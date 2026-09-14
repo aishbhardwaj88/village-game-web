@@ -9,6 +9,7 @@ import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 import { buildHeroZone } from './village.js';
 import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
+import { AudioEngine } from './audio.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -68,11 +69,13 @@ async function main() {
 
   canvas.addEventListener('click', () => input.requestPointerLock?.());
 
+  const audio = new AudioEngine();
   let started = false;
   setupStartOverlay({
     isTouch: touch,
     onStart: () => {
       started = true;
+      audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
     },
   });
@@ -121,6 +124,7 @@ async function main() {
     camRig.distance = CAMERA_DISTANCE;
     camRig.height = CAMERA_HEIGHT;
     mountedVehicle = null;
+    audio.setVehicle(null, 0);
   }
 
   function tick(now) {
@@ -138,6 +142,7 @@ async function main() {
         mountedVehicle.update(dt, input);
         mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         mountedVehicle.group.position.z = THREE.MathUtils.clamp(mountedVehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        audio.setVehicle(mountedVehicle.preset.kind, mountedVehicle.speed / mountedVehicle.preset.maxSpeed);
 
         interactHint.textContent = touch ? 'Tap to dismount' : 'Press E to dismount';
         interactHint.classList.add('visible');
@@ -154,6 +159,7 @@ async function main() {
         player.position.addScaledVector(moveDir, MOVE_SPEED * dt);
         player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
 
         const nearby = nearestMountable();
         if (nearby) {
@@ -166,6 +172,7 @@ async function main() {
       }
 
       camRig.update();
+      audio.update(dt);
     }
 
     renderer.info.reset();

@@ -25,9 +25,11 @@ export function setupFpsCounter() {
 }
 
 /**
- * Shows the tap-to-start overlay, unlocks audio on first interaction, requests
- * pointer lock on desktop, and reveals touch controls on touch devices. Resolves once
- * the player has tapped/clicked to start.
+ * Shows the tap-to-start overlay, requests pointer lock on desktop, and reveals touch
+ * controls on touch devices. Resolves once the player has tapped/clicked to start.
+ * `onStart` is called synchronously inside the pointerdown handler — callers that need
+ * to unlock a Web Audio AudioContext (iOS/Safari requires this inside a user gesture)
+ * should create/resume it there, not after an await.
  */
 export function setupStartOverlay({ isTouch, onStart }) {
   const overlay = document.getElementById('start-overlay');
@@ -39,17 +41,6 @@ export function setupStartOverlay({ isTouch, onStart }) {
   const start = () => {
     overlay.removeEventListener('pointerdown', start);
     overlay.classList.add('hidden');
-
-    // Unlock audio playback on iOS/Safari by resuming a context inside the gesture.
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (Ctx) {
-        const ctx = new Ctx();
-        if (ctx.state === 'suspended') ctx.resume();
-      }
-    } catch (e) {
-      // Audio unlock is best-effort; ignore failures.
-    }
 
     if (isTouch) {
       touchControls.classList.add('active');
