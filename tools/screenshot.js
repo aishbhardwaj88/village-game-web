@@ -75,7 +75,8 @@ async function main() {
 
     // Dismiss the tap-to-start overlay and let assets (ground textures, HDRI, pot model) load.
     await page.click('#start-overlay');
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForTimeout(1500);
 
     for (const preset of CAMERA_PRESETS) {
       await page.evaluate((p) => {

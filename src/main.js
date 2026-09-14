@@ -6,6 +6,7 @@ import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
+import { buildHeroZone } from './village.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -22,13 +23,20 @@ async function main() {
 
   const sun = createSun();
   scene.add(sun);
-  scene.add(new THREE.AmbientLight(0x445577, 0.15));
+  // Fill light for shadow-side surfaces: cool sky above, warm ground-bounce below.
+  // Needed because scene.environmentIntensity is kept low (see scene.js) to tame the
+  // HDRI's very hot sun disk in specular reflections — that also dims the HDRI's own
+  // diffuse IBL fill, so this hemisphere light replaces it explicitly.
+  scene.add(new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9));
 
   const sky = createSky(sun.position);
   scene.add(sky);
   applyFog(scene, SKY_HORIZON_COLOR.getHex());
 
+  buildHeroZone(scene);
+
   const player = createPlayer();
+  player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
   scene.add(player);
 
   const camRig = new ThirdPersonCamera(camera, player);

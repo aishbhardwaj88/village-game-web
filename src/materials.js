@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 const textureLoader = new THREE.TextureLoader();
-const rawTextureCache = new Map(); // url -> Texture (unconfigured repeat)
+const rawTextureCache = new Map(); // url -> Texture, shared Source, one real network fetch each
 const materialCache = new Map(); // "name|rx|ry|tint" -> Material
 
 /**
@@ -19,6 +19,12 @@ const SETS = {
 };
 
 function loadRaw(url, srgb) {
+  // One real load() per URL, reused via clone() for every repeat/tint variant — this
+  // is what keeps a scene with many wall/roof boxes to a handful of actual network
+  // fetches and image decodes (load target: playable within 8s on 4G, item 6).
+  // Texture.clone() unconditionally flips needsUpdate on the copy, which — before the
+  // shared image has actually decoded — logs a harmless
+  // "Texture marked for update but no image data found" warning; see docs/parked.md.
   let tex = rawTextureCache.get(url);
   if (!tex) {
     tex = textureLoader.load(url);
@@ -43,10 +49,6 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 
   const opts = { map: null, normalMap: null, roughnessMap: null, aoMap: null, roughness };
   for (const mapType of set.maps) {
-    // clone() shares the underlying Source with the original TextureLoader.load()
-    // result, so it picks up the decoded image the same way once loading finishes —
-    // no manual needsUpdate needed (forcing it here, before the image exists, is what
-    // produced "Texture marked for update but no image data found" warnings).
     const tex = loadRaw(set.base + name + '_' + mapType + '.jpg', mapType === 'color').clone();
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
@@ -86,6 +88,25 @@ export function texturedBox(width, height, depth, materialName, opts = {}) {
   const repeatX = Math.max(width, depth) / tileSize;
   const repeatY = height / tileSize;
   const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+/**
+ * A thin double-sided wall as a plane, not a box. A BoxGeometry with one dimension
+ * near-zero (a 0.2m-thick wall) gives its end-cap faces the same UV repeat as the big
+ * faces, which samples the texture at extreme, near-degenerate magnification and can
+ * read as a blown-out/flat highlight (see docs/parked.md). A plane has no end caps.
+ */
+export function texturedWall(width, height, materialName, opts = {}) {
+  const { tileSize = 1.5, tint = null, roughness = 1 } = opts;
+  const geometry = ensureUv2(new THREE.PlaneGeometry(width, height));
+  const repeatX = width / tileSize;
+  const repeatY = height / tileSize;
+  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness });
+  material.side = THREE.DoubleSide;
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

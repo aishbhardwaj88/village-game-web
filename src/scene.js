@@ -69,6 +69,11 @@ export async function loadEnvironment(renderer, scene, hdriUrl) {
   // HDRI as scene.background read wrong for flat Amrai Khera and looked pixelated at
   // the horizon. See docs/parked.md.
   scene.environment = envMap;
+  // camdeboo_road's sun disk is extremely hot (~80,000x middle grey — see docs/parked.md
+  // from the sky-swap decision); at full IBL intensity its specular reflection blows
+  // flat, favourably-angled walls to solid white. 0.45 keeps soft ambient fill/bounce
+  // light without that hotspot.
+  scene.environmentIntensity = 0.45;
 
   hdrTexture.dispose();
   pmrem.dispose();
