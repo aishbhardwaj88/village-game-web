@@ -7,6 +7,7 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 import { buildHeroZone } from './village.js';
+import { buildField } from './field.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -34,6 +35,7 @@ async function main() {
   applyFog(scene, SKY_HORIZON_COLOR.getHex());
 
   buildHeroZone(scene);
+  buildField(scene);
 
   const player = createPlayer();
   player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
