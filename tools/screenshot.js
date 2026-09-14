@@ -73,7 +73,10 @@ async function main() {
 
     await page.goto(`${DEV_URL}?dev=1`, { waitUntil: 'load' });
 
-    // Dismiss the tap-to-start overlay and let assets (ground textures, HDRI, pot model) load.
+    // The overlay only accepts a tap once THREE.DefaultLoadingManager reports every
+    // queued asset loaded (see src/ui.js setupLoadingScreen) — wait for that class
+    // before clicking, same gate a real player hits.
+    await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
     await page.click('#start-overlay');
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(1500);

@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Dopahar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
     <style>
       html, body {
         margin: 0;
@@ -28,34 +31,64 @@
         touch-action: none;
       }
 
-      /* --- Tap to start overlay --- */
+      /* --- Loading / tap-to-start overlay --- */
       #start-overlay {
         position: fixed;
         inset: 0;
         z-index: 100;
-        background: #0a0a12;
+        background: radial-gradient(ellipse at 50% 40%, #4a2e18 0%, #2a1810 60%, #1a0f0a 100%);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #f2e6d0;
+        color: #f8ead0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         text-align: center;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
-      #start-overlay h1 {
-        font-size: 1.6rem;
-        letter-spacing: 0.08em;
-        margin: 0 0 0.5rem;
-        font-weight: 600;
-      }
-      #start-overlay p {
-        opacity: 0.7;
-        font-size: 0.95rem;
+      #start-overlay .title-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 3rem;
+        line-height: 1.2;
         margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      #start-overlay .title-en {
+        font-size: 1rem;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin: 0.4rem 0 2.2rem;
+        font-weight: 500;
+      }
+      #progress-track {
+        width: 200px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.15);
+        overflow: hidden;
+      }
+      #progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #f2b25c;
+        transition: width 0.15s ease-out;
       }
       #start-overlay.hidden {
         display: none;
+      }
+      #start-overlay-hint {
+        opacity: 0.85;
+        font-size: 0.95rem;
+        margin: 1.4rem 0 0;
+        display: none;
+      }
+      #start-overlay.ready #progress-track {
+        display: none;
+      }
+      #start-overlay.ready #start-overlay-hint {
+        display: block;
       }
 
       /* --- FPS counter (dev flag only) --- */
@@ -175,7 +208,9 @@
       </div>
       <div id="interact-hint"></div>
       <div id="start-overlay">
-        <h1>दोपहर · Dopahar</h1>
+        <p class="title-hi">दोपहर</p>
+        <p class="title-en">Dopahar</p>
+        <div id="progress-track"><div id="progress-fill"></div></div>
         <p id="start-overlay-hint">Tap to start</p>
       </div>
     </div>
