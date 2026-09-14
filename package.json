@@ -1,0 +1,28 @@
+{
+  "name": "dopahar-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check-budget": "node tools/check-budget.js",
+    "shrink": "node tools/shrink.js",
+    "screenshot": "node tools/screenshot.js"
+  },
+  "dependencies": {
+    "three": "^0.186.0",
+    "postprocessing": "^6.39.5"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0",
+    "@gltf-transform/cli": "^4.5.0",
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
+    "meshoptimizer": "^1.2.0",
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.4"
+  }
+}

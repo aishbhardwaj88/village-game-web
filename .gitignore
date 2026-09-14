@@ -1,0 +1,15 @@
+node_modules/
+dist/
+docs/shots/
+.DS_Store
+.env
+.env.*
+*.log
+npm-debug.log*
+.vite/
+playwright-report/
+test-results/
+Places V1/
+Characters V1/
+Mood board/
+reference-from-unity/
