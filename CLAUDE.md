@@ -9,6 +9,13 @@ Vite, vanilla JS, no framework. Runs from a link on phone and desktop browsers, 
 to GitHub Pages. The Unity project (`../Village nostalgia`) is the future downloadable
 version — **never touch it from here.** `START_HERE.md` has the folder map.
 
+Current world: house/school/halwai hero zone + connecting lane (`src/village.js`),
+a wheat/sabzi field with a dirt track loop (`src/field.js`), one vehicle controller with
+four presets — walk/bike/tractor+trolley/bullock cart (`src/vehicles.js`), procedural
+Web Audio (`src/audio.js`), a gradient sky + HDRI-for-lighting-only (`src/sky.js`,
+`src/scene.js`). Coordinates match `reference-from-unity/MAP.md` /
+`WorldData/*.json` (1 unit = 1 m).
+
 ## 2. Reference folders — read-only, never touched
 
 `Places V1/`, `Characters V1/`, `Mood board/`, `reference-from-unity/` live in this
@@ -42,9 +49,12 @@ Full spec lives there; read it before any visual work. The load-bearing rules:
 
 ## 5. Renderer and colour — law, from step 3 of the initial build (do not change casually)
 
+**`docs/look-standard.md` is the exact-values snapshot (sun, fog, post-processing,
+texture tiling, palette) — read it before building any new scene content, and update it
+in the same commit as any change to these systems.** The headline rules:
+
 - `renderer.outputColorSpace = THREE.SRGBColorSpace`
-- `renderer.toneMapping = THREE.ACESFilmicToneMapping`, `toneMappingExposure` tuned
-  around 1.0 (currently 1.0 — see `docs/parked.md` if an HDRI needs a different value)
+- `renderer.toneMapping = THREE.ACESFilmicToneMapping`, `toneMappingExposure = 1.0`
 - Albedo/colour textures: `colorSpace = THREE.SRGBColorSpace`. Normal/roughness/AO stay
   linear (no colorSpace set).
 - Pixel ratio capped at 1.5. Shadows on, one 2048 shadow map, `THREE.PCFShadowMap`
@@ -54,6 +64,9 @@ Full spec lives there; read it before any visual work. The load-bearing rules:
   non-touch devices only. **No `ToneMappingEffect` in the composer** — the renderer's
   ACES pass above is the single source of truth; duplicating it washes the image out
   (see `docs/parked.md`).
+- Sky is a shader gradient dome (`src/sky.js`) — Amrai Khera is flat farmland, no
+  hills/mountains in the visible background. The HDRI (Poly Haven `camdeboo_road`)
+  feeds `scene.environment` (lighting/IBL) only, **never** `scene.background`.
 
 ## 6. Asset licence rule
 
