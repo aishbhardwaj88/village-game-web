@@ -1,34 +1,14 @@
 import * as THREE from 'three';
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
-import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
+import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
 import { createPlayer, ThirdPersonCamera } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, isDevMode } from './ui.js';
-import { getGLTFLoader } from './loaders.js';
+import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 
-const GROUND_HALF_EXTENT = 98; // keep the player a couple metres inside the 200x200 ground
+const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
-
-/** First asset-pipeline test piece: a shrunk CC0 clay pot, placed near spawn. */
-function loadTestProp(scene) {
-  getGLTFLoader().load(
-    'assets/models/ceramic_pot.glb',
-    (gltf) => {
-      const pot = gltf.scene;
-      pot.position.set(2, 0, -3);
-      pot.traverse((obj) => {
-        if (obj.isMesh) {
-          obj.castShadow = true;
-          obj.receiveShadow = true;
-        }
-      });
-      scene.add(pot);
-    },
-    undefined,
-    (err) => console.error('Failed to load ceramic_pot.glb', err)
-  );
-}
 
 async function main() {
   const canvas = document.getElementById('scene');
@@ -44,10 +24,12 @@ async function main() {
   scene.add(sun);
   scene.add(new THREE.AmbientLight(0x445577, 0.15));
 
+  const sky = createSky(sun.position);
+  scene.add(sky);
+  applyFog(scene, SKY_HORIZON_COLOR.getHex());
+
   const player = createPlayer();
   scene.add(player);
-
-  loadTestProp(scene);
 
   const camRig = new ThirdPersonCamera(camera, player);
   camRig.update();
@@ -60,10 +42,10 @@ async function main() {
 
   const fps = setupFpsCounter();
 
-  // Environment (HDRI sky + IBL) and fog load async; scene renders as soon as ground/sun are up.
-  loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_1k.hdr')
-    .then(() => applyFog(scene))
-    .catch((err) => console.error('Failed to load environment HDRI', err));
+  // HDRI lighting (IBL) loads async; scene renders as soon as ground/sun/sky are up.
+  loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_1k.hdr').catch((err) =>
+    console.error('Failed to load environment HDRI', err)
+  );
 
   function onResize() {
     resizeRendererToDisplaySize(renderer, camera);

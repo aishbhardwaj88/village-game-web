@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { getTiledMaterial, ensureUv2 } from './materials.js';
 
-const GROUND_SIZE = 200; // metres
-const GROUND_TEXTURE_REPEAT = 40; // 200m / 40 = 5m per texture tile
+export const GROUND_SIZE = 480; // metres — big enough for the hero zone + field + track
+const GROUND_TILE_METRES = 5; // real-world metres per ground texture tile
 
 export function createScene() {
   const scene = new THREE.Scene();
@@ -20,26 +21,10 @@ export function loadTexture(loader, url, { srgb = false, repeat = 1 } = {}) {
 }
 
 export function createGround() {
-  const loader = new THREE.TextureLoader();
-  const base = 'assets/textures/ground/';
-
-  const map = loadTexture(loader, base + 'ground_color.jpg', { srgb: true, repeat: GROUND_TEXTURE_REPEAT });
-  const normalMap = loadTexture(loader, base + 'ground_normal.jpg', { repeat: GROUND_TEXTURE_REPEAT });
-  const roughnessMap = loadTexture(loader, base + 'ground_roughness.jpg', { repeat: GROUND_TEXTURE_REPEAT });
-  const aoMap = loadTexture(loader, base + 'ground_ao.jpg', { repeat: GROUND_TEXTURE_REPEAT });
-
-  const geometry = new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1);
-  // uv2 needed for aoMap
-  geometry.setAttribute('uv2', geometry.attributes.uv);
-
-  const material = new THREE.MeshStandardMaterial({
-    map,
-    normalMap,
-    roughnessMap,
-    aoMap,
-    aoMapIntensity: 0.8,
-    roughness: 1.0,
-  });
+  const repeat = GROUND_SIZE / GROUND_TILE_METRES;
+  const geometry = ensureUv2(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1));
+  const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });
+  material.aoMapIntensity = 0.8;
 
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;
@@ -80,9 +65,10 @@ export async function loadEnvironment(renderer, scene, hdriUrl) {
   const hdrTexture = await new HDRLoader().loadAsync(hdriUrl);
   const envMap = pmrem.fromEquirectangular(hdrTexture).texture;
 
+  // Lighting/IBL only — the visible sky is the gradient dome in sky.js. A foreign hilly
+  // HDRI as scene.background read wrong for flat Amrai Khera and looked pixelated at
+  // the horizon. See docs/parked.md.
   scene.environment = envMap;
-  scene.background = envMap;
-  scene.backgroundBlurriness = 0.02;
 
   hdrTexture.dispose();
   pmrem.dispose();
@@ -90,7 +76,7 @@ export async function loadEnvironment(renderer, scene, hdriUrl) {
   return envMap;
 }
 
-export function applyFog(scene, horizonColorHex = 0xd98c53) {
-  // Warm exponential fog matched to the golden-hour sky horizon colour.
-  scene.fog = new THREE.FogExp2(horizonColorHex, 0.006);
+export function applyFog(scene, horizonColorHex) {
+  // Matches sky.js's SKY_HORIZON_COLOR so the ground fades into the sky with no seam.
+  scene.fog = new THREE.FogExp2(horizonColorHex, 0.0085);
 }
