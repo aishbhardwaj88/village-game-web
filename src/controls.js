@@ -15,6 +15,7 @@ export class InputController {
     this.moveZ = 0; // forward, -1..1 (negative = forward)
     this.yawDelta = 0;
     this.pitchDelta = 0;
+    this._interactPressed = false; // edge-triggered, consumed via consumeInteract()
 
     this._keys = new Set();
     this._pointerLocked = false;
@@ -23,6 +24,31 @@ export class InputController {
       this._setupTouch();
     } else {
       this._setupDesktop();
+    }
+    this._setupInteractButton();
+  }
+
+  /** Mount/dismount vehicles: E on desktop, the on-screen button on touch. Returns
+   * true once per press (edge-triggered) so callers don't need their own debounce. */
+  consumeInteract() {
+    const pressed = this._interactPressed;
+    this._interactPressed = false;
+    return pressed;
+  }
+
+  _setupInteractButton() {
+    const btn = document.getElementById('interact-button');
+    if (!btn) return;
+    if (this.touch) {
+      btn.classList.add('active');
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this._interactPressed = true;
+      });
+    } else {
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyE') this._interactPressed = true;
+      });
     }
   }
 

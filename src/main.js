@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
-import { createPlayer, ThirdPersonCamera } from './player.js';
+import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 import { buildHeroZone } from './village.js';
 import { buildField } from './field.js';
+import { spawnVehicles } from './vehicles.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -36,6 +37,7 @@ async function main() {
 
   buildHeroZone(scene);
   buildField(scene);
+  const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
   player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
@@ -85,6 +87,42 @@ async function main() {
   const moveDir = new THREE.Vector3();
   let lastTime = performance.now();
 
+  const interactHint = document.getElementById('interact-hint');
+  let mountedVehicle = null;
+
+  function nearestMountable() {
+    let nearest = null;
+    let nearestDist = Infinity;
+    for (const v of vehicles) {
+      const d = player.position.distanceTo(v.position);
+      if (d < v.preset.mountRadius && d < nearestDist) {
+        nearest = v;
+        nearestDist = d;
+      }
+    }
+    return nearest;
+  }
+
+  function mount(vehicle) {
+    mountedVehicle = vehicle;
+    player.visible = false;
+    camRig.target = vehicle.group;
+    camRig.distance = vehicle.preset.cameraDistance;
+    camRig.height = vehicle.preset.cameraHeight;
+  }
+
+  function dismount() {
+    const v = mountedVehicle;
+    const besideOffset = new THREE.Vector3(v.preset.body.w / 2 + 1.3, 0, 0);
+    besideOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), v.group.rotation.y);
+    player.position.copy(v.group.position).add(besideOffset);
+    player.visible = true;
+    camRig.target = player;
+    camRig.distance = CAMERA_DISTANCE;
+    camRig.height = CAMERA_HEIGHT;
+    mountedVehicle = null;
+  }
+
   function tick(now) {
     requestAnimationFrame(tick);
     const dt = Math.min((now - lastTime) / 1000, 0.05);
@@ -94,18 +132,38 @@ async function main() {
       input.update();
       const { yaw, pitch } = input.consumeLookDelta();
       camRig.addYawPitch(yaw, pitch);
+      const interactPressed = input.consumeInteract();
 
-      forward.set(-Math.sin(camRig.yaw), 0, -Math.cos(camRig.yaw));
-      right.set(Math.cos(camRig.yaw), 0, -Math.sin(camRig.yaw));
+      if (mountedVehicle) {
+        mountedVehicle.update(dt, input);
+        mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        mountedVehicle.group.position.z = THREE.MathUtils.clamp(mountedVehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
 
-      moveDir.set(0, 0, 0);
-      moveDir.addScaledVector(forward, -input.moveZ);
-      moveDir.addScaledVector(right, input.moveX);
-      if (moveDir.lengthSq() > 1) moveDir.normalize();
+        interactHint.textContent = touch ? 'Tap to dismount' : 'Press E to dismount';
+        interactHint.classList.add('visible');
+        if (interactPressed) dismount();
+      } else {
+        forward.set(-Math.sin(camRig.yaw), 0, -Math.cos(camRig.yaw));
+        right.set(Math.cos(camRig.yaw), 0, -Math.sin(camRig.yaw));
 
-      player.position.addScaledVector(moveDir, MOVE_SPEED * dt);
-      player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-      player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        moveDir.set(0, 0, 0);
+        moveDir.addScaledVector(forward, -input.moveZ);
+        moveDir.addScaledVector(right, input.moveX);
+        if (moveDir.lengthSq() > 1) moveDir.normalize();
+
+        player.position.addScaledVector(moveDir, MOVE_SPEED * dt);
+        player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+
+        const nearby = nearestMountable();
+        if (nearby) {
+          interactHint.textContent = touch ? `Tap to mount ${nearby.preset.label}` : `Press E to mount ${nearby.preset.label}`;
+          interactHint.classList.add('visible');
+          if (interactPressed) mount(nearby);
+        } else {
+          interactHint.classList.remove('visible');
+        }
+      }
 
       camRig.update();
     }
@@ -117,7 +175,7 @@ async function main() {
   requestAnimationFrame(tick);
 
   if (isDevMode()) {
-    window.__dopahar = { scene, renderer, composer, camera, player, camRig };
+    window.__dopahar = { scene, renderer, composer, camera, player, camRig, vehicles };
   }
 }
 

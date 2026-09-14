@@ -32,18 +32,24 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
     pos.setZ(i, bumpHeight(u, v, seed));
   }
   geometry.computeVertexNormals();
+  // Bake the "lay flat" rotation into the geometry itself (local Y -> -Z, local
+  // Z/bump -> Y/up), rather than applying it as a second runtime rotation.x
+  // alongside rotation.y on the mesh. Two non-zero Euler components compose in a
+  // fixed axis order (X, then Y, then Z here) that does NOT match "flatten, then
+  // yaw" for an arbitrary yaw angle — that combination was rendering lane/track
+  // segments with an inverted (downward) normal for some directions, reading as a
+  // flat black strip. A single baked axis plus a single runtime rotation.y has no
+  // such ambiguity. See docs/parked.md.
+  geometry.rotateX(-Math.PI / 2);
   ensureUv2(geometry);
 
   const repeat = Math.max(1, Math.round(length / 4));
   const material = getTiledMaterial('ground', { repeatX: 2, repeatY: repeat, tint, roughness: 1 });
 
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.x = -Math.PI / 2;
   const midX = (start.x + end.x) / 2;
   const midZ = (start.z + end.z) / 2;
   mesh.position.set(midX, 0.03, midZ);
-  // rotation.x lays the plane flat (local Y -> world -Z); rotation.y then yaws it in
-  // the ground plane to point along (dx, dz).
   mesh.rotation.y = Math.atan2(-dx, -dz);
   mesh.receiveShadow = true;
   mesh.castShadow = false;

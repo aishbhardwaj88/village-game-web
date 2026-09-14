@@ -36,6 +36,7 @@ export class ThirdPersonCamera {
     this.yaw = Math.PI; // behind the player looking forward
     this.pitch = -0.15;
     this.distance = CAMERA_DISTANCE;
+    this.height = CAMERA_HEIGHT; // settable per mount (bigger vehicles pull the rig back/up)
     this._pivot = new THREE.Vector3();
     this._desired = new THREE.Vector3();
   }
@@ -49,7 +50,7 @@ export class ThirdPersonCamera {
     const distance = Math.max(this.distance, CAMERA_MIN_DISTANCE);
 
     this._pivot.copy(this.target.position);
-    this._pivot.y += CAMERA_HEIGHT;
+    this._pivot.y += this.height;
 
     const cosPitch = Math.cos(this.pitch);
     const offset = new THREE.Vector3(
@@ -64,4 +65,4 @@ export class ThirdPersonCamera {
   }
 }
 
-export { PLAYER_HEIGHT, PLAYER_RADIUS };
+export { PLAYER_HEIGHT, PLAYER_RADIUS, CAMERA_DISTANCE, CAMERA_HEIGHT };
