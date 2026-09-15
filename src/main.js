@@ -10,7 +10,7 @@ import { buildHeroZone } from './village.js';
 import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
-import { buildBackgroundHouses, buildLaneTrees } from './scenery.js';
+import { buildBackgroundHouses } from './scenery.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -42,7 +42,6 @@ async function main() {
   buildHeroZone(scene);
   buildField(scene);
   buildBackgroundHouses(scene);
-  buildLaneTrees(scene);
   const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
