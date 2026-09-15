@@ -80,16 +80,45 @@ building). Ground/lane/track/field use a fixed 5m/tile via their own explicit re
 math. **Thin (<0.5m) walls must use `texturedWall` (a plane), never `texturedBox`** —
 see docs/parked.md for the rendering bug this avoids.
 
-## Palette (hex, as used in `src/village.js` / `src/field.js`)
+## Palette — LAW, fixed values (`src/village.js` `PALETTE`, 2026-09-15)
+
+These eight hex values are the only building/wall colours in the village. No per-call
+tuning "by feel" — pick from this list, or a `darken()` (×0.72) of one of these values
+for a band/plinth. **Nothing in the village may be more saturated or darker than this
+list.**
+
+| Name | Hex | Use |
+|---|---|---|
+| Cream plaster | `#E8DCC4` | Spare / background houses |
+| Pale mustard | `#DCC488` | House walls |
+| Muted terracotta | `#C98E72` | Halwai walls, background houses |
+| Pale teal | `#8FAFA6` | Background houses |
+| Faded blue | `#A8BCCB` | Background houses |
+| School pale yellow | `#EFDCA8` | School walls |
+| Grey-green | `#BCBFA8` | Spare / background houses |
+| Wood trim | `#8A6A4A` | Doors, window/door frames, lintels, cabinet |
+
+**Application rules (law):**
+- Tint strength is capped at **30%** (`WALL_TINT_STRENGTH` in `src/village.js`,
+  `tintStrength` param on `getTiledMaterial`/`texturedBox`/`texturedWall` in
+  `src/materials.js`): the material colour is `white.lerp(paletteHex, 0.3)`, never the
+  raw hex applied as a full multiply — this is what keeps the plaster texture's own
+  grain and colour visible instead of the wall reading as a flat painted cut-out.
+- **Bands and plinths use a deeper shade of the same hue as their wall** (`darken()`,
+  ×0.72) — never a different, more saturated colour. A school gets a darker
+  pale-yellow band, not a blue one.
+- Wood trim (`#8A6A4A`) and neutral concrete (`0xd7d2c4`, already paler/less saturated
+  than every palette value, unchanged) are applied at full strength — they're small
+  trim/structural elements, not the "cardboard wall" problem this palette fixes.
+- Small non-architectural props (e.g. the halwai's red/green plastic chairs, per
+  `Places V1/halwai/LAYOUT.md`) are outside this palette — clothing/small objects are
+  where brightness belongs (art-direction 7.3), architecture is not.
+
+Non-architectural terrain tints (lane/track/field/ground) are unaffected by this law —
+they were tuned and validated separately:
 
 | Colour | Hex | Use |
 |---|---|---|
-| Sun-faded cream plaster | `0xe8d9b0` | House + halwai walls |
-| Pale blue-white plaster | `0xdce8ef` | School walls (MAP.md "blue-and-white") |
-| Painted accent band | `0x3d6fa3` | School base band |
-| Wood | `0x8a6238` | Doors, cabinet |
-| Neutral concrete | `0xd7d2c4` | Roofs, floors, parapets |
-| Warm cement/brick plinth | `0xb08a5c` | Halwai kadhai platform |
 | Golden field soil | `0xc9a24f` | Field ground tint |
 | Lane/track dirt | `0xb7a179` (lane), `0xa88a5e` (track) | `src/paths.js` |
 

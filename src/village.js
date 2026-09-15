@@ -10,19 +10,35 @@ const HOUSE_CENTER = { x: -48, z: 39 };
 const SCHOOL_CENTER = { x: -50, z: 106 };
 const HALWAI_CENTER = { x: -40, z: 62 };
 
-// Sun-faded, intact palette (art-direction 7.1b — worn-in is fine, damage is not).
-// The plaster texture itself is a near-white light grey, so these tint colours are
-// mid-tone/saturated on purpose — multiplying against that pale base (~0.85x) is what
-// lightens them into the final sun-faded look. A pale tint here multiplies down to an
-// almost-grey wall; see docs/look-standard.md and docs/parked.md.
-const PLASTER_HOUSE = 0xc49a2e; // sun-faded mustard
-const PLASTER_HALWAI = 0xb8652e; // terracotta
-const PLASTER_SCHOOL = 0xd9c468; // pale yellow, per MAP.md "blue-and-white walls"
-const SCHOOL_BAND = 0x3f6fa3; // faded blue accent band, echoes the sky zenith blue
-const HOUSE_BAND = 0x6fa89c; // pale teal skirt band
-const WOOD_DOOR = 0x8a6238;
-const CONCRETE_NEUTRAL = 0xd7d2c4;
-const KADHAI_PLATFORM_TINT = 0xb08a5c; // warm cement/brick-toned plinth, no brick texture
+// Fixed palette, law — see docs/look-standard.md. Exact hex values, no per-call tuning.
+// Applied at WALL_TINT_STRENGTH (0.3) so the plaster texture's own grain/colour stays
+// visible instead of a flat saturated cut-out (see src/materials.js getTiledMaterial).
+export const PALETTE = {
+  cream: 0xe8dcc4,
+  mustard: 0xdcc488,
+  terracotta: 0xc98e72,
+  teal: 0x8fafa6,
+  fadedBlue: 0xa8bccb,
+  schoolYellow: 0xefdca8,
+  greyGreen: 0xbcbfa8,
+  woodTrim: 0x8a6a4a,
+};
+export const WALL_TINT_STRENGTH = 0.3;
+
+/** A deeper shade of the same hue, for bands/plinths — never a different, more
+ * saturated colour (law). */
+function darken(hex, factor = 0.72) {
+  return new THREE.Color(hex).multiplyScalar(factor).getHex();
+}
+
+const PLASTER_HOUSE = PALETTE.mustard;
+const PLASTER_HALWAI = PALETTE.terracotta;
+const PLASTER_SCHOOL = PALETTE.schoolYellow;
+const SCHOOL_BAND = darken(PALETTE.schoolYellow);
+const HOUSE_BAND = darken(PALETTE.mustard);
+const WOOD_DOOR = PALETTE.woodTrim;
+const CONCRETE_NEUTRAL = 0xd7d2c4; // already paler/less saturated than every palette value
+const KADHAI_PLATFORM_TINT = darken(PALETTE.terracotta);
 
 function addBox(group, width, height, depth, materialName, position, opts = {}) {
   const mesh = texturedBox(width, height, depth, materialName, opts);
@@ -63,11 +79,11 @@ function buildHouse() {
   const blockD = 8;
   const blockCx = cx;
   const blockCz = cz - 3; // north side of the 14m-deep courtyard (cz-7 .. cz+7)
-  addBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, { tint: PLASTER_HOUSE, tileSize: 2 });
+  addBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
   // Painted skirt band along the base of the wall.
   const houseBandH = 1.0;
-  addBox(group, blockW + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2 });
+  addBox(group, blockW + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
   // Flat concrete roof with a parapet lip.
   const roofY = blockH + 0.15;
@@ -83,8 +99,8 @@ function buildHouse() {
 
   // Low compound walls, east/west courtyard edges (south stays open onto the lane).
   const wallH = 1.6;
-  addWall(group, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2 });
-  addWall(group, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2 });
+  addWall(group, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWall(group, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
   return group;
 }
@@ -115,8 +131,8 @@ function buildSchool() {
   ];
 
   for (const b of blocks) {
-    addBox(group, b.w, wallH, b.d, 'plaster', { x: b.x, y: wallH / 2, z: b.z }, { tint: PLASTER_SCHOOL, tileSize: 2 });
-    addBox(group, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2 });
+    addBox(group, b.w, wallH, b.d, 'plaster', { x: b.x, y: wallH / 2, z: b.z }, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addBox(group, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     addBox(group, b.w + 0.3, 0.25, b.d + 0.3, 'concrete', { x: b.x, y: wallH + 0.15, z: b.z }, { tint: CONCRETE_NEUTRAL });
   }
 
@@ -145,12 +161,12 @@ function buildHalwai() {
   const xBack = cx + depth / 2;
   const zLeft = cz - width / 2;
 
-  addWall(group, depth, height, 'plaster', { x: cx, y: height / 2, z: zLeft }, 'x', { tint: PLASTER_HALWAI, tileSize: 1.5 }); // left/north wall
-  addWall(group, width, height, 'plaster', { x: xBack, y: height / 2, z: cz }, 'z', { tint: PLASTER_HALWAI, tileSize: 1.5 }); // back/east wall
+  addWall(group, depth, height, 'plaster', { x: cx, y: height / 2, z: zLeft }, 'x', { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // left/north wall
+  addWall(group, width, height, 'plaster', { x: xBack, y: height / 2, z: cz }, 'z', { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // back/east wall
   addBox(group, depth + 0.6, 0.25, width + 0.6, 'concrete', { x: cx, y: height + 0.125, z: cz }, { tint: CONCRETE_NEUTRAL }); // roof
 
   // Kadhai platform: 0.9m deep band nearest the street.
-  addBox(group, 0.9, 0.4, width, 'concrete', { x: xFront + 0.45, y: 0.2, z: cz }, { tint: KADHAI_PLATFORM_TINT });
+  addBox(group, 0.9, 0.4, width, 'concrete', { x: xFront + 0.45, y: 0.2, z: cz }, { tint: KADHAI_PLATFORM_TINT, tintStrength: WALL_TINT_STRENGTH });
 
   // Sweet display cabinet, in the 0.6m band after the 2.5m working aisle.
   addBox(group, 0.6, 1.6, 1.5, 'wood', { x: xBack - 0.55, y: 0.8, z: cz - 1 }, { tint: WOOD_DOOR, tileSize: 1 });

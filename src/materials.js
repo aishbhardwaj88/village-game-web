@@ -41,8 +41,8 @@ function loadRaw(url, srgb) {
  * scale (repeatX/repeatY = metres of surface / metres per texture tile). Cached per
  * (name, repeat, tint) so reused tiling scales share one material/draw-call group.
  */
-export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1 } = {}) {
-  const key = `${name}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}`;
+export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1, tintStrength = 1 } = {}) {
+  const key = `${name}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}`;
   let mat = materialCache.get(key);
   if (mat) return mat;
 
@@ -64,7 +64,11 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 
   mat = new THREE.MeshStandardMaterial(opts);
   if (tint) {
-    mat.color = new THREE.Color(tint);
+    // tintStrength < 1 blends from white toward the tint instead of a full multiply,
+    // so the texture's own colour/grain stays visible under the paint rather than the
+    // wall reading as a flat, saturated cut-out. Building walls use 0.3 (law — see
+    // docs/look-standard.md); terrain (ground/lane/field/crop) keeps full strength.
+    mat.color = new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength);
   }
   materialCache.set(key, mat);
   return mat;
@@ -85,11 +89,11 @@ export function ensureUv2(geometry) {
  * roughly right for these sets at 1K).
  */
 export function texturedBox(width, height, depth, materialName, opts = {}) {
-  const { tileSize = 1.5, tint = null, roughness = 1 } = opts;
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
   const geometry = ensureUv2(new THREE.BoxGeometry(width, height, depth));
   const repeatX = Math.max(width, depth) / tileSize;
   const repeatY = height / tileSize;
-  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness });
+  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness, tintStrength });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -103,11 +107,11 @@ export function texturedBox(width, height, depth, materialName, opts = {}) {
  * read as a blown-out/flat highlight (see docs/parked.md). A plane has no end caps.
  */
 export function texturedWall(width, height, materialName, opts = {}) {
-  const { tileSize = 1.5, tint = null, roughness = 1 } = opts;
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
   const geometry = ensureUv2(new THREE.PlaneGeometry(width, height));
   const repeatX = width / tileSize;
   const repeatY = height / tileSize;
-  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness });
+  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness, tintStrength });
   material.side = THREE.DoubleSide;
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;

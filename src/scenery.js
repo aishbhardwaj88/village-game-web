@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { texturedBox } from './materials.js';
+import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
 
 // Item 10 — background houses beyond the fog line, so the village doesn't end
 // abruptly. Lane trees were removed — see docs/parked.md: no suitable CC0 canopy-
@@ -7,10 +8,8 @@ import { texturedBox } from './materials.js';
 // "LeafSet"/"Foliage" atlases are individual leaves and grass blades, not a dense
 // canopy silhouette), and the faceted icosahedron placeholder read as a toy prop.
 
-// Same mid-tone/saturated-tint logic as src/village.js — the plaster texture itself is
-// pale, so these multiply down to sun-faded rather than reading as grey. Each a
-// different colour, per docs/look-standard.md's palette.
-const HOUSE_TINTS = [0xb8652e /* terracotta */, 0x6fa89c /* pale teal */, 0x4a7ba8 /* faded blue */];
+// Fixed palette (law, see docs/look-standard.md), each a different colour.
+const HOUSE_TINTS = [PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue];
 
 /** A handful of simple flat-roofed boxes scattered past the hero zone, at a distance
  * fog (density 0.0085) mostly hazes over — same texture set as the hero zone, just
@@ -27,7 +26,7 @@ export function buildBackgroundHouses(scene) {
 
   placements.forEach((p, i) => {
     const tint = HOUSE_TINTS[i % HOUSE_TINTS.length];
-    const block = texturedBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2 });
+    const block = texturedBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     block.position.set(p.x, p.h / 2, p.z);
     group.add(block);
 
