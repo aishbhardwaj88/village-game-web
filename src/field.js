@@ -61,6 +61,7 @@ function buildCropRows() {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'crop_rows';
+  mesh.userData.groundLevel = true; // every instance sits at ground level — see tools/screenshot.js
 
   const dummy = new THREE.Object3D();
   let index = 0;

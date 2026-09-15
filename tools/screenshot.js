@@ -121,6 +121,114 @@ async function main() {
       console.error('Could not read renderer.info — window.__dopahar missing (dev flag not active?)');
     }
 
+    console.log('\n--- grounding check ---');
+    const grounding = await page.evaluate(() => {
+      const scene = window.__dopahar?.scene;
+      const vehicles = window.__dopahar?.vehicles;
+      const player = window.__dopahar?.player;
+      if (!scene) return null;
+
+      const { Box3, Matrix4 } = window.__dopahar;
+      const TOLERANCE = 0.05;
+      const results = [];
+      const box = new Box3();
+      const localBox = new Box3();
+      const mat = new Matrix4();
+      const fullMat = new Matrix4();
+
+      // Whole-object check: the union bounding box of an entire placed object (a
+      // building, a vehicle, the player) should touch the ground at its lowest point
+      // — this is what "for every placed object" means for something like a house,
+      // where the floor/plinth sits at y=0 but the roof is metres up on purpose.
+      // Checking every individual sub-mesh (roofs, lintels, window frames) would
+      // flag hundreds of pieces that are *supposed* to be elevated as part of the
+      // structure, not independently "placed".
+      function checkWholeObject(object, label) {
+        if (!object) return;
+        box.setFromObject(object);
+        if (!isFinite(box.min.y)) return;
+        const diff = box.min.y;
+        if (Math.abs(diff) > TOLERANCE) {
+          results.push({ label, lowestY: +box.min.y.toFixed(3), diff: +diff.toFixed(3) });
+        }
+      }
+
+      // Per-instance check: only for instanced pieces whose every instance is
+      // individually meant to sit at ground level (plinths, drainpipes, steps, crop
+      // rows) — unlike trim bars (door jambs from the floor, but also lintels and
+      // window frames well above it) or switchboards (deliberately wall-mounted),
+      // which mix elevated and ground-level pieces in one shared mesh and so can't be
+      // checked this way; those are covered by their parent building's whole-object
+      // check instead.
+      function checkInstancedGroundLevel(object, label) {
+        if (!object) return;
+        object.geometry.computeBoundingBox();
+        localBox.copy(object.geometry.boundingBox);
+        for (let i = 0; i < object.count; i++) {
+          object.getMatrixAt(i, mat);
+          fullMat.multiplyMatrices(object.matrixWorld, mat);
+          box.copy(localBox).applyMatrix4(fullMat);
+          const lowestY = box.min.y;
+          if (Math.abs(lowestY) > TOLERANCE) {
+            results.push({ label: `${label}[${i}]`, lowestY: +lowestY.toFixed(3), diff: +lowestY.toFixed(3) });
+          }
+        }
+      }
+
+      function findByName(root, name) {
+        let found = null;
+        root.traverse((o) => {
+          if (o.name === name) found = o;
+        });
+        return found;
+      }
+
+      // Buildings and background houses, as whole objects. Skip the lane (terrain
+      // with intentional bumps/ruts, not a "placed object") and the instanced kit
+      // meshes (checked separately below, per-instance, where that's meaningful).
+      const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step']);
+      for (const name of ['hero_zone', 'background_houses']) {
+        const group = findByName(scene, name);
+        if (!group) continue;
+        for (const child of group.children) {
+          if (SKIP_CHILD_NAMES.has(child.name)) continue;
+          checkWholeObject(child, `${name}/${child.name || child.type}`);
+        }
+      }
+
+      // Vehicles + trolley, and the player, as whole objects.
+      if (vehicles) {
+        for (const v of vehicles) {
+          checkWholeObject(v.group, v.group.name);
+          if (v.trolley) checkWholeObject(v.trolley, `${v.group.name}/trolley`);
+        }
+      }
+      checkWholeObject(player, 'player');
+
+      // Ground-level-only instanced kit pieces (plinth, drainpipe, step, crop rows),
+      // per instance — identified by a `groundLevel` flag set on the mesh itself at
+      // creation time (see src/buildingKit.js, src/field.js), since trim/reveal/
+      // switchboard meshes mix elevated and ground-level pieces and can't be checked
+      // this way (covered by the whole-building check instead).
+      scene.traverse((o) => {
+        if (o.isInstancedMesh && o.userData.groundLevel) {
+          checkInstancedGroundLevel(o, o.name || o.userData.kind || 'instanced');
+        }
+      });
+
+      return results;
+    });
+
+    if (grounding === null) {
+      console.error('Could not run grounding check — window.__dopahar.scene missing');
+    } else if (grounding.length === 0) {
+      console.log('(none — every placed object is within 5cm of the ground)');
+    } else {
+      for (const g of grounding) {
+        console.error(`${g.diff > 0 ? 'ABOVE' : 'BELOW'} ground by ${Math.abs(g.diff)}m: ${g.label} (lowest point y=${g.lowestY})`);
+      }
+    }
+
     console.log('\n--- console errors ---');
     if (consoleErrors.length === 0) {
       console.log('(none)');

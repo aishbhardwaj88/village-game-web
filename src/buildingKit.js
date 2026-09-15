@@ -32,6 +32,7 @@ export class BuildingKit {
     // (law: wood trim #8A6A4A), so one instanced mesh covers all of them.
     const trimMat = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, tint: 0x8a6a4a, roughness: 1 });
     this.trim = new THREE.InstancedMesh(UNIT_BOX, trimMat, capacity);
+    this.trim.name = 'trim';
     this.trim.castShadow = true;
     this.trim.receiveShadow = true;
     this._trimCount = 0;
@@ -40,6 +41,8 @@ export class BuildingKit {
     // concrete/stone regardless of the wall's paint colour above them.
     const plinthMat = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, tint: 0x8f8878, roughness: 1 });
     this.plinth = new THREE.InstancedMesh(UNIT_BOX, plinthMat, capacity);
+    this.plinth.name = 'plinth';
+    this.plinth.userData.groundLevel = true; // every instance sits with its base at y=0 — see tools/screenshot.js
     this.plinth.castShadow = true;
     this.plinth.receiveShadow = true;
     this._plinthCount = 0;
@@ -49,20 +52,26 @@ export class BuildingKit {
     // geometry (see docs/parked.md).
     const revealMat = new THREE.MeshStandardMaterial({ color: 0x120f0a, roughness: 0.95 });
     this.reveal = new THREE.InstancedMesh(UNIT_BOX, revealMat, capacity);
+    this.reveal.name = 'reveal';
     this._revealCount = 0;
 
     const pipeMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.7, metalness: 0.3 });
     this.drainpipe = new THREE.InstancedMesh(UNIT_CYLINDER, pipeMat, capacity);
+    this.drainpipe.name = 'drainpipe';
+    this.drainpipe.userData.groundLevel = true;
     this.drainpipe.castShadow = true;
     this._drainpipeCount = 0;
 
     const boardMat = new THREE.MeshStandardMaterial({ color: 0x8a8a86, roughness: 0.6 });
     this.switchboard = new THREE.InstancedMesh(UNIT_BOX, boardMat, capacity);
+    this.switchboard.name = 'switchboard';
     this.switchboard.castShadow = true;
     this._switchboardCount = 0;
 
     const stepMat = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, tint: 0xd7d2c4, roughness: 1 });
     this.step = new THREE.InstancedMesh(UNIT_BOX, stepMat, capacity);
+    this.step.name = 'step';
+    this.step.userData.groundLevel = true;
     this.step.castShadow = true;
     this.step.receiveShadow = true;
     this._stepCount = 0;

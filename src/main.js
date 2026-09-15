@@ -212,7 +212,24 @@ async function main() {
     // mount/dismount exposed for scripted collision testing (tools/*, throwaway test
     // scripts) — real player/E-key flow works too, this just avoids needing the
     // player to walk into mount range for every test case.
-    window.__dopahar = { scene, renderer, composer, camera, player, camRig, vehicles, mount, dismount };
+    // Only the two THREE classes the grounding-check tool needs, not the whole
+    // namespace — assigning `THREE` itself here stops the bundler from tree-shaking
+    // any unused three.js code for every visitor, not just dev-mode ones (confirmed:
+    // +164KB raw / +46KB gzipped). Property access on two named classes doesn't have
+    // that effect.
+    window.__dopahar = {
+      scene,
+      renderer,
+      composer,
+      camera,
+      player,
+      camRig,
+      vehicles,
+      mount,
+      dismount,
+      Box3: THREE.Box3,
+      Matrix4: THREE.Matrix4,
+    };
   }
 }
 

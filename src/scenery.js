@@ -28,14 +28,22 @@ export function buildBackgroundHouses(scene) {
   const kit = new BuildingKit(60);
 
   placements.forEach((p, i) => {
+    // Grouped per house (not added loose into `group`) so a whole-object grounding
+    // check (tools/screenshot.js) sees one "placed object" whose lowest point is the
+    // block's base — not the roof, checked in isolation, several metres up.
+    const houseGroup = new THREE.Group();
+    houseGroup.name = `background_house_${i}`;
+
     const tint = HOUSE_TINTS[i % HOUSE_TINTS.length];
     const block = texturedBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     block.position.set(p.x, p.h / 2, p.z);
-    group.add(block);
+    houseGroup.add(block);
 
     const roof = texturedThickBox(p.w + 0.3, 0.25, p.d + 0.3, 'concrete', { tint: 0xd7d2c4 });
     roof.position.set(p.x, p.h + 0.125, p.z);
-    group.add(roof);
+    houseGroup.add(roof);
+
+    group.add(houseGroup);
 
     kit.addPlinthRing(p.x, p.z, p.w, p.d, WALL_THICKNESS);
     kit.addCornerPilasters(p.x, p.z, p.w, p.d, p.h, WALL_THICKNESS);
