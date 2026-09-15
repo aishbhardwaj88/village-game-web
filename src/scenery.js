@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { texturedBox } from './materials.js';
-import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
+import { texturedBox, texturedThickBox } from './materials.js';
+import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
+import { BuildingKit } from './buildingKit.js';
 
 // Item 10 — background houses beyond the fog line, so the village doesn't end
 // abruptly. Lane trees were removed — see docs/parked.md: no suitable CC0 canopy-
@@ -24,17 +25,23 @@ export function buildBackgroundHouses(scene) {
     { x: -95, z: 165, w: 10, d: 7, h: 5 },
   ];
 
+  const kit = new BuildingKit(60);
+
   placements.forEach((p, i) => {
     const tint = HOUSE_TINTS[i % HOUSE_TINTS.length];
     const block = texturedBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     block.position.set(p.x, p.h / 2, p.z);
     group.add(block);
 
-    const roof = texturedBox(p.w + 0.3, 0.25, p.d + 0.3, 'concrete', { tint: 0xd7d2c4 });
+    const roof = texturedThickBox(p.w + 0.3, 0.25, p.d + 0.3, 'concrete', { tint: 0xd7d2c4 });
     roof.position.set(p.x, p.h + 0.125, p.z);
     group.add(roof);
+
+    kit.addPlinthRing(p.x, p.z, p.w, p.d, WALL_THICKNESS);
+    kit.addCornerPilasters(p.x, p.z, p.w, p.d, p.h, WALL_THICKNESS);
   });
 
+  kit.finalize(group);
   scene.add(group);
   return group;
 }

@@ -126,6 +126,37 @@ they were tuned and validated separately:
 damaged (art-direction 7.1b). Vary prosperity via *which* of these materials/tints a
 building gets and how much detail it carries — not via wear/damage.
 
+## Building geometry detail — law (`src/village.js`, `src/buildingKit.js`, 2026-09-15)
+
+Every building gets, at minimum:
+
+| Element | Spec | How |
+|---|---|---|
+| Wall thickness | `WALL_THICKNESS = 0.22`m (200-250mm) | Expressed as the recess depth at openings and the width of corner pilasters — buildings stay solid-box masses (not hollow shells); see docs/parked.md for why |
+| Plinth | 0.3m base course, ~0.05m proud, deeper neutral cement tone (`0x8f8878`), never the wall's own hue | `BuildingKit.addPlinthRing()` / `addPlinthSegment()` — one shared instanced mesh |
+| Roof overhang | 0.3m beyond the wall (within the 0.25-0.4m spec), visible edge | `texturedThickBox` (per-face UV tiling — see below), parapet where the reference shows one (house; school gets a lighter overhang lip) |
+| Openings | Recessed reveal (dark, at `wallThickness` depth) + frame jambs + lintel bar, door leaf for doors | `BuildingKit.addOpening()` — reveal/trim are shared instanced meshes |
+| Corner pilasters | Proud vertical strip at each corner, full wall height, wood-trim coloured (shared with frame/lintel bars) | `BuildingKit.addCornerPilasters()` |
+| Small props | 2-3 per building: drainpipe, switchboard box, door step | `BuildingKit.addDrainpipe/addSwitchboard/addStep()` — each its own shared instanced mesh |
+| Wall height variation | Not perfectly flat across a compound | School's 3 wings: 3.4/3.6/3.7m. House 6m, halwai 3.5m (per `Places V1/halwai/LAYOUT.md` — not varied, it's a documented exact spec). Background houses: 4/4.5/5m |
+
+**`texturedThickBox`** (`src/materials.js`) replaces `texturedBox` for any box where one
+dimension (thickness) is much smaller than the other two — roof slabs, parapets, real-
+thickness walls. It bakes the correct tile count into each face's own UVs instead of
+one blanket repeat for the whole box, which is what the old approach got wrong: thin
+end-cap faces got the same repeat as the big faces, sampling the texture at extreme
+magnification (the "flat black lane" and "blown-out wall" bugs — see docs/parked.md).
+Use `texturedThickBox` for any new thin-dimension box; keep `texturedBox` for masses
+where every dimension is comparable.
+
+**`BuildingKit`** (`src/buildingKit.js`) holds the reusable instanced pieces — reused
+"everywhere" per the brief: one `InstancedMesh` per piece type (trim bars, plinth
+segments, reveals, drainpipes, switchboards, steps), shared across every building that
+uses it, so triangle/draw-call cost stays flat regardless of how much detail is added.
+Create one `BuildingKit` per group of buildings that should share it (the hero zone;
+background houses use their own smaller one), call its `add*` methods while building
+each structure, then `finalize(group)` once at the end.
+
 ## Budgets (enforced — see `docs/budgets.md`, `tools/check-budget.js`)
 
 `public/assets/` under 40MB, any model under 5MB, textures 1K max (512 for small

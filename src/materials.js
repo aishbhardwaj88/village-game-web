@@ -118,3 +118,46 @@ export function texturedWall(width, height, materialName, opts = {}) {
   mesh.receiveShadow = true;
   return mesh;
 }
+
+/**
+ * A textured box with each face pair tiled by its OWN real-world dimensions, not one
+ * blanket repeat for the whole box. `texturedBox` computes a single repeat from
+ * max(width, depth) and applies it to every face via the texture's own repeat — fine
+ * when all three dimensions are similar, but a genuinely thin/thick box (a roof slab,
+ * a real-thickness wall) has small end-cap faces that then get the SAME repeat as the
+ * big faces, sampling the texture at extreme magnification (see docs/parked.md, the
+ * "flat black lane" and "blown-out wall" bugs). This bakes the correct per-face tile
+ * count into the UV attribute instead, so the material's own texture.repeat can stay
+ * at 1x1 and be shared across every box regardless of size.
+ */
+export function texturedThickBox(width, height, depth, materialName, opts = {}) {
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
+  const geometry = new THREE.BoxGeometry(width, height, depth);
+  const uv = geometry.attributes.uv;
+  // BoxGeometry group/face order: +X, -X, +Y, -Y, +Z, -Z, 4 vertices each.
+  const faceDims = [
+    [depth, height],
+    [depth, height],
+    [width, depth],
+    [width, depth],
+    [width, height],
+    [width, height],
+  ];
+  for (let f = 0; f < 6; f++) {
+    const [fw, fh] = faceDims[f];
+    const rx = fw / tileSize;
+    const ry = fh / tileSize;
+    for (let v = 0; v < 4; v++) {
+      const i = f * 4 + v;
+      uv.setXY(i, uv.getX(i) * rx, uv.getY(i) * ry);
+    }
+  }
+  uv.needsUpdate = true;
+  geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
+
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, tint, roughness, tintStrength });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}

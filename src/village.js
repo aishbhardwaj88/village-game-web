@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { texturedBox, texturedWall, getTiledMaterial, ensureUv2 } from './materials.js';
+import { texturedBox, texturedWall, texturedThickBox, getTiledMaterial, ensureUv2 } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment } from './paths.js';
+import { BuildingKit } from './buildingKit.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -24,10 +25,11 @@ export const PALETTE = {
   woodTrim: 0x8a6a4a,
 };
 export const WALL_TINT_STRENGTH = 0.3;
+export const WALL_THICKNESS = 0.22; // law — see docs/look-standard.md
 
 /** A deeper shade of the same hue, for bands/plinths — never a different, more
  * saturated colour (law). */
-function darken(hex, factor = 0.72) {
+export function darken(hex, factor = 0.72) {
   return new THREE.Color(hex).multiplyScalar(factor).getHex();
 }
 
@@ -47,6 +49,15 @@ function addBox(group, width, height, depth, materialName, position, opts = {}) 
   return mesh;
 }
 
+/** Roof slabs, parapets — anywhere one box dimension (thickness) is much smaller
+ * than the other two. See texturedThickBox in src/materials.js. */
+function addThickBox(group, width, height, depth, materialName, position, opts = {}) {
+  const mesh = texturedThickBox(width, height, depth, materialName, opts);
+  mesh.position.set(position.x, position.y, position.z);
+  group.add(mesh);
+  return mesh;
+}
+
 /** A thin standing wall (see texturedWall). `axis: 'x'` runs east-west (no yaw
  * needed), `axis: 'z'` runs north-south (yawed 90°). */
 function addWall(group, length, height, materialName, position, axis, opts = {}) {
@@ -57,7 +68,7 @@ function addWall(group, length, height, materialName, position, axis, opts = {})
   return mesh;
 }
 
-function buildHouse() {
+function buildHouse(kit) {
   const group = new THREE.Group();
   group.name = 'house_compound';
   const cx = HOUSE_CENTER.x;
@@ -81,21 +92,31 @@ function buildHouse() {
   const blockCz = cz - 3; // north side of the 14m-deep courtyard (cz-7 .. cz+7)
   addBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
-  // Painted skirt band along the base of the wall.
+  // Painted skirt band along the base of the wall, plus a proud structural plinth
+  // right at the ground line (deeper, neutral — real plinths are usually exposed
+  // concrete regardless of the wall's own paint colour).
   const houseBandH = 1.0;
   addBox(group, blockW + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  kit.addPlinthRing(blockCx, blockCz, blockW, blockD, WALL_THICKNESS);
+  kit.addCornerPilasters(blockCx, blockCz, blockW, blockD, blockH, WALL_THICKNESS);
 
-  // Flat concrete roof with a parapet lip.
+  // Flat concrete roof with a parapet lip — overhangs the wall by 0.3m, visible edge.
+  const overhang = 0.3;
   const roofY = blockH + 0.15;
-  addBox(group, blockW + 0.4, 0.3, blockD + 0.4, 'concrete', { x: blockCx, y: roofY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(group, blockW + overhang * 2, 0.3, blockD + overhang * 2, 'concrete', { x: blockCx, y: roofY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
   const parapetY = roofY + 0.55;
-  addBox(group, blockW + 0.4, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz - blockD / 2 - 0.1 }, { tint: CONCRETE_NEUTRAL });
-  addBox(group, blockW + 0.4, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz + blockD / 2 + 0.1 }, { tint: CONCRETE_NEUTRAL });
-  addBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx - blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
-  addBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx + blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz - blockD / 2 - 0.1 }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz + blockD / 2 + 0.1 }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx - blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx + blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
 
-  // Wooden front door, south face of the block.
-  addBox(group, 1.3, 2.2, 0.12, 'wood', { x: blockCx, y: 1.1, z: blockCz + blockD / 2 + 0.06 }, { tint: WOOD_DOOR, tileSize: 1 });
+  // Front door, south face: recessed reveal, frame, lintel and leaf, real wall
+  // thickness expressed as the reveal depth.
+  const doorZ = blockCz + blockD / 2;
+  kit.addOpening({ center: { x: blockCx, y: 0, z: doorZ }, width: 1.3, height: 2.2, wallThickness: WALL_THICKNESS, widthAxis: 'x', isDoor: true });
+  kit.addStep({ x: blockCx, y: 0.08, z: doorZ + 0.35 }, { x: 1.6, y: 0.16, z: 0.5 });
+  kit.addSwitchboard({ x: blockCx + 1.4, y: 1.4, z: doorZ + 0.02 });
+  kit.addDrainpipe({ x: blockCx - blockW / 2 - 0.05, y: blockH / 2, z: blockCz - blockD / 2 - 0.05 }, blockH);
 
   // Low compound walls, east/west courtyard edges (south stays open onto the lane).
   const wallH = 1.6;
@@ -105,7 +126,7 @@ function buildHouse() {
   return group;
 }
 
-function buildSchool() {
+function buildSchool(kit) {
   const group = new THREE.Group();
   group.name = 'school_compound';
   const cx = SCHOOL_CENTER.x;
@@ -120,20 +141,45 @@ function buildSchool() {
   floor.receiveShadow = true;
   group.add(floor);
 
-  const wallH = 3.5;
   const bandH = 0.9;
+  const overhang = 0.3;
 
   // Back (north) classroom block, plus two side wings — a U open south onto the yard.
+  // Heights vary slightly between blocks so the skyline isn't one flat line.
   const blocks = [
-    { w: 24, d: 6, x: cx, z: cz + 12 - 3 }, // back
-    { w: 6, d: 18, x: cx - 15 + 3, z: cz }, // west wing
-    { w: 6, d: 18, x: cx + 15 - 3, z: cz }, // east wing
+    { w: 24, d: 6, x: cx, z: cz + 12 - 3, h: 3.7, doorAxis: 'x', doorSign: 1, windows: 2 }, // back, faces yard (+z)
+    { w: 6, d: 18, x: cx - 15 + 3, z: cz, h: 3.4, doorAxis: 'z', doorSign: 1, windows: 1 }, // west wing, faces yard (+x)
+    { w: 6, d: 18, x: cx + 15 - 3, z: cz, h: 3.6, doorAxis: 'z', doorSign: -1, windows: 1 }, // east wing, faces yard (-x)
   ];
 
   for (const b of blocks) {
-    addBox(group, b.w, wallH, b.d, 'plaster', { x: b.x, y: wallH / 2, z: b.z }, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addBox(group, b.w, b.h, b.d, 'plaster', { x: b.x, y: b.h / 2, z: b.z }, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     addBox(group, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-    addBox(group, b.w + 0.3, 0.25, b.d + 0.3, 'concrete', { x: b.x, y: wallH + 0.15, z: b.z }, { tint: CONCRETE_NEUTRAL });
+    addThickBox(group, b.w + overhang * 2, 0.25, b.d + overhang * 2, 'concrete', { x: b.x, y: b.h + 0.125, z: b.z }, { tint: CONCRETE_NEUTRAL });
+    kit.addPlinthRing(b.x, b.z, b.w, b.d, WALL_THICKNESS);
+    kit.addCornerPilasters(b.x, b.z, b.w, b.d, b.h, WALL_THICKNESS);
+
+    // Yard-facing wall: a door plus one or two windows either side.
+    const faceAxis = b.doorAxis === 'x' ? 'z' : 'x'; // the axis the wall's own face normal points along
+    const faceOffset = (b.doorSign * (faceAxis === 'z' ? b.d : b.w)) / 2;
+    const doorCenter = { x: b.x, y: 0, z: b.z };
+    doorCenter[faceAxis] += faceOffset;
+    kit.addOpening({ center: doorCenter, width: 1.1, height: 2.1, wallThickness: WALL_THICKNESS, widthAxis: b.doorAxis, isDoor: true });
+    const stepPos = { x: doorCenter.x, y: 0.08, z: doorCenter.z };
+    stepPos[faceAxis] += Math.sign(faceOffset) * 0.3;
+    const stepSize = faceAxis === 'z' ? { x: 1.4, y: 0.16, z: 0.45 } : { x: 0.45, y: 0.16, z: 1.4 };
+    kit.addStep(stepPos, stepSize);
+
+    const windowSpan = b.doorAxis === 'x' ? b.w : b.d;
+    for (let i = 0; i < b.windows; i++) {
+      const side = b.windows === 1 ? 1 : i === 0 ? -1 : 1;
+      const winCenter = { x: b.x, y: 0, z: b.z };
+      winCenter[b.doorAxis] += side * Math.min(windowSpan / 2 - 1.2, 3 + i * 0.2);
+      winCenter[faceAxis] += faceOffset;
+      kit.addOpening({ center: winCenter, width: 1.3, height: 1.3, wallThickness: WALL_THICKNESS, widthAxis: b.doorAxis, sill: 1.1 });
+    }
+
+    kit.addDrainpipe({ x: b.x - b.w / 2 - 0.05, y: b.h / 2, z: b.z - b.d / 2 - 0.05 }, b.h);
   }
 
   // Steel gate at the yard's south (open) entrance.
@@ -145,7 +191,7 @@ function buildSchool() {
   return group;
 }
 
-function buildHalwai() {
+function buildHalwai(kit) {
   const group = new THREE.Group();
   group.name = 'halwai_shop';
   const cx = HALWAI_CENTER.x;
@@ -160,10 +206,18 @@ function buildHalwai() {
   const xFront = cx - depth / 2;
   const xBack = cx + depth / 2;
   const zLeft = cz - width / 2;
+  const overhang = 0.3;
 
-  addWall(group, depth, height, 'plaster', { x: cx, y: height / 2, z: zLeft }, 'x', { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // left/north wall
-  addWall(group, width, height, 'plaster', { x: xBack, y: height / 2, z: cz }, 'z', { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // back/east wall
-  addBox(group, depth + 0.6, 0.25, width + 0.6, 'concrete', { x: cx, y: height + 0.125, z: cz }, { tint: CONCRETE_NEUTRAL }); // roof
+  addThickBox(group, depth, height, WALL_THICKNESS, 'plaster', { x: cx, y: height / 2, z: zLeft }, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // left/north wall
+  addThickBox(group, WALL_THICKNESS, height, width, 'plaster', { x: xBack, y: height / 2, z: cz }, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // back/east wall
+  addThickBox(group, depth + overhang * 2, 0.25, width + overhang * 2, 'concrete', { x: cx, y: height + 0.125, z: cz }, { tint: CONCRETE_NEUTRAL }); // roof
+
+  // Plinth + a single corner pilaster at the one real (north/east) corner.
+  kit.addPlinthSegment({ x: cx, y: 0.15, z: zLeft }, { x: depth + 0.1, y: 0.3, z: WALL_THICKNESS + 0.05 });
+  kit.addPlinthSegment({ x: xBack, y: 0.15, z: cz }, { x: WALL_THICKNESS + 0.05, y: 0.3, z: width + 0.1 });
+  kit.addTrimBar({ x: xBack, y: height / 2, z: zLeft }, { x: WALL_THICKNESS + 0.05, y: height, z: WALL_THICKNESS + 0.05 });
+  kit.addDrainpipe({ x: xBack + 0.05, y: height / 2, z: zLeft - 0.05 }, height);
+  kit.addSwitchboard({ x: xBack - 0.02, y: 1.4, z: cz + 1.5 }, Math.PI / 2);
 
   // Kadhai platform: 0.9m deep band nearest the street.
   addBox(group, 0.9, 0.4, width, 'concrete', { x: xFront + 0.45, y: 0.2, z: cz }, { tint: KADHAI_PLATFORM_TINT, tintStrength: WALL_TINT_STRENGTH });
@@ -207,10 +261,12 @@ function buildLane() {
 export function buildHeroZone(scene) {
   const group = new THREE.Group();
   group.name = 'hero_zone';
+  const kit = new BuildingKit(200);
   group.add(buildLane());
-  group.add(buildHouse());
-  group.add(buildSchool());
-  group.add(buildHalwai());
+  group.add(buildHouse(kit));
+  group.add(buildSchool(kit));
+  group.add(buildHalwai(kit));
+  kit.finalize(group);
   scene.add(group);
   return group;
 }
