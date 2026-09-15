@@ -64,7 +64,8 @@ All CC0, ambientCG unless noted (full credits: `docs/CREDITS.md`).
 
 | Set | Source | Resized to | Used for |
 |---|---|---|---|
-| `ground` | Ground109 | 1024 | Main ground, lane, track, field base |
+| `ground` | Ground109 | 1024 | Main open ground, field base |
+| `lane` | Ground102 (smoother, "compressed/stamped" dirt) | 1024 | Lane + field track — deliberately a different texture from `ground`, not just a different tint, so they read as a different surface (see docs/parked.md) |
 | `plaster` | PaintedPlaster017 | 1024 | Walls (house, school, halwai) |
 | `concrete` | Concrete048 | 1024 | Roofs, courtyard/yard floors |
 | `wood` | Planks023A | 1024 | Doors, halwai display cabinet, chairs |

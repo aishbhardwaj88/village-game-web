@@ -183,8 +183,8 @@ function buildHalwai() {
 function buildLane() {
   const group = new THREE.Group();
   group.name = 'lane';
-  group.add(buildStripSegment(HOUSE_CENTER, HALWAI_CENTER, 6, { seed: 1.0 }));
-  group.add(buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0 }));
+  group.add(buildStripSegment(HOUSE_CENTER, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }));
+  group.add(buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true }));
   return group;
 }
 

@@ -11,25 +11,39 @@ export function bumpHeight(u, v, seed) {
   );
 }
 
+const RUT_OFFSET = 1 / 3; // u is normalised -0.5..0.5 across the strip's width
+const RUT_WIDTH = 0.05;
+const RUT_DEPTH = 0.035;
+
+/** Two shallow parallel wheel-track grooves, cheap to add on top of the general bumps
+ * since the strip geometry already exists. */
+function rutDepth(u) {
+  const left = Math.exp(-(((u - RUT_OFFSET) / RUT_WIDTH) ** 2));
+  const right = Math.exp(-(((u + RUT_OFFSET) / RUT_WIDTH) ** 2));
+  return -RUT_DEPTH * (left + right);
+}
+
 /**
  * A straight dirt strip (lane or track segment) between two points, with gentle baked
  * height bumps. Reused by src/village.js (the lane) and src/field.js (the field
  * track loop) so both use the same construction and the same ground texture set at a
  * different tint/tiling from the open ground.
  */
-export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179 } = {}) {
+export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179, ruts = false } = {}) {
   const dx = end.x - start.x;
   const dz = end.z - start.z;
   const length = Math.hypot(dx, dz);
   const segsAlong = Math.max(4, Math.round(length / 3));
-  const segsAcross = 4;
+  const segsAcross = 6;
 
   const geometry = new THREE.PlaneGeometry(width, length, segsAcross, segsAlong);
   const pos = geometry.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const u = pos.getX(i) / width;
     const v = pos.getY(i) / length;
-    pos.setZ(i, bumpHeight(u, v, seed));
+    let z = bumpHeight(u, v, seed);
+    if (ruts) z += rutDepth(u);
+    pos.setZ(i, z);
   }
   geometry.computeVertexNormals();
   // Bake the "lay flat" rotation into the geometry itself (local Y -> -Z, local
@@ -44,7 +58,11 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
   ensureUv2(geometry);
 
   const repeat = Math.max(1, Math.round(length / 4));
-  const material = getTiledMaterial('ground', { repeatX: 2, repeatY: repeat, tint, roughness: 1 });
+  // Ground102 — a smooth, compressed/stamped dirt texture, distinct from the open
+  // ground's Ground109 (looser, pebbly) and the courtyards' concrete — so lane and
+  // track read as a different kind of surface, not just a different tint of the same
+  // one. See docs/look-standard.md / docs/parked.md.
+  const material = getTiledMaterial('lane', { repeatX: 2, repeatY: repeat, tint, roughness: 1 });
 
   const mesh = new THREE.Mesh(geometry, material);
   const midX = (start.x + end.x) / 2;

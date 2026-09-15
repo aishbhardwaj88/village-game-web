@@ -23,9 +23,9 @@ function buildTrack() {
   group.name = 'field_track';
   const corners = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW, TRACK_NW];
   for (let i = 0; i < corners.length - 1; i++) {
-    group.add(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e }));
+    group.add(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e, ruts: true }));
   }
-  group.add(buildStripSegment(LANE_JOIN, TRACK_NW, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e }));
+  group.add(buildStripSegment(LANE_JOIN, TRACK_NW, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
   return group;
 }
 

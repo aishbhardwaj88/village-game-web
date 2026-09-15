@@ -17,6 +17,7 @@ const SETS = {
   terracotta: { base: 'assets/textures/terracotta/', maps: ['color', 'normal', 'roughness'] },
   ground: { base: 'assets/textures/ground/', maps: ['color', 'normal', 'roughness', 'ao'] },
   crop: { base: 'assets/textures/crop/', maps: ['color', 'normal', 'roughness'] },
+  lane: { base: 'assets/textures/lane/', maps: ['color', 'normal', 'roughness'] },
 };
 
 function loadRaw(url, srgb) {
