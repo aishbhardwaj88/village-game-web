@@ -26,9 +26,19 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform vec3 sunColor;
   varying vec3 vWorldPosition;
 
+  // Cheap screen-space hash for dithering — breaks up the 8-bit banding a smooth
+  // gradient over a large area shows (visible as flat colour steps), without adding
+  // visible noise of its own. See docs/parked.md.
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+
   void main() {
     vec3 dir = normalize(vWorldPosition);
-    float h = smoothstep(-0.05, 0.45, dir.y);
+    // Tighter than before (was -0.05..0.45) — the sky reaches its full zenith blue by
+    // ~13 degrees of elevation instead of ~26, so it holds colour instead of reading
+    // as mostly the pale horizon tone. See docs/parked.md.
+    float h = smoothstep(-0.02, 0.22, dir.y);
     vec3 sky = mix(horizonColor, zenithColor, h);
 
     // The glow term (wide, gentle falloff) was the main cause of a large clipped-white
@@ -38,6 +48,9 @@ const FRAGMENT_SHADER = /* glsl */ `
     float sunDisc = pow(sunDot, 800.0) * 2.2;
     float sunGlow = pow(sunDot, 24.0) * 0.3;
     sky += sunColor * (sunDisc + sunGlow);
+
+    float dither = (hash(gl_FragCoord.xy) - 0.5) * (1.5 / 255.0);
+    sky += dither;
 
     gl_FragColor = vec4(sky, 1.0);
   }

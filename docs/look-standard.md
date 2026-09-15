@@ -43,7 +43,7 @@ shadow-side surfaces read near-black. See docs/parked.md for why.
 |---|---|
 | Sky horizon colour | `0xf6dcae` (warm pale) |
 | Sky zenith colour | `0x3f6fa3` (deeper blue) |
-| Sky construction | Shader gradient dome, radius 400m, `smoothstep(-0.05, 0.45, dir.y)` between horizon/zenith, plus a sun disc (`pow(sunDot, 800) * 2.2`) and a tight glow (`pow(sunDot, 24) * 0.3`), both tinted `0xfff1d6` |
+| Sky construction | Shader gradient dome, radius 400m, `smoothstep(-0.02, 0.22, dir.y)` between horizon/zenith (tightened from `-0.05, 0.45` — the sky now holds its zenith blue by ~13° of elevation instead of ~26°), plus a sun disc (`pow(sunDot, 800) * 2.2`) and a tight glow (`pow(sunDot, 24) * 0.3`), both tinted `0xfff1d6`, plus a screen-space hash dither (±1.5/255) to break up gradient banding |
 | Fog | `THREE.FogExp2`, colour = sky horizon colour, density `0.0085` |
 | HDRI | Poly Haven `camdeboo_road` 1K — **lighting/IBL only** (`scene.environment`), never `scene.background` (see docs/parked.md) |
 | `scene.environmentIntensity` | `0.45` — tames the HDRI's very hot sun disk in specular reflections; see docs/parked.md before raising this |
