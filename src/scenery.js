@@ -6,7 +6,10 @@ import { HOUSE_CENTER, HALWAI_CENTER, SCHOOL_CENTER } from './village.js';
 // abruptly) and simple instanced trees along the lane. Both optional/time-permitting;
 // kept deliberately simple relative to the hero zone.
 
-const HOUSE_TINTS = [0xd9b98c, 0xc9a9a0, 0xb8c9a0]; // varied but still sun-faded/intact
+// Same mid-tone/saturated-tint logic as src/village.js — the plaster texture itself is
+// pale, so these multiply down to sun-faded rather than reading as grey. Each a
+// different colour, per docs/look-standard.md's palette.
+const HOUSE_TINTS = [0xb8652e /* terracotta */, 0x6fa89c /* pale teal */, 0x4a7ba8 /* faded blue */];
 
 /** A handful of simple flat-roofed boxes scattered past the hero zone, at a distance
  * fog (density 0.0085) mostly hazes over — same texture set as the hero zone, just
