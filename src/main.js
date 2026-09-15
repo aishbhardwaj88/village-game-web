@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
-import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT } from './player.js';
+import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
@@ -11,9 +11,11 @@ import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
+import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
+const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
@@ -103,6 +105,14 @@ async function main() {
   const interactHint = document.getElementById('interact-hint');
   let mountedVehicle = null;
 
+  function otherVehicleBoxes(excludeVehicle) {
+    const boxes = [];
+    for (const v of vehicles) {
+      if (v !== excludeVehicle) boxes.push(vehicleFootprintBox(v));
+    }
+    return boxes;
+  }
+
   function nearestMountable() {
     let nearest = null;
     let nearestDist = Infinity;
@@ -155,6 +165,9 @@ async function main() {
         mountedVehicle.update(dt, input);
         mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         mountedVehicle.group.position.z = THREE.MathUtils.clamp(mountedVehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        const p = mountedVehicle.preset;
+        const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
+        resolveCollisions(mountedVehicle.group.position, vehicleRadius, otherVehicleBoxes(mountedVehicle));
         audio.setVehicle(mountedVehicle.preset.kind, mountedVehicle.speed / mountedVehicle.preset.maxSpeed);
 
         interactHint.textContent = touch ? 'Tap to dismount' : 'Press E to dismount';
@@ -172,6 +185,7 @@ async function main() {
         player.position.addScaledVector(moveDir, MOVE_SPEED * dt);
         player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        resolveCollisions(player.position, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
 
         const nearby = nearestMountable();
@@ -195,7 +209,10 @@ async function main() {
   requestAnimationFrame(tick);
 
   if (isDevMode()) {
-    window.__dopahar = { scene, renderer, composer, camera, player, camRig, vehicles };
+    // mount/dismount exposed for scripted collision testing (tools/*, throwaway test
+    // scripts) — real player/E-key flow works too, this just avoids needing the
+    // player to walk into mount range for every test case.
+    window.__dopahar = { scene, renderer, composer, camera, player, camRig, vehicles, mount, dismount };
   }
 }
 
