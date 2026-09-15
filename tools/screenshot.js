@@ -88,7 +88,9 @@ async function main() {
         rig.yaw = p.yaw;
         rig.pitch = p.pitch;
         rig.distance = p.distance;
-        rig.update();
+        // A large dt forces the occlusion-easing distance to fully converge in one
+        // call — screenshot presets want deterministic framing, not real-time easing.
+        rig.update(10);
       }, preset);
       await page.waitForTimeout(200);
 

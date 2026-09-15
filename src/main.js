@@ -39,9 +39,9 @@ async function main() {
   scene.add(sky);
   applyFog(scene, SKY_HORIZON_COLOR.getHex());
 
-  buildHeroZone(scene);
+  const heroZoneGroup = buildHeroZone(scene);
   buildField(scene);
-  buildBackgroundHouses(scene);
+  const backgroundHousesGroup = buildBackgroundHouses(scene);
   const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
@@ -49,6 +49,12 @@ async function main() {
   scene.add(player);
 
   const camRig = new ThirdPersonCamera(camera, player);
+  // Buildings the camera should never clip through (item 1) — raycast against the
+  // actual visual meshes (walls, roofs, pilasters), not the simplified collision
+  // boxes below, since those also occlude the camera even where they don't block
+  // movement (e.g. a roof overhang).
+  const cameraObstacles = [heroZoneGroup, backgroundHousesGroup];
+  camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
   const touch = isTouchDevice();
@@ -116,6 +122,8 @@ async function main() {
     camRig.target = vehicle.group;
     camRig.distance = vehicle.preset.cameraDistance;
     camRig.height = vehicle.preset.cameraHeight;
+    const excludeRoots = vehicle.trolley ? [vehicle.group, vehicle.trolley] : [vehicle.group];
+    camRig.setObstacles(cameraObstacles, excludeRoots);
   }
 
   function dismount() {
@@ -127,6 +135,7 @@ async function main() {
     camRig.target = player;
     camRig.distance = CAMERA_DISTANCE;
     camRig.height = CAMERA_HEIGHT;
+    camRig.setObstacles(cameraObstacles, player);
     mountedVehicle = null;
     audio.setVehicle(null, 0);
   }
