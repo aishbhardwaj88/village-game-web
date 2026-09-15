@@ -11,7 +11,7 @@ stale (update it in the same commit as any change).
 |---|---|
 | `outputColorSpace` | `THREE.SRGBColorSpace` |
 | `toneMapping` | `THREE.ACESFilmicToneMapping` |
-| `toneMappingExposure` | `1.0` |
+| `toneMappingExposure` | `0.55` (dropped from `1.0` — the horizon/sun clipped to flat white at 1.0; see docs/parked.md) |
 | Pixel ratio cap | `1.5` |
 | Shadow map | `THREE.PCFShadowMap`, one 2048 map (`PCFSoftShadowMap` was removed in this three.js version — see docs/parked.md) |
 | Albedo/colour textures | `colorSpace = THREE.SRGBColorSpace` |
@@ -43,7 +43,7 @@ shadow-side surfaces read near-black. See docs/parked.md for why.
 |---|---|
 | Sky horizon colour | `0xf6dcae` (warm pale) |
 | Sky zenith colour | `0x3f6fa3` (deeper blue) |
-| Sky construction | Shader gradient dome, radius 400m, `smoothstep(-0.05, 0.45, dir.y)` between horizon/zenith, plus a sun disc (`pow(sunDot, 800) * 4`) and soft glow (`pow(sunDot, 12) * 0.6`), both tinted `0xfff1d6` |
+| Sky construction | Shader gradient dome, radius 400m, `smoothstep(-0.05, 0.45, dir.y)` between horizon/zenith, plus a sun disc (`pow(sunDot, 800) * 2.2`) and a tight glow (`pow(sunDot, 24) * 0.3`), both tinted `0xfff1d6` |
 | Fog | `THREE.FogExp2`, colour = sky horizon colour, density `0.0085` |
 | HDRI | Poly Haven `camdeboo_road` 1K — **lighting/IBL only** (`scene.environment`), never `scene.background` (see docs/parked.md) |
 | `scene.environmentIntensity` | `0.45` — tames the HDRI's very hot sun disk in specular reflections; see docs/parked.md before raising this |
@@ -56,7 +56,7 @@ shadow-side surfaces read near-black. See docs/parked.md for why.
 | Brightness/Contrast | brightness `+0.02`, contrast `+0.06` |
 | Noise (grain) | `BlendFunction.OVERLAY`, premultiplied, opacity `0.06` |
 | Vignette | offset `0.35`, darkness `0.5` |
-| Bloom | non-touch devices only; intensity `0.6`, luminance threshold `0.8`, smoothing `0.2`, mipmap blur on |
+| Bloom | non-touch devices only; intensity `0.3`, luminance threshold `0.92`, smoothing `0.15`, mipmap blur on — soft warmth on real highlights, not a haze (dropped from `0.6`/`0.8`; see docs/parked.md) |
 
 ## Texture sources and tiling (`src/materials.js`)
 

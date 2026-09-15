@@ -32,11 +32,14 @@ export function createComposer(renderer, scene, camera, { enableBloom }) {
   effects[2].blendMode.opacity.value = 0.06;
 
   if (enableBloom) {
+    // Soft warmth on genuinely bright things (sun glow, practicals), not a haze over
+    // the whole frame — intensity/threshold both pulled back from the first pass,
+    // which read as blown-out fog rather than bloom. See docs/parked.md.
     effects.unshift(
       new BloomEffect({
-        intensity: 0.6,
-        luminanceThreshold: 0.8,
-        luminanceSmoothing: 0.2,
+        intensity: 0.3,
+        luminanceThreshold: 0.92,
+        luminanceSmoothing: 0.15,
         mipmapBlur: true,
       })
     );

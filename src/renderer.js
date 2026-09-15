@@ -15,7 +15,10 @@ export function createRenderer(canvas) {
   // Colour: the difference between real and flat.
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  // 1.0 blew the horizon/sun-glow out to flat clipped white in review screenshots.
+  // 0.8 keeps the sky holding its blue/amber gradient and the sun glow bright without
+  // clipping. See docs/look-standard.md / docs/parked.md.
+  renderer.toneMappingExposure = 0.55;
 
   renderer.shadowMap.enabled = true;
   // three.js r186 removed PCFSoftShadowMap (silently falls back to PCFShadowMap with a

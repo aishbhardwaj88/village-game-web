@@ -31,9 +31,12 @@ const FRAGMENT_SHADER = /* glsl */ `
     float h = smoothstep(-0.05, 0.45, dir.y);
     vec3 sky = mix(horizonColor, zenithColor, h);
 
+    // The glow term (wide, gentle falloff) was the main cause of a large clipped-white
+    // halo around the sun rather than a warm bright glow — pulled back alongside the
+    // disc itself. See docs/parked.md.
     float sunDot = max(dot(dir, normalize(sunDirection)), 0.0);
-    float sunDisc = pow(sunDot, 800.0) * 4.0;
-    float sunGlow = pow(sunDot, 12.0) * 0.6;
+    float sunDisc = pow(sunDot, 800.0) * 2.2;
+    float sunGlow = pow(sunDot, 24.0) * 0.3;
     sky += sunColor * (sunDisc + sunGlow);
 
     gl_FragColor = vec4(sky, 1.0);
