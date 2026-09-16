@@ -13,10 +13,17 @@ export class Dialogue {
     this._queue = [];
     this._onComplete = null;
     this._autoTimer = null;
+    this._anyKey = false; // item 2: the one-time tutorial line dismisses on ANY key/tap, not just Space
 
     this._panel.addEventListener('pointerdown', () => this._advanceFromInput());
+    // A tutorial line (anyKey) should dismiss on a tap anywhere, not just on the
+    // panel itself — mirrors "any key" being unrestricted on desktop.
+    window.addEventListener('pointerdown', () => {
+      if (this.isOpen && this._anyKey) this._advanceFromInput();
+    });
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && this.isOpen) {
+      if (!this.isOpen) return;
+      if (e.code === 'Space' || this._anyKey) {
         e.preventDefault();
         this._advanceFromInput();
       }
@@ -27,10 +34,13 @@ export class Dialogue {
     return this._panel.classList.contains('visible');
   }
 
-  /** lines: [{hi, en, holdMs?}, ...]. onComplete fires once the last line is closed. */
-  say(lines, onComplete = null) {
+  /** lines: [{hi, en, holdMs?}, ...]. onComplete fires once the last line is closed.
+   * `anyKey: true` (the one-time movement/interact tutorial, item 2) dismisses on any
+   * keypress or tap anywhere, not just clicking the panel or pressing Space. */
+  say(lines, onComplete = null, { anyKey = false } = {}) {
     this._queue = lines.slice();
     this._onComplete = onComplete;
+    this._anyKey = anyKey;
     this._panel.classList.add('visible');
     this._showCurrent();
   }

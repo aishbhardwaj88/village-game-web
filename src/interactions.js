@@ -10,9 +10,9 @@ import { QUEST_STEPS } from './quest.js';
  * callers must not query this while mounted) and shows its label as a prompt, exactly
  * like the existing mount/dismount hint.
  *
- * `label` may be a plain string or `(ctx) => string` for state-dependent prompts (e.g.
- * "sit down" vs "stand up"); `available` likewise may gate whether a point can be
- * interacted with at all right now. `onInteract(ctx)` runs once per press.
+ * `label` is a `{hi, en}` pair (or `(ctx) => {hi, en}` for state-dependent prompts);
+ * `available` likewise may gate whether a point can be interacted with at all right
+ * now. `onInteract(ctx)` runs once per press.
  */
 export const INTERACTION_POINTS = [];
 
@@ -49,7 +49,7 @@ registerInteraction({
   id: 'maa',
   position: MAA_POSITION,
   radius: 2.5,
-  label: 'talk to Maa',
+  label: { hi: 'माँ से बात करें', en: 'Talk to Maa' },
   onInteract: (ctx) => {
     const { quest, dialogue } = ctx;
     if (quest.step === QUEST_STEPS.NOT_STARTED) {
@@ -80,7 +80,7 @@ registerInteraction({
   id: 'halwai',
   position: HALWAI_NPC_POSITION,
   radius: 2.5,
-  label: 'talk to the halwai',
+  label: { hi: 'हलवाई से बात करें', en: 'Talk to the halwai' },
   onInteract: (ctx) => {
     const { quest, dialogue, audio } = ctx;
     if (quest.step === QUEST_STEPS.NOT_STARTED) {
@@ -111,7 +111,7 @@ registerInteraction({
   id: 'school_bell',
   position: BELL_POSITION,
   radius: 2.2,
-  label: 'ring the school bell',
+  label: { hi: 'घंटी बजाएं', en: 'Ring the school bell' },
   onInteract: (ctx) => {
     ctx.audio.ringBell();
     ctx.dialogue.say([{ hi: 'घंटी की आवाज़ पूरे स्कूल में गूंज उठी।', en: 'The bell rings out across the schoolyard.' }]);
@@ -122,7 +122,7 @@ registerInteraction({
   id: 'charpai',
   position: CHARPAI_POSITION,
   radius: 1.8,
-  label: 'sit down',
+  label: { hi: 'बैठ जाएं', en: 'Sit down' },
   // Once sitting, standing back up is handled directly by main.js's dedicated
   // "sitting" state (same E key) rather than through this registry — so this point
   // simply isn't offered again until the player stands up.

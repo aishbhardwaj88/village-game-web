@@ -81,6 +81,13 @@ async function main() {
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(1500);
 
+    // One-time move/interact tutorial (item 2) — capture it once, then dismiss so it
+    // doesn't sit on top of every shot below.
+    await page.screenshot({ path: resolve(shotsDir, 'tutorial_line.png') });
+    console.log(`Captured tutorial_line -> ${resolve(shotsDir, 'tutorial_line.png')}`);
+    await page.evaluate(() => window.__dopahar?.dialogue._advanceFromInput());
+    await page.waitForTimeout(150);
+
     for (const preset of CAMERA_PRESETS) {
       await page.evaluate((p) => {
         const rig = window.__dopahar?.camRig;

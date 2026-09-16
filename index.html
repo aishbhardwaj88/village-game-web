@@ -151,28 +151,6 @@
         width: 50%;
         pointer-events: auto;
       }
-      #interact-button {
-        position: absolute;
-        right: calc(20px + env(safe-area-inset-right));
-        bottom: calc(24px + env(safe-area-inset-bottom));
-        width: 68px;
-        height: 68px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.22);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        color: #fff;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        pointer-events: auto;
-      }
-      #interact-button.active {
-        display: flex;
-      }
-
       /* --- Objective (item 3) --- */
       #objective-panel {
         position: fixed;
@@ -319,24 +297,86 @@
         letter-spacing: 0.08em;
       }
 
-      /* --- Mount/dismount prompt --- */
+      /* --- Interaction prompt (item 2) — a key badge + bilingual label, centre-lower,
+         doubling as the large tap target on touch. Replaces the old tiny bottom hint
+         and the separate bottom-right circular tap button. --- */
       #interact-hint {
         position: fixed;
         left: 50%;
-        bottom: calc(30px + env(safe-area-inset-bottom));
+        bottom: 26vh;
         transform: translateX(-50%);
-        z-index: 45;
-        color: #fff;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 14px;
-        background: rgba(0, 0, 0, 0.45);
-        padding: 6px 14px;
-        border-radius: 20px;
-        pointer-events: none;
+        z-index: 47;
         display: none;
+        align-items: center;
+        gap: 12px;
+        background: rgba(20, 14, 10, 0.74);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 30px;
+        padding: 8px 22px 8px 8px;
+        pointer-events: none;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32);
       }
       #interact-hint.visible {
-        display: block;
+        display: flex;
+      }
+      #interact-hint.touch-target {
+        pointer-events: auto;
+        cursor: pointer;
+        padding: 10px 26px 10px 10px;
+      }
+      #interact-hint.touch-target:active {
+        transform: translateX(-50%) scale(0.96);
+      }
+      #interact-key-badge {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1.5px solid rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: ui-monospace, Menlo, monospace;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #f8ead0;
+      }
+      #interact-hint.touch-target #interact-key-badge {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        font-size: 0.6rem;
+        letter-spacing: 0.03em;
+      }
+      #interact-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.25;
+        color: #f8ead0;
+      }
+      #interact-en {
+        font-size: 0.7rem;
+        opacity: 0.72;
+        margin: 1px 0 0;
+        font-weight: 500;
+        color: #f8ead0;
+      }
+      @keyframes interactPulseOnce {
+        0% {
+          transform: translateX(-50%) scale(1);
+        }
+        35% {
+          transform: translateX(-50%) scale(1.08);
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
+        }
+      }
+      #interact-hint.pulse {
+        animation: interactPulseOnce 0.5s ease-out;
       }
     </style>
   </head>
@@ -350,9 +390,14 @@
           <div id="joystick-knob"></div>
         </div>
         <div id="look-zone"></div>
-        <button id="interact-button" type="button">Mount</button>
       </div>
-      <div id="interact-hint"></div>
+      <div id="interact-hint">
+        <div id="interact-key-badge">E</div>
+        <div>
+          <p id="interact-hi"></p>
+          <p id="interact-en"></p>
+        </div>
+      </div>
       <div id="waypoint-arrow"><div id="waypoint-arrow-shape"></div></div>
       <div id="objective-panel">
         <p id="objective-hi"></p>

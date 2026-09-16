@@ -25,6 +25,14 @@ const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
 
+// Hindi names for the mount/dismount prompt (item 2) — vehicle presets only carry an
+// English label (src/vehicles.js), used for both the UI and internal preset lookups.
+const VEHICLE_LABEL_HI = {
+  Tractor: 'ट्रैक्टर',
+  Bicycle: 'साइकिल',
+  'Bullock cart': 'बैलगाड़ी',
+};
+
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
@@ -114,6 +122,26 @@ async function main() {
       started = true;
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
+      // One-time tutorial (item 2) — how to move and how to interact, dismissed by
+      // the very next key or tap rather than needing a deliberate click on the panel.
+      // Deferred a beat: the pointerdown that just started the game would otherwise
+      // still be bubbling to window when dialogue.say() runs, and Dialogue's own
+      // any-tap-dismiss listener (also on window) would catch that same event and
+      // close the tutorial in the same frame it opened.
+      setTimeout(() => {
+        dialogue.say(
+          [
+            {
+              hi: touch
+                ? 'जॉयस्टिक से चलें। किसी के पास जाकर नीचे का बटन दबाएं।'
+                : 'WASD या तीर कुंजियों से चलें। किसी के पास जाकर E दबाएं।',
+              en: touch ? 'Move with the joystick. Tap the button below when close to someone.' : 'Move with WASD or arrow keys. Press E when close to someone.',
+            },
+          ],
+          null,
+          { anyKey: true }
+        );
+      }, 400);
     },
   });
 
@@ -127,7 +155,30 @@ async function main() {
   const moveDir = new THREE.Vector3();
   let lastTime = performance.now();
 
+  // Interaction prompt (item 2) — key badge + bilingual label, centre-lower, pulses
+  // once each time it transitions from hidden to visible.
   const interactHint = document.getElementById('interact-hint');
+  const interactHiEl = document.getElementById('interact-hi');
+  const interactEnEl = document.getElementById('interact-en');
+  let interactPromptVisible = false;
+
+  function setInteractPrompt(hi, en) {
+    interactHiEl.textContent = hi;
+    interactEnEl.textContent = en;
+    if (!interactPromptVisible) {
+      interactHint.classList.remove('pulse');
+      void interactHint.offsetWidth; // force reflow so the animation can restart
+      interactHint.classList.add('pulse');
+    }
+    interactPromptVisible = true;
+    interactHint.classList.add('visible');
+  }
+
+  function hideInteractPrompt() {
+    interactPromptVisible = false;
+    interactHint.classList.remove('visible', 'pulse');
+  }
+
   let mountedVehicle = null;
 
   const dialogue = new Dialogue();
@@ -256,10 +307,9 @@ async function main() {
       if (dialogue.isOpen) {
         // Dialogue pauses movement/interaction entirely — it advances only on
         // click/tap/Space (handled inside Dialogue itself), not E.
-        interactHint.classList.remove('visible');
+        hideInteractPrompt();
       } else if (sitting) {
-        interactHint.textContent = touch ? 'Tap to stand up' : 'Press E to stand up';
-        interactHint.classList.add('visible');
+        setInteractPrompt('खड़े हो जाएं', 'Stand up');
         if (interactPressed) standUp();
       } else if (mountedVehicle) {
         mountedVehicle.update(dt, input);
@@ -270,8 +320,7 @@ async function main() {
         resolveCollisions(mountedVehicle.group.position, vehicleRadius, otherVehicleBoxes(mountedVehicle));
         audio.setVehicle(mountedVehicle.preset.kind, mountedVehicle.speed / mountedVehicle.preset.maxSpeed);
 
-        interactHint.textContent = touch ? 'Tap to dismount' : 'Press E to dismount';
-        interactHint.classList.add('visible');
+        setInteractPrompt('उतर जाएं', 'Dismount');
         if (interactPressed) dismount();
       } else {
         forward.set(-Math.sin(camRig.yaw), 0, -Math.cos(camRig.yaw));
@@ -290,8 +339,8 @@ async function main() {
 
         const nearby = nearestMountable();
         if (nearby) {
-          interactHint.textContent = touch ? `Tap to mount ${nearby.preset.label}` : `Press E to mount ${nearby.preset.label}`;
-          interactHint.classList.add('visible');
+          const hi = VEHICLE_LABEL_HI[nearby.preset.label] || nearby.preset.label;
+          setInteractPrompt(`${hi} पर बैठें`, `Mount ${nearby.preset.label}`);
           if (interactPressed) mount(nearby);
         } else {
           // Interaction points (item 1) — foot only, checked here since this branch
@@ -301,11 +350,10 @@ async function main() {
           const nearestPoint = findNearestInteraction(player.position, interactionCtx);
           if (nearestPoint) {
             const label = resolveLabel(nearestPoint, interactionCtx);
-            interactHint.textContent = touch ? `Tap to ${label}` : `Press E to ${label}`;
-            interactHint.classList.add('visible');
+            setInteractPrompt(label.hi, label.en);
             if (interactPressed) nearestPoint.onInteract(interactionCtx);
           } else {
-            interactHint.classList.remove('visible');
+            hideInteractPrompt();
           }
         }
       }
@@ -345,6 +393,7 @@ async function main() {
       scene,
       renderer,
       composer,
+      input,
       camera,
       player,
       camRig,

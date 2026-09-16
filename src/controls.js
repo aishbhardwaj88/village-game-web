@@ -36,12 +36,15 @@ export class InputController {
     return pressed;
   }
 
+  /** The interaction prompt (item 2, index.html #interact-hint) doubles as the large
+   * tap target on touch — no separate button. On desktop it's purely a visual badge;
+   * E does the work via the keydown listener below. */
   _setupInteractButton() {
-    const btn = document.getElementById('interact-button');
-    if (!btn) return;
+    const hint = document.getElementById('interact-hint');
+    if (!hint) return;
     if (this.touch) {
-      btn.classList.add('active');
-      btn.addEventListener('pointerdown', (e) => {
+      hint.classList.add('touch-target');
+      hint.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         this._interactPressed = true;
       });
