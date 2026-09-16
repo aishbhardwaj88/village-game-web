@@ -16,6 +16,7 @@ import { createNPC } from './npc.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION } from './interactions.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
+import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -60,6 +61,12 @@ async function main() {
   scene.add(maaNpc);
   const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
   scene.add(halwaiNpc);
+
+  // Waypoint (item 4) — repositioned each frame to the current objective's target.
+  const waypointGlow = createWaypointGlow();
+  scene.add(waypointGlow);
+  const waypointArrowEl = document.getElementById('waypoint-arrow');
+  const waypointArrowShapeEl = document.getElementById('waypoint-arrow-shape');
 
   const camRig = new ThirdPersonCamera(camera, player);
   // Buildings the camera should never clip through (item 1) — raycast against the
@@ -137,6 +144,13 @@ async function main() {
   function showEndCard() {
     endCard.classList.add('visible');
     objectivePanel.classList.remove('visible');
+  }
+
+  function currentWaypointTarget() {
+    if (quest.step === QUEST_STEPS.NOT_STARTED) return MAA_POSITION;
+    if (quest.step === QUEST_STEPS.HAVE_MONEY) return HALWAI_NPC_POSITION;
+    if (quest.step === QUEST_STEPS.HAVE_JALEBI) return MAA_POSITION;
+    return null; // COMPLETE — errand done, nowhere to point
   }
 
   playAgainBtn.addEventListener('click', () => {
@@ -265,6 +279,18 @@ async function main() {
 
       camRig.update();
       audio.update(dt);
+
+      camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
+      updateWaypoint({
+        glowMesh: waypointGlow,
+        arrowEl: waypointArrowEl,
+        arrowShapeEl: waypointArrowShapeEl,
+        camera,
+        targetPos: currentWaypointTarget(),
+        time: now / 1000,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     }
 
     renderer.info.reset();

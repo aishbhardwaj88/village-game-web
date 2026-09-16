@@ -99,6 +99,31 @@ async function main() {
       console.log(`Captured ${preset.name} -> ${shotPath}`);
     }
 
+    // Waypoint (item 4): the glow at the target when it's in view, and the edge arrow
+    // when it isn't — captured before the errand-flow shots below change quest.step.
+    await page.evaluate(() => {
+      const d = window.__dopahar;
+      // Offset to the side and angled slightly so the ground glow isn't hidden
+      // directly behind the player capsule from a dead-on angle.
+      d.teleportPlayer(d.interactions.MAA_POSITION.x + 3, d.interactions.MAA_POSITION.z + 8);
+      d.camRig.yaw = -0.3;
+      d.camRig.pitch = -0.15;
+      d.camRig.distance = 6;
+      d.camRig.update(10);
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'waypoint_glow_onscreen.png') });
+    console.log(`Captured waypoint_glow_onscreen -> ${resolve(shotsDir, 'waypoint_glow_onscreen.png')}`);
+
+    await page.evaluate(() => {
+      const d = window.__dopahar;
+      d.camRig.yaw = Math.PI; // turn away from Maa — target now off camera
+      d.camRig.update(10);
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'waypoint_arrow_offscreen.png') });
+    console.log(`Captured waypoint_arrow_offscreen -> ${resolve(shotsDir, 'waypoint_arrow_offscreen.png')}`);
+
     // Feature shots: scripted moments that the 3 fixed camera presets above wouldn't
     // otherwise catch (the player has to actually be standing at a specific spot for
     // these UI elements to be visible at all).

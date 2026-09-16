@@ -250,6 +250,30 @@
         cursor: pointer;
       }
 
+      /* --- Waypoint edge arrow (item 4) --- */
+      #waypoint-arrow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 42;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+        display: none;
+      }
+      #waypoint-arrow.visible {
+        display: block;
+      }
+      #waypoint-arrow-shape {
+        width: 0;
+        height: 0;
+        margin: -14px 0 0 -10px;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 16px solid rgba(242, 178, 92, 0.75);
+        filter: drop-shadow(0 0 5px rgba(242, 178, 92, 0.5));
+      }
+
       /* --- Dialogue / message panel (item 2) --- */
       #dialogue-panel {
         position: fixed;
@@ -329,6 +353,7 @@
         <button id="interact-button" type="button">Mount</button>
       </div>
       <div id="interact-hint"></div>
+      <div id="waypoint-arrow"><div id="waypoint-arrow-shape"></div></div>
       <div id="objective-panel">
         <p id="objective-hi"></p>
         <p id="objective-en"></p>
