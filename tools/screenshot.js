@@ -118,6 +118,11 @@ async function main() {
     await page.screenshot({ path: resolve(shotsDir, 'interact_prompt_maa.png') });
     console.log(`Captured interact_prompt_maa -> ${resolve(shotsDir, 'interact_prompt_maa.png')}`);
 
+    await page.evaluate(() => window.__dopahar.interact());
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'dialogue_maa.png') });
+    console.log(`Captured dialogue_maa -> ${resolve(shotsDir, 'dialogue_maa.png')}`);
+
     const stats = await page.evaluate(() => {
       const renderer = window.__dopahar?.renderer;
       if (!renderer) return null;

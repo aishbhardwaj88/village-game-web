@@ -14,6 +14,7 @@ import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION } from './interactions.js';
+import { Dialogue } from './dialogue.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -114,10 +115,11 @@ async function main() {
   const interactHint = document.getElementById('interact-hint');
   let mountedVehicle = null;
 
+  const dialogue = new Dialogue();
+
   // Shared context passed to every interaction point's label()/available()/onInteract()
-  // — grows in later items (quest state, dialogue, audio) without changing the
-  // interaction system itself.
-  const interactionCtx = { audio };
+  // — grows in later items (quest state) without changing the interaction system itself.
+  const interactionCtx = { audio, dialogue };
 
   function otherVehicleBoxes(excludeVehicle) {
     const boxes = [];
@@ -175,7 +177,11 @@ async function main() {
       camRig.addYawPitch(yaw, pitch);
       const interactPressed = input.consumeInteract();
 
-      if (mountedVehicle) {
+      if (dialogue.isOpen) {
+        // Dialogue pauses movement/interaction entirely — it advances only on
+        // click/tap/Space (handled inside Dialogue itself), not E.
+        interactHint.classList.remove('visible');
+      } else if (mountedVehicle) {
         mountedVehicle.update(dt, input);
         mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         mountedVehicle.group.position.z = THREE.MathUtils.clamp(mountedVehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
@@ -253,6 +259,7 @@ async function main() {
       vehicles,
       npcs: [maaNpc, halwaiNpc],
       interactions: { MAA_POSITION, HALWAI_NPC_POSITION },
+      dialogue,
       mount,
       dismount,
       Box3: THREE.Box3,

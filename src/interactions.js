@@ -49,7 +49,11 @@ registerInteraction({
   position: MAA_POSITION,
   radius: 2.5,
   label: 'talk to Maa',
-  onInteract: () => {},
+  onInteract: (ctx) => {
+    // Placeholder line for item 2's demo — item 3 replaces this with the errand's
+    // actual quest-state-aware dialogue.
+    ctx.dialogue.say([{ hi: 'अरे बेटा, आ गए?', en: 'Oh, you’re here?' }]);
+  },
 });
 
 registerInteraction({
@@ -57,5 +61,7 @@ registerInteraction({
   position: HALWAI_NPC_POSITION,
   radius: 2.5,
   label: 'talk to the halwai',
-  onInteract: () => {},
+  onInteract: (ctx) => {
+    ctx.dialogue.say([{ hi: 'नमस्ते, क्या चाहिए?', en: 'Hello, what would you like?' }]);
+  },
 });
