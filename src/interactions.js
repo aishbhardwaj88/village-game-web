@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HOUSE_CENTER, HALWAI_CENTER } from './village.js';
+import { HOUSE_CENTER, HALWAI_CENTER, SCHOOL_CENTER } from './village.js';
 import { QUEST_STEPS } from './quest.js';
 
 /**
@@ -101,4 +101,31 @@ registerInteraction({
       dialogue.say([{ hi: 'जलेबी ठंडी होने से पहले घर ले जाओ!', en: 'Get the jalebi home before it cools!' }]);
     }
   },
+});
+
+// --- item 5: two optional points, not part of the errand ---
+export const BELL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x - 5, 0, 116); // beside the back block's yard-facing door
+export const CHARPAI_POSITION = new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z + 5.5 / 2 + 0.85); // between the two chairs outside the halwai
+
+registerInteraction({
+  id: 'school_bell',
+  position: BELL_POSITION,
+  radius: 2.2,
+  label: 'ring the school bell',
+  onInteract: (ctx) => {
+    ctx.audio.ringBell();
+    ctx.dialogue.say([{ hi: 'घंटी की आवाज़ पूरे स्कूल में गूंज उठी।', en: 'The bell rings out across the schoolyard.' }]);
+  },
+});
+
+registerInteraction({
+  id: 'charpai',
+  position: CHARPAI_POSITION,
+  radius: 1.8,
+  label: 'sit down',
+  // Once sitting, standing back up is handled directly by main.js's dedicated
+  // "sitting" state (same E key) rather than through this registry — so this point
+  // simply isn't offered again until the player stands up.
+  available: (ctx) => !ctx.sitting,
+  onInteract: (ctx) => ctx.onSitDown?.(),
 });

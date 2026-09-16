@@ -13,7 +13,8 @@ import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
-import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION } from './interactions.js';
+import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
+import { createBellProp } from './props.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -21,6 +22,8 @@ import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
+const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
+const SIT_CAMERA_HEIGHT = 1.3;
 
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
@@ -61,6 +64,10 @@ async function main() {
   scene.add(maaNpc);
   const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
   scene.add(halwaiNpc);
+
+  // Optional interaction props (item 5) — not part of the errand.
+  const bellProp = createBellProp(BELL_POSITION);
+  scene.add(bellProp);
 
   // Waypoint (item 4) — repositioned each frame to the current objective's target.
   const waypointGlow = createWaypointGlow();
@@ -213,6 +220,28 @@ async function main() {
     audio.setVehicle(null, 0);
   }
 
+  // Sitting (item 5) — camera settles in tighter, ambience rises; same E key stands
+  // back up (see the dedicated tick() branch below, mirroring mount/dismount).
+  let sitting = false;
+
+  function sitDown() {
+    sitting = true;
+    interactionCtx.sitting = true;
+    camRig.distance = SIT_CAMERA_DISTANCE;
+    camRig.height = SIT_CAMERA_HEIGHT;
+    audio.setSitting(true);
+  }
+
+  function standUp() {
+    sitting = false;
+    interactionCtx.sitting = false;
+    camRig.distance = CAMERA_DISTANCE;
+    camRig.height = CAMERA_HEIGHT;
+    audio.setSitting(false);
+  }
+
+  interactionCtx.onSitDown = sitDown;
+
   function tick(now) {
     requestAnimationFrame(tick);
     const dt = Math.min((now - lastTime) / 1000, 0.05);
@@ -228,6 +257,10 @@ async function main() {
         // Dialogue pauses movement/interaction entirely — it advances only on
         // click/tap/Space (handled inside Dialogue itself), not E.
         interactHint.classList.remove('visible');
+      } else if (sitting) {
+        interactHint.textContent = touch ? 'Tap to stand up' : 'Press E to stand up';
+        interactHint.classList.add('visible');
+        if (interactPressed) standUp();
       } else if (mountedVehicle) {
         mountedVehicle.update(dt, input);
         mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
@@ -317,12 +350,16 @@ async function main() {
       camRig,
       vehicles,
       npcs: [maaNpc, halwaiNpc],
-      interactions: { MAA_POSITION, HALWAI_NPC_POSITION },
+      props: [bellProp],
+      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION },
       dialogue,
       quest,
       QUEST_STEPS,
       mount,
       dismount,
+      sitDown,
+      standUp,
+      isSitting: () => sitting,
       Box3: THREE.Box3,
       Matrix4: THREE.Matrix4,
       // For scripted feature screenshots (tools/screenshot.js) — teleport near an

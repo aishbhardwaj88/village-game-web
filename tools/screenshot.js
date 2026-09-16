@@ -200,6 +200,37 @@ async function main() {
     const endCardHiddenAfterReset = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
     console.log('quest step after Play again (should be not_started):', stepAfterReset, '| end card hidden:', endCardHiddenAfterReset);
 
+    // Item 5 — two optional points, not part of the errand.
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.BELL_POSITION.x + 1.2, dd.interactions.BELL_POSITION.z + 1.2);
+      dd.camRig.yaw = Math.PI / 4; // camera looks back toward the bell, southwest of the player here
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'bell_ring.png') });
+    console.log(`Captured bell_ring -> ${resolve(shotsDir, 'bell_ring.png')}`);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.CHARPAI_POSITION.x, dd.interactions.CHARPAI_POSITION.z - 1.0);
+      dd.camRig.yaw = Math.PI;
+      dd.camRig.pitch = -0.05;
+      dd.camRig.update(10);
+      dd.sitDown();
+      dd.camRig.update(10); // converge the eased distance to the sit-camera settings instantly
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'sit_charpai.png') });
+    console.log(`Captured sit_charpai -> ${resolve(shotsDir, 'sit_charpai.png')}`);
+    const sittingHint = await page.evaluate(() => document.getElementById('interact-hint').textContent);
+    console.log('hint while sitting:', sittingHint);
+    await page.evaluate(() => window.__dopahar.standUp());
+
     const stats = await page.evaluate(() => {
       const renderer = window.__dopahar?.renderer;
       if (!renderer) return null;
@@ -228,6 +259,7 @@ async function main() {
       const vehicles = window.__dopahar?.vehicles;
       const player = window.__dopahar?.player;
       const npcs = window.__dopahar?.npcs;
+      const props = window.__dopahar?.props;
       if (!scene) return null;
 
       const { Box3, Matrix4 } = window.__dopahar;
@@ -308,6 +340,9 @@ async function main() {
       checkWholeObject(player, 'player');
       if (npcs) {
         for (const npc of npcs) checkWholeObject(npc, npc.name);
+      }
+      if (props) {
+        for (const prop of props) checkWholeObject(prop, prop.name);
       }
 
       // Ground-level-only instanced kit pieces (plinth, drainpipe, step, crop rows),

@@ -158,6 +158,20 @@ export class AudioEngine {
     osc.stop(t + 0.55);
   }
 
+  /** Public wrapper for the school bell interaction point (item 5) — reuses the same
+   * bell strike as the cart's rhythm bell. */
+  ringBell() {
+    if (!this.started) return;
+    this._playBell(this.ctx.currentTime);
+  }
+
+  /** "camera settles, ambience rises" while sitting (item 5) — a slow, smooth swell
+   * of the wind bed rather than a new sound, so it stays subtle. */
+  setSitting(sitting) {
+    if (!this.started || !this._windGain) return;
+    this._windGain.gain.setTargetAtTime(sitting ? 0.065 : 0.035, this.ctx.currentTime, 0.6);
+  }
+
   /** A sizzling-oil bed for the halwai's short "packing the jalebi" wait (item 3) —
    * filtered noise, ramped in/out over `duration` seconds so it doesn't click. */
   playFrying(duration = 1.8) {
@@ -213,6 +227,7 @@ export class AudioEngine {
     windGain.gain.value = 0.035;
     wind.connect(windFilter).connect(windGain).connect(this.master);
     wind.start();
+    this._windGain = windGain; // adjustable target for setSitting()
 
     // Cart creak: a second, quieter noise bed, filtered narrower and gated to 0 until
     // a cart is being driven (see update()).
