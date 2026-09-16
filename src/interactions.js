@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { HOUSE_CENTER, HALWAI_CENTER } from './village.js';
+import { QUEST_STEPS } from './quest.js';
 
 /**
  * One reusable system, one data file (item 1 brief): every interaction point in the
@@ -50,9 +51,28 @@ registerInteraction({
   radius: 2.5,
   label: 'talk to Maa',
   onInteract: (ctx) => {
-    // Placeholder line for item 2's demo — item 3 replaces this with the errand's
-    // actual quest-state-aware dialogue.
-    ctx.dialogue.say([{ hi: 'अरे बेटा, आ गए?', en: 'Oh, you’re here?' }]);
+    const { quest, dialogue } = ctx;
+    if (quest.step === QUEST_STEPS.NOT_STARTED) {
+      dialogue.say(
+        [{ hi: 'बेटा, यह पैसे लो और शाम से पहले हलवाई से जलेबी ले आओ।', en: 'Beta, take this money and bring back jalebi from the halwai before evening.' }],
+        () => {
+          quest.step = QUEST_STEPS.HAVE_MONEY;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.HAVE_MONEY) {
+      dialogue.say([{ hi: 'हलवाई की दुकान भूलना मत!', en: "Don't forget the halwai's shop!" }]);
+    } else if (quest.step === QUEST_STEPS.HAVE_JALEBI) {
+      dialogue.say(
+        [{ hi: 'वाह! शाबाश बेटा, बिल्कुल घर जैसी मीठी जलेबी।', en: 'Wonderful! Well done — jalebi as sweet as home.' }],
+        () => {
+          quest.step = QUEST_STEPS.COMPLETE;
+          ctx.onErrandComplete?.();
+        }
+      );
+    } else {
+      dialogue.say([{ hi: 'आज का काम हो गया, शुक्रिया बेटा।', en: "Today's errand is done, thank you." }]);
+    }
   },
 });
 
@@ -62,6 +82,23 @@ registerInteraction({
   radius: 2.5,
   label: 'talk to the halwai',
   onInteract: (ctx) => {
-    ctx.dialogue.say([{ hi: 'नमस्ते, क्या चाहिए?', en: 'Hello, what would you like?' }]);
+    const { quest, dialogue, audio } = ctx;
+    if (quest.step === QUEST_STEPS.NOT_STARTED) {
+      dialogue.say([{ hi: 'नमस्ते! पहले माँ से बात कर लो।', en: 'Hello! Talk to Maa first.' }]);
+    } else if (quest.step === QUEST_STEPS.HAVE_MONEY) {
+      audio.playFrying(2.0);
+      dialogue.say(
+        [
+          { hi: 'जलेबी? अभी बनाता हूँ, गरम-गरम!', en: 'Jalebi? Coming right up, hot and fresh!', holdMs: 2200 },
+          { hi: 'लो बेटा, ताज़ी जलेबी!', en: 'Here you go, fresh jalebi!' },
+        ],
+        () => {
+          quest.step = QUEST_STEPS.HAVE_JALEBI;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else {
+      dialogue.say([{ hi: 'जलेबी ठंडी होने से पहले घर ले जाओ!', en: 'Get the jalebi home before it cools!' }]);
+    }
   },
 });

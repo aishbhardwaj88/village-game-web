@@ -15,6 +15,7 @@ import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION } from './interactions.js';
 import { Dialogue } from './dialogue.js';
+import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -117,9 +118,41 @@ async function main() {
 
   const dialogue = new Dialogue();
 
-  // Shared context passed to every interaction point's label()/available()/onInteract()
-  // — grows in later items (quest state) without changing the interaction system itself.
-  const interactionCtx = { audio, dialogue };
+  // The errand (item 3) — one small in-memory state object, no save system.
+  const quest = createQuestState();
+  const objectivePanel = document.getElementById('objective-panel');
+  const objectiveHiEl = document.getElementById('objective-hi');
+  const objectiveEnEl = document.getElementById('objective-en');
+  const endCard = document.getElementById('end-card');
+  const playAgainBtn = document.getElementById('play-again-btn');
+
+  function updateObjective() {
+    const text = OBJECTIVE_TEXT[quest.step];
+    objectiveHiEl.textContent = text.hi;
+    objectiveEnEl.textContent = text.en;
+    objectivePanel.classList.toggle('visible', quest.step !== QUEST_STEPS.COMPLETE);
+  }
+  updateObjective();
+
+  function showEndCard() {
+    endCard.classList.add('visible');
+    objectivePanel.classList.remove('visible');
+  }
+
+  playAgainBtn.addEventListener('click', () => {
+    quest.step = QUEST_STEPS.NOT_STARTED;
+    endCard.classList.remove('visible');
+    updateObjective();
+  });
+
+  // Shared context passed to every interaction point's label()/available()/onInteract().
+  const interactionCtx = {
+    audio,
+    dialogue,
+    quest,
+    onObjectiveChange: updateObjective,
+    onErrandComplete: showEndCard,
+  };
 
   function otherVehicleBoxes(excludeVehicle) {
     const boxes = [];
@@ -260,6 +293,8 @@ async function main() {
       npcs: [maaNpc, halwaiNpc],
       interactions: { MAA_POSITION, HALWAI_NPC_POSITION },
       dialogue,
+      quest,
+      QUEST_STEPS,
       mount,
       dismount,
       Box3: THREE.Box3,

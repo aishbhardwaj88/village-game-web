@@ -158,6 +158,27 @@ export class AudioEngine {
     osc.stop(t + 0.55);
   }
 
+  /** A sizzling-oil bed for the halwai's short "packing the jalebi" wait (item 3) —
+   * filtered noise, ramped in/out over `duration` seconds so it doesn't click. */
+  playFrying(duration = 1.8) {
+    if (!this.started) return;
+    const t = this.ctx.currentTime;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(this.ctx, duration);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 3200;
+    filter.Q.value = 0.6;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.12, t + 0.15);
+    gain.gain.setValueAtTime(0.12, t + Math.max(0.15, duration - 0.3));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    noise.connect(filter).connect(gain).connect(this.master);
+    noise.start(t);
+    noise.stop(t + duration + 0.05);
+  }
+
   _playBirdChirp() {
     if (!this.started) return;
     const t = this.ctx.currentTime;

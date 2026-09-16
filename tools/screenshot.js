@@ -123,6 +123,58 @@ async function main() {
     await page.screenshot({ path: resolve(shotsDir, 'dialogue_maa.png') });
     console.log(`Captured dialogue_maa -> ${resolve(shotsDir, 'dialogue_maa.png')}`);
 
+    // Walk the whole errand (item 3) via dev hooks: advance Maa's dialogue (receive
+    // money), go hand it to the halwai (through the frying wait), bring the jalebi
+    // back to Maa, and land on the end card.
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close Maa's line -> HAVE_MONEY
+    await page.waitForTimeout(150);
+    const stepAfterMaa1 = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after talking to Maa:', stepAfterMaa1);
+    await page.screenshot({ path: resolve(shotsDir, 'objective_have_money.png') });
+    console.log(`Captured objective_have_money -> ${resolve(shotsDir, 'objective_have_money.png')}`);
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.HALWAI_NPC_POSITION.x, dd.interactions.HALWAI_NPC_POSITION.z + 1.8);
+      dd.camRig.yaw = 0.35; // angled so the player capsule doesn't hide the halwai NPC behind it
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 4.5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: resolve(shotsDir, 'dialogue_halwai_frying.png') });
+    console.log(`Captured dialogue_halwai_frying -> ${resolve(shotsDir, 'dialogue_halwai_frying.png')}`);
+
+    await page.waitForTimeout(2300); // outlast the frying holdMs line
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close "here you go" -> HAVE_JALEBI
+    await page.waitForTimeout(150);
+    const stepAfterHalwai = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after the halwai:', stepAfterHalwai);
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.MAA_POSITION.x + 1.3, dd.interactions.MAA_POSITION.z + 2);
+      dd.camRig.yaw = 0;
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> COMPLETE
+    await page.waitForTimeout(300);
+    const stepFinal = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after returning the jalebi:', stepFinal);
+    await page.screenshot({ path: resolve(shotsDir, 'end_card.png') });
+    console.log(`Captured end_card -> ${resolve(shotsDir, 'end_card.png')}`);
+
+    await page.click('#play-again-btn');
+    await page.waitForTimeout(150);
+    const stepAfterReset = await page.evaluate(() => window.__dopahar.quest.step);
+    const endCardHiddenAfterReset = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
+    console.log('quest step after Play again (should be not_started):', stepAfterReset, '| end card hidden:', endCardHiddenAfterReset);
+
     const stats = await page.evaluate(() => {
       const renderer = window.__dopahar?.renderer;
       if (!renderer) return null;
