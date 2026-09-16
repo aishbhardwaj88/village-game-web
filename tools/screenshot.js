@@ -99,6 +99,25 @@ async function main() {
       console.log(`Captured ${preset.name} -> ${shotPath}`);
     }
 
+    // Feature shots: scripted moments that the 3 fixed camera presets above wouldn't
+    // otherwise catch (the player has to actually be standing at a specific spot for
+    // these UI elements to be visible at all).
+    console.log('\n--- feature shots ---');
+    await page.evaluate(() => {
+      const d = window.__dopahar;
+      if (!d) return;
+      // Offset a little to the side so the player capsule doesn't sit exactly in
+      // front of (and hide) Maa's capsule from a dead-on angle.
+      d.teleportPlayer(d.interactions.MAA_POSITION.x + 1.3, d.interactions.MAA_POSITION.z + 2);
+      d.camRig.yaw = 0; // camera south of the player, looking north toward Maa
+      d.camRig.pitch = -0.1;
+      d.camRig.distance = 5;
+      d.camRig.update(10);
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'interact_prompt_maa.png') });
+    console.log(`Captured interact_prompt_maa -> ${resolve(shotsDir, 'interact_prompt_maa.png')}`);
+
     const stats = await page.evaluate(() => {
       const renderer = window.__dopahar?.renderer;
       if (!renderer) return null;
@@ -126,6 +145,7 @@ async function main() {
       const scene = window.__dopahar?.scene;
       const vehicles = window.__dopahar?.vehicles;
       const player = window.__dopahar?.player;
+      const npcs = window.__dopahar?.npcs;
       if (!scene) return null;
 
       const { Box3, Matrix4 } = window.__dopahar;
@@ -204,6 +224,9 @@ async function main() {
         }
       }
       checkWholeObject(player, 'player');
+      if (npcs) {
+        for (const npc of npcs) checkWholeObject(npc, npc.name);
+      }
 
       // Ground-level-only instanced kit pieces (plinth, drainpipe, step, crop rows),
       // per instance — identified by a `groundLevel` flag set on the mesh itself at

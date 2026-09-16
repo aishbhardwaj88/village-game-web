@@ -12,6 +12,8 @@ import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
+import { createNPC } from './npc.js';
+import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION } from './interactions.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -49,6 +51,13 @@ async function main() {
   const player = createPlayer();
   player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
   scene.add(player);
+
+  // Errand NPCs (item 1/3 brief) — placeholder capsules, same construction as the
+  // player, positioned to match the interaction points in src/interactions.js.
+  const maaNpc = createNPC(0xa3453a, MAA_POSITION, 0, 'npc_maa');
+  scene.add(maaNpc);
+  const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
+  scene.add(halwaiNpc);
 
   const camRig = new ThirdPersonCamera(camera, player);
   // Buildings the camera should never clip through (item 1) — raycast against the
@@ -104,6 +113,11 @@ async function main() {
 
   const interactHint = document.getElementById('interact-hint');
   let mountedVehicle = null;
+
+  // Shared context passed to every interaction point's label()/available()/onInteract()
+  // — grows in later items (quest state, dialogue, audio) without changing the
+  // interaction system itself.
+  const interactionCtx = { audio };
 
   function otherVehicleBoxes(excludeVehicle) {
     const boxes = [];
@@ -194,7 +208,19 @@ async function main() {
           interactHint.classList.add('visible');
           if (interactPressed) mount(nearby);
         } else {
-          interactHint.classList.remove('visible');
+          // Interaction points (item 1) — foot only, checked here since this branch
+          // only runs when the player isn't mounted. Mounting takes priority above;
+          // in practice the two never overlap (vehicles and interaction points are
+          // placed apart from each other).
+          const nearestPoint = findNearestInteraction(player.position, interactionCtx);
+          if (nearestPoint) {
+            const label = resolveLabel(nearestPoint, interactionCtx);
+            interactHint.textContent = touch ? `Tap to ${label}` : `Press E to ${label}`;
+            interactHint.classList.add('visible');
+            if (interactPressed) nearestPoint.onInteract(interactionCtx);
+          } else {
+            interactHint.classList.remove('visible');
+          }
         }
       }
 
@@ -225,10 +251,20 @@ async function main() {
       player,
       camRig,
       vehicles,
+      npcs: [maaNpc, halwaiNpc],
+      interactions: { MAA_POSITION, HALWAI_NPC_POSITION },
       mount,
       dismount,
       Box3: THREE.Box3,
       Matrix4: THREE.Matrix4,
+      // For scripted feature screenshots (tools/screenshot.js) — teleport near an
+      // interaction point and trigger it without needing to actually walk there.
+      teleportPlayer: (x, z) => player.position.set(x, 0, z),
+      interact: () => {
+        if (mountedVehicle) return;
+        const nearestPoint = findNearestInteraction(player.position, interactionCtx);
+        if (nearestPoint) nearestPoint.onInteract(interactionCtx);
+      },
     };
   }
 }
