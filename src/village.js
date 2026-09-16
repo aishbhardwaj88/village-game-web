@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { texturedBox, texturedWall, texturedThickBox, getTiledMaterial, ensureUv2 } from './materials.js';
+import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, getTiledMaterial, ensureUv2 } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment } from './paths.js';
 import { BuildingKit } from './buildingKit.js';
@@ -68,6 +68,16 @@ function addWall(group, length, height, materialName, position, axis, opts = {})
   return mesh;
 }
 
+/** A main exterior wall — solid block or real-thickness thin wall — with Fix 4/4's
+ * per-wall tiling/rotation jitter and baked dirt/bleach/blotch vertex-colour shading.
+ * `seed` should be stable per wall so variation doesn't reshuffle between rebuilds. */
+function addWallBox(group, width, height, depth, materialName, position, seed, opts = {}) {
+  const mesh = texturedWallBox(width, height, depth, materialName, { ...opts, seed });
+  mesh.position.set(position.x, position.y, position.z);
+  group.add(mesh);
+  return mesh;
+}
+
 function buildHouse(kit) {
   const group = new THREE.Group();
   group.name = 'house_compound';
@@ -90,7 +100,7 @@ function buildHouse(kit) {
   const blockD = 8;
   const blockCx = cx;
   const blockCz = cz - 3; // north side of the 14m-deep courtyard (cz-7 .. cz+7)
-  addBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, blockCx * 3.1 + blockCz * 1.7, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
   // Painted skirt band along the base of the wall, plus a proud structural plinth
   // right at the ground line (deeper, neutral — real plinths are usually exposed
@@ -153,7 +163,7 @@ function buildSchool(kit) {
   ];
 
   for (const b of blocks) {
-    addBox(group, b.w, b.h, b.d, 'plaster', { x: b.x, y: b.h / 2, z: b.z }, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addWallBox(group, b.w, b.h, b.d, 'plaster', { x: b.x, y: b.h / 2, z: b.z }, b.x * 3.1 + b.z * 1.7, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     addBox(group, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
     addThickBox(group, b.w + overhang * 2, 0.25, b.d + overhang * 2, 'concrete', { x: b.x, y: b.h + 0.125, z: b.z }, { tint: CONCRETE_NEUTRAL });
     kit.addPlinthRing(b.x, b.z, b.w, b.d, WALL_THICKNESS);
@@ -208,8 +218,8 @@ function buildHalwai(kit) {
   const zLeft = cz - width / 2;
   const overhang = 0.3;
 
-  addThickBox(group, depth, height, WALL_THICKNESS, 'plaster', { x: cx, y: height / 2, z: zLeft }, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // left/north wall
-  addThickBox(group, WALL_THICKNESS, height, width, 'plaster', { x: xBack, y: height / 2, z: cz }, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // back/east wall
+  addWallBox(group, depth, height, WALL_THICKNESS, 'plaster', { x: cx, y: height / 2, z: zLeft }, cx * 3.1 + zLeft * 1.7, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // left/north wall
+  addWallBox(group, WALL_THICKNESS, height, width, 'plaster', { x: xBack, y: height / 2, z: cz }, xBack * 3.1 + cz * 1.7, { tint: PLASTER_HALWAI, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH }); // back/east wall
   addThickBox(group, depth + overhang * 2, 0.25, width + overhang * 2, 'concrete', { x: cx, y: height + 0.125, z: cz }, { tint: CONCRETE_NEUTRAL }); // roof
 
   // Plinth + a single corner pilaster at the one real (north/east) corner.

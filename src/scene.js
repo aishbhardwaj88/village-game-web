@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
-import { getTiledMaterial, ensureUv2 } from './materials.js';
+import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 
 export const GROUND_SIZE = 480; // metres — big enough for the hero zone + field + track
 const GROUND_TILE_METRES = 5; // real-world metres per ground texture tile
@@ -25,6 +25,7 @@ export function createGround() {
   const geometry = ensureUv2(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1));
   const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });
   material.aoMapIntensity = 0.8;
+  applyGroundNoiseDetail(material); // Fix 4/4 (playtest pass) — see materials.js
 
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;

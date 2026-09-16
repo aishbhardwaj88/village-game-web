@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { texturedBox, texturedThickBox } from './materials.js';
+import { texturedThickBox, texturedWallBox } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 
@@ -35,7 +35,7 @@ export function buildBackgroundHouses(scene) {
     houseGroup.name = `background_house_${i}`;
 
     const tint = HOUSE_TINTS[i % HOUSE_TINTS.length];
-    const block = texturedBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    const block = texturedWallBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: p.x * 3.1 + p.z * 1.7 });
     block.position.set(p.x, p.h / 2, p.z);
     houseGroup.add(block);
 

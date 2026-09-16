@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTiledMaterial, ensureUv2 } from './materials.js';
+import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
 
@@ -37,6 +37,7 @@ function buildFieldGround() {
     tint: FIELD_GOLD,
     roughness: 1,
   });
+  applyGroundNoiseDetail(material); // Fix 4/4 (playtest pass) — see materials.js
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(FIELD_CENTER.x, 0.02, FIELD_CENTER.z);

@@ -41,8 +41,8 @@ function loadRaw(url, srgb) {
  * scale (repeatX/repeatY = metres of surface / metres per texture tile). Cached per
  * (name, repeat, tint) so reused tiling scales share one material/draw-call group.
  */
-export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1, tintStrength = 1 } = {}) {
-  const key = `${name}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}`;
+export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1, tintStrength = 1, vertexColors = false } = {}) {
+  const key = `${name}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}|${vertexColors ? 'vc' : ''}`;
   let mat = materialCache.get(key);
   if (mat) return mat;
 
@@ -63,6 +63,11 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
   }
 
   mat = new THREE.MeshStandardMaterial(opts);
+  // vertexColors requested separately from the cache key above so a wall using baked
+  // dirt/bleach/blotch vertex colours (texturedWallBox, Fix 4/4) never accidentally
+  // shares a material with a caller at the same repeat/tint that has no 'color'
+  // geometry attribute (which would otherwise multiply in undefined/black).
+  if (vertexColors) mat.vertexColors = true;
   if (tint) {
     // tintStrength < 1 blends from white toward the tint instead of a full multiply,
     // so the texture's own colour/grain stays visible under the paint rather than the
@@ -72,6 +77,71 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
   }
   materialCache.set(key, mat);
   return mat;
+}
+
+/**
+ * Fix 4/4 (playtest pass) — attaches a large-scale (20-40m) procedural colour/
+ * brightness noise multiply, plus a near-camera detail-texture blend, to a ground-type
+ * material via onBeforeCompile. Both terrain planes (the main ground and the field,
+ * src/scene.js and src/field.js — both use the 'ground' texture set) call this so no
+ * repeat is visible from any height and there's crispness underfoot without a second
+ * texture asset. See docs/parked.md for why this is a shader hook rather than a second
+ * texture: it's per-pixel (no mip/tiling artefacts of its own) and needs zero extra
+ * network fetches.
+ */
+export function applyGroundNoiseDetail(material, { noiseCellMetres = 30, detailTileMultiplier = 22, detailFadeMetres = 8 } = {}) {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uNoiseScale = { value: 1 / noiseCellMetres };
+    shader.uniforms.uDetailScale = { value: detailTileMultiplier };
+    shader.uniforms.uDetailFade = { value: detailFadeMetres };
+
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_g;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWorldPos_g = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        varying vec3 vWorldPos_g;
+        uniform float uNoiseScale;
+        uniform float uDetailScale;
+        uniform float uDetailFade;
+
+        float groundHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+        float groundValueNoise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          float a = groundHash(i);
+          float b = groundHash(i + vec2(1.0, 0.0));
+          float c = groundHash(i + vec2(0.0, 1.0));
+          float d = groundHash(i + vec2(1.0, 1.0));
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+        }`
+      )
+      .replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+        {
+          float largeN = groundValueNoise(vWorldPos_g.xz * uNoiseScale);
+          vec3 patchTint = vec3(0.92, 0.9, 0.86) + largeN * vec3(0.16, 0.14, 0.09);
+          diffuseColor.rgb *= patchTint;
+
+          float camDist = distance(vWorldPos_g, cameraPosition);
+          float detailMix = 1.0 - smoothstep(0.0, uDetailFade, camDist);
+          if (detailMix > 0.001) {
+            vec3 detailColor = texture2D(map, vMapUv * uDetailScale).rgb;
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * detailColor * 1.5, detailMix * 0.5);
+          }
+        }`
+      );
+  };
+  // Distinct cache key per material instance sharing this hook, so three.js doesn't
+  // reuse a compiled program from a material that didn't request the noise/detail
+  // pass (or vice versa).
+  material.customProgramCacheKey = () => `ground-noise-detail-v1-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}`;
+  return material;
 }
 
 /** Box geometry needs a uv2 (= uv) for any material using an aoMap. */
@@ -156,6 +226,129 @@ export function texturedThickBox(width, height, depth, materialName, opts = {}) 
   geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
 
   const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, tint, roughness, tintStrength });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+function pseudoRandom01(seed) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Like texturedThickBox's UV rebake, but generalised to any BoxGeometry segment count
+ * via geometry.groups (six groups, one per face, covering that face's full index range
+ * regardless of subdivision) instead of assuming exactly 4 vertices/face. Also applies
+ * a small rotation to the UV pattern (about each face's own centre) before scaling —
+ * rotating the SAMPLED pattern per wall, in the geometry, rather than rotating the
+ * shared texture object (which would rotate it for every wall using that material).
+ */
+function rescaleAndRotateBoxFaceUVs(geometry, width, height, depth, tileSize, rotation) {
+  const uv = geometry.attributes.uv;
+  const index = geometry.index;
+  const faceDims = [
+    [depth, height],
+    [depth, height],
+    [width, depth],
+    [width, depth],
+    [width, height],
+    [width, height],
+  ];
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const touched = new Uint8Array(uv.count);
+  for (let g = 0; g < geometry.groups.length; g++) {
+    const { start, count } = geometry.groups[g];
+    const [fw, fh] = faceDims[g];
+    const rx = fw / tileSize;
+    const ry = fh / tileSize;
+    for (let k = start; k < start + count; k++) {
+      const vi = index.array[k];
+      if (touched[vi]) continue;
+      touched[vi] = 1;
+      const u = uv.getX(vi) - 0.5;
+      const v = uv.getY(vi) - 0.5;
+      const ru = u * cos - v * sin;
+      const rv = u * sin + v * cos;
+      uv.setXY(vi, (ru + 0.5) * rx, (rv + 0.5) * ry);
+    }
+  }
+  uv.needsUpdate = true;
+  geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
+}
+
+/**
+ * Bakes per-vertex shading into a (height-subdivided) box: a soft dirt darkening near
+ * the base, a light sun-bleached lightening near the top, and a faint large-scale
+ * blotch so the plaster reads as uneven rather than a flat, uniform colour. Needs
+ * `heightSegments > 1` on the geometry to have any vertices between y=0 and the top to
+ * hold the transition — see texturedWallBox.
+ */
+function bakeWallShadeColors(geometry, height, seed = 0) {
+  const pos = geometry.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  const dirtBandTop = Math.min(0.7, height * 0.3); // soft transition zone above the 400mm dirt line
+  const bleachStart = Math.max(height - 0.6, height * 0.65);
+  for (let i = 0; i < pos.count; i++) {
+    const worldY = pos.getY(i) + height / 2; // BoxGeometry is centred — 0 at the base
+    const x = pos.getX(i);
+    const z = pos.getZ(i);
+
+    let shade = 1.0;
+    if (worldY < dirtBandTop) {
+      const t = 1 - THREE.MathUtils.clamp(worldY / dirtBandTop, 0, 1);
+      shade -= t * t * 0.26; // soft — not a hard-edged band
+    }
+    if (worldY > bleachStart) {
+      const t = THREE.MathUtils.clamp((worldY - bleachStart) / Math.max(0.01, height - bleachStart), 0, 1);
+      shade += t * 0.1;
+    }
+
+    // Large-scale blotch: low-frequency sine combo over world XZ, never a texture, so
+    // it costs nothing extra and doesn't repeat visibly at wall scale.
+    const blotch =
+      Math.sin((x + seed * 3.1) * 0.55) * Math.cos((z * 0.85 - seed * 1.7)) * 0.05 +
+      Math.sin((x * 0.21 - z * 0.33 + seed * 2.3)) * 0.03;
+    shade += blotch;
+    shade = THREE.MathUtils.clamp(shade, 0.7, 1.12);
+
+    colors[i * 3] = shade;
+    colors[i * 3 + 1] = shade;
+    colors[i * 3 + 2] = shade;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+}
+
+/**
+ * A wall box (solid block or thin real-thickness wall — both share BoxGeometry's
+ * per-face UV structure, so one function covers house/school blocks AND halwai's thin
+ * walls) with, per Fix 4/4: a slightly jittered tiling scale and a small UV rotation
+ * so no two walls look identical, plus baked-in vertex-colour dirt/bleach/blotch
+ * shading. `seed` should be stable per wall (e.g. derived from its world position) so
+ * the variation doesn't change between rebuilds.
+ */
+export function texturedWallBox(width, height, depth, materialName, opts = {}) {
+  const {
+    tileSize = 1.5,
+    tint = null,
+    roughness = 1,
+    tintStrength = 1,
+    tileJitter = 0.12, // ±12% tiling-scale variance
+    rotationJitter = 0.045, // radians — kept small since rotating a tiled texture isn't perfectly seamless
+    seed = 0,
+  } = opts;
+
+  const jitteredTileSize = tileSize * (1 + (pseudoRandom01(seed) - 0.5) * 2 * tileJitter);
+  const rotation = (pseudoRandom01(seed + 11) - 0.5) * 2 * rotationJitter;
+  const heightSegments = THREE.MathUtils.clamp(Math.round(height / 0.9), 5, 14);
+
+  const geometry = new THREE.BoxGeometry(width, height, depth, 1, heightSegments, 1);
+  rescaleAndRotateBoxFaceUVs(geometry, width, height, depth, jitteredTileSize, rotation);
+  bakeWallShadeColors(geometry, height, seed);
+
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, tint, roughness, tintStrength, vertexColors: true });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
