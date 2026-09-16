@@ -178,8 +178,13 @@ export class Vehicle {
 
     // Wider vehicles turn more slowly at low speed (a stationary tractor can't pivot
     // like a bike) and turnRate itself caps how tight the circle ever gets.
+    // Negative sign: with forward = (-sin(rotation.y), 0, -cos(rotation.y)), a
+    // positive rotation.y sweeps forward.x negative (a left/counter-clockwise turn),
+    // so steer=+1 (D, "turn right") needs to DECREASE rotation.y, not increase it.
+    // Math.sign(this.speed || 1) still reverses this when backing up, same as before —
+    // that's what makes reverse steer like a real vehicle backing up.
     const speedFactor = THREE.MathUtils.clamp(Math.abs(this.speed) / (p.maxSpeed * 0.4), 0, 1);
-    const yawDelta = steer * p.turnRate * speedFactor * dt * Math.sign(this.speed || 1);
+    const yawDelta = -steer * p.turnRate * speedFactor * dt * Math.sign(this.speed || 1);
     this.group.rotation.y += yawDelta;
 
     const forward = new THREE.Vector3(-Math.sin(this.group.rotation.y), 0, -Math.cos(this.group.rotation.y));
