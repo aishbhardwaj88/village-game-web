@@ -34,7 +34,7 @@ export function createGround() {
   return ground;
 }
 
-export function createSun() {
+export function createSun(isTouch = false) {
   // Warm ~4500K sun at 20 degrees elevation.
   const sun = new THREE.DirectionalLight(0xfff1d6, 3.2);
   const elevationDeg = 20;
@@ -46,10 +46,15 @@ export function createSun() {
     Math.cos(elevationRad) * distance * 0.4
   );
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  // Phone perf pass (queue item 5): a 2048 shadow map over a 60m extent is a lot of
+  // shadow-pass fill on a phone GPU — touch gets a smaller map over a tighter extent
+  // (shadows still cover the hero zone the player actually stands in, just not the
+  // full 60m). Recorded in docs/look-standard.md.
+  const mapSize = isTouch ? 1024 : 2048;
+  sun.shadow.mapSize.set(mapSize, mapSize);
   sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 200;
-  const shadowExtent = 60;
+  sun.shadow.camera.far = isTouch ? 120 : 200;
+  const shadowExtent = isTouch ? 38 : 60;
   sun.shadow.camera.left = -shadowExtent;
   sun.shadow.camera.right = shadowExtent;
   sun.shadow.camera.top = shadowExtent;

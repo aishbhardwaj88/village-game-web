@@ -157,6 +157,30 @@ Create one `BuildingKit` per group of buildings that should share it (the hero z
 background houses use their own smaller one), call its `add*` methods while building
 each structure, then `finalize(group)` once at the end.
 
+## Mobile/touch settings (queue item 5 — phone performance pass)
+
+Touch devices (`isTouchDevice()`, `src/controls.js`) get a lower-cost render config,
+applied at renderer/scene creation time (`src/main.js` passes `touch` through):
+
+| Setting | Desktop | Touch | Where |
+|---|---|---|---|
+| Max pixel ratio | 1.5 | **1.0** | `src/renderer.js` `MAX_PIXEL_RATIO` / `MAX_PIXEL_RATIO_TOUCH` |
+| Shadow map size | 2048 | **1024** | `src/scene.js` `createSun(isTouch)` |
+| Shadow camera far / extent | 200m / ±60m | **120m / ±38m** | same — shadows still cover the hero zone, just not the full 60m |
+| Bloom | on | **off** | `src/postfx.js` `enableBloom` (already existed) |
+| Film grain (NoiseEffect) | on | **off** | `src/postfx.js` `enableGrain` (new) |
+| Texture resolution | 1K (512 for small props) | same — already within budget on both | `docs/budgets.md` |
+
+Verified (headless SwiftShader, `?dev=1`, a 390×844 3x-DPR phone viewport +
+`hasTouch`/`isMobile` emulation): `renderer.getPixelRatio()` reads back `1` (not the
+device's real `3`), the sun's `shadow.mapSize.width` reads back `1024`, no console
+errors walking/driving. **Caveat**: headless SwiftShader is software-rendered and
+reports 2-8 fps regardless of scene complexity — it cannot produce a meaningful "30fps
+on phone" number. These settings are the standard, well-understood high-impact levers
+(fewer shaded pixels via pixel ratio, smaller/tighter shadow pass, two fewer full-
+screen post-effect passes) rather than a number measured on real hardware; re-verify
+on an actual phone before relying on the 30fps target being met.
+
 ## Budgets (enforced — see `docs/budgets.md`, `tools/check-budget.js`)
 
 `public/assets/` under 40MB, any model under 5MB, textures 1K max (512 for small

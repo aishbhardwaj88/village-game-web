@@ -36,8 +36,12 @@ const VEHICLE_LABEL_HI = {
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
+  // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
+  // ratio and shadow map settings at creation time, not just post-processing later.
+  const touch = isTouchDevice();
+
   const canvas = document.getElementById('scene');
-  const renderer = createRenderer(canvas);
+  const renderer = createRenderer(canvas, touch);
 
   const scene = createScene();
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
@@ -45,7 +49,7 @@ async function main() {
   const ground = createGround();
   scene.add(ground);
 
-  const sun = createSun();
+  const sun = createSun(touch);
   scene.add(sun);
   // Fill light for shadow-side surfaces: cool sky above, warm ground-bounce below.
   // Needed because scene.environmentIntensity is kept low (see scene.js) to tame the
@@ -92,11 +96,11 @@ async function main() {
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
-  const touch = isTouchDevice();
   const input = new InputController(canvas);
 
   const enableBloom = !touch;
-  const composer = createComposer(renderer, scene, camera, { enableBloom });
+  const enableGrain = !touch;
+  const composer = createComposer(renderer, scene, camera, { enableBloom, enableGrain });
 
   const fps = setupFpsCounter();
 
@@ -106,7 +110,7 @@ async function main() {
   );
 
   function onResize() {
-    resizeRendererToDisplaySize(renderer, camera);
+    resizeRendererToDisplaySize(renderer, camera, touch);
     resizeComposer(composer, window.innerWidth, window.innerHeight);
   }
   window.addEventListener('resize', onResize);

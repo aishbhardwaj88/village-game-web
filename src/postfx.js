@@ -18,18 +18,25 @@ import {
  * calibration than three.js's, and running both in sequence double-compresses highlights
  * and reads as washed-out grey rather than a saturated golden-hour image. See docs/parked.md.
  */
-export function createComposer(renderer, scene, camera, { enableBloom }) {
+export function createComposer(renderer, scene, camera, { enableBloom, enableGrain = true }) {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
   const effects = [
     new HueSaturationEffect({ hue: 0.0, saturation: 0.08 }),
     new BrightnessContrastEffect({ brightness: 0.02, contrast: 0.06 }),
-    new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true }),
     new VignetteEffect({ offset: 0.35, darkness: 0.5 }),
   ];
-  // Subtle film grain: dial the overlay noise down via opacity-like blend intensity.
-  effects[2].blendMode.opacity.value = 0.06;
+
+  if (enableGrain) {
+    // Subtle film grain: dial the overlay noise down via opacity-like blend intensity.
+    // Skipped on touch (queue item 5) — a full-screen per-pixel noise pass is real
+    // fragment-shader cost on a phone GPU for an effect that barely reads at phone
+    // viewing distance/size anyway.
+    const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
+    grain.blendMode.opacity.value = 0.06;
+    effects.push(grain);
+  }
 
   if (enableBloom) {
     // Soft warmth on genuinely bright things (sun glow, practicals), not a haze over
