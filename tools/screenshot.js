@@ -106,6 +106,47 @@ async function main() {
       console.log(`Captured ${preset.name} -> ${shotPath}`);
     }
 
+    // Vehicle kitbashes (queue items 1-4) — close side/rear views, not otherwise
+    // framed by the 3 generic presets above. Player placed a few metres SOUTH of the
+    // vehicle (larger Z), camera yaw=0 (camera further south, looking north) — the
+    // same proven framing pattern as the Maa/halwai interaction shots earlier.
+    // Player placed south of the target (larger Z) with a sideways X nudge — camera
+    // yaw=0 (further south, looking north) — same proven framing as the Maa/halwai
+    // shots earlier. The sideways nudge keeps the player capsule from sitting exactly
+    // between the camera and the target (which hid Maa completely the first time
+    // this pattern was tried, earlier in this session).
+    async function framedOn(kind, sideways, southOf, distance, yaw = 0, pitch = -0.05) {
+      await page.evaluate(
+        ({ sideways, southOf, distance, yaw, pitch, kind }) => {
+          const d = window.__dopahar;
+          const target = d.vehicles.find((v) => v.preset.kind === kind).group.position;
+          d.teleportPlayer(target.x + sideways, target.z + southOf);
+          d.camRig.yaw = yaw;
+          d.camRig.pitch = pitch;
+          d.camRig.distance = distance;
+          d.camRig.update(10);
+        },
+        { sideways, southOf, distance, yaw, pitch, kind }
+      );
+      await page.waitForTimeout(200);
+    }
+
+    await framedOn('tractor', 3.5, 5, 9);
+    await page.screenshot({ path: resolve(shotsDir, 'vehicle_tractor_trolley_side.png') });
+    console.log(`Captured vehicle_tractor_trolley_side -> ${resolve(shotsDir, 'vehicle_tractor_trolley_side.png')}`);
+
+    await framedOn('tractor', 2.5, -4, 4.5, Math.PI);
+    await page.screenshot({ path: resolve(shotsDir, 'vehicle_tractor_front.png') });
+    console.log(`Captured vehicle_tractor_front -> ${resolve(shotsDir, 'vehicle_tractor_front.png')}`);
+
+    await framedOn('cart', 3, 4.5, 6.5);
+    await page.screenshot({ path: resolve(shotsDir, 'vehicle_cart_side.png') });
+    console.log(`Captured vehicle_cart_side -> ${resolve(shotsDir, 'vehicle_cart_side.png')}`);
+
+    await framedOn('bike', 1.8, 2.5, 3.2);
+    await page.screenshot({ path: resolve(shotsDir, 'vehicle_bike_side.png') });
+    console.log(`Captured vehicle_bike_side -> ${resolve(shotsDir, 'vehicle_bike_side.png')}`);
+
     // Waypoint (item 4): the glow at the target when it's in view, and the edge arrow
     // when it isn't — captured before the errand-flow shots below change quest.step.
     await page.evaluate(() => {
@@ -341,7 +382,9 @@ async function main() {
       if (vehicles) {
         for (const v of vehicles) {
           checkWholeObject(v.group, v.group.name);
-          if (v.trolley) checkWholeObject(v.trolley, `${v.group.name}/trolley`);
+          // v.trolley is a Trolley class instance (queue item 2 — a separate,
+          // attach/detachable object), not itself a THREE.Object3D — check its .group.
+          if (v.trolley) checkWholeObject(v.trolley.group, `${v.group.name}/trolley`);
         }
       }
       checkWholeObject(player, 'player');

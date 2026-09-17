@@ -16,6 +16,7 @@ export class InputController {
     this.yawDelta = 0;
     this.pitchDelta = 0;
     this._interactPressed = false; // edge-triggered, consumed via consumeInteract()
+    this._attachPressed = false; // trolley attach/detach (queue item 2) — F on desktop, the same tap target on touch
 
     this._keys = new Set();
     this._pointerLocked = false;
@@ -36,6 +37,15 @@ export class InputController {
     return pressed;
   }
 
+  /** Trolley attach/detach: F on desktop (separate from E so dismounting still works
+   * independently); on touch there's no second physical button, so main.js treats a
+   * tap on the shared prompt as this action when that's what the prompt is showing. */
+  consumeAttach() {
+    const pressed = this._attachPressed;
+    this._attachPressed = false;
+    return pressed;
+  }
+
   /** The interaction prompt (item 2, index.html #interact-hint) doubles as the large
    * tap target on touch — no separate button. On desktop it's purely a visual badge;
    * E does the work via the keydown listener below. */
@@ -51,6 +61,7 @@ export class InputController {
     } else {
       window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyE') this._interactPressed = true;
+        if (e.code === 'KeyF') this._attachPressed = true;
       });
     }
   }

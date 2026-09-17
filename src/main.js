@@ -253,9 +253,14 @@ async function main() {
     camRig.target = vehicle.group;
     camRig.distance = vehicle.preset.cameraDistance;
     camRig.height = vehicle.preset.cameraHeight;
-    const excludeRoots = vehicle.trolley ? [vehicle.group, vehicle.trolley] : [vehicle.group];
+    const excludeRoots = vehicle.trolley ? [vehicle.group, vehicle.trolley.group] : [vehicle.group];
     camRig.setObstacles(cameraObstacles, excludeRoots);
   }
+
+  // A trolley detached from the tractor (item 2) stays in the scene, standing where
+  // it was left — this is the only reference main.js keeps to it once it's no longer
+  // reachable via mountedVehicle.trolley.
+  let looseTrolley = null;
 
   function dismount() {
     const v = mountedVehicle;
@@ -303,6 +308,7 @@ async function main() {
       const { yaw, pitch } = input.consumeLookDelta();
       camRig.addYawPitch(yaw, pitch);
       const interactPressed = input.consumeInteract();
+      const attachPressed = input.consumeAttach();
 
       if (dialogue.isOpen) {
         // Dialogue pauses movement/interaction entirely — it advances only on
@@ -320,8 +326,35 @@ async function main() {
         resolveCollisions(mountedVehicle.group.position, vehicleRadius, otherVehicleBoxes(mountedVehicle));
         audio.setVehicle(mountedVehicle.preset.kind, mountedVehicle.speed / mountedVehicle.preset.maxSpeed);
 
-        setInteractPrompt('उतर जाएं', 'Dismount');
-        if (interactPressed) dismount();
+        // Trolley attach/detach (item 2) — F on desktop, the shared tap target on
+        // touch when that's the prompt showing; E always dismounts on desktop
+        // regardless (kept independent so getting off the tractor never needs a
+        // detour through the trolley prompt).
+        const candidateTrolley = mountedVehicle.trolley || looseTrolley;
+        if (p.kind === 'tractor' && !mountedVehicle.trolley && candidateTrolley) {
+          const hitchDist = mountedVehicle.hitchWorldPoint.distanceTo(candidateTrolley.hitchWorldPoint);
+          const eligible = mountedVehicle.speed < -0.05 && hitchDist < p.attachRadius;
+          if (eligible) {
+            setInteractPrompt('ट्रॉली जोड़ें', 'Attach trolley');
+            if (touch ? interactPressed : attachPressed) {
+              mountedVehicle.attachTrolley(candidateTrolley);
+              looseTrolley = null;
+            }
+          } else {
+            setInteractPrompt('उतर जाएं', 'Dismount');
+            if (interactPressed) dismount();
+          }
+        } else if (p.kind === 'tractor' && mountedVehicle.trolley) {
+          setInteractPrompt('ट्रॉली अलग करें', 'Detach trolley');
+          if (touch ? interactPressed : attachPressed) {
+            looseTrolley = mountedVehicle.detachTrolley();
+          } else if (!touch && interactPressed) {
+            dismount();
+          }
+        } else {
+          setInteractPrompt('उतर जाएं', 'Dismount');
+          if (interactPressed) dismount();
+        }
       } else {
         forward.set(-Math.sin(camRig.yaw), 0, -Math.cos(camRig.yaw));
         right.set(Math.cos(camRig.yaw), 0, -Math.sin(camRig.yaw));
