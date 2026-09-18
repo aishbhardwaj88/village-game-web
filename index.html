@@ -31,20 +31,42 @@
         touch-action: none;
       }
 
-      /* --- Loading / tap-to-start overlay --- */
+      /* --- Title screen --- */
+      /* Warm late-afternoon gradient built from the game's own established colours —
+         SKY_ZENITH_COLOR/SKY_HORIZON_COLOR (src/sky.js) at top/mid, PALETTE.mustard/
+         terracotta (src/village.js) toward the bottom — not a generic template
+         gradient. A soft low-sun glow and a dark flat-farmland horizon band (::after)
+         echo the in-game sky without literally drawing geometry. */
       #start-overlay {
         position: fixed;
         inset: 0;
         z-index: 100;
-        background: radial-gradient(ellipse at 50% 40%, #4a2e18 0%, #2a1810 60%, #1a0f0a 100%);
+        background:
+          radial-gradient(ellipse 60% 38% at 50% 76%, rgba(255, 241, 214, 0.55) 0%, rgba(255, 241, 214, 0) 70%),
+          linear-gradient(to bottom, #3f6fa3 0%, #7590b4 24%, #cbb98a 54%, #f6dcae 70%, #dcc488 86%, #c98e72 100%);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #f8ead0;
+        color: #2a1810;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         text-align: center;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        overflow: hidden;
+      }
+      #start-overlay::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 12%;
+        background: linear-gradient(to bottom, rgba(74, 55, 36, 0) 0%, rgba(58, 42, 27, 0.85) 100%);
+        pointer-events: none;
+      }
+      #start-overlay > * {
+        position: relative;
+        z-index: 1;
       }
       /* English primary (larger, on top), Devanagari secondary (smaller, beneath) —
          law, see CLAUDE.md. Signboards in the world are the one exception. */
@@ -54,38 +76,82 @@
         margin: 0;
         font-weight: 700;
         letter-spacing: 0.02em;
+        text-shadow: 0 2px 18px rgba(74, 46, 24, 0.25);
       }
       #start-overlay .title-hi {
         font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         font-size: 1.1rem;
-        opacity: 0.75;
-        margin: 0.4rem 0 2.2rem;
+        opacity: 0.8;
+        margin: 0.35rem 0 1.1rem;
         font-weight: 600;
+      }
+      #subtitle-en {
+        font-size: 1.02rem;
+        margin: 0;
+        font-weight: 600;
+        opacity: 0.88;
+        letter-spacing: 0.01em;
+      }
+      #subtitle-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.78rem;
+        opacity: 0.68;
+        margin: 0.25rem 0 2.6rem;
+        font-weight: 500;
       }
       #progress-track {
         width: 200px;
         height: 4px;
         border-radius: 2px;
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(42, 24, 16, 0.18);
         overflow: hidden;
       }
       #progress-fill {
         width: 0%;
         height: 100%;
-        background: #f2b25c;
+        background: #7a3f22;
         transition: width 0.15s ease-out;
       }
       #start-overlay.hidden {
         display: none;
       }
+      #play-btn {
+        display: none;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0;
+        font-family: inherit;
+        font-weight: 700;
+        color: #f8ead0;
+        background: #7a3f22;
+        border: none;
+        border-radius: 28px;
+        padding: 15px 42px;
+        cursor: pointer;
+        box-shadow: 0 10px 26px rgba(42, 24, 16, 0.3);
+      }
+      #play-btn:active {
+        transform: scale(0.96);
+      }
+      #play-btn .play-en {
+        font-size: 1.15rem;
+      }
+      #play-btn .play-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.78rem;
+        opacity: 0.8;
+      }
       #start-overlay-hint {
-        opacity: 0.85;
-        font-size: 0.95rem;
-        margin: 1.4rem 0 0;
+        opacity: 0.7;
+        font-size: 0.85rem;
+        margin: 1.3rem 0 0;
         display: none;
       }
       #start-overlay.ready #progress-track {
         display: none;
+      }
+      #start-overlay.ready #play-btn {
+        display: inline-flex;
       }
       #start-overlay.ready #start-overlay-hint {
         display: block;
@@ -414,8 +480,14 @@
       <div id="start-overlay">
         <p class="title-en">Dopahar</p>
         <p class="title-hi">दोपहर</p>
+        <p id="subtitle-en">An afternoon in Amrai Khera</p>
+        <p id="subtitle-hi">अमराई खेड़ा में एक दोपहर</p>
         <div id="progress-track"><div id="progress-fill"></div></div>
-        <p id="start-overlay-hint">Tap to start</p>
+        <button id="play-btn" type="button">
+          <span class="play-en">Play</span>
+          <span class="play-hi">खेलें</span>
+        </button>
+        <p id="start-overlay-hint"></p>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

@@ -77,7 +77,7 @@ async function main() {
     // queued asset loaded (see src/ui.js setupLoadingScreen) — wait for that class
     // before clicking, same gate a real player hits.
     await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
-    await page.click('#start-overlay');
+    await page.click('#play-btn');
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(1500);
 

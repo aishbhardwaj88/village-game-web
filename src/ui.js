@@ -58,24 +58,25 @@ export function setupLoadingScreen() {
 }
 
 /**
- * Shows the tap-to-start overlay, requests pointer lock on desktop, and reveals touch
- * controls on touch devices. Resolves once the player has tapped/clicked to start —
- * taps are ignored until setupLoadingScreen() has marked the overlay "ready" (assets
- * loaded, or the safety timeout fired). `onStart` is called synchronously inside the
- * pointerdown handler — callers that need to unlock a Web Audio AudioContext
- * (iOS/Safari requires this inside a user gesture) should create/resume it there, not
- * after an await.
+ * Shows the title screen, requests pointer lock on desktop, and reveals touch
+ * controls on touch devices. Resolves once the player taps/clicks the Play button —
+ * disabled (CSS `display: none`, see index.html `#start-overlay.ready #play-btn`)
+ * until setupLoadingScreen() has marked the overlay "ready" (assets loaded, or the
+ * safety timeout fired). `onStart` is called synchronously inside the pointerdown
+ * handler — callers that need to unlock a Web Audio AudioContext (iOS/Safari requires
+ * this inside a user gesture) should create/resume it there, not after an await.
  */
 export function setupStartOverlay({ isTouch, onStart }) {
   const overlay = document.getElementById('start-overlay');
   const touchControls = document.getElementById('touch-controls');
+  const playBtn = document.getElementById('play-btn');
   const hint = document.getElementById('start-overlay-hint');
 
-  hint.textContent = isTouch ? 'Tap to start' : 'Click to start · WASD to move · Esc to release mouse';
+  hint.textContent = isTouch ? '' : 'WASD to move · Esc to pause';
 
   const start = () => {
     if (!overlay.classList.contains('ready')) return;
-    overlay.removeEventListener('pointerdown', start);
+    playBtn.removeEventListener('pointerdown', start);
     overlay.classList.add('hidden');
 
     if (isTouch) {
@@ -85,5 +86,5 @@ export function setupStartOverlay({ isTouch, onStart }) {
     onStart();
   };
 
-  overlay.addEventListener('pointerdown', start);
+  playBtn.addEventListener('pointerdown', start);
 }
