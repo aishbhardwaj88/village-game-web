@@ -46,6 +46,9 @@ async function main() {
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
   // ratio and shadow map settings at creation time, not just post-processing later.
   const touch = isTouchDevice();
+  // Mobile pass (task 3) — a couple of CSS rules (dialogue panel position, see
+  // index.html) need to know this too, and CSS can't read isTouchDevice() itself.
+  document.body.classList.toggle('touch-device', touch);
 
   const canvas = document.getElementById('scene');
   const renderer = createRenderer(canvas, touch);

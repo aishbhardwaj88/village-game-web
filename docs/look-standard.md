@@ -157,29 +157,50 @@ Create one `BuildingKit` per group of buildings that should share it (the hero z
 background houses use their own smaller one), call its `add*` methods while building
 each structure, then `finalize(group)` once at the end.
 
-## Mobile/touch settings (queue item 5 — phone performance pass)
+## Mobile/touch settings (queue item 5 — phone performance pass; superseded by task 2's
+quality setting)
 
-Touch devices (`isTouchDevice()`, `src/controls.js`) get a lower-cost render config,
-applied at renderer/scene creation time (`src/main.js` passes `touch` through):
-
-| Setting | Desktop | Touch | Where |
-|---|---|---|---|
-| Max pixel ratio | 1.5 | **1.0** | `src/renderer.js` `MAX_PIXEL_RATIO` / `MAX_PIXEL_RATIO_TOUCH` |
-| Shadow map size | 2048 | **1024** | `src/scene.js` `createSun(isTouch)` |
-| Shadow camera far / extent | 200m / ±60m | **120m / ±38m** | same — shadows still cover the hero zone, just not the full 60m |
-| Bloom | on | **off** | `src/postfx.js` `enableBloom` (already existed) |
-| Film grain (NoiseEffect) | on | **off** | `src/postfx.js` `enableGrain` (new) |
-| Texture resolution | 1K (512 for small props) | same — already within budget on both | `docs/budgets.md` |
+`src/renderer.js`'s `MAX_PIXEL_RATIO`/`MAX_PIXEL_RATIO_TOUCH` and `src/scene.js`'s
+`createSun(isTouch)` still set the very first frame's values (before the pause menu's
+Quality setting, `src/quality.js`, applies over them a moment later), but the live
+control is now the three named presets (High/Medium/Low) — see `src/quality.js`
+`PRESETS` for the exact numbers. High matches the old fixed desktop defaults exactly;
+default is Medium on touch / High on desktop, or whatever was last saved to
+`localStorage`. Quality changes pixel ratio, shadow map size/distance, and bloom/grain
+instantly, no reload (`src/main.js` `setQuality()`).
 
 Verified (headless SwiftShader, `?dev=1`, a 390×844 3x-DPR phone viewport +
 `hasTouch`/`isMobile` emulation): `renderer.getPixelRatio()` reads back `1` (not the
-device's real `3`), the sun's `shadow.mapSize.width` reads back `1024`, no console
-errors walking/driving. **Caveat**: headless SwiftShader is software-rendered and
-reports 2-8 fps regardless of scene complexity — it cannot produce a meaningful "30fps
-on phone" number. These settings are the standard, well-understood high-impact levers
-(fewer shaded pixels via pixel ratio, smaller/tighter shadow pass, two fewer full-
-screen post-effect passes) rather than a number measured on real hardware; re-verify
-on an actual phone before relying on the 30fps target being met.
+device's real `3`), the sun's `shadow.mapSize.width` reads back the preset's value, no
+console errors walking/driving. **Caveat**: headless SwiftShader is software-rendered
+and reports ~7-23 fps regardless of scene complexity (measured 20-23fps at both 390×844
+and 360×800 during task 3's mobile pass) — it cannot produce a meaningful "30fps on
+phone" number either way. These settings are the standard, well-understood high-impact
+levers (fewer shaded pixels via pixel ratio, smaller/tighter shadow pass, fewer full-
+screen post-effect passes) rather than a number measured on real hardware; re-verify on
+an actual phone before relying on any fps target being met.
+
+**Task 3 (mobile pass) fixes**, all verified via Playwright touch emulation at both
+390×844 and 360×800 (`tmp/mobile_pass.mjs`):
+- The dialogue panel (near-full-width, bottom:20px) overlapped the joystick on touch —
+  movement was already disabled while dialogue is open, but the panel still visually
+  covered it. Raised above the joystick's top edge on touch only (`body.touch-device
+  #dialogue-panel`, the class is set once in `main.js` since CSS can't call
+  `isTouchDevice()` itself).
+- The interaction prompt's key badge hard-coded "E" in `index.html` regardless of
+  device — on touch it now reads "TAP" (`src/controls.js` `_setupInteractButton()`).
+- Bright-light contrast: `#objective-panel`/`#interact-hint` background opacity raised
+  (0.5→0.68, 0.74→0.86), a subtle text-shadow added to their text, and the joystick's
+  base/knob opacity raised (0.12/0.35→0.2/0.5) — all were legible but marginal against
+  a bright sky/wall behind them.
+- "Interaction button never overlapping the mount button": both are the same single
+  `#interact-hint` element (mount/dismount/talk/etc. all reuse one prompt, shown
+  contextually, never two at once by construction) — nothing to fix, confirmed via the
+  `nearestMountable()`-before-`findNearestInteraction()` priority in `main.js`.
+- No accidental scroll/zoom: already correct before this pass (`touch-action: none` +
+  `overflow: hidden` on `html body`, `user-scalable=no` in the viewport meta tag) —
+  confirmed with a scripted `window.scrollTo()` + `visualViewport.scale` check, both
+  unchanged after the attempt.
 
 ## Budgets (enforced — see `docs/budgets.md`, `tools/check-budget.js`)
 

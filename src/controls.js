@@ -54,6 +54,12 @@ export class InputController {
     if (!hint) return;
     if (this.touch) {
       hint.classList.add('touch-target');
+      // Mobile pass (task 3): the badge hard-codes "E" in index.html for the desktop
+      // keyboard-hint case — showing that on a touchscreen implied a physical E key
+      // that doesn't exist there. TAP fits the same badge sizing (already tuned small
+      // for short text, not a single letter).
+      const badge = document.getElementById('interact-key-badge');
+      if (badge) badge.textContent = 'TAP';
       hint.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         this._interactPressed = true;
