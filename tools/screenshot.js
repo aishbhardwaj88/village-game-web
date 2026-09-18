@@ -371,12 +371,16 @@ async function main() {
       // shop_roofs/shop_signboards are legitimately elevated (roof height, sign
       // height) — like trim/reveal/etc., they're sub-components of a building, not
       // independently "placed objects" of their own, so they're excluded the same way.
+      // mergedStatic (src/mergeUtils.js, task 2 draw-call budget) flags any mesh that
+      // folds sub-components of one or more buildings together (e.g. just the roofs,
+      // deliberately elevated) — same reasoning as shop_roofs/shop_signboards below,
+      // generalised so new merges don't need a name added here by hand.
       const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step', 'shop_roofs', 'shop_signboards']);
       for (const name of ['hero_zone', 'background_houses', 'shops']) {
         const group = findByName(scene, name);
         if (!group) continue;
         for (const child of group.children) {
-          if (SKIP_CHILD_NAMES.has(child.name)) continue;
+          if (SKIP_CHILD_NAMES.has(child.name) || child.userData?.mergedStatic) continue;
           checkWholeObject(child, `${name}/${child.name || child.type}`);
         }
       }

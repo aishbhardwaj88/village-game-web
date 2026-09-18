@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGroupByMaterial } from './mergeUtils.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -40,6 +41,58 @@ function box(w, h, d, material) {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   return mesh;
+}
+
+/**
+ * Task 2 (draw-call budget) — every vehicle is a kitbash of many flat-coloured
+ * primitives on a shared rigid pivot (bodyPivot pitches/rolls as one unit; a
+ * trolley/bullock's non-leg parts never move independently at all), so most of
+ * these never need to be separate meshes. `paint()` returns ONE cached white
+ * MeshStandardMaterial per (roughness, metalness) pair — the real, meaningful
+ * material distinction (rubber vs chrome vs painted steel) — and `pbox`/`pmesh`
+ * bake each part's actual colour into a vertex-colour attribute instead of
+ * material.color, so parts that only differ by hue can be merged into one draw
+ * call via src/mergeUtils.js's mergeGroupByMaterial(). Wheels keep using the
+ * plain mat()/box() above — they roll/steer independently and can never merge.
+ */
+const paintCache = new Map(); // "roughness|metalness" -> Material
+function paint(roughness, metalness) {
+  const key = `${roughness}|${metalness}`;
+  let m = paintCache.get(key);
+  if (!m) {
+    m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness, metalness, vertexColors: true });
+    m.name = `vehiclePaint_${key}`;
+    paintCache.set(key, m);
+  }
+  return m;
+}
+
+function bakeColor(geometry, color) {
+  const c = new THREE.Color(color);
+  const count = geometry.attributes.position.count;
+  const colors = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+}
+
+/** A flat-coloured mesh on a shared geometry (safe to reuse the same geometry
+ * object across several pmesh() calls, same as the plain mat()/box() pattern
+ * above — colour/position/rotation live on the Mesh and its baked attribute, not
+ * on a shared geometry's identity). */
+function pmesh(geometry, color, roughness = 0.85, metalness = 0) {
+  bakeColor(geometry, color);
+  const mesh = new THREE.Mesh(geometry, paint(roughness, metalness));
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+function pbox(w, h, d, color, roughness = 0.85, metalness = 0) {
+  return pmesh(new THREE.BoxGeometry(w, h, d), color, roughness, metalness);
 }
 
 /**
@@ -167,12 +220,8 @@ function buildTractorGroup() {
   const bodyPivot = new THREE.Group(); // pitch/roll under throttle/brake/turns (item 4)
   group.add(bodyPivot);
 
-  const bodyMat = mat(V.tractorBody, 0.75);
-  const dustMat = mat(V.tractorBodyDust, 0.9);
-  const steelMat = mat(V.chassisSteel, 0.55, 0.6);
-
   // Chassis rail — a low connecting spine so the bonnet/seat/wheels read as one machine.
-  const chassis = box(0.5, 0.28, T.length - 0.3, steelMat);
+  const chassis = pbox(0.5, 0.28, T.length - 0.3, V.chassisSteel, 0.55, 0.6);
   chassis.position.set(0, 0.42, 0.1);
   bodyPivot.add(chassis);
 
@@ -180,38 +229,35 @@ function buildTractorGroup() {
   // true beveling (a placeholder kitbash, not a modelled asset).
   const bonnetBottomY = 0.55;
   const bonnetMainLen = T.bonnetLen - 0.3;
-  const bonnetMain = box(T.bonnetW, T.bonnetTopY - bonnetBottomY, bonnetMainLen, bodyMat);
+  const bonnetMain = pbox(T.bonnetW, T.bonnetTopY - bonnetBottomY, bonnetMainLen, V.tractorBody, 0.75);
   bonnetMain.position.set(0, (T.bonnetTopY + bonnetBottomY) / 2, T.noseZ + 0.3 + bonnetMainLen / 2);
   bodyPivot.add(bonnetMain);
   const noseCapTopY = T.bonnetTopY - T.bonnetFrontDrop;
-  const noseCap = box(T.bonnetW, noseCapTopY - bonnetBottomY, 0.3, dustMat);
+  const noseCap = pbox(T.bonnetW, noseCapTopY - bonnetBottomY, 0.3, V.tractorBodyDust, 0.9);
   noseCap.position.set(0, (noseCapTopY + bonnetBottomY) / 2, T.noseZ + 0.15);
   bodyPivot.add(noseCap);
   // Thin dust film strip along the bonnet's top (upward-facing) surface only.
-  const dustStrip = box(T.bonnetW - 0.02, 0.015, bonnetMainLen, dustMat);
+  const dustStrip = pbox(T.bonnetW - 0.02, 0.015, bonnetMainLen, V.tractorBodyDust, 0.9);
   dustStrip.position.set(0, T.bonnetTopY + 0.008, T.noseZ + 0.3 + bonnetMainLen / 2);
   bodyPivot.add(dustStrip);
 
   // Grille: dark backing + vertical slats, full bonnet width, at the very front.
   const grilleY = (T.bonnetTopY + bonnetBottomY) / 2 - 0.05;
-  const grilleBacking = box(T.bonnetW - 0.04, T.grilleH, 0.04, mat(0x14100e, 0.9));
+  const grilleBacking = pbox(T.bonnetW - 0.04, T.grilleH, 0.04, 0x14100e, 0.9);
   grilleBacking.position.set(0, grilleY, T.noseZ + 0.01);
   bodyPivot.add(grilleBacking);
-  const slatMat = mat(0x8f9296, 0.5, 0.4);
   const slatCount = 6;
   for (let i = 0; i < slatCount; i++) {
-    const slat = box(0.035, T.grilleH - 0.04, 0.05, slatMat);
+    const slat = pbox(0.035, T.grilleH - 0.04, 0.05, 0x8f9296, 0.5, 0.4);
     slat.position.set((i / (slatCount - 1) - 0.5) * (T.bonnetW - 0.12), grilleY, T.noseZ - 0.005);
     bodyPivot.add(slat);
   }
 
   // Headlamps: round, either side of the grille.
-  const lampMat = mat(0xf2ecd8, 0.35, 0.1);
   const lampGeo = new THREE.SphereGeometry(T.headlampDia / 2, 10, 8);
   for (const side of [-1, 1]) {
-    const lamp = new THREE.Mesh(lampGeo, lampMat);
+    const lamp = pmesh(lampGeo, 0xf2ecd8, 0.35, 0.1);
     lamp.position.set(side * (T.bonnetW / 2 - T.headlampDia / 2 - 0.02), T.headlampY, T.noseZ - 0.01);
-    lamp.castShadow = true;
     bodyPivot.add(lamp);
   }
 
@@ -219,52 +265,49 @@ function buildTractorGroup() {
   const exhaustX = T.bonnetW / 2 - 0.05;
   const exhaustZ = T.noseZ + 0.9;
   const exhaustH = T.exhaustTopY - T.bonnetTopY;
-  const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(T.exhaustDia / 2, T.exhaustDia / 2, exhaustH, 10), mat(V.exhaust, 0.6, 0.5));
+  const exhaust = pmesh(new THREE.CylinderGeometry(T.exhaustDia / 2, T.exhaustDia / 2, exhaustH, 10), V.exhaust, 0.6, 0.5);
   exhaust.position.set(exhaustX, T.bonnetTopY + exhaustH / 2, exhaustZ);
-  exhaust.castShadow = true;
   bodyPivot.add(exhaust);
-  const cap = new THREE.Mesh(new THREE.CylinderGeometry(T.exhaustDia / 2 + 0.015, T.exhaustDia / 2 + 0.015, 0.04, 10), mat(V.exhaust, 0.5, 0.6));
+  const cap = pmesh(new THREE.CylinderGeometry(T.exhaustDia / 2 + 0.015, T.exhaustDia / 2 + 0.015, 0.04, 10), V.exhaust, 0.5, 0.6);
   cap.position.set(exhaustX, T.exhaustTopY + 0.02, exhaustZ);
   bodyPivot.add(cap);
 
   // Seat: cushion + low backrest.
-  const seatMat = mat(V.seat, 0.95);
-  const cushion = box(T.seatSize, 0.1, T.seatSize, seatMat);
+  const cushion = pbox(T.seatSize, 0.1, T.seatSize, V.seat, 0.95);
   cushion.position.set(0, T.seatTopY - 0.05, T.seatZ);
   bodyPivot.add(cushion);
-  const backrest = box(T.seatSize, T.backrestH, 0.08, seatMat);
+  const backrest = pbox(T.seatSize, T.backrestH, 0.08, V.seat, 0.95);
   backrest.position.set(0, T.seatTopY + T.backrestH / 2, T.seatZ + T.seatSize / 2 - 0.04);
   bodyPivot.add(backrest);
 
   // Steering column (raked 25°) + wheel + a small dash with 2 dials.
-  const columnMat = mat(V.chassisSteel, 0.6, 0.5);
   const columnLen = 0.75;
-  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, columnLen, 8), columnMat);
+  const column = pmesh(new THREE.CylinderGeometry(0.025, 0.03, columnLen, 8), V.chassisSteel, 0.6, 0.5);
   column.position.set(0, 0.55 + (Math.cos(THREE.MathUtils.degToRad(25)) * columnLen) / 2, T.steerZ - (Math.sin(THREE.MathUtils.degToRad(25)) * columnLen) / 2);
   column.rotation.x = THREE.MathUtils.degToRad(25);
   bodyPivot.add(column);
-  const wheelRing = new THREE.Mesh(new THREE.TorusGeometry(T.wheelDia / 2, 0.028, 8, 16), mat(V.steeringCover, 0.85));
+  const wheelRing = pmesh(new THREE.TorusGeometry(T.wheelDia / 2, 0.028, 8, 16), V.steeringCover, 0.85);
   wheelRing.position.set(0, T.wheelCenterY, T.steerZ);
   wheelRing.rotation.x = Math.PI / 2 - THREE.MathUtils.degToRad(25);
   bodyPivot.add(wheelRing);
-  const dash = box(0.3, 0.12, 0.06, mat(0x2a2a2a, 0.7));
+  const dash = pbox(0.3, 0.12, 0.06, 0x2a2a2a, 0.7);
   dash.position.set(0, 1.32, T.steerZ - 0.2);
   bodyPivot.add(dash);
-  const dialMat = mat(0xd8d8d8, 0.4);
+  const dialGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.01, 10);
   for (const side of [-1, 1]) {
-    const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 10), dialMat);
+    const dial = pmesh(dialGeo, 0xd8d8d8, 0.4);
     dial.rotation.x = Math.PI / 2;
     dial.position.set(side * 0.08, 1.34, T.steerZ - 0.23);
     bodyPivot.add(dial);
   }
 
   // Toolbox, behind the seat.
-  const toolbox = box(T.toolbox.w, T.toolbox.h, T.toolbox.d, steelMat);
+  const toolbox = pbox(T.toolbox.w, T.toolbox.h, T.toolbox.d, V.chassisSteel, 0.55, 0.6);
   toolbox.position.set(0, 0.75 + T.toolbox.h / 2, T.seatZ + T.seatSize / 2 + 0.25);
   bodyPivot.add(toolbox);
 
   // Hitch bracket at the rear.
-  const hitch = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.018, 6, 10), steelMat);
+  const hitch = pmesh(new THREE.TorusGeometry(0.06, 0.018, 6, 10), V.chassisSteel, 0.55, 0.6);
   hitch.position.set(0, T.hitchY, T.hitchZ);
   hitch.rotation.y = Math.PI / 2;
   bodyPivot.add(hitch);
@@ -275,29 +318,34 @@ function buildTractorGroup() {
   // and put the whole mesh partly underground; see docs/parked.md). A smaller radius
   // and this centring keeps the bounding box above ground regardless of which half of
   // the arc CylinderGeometry's theta range actually lands on.
-  const mudguardMat = mat(V.tractorBody, 0.7);
   const mudguardRadius = T.rearWheelDia / 2 + 0.1;
   for (const side of [-1, 1]) {
-    const mudguard = new THREE.Mesh(
+    const mudguard = pmesh(
       new THREE.CylinderGeometry(mudguardRadius, mudguardRadius, T.rearWheelW + 0.08, 16, 1, true, Math.PI, Math.PI),
-      mudguardMat
+      V.tractorBody,
+      0.7
     );
     mudguard.rotation.z = Math.PI / 2;
     mudguard.position.set(side * (T.mudguardOuterW / 2 - (T.rearWheelW + 0.08) / 2), T.rearAxleY + 0.2, T.rearAxleZ);
-    mudguard.castShadow = true;
     bodyPivot.add(mudguard);
   }
 
   // Rear axle/differential housing — connects the two rear wheels so the machine
   // reads as one connected body instead of a thin chassis rail between two big wheels.
-  const axleHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, T.rearTrack - 0.5, 8), steelMat);
+  const axleHousing = pmesh(new THREE.CylinderGeometry(0.16, 0.16, T.rearTrack - 0.5, 8), V.chassisSteel, 0.55, 0.6);
   axleHousing.rotation.z = Math.PI / 2;
   axleHousing.position.set(0, T.rearAxleY, T.rearAxleZ);
-  axleHousing.castShadow = true;
   bodyPivot.add(axleHousing);
-  const gearbox = box(0.55, 0.5, 0.7, bodyMat);
+  const gearbox = pbox(0.55, 0.5, 0.7, V.tractorBody, 0.75);
   gearbox.position.set(0, T.rearAxleY + 0.1, T.rearAxleZ - 0.45);
   bodyPivot.add(gearbox);
+
+  // Task 2 (draw-call budget) — bodyPivot's ~28 static parts above share only ~11
+  // distinct (roughness, metalness) material pairs (see pbox/pmesh, materials.js-
+  // style vertex-colour tint baking), so this folds them into ~11 draw calls
+  // instead of one per part. Wheels (independently rolling/steering) are added to
+  // `group` below, outside bodyPivot, and are never touched by this merge.
+  mergeGroupByMaterial(bodyPivot);
 
   // Wheels — front wheels steer (own pivot below the body), rear wheels don't.
   const rearWheels = [];
@@ -339,68 +387,73 @@ TR.hitchLocalZ = TR.frontZ - TR.drawbarLen;
 
 function buildTrolleyGroup() {
   const group = new THREE.Group();
-  const timberMat = mat(V.timber, 0.95);
-  const timberDarkMat = mat(V.timberDark, 0.95);
-  const steelMat = mat(V.chassisSteel, 0.55, 0.55);
+  // Task 2 (draw-call budget) — every part except the wheels is rigid relative to
+  // the trolley itself (no independent animation), so they all live in one
+  // container that gets merged down to a handful of draw calls at the end.
+  const staticParts = new THREE.Group();
+  group.add(staticParts);
 
   // Plank floor.
-  const floor = box(TR.bedW, 0.08, TR.bedLen, timberMat);
+  const floor = pbox(TR.bedW, 0.08, TR.bedLen, V.timber, 0.95);
   floor.position.set(0, TR.floorY - 0.04, 0);
-  group.add(floor);
+  staticParts.add(floor);
   // A few visible plank seams (thin darker strips) so it doesn't read as one slab.
   for (let i = -2; i <= 2; i++) {
-    const seam = box(TR.bedW, 0.005, 0.02, timberDarkMat);
+    const seam = pbox(TR.bedW, 0.005, 0.02, V.timberDark, 0.95);
     seam.position.set(0, TR.floorY + 0.001, (i / 2) * (TR.bedLen / 2) * 0.85);
-    group.add(seam);
+    staticParts.add(seam);
   }
 
   // Side walls: horizontal planks between vertical steel posts.
   const postCount = 6;
   for (const side of [-1, 1]) {
     for (let i = 0; i < postCount; i++) {
-      const post = box(0.05, TR.wallH, 0.05, steelMat);
+      const post = pbox(0.05, TR.wallH, 0.05, V.chassisSteel, 0.55, 0.55);
       post.position.set((side * TR.bedW) / 2, TR.floorY + TR.wallH / 2, (i / (postCount - 1) - 0.5) * (TR.bedLen - 0.3));
-      group.add(post);
+      staticParts.add(post);
     }
     const plankRows = 3;
     for (let r = 0; r < plankRows; r++) {
-      const plank = box(0.03, TR.wallH / plankRows - 0.02, TR.bedLen - 0.1, timberMat);
+      const plank = pbox(0.03, TR.wallH / plankRows - 0.02, TR.bedLen - 0.1, V.timber, 0.95);
       plank.position.set((side * TR.bedW) / 2, TR.floorY + (r + 0.5) * (TR.wallH / plankRows), 0);
-      group.add(plank);
+      staticParts.add(plank);
     }
   }
 
   // Tailgate: hinged at the rear, full width, with two steel latches.
-  const tailgate = box(TR.bedW - 0.06, TR.wallH, 0.04, timberMat);
+  const tailgate = pbox(TR.bedW - 0.06, TR.wallH, 0.04, V.timber, 0.95);
   tailgate.position.set(0, TR.floorY + TR.wallH / 2, TR.rearZ + 0.03);
-  group.add(tailgate);
-  const latchMat = mat(0x2a2a2a, 0.5, 0.6);
+  staticParts.add(tailgate);
   for (const side of [-1, 1]) {
-    const latch = box(0.05, 0.1, 0.03, latchMat);
+    const latch = pbox(0.05, 0.1, 0.03, 0x2a2a2a, 0.5, 0.6);
     latch.position.set((side * TR.bedW) / 2.4, TR.floorY + TR.wallH * 0.6, TR.rearZ + 0.03);
-    group.add(latch);
+    staticParts.add(latch);
   }
 
   // Drawbar + hitch eye (front).
-  const drawbar = box(0.12, 0.1, TR.drawbarLen, steelMat);
+  const drawbar = pbox(0.12, 0.1, TR.drawbarLen, V.chassisSteel, 0.55, 0.55);
   drawbar.position.set(0, TR.hitchY, TR.frontZ - TR.drawbarLen / 2);
-  group.add(drawbar);
-  const hitchEye = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.016, 6, 10), steelMat);
+  staticParts.add(drawbar);
+  const hitchEye = pmesh(new THREE.TorusGeometry(0.055, 0.016, 6, 10), V.chassisSteel, 0.55, 0.55);
   hitchEye.position.set(0, TR.hitchY, TR.hitchLocalZ);
   hitchEye.rotation.y = Math.PI / 2;
-  group.add(hitchEye);
+  staticParts.add(hitchEye);
 
-  // Mudguards + wheels — a single axle under the bed centre.
-  const mudguardMat = mat(V.chassisSteel, 0.6, 0.5);
+  // Mudguards — a single axle under the bed centre.
   for (const side of [-1, 1]) {
-    const mudguard = new THREE.Mesh(
+    const mudguard = pmesh(
       new THREE.CylinderGeometry(TR.wheelDia / 2 + 0.1, TR.wheelDia / 2 + 0.1, TR.wheelW + 0.06, 14, 1, true, Math.PI, Math.PI),
-      mudguardMat
+      V.chassisSteel,
+      0.6,
+      0.5
     );
     mudguard.rotation.z = Math.PI / 2;
     mudguard.position.set((side * TR.track) / 2, TR.wheelDia / 2 + 0.1 + 0.35, 0);
-    group.add(mudguard);
+    staticParts.add(mudguard);
   }
+
+  mergeGroupByMaterial(staticParts);
+
   const wheels = [];
   for (const side of [-1, 1]) {
     const w = createRoadWheel({ radius: TR.wheelDia / 2, width: TR.wheelW });
@@ -515,35 +568,40 @@ const BULLOCK_BODY_W = 0.55;
 const BULLOCK_BODY_H = 0.75;
 const BULLOCK_LEG_LEN = 0.75;
 
-function buildBullock() {
-  const group = new THREE.Group();
-  const hideMat = mat(V.bullockHide, 0.9);
-  const hornMat = mat(0xe8e2d0, 0.5);
+/**
+ * Task 2 (draw-call budget) — a bullock's body/hump/neck/head/horns never move
+ * independently (only its legs animate, see _updateBullockLegs), so they're built
+ * straight into `offsetX`/`offsetZ`-shifted world-relative positions (not a
+ * separately-positioned wrapper Group) and returned as a `staticGroup`, so
+ * buildCartGroup can merge BOTH bullocks' static parts together into one mesh.
+ * Legs are returned separately (unmerged — each needs its own swing rotation) for
+ * the caller to add directly under the cart's own group.
+ */
+function buildBullock(offsetX, offsetZ) {
+  const staticGroup = new THREE.Group();
 
-  const body = box(BULLOCK_BODY_W, BULLOCK_BODY_H, BULLOCK_BODY_LEN, hideMat);
-  body.position.y = C.bullockShoulderY - BULLOCK_BODY_H / 2;
-  body.castShadow = true;
-  group.add(body);
+  const body = pbox(BULLOCK_BODY_W, BULLOCK_BODY_H, BULLOCK_BODY_LEN, V.bullockHide, 0.9);
+  body.position.set(offsetX, C.bullockShoulderY - BULLOCK_BODY_H / 2, offsetZ);
+  staticGroup.add(body);
 
   // Shoulder hump — zebu cattle's defining silhouette feature, sat just behind the
   // neck junction, on top of the back.
-  const hump = box(0.3, 0.2, 0.32, hideMat);
-  hump.position.set(0, C.bullockShoulderY + 0.1, BULLOCK_BODY_LEN / 2 - 0.28);
-  hump.castShadow = true;
-  group.add(hump);
+  const hump = pbox(0.3, 0.2, 0.32, V.bullockHide, 0.9);
+  hump.position.set(offsetX, C.bullockShoulderY + 0.1, offsetZ + BULLOCK_BODY_LEN / 2 - 0.28);
+  staticGroup.add(hump);
 
-  const neck = box(0.32, 0.32, 0.4, hideMat);
-  neck.position.set(0, C.bullockShoulderY - 0.1, BULLOCK_BODY_LEN / 2 + 0.15);
-  group.add(neck);
-  const head = box(0.28, 0.3, 0.35, hideMat);
-  head.position.set(0, C.bullockShoulderY, BULLOCK_BODY_LEN / 2 + 0.45);
-  group.add(head);
+  const neck = pbox(0.32, 0.32, 0.4, V.bullockHide, 0.9);
+  neck.position.set(offsetX, C.bullockShoulderY - 0.1, offsetZ + BULLOCK_BODY_LEN / 2 + 0.15);
+  staticGroup.add(neck);
+  const head = pbox(0.28, 0.3, 0.35, V.bullockHide, 0.9);
+  head.position.set(offsetX, C.bullockShoulderY, offsetZ + BULLOCK_BODY_LEN / 2 + 0.45);
+  staticGroup.add(head);
   const hornGeo = new THREE.ConeGeometry(0.03, 0.22, 6);
   for (const side of [-1, 1]) {
-    const horn = new THREE.Mesh(hornGeo, hornMat);
-    horn.position.set(side * 0.1, C.bullockShoulderY + 0.2, BULLOCK_BODY_LEN / 2 + 0.4);
+    const horn = pmesh(hornGeo, 0xe8e2d0, 0.5);
+    horn.position.set(offsetX + side * 0.1, C.bullockShoulderY + 0.2, offsetZ + BULLOCK_BODY_LEN / 2 + 0.4);
     horn.rotation.z = side * 0.5;
-    group.add(horn);
+    staticGroup.add(horn);
   }
 
   // Legs: bottom at the ground (y=0) by construction, top reaching BULLOCK_LEG_LEN —
@@ -558,14 +616,11 @@ function buildBullock() {
     [-0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
     [0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
   ]) {
-    const leg = new THREE.Mesh(legGeo, hideMat);
-    leg.position.set(lx, BULLOCK_LEG_LEN / 2, lz);
-    leg.castShadow = true;
-    group.add(leg);
+    const leg = pmesh(legGeo, V.bullockHide, 0.9);
+    leg.position.set(offsetX + lx, BULLOCK_LEG_LEN / 2, offsetZ + lz);
     legs.push(leg);
   }
-  group.userData.legs = legs;
-  return group;
+  return { staticGroup, legs };
 }
 
 function buildCartGroup() {
@@ -573,22 +628,25 @@ function buildCartGroup() {
   const bodyPivot = new THREE.Group();
   group.add(bodyPivot);
 
-  const timberMat = mat(V.timber, 0.9);
-  const platform = box(C.platformW, 0.08, C.platformLen, timberMat);
+  const platform = pbox(C.platformW, 0.08, C.platformLen, V.timber, 0.9);
   platform.position.set(0, C.floorY - 0.04, 0);
   bodyPivot.add(platform);
   // A low rim so it reads as a platform, not a floating plank.
   for (const side of [-1, 1]) {
-    const rim = box(0.05, 0.12, C.platformLen, timberMat);
+    const rim = pbox(0.05, 0.12, C.platformLen, V.timber, 0.9);
     rim.position.set((side * C.platformW) / 2, C.floorY + 0.02, 0);
     bodyPivot.add(rim);
   }
 
   // Task 3: raised to rest across the bullocks' shoulders (was at 0.8m — well below
   // shoulder height 1.35m, reading as a low drawbar rather than a yoke pole).
-  const yoke = box(0.07, 0.07, C.yokeForward, mat(V.timberDark, 0.9));
+  const yoke = pbox(0.07, 0.07, C.yokeForward, V.timberDark, 0.9);
   yoke.position.set(0, C.bullockShoulderY - 0.05, -C.platformLen / 2 - C.yokeForward / 2);
   bodyPivot.add(yoke);
+
+  // Task 2 (draw-call budget) — platform + rims + yoke are the same 'timber'/
+  // 'timberDark' family (only tint differs), so they fold into one draw call.
+  mergeGroupByMaterial(bodyPivot);
 
   const wheelZ = -0.15;
   const track = C.platformW + 0.1;
@@ -600,13 +658,22 @@ function buildCartGroup() {
     wheels.push(w);
   }
 
+  // Task 2 (draw-call budget) — both bullocks' bodies never move independently of
+  // the cart (only their legs do), so their static parts merge into one mesh
+  // across BOTH animals, while each leg stays its own mesh under `group` for
+  // _updateBullockLegs()'s per-leg swing rotation.
+  const bullocksStatic = new THREE.Group();
+  group.add(bullocksStatic);
   const bullocks = [];
   for (const side of [-1, 1]) {
-    const bullock = buildBullock();
-    bullock.position.set(side * 0.42, 0, -C.platformLen / 2 - C.yokeForward + 0.5);
-    group.add(bullock);
-    bullocks.push(bullock);
+    const offsetX = side * 0.42;
+    const offsetZ = -C.platformLen / 2 - C.yokeForward + 0.5;
+    const built = buildBullock(offsetX, offsetZ);
+    bullocksStatic.add(built.staticGroup);
+    for (const leg of built.legs) group.add(leg);
+    bullocks.push({ userData: { legs: built.legs } });
   }
+  mergeGroupByMaterial(bullocksStatic);
 
   return { group, bodyPivot, wheels, bullocks };
 }
@@ -627,37 +694,40 @@ function buildBikeGroup() {
   const bodyPivot = new THREE.Group();
   group.add(bodyPivot);
 
-  const frameMat = mat(V.bikeFrame, 0.6, 0.3);
   const wheelR = B.wheelDia / 2;
 
   const frontAxleZ = B.length / 2 - 0.25;
   const rearAxleZ = -B.length / 2 + 0.25;
 
   // Main frame tube (rear axle to seat/head area) + down tube (to the front fork).
-  const topTube = box(0.04, 0.04, 0.75, frameMat);
+  const topTube = pbox(0.04, 0.04, 0.75, V.bikeFrame, 0.6, 0.3);
   topTube.position.set(0, wheelR + 0.42, -0.05);
   topTube.rotation.x = -0.12;
   bodyPivot.add(topTube);
-  const downTube = box(0.045, 0.045, 0.7, frameMat);
+  const downTube = pbox(0.045, 0.045, 0.7, V.bikeFrame, 0.6, 0.3);
   downTube.position.set(0, wheelR + 0.28, 0.15);
   downTube.rotation.x = 0.55;
   bodyPivot.add(downTube);
 
-  const tank = box(0.16, 0.14, 0.32, mat(0x8a1f1f, 0.55, 0.2));
+  const tank = pbox(0.16, 0.14, 0.32, 0x8a1f1f, 0.55, 0.2);
   tank.position.set(0, wheelR + 0.52, -0.1);
   bodyPivot.add(tank);
 
-  const seat = box(0.14, 0.06, 0.26, mat(V.seat, 0.9));
+  const seat = pbox(0.14, 0.06, 0.26, V.seat, 0.9);
   seat.position.set(0, wheelR + 0.62, -0.42);
   bodyPivot.add(seat);
 
-  const handlebar = box(0.36, 0.03, 0.03, mat(0x1c1c1c, 0.5, 0.4));
+  const handlebar = pbox(0.36, 0.03, 0.03, 0x1c1c1c, 0.5, 0.4);
   handlebar.position.set(0, wheelR + 0.72, frontAxleZ - 0.15);
   bodyPivot.add(handlebar);
-  const forkTube = box(0.03, 0.55, 0.03, frameMat);
+  const forkTube = pbox(0.03, 0.55, 0.03, V.bikeFrame, 0.6, 0.3);
   forkTube.position.set(0, wheelR + 0.42, frontAxleZ - 0.1);
   forkTube.rotation.x = 0.18;
   bodyPivot.add(forkTube);
+
+  // Task 2 (draw-call budget) — the 3 bikeFrame-coloured tubes merge into one draw
+  // call; tank/seat/handlebar stay their own single meshes (unique material each).
+  mergeGroupByMaterial(bodyPivot);
 
   const frontWheel = createRoadWheel({ radius: wheelR, width: 0.09, ribbed: true });
   frontWheel.position.set(0, wheelR, frontAxleZ);

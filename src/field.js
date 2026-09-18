@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
+import { mergeMeshList } from './mergeUtils.js';
 
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
 // spur connecting it back to the lane near the house (see docs/parked.md for why a
@@ -19,14 +20,16 @@ const TRACK_WIDTH = 5;
 const FIELD_GOLD = 0xc9a24f; // golden wheat/sabzi soil, distinct from the main dirt ground and lane
 
 function buildTrack() {
-  const group = new THREE.Group();
-  group.name = 'field_track';
+  // Task 2 (draw-call budget) — all 5 segments share the same tint, and
+  // buildStripSegment now bakes its own repeat/tint into the geometry (see
+  // paths.js), so they merge into one mesh instead of 5.
   const corners = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW, TRACK_NW];
+  const segments = [];
   for (let i = 0; i < corners.length - 1; i++) {
-    group.add(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e, ruts: true }));
+    segments.push(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e, ruts: true }));
   }
-  group.add(buildStripSegment(LANE_JOIN, TRACK_NW, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
-  return group;
+  segments.push(buildStripSegment(LANE_JOIN, TRACK_NW, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
+  return mergeMeshList(segments, 'field_track');
 }
 
 function buildFieldGround() {

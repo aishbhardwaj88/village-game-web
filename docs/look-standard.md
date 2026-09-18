@@ -186,13 +186,41 @@ on an actual phone before relying on the 30fps target being met.
 `public/assets/` under 40MB, any model under 5MB, textures 1K max (512 for small
 props) — all textures are WebP as of the 13-item queue's item 6 (JPG→WebP, 54%
 smaller; see `docs/CREDITS.md`). Runtime targets (`tools/screenshot.js` prints
-`renderer.info`): under 400k triangles, under 150 draw calls. As of the 13-item
-queue's item 11 (full playtest sweep): **~17.6k triangles, 149/150 draw calls,
-4.72MB assets** — triangle budget has huge headroom, but **draw calls have almost
-none left**. The vehicle rebuild (items 1-3) and the two new shops (item 9) both had
-to actively merge same-material geometry into single meshes (see `src/vehicles.js`'s
-spoked-wheel merge and `src/shops.js`'s `buildShopWalls`/`buildShopRoofs`/
-`buildShopCounters` — world transforms baked into cloned geometry via
-`Matrix4.applyMatrix4()`, then `BufferGeometryUtils.mergeGeometries()`) just to fit —
-**any future new geometry should default to that pattern, not one mesh per part**,
-or reuse an existing shared `BuildingKit`/instanced mesh rather than creating a new one.
+`renderer.info`): under 400k triangles, under 150 draw calls.
+
+**Draw-call reduction pass (2026-09-18, "task 2")**: the 13-item queue left the scene
+at 149/150 with no margin for anything new. `src/mergeUtils.js` now provides two
+general-purpose helpers — `mergeGroupByMaterial(group)` (merges every mesh descendant
+of a group that already shares one Material into a single Mesh per material, replacing
+them as new children of that group) and `mergeMeshList(meshes, name)` (same, for a flat
+array of already-positioned meshes, e.g. several `buildStripSegment()` results) — both
+baking each source mesh's `matrixWorld`/`matrix` into the merged geometry via
+`Matrix4.applyMatrix4()` + `BufferGeometryUtils.mergeGeometries()`, the same pattern
+`src/shops.js` already used. What made this apply almost everywhere: `src/materials.js`'s
+`texturedBox`/`texturedThickBox`/`texturedWall`/`texturedWallBox` (and the new
+`texturedFloor`) now bake **tint into a per-vertex `color` attribute** instead of the
+material's own `.color`, and always request their material at a fixed `repeat=1×1` (the
+real per-object repeat is baked into the UV instead) — so two objects that used to need
+their own Material purely because of a different tint or size (a mustard wall vs a
+terracotta wall, a 3m roof vs a 30m floor) now share ONE cached Material and can be
+merged. `src/vehicles.js` mirrors this with its own `paint(roughness, metalness)` +
+`pbox`/`pmesh` helpers (vehicles have no textures, just flat colours, so the "material
+family" is the (roughness, metalness) pair, not a texture-set name) — every vehicle's
+non-animated body parts (everything except wheels, which roll/steer independently and
+can never merge) are merged per vehicle at build time. Bullocks are the one cross-object
+merge: both bullocks' bodies (never animate) merge into one mesh across both animals,
+while each leg (which does animate — see `_updateBullockLegs`) stays its own mesh.
+Village buildings, background houses, the lane/field-track, and the school bell all use
+`mergeGroupByMaterial`/`mergeMeshList` the same way — see each file for specifics.
+Result: **~18.6k triangles, 87/150 draw calls, 4.72MB assets** (was 149/150) — verified
+pixel-identical before/after via `tools/screenshot.js` + custom bird's-eye comparison
+shots (see `docs/parked.md`), and every wheel-roll/steer/body-pitch/bullock-leg/trolley-
+attach animation re-verified working after the restructure.
+
+**Any future new geometry should default to this pattern** (bake tint/repeat into the
+geometry, share one Material per real distinction, merge via `src/mergeUtils.js`), not
+one mesh per part — or reuse an existing shared `BuildingKit`/instanced mesh rather than
+creating a new one. `tools/screenshot.js`'s grounding check skips any mesh flagged
+`userData.mergedStatic` (set by `mergeGroupByMaterial`) the same way it already skipped
+`shop_roofs`/`trim`/`plinth`/etc — a merged mesh folds sub-components of one or more
+objects together and is never a single "placed object" of its own.

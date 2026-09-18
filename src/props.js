@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGroupByMaterial } from './mergeUtils.js';
 
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
@@ -22,6 +23,10 @@ export function createBellProp(position) {
   bell.position.set(0.42, 1.75, 0);
   bell.castShadow = true;
   group.add(bell);
+
+  // Task 2 (draw-call budget) — post + arm already share postMat, so this folds
+  // them into one draw call (bell keeps its own metal material).
+  mergeGroupByMaterial(group);
 
   group.position.set(position.x, 0, position.z);
   return group;

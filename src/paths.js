@@ -57,12 +57,32 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
   geometry.rotateX(-Math.PI / 2);
   ensureUv2(geometry);
 
+  // repeatY is baked into the UV (instead of passed to the material) and tint is
+  // baked into a flat vertex colour (instead of material.color) — task 2 (draw-call
+  // budget): every segment then requests the SAME cached 'lane' material regardless
+  // of its own length or tint, so segments (with different tints even, e.g. the lane
+  // vs the field track) can be merged into one draw call via src/mergeUtils.js.
   const repeat = Math.max(1, Math.round(length / 4));
+  const uv = geometry.attributes.uv;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, uv.getX(i) * 2, uv.getY(i) * repeat);
+  }
+  uv.needsUpdate = true;
+
+  const colors = new Float32Array(pos.count * 3);
+  const tintColor = new THREE.Color(tint);
+  for (let i = 0; i < pos.count; i++) {
+    colors[i * 3] = tintColor.r;
+    colors[i * 3 + 1] = tintColor.g;
+    colors[i * 3 + 2] = tintColor.b;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
   // Ground102 — a smooth, compressed/stamped dirt texture, distinct from the open
   // ground's Ground109 (looser, pebbly) and the courtyards' concrete — so lane and
   // track read as a different kind of surface, not just a different tint of the same
   // one. See docs/look-standard.md / docs/parked.md.
-  const material = getTiledMaterial('lane', { repeatX: 2, repeatY: repeat, tint, roughness: 1 });
+  const material = getTiledMaterial('lane', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
 
   const mesh = new THREE.Mesh(geometry, material);
   const midX = (start.x + end.x) / 2;

@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, getTiledMaterial, ensureUv2 } from './materials.js';
+import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment } from './paths.js';
 import { BuildingKit } from './buildingKit.js';
+import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -85,12 +86,9 @@ function buildHouse(kit) {
   const cz = HOUSE_CENTER.z;
 
   // Courtyard: 18m (x) x 14m (z), cement floor, centred exactly on the given point.
-  const floorGeo = ensureUv2(new THREE.PlaneGeometry(18, 14));
-  const floorMat = getTiledMaterial('concrete', { repeatX: 18 / 2, repeatY: 14 / 2, tint: CONCRETE_NEUTRAL });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
+  const floor = texturedFloor(18, 14, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, 0.015, cz);
-  floor.receiveShadow = true;
   group.add(floor);
 
   // Two-storey house block along the courtyard's north edge, front door facing south
@@ -133,6 +131,12 @@ function buildHouse(kit) {
   addWall(group, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   addWall(group, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
+  // Task 2 (draw-call budget) — the wall/band/compound-wall meshes above all share
+  // one 'plaster' Material now (tint baked into vertex colour, see materials.js),
+  // and the floor/roof/parapets all share one 'concrete' Material, so this folds
+  // house_compound's ~10 meshes down to ~2 without moving a single vertex.
+  mergeGroupByMaterial(group);
+
   return group;
 }
 
@@ -143,12 +147,9 @@ function buildSchool(kit) {
   const cz = SCHOOL_CENTER.z;
 
   // Yard: 30m (x) x 24m (z), cement floor, centred on the given point.
-  const floorGeo = ensureUv2(new THREE.PlaneGeometry(30, 24));
-  const floorMat = getTiledMaterial('concrete', { repeatX: 15, repeatY: 12, tint: CONCRETE_NEUTRAL });
-  const floor = new THREE.Mesh(floorGeo, floorMat);
+  const floor = texturedFloor(30, 24, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, 0.015, cz);
-  floor.receiveShadow = true;
   group.add(floor);
 
   const bandH = 0.9;
@@ -197,6 +198,11 @@ function buildSchool(kit) {
   addBox(group, 0.15, 2.2, 0.15, 'metal', { x: cx - 4, y: 1.1, z: gateZ }, { tileSize: 1 });
   addBox(group, 0.15, 2.2, 0.15, 'metal', { x: cx + 4, y: 1.1, z: gateZ }, { tileSize: 1 });
   addBox(group, 8, 0.15, 0.15, 'metal', { x: cx, y: 2.1, z: gateZ }, { tileSize: 1 });
+
+  // Task 2 (draw-call budget) — folds the 3 wallBox + 3 band walls into one
+  // 'plaster' mesh, the floor + 3 roofs into one 'concrete' mesh, and the 3 gate
+  // bars into one 'metal' mesh (~13 meshes -> 3).
+  mergeGroupByMaterial(group);
 
   return group;
 }
@@ -257,15 +263,24 @@ function buildHalwai(kit) {
     }
   });
 
+  // Task 2 (draw-call budget) — folds the 2 walls + roof into one 'plaster'/
+  // 'concrete' pair, and the kadhai platform + cabinet + 2 chairs (three different
+  // tints) into one 'concrete' + one 'wood' mesh. Runs before the clay pots' async
+  // GLTF load resolves, so they're added afterwards untouched (own draw calls).
+  mergeGroupByMaterial(group);
+
   return group;
 }
 
 function buildLane() {
-  const group = new THREE.Group();
-  group.name = 'lane';
-  group.add(buildStripSegment(HOUSE_CENTER, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }));
-  group.add(buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true }));
-  return group;
+  // Task 2 (draw-call budget) — both segments share the lane's default tint, and
+  // buildStripSegment now bakes its own repeat/tint into the geometry (see
+  // paths.js), so they merge into a single mesh instead of a 2-mesh group.
+  const mesh = mergeMeshList(
+    [buildStripSegment(HOUSE_CENTER, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true })],
+    'lane'
+  );
+  return mesh;
 }
 
 export function buildHeroZone(scene) {

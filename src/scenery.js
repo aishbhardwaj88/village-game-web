@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { texturedThickBox, texturedWallBox } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { BuildingKit } from './buildingKit.js';
+import { mergeGroupByMaterial } from './mergeUtils.js';
 
 // Item 10 — background houses beyond the fog line, so the village doesn't end
 // abruptly. Lane trees were removed — see docs/parked.md: no suitable CC0 canopy-
@@ -49,6 +50,12 @@ export function buildBackgroundHouses(scene) {
     kit.addCornerPilasters(p.x, p.z, p.w, p.d, p.h, WALL_THICKNESS);
   });
 
+  // Task 2 (draw-call budget) — the 3 houses' walls (different tints, baked into
+  // vertex colour) share one 'plaster' Material, and their 3 roofs (same tint)
+  // share one 'concrete' Material, so this crosses the per-house subgroups and
+  // folds 6 meshes down to 2. Runs before kit.finalize adds its own instanced
+  // meshes, so those aren't touched.
+  mergeGroupByMaterial(group);
   kit.finalize(group);
   scene.add(group);
   return group;

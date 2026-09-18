@@ -63,6 +63,7 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
   }
 
   mat = new THREE.MeshStandardMaterial(opts);
+  mat.name = name;
   // vertexColors requested separately from the cache key above so a wall using baked
   // dirt/bleach/blotch vertex colours (texturedWallBox, Fix 4/4) never accidentally
   // shares a material with a caller at the same repeat/tint that has no 'color'
@@ -153,56 +154,31 @@ export function ensureUv2(geometry) {
 }
 
 /**
- * A textured box mesh. `faceTiling` sets repeat per metre for the box's own
- * dimensions (width/height/depth), so texture scale stays consistent regardless of
- * box size — pass the CC0 set's real-world tile size in metres (default 1m/tile is
- * roughly right for these sets at 1K).
+ * Task 2 (draw-call budget, docs/parked.md) — bakes a flat tint into a geometry's
+ * per-vertex `color` attribute instead of the material's uniform `.color`, so two
+ * objects that need different tints (e.g. a mustard wall and a terracotta wall) can
+ * still share ONE cached Material (same texture set, same baked repeat=1x1) and be
+ * merged into a single draw call via src/mergeUtils.js. Every textured* helper below
+ * always writes a `color` attribute (white when no tint) so merge candidates never
+ * differ by attribute shape.
  */
-export function texturedBox(width, height, depth, materialName, opts = {}) {
-  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
-  const geometry = ensureUv2(new THREE.BoxGeometry(width, height, depth));
-  const repeatX = Math.max(width, depth) / tileSize;
-  const repeatY = height / tileSize;
-  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness, tintStrength });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  return mesh;
+function bakeFlatTintColors(geometry, tint, tintStrength = 1) {
+  const count = geometry.attributes.position.count;
+  const colors = new Float32Array(count * 3);
+  const c = tint ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength) : new THREE.Color(1, 1, 1);
+  for (let i = 0; i < count; i++) {
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 }
 
-/**
- * A thin double-sided wall as a plane, not a box. A BoxGeometry with one dimension
- * near-zero (a 0.2m-thick wall) gives its end-cap faces the same UV repeat as the big
- * faces, which samples the texture at extreme, near-degenerate magnification and can
- * read as a blown-out/flat highlight (see docs/parked.md). A plane has no end caps.
- */
-export function texturedWall(width, height, materialName, opts = {}) {
-  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
-  const geometry = ensureUv2(new THREE.PlaneGeometry(width, height));
-  const repeatX = width / tileSize;
-  const repeatY = height / tileSize;
-  const material = getTiledMaterial(materialName, { repeatX, repeatY, tint, roughness, tintStrength });
-  material.side = THREE.DoubleSide;
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  return mesh;
-}
-
-/**
- * A textured box with each face pair tiled by its OWN real-world dimensions, not one
- * blanket repeat for the whole box. `texturedBox` computes a single repeat from
- * max(width, depth) and applies it to every face via the texture's own repeat — fine
- * when all three dimensions are similar, but a genuinely thin/thick box (a roof slab,
- * a real-thickness wall) has small end-cap faces that then get the SAME repeat as the
- * big faces, sampling the texture at extreme magnification (see docs/parked.md, the
- * "flat black lane" and "blown-out wall" bugs). This bakes the correct per-face tile
- * count into the UV attribute instead, so the material's own texture.repeat can stay
- * at 1x1 and be shared across every box regardless of size.
- */
-export function texturedThickBox(width, height, depth, materialName, opts = {}) {
-  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
-  const geometry = new THREE.BoxGeometry(width, height, depth);
+/** Bakes each BoxGeometry face's own real-world tile count into its UV (see
+ * texturedThickBox's doc comment below) — shared by texturedBox/texturedThickBox so
+ * every box requests its material at a fixed repeat=1x1 regardless of size, letting
+ * same-material boxes of any dimensions merge into one draw call. */
+function bakePerFaceBoxUv(geometry, width, height, depth, tileSize) {
   const uv = geometry.attributes.uv;
   // BoxGeometry group/face order: +X, -X, +Y, -Y, +Z, -Z, 4 vertices each.
   const faceDims = [
@@ -224,10 +200,87 @@ export function texturedThickBox(width, height, depth, materialName, opts = {}) 
   }
   uv.needsUpdate = true;
   geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
+}
 
-  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, tint, roughness, tintStrength });
+/**
+ * A textured box with each face pair tiled by its OWN real-world dimensions (not one
+ * blanket repeat for the whole box, which would sample a thin end-cap face at extreme
+ * magnification — see docs/parked.md, the "flat black lane"/"blown-out wall" bugs).
+ * Tint is baked into vertex colour (see bakeFlatTintColors) rather than the
+ * material's own `.color`, so texturedBox/texturedThickBox calls of the same
+ * materialName always share one cached Material regardless of size or tint —
+ * required for src/mergeUtils.js to combine them into a single draw call.
+ */
+export function texturedThickBox(width, height, depth, materialName, opts = {}) {
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
+  const geometry = new THREE.BoxGeometry(width, height, depth);
+  bakePerFaceBoxUv(geometry, width, height, depth, tileSize);
+  bakeFlatTintColors(geometry, tint, tintStrength);
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, roughness, vertexColors: true });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+/** A solid textured box (roof slabs, plinths, wall blocks with similar-scale faces —
+ * see texturedThickBox's doc comment for why blanket single-repeat boxes were
+ * replaced by per-face baked UV). Same construction as texturedThickBox; kept as a
+ * separate name for call-site clarity ("this is a solid block", not "this is a thin
+ * slab"). */
+export function texturedBox(width, height, depth, materialName, opts = {}) {
+  return texturedThickBox(width, height, depth, materialName, opts);
+}
+
+/**
+ * A thin double-sided wall as a plane, not a box. A BoxGeometry with one dimension
+ * near-zero (a 0.2m-thick wall) gives its end-cap faces the same UV repeat as the big
+ * faces, which samples the texture at extreme, near-degenerate magnification and can
+ * read as a blown-out/flat highlight (see docs/parked.md). A plane has no end caps.
+ * Tint baked into vertex colour, same reasoning as texturedThickBox above — shares
+ * one Material with any other plaster/concrete/etc textured* call of the same name.
+ */
+export function texturedWall(width, height, materialName, opts = {}) {
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const uv = geometry.attributes.uv;
+  const repeatX = width / tileSize;
+  const repeatY = height / tileSize;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, uv.getX(i) * repeatX, uv.getY(i) * repeatY);
+  }
+  uv.needsUpdate = true;
+  geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
+  bakeFlatTintColors(geometry, tint, tintStrength);
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, roughness, vertexColors: true });
+  material.side = THREE.DoubleSide; // shared/cached material — every wall in this family renders double-sided
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+/**
+ * A textured ground-facing plane (courtyard/yard floor). Like texturedWall, bakes
+ * its own real-world repeat into the UV and its tint (if any) into vertex colour, so
+ * two floors of different size/tint still request the same cached Material and can
+ * be merged with each other (or with same-materialName roof/plinth geometry) via
+ * src/mergeUtils.js.
+ */
+export function texturedFloor(width, depth, materialName, opts = {}) {
+  const { tileSize = 1.5, tint = null, roughness = 1, tintStrength = 1 } = opts;
+  const geometry = new THREE.PlaneGeometry(width, depth);
+  const uv = geometry.attributes.uv;
+  const repeatX = width / tileSize;
+  const repeatY = depth / tileSize;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, uv.getX(i) * repeatX, uv.getY(i) * repeatY);
+  }
+  uv.needsUpdate = true;
+  geometry.setAttribute('uv2', new THREE.BufferAttribute(uv.array.slice(), 2));
+  bakeFlatTintColors(geometry, tint, tintStrength);
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, roughness, vertexColors: true });
+  const mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;
   return mesh;
 }
@@ -286,11 +339,15 @@ function rescaleAndRotateBoxFaceUVs(geometry, width, height, depth, tileSize, ro
  * `heightSegments > 1` on the geometry to have any vertices between y=0 and the top to
  * hold the transition — see texturedWallBox.
  */
-function bakeWallShadeColors(geometry, height, seed = 0) {
+function bakeWallShadeColors(geometry, height, seed = 0, tint = null, tintStrength = 1) {
   const pos = geometry.attributes.position;
   const colors = new Float32Array(pos.count * 3);
   const dirtBandTop = Math.min(0.7, height * 0.3); // soft transition zone above the 400mm dirt line
   const bleachStart = Math.max(height - 0.6, height * 0.65);
+  // Baked in per-vertex (not material.color) so two walls that need different tints
+  // (house mustard vs school yellow vs halwai terracotta) can still share one cached
+  // Material and merge into a single draw call — see bakeFlatTintColors above.
+  const tintColor = tint ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength) : new THREE.Color(1, 1, 1);
   for (let i = 0; i < pos.count; i++) {
     const worldY = pos.getY(i) + height / 2; // BoxGeometry is centred — 0 at the base
     const x = pos.getX(i);
@@ -314,9 +371,9 @@ function bakeWallShadeColors(geometry, height, seed = 0) {
     shade += blotch;
     shade = THREE.MathUtils.clamp(shade, 0.7, 1.12);
 
-    colors[i * 3] = shade;
-    colors[i * 3 + 1] = shade;
-    colors[i * 3 + 2] = shade;
+    colors[i * 3] = shade * tintColor.r;
+    colors[i * 3 + 1] = shade * tintColor.g;
+    colors[i * 3 + 2] = shade * tintColor.b;
   }
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 }
@@ -346,9 +403,9 @@ export function texturedWallBox(width, height, depth, materialName, opts = {}) {
 
   const geometry = new THREE.BoxGeometry(width, height, depth, 1, heightSegments, 1);
   rescaleAndRotateBoxFaceUVs(geometry, width, height, depth, jitteredTileSize, rotation);
-  bakeWallShadeColors(geometry, height, seed);
+  bakeWallShadeColors(geometry, height, seed, tint, tintStrength);
 
-  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, tint, roughness, tintStrength, vertexColors: true });
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, roughness, vertexColors: true });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
