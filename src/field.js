@@ -6,8 +6,8 @@ import { HOUSE_CENTER } from './village.js';
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
 // spur connecting it back to the lane near the house (see docs/parked.md for why a
 // single spur, not two).
-const FIELD_CENTER = { x: 20, z: -20 };
-const FIELD_SIZE = { x: 110, z: 80 };
+export const FIELD_CENTER = { x: 20, z: -20 };
+export const FIELD_SIZE = { x: 110, z: 80 };
 
 const TRACK_NW = { x: -40, z: 25 };
 const TRACK_NE = { x: 80, z: 25 };

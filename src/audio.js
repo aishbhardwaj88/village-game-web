@@ -27,8 +27,12 @@ export class AudioEngine {
 
     this.walking = false;
     this.walkSpeedRatio = 0;
+    this.surface = 'dirt'; // 'dirt' | 'cement' | 'soil' — see src/surfaces.js
     this.vehicleKind = null;
     this.vehicleSpeedRatio = 0;
+
+    this._nextDogAt = 10 + Math.random() * 20; // first bark after a while, not immediately
+    this._dogTimer = 0;
   }
 
   start() {
@@ -49,6 +53,21 @@ export class AudioEngine {
     this.walkSpeedRatio = speedRatio;
   }
 
+  /** Footstep tone changes with what's underfoot (item 7) — lane dirt, a courtyard's
+   * cement, or the field's soil. See src/surfaces.js surfaceAt(). */
+  setSurface(surface) {
+    this.surface = surface;
+  }
+
+  /** Distance (metres) from the player/camera to the halwai — drives the distant
+   * radio's fade (item 7). Called once per frame; harmless before start() (no-op). */
+  setListenerDistanceToRadio(distanceMetres) {
+    if (!this.started || !this._radioGain) return;
+    // Audible within ~18m, inaudible by ~35m — a soft-knee fade, not a hard cutoff.
+    const t = 1 - Math.min(1, Math.max(0, (distanceMetres - 18) / 17));
+    this._radioGain.gain.setTargetAtTime(t * 0.05, this.ctx.currentTime, 0.8);
+  }
+
   setVehicle(kind, speedRatio) {
     this.vehicleKind = kind;
     this.vehicleSpeedRatio = kind ? Math.abs(speedRatio) : 0;
@@ -65,8 +84,17 @@ export class AudioEngine {
       this._footstepPhase += rate * dt;
       if (this._footstepPhase >= 1) {
         this._footstepPhase -= 1;
-        this._playFootstep(t);
+        this._playFootstep(t, this.surface);
       }
+    }
+
+    // A far-off dog, once in a while (item 7) — rare and quiet enough to read as
+    // distant, not next to the player.
+    this._dogTimer += dt;
+    if (this._dogTimer >= this._nextDogAt) {
+      this._dogTimer = 0;
+      this._nextDogAt = 18 + Math.random() * 30;
+      this._playDistantDog(t);
     }
 
     if (this.vehicleKind === 'tractor') {
@@ -101,19 +129,53 @@ export class AudioEngine {
 
   // --- one-shot sounds -----------------------------------------------------
 
-  _playFootstep(t) {
+  /** Surface changes the footstep's filter/decay (item 7): cement is a brighter, drier
+   * tap with a quick decay; soft field soil is duller/lower with a slightly longer,
+   * more diffuse decay; lane dirt (the default) sits between the two. */
+  _playFootstep(t, surface = 'dirt') {
+    const profile =
+      surface === 'cement'
+        ? { freq: 650, q: 1.4, gain: 0.22, decay: 0.06 }
+        : surface === 'soil'
+          ? { freq: 140, q: 0.6, gain: 0.22, decay: 0.13 }
+          : { freq: 220, q: 0.9, gain: 0.25, decay: 0.09 };
+
     const noise = this.ctx.createBufferSource();
-    noise.buffer = createNoiseBuffer(this.ctx, 0.08);
+    noise.buffer = createNoiseBuffer(this.ctx, 0.16);
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = 220;
-    filter.Q.value = 0.9;
+    filter.frequency.value = profile.freq;
+    filter.Q.value = profile.q;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.25, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    gain.gain.setValueAtTime(profile.gain, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + profile.decay);
     noise.connect(filter).connect(gain).connect(this.master);
     noise.start(t);
-    noise.stop(t + 0.1);
+    noise.stop(t + profile.decay + 0.02);
+  }
+
+  /** A far-off dog bark (item 7) — heavily low-passed and quiet so it reads as
+   * distant, not standing next to the player; 2-4 short barks per occurrence. */
+  _playDistantDog(t) {
+    const barks = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < barks; i++) {
+      const bt = t + i * (0.16 + Math.random() * 0.06);
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sawtooth';
+      const baseFreq = 260 + Math.random() * 40;
+      osc.frequency.setValueAtTime(baseFreq, bt);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, bt + 0.09);
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 900; // distant — no bright bite
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, bt);
+      gain.gain.exponentialRampToValueAtTime(0.045, bt + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, bt + 0.12);
+      osc.connect(filter).connect(gain).connect(this.master);
+      osc.start(bt);
+      osc.stop(bt + 0.14);
+    }
   }
 
   _playChug(t, speedRatio) {
@@ -244,5 +306,35 @@ export class AudioEngine {
     creak.start();
 
     setTimeout(() => this._playBirdChirp(), 2000 + Math.random() * 5000);
+
+    // Faint distant radio near the halwai (item 7): narrow-band noise (a muffled,
+    // AM-ish tone) with a slow amplitude wobble so it reads as indistinct chatter/
+    // music rather than pure noise. Always playing, gain-only fade driven by listener
+    // distance (setListenerDistanceToRadio, called from main.js each frame) — a
+    // continuously-running loop is simpler and click-free than starting/stopping it
+    // as the player wanders in and out of range.
+    const radio = this.ctx.createBufferSource();
+    radio.buffer = createNoiseBuffer(this.ctx, 5);
+    radio.loop = true;
+    const radioFilter = this.ctx.createBiquadFilter();
+    radioFilter.type = 'bandpass';
+    radioFilter.frequency.value = 1100;
+    radioFilter.Q.value = 3;
+    const radioWobble = this.ctx.createOscillator();
+    radioWobble.type = 'sine';
+    radioWobble.frequency.value = 4.2;
+    const radioWobbleGain = this.ctx.createGain();
+    radioWobbleGain.gain.value = 0.4;
+    const radioWobbleBase = this.ctx.createConstantSource();
+    radioWobbleBase.offset.value = 0.6;
+    const radioAmpGain = this.ctx.createGain();
+    radioWobble.connect(radioWobbleGain).connect(radioAmpGain.gain);
+    radioWobbleBase.connect(radioAmpGain.gain);
+    this._radioGain = this.ctx.createGain();
+    this._radioGain.gain.value = 0; // starts silent; setListenerDistanceToRadio ramps it
+    radio.connect(radioFilter).connect(radioAmpGain).connect(this._radioGain).connect(this.master);
+    radio.start();
+    radioWobble.start();
+    radioWobbleBase.start();
   }
 }

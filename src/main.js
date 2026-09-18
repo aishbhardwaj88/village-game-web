@@ -14,6 +14,7 @@ import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
+import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
@@ -388,6 +389,7 @@ async function main() {
         player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         resolveCollisions(player.position, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
+        audio.setSurface(surfaceAt(player.position.x, player.position.z));
 
         const nearby = nearestMountable();
         if (nearby) {
@@ -412,6 +414,11 @@ async function main() {
 
       camRig.update();
       audio.update(dt);
+      // Distant radio fade (item 7) — uses whatever the player is actually "at"
+      // (on foot, or the vehicle they're driving/sitting on), not the camera, so it
+      // doesn't fade with a wide third-person zoom.
+      const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
+      audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({
@@ -446,6 +453,7 @@ async function main() {
       renderer,
       composer,
       input,
+      audio,
       camera,
       player,
       camRig,
