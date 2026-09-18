@@ -23,6 +23,8 @@ import { buildSignboards } from './signboards.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
+import { applyQuality, loadSavedQuality, saveQuality } from './quality.js';
+import { setupPauseMenu } from './pause.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -56,6 +58,13 @@ async function main() {
 
   const sun = createSun(touch);
   scene.add(sun);
+
+  // Pause menu quality setting (task 2) — default Medium on touch / High on desktop,
+  // overridden by whatever was last saved. Applied immediately so the very first
+  // frame already reflects it, not just future ones.
+  let currentQuality = loadSavedQuality(touch ? 'medium' : 'high');
+  let { enableBloom, enableGrain } = applyQuality(currentQuality, { renderer, sun, isTouch: touch });
+
   // Fill light for shadow-side surfaces: cool sky above, warm ground-bounce below.
   // Needed because scene.environmentIntensity is kept low (see scene.js) to tame the
   // HDRI's very hot sun disk in specular reflections — that also dims the HDRI's own
@@ -178,9 +187,7 @@ async function main() {
 
   const input = new InputController(canvas);
 
-  const enableBloom = !touch;
-  const enableGrain = !touch;
-  const composer = createComposer(renderer, scene, camera, { enableBloom, enableGrain });
+  let composer = createComposer(renderer, scene, camera, { enableBloom, enableGrain });
 
   const fps = setupFpsCounter();
 
@@ -190,13 +197,30 @@ async function main() {
   );
 
   function onResize() {
-    resizeRendererToDisplaySize(renderer, camera, touch);
+    const preset = applyQuality(currentQuality, { renderer, sun, isTouch: touch }); // re-reads the pixel ratio cap; shadow map dispose here is a harmless no-op if size didn't change
+    resizeRendererToDisplaySize(renderer, camera, preset.pixelRatioCap);
     resizeComposer(composer, window.innerWidth, window.innerHeight);
   }
   window.addEventListener('resize', onResize);
   onResize();
 
-  canvas.addEventListener('click', () => input.requestPointerLock?.());
+  /** Pause menu quality change (task 2) — applies instantly, no reload: pixel ratio
+   * and the sun's shadow map/frustum change in place (applyQuality), but bloom/grain
+   * live on the EffectComposer's single fixed EffectPass, which postprocessing has no
+   * API to add/remove effects from in place — so this rebuilds the composer itself. */
+  function setQuality(level) {
+    currentQuality = level;
+    saveQuality(level);
+    const result = applyQuality(level, { renderer, sun, isTouch: touch });
+    composer.dispose();
+    composer = createComposer(renderer, scene, camera, { enableBloom: result.enableBloom, enableGrain: result.enableGrain });
+    resizeRendererToDisplaySize(renderer, camera, result.pixelRatioCap);
+    resizeComposer(composer, window.innerWidth, window.innerHeight);
+  }
+
+  canvas.addEventListener('click', () => {
+    if (!paused) input.requestPointerLock?.();
+  });
 
   // Streamed in after the player starts (queue item 6) — see the comment where
   // heroZoneGroup/vehicles are built above.
@@ -307,11 +331,15 @@ async function main() {
     return null; // COMPLETE — errand done, nowhere to point
   }
 
-  playAgainBtn.addEventListener('click', () => {
+  // Shared by the end card's "Play again" button and the pause menu's "Restart
+  // errand" button (task 2).
+  function restartErrand() {
     quest.step = QUEST_STEPS.NOT_STARTED;
     endCard.classList.remove('visible');
     updateObjective();
-  });
+  }
+
+  playAgainBtn.addEventListener('click', restartErrand);
 
   // Shared context passed to every interaction point's label()/available()/onInteract().
   const interactionCtx = {
@@ -394,12 +422,41 @@ async function main() {
 
   interactionCtx.onSitDown = sitDown;
 
+  // Pause menu (task 2) — freezes the tick loop's game-logic block (see tick() below:
+  // `if (started && !paused)`) but keeps rendering, so the world stays visible, just
+  // still, behind the panel. Releases pointer lock while open (so the panel is
+  // clickable) and re-requests it on resume, desktop only.
+  let paused = false;
+  const pauseMenu = setupPauseMenu({
+    isTouch: touch,
+    initialQuality: currentQuality,
+    onOpen: () => {
+      paused = true;
+      if (!touch) document.exitPointerLock?.();
+    },
+    onResume: () => {
+      paused = false;
+      if (!touch && started) input.requestPointerLock();
+    },
+    onRestart: restartErrand,
+    onQualityChange: setQuality,
+    onShowCredits: () => {
+      // Wired up once the credits screen exists — see src/credits.js.
+    },
+  });
+
   function tick(now) {
     requestAnimationFrame(tick);
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
 
-    if (started) {
+    if (started && paused) {
+      // Drain any input that landed while paused so it doesn't fire the instant the
+      // game resumes (e.g. an E press meant for the pause panel).
+      input.consumeLookDelta();
+      input.consumeInteract();
+      input.consumeAttach();
+    } else if (started) {
       input.update();
       const { yaw, pitch } = input.consumeLookDelta();
       camRig.addYawPitch(yaw, pitch);
@@ -537,7 +594,9 @@ async function main() {
     window.__dopahar = {
       scene,
       renderer,
-      composer,
+      get composer() {
+        return composer; // reassigned by setQuality() (task 2) — must read live, not a snapshot
+      },
       input,
       audio,
       camera,
@@ -555,6 +614,10 @@ async function main() {
       sitDown,
       standUp,
       isSitting: () => sitting,
+      setQuality,
+      getQuality: () => currentQuality,
+      isPaused: () => paused,
+      pauseMenu,
       Box3: THREE.Box3,
       Matrix4: THREE.Matrix4,
       // For scripted feature screenshots (tools/screenshot.js) — teleport near an
