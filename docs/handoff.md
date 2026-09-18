@@ -5,6 +5,13 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-18, after queue items 10-11:** Signboards done via shared texture atlas
+(149/150 draw calls, no margin left — d4b3c59). Full playtest sweep found no new bugs
+(0fd6ac8) — errand playthrough clean, tea stall + general store collision both
+verified, shadows confirmed, wide overview screenshot clean. Next: item 12 (docs).
+
+---
+
 **2026-09-18, after queue item 9:** Tea stall + general store built (f4e8eda), no
 LAYOUT.md for either so read off the reference images instead. Draw calls landed at
 149/150 after real geometry-merging work — **item 10 signboards MUST use a shared
