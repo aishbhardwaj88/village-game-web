@@ -3,6 +3,11 @@
 Every third-party asset in this repo, logged as it's added. Licence rule: CC0 first,
 CC BY second (credited here), NC never, unknown licence = not used.
 
+**2026-09-18:** every texture below was re-encoded JPG→WebP in place (same source
+image, same licence/author, just a smaller file — 6.67MB→3.05MB total, 54% smaller;
+queue item 6) — the `public/assets/textures/*/*.jpg` paths in the notes column are now
+`.webp`.
+
 | Asset | Source | Licence | Author | Notes |
 |---|---|---|---|---|
 | Ground109 (dirt ground texture: color, normal, roughness, AO) | [ambientCG](https://ambientcg.com/view?id=Ground109) | CC0 | ambientCG | Already present in `reference-from-unity/ambientcg/`; resized 2K→1K JPG into `public/assets/textures/ground/`. |

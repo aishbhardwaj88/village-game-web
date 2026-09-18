@@ -9,12 +9,17 @@ Vite, vanilla JS, no framework. Runs from a link on phone and desktop browsers, 
 to GitHub Pages. The Unity project (`../Village nostalgia`) is the future downloadable
 version — **never touch it from here.** `START_HERE.md` has the folder map.
 
-Current world: house/school/halwai hero zone + connecting lane (`src/village.js`),
-a wheat/sabzi field with a dirt track loop (`src/field.js`), one vehicle controller with
-four presets — walk/bike/tractor+trolley/bullock cart (`src/vehicles.js`), procedural
-Web Audio (`src/audio.js`), a gradient sky + HDRI-for-lighting-only (`src/sky.js`,
-`src/scene.js`). Coordinates match `reference-from-unity/MAP.md` /
-`WorldData/*.json` (1 unit = 1 m).
+Current world: house/school/halwai/tea-stall/general-store hero zone + connecting lane
+(`src/village.js`, `src/shops.js`), a wheat/sabzi field with a dirt track loop
+(`src/field.js`), vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s exact
+measurements — walk/bike/tractor+detachable-trolley/bullock cart (`src/vehicles.js`),
+an errand with objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
+`src/interactions.js`, `src/waypoint.js`), NPCs with simple waypoint-loop routines
+(`src/npcRoutines.js`), procedural Web Audio (`src/audio.js`), a gradient sky + HDRI-
+for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
+`reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m). **Draw-call budget
+has almost no headroom (149/150) — see §7 and `docs/look-standard.md`'s Budgets
+section before adding new geometry.**
 
 ## 2. Reference folders — read-only, never touched
 

@@ -184,7 +184,15 @@ on an actual phone before relying on the 30fps target being met.
 ## Budgets (enforced — see `docs/budgets.md`, `tools/check-budget.js`)
 
 `public/assets/` under 40MB, any model under 5MB, textures 1K max (512 for small
-props). Runtime targets (`tools/screenshot.js` prints `renderer.info`): under 400k
-triangles, under 150 draw calls. As of the last item completed tonight: **24.5k
-triangles, 86 draw calls** — comfortably inside budget; instance any future repeated
-geometry (trees, fence posts, more crop rows) the way `src/field.js` does its crop rows.
+props) — all textures are WebP as of the 13-item queue's item 6 (JPG→WebP, 54%
+smaller; see `docs/CREDITS.md`). Runtime targets (`tools/screenshot.js` prints
+`renderer.info`): under 400k triangles, under 150 draw calls. As of the 13-item
+queue's item 11 (full playtest sweep): **~17.6k triangles, 149/150 draw calls,
+4.72MB assets** — triangle budget has huge headroom, but **draw calls have almost
+none left**. The vehicle rebuild (items 1-3) and the two new shops (item 9) both had
+to actively merge same-material geometry into single meshes (see `src/vehicles.js`'s
+spoked-wheel merge and `src/shops.js`'s `buildShopWalls`/`buildShopRoofs`/
+`buildShopCounters` — world transforms baked into cloned geometry via
+`Matrix4.applyMatrix4()`, then `BufferGeometryUtils.mergeGeometries()`) just to fit —
+**any future new geometry should default to that pattern, not one mesh per part**,
+or reuse an existing shared `BuildingKit`/instanced mesh rather than creating a new one.
