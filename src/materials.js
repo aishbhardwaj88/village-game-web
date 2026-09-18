@@ -51,7 +51,7 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 
   const opts = { map: null, normalMap: null, roughnessMap: null, aoMap: null, roughness };
   for (const mapType of set.maps) {
-    const tex = loadRaw(set.base + name + '_' + mapType + '.jpg', mapType === 'color').clone();
+    const tex = loadRaw(set.base + name + '_' + mapType + '.webp', mapType === 'color').clone();
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(repeatX, repeatY);

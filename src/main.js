@@ -61,9 +61,12 @@ async function main() {
   scene.add(sky);
   applyFog(scene, SKY_HORIZON_COLOR.getHex());
 
+  // Load order (queue item 6): the hero zone (house/school/halwai/lane) and the
+  // vehicles the player starts next to load eagerly — everything the loading screen
+  // waits on. The field and background houses (visually distant, fog-hazed, not
+  // needed for the errand) are built after the player has already started playing —
+  // see loadDeferredContent() below, called from onStart.
   const heroZoneGroup = buildHeroZone(scene);
-  buildField(scene);
-  const backgroundHousesGroup = buildBackgroundHouses(scene);
   const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
@@ -92,7 +95,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup, backgroundHousesGroup];
+  const cameraObstacles = [heroZoneGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
@@ -118,6 +121,17 @@ async function main() {
 
   canvas.addEventListener('click', () => input.requestPointerLock?.());
 
+  // Streamed in after the player starts (queue item 6) — see the comment where
+  // heroZoneGroup/vehicles are built above.
+  let deferredContentLoaded = false;
+  function loadDeferredContent() {
+    if (deferredContentLoaded) return;
+    deferredContentLoaded = true;
+    buildField(scene);
+    const backgroundHousesGroup = buildBackgroundHouses(scene);
+    cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
+  }
+
   const audio = new AudioEngine();
   let started = false;
   setupStartOverlay({
@@ -126,6 +140,7 @@ async function main() {
       started = true;
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
+      loadDeferredContent();
       // One-time tutorial (item 2) — how to move and how to interact, dismissed by
       // the very next key or tap rather than needing a deliberate click on the panel.
       // Deferred a beat: the pointerdown that just started the game would otherwise
