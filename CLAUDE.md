@@ -50,7 +50,12 @@ Full spec lives there; read it before any visual work. The load-bearing rules:
 - No real village names anywhere (code, assets, filenames, commits, docs).
 - No alcohol, tobacco, or intoxicants in any form, including background props.
 - Era: nothing that would only exist after ~2015.
-- Signboards bilingual: Devanagari larger, English beneath.
+- **Language order — law, do not reverse.** English is primary, Hindi secondary,
+  everywhere in the UI: objective text, interaction prompts, dialogue panel, end card,
+  loading screen. English on top in the larger size, Devanagari beneath in the
+  smaller size. **Signboards painted in the world are the one exception** — those stay
+  Devanagari-first (larger) with English beneath, because that's how real village shop
+  boards read (`src/signboards.js`, deliberately not touched by this rule).
 
 ## 5. Renderer and colour — law, from step 3 of the initial build (do not change casually)
 
