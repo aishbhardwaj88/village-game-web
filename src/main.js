@@ -17,6 +17,7 @@ import { createWaypointLoop, createStirLoop } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
+import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildSignboards } from './signboards.js';
 import { Dialogue } from './dialogue.js';
@@ -64,6 +65,10 @@ async function main() {
   const sky = createSky(sun.position);
   scene.add(sky);
   applyFog(scene, SKY_HORIZON_COLOR.getHex());
+
+  // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
+  // progresses; updated once per frame further down, once `quest` exists.
+  const updateDayline = createDaylineController(sun, sky, scene);
 
   // Load order (queue item 6): the hero zone (house/school/halwai/lane) and the
   // vehicles the player starts next to load eagerly — everything the loading screen
@@ -494,6 +499,7 @@ async function main() {
 
       camRig.update();
       audio.update(dt);
+      updateDayline(dayProgressForQuestStep(quest.step, QUEST_STEPS), dt);
       // Distant radio fade (item 7) — uses whatever the player is actually "at"
       // (on foot, or the vehicle they're driving/sitting on), not the camera, so it
       // doesn't fade with a wide third-person zoom.
