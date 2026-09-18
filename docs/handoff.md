@@ -5,6 +5,14 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-18, after queue items 7-8:** Ambience audio (dog, distant radio, surface
+footsteps — 83f6fa6) and NPC life (Maa wanders + tracks her interaction point live,
+halwai stirs, child walks house<->school avoiding the halwai's footprint — ecaae3c)
+both done. Next: item 9 (tea stall + general store buildings) — check draw calls
+closely, was at 145/150 before this pair (audio/NPC additions don't add draw calls).
+
+---
+
 **2026-09-18, after queue item 6:** WebP textures (54% smaller) + hero-zone-first
 streaming done, committed (d7b8ff8). Real production-build measurement: 4.78MB before
 start -> 5.01MB total, ~7.4s->~4.3s estimated on 4G. Also handled a user mid-turn
