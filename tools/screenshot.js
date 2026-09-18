@@ -368,8 +368,11 @@ async function main() {
       // Buildings and background houses, as whole objects. Skip the lane (terrain
       // with intentional bumps/ruts, not a "placed object") and the instanced kit
       // meshes (checked separately below, per-instance, where that's meaningful).
-      const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step']);
-      for (const name of ['hero_zone', 'background_houses']) {
+      // shop_roofs/shop_signboards are legitimately elevated (roof height, sign
+      // height) — like trim/reveal/etc., they're sub-components of a building, not
+      // independently "placed objects" of their own, so they're excluded the same way.
+      const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step', 'shop_roofs', 'shop_signboards']);
+      for (const name of ['hero_zone', 'background_houses', 'shops']) {
         const group = findByName(scene, name);
         if (!group) continue;
         for (const child of group.children) {
