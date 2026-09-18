@@ -6,13 +6,14 @@ import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
-import { buildHeroZone } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER } from './village.js';
 import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
+import { createWaypointLoop, createStirLoop } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
@@ -80,6 +81,30 @@ async function main() {
   scene.add(maaNpc);
   const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
   scene.add(halwaiNpc);
+
+  // NPC life (item 8) — simple waypoint loops, no pathfinding. Maa wanders two spots
+  // in the courtyard (one of them her interaction point); the halwai stirs in place
+  // over the kadhai; a child walks the lane between the house and the school. The
+  // child's middle waypoint is offset west of the halwai's own footprint on purpose —
+  // a straight house-to-school line would clip straight through that building (see
+  // docs/parked.md).
+  const maaWalk = createWaypointLoop(maaNpc, [
+    { x: MAA_POSITION.x, z: MAA_POSITION.z },
+    { x: MAA_POSITION.x - 3, z: MAA_POSITION.z + 2 },
+  ]);
+  const halwaiStir = createStirLoop(halwaiNpc.userData.mesh);
+
+  const childNpc = createNPC(0x6d8a9c, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_child');
+  scene.add(childNpc);
+  const childWalk = createWaypointLoop(
+    childNpc,
+    [
+      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
+      { x: -44, z: 55 }, // west of the halwai's footprint, not through it
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
+    ],
+    { speed: 1.6, pauseSeconds: 3 }
+  );
 
   // Optional interaction props (item 5) — not part of the errand.
   const bellProp = createBellProp(BELL_POSITION);
@@ -330,6 +355,15 @@ async function main() {
       const interactPressed = input.consumeInteract();
       const attachPressed = input.consumeAttach();
 
+      // NPC life (item 8) — runs regardless of dialogue/mount/sit state, same as the
+      // ambient world around the player. MAA_POSITION is the same Vector3 object the
+      // interaction point and waypoint system both hold a reference to, so syncing it
+      // here makes "talk to Maa" and the waypoint arrow/glow follow her as she walks.
+      maaWalk(dt);
+      halwaiStir(dt);
+      childWalk(dt);
+      MAA_POSITION.copy(maaNpc.position);
+
       if (dialogue.isOpen) {
         // Dialogue pauses movement/interaction entirely — it advances only on
         // click/tap/Space (handled inside Dialogue itself), not E.
@@ -458,7 +492,7 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc],
+      npcs: [maaNpc, halwaiNpc, childNpc],
       props: [bellProp],
       interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION },
       dialogue,

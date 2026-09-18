@@ -17,6 +17,7 @@ export function createNPC(tint, position, rotationY = 0, name = 'npc') {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   group.add(mesh);
+  group.userData.mesh = mesh; // exposed for in-place animations (item 8's kadhai stir) that shouldn't move the group itself
 
   group.position.set(position.x, 0, position.z);
   group.rotation.y = rotationY;
