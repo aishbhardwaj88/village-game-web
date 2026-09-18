@@ -93,6 +93,13 @@ function buildStaticColliders() {
     boxes.push({ minX: p.x - p.w / 2, maxX: p.x + p.w / 2, minZ: p.z - p.d / 2, maxZ: p.z + p.d / 2 });
   }
 
+  // Tea stall + general store (src/shops.js, item 9) — simple solid footprints
+  // (world-space AABB, accounting for each one's 90°/-90° placement rotation — a
+  // rotateY(θ) maps local (x,z) half-extents to world (|z|,|x|) half-extents at
+  // θ=±90°, i.e. swapped, not the local w×d as authored).
+  boxes.push({ minX: -53.25, maxX: -50.75, minZ: 76, maxZ: 80 }); // tea stall, 2.5(x) x 4(z) world footprint
+  boxes.push({ minX: -39.5, maxX: -36.5, minZ: 88.25, maxZ: 91.75 }); // general store, 3(x) x 3.5(z) world footprint
+
   return boxes;
 }
 

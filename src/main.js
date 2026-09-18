@@ -17,6 +17,8 @@ import { createWaypointLoop, createStirLoop } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
+import { buildTeaStall, buildGeneralStore, buildShopRoofs, buildShopWalls, buildShopCounters } from './shops.js';
+import { BuildingKit } from './buildingKit.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -69,6 +71,28 @@ async function main() {
   // needed for the errand) are built after the player has already started playing —
   // see loadDeferredContent() below, called from onStart.
   const heroZoneGroup = buildHeroZone(scene);
+
+  // Two more Places V1 locations (item 9) on the lane between the house and the
+  // school, with clearance either side (see docs/parked.md for the exact placement
+  // reasoning — neither has a LAYOUT.md, dimensions/names read off the reference
+  // orthographic images instead).
+  const shopsGroup = new THREE.Group();
+  shopsGroup.name = 'shops';
+  // One shared BuildingKit (draw-call budget — see docs/parked.md) rather than one
+  // per building; finalize() adds each used instanced-mesh type to shopsGroup once.
+  const shopsKit = new BuildingKit(20);
+  const TEA_SHOP_POS = { x: -52, z: 78 };
+  const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
+  const STORE_POS = { x: -38, z: 90 };
+  const STORE_ROT = -Math.PI / 2; // east of the lane, facing west
+  shopsGroup.add(buildTeaStall(shopsKit, TEA_SHOP_POS, TEA_SHOP_ROT));
+  shopsGroup.add(buildGeneralStore(shopsKit, STORE_POS, STORE_ROT));
+  shopsGroup.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
+  shopsGroup.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
+  shopsGroup.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
+  shopsKit.finalize(shopsGroup);
+  scene.add(shopsGroup);
+
   const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
@@ -121,7 +145,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
+  const cameraObstacles = [heroZoneGroup, shopsGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
