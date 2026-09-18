@@ -141,7 +141,11 @@ const T = {
   frontAxleY: 0.375,
   frontTrack: 1.2,
   wheelbase: 1.95,
-  mudguardOuterW: 1.85,
+  // Task 3 (proportions pass): was 1.85, narrower than the wheels themselves
+  // (rearTrack 1.55 + rearWheelW 0.4 = 1.95 wheel-to-wheel outer span) — wheels stuck
+  // out past the mudguards, which is the opposite of "nothing wider than the
+  // mudguards". Now the widest point on the whole vehicle, with real clearance.
+  mudguardOuterW: 2.05,
   mudguardTopY: 1.45,
   toolbox: { w: 0.45, h: 0.25, d: 0.25 },
   hitchY: 0.55,
@@ -150,8 +154,13 @@ const T = {
 T.rearAxleZ = 0.9;
 T.frontAxleZ = T.rearAxleZ - T.wheelbase;
 T.hitchZ = T.noseZ + T.hitchZFromNose;
-T.steerZ = -0.05; // steering column position, ahead of the seat
-T.seatZ = T.steerZ + 0.55;
+// Task 3: the seat now sits AT the rear axle's own Z — literally between the two rear
+// mudguards — instead of 0.4m forward of them (which read as floating disconnected
+// from the wheels, part of why the whole machine looked toy-proportioned). The
+// steering column keeps LAYOUT.md's "0.55m ahead of the seat" relationship, just
+// carried along with the seat's move.
+T.seatZ = T.rearAxleZ;
+T.steerZ = T.seatZ - 0.55;
 
 function buildTractorGroup() {
   const group = new THREE.Group();
@@ -498,42 +507,59 @@ const C = {
   bullockShoulderY: 1.35,
 };
 
+// Task 3 (proportions pass): body length 1.5->1.6m, leg length 0.62->0.75m (both per
+// this task's brief), plus a shoulder hump — a real silhouette feature the "pale
+// boxes" placeholder was missing entirely, not an added decoration.
+const BULLOCK_BODY_LEN = 1.6;
+const BULLOCK_BODY_W = 0.55;
+const BULLOCK_BODY_H = 0.75;
+const BULLOCK_LEG_LEN = 0.75;
+
 function buildBullock() {
   const group = new THREE.Group();
   const hideMat = mat(V.bullockHide, 0.9);
   const hornMat = mat(0xe8e2d0, 0.5);
 
-  const bodyLen = 1.5;
-  const bodyH = 0.75;
-  const body = box(0.55, bodyH, bodyLen, hideMat);
-  body.position.y = C.bullockShoulderY - bodyH / 2;
+  const body = box(BULLOCK_BODY_W, BULLOCK_BODY_H, BULLOCK_BODY_LEN, hideMat);
+  body.position.y = C.bullockShoulderY - BULLOCK_BODY_H / 2;
   body.castShadow = true;
   group.add(body);
 
+  // Shoulder hump — zebu cattle's defining silhouette feature, sat just behind the
+  // neck junction, on top of the back.
+  const hump = box(0.3, 0.2, 0.32, hideMat);
+  hump.position.set(0, C.bullockShoulderY + 0.1, BULLOCK_BODY_LEN / 2 - 0.28);
+  hump.castShadow = true;
+  group.add(hump);
+
   const neck = box(0.32, 0.32, 0.4, hideMat);
-  neck.position.set(0, C.bullockShoulderY - 0.1, bodyLen / 2 + 0.15);
+  neck.position.set(0, C.bullockShoulderY - 0.1, BULLOCK_BODY_LEN / 2 + 0.15);
   group.add(neck);
   const head = box(0.28, 0.3, 0.35, hideMat);
-  head.position.set(0, C.bullockShoulderY, bodyLen / 2 + 0.45);
+  head.position.set(0, C.bullockShoulderY, BULLOCK_BODY_LEN / 2 + 0.45);
   group.add(head);
   const hornGeo = new THREE.ConeGeometry(0.03, 0.22, 6);
   for (const side of [-1, 1]) {
     const horn = new THREE.Mesh(hornGeo, hornMat);
-    horn.position.set(side * 0.1, C.bullockShoulderY + 0.2, bodyLen / 2 + 0.4);
+    horn.position.set(side * 0.1, C.bullockShoulderY + 0.2, BULLOCK_BODY_LEN / 2 + 0.4);
     horn.rotation.z = side * 0.5;
     group.add(horn);
   }
 
-  const legGeo = new THREE.BoxGeometry(0.13, 0.62, 0.13);
+  // Legs: bottom at the ground (y=0) by construction, top reaching BULLOCK_LEG_LEN —
+  // a little into the body's own bottom (0.75 vs the body's belly at shoulderY-bodyH
+  // = 0.6), which is correct/expected (legs plug into the torso volume, not a precise
+  // seam) rather than the old formula's arbitrary offset.
+  const legGeo = new THREE.BoxGeometry(0.13, BULLOCK_LEG_LEN, 0.13);
   const legs = [];
   for (const [lx, lz] of [
-    [-0.18, bodyLen / 2 - 0.15],
-    [0.18, bodyLen / 2 - 0.15],
-    [-0.18, -bodyLen / 2 + 0.15],
-    [0.18, -bodyLen / 2 + 0.15],
+    [-0.18, BULLOCK_BODY_LEN / 2 - 0.15],
+    [0.18, BULLOCK_BODY_LEN / 2 - 0.15],
+    [-0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
+    [0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
   ]) {
     const leg = new THREE.Mesh(legGeo, hideMat);
-    leg.position.set(lx, C.bullockShoulderY - bodyH - 0.31 + 0.62 / 2, lz);
+    leg.position.set(lx, BULLOCK_LEG_LEN / 2, lz);
     leg.castShadow = true;
     group.add(leg);
     legs.push(leg);
@@ -558,8 +584,10 @@ function buildCartGroup() {
     bodyPivot.add(rim);
   }
 
+  // Task 3: raised to rest across the bullocks' shoulders (was at 0.8m — well below
+  // shoulder height 1.35m, reading as a low drawbar rather than a yoke pole).
   const yoke = box(0.07, 0.07, C.yokeForward, mat(V.timberDark, 0.9));
-  yoke.position.set(0, C.floorY - 0.1, -C.platformLen / 2 - C.yokeForward / 2);
+  yoke.position.set(0, C.bullockShoulderY - 0.05, -C.platformLen / 2 - C.yokeForward / 2);
   bodyPivot.add(yoke);
 
   const wheelZ = -0.15;
