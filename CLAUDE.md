@@ -94,12 +94,18 @@ loads the game headless, captures 3 preset camera angles into
 the images. Fix anything black, flat, washed-out, or broken before reporting the work
 as done** — don't rely on "it built" or "no console errors" alone.
 
-## 9. Git
+## 9. Scratch/test scripts
+
+Never `rm` a file you created for a one-off check (a throwaway Playwright script, a
+test screenshot). Write it into `tmp/` (git-ignored) and leave it there — don't delete
+it afterward.
+
+## 10. Git
 
 Commit on `main` with clear messages. **Never push** — the user pushes manually via
 GitHub Desktop. Never touch `../Village nostalgia` or the reference folders (§2).
 
-## 10. Report format — end every reply with this exact line
+## 11. Report format — end every reply with this exact line
 
 ```
 LINK: <url or 'not yet'>. YOU: <exactly what I must do, or 'nothing'>. NEXT: <what I will do next>.

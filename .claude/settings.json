@@ -12,7 +12,9 @@
       "Grep",
       "Task",
       "NotebookEdit",
-      "TodoWrite"
+      "TodoWrite",
+      "Bash(rm *)",
+      "Bash(rm -f *)"
     ],
     "deny": [
       "Bash(sudo *)",

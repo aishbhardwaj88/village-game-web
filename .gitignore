@@ -9,6 +9,7 @@ npm-debug.log*
 .vite/
 playwright-report/
 test-results/
+tmp/
 Places V1/
 Characters V1/
 Mood board/
