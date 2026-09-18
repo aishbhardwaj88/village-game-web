@@ -484,9 +484,9 @@
         transform: scale(0.94);
       }
 
-      /* --- Pause / Credits panel overlay --- */
-      #pause-overlay,
-      #credits-overlay {
+      /* --- Pause panel overlay (dimmed backdrop over the still-visible, frozen world —
+         see src/pause.js) --- */
+      #pause-overlay {
         position: fixed;
         inset: 0;
         z-index: 90;
@@ -496,11 +496,7 @@
         justify-content: center;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
-      #credits-overlay {
-        z-index: 95; /* stacks above the pause panel that opened it */
-      }
-      #pause-overlay.visible,
-      #credits-overlay.visible {
+      #pause-overlay.visible {
         display: flex;
       }
       .panel-card {
@@ -596,7 +592,52 @@
         border-color: #f2b25c;
       }
 
-      /* --- Credits panel specifics --- */
+      /* --- Credits screen (task 5) — same warm palette-built gradient as the title
+         screen (#start-overlay), not the pause menu's dark utility-panel look; reachable
+         from the pause menu and shown after the final end card. Tall content (the
+         auto-generated asset list) means this one scrolls, unlike the title screen. */
+      #credits-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 120; /* above everything — the pause panel (90) or end card (110) that opened it */
+        background:
+          radial-gradient(ellipse 60% 38% at 50% 76%, rgba(255, 241, 214, 0.55) 0%, rgba(255, 241, 214, 0) 70%),
+          linear-gradient(to bottom, #3f6fa3 0%, #7590b4 24%, #cbb98a 54%, #f6dcae 70%, #dcc488 86%, #c98e72 100%);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        overflow-y: auto;
+        color: #2a1810;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        text-align: center;
+        padding: calc(48px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom))
+          calc(20px + env(safe-area-inset-left));
+      }
+      #credits-overlay.visible {
+        display: flex;
+      }
+      #credits-overlay::after {
+        content: '';
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 12%;
+        background: linear-gradient(to bottom, rgba(74, 55, 36, 0) 0%, rgba(58, 42, 27, 0.85) 100%);
+        pointer-events: none;
+      }
+      #credits-overlay > * {
+        position: relative;
+        z-index: 1;
+        width: min(420px, 100%);
+      }
+      #credits-panel .panel-title-en {
+        font-size: 2rem;
+      }
+      #credits-panel .panel-title-hi {
+        font-size: 0.85rem;
+        opacity: 0.75;
+      }
       #credits-panel .credits-line-en {
         font-size: 0.95rem;
         margin: 0 0 2px;
@@ -608,33 +649,39 @@
         opacity: 0.7;
         margin: 0 0 14px;
       }
+      #credits-panel .panel-btn {
+        margin-top: 18px;
+      }
       #credits-assets {
-        margin-top: 16px;
-        padding-top: 14px;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        margin-top: 20px;
+        padding: 16px 18px;
+        background: rgba(58, 42, 27, 0.14);
+        border: 1px solid rgba(58, 42, 27, 0.18);
+        border-radius: 14px;
         text-align: left;
-        max-height: 220px;
+        max-height: 260px;
         overflow-y: auto;
       }
       #credits-assets-heading {
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        opacity: 0.6;
+        opacity: 0.65;
         margin: 0 0 10px;
         text-align: center;
+        font-weight: 700;
       }
       .credit-entry {
         font-size: 0.78rem;
         line-height: 1.5;
-        opacity: 0.85;
+        opacity: 0.9;
         margin: 0 0 10px;
       }
       .credit-entry .credit-asset {
         font-weight: 700;
       }
       .credit-entry .credit-meta {
-        opacity: 0.7;
+        opacity: 0.75;
         display: block;
       }
     </style>
@@ -684,6 +731,23 @@
           </div>
           <button id="pause-credits-btn" class="panel-btn secondary" type="button" style="margin-top: 16px">
             <span class="btn-en">Credits</span><span class="btn-hi">श्रेय</span>
+          </button>
+        </div>
+      </div>
+      <div id="credits-overlay">
+        <div id="credits-panel">
+          <p class="panel-title-en">Dopahar</p>
+          <p class="panel-title-hi">दोपहर</p>
+          <p class="credits-line-en">Made by Aishwarya Bhardwaj</p>
+          <p class="credits-line-hi">आशा भारद्वाज द्वारा निर्मित</p>
+          <p class="credits-line-en">Profits from the full game go to village primary schools.</p>
+          <p class="credits-line-hi">पूरे खेल से होने वाला मुनाफ़ा गाँव के प्राथमिक विद्यालयों को दिया जाएगा।</p>
+          <div id="credits-assets">
+            <p id="credits-assets-heading">Assets</p>
+            <div id="credits-assets-list"></div>
+          </div>
+          <button id="credits-close-btn" class="panel-btn" type="button">
+            <span class="btn-en">Close</span><span class="btn-hi">बंद करें</span>
           </button>
         </div>
       </div>

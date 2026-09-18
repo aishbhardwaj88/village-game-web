@@ -25,6 +25,7 @@ import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 import { applyQuality, loadSavedQuality, saveQuality } from './quality.js';
 import { setupPauseMenu } from './pause.js';
+import { setupCredits } from './credits.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -385,8 +386,16 @@ async function main() {
     updateObjective();
   });
   playAgainBtn.addEventListener('click', restartErrand);
-  // Wired up once the credits screen exists — see src/credits.js (task 5).
-  function showCredits() {}
+
+  // Credits (task 5) — reachable from the pause menu and shown after the final end
+  // card. Doesn't need its own pause bookkeeping: opened from the pause menu, the
+  // game is already frozen (paused === true); opened from the end card, the world
+  // is already hidden behind it — either way credits.js's own overlay just needs to
+  // render on top (index.html gives it the highest z-index of the three).
+  const credits = setupCredits();
+  function showCredits() {
+    credits.open();
+  }
   endCreditsBtn.addEventListener('click', showCredits);
 
   // Shared context passed to every interaction point's label()/available()/onInteract().
