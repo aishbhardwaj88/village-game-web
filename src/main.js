@@ -17,8 +17,8 @@ import { createWaypointLoop, createStirLoop } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
-import { buildTeaStall, buildGeneralStore, buildShopRoofs, buildShopWalls, buildShopCounters } from './shops.js';
-import { BuildingKit } from './buildingKit.js';
+import { buildTeaStall, buildGeneralStore, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
+import { buildSignboards } from './signboards.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -78,20 +78,42 @@ async function main() {
   // orthographic images instead).
   const shopsGroup = new THREE.Group();
   shopsGroup.name = 'shops';
-  // One shared BuildingKit (draw-call budget — see docs/parked.md) rather than one
-  // per building; finalize() adds each used instanced-mesh type to shopsGroup once.
-  const shopsKit = new BuildingKit(20);
   const TEA_SHOP_POS = { x: -52, z: 78 };
   const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
   const STORE_POS = { x: -38, z: 90 };
   const STORE_ROT = -Math.PI / 2; // east of the lane, facing west
-  shopsGroup.add(buildTeaStall(shopsKit, TEA_SHOP_POS, TEA_SHOP_ROT));
-  shopsGroup.add(buildGeneralStore(shopsKit, STORE_POS, STORE_ROT));
+  shopsGroup.add(buildTeaStall(TEA_SHOP_POS, TEA_SHOP_ROT));
+  shopsGroup.add(buildGeneralStore(STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
-  shopsKit.finalize(shopsGroup);
   scene.add(shopsGroup);
+
+  // Signboards (item 10) — not awaited inline (same reasoning as loadEnvironment
+  // below: don't block the rest of scene setup on an async step); both boards share
+  // one atlas texture/mesh, added once the canvas + font are ready.
+  buildSignboards(
+    {
+      position: TEA_SHOP_POS,
+      rotationY: TEA_SHOP_ROT,
+      width: TEA_DIMS.w - 0.4,
+      depth: TEA_DIMS.d,
+      boardY: TEA_DIMS.postH + 0.35,
+      hi: 'शर्मा चाय की दुकान',
+      en: 'Sharma Tea Stall',
+    },
+    {
+      position: STORE_POS,
+      rotationY: STORE_ROT,
+      width: STORE_DIMS.w - 0.6,
+      depth: STORE_DIMS.d,
+      boardY: STORE_DIMS.h - 0.1,
+      hi: 'गुप्ता जनरल स्टोर',
+      en: 'Gupta General Store',
+    }
+  )
+    .then((mesh) => shopsGroup.add(mesh))
+    .catch((err) => console.error('Failed to build signboards', err));
 
   const vehicles = spawnVehicles(scene);
 

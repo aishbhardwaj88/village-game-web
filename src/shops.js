@@ -32,14 +32,14 @@ export const TEA = {
   roofOverhang: 0.35,
 };
 
-export function buildTeaStall(kit, position, rotationY = 0) {
+export function buildTeaStall(position, rotationY = 0) {
   const group = new THREE.Group();
   group.name = 'tea_stall';
 
   // The two corner posts are built in buildShopCounters() (merged into the same draw
-  // call — same 'wood'/tealTint material family, see that function's doc comment).
-
-  kit.addPlinthSegment({ x: 0, y: 0.1, z: -TEA.d / 2 + WALL_THICKNESS / 2 }, { x: TEA.w + 0.06, y: 0.2, z: WALL_THICKNESS + 0.05 });
+  // call — same 'wood'/tealTint material family, see that function's doc comment). No
+  // plinth ring (draw-call budget — see docs/parked.md): a minor foundation detail,
+  // cut once the budget left no room for it.
 
   group.position.set(position.x, 0, position.z);
   group.rotation.y = rotationY;
@@ -58,13 +58,13 @@ export const STORE = {
   roofOverhang: 0.3,
 };
 
-export function buildGeneralStore(kit, position, rotationY = 0) {
+export function buildGeneralStore(position, rotationY = 0) {
   const group = new THREE.Group();
   group.name = 'general_store';
   const cx = 0;
   const cz = 0;
 
-  kit.addPlinthRing(cx, cz, STORE.w, STORE.d, WALL_THICKNESS);
+  // No plinth ring (draw-call budget — see docs/parked.md).
 
   // Front counter-window — no separate reveal box (draw-call budget; see the file doc
   // comment): the counter itself, sitting proud of the wall, already reads as the
