@@ -288,16 +288,11 @@
         margin: 0.5rem 0 2rem;
         font-weight: 600;
       }
-      #play-again-btn {
-        font-family: inherit;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #2a1810;
-        background: #f2b25c;
-        border: none;
-        border-radius: 24px;
-        padding: 12px 28px;
-        cursor: pointer;
+      /* End card buttons (task 4: errand 1's card shows Continue only, so the second
+         errand stays reachable; the final all-errands-complete card shows Play again
+         + Credits instead) reuse the pause panel's .panel-btn look, just narrower. */
+      #end-card .panel-btn {
+        width: min(280px, 100%);
       }
 
       /* --- Waypoint edge arrow (item 4) --- */
@@ -693,9 +688,17 @@
         </div>
       </div>
       <div id="end-card">
-        <p class="end-en">The jalebi made it home.</p>
-        <p class="end-hi">जलेबी घर पहुँच गई!</p>
-        <button id="play-again-btn" type="button">Play again · फिर से खेलें</button>
+        <p id="end-en" class="end-en"></p>
+        <p id="end-hi" class="end-hi"></p>
+        <button id="end-continue-btn" class="panel-btn" type="button">
+          <span class="btn-en">Continue</span><span class="btn-hi">जारी रखें</span>
+        </button>
+        <button id="play-again-btn" class="panel-btn" type="button">
+          <span class="btn-en">Play again</span><span class="btn-hi">फिर से खेलें</span>
+        </button>
+        <button id="end-credits-btn" class="panel-btn secondary" type="button">
+          <span class="btn-en">Credits</span><span class="btn-hi">श्रेय</span>
+        </button>
       </div>
       <div id="dialogue-panel">
         <p id="dialogue-en"></p>

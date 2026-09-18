@@ -13,8 +13,8 @@ import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
-import { createWaypointLoop, createStirLoop } from './npcRoutines.js';
-import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION } from './interactions.js';
+import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
+import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -173,6 +173,18 @@ async function main() {
   const bellProp = createBellProp(BELL_POSITION);
   scene.add(bellProp);
 
+  // Second errand (task 4) — the teacher (a fixed interaction point, like maaNpc/
+  // halwaiNpc above) and the sister (starts stationary at the school; once collected
+  // via the bell or the teacher, createFollowRoutine below walks her toward whichever
+  // of the player/mounted vehicle is "them" right now, stopping 2m short, pushed back
+  // out of walls the same way the player is — see src/npcRoutines.js).
+  const teacherNpc = createNPC(0x5a4a6e, TEACHER_POSITION, Math.PI, 'npc_teacher');
+  scene.add(teacherNpc);
+  const sisterNpc = createNPC(0xc98ea0, SISTER_SCHOOL_POSITION, 0, 'npc_sister');
+  scene.add(sisterNpc);
+  let sisterFollowing = false;
+  const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2 });
+
   // Waypoint (item 4) — repositioned each frame to the current objective's target.
   const waypointGlow = createWaypointGlow();
   scene.add(waypointGlow);
@@ -312,17 +324,36 @@ async function main() {
   const objectiveHiEl = document.getElementById('objective-hi');
   const objectiveEnEl = document.getElementById('objective-en');
   const endCard = document.getElementById('end-card');
+  const endEnEl = document.getElementById('end-en');
+  const endHiEl = document.getElementById('end-hi');
+  const endContinueBtn = document.getElementById('end-continue-btn');
   const playAgainBtn = document.getElementById('play-again-btn');
+  const endCreditsBtn = document.getElementById('end-credits-btn');
 
   function updateObjective() {
     const text = OBJECTIVE_TEXT[quest.step];
     objectiveHiEl.textContent = text.hi;
     objectiveEnEl.textContent = text.en;
-    objectivePanel.classList.toggle('visible', quest.step !== QUEST_STEPS.COMPLETE);
+    objectivePanel.classList.toggle('visible', quest.step !== QUEST_STEPS.ALL_COMPLETE);
   }
   updateObjective();
 
-  function showEndCard() {
+  // Task 4 — errand 1's completion isn't the end of the game any more (the second
+  // errand unlocks from talking to Maa again), so that card shows only "Continue"
+  // (dismiss, keep playing); only the truly final card (both errands done) offers
+  // Play again + Credits — see src/quest.js's QUEST_STEPS doc comment.
+  function showEndCard(step) {
+    const isFinal = step === QUEST_STEPS.ALL_COMPLETE;
+    if (isFinal) {
+      endEnEl.textContent = 'Both errands are done. The afternoon is yours.';
+      endHiEl.textContent = 'दोनों काम हो गए। बाकी दोपहर तुम्हारी है।';
+    } else {
+      endEnEl.textContent = 'The jalebi made it home.';
+      endHiEl.textContent = 'जलेबी घर पहुँच गई!';
+    }
+    endContinueBtn.style.display = isFinal ? 'none' : 'flex';
+    playAgainBtn.style.display = isFinal ? 'flex' : 'none';
+    endCreditsBtn.style.display = isFinal ? 'flex' : 'none';
     endCard.classList.add('visible');
     objectivePanel.classList.remove('visible');
   }
@@ -331,18 +362,32 @@ async function main() {
     if (quest.step === QUEST_STEPS.NOT_STARTED) return MAA_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_MONEY) return HALWAI_NPC_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_JALEBI) return MAA_POSITION;
-    return null; // COMPLETE — errand done, nowhere to point
+    if (quest.step === QUEST_STEPS.COMPLETE) return MAA_POSITION;
+    if (quest.step === QUEST_STEPS.HAVE_TIFFIN) return TEACHER_POSITION;
+    if (quest.step === QUEST_STEPS.HAVE_SISTER) return MAA_POSITION;
+    return null; // ALL_COMPLETE — both errands done, nowhere to point
   }
 
   // Shared by the end card's "Play again" button and the pause menu's "Restart
-  // errand" button (task 2).
+  // errand" button (task 2) — resets both errands at once (one continuous quest.step,
+  // see src/quest.js), including the sister's following state/position (task 4).
   function restartErrand() {
     quest.step = QUEST_STEPS.NOT_STARTED;
     endCard.classList.remove('visible');
+    sisterFollowing = false;
+    sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
+    sisterNpc.rotation.y = 0;
     updateObjective();
   }
 
+  endContinueBtn.addEventListener('click', () => {
+    endCard.classList.remove('visible');
+    updateObjective();
+  });
   playAgainBtn.addEventListener('click', restartErrand);
+  // Wired up once the credits screen exists — see src/credits.js (task 5).
+  function showCredits() {}
+  endCreditsBtn.addEventListener('click', showCredits);
 
   // Shared context passed to every interaction point's label()/available()/onInteract().
   const interactionCtx = {
@@ -351,6 +396,9 @@ async function main() {
     quest,
     onObjectiveChange: updateObjective,
     onErrandComplete: showEndCard,
+    onSisterCollected: () => {
+      sisterFollowing = true;
+    },
   };
 
   function otherVehicleBoxes(excludeVehicle) {
@@ -443,9 +491,7 @@ async function main() {
     },
     onRestart: restartErrand,
     onQualityChange: setQuality,
-    onShowCredits: () => {
-      // Wired up once the credits screen exists — see src/credits.js.
-    },
+    onShowCredits: showCredits,
   });
 
   function tick(now) {
@@ -473,6 +519,7 @@ async function main() {
       maaWalk(dt);
       halwaiStir(dt);
       childWalk(dt);
+      if (sisterFollowing) sisterFollow(dt);
       MAA_POSITION.copy(maaNpc.position);
 
       if (dialogue.isOpen) {
@@ -606,9 +653,10 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc, childNpc],
+      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc],
       props: [bellProp],
-      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION },
+      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION },
+      isSisterFollowing: () => sisterFollowing,
       dialogue,
       quest,
       QUEST_STEPS,

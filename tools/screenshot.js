@@ -242,13 +242,35 @@ async function main() {
     await page.screenshot({ path: resolve(shotsDir, 'end_card.png') });
     console.log(`Captured end_card -> ${resolve(shotsDir, 'end_card.png')}`);
 
-    await page.click('#play-again-btn');
+    // Task 4 — errand 1's card is no longer the end of the game: "Continue" just
+    // dismisses it (quest.step stays COMPLETE), which is what unlocks the second
+    // errand on the next Maa visit.
+    await page.click('#end-continue-btn');
     await page.waitForTimeout(150);
-    const stepAfterReset = await page.evaluate(() => window.__dopahar.quest.step);
-    const endCardHiddenAfterReset = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
-    console.log('quest step after Play again (should be not_started):', stepAfterReset, '| end card hidden:', endCardHiddenAfterReset);
+    const stepAfterContinue = await page.evaluate(() => window.__dopahar.quest.step);
+    const endCardHiddenAfterContinue = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
+    console.log('quest step after Continue (should still be complete):', stepAfterContinue, '| end card hidden:', endCardHiddenAfterContinue);
 
-    // Item 5 — two optional points, not part of the errand.
+    // Second errand (task 4): talk to Maa again -> HAVE_TIFFIN, walk to the school and
+    // ring the bell (the item 5 bell prop doubles as one of the two collection
+    // triggers) -> HAVE_SISTER, sister starts following -> back to Maa -> ALL_COMPLETE.
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.MAA_POSITION.x + 1.3, dd.interactions.MAA_POSITION.z + 2);
+      dd.camRig.yaw = 0;
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close tiffin line -> HAVE_TIFFIN
+    await page.waitForTimeout(150);
+    const stepAfterTiffin = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after Maa offers the tiffin errand:', stepAfterTiffin);
+    await page.screenshot({ path: resolve(shotsDir, 'objective_have_tiffin.png') });
+    console.log(`Captured objective_have_tiffin -> ${resolve(shotsDir, 'objective_have_tiffin.png')}`);
+
     await page.evaluate(() => {
       const dd = window.__dopahar;
       dd.teleportPlayer(dd.interactions.BELL_POSITION.x + 1.2, dd.interactions.BELL_POSITION.z + 1.2);
@@ -261,7 +283,54 @@ async function main() {
     await page.waitForTimeout(200);
     await page.screenshot({ path: resolve(shotsDir, 'bell_ring.png') });
     console.log(`Captured bell_ring -> ${resolve(shotsDir, 'bell_ring.png')}`);
-    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close bell line -> HAVE_SISTER
+    await page.waitForTimeout(150);
+    const stepAfterBell = await page.evaluate(() => window.__dopahar.quest.step);
+    const sisterFollowingAfterBell = await page.evaluate(() => window.__dopahar.isSisterFollowing());
+    console.log('quest step after ringing the bell (should be have_sister):', stepAfterBell, '| sister following:', sisterFollowingAfterBell);
+
+    // Let the sister walk a couple of seconds so the "follows, stops at 2m, pushed
+    // out of walls" behaviour actually runs before checking on it.
+    await page.waitForTimeout(2000);
+    const sisterDistToTeacher = await page.evaluate(() => {
+      const dd = window.__dopahar;
+      const sister = dd.npcs.find((n) => n.name === 'npc_sister');
+      return sister.position.distanceTo(dd.interactions.TEACHER_POSITION);
+    });
+    console.log('sister distance from her school start point after 2s of following (should have moved):', sisterDistToTeacher);
+    await page.screenshot({ path: resolve(shotsDir, 'sister_following.png') });
+    console.log(`Captured sister_following -> ${resolve(shotsDir, 'sister_following.png')}`);
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.MAA_POSITION.x + 1.3, dd.interactions.MAA_POSITION.z + 2);
+      dd.camRig.yaw = 0;
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> ALL_COMPLETE
+    await page.waitForTimeout(300);
+    const stepAllComplete = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after bringing the sister home (should be all_complete):', stepAllComplete);
+    await page.screenshot({ path: resolve(shotsDir, 'final_end_card.png') });
+    console.log(`Captured final_end_card -> ${resolve(shotsDir, 'final_end_card.png')}`);
+
+    await page.click('#play-again-btn');
+    await page.waitForTimeout(150);
+    const stepAfterReset = await page.evaluate(() => window.__dopahar.quest.step);
+    const endCardHiddenAfterReset = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
+    const sisterFollowingAfterReset = await page.evaluate(() => window.__dopahar.isSisterFollowing());
+    console.log(
+      'quest step after Play again (should be not_started):',
+      stepAfterReset,
+      '| end card hidden:',
+      endCardHiddenAfterReset,
+      '| sister following (should be false):',
+      sisterFollowingAfterReset
+    );
 
     await page.evaluate(() => {
       const dd = window.__dopahar;

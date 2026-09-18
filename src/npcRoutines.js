@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { resolveCollisions } from './collision.js';
+import { NPC_RADIUS } from './npc.js';
 
 /**
  * Simple waypoint-loop routines for the placeholder NPCs (queue item 8) — no
@@ -53,5 +55,35 @@ export function createStirLoop(mesh, { rate = 1.6, amount = 0.14 } = {}) {
     t += dt * rate;
     mesh.rotation.x = Math.sin(t) * amount;
     mesh.rotation.z = Math.sin(t * 0.6) * amount * 0.5;
+  };
+}
+
+const _toFollowTarget = new THREE.Vector3();
+
+/**
+ * Task 4 (second errand) — walks `npcGroup` toward whatever `getTargetPosition()`
+ * currently returns (called fresh every frame, e.g. the player's live position),
+ * stopping at `stopDistance`, facing the direction of travel (same yaw-damp as
+ * createWaypointLoop above), and pushed back out of building walls the same way the
+ * player/vehicles are (src/collision.js `resolveCollisions` — the actual "does not
+ * pass through walls" behaviour; there's no separate avoidance system to write).
+ */
+export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance = 2, speed = 1.8 } = {}) {
+  return function update(dt) {
+    const target = getTargetPosition();
+    _toFollowTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
+    const dist = _toFollowTarget.length();
+
+    if (dist > stopDistance) {
+      _toFollowTarget.multiplyScalar(1 / dist);
+      const step = Math.min(speed * dt, dist - stopDistance);
+      npcGroup.position.addScaledVector(_toFollowTarget, step);
+      const targetYaw = Math.atan2(_toFollowTarget.x, _toFollowTarget.z);
+      let diff = targetYaw - npcGroup.rotation.y;
+      diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
+      npcGroup.rotation.y += diff * Math.min(1, dt * 4);
+    }
+
+    resolveCollisions(npcGroup.position, NPC_RADIUS, []);
   };
 }

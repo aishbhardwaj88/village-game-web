@@ -67,11 +67,30 @@ registerInteraction({
         [{ hi: 'वाह! शाबाश बेटा, बिल्कुल घर जैसी मीठी जलेबी।', en: 'Wonderful! Well done — jalebi as sweet as home.' }],
         () => {
           quest.step = QUEST_STEPS.COMPLETE;
-          ctx.onErrandComplete?.();
+          ctx.onErrandComplete?.(QUEST_STEPS.COMPLETE);
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.COMPLETE) {
+      // Second errand (task 4) — unlocked only now, by talking to Maa again.
+      dialogue.say(
+        [{ hi: 'बेटा, अब यह खाली टिफिन स्कूल ले जाओ और अपनी बहन को घर ले आओ।', en: 'Beta, now take this empty tiffin to the school and bring your sister home.' }],
+        () => {
+          quest.step = QUEST_STEPS.HAVE_TIFFIN;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.HAVE_TIFFIN) {
+      dialogue.say([{ hi: 'स्कूल जाकर टिफिन देना मत भूलना, और बहन को साथ लाना।', en: "Don't forget to drop the tiffin at school, and bring your sister back with you." }]);
+    } else if (quest.step === QUEST_STEPS.HAVE_SISTER) {
+      dialogue.say(
+        [{ hi: 'शाबाश! तुम दोनों घर पहुँच गए।', en: 'Well done! You both made it home.' }],
+        () => {
+          quest.step = QUEST_STEPS.ALL_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ALL_COMPLETE);
         }
       );
     } else {
-      dialogue.say([{ hi: 'आज का काम हो गया, शुक्रिया बेटा।', en: "Today's errand is done, thank you." }]);
+      dialogue.say([{ hi: 'आज का सारा काम हो गया, बहुत शुक्रिया बेटा।', en: "All of today's work is done, thank you so much." }]);
     }
   },
 });
@@ -107,6 +126,20 @@ registerInteraction({
 export const BELL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x - 5, 0, 116); // beside the back block's yard-facing door
 export const CHARPAI_POSITION = new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z + 5.5 / 2 + 0.85); // between the two chairs outside the halwai
 
+// --- task 4: second errand — the teacher and the school bell (already above) are the
+// two alternate ways to hand over the tiffin and collect the sister. ---
+export const TEACHER_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 116); // opposite side of the same yard-facing door as the bell
+export const SISTER_SCHOOL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 113); // beside the teacher, inside the yard — until collected
+
+/** Shared by both alternate triggers below — advances the quest and tells main.js to
+ * start the sister NPC following the player (src/npcRoutines.js createFollowRoutine,
+ * wired up in main.js). */
+function collectSister(ctx) {
+  ctx.quest.step = QUEST_STEPS.HAVE_SISTER;
+  ctx.onObjectiveChange?.();
+  ctx.onSisterCollected?.();
+}
+
 registerInteraction({
   id: 'school_bell',
   position: BELL_POSITION,
@@ -114,7 +147,36 @@ registerInteraction({
   label: { hi: 'घंटी बजाएं', en: 'Ring the school bell' },
   onInteract: (ctx) => {
     ctx.audio.ringBell();
-    ctx.dialogue.say([{ hi: 'घंटी की आवाज़ पूरे स्कूल में गूंज उठी।', en: 'The bell rings out across the schoolyard.' }]);
+    if (ctx.quest.step === QUEST_STEPS.HAVE_TIFFIN) {
+      ctx.dialogue.say(
+        [
+          {
+            hi: 'घंटी बजी! शिक्षिका बाहर आईं — "टिफिन के लिए शुक्रिया! अपनी बहन को घर ले जाओ।"',
+            en: 'The bell rings! The teacher steps out — "Thank you for the tiffin! Take your sister home now."',
+          },
+        ],
+        () => collectSister(ctx)
+      );
+    } else {
+      ctx.dialogue.say([{ hi: 'घंटी की आवाज़ पूरे स्कूल में गूंज उठी।', en: 'The bell rings out across the schoolyard.' }]);
+    }
+  },
+});
+
+registerInteraction({
+  id: 'teacher',
+  position: TEACHER_POSITION,
+  radius: 2.2,
+  label: { hi: 'शिक्षिका से बात करें', en: 'Talk to the teacher' },
+  onInteract: (ctx) => {
+    const { quest, dialogue } = ctx;
+    if (quest.step === QUEST_STEPS.HAVE_TIFFIN) {
+      dialogue.say([{ hi: 'टिफिन के लिए शुक्रिया! अपनी बहन को घर ले जाओ।', en: 'Thank you for the tiffin! Take your sister home now.' }], () => collectSister(ctx));
+    } else if (quest.step === QUEST_STEPS.HAVE_SISTER) {
+      dialogue.say([{ hi: 'रास्ते में उसका ध्यान रखना।', en: 'Take care of her on the way.' }]);
+    } else {
+      dialogue.say([{ hi: 'नमस्ते!', en: 'Hello!' }]);
+    }
   },
 });
 
