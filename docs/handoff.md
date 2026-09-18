@@ -5,6 +5,13 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-18, after queue item 9:** Tea stall + general store built (f4e8eda), no
+LAYOUT.md for either so read off the reference images instead. Draw calls landed at
+149/150 after real geometry-merging work — **item 10 signboards MUST use a shared
+texture atlas (not one draw call per board)** or budget breaks. Next: item 10.
+
+---
+
 **2026-09-18, after queue items 7-8:** Ambience audio (dog, distant radio, surface
 footsteps — 83f6fa6) and NPC life (Maa wanders + tracks her interaction point live,
 halwai stirs, child walks house<->school avoiding the halwai's footprint — ecaae3c)
