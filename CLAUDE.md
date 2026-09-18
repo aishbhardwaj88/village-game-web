@@ -13,13 +13,17 @@ Current world: house/school/halwai/tea-stall/general-store hero zone + connectin
 (`src/village.js`, `src/shops.js`), a wheat/sabzi field with a dirt track loop
 (`src/field.js`), vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s exact
 measurements — walk/bike/tractor+detachable-trolley/bullock cart (`src/vehicles.js`),
-an errand with objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
-`src/interactions.js`, `src/waypoint.js`), NPCs with simple waypoint-loop routines
-(`src/npcRoutines.js`), procedural Web Audio (`src/audio.js`), a gradient sky + HDRI-
-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
-`reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m). **Draw-call budget
-has almost no headroom (149/150) — see §7 and `docs/look-standard.md`'s Budgets
-section before adding new geometry.**
+two errands (bring jalebi home, then take a tiffin to school and bring your sister
+home) with objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
+`src/interactions.js`, `src/waypoint.js`), NPCs with simple waypoint-loop/follow
+routines (`src/npcRoutines.js`), a title screen, pause menu with a live quality setting
+(`src/pause.js`, `src/quality.js`), and a credits screen generated from
+`docs/CREDITS.md` (`src/credits.js`), procedural Web Audio (`src/audio.js`), a gradient
+sky + HDRI-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
+`reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m). **Draw-call budget:
+89/150 as of 2026-09-18's draw-call reduction pass (was 149/150 — see
+`docs/look-standard.md`'s Budgets section and `src/mergeUtils.js` before adding new
+static geometry; merge same-material meshes rather than one mesh per part).**
 
 ## 2. Reference folders — read-only, never touched
 
