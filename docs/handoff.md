@@ -5,6 +5,14 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-18, 13-item queue complete:** Items 1-12 done, item 13 partial (day-end
+lighting done, puncture shop skipped — draw-call budget at 149/150 with no margin).
+All committed to `main`, nothing pushed. Final: 17.6k triangles, 149/150 draw calls,
+4.72MB assets, 0 console errors, grounding check empty. Full report delivered to the
+user. Next: awaiting review/push.
+
+---
+
 **2026-09-18, after queue items 10-11:** Signboards done via shared texture atlas
 (149/150 draw calls, no margin left — d4b3c59). Full playtest sweep found no new bugs
 (0fd6ac8) — errand playthrough clean, tea stall + general store collision both
