@@ -691,8 +691,30 @@ const B = {
 
 function buildBikeGroup() {
   const group = new THREE.Group();
+
+  // Bug fix: this whole assembly below is authored with its front (handlebar, fork,
+  // front wheel) at +Z, but every other vehicle — and the `forward` vector
+  // Vehicle.update() computes from `group.rotation.y` — assumes front = -Z at
+  // rotation.y = 0. That mismatch is why W drove the bike backward. Fixed by baking a
+  // static 180° turn onto an inner `orient` group (every part below attaches to
+  // `orient`, not `group` directly) rather than re-deriving every part's position/tilt
+  // by hand — `group.rotation.y` itself can't carry this fix because the Vehicle
+  // constructor and the steering code overwrite/add to it every frame.
+  //
+  // orient's rotation is set at the very END of this function, AFTER
+  // mergeGroupByMaterial(bodyPivot) below — that call bakes each merged mesh's
+  // matrixWorld (i.e. including every real ancestor transform that already exists at
+  // merge time) into its geometry, then re-parents the merged mesh back under
+  // bodyPivot; setting orient's 180° before the merge would get baked into the merged
+  // tubes' geometry once AND applied again live via orient's own transform, rotating
+  // them back to the original (wrong) direction while the unmerged parts (tank/seat/
+  // handlebar/wheels) rotated correctly — a mismatched-frame bug. Setting it after
+  // avoids that entirely.
+  const orient = new THREE.Group();
+  group.add(orient);
+
   const bodyPivot = new THREE.Group();
-  group.add(bodyPivot);
+  orient.add(bodyPivot);
 
   const wheelR = B.wheelDia / 2;
 
@@ -731,10 +753,12 @@ function buildBikeGroup() {
 
   const frontWheel = createRoadWheel({ radius: wheelR, width: 0.09, ribbed: true });
   frontWheel.position.set(0, wheelR, frontAxleZ);
-  group.add(frontWheel);
+  orient.add(frontWheel);
   const rearWheel = createRoadWheel({ radius: wheelR, width: 0.09, ribbed: true });
   rearWheel.position.set(0, wheelR, rearAxleZ);
-  group.add(rearWheel);
+  orient.add(rearWheel);
+
+  orient.rotation.y = Math.PI; // see the comment where `orient` is created, above
 
   return { group, bodyPivot, frontWheel, rearWheel };
 }
