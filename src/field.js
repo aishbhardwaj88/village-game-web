@@ -16,6 +16,10 @@ const TRACK_SE = { x: 80, z: -65 };
 const TRACK_SW = { x: -40, z: -65 };
 const LANE_JOIN = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 }; // house courtyard's south edge
 
+// Item 6 (dust motes) reuses the same loop corners, so it drifts along the actual
+// track instead of a re-guessed one.
+export const TRACK_CORNERS = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW];
+
 const TRACK_WIDTH = 5;
 const FIELD_GOLD = 0xc9a24f; // golden wheat/sabzi soil, distinct from the main dirt ground and lane
 

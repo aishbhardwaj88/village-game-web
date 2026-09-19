@@ -5,6 +5,19 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-19, new 10-item queue, items 4-6 done:** School interior — one real
+walkable classroom in the west wing, benches/blackboard/teacher's table, bell now
+visible on its post (item 4, `9326d4c`). Five new interactions wired through the
+existing registry (lie on the house charpai, pump water, water the tulsi, write on the
+blackboard, sit on a school bench), none touch quest state, verified via a scripted
+run of the real `interact()`/`tick()` code paths (item 5, `64e7131`). Dust motes — one
+`THREE.Points` draw call, ~466 particles across fixed outdoor zones (lane, track loop,
+field, open courtyards), verified none land inside the house/school interiors (item 6).
+111/150 draw calls, 25.8k triangles, 4.72MB assets, grounding clean, zero console
+errors. Next: item 7 (save/continue).
+
+---
+
 **2026-09-19, new 10-item queue, items 1-3 done:** Asset slot system (drop a .glb in
 `public/assets/models/`, auto-detected/scaled/grounded, tested end to end with the
 ceramic pot — item 1, `9e9456e`); procedural trees, fixed a real "flat cards" bug via

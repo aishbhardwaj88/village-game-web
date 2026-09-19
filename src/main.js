@@ -8,7 +8,8 @@ import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } fro
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS } from './village.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
-import { buildField } from './field.js';
+import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
+import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
@@ -208,6 +209,19 @@ async function main() {
   const { group: treesGroup, colliders: treeColliders } = buildTrees(defaultTreePlacements());
   scene.add(treesGroup);
   addStaticColliders(treeColliders.map((t) => ({ minX: t.x - t.radius, maxX: t.x + t.radius, minZ: t.z - t.radius, maxZ: t.z + t.radius })));
+
+  // Dust motes (task queue item 6) — one Points draw call, confined to outdoor
+  // "zones" (lane, track loop, field, open courtyards) so interiors stay dust-free
+  // without a runtime indoor/outdoor check. See src/dust.js for the shape/PRNG detail.
+  const dust = buildDust([
+    { a: HOUSE_CENTER, b: HALWAI_CENTER, halfWidth: 4, count: 70 },
+    { a: HALWAI_CENTER, b: SCHOOL_CENTER, halfWidth: 4, count: 70 },
+    ...TRACK_CORNERS.map((corner, i) => ({ a: corner, b: TRACK_CORNERS[(i + 1) % TRACK_CORNERS.length], halfWidth: 3.5, count: 45 })),
+    { cx: FIELD_CENTER.x, cz: FIELD_CENTER.z, halfW: FIELD_SIZE.x / 2 - 5, halfD: FIELD_SIZE.z / 2 - 5, count: 110, maxY: 1.1 },
+    { cx: HOUSE_CENTER.x, cz: HOUSE_CENTER.z + 6, halfW: 3, halfD: 2, count: 18 }, // house courtyard, open to sky
+    { cx: HALWAI_CENTER.x + 2, cz: HALWAI_CENTER.z + 3, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
+  ]);
+  scene.add(dust.points);
 
   const camRig = new ThirdPersonCamera(camera, player);
   // Buildings the camera should never clip through (item 1) — raycast against the
@@ -812,6 +826,7 @@ async function main() {
 
       camRig.update();
       audio.update(dt);
+      dust.update(dt, now / 1000);
       updateDayline(dayProgressForQuestStep(quest.step, QUEST_STEPS), dt);
       // Distant radio fade (item 7) — uses whatever the player is actually "at"
       // (on foot, or the vehicle they're driving/sitting on), not the camera, so it
