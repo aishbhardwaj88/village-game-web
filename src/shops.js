@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { texturedWallBox, getTiledMaterial } from './materials.js';
+import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 
 /**
@@ -100,8 +100,17 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
     return g.applyMatrix4(local).applyMatrix4(teaWorld);
   });
 
-  const material = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, tint: TEA.tealTint, roughness: 1 });
-  const mesh = new THREE.Mesh(mergeGeometries([teaGeo, storeGeo, ...postGeos]), material);
+  // Headroom pass (docs/parked.md) — tint baked into vertex colour (not the
+  // material) so this shares the one cached 'wood' Material every other wood-family
+  // object in the village uses, letting the village-wide merge (main.js) fold this
+  // in too, instead of paying its own separate draw call.
+  const counterGeos = [teaGeo, storeGeo, ...postGeos];
+  for (const g of counterGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, TEA.tealTint, 1);
+  }
+  const material = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const mesh = new THREE.Mesh(mergeGeometries(counterGeos), material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'shop_counters_and_posts';
@@ -161,8 +170,15 @@ export function buildShopRoofs(teaPosition, teaRotationY, storePosition, storeRo
     .setPosition(storePosition.x, STORE.h + 0.125, storePosition.z);
   geoStore.applyMatrix4(mStore);
 
-  const material = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, tint, roughness: 1 });
-  const mesh = new THREE.Mesh(mergeGeometries([geoTea, geoStore]), material);
+  // Headroom pass (docs/parked.md) — same vertex-colour-tint conversion as
+  // buildShopCounters above, so this folds into the village-wide 'concrete' merge.
+  const roofGeos = [geoTea, geoStore];
+  for (const g of roofGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, tint, 1);
+  }
+  const material = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const mesh = new THREE.Mesh(mergeGeometries(roofGeos), material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'shop_roofs';

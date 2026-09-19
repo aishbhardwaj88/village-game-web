@@ -7,6 +7,8 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM } from './village.js';
+import { BuildingKit } from './buildingKit.js';
+import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
@@ -106,13 +108,21 @@ async function main() {
   // waits on. The field and background houses (visually distant, fog-hazed, not
   // needed for the errand) are built after the player has already started playing —
   // see loadDeferredContent() below, called from onStart.
+  // One shared BuildingKit for the whole village (headroom pass, docs/parked.md) —
+  // every building's trim/plinth/reveal/drainpipe/switchboard/step instances live in
+  // the same 6 InstancedMeshes regardless of which building added them, instead of
+  // each building group paying for its own copy of all 6. finalize()'d below, once
+  // after the eager buildings (so hero zone + bazaar detail is visible immediately,
+  // even before Play is clicked) and again after the deferred background houses.
+  const buildingKit = new BuildingKit(400);
+
   const {
     group: heroZoneGroup,
     charpaiGroup: houseCharpaiGroup,
     handPumpGroup: houseHandPumpGroup,
     pumpWaterMesh,
     tulsiWaterMesh,
-  } = buildHeroZone(scene);
+  } = buildHeroZone(scene, buildingKit);
 
   // Two more Places V1 locations (item 9) on the lane between the house and the
   // school, with clearance either side (see docs/parked.md for the exact placement
@@ -161,7 +171,7 @@ async function main() {
   // src/bazaar.js for the full build. Real gameplay content (not distant scenery), so
   // built eagerly with the rest of the hero zone, not deferred like the field/
   // background houses.
-  const bazaarGroup = buildBazaarRow();
+  const bazaarGroup = buildBazaarRow(buildingKit);
   scene.add(bazaarGroup);
   addStaticColliders(bazaarColliders());
   bazaarGroup.add(buildBazaarCountersAndShutters());
@@ -183,6 +193,12 @@ async function main() {
   buildBazaarSignboards()
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build bazaar signboards', err));
+
+  // First flush of the shared kit — makes hero zone + bazaar trim/plinth/etc visible
+  // right away (including behind the title screen, before Play is clicked). A second
+  // flush happens in loadDeferredContent() once the background houses have added
+  // their own pieces to the same kit.
+  buildingKit.finalize(scene);
 
   const vehicles = spawnVehicles(scene);
 
@@ -452,9 +468,39 @@ async function main() {
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
-    buildField(scene);
-    const backgroundHousesGroup = buildBackgroundHouses(scene);
+    const fieldGroup = buildField(scene);
+    const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
+    buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
+
+    // Headroom pass (docs/parked.md) — one village-wide merge across every static
+    // building group now that everything (hero zone, shops, bazaar/chowk,
+    // background houses, field) is in the scene, folding same-material meshes
+    // together regardless of which building added them (texturedWallBox/
+    // texturedThickBox/etc already share one cached Material per texture family +
+    // tiling + roughness across the whole village, so this is safe — see
+    // src/mergeUtils.js). Scoped to exactly these 5 static roots, never `scene`
+    // itself — scene also holds the player, vehicles and NPCs, and merging an
+    // animated mesh detaches it from the group that moves it every frame.
+    // Skipped subtrees are every asset slot (assetSlots.js) whose `hide` list, or
+    // whose interaction code, holds a direct reference to a specific mesh captured
+    // before this merge runs: `halwai_shop` (whole-building slot), `charpai` and
+    // `hand_pump` (house interior prop slots), `pump_water`/`tulsi_water` (the
+    // pump/tulsi interaction's flashed water meshes) — folding any of these into a
+    // merged mesh would make that captured reference stale.
+    //
+    // Merged output goes into its own group (not loose into `scene`) and that group
+    // is pushed into `cameraObstacles` — the 5 source groups are what the camera rig
+    // was colliding against for occlusion, and this merge empties them of everything
+    // except the skipped subtrees, so without this the camera would start clipping
+    // through every merged wall/roof.
+    const villageStaticGroup = new THREE.Group();
+    villageStaticGroup.name = 'village_static_merged';
+    scene.add(villageStaticGroup);
+    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water'],
+    });
+    cameraObstacles.push(villageStaticGroup);
   }
 
   const audio = new AudioEngine();

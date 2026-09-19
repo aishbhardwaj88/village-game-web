@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
+import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
-import { BuildingKit } from './buildingKit.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment } from './paths.js';
 
@@ -89,10 +88,9 @@ export function bazaarColliders() {
  * only") — a lintel trim bar across each unit's front plus jamb trim on the flanking
  * party walls stands in for the "recessed opening + lintel band" detail rule.
  */
-export function buildBazaarRow() {
+export function buildBazaarRow(kit) {
   const group = new THREE.Group();
   group.name = 'bazaar_row';
-  const kit = new BuildingKit(120);
 
   const backZ = BAZAAR_ROW_CZ + BAZAAR_UNIT_D / 2;
   const frontZ = BAZAAR_FRONT_Z;
@@ -176,7 +174,14 @@ export function buildBazaarRow() {
     const lipLocal = new THREE.Matrix4().makeTranslation(cx, unit.wallHeight + slabT + lipH / 2, backZ - WALL_THICKNESS / 2);
     roofGeos.push(lip.applyMatrix4(lipLocal));
   });
-  const roofMaterial = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, tint: concreteTint, roughness: 1 });
+  // Headroom pass (docs/parked.md) — tint baked into vertex colour so this shares
+  // the one cached 'concrete' Material the rest of the village's concrete already
+  // uses, instead of its own separate direct-tint Material/draw call.
+  for (const g of roofGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, concreteTint, 1);
+  }
+  const roofMaterial = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
   const roofMesh = new THREE.Mesh(mergeGeometries(roofGeos), roofMaterial);
   roofMesh.name = 'bazaar_roof';
   roofMesh.castShadow = true;
@@ -206,7 +211,13 @@ export function buildBazaarRow() {
     const postLocal = new THREE.Matrix4().makeTranslation(x, awningFrontY / 2, awningOuterZ);
     awningGeos.push(post.applyMatrix4(postLocal));
   }
-  const awningMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, tint: 0x5c6a70, roughness: 1 });
+  // Headroom pass (docs/parked.md) — vertex-colour tint so this shares the village's
+  // one cached 'metal' Material instead of its own direct-tint one.
+  for (const g of awningGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, 0x5c6a70, 1);
+  }
+  const awningMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
   const awningMesh = new THREE.Mesh(mergeGeometries(awningGeos), awningMaterial);
   awningMesh.name = 'bazaar_awning';
   awningMesh.castShadow = true;
@@ -226,6 +237,10 @@ export function buildBazaarRow() {
     const local = new THREE.Matrix4().makeTranslation(cx, 0.03, BAZAAR_ROW_CZ);
     floorGeos.push(floor.applyMatrix4(local));
   });
+  for (const g of floorGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, concreteTint, 1);
+  }
   const floorMesh = new THREE.Mesh(mergeGeometries(floorGeos), roofMaterial); // shares the concrete material cache
   floorMesh.name = 'bazaar_floor';
   floorMesh.receiveShadow = true;
@@ -250,7 +265,6 @@ export function buildBazaarRow() {
   kit.addSwitchboard({ x: bazaarUnitCx(3) + 1.5, y: 1.3, z: backZ - WALL_THICKNESS - 0.02 }, Math.PI);
   kit.addSwitchboard({ x: bazaarUnitCx(6) - 1.5, y: 1.3, z: backZ - WALL_THICKNESS - 0.02 }, Math.PI);
 
-  kit.finalize(group);
   mergeGroupByMaterial(group);
   return group;
 }
@@ -435,6 +449,7 @@ export function buildBazaarInteriors() {
 
   function pushCyl(radiusTop, radiusBottom, h, x, y, z, tint) {
     const geo = new THREE.CylinderGeometry(radiusTop, radiusBottom, h, 10);
+    ensureUv2(geo); // raw CylinderGeometry has no uv2 — needed to merge with texturedThickBox's own 'terracotta' geometry
     bakeFlatTintColors(geo, tint, 1);
     geo.applyMatrix4(new THREE.Matrix4().setPosition(x, y, z));
     cylGeos.push(geo);
@@ -442,6 +457,7 @@ export function buildBazaarInteriors() {
 
   function pushTorus(radius, tube, x, y, z, tint, rotX = Math.PI / 2) {
     const geo = new THREE.TorusGeometry(radius, tube, 8, 16);
+    ensureUv2(geo); // raw TorusGeometry has no uv2 — needed to merge with texturedThickBox's own 'metal' geometry
     bakeFlatTintColors(geo, tint, 1);
     const m = new THREE.Matrix4().makeRotationX(rotX).setPosition(x, y, z);
     geo.applyMatrix4(m);
@@ -618,13 +634,13 @@ export function buildTeaStallChowk() {
   group.add(wallMesh);
 
   // Teal counter + posts + sloped roof, one merged 'metal' draw call. Raw
-  // BoxGeometry throughout (not texturedThickBox, which also bakes a uv2 + vertex-
-  // colour attribute pair that these plain, uniformly-tinted boxes don't carry) —
-  // mergeGeometries requires every input to share the same attribute set, and mixing
-  // the two broke it (found via the actual render throwing, not by inspection). One
-  // flat material tint (set directly on the material below, not per-vertex) covers
-  // the whole merged mesh since it's all one uniform teal here, unlike item 3's
-  // per-instance-tinted goods.
+  // BoxGeometry throughout, each given a baked uv2 + vertex colour below (headroom
+  // pass, docs/parked.md) so it shares the village's one cached vertex-coloured
+  // 'metal' Material instead of its own direct-tint one — mergeGeometries requires
+  // every input to share the same attribute set, which baking uv2 on every piece
+  // here guarantees regardless of which helper built it (an earlier direct-tint-only
+  // version of this hit that mismatch — found via the actual render throwing, not by
+  // inspection).
   const teal = PALETTE.teal;
   const tealGeos = [];
   const counter = new THREE.BoxGeometry(w - 0.6, counterH, 0.5);
@@ -651,7 +667,11 @@ export function buildTeaStallChowk() {
   const roofLocal = new THREE.Matrix4().makeTranslation(0, roofMidY, 0);
   tealGeos.push(roofSlab.applyMatrix4(roofLocal).applyMatrix4(world));
 
-  const tealMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, tint: teal, roughness: 1 });
+  for (const g of tealGeos) {
+    ensureUv2(g);
+    bakeFlatTintColors(g, teal, 1);
+  }
+  const tealMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
   const tealMesh = new THREE.Mesh(mergeGeometries(tealGeos), tealMaterial);
   tealMesh.name = 'chowk_tea_counter_roof';
   tealMesh.castShadow = true;

@@ -52,6 +52,57 @@ export function mergeGroupByMaterial(group) {
   }
 }
 
+/** Merges same-material meshes ACROSS several already-built, already-in-the-scene
+ * static root groups (e.g. the hero zone, the bazaar row, the background houses —
+ * each already merged internally by its own builder) into one mesh per material,
+ * added as a new child of `dest`. This is what actually saves draw calls "across
+ * the whole village, not just within a building" (headroom pass, docs/parked.md):
+ * texturedWallBox/texturedThickBox/etc already share one cached Material per
+ * texture family+tiling+roughness regardless of which building or tint used it, so
+ * a house's already-merged 'plaster_0' and a shop's already-merged 'plaster_0' still
+ * share that one Material object and fold together here.
+ *
+ * Only ever pass STATIC roots — never scene itself, and never a root that contains
+ * an animated object (vehicles, NPCs, the player): every mesh this touches is
+ * detached from its original parent and rebuilt as a brand-new Mesh, so anything
+ * that relied on its old parent's transform (to move/rotate with it) breaks.
+ * `skipNames` — subtree root names inside those roots to leave untouched, same
+ * reasoning as mergeGroupByMaterial's own `skipNames` (a stale `hide` list in
+ * assetSlots.js otherwise). */
+export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
+  const buckets = new Map();
+  const toRemove = [];
+
+  for (const root of roots) {
+    root.updateWorldMatrix(true, true);
+    (function walk(obj) {
+      if (obj !== root && skipNames.includes(obj.name)) return;
+      if (obj.isMesh && !obj.isInstancedMesh) {
+        let bucket = buckets.get(obj.material);
+        if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false }));
+        bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
+        bucket.castShadow = bucket.castShadow || obj.castShadow;
+        bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
+        toRemove.push(obj);
+      }
+      for (const child of obj.children) walk(child);
+    })(root);
+  }
+
+  for (const obj of toRemove) obj.parent.remove(obj);
+
+  let i = 0;
+  for (const [material, bucket] of buckets) {
+    const geometry = bucket.geometries.length > 1 ? mergeGeometries(bucket.geometries) : bucket.geometries[0];
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = `${material.name || 'merged'}_${i++}`;
+    mesh.castShadow = bucket.castShadow;
+    mesh.receiveShadow = bucket.receiveShadow;
+    mesh.userData.mergedStatic = true; // see mergeGroupByMaterial's own comment on this flag
+    dest.add(mesh);
+  }
+}
+
 /** Merges a flat list of already-positioned, unparented Meshes (e.g. several
  * buildStripSegment() results) that all share one Material into a single Mesh. */
 export function mergeMeshList(meshes, name) {

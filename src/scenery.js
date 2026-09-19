@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { texturedThickBox, texturedWallBox } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
-import { BuildingKit } from './buildingKit.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 
 // Item 10 — background houses beyond the fog line, so the village doesn't end
@@ -16,7 +15,7 @@ const HOUSE_TINTS = [PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue];
 /** A handful of simple flat-roofed boxes scattered past the hero zone, at a distance
  * fog (density 0.0085) mostly hazes over — same texture set as the hero zone, just
  * different tints, so it reads as "more village" rather than a different place. */
-export function buildBackgroundHouses(scene) {
+export function buildBackgroundHouses(scene, kit) {
   const group = new THREE.Group();
   group.name = 'background_houses';
 
@@ -25,8 +24,6 @@ export function buildBackgroundHouses(scene) {
     { x: 25, z: 128, w: 8, d: 8, h: 4 },
     { x: -95, z: 165, w: 10, d: 7, h: 5 },
   ];
-
-  const kit = new BuildingKit(60);
 
   placements.forEach((p, i) => {
     // Grouped per house (not added loose into `group`) so a whole-object grounding
@@ -53,10 +50,11 @@ export function buildBackgroundHouses(scene) {
   // Task 2 (draw-call budget) — the 3 houses' walls (different tints, baked into
   // vertex colour) share one 'plaster' Material, and their 3 roofs (same tint)
   // share one 'concrete' Material, so this crosses the per-house subgroups and
-  // folds 6 meshes down to 2. Runs before kit.finalize adds its own instanced
-  // meshes, so those aren't touched.
+  // folds 6 meshes down to 2. (Further folded into the village-wide merge in
+  // main.js, which now also picks these up — this local pass just keeps things
+  // tidy if that ever changes.) kit's instanced pieces are shared with the rest
+  // of the village and finalized once by the caller, not here.
   mergeGroupByMaterial(group);
-  kit.finalize(group);
   scene.add(group);
   return group;
 }

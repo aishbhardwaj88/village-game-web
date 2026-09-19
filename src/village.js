@@ -3,7 +3,6 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment } from './paths.js';
-import { BuildingKit } from './buildingKit.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
@@ -291,11 +290,13 @@ function buildHouseInteriorProps(houseGroup) {
   // toggled visible briefly by src/main.js. Kept out of the merge groups above so
   // each can be shown/hidden individually.
   const pumpWaterMesh = texturedBox(0.05, 0.4, 0.05, 'metal', { tint: 0x6fa8c9, tileSize: 1 });
+  pumpWaterMesh.name = 'pump_water'; // named so the village-wide merge (main.js) can skip it — see mergeUtils.js
   pumpWaterMesh.position.set(pumpX, 0.55, pumpZ + 0.18);
   pumpWaterMesh.visible = false;
   houseGroup.add(pumpWaterMesh);
 
   const tulsiWaterMesh = texturedBox(0.5, 0.05, 0.5, 'metal', { tint: 0x6fa8c9, tileSize: 1 });
+  tulsiWaterMesh.name = 'tulsi_water'; // named so the village-wide merge (main.js) can skip it — see mergeUtils.js
   tulsiWaterMesh.position.set(tulsiX, 0.52, tulsiZ);
   tulsiWaterMesh.visible = false;
   houseGroup.add(tulsiWaterMesh);
@@ -612,16 +613,14 @@ function buildLane() {
   return mesh;
 }
 
-export function buildHeroZone(scene) {
+export function buildHeroZone(scene, kit) {
   const group = new THREE.Group();
   group.name = 'hero_zone';
-  const kit = new BuildingKit(200);
   group.add(buildLane());
   const house = buildHouse(kit);
   group.add(house.group);
   group.add(buildSchool(kit));
   group.add(buildHalwai(kit));
-  kit.finalize(group);
   scene.add(group);
   return {
     group,
