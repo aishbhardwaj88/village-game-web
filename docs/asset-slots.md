@@ -31,8 +31,8 @@ exactly as it does today.
 | `halwai.glb` | The halwai | 0.66 × 1.8 × 0.66 |
 | `teacher.glb` | The teacher | 0.66 × 1.8 × 0.66 |
 | `sister.glb` | The sister | 0.66 × 1.8 × 0.66 |
-| `charpai.glb` | The charpai (rope bed) | registered once item 3 builds its placeholder — see `docs/parked.md` |
-| `hand_pump.glb` | The hand pump | registered once item 3 builds its placeholder — see `docs/parked.md` |
+| `charpai.glb` | The charpai (rope bed), house front room | 0.9 × 0.5 × 1.9 |
+| `hand_pump.glb` | The hand pump, house courtyard | 0.5 × 1.4 × 0.5 |
 
 ## Things worth knowing
 

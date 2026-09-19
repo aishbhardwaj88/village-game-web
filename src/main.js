@@ -6,7 +6,7 @@ import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS } from './village.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
@@ -90,7 +90,7 @@ async function main() {
   // waits on. The field and background houses (visually distant, fog-hazed, not
   // needed for the errand) are built after the player has already started playing —
   // see loadDeferredContent() below, called from onStart.
-  const heroZoneGroup = buildHeroZone(scene);
+  const { group: heroZoneGroup, charpaiGroup: houseCharpaiGroup, handPumpGroup: houseHandPumpGroup } = buildHeroZone(scene);
 
   // Two more Places V1 locations (item 9) on the lane between the house and the
   // school, with clearance either side (see docs/parked.md for the exact placement
@@ -294,8 +294,19 @@ async function main() {
       placements: [{ container: npc, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
   }
-  // charpai/hand_pump slots are registered once queue item 3 builds their
-  // placeholders (they don't exist yet) — see docs/parked.md.
+  // charpai/hand_pump (queue item 3 builds these — see src/village.js
+  // buildHouseInteriorProps, which keeps each in its own small Group for exactly
+  // this reason: independently hideable once a real model exists).
+  assetSlots.register('charpai', {
+    dimensions: { w: 0.9, h: 0.5, d: 1.9 },
+    hide: houseCharpaiGroup.children.slice(),
+    placements: [{ container: houseCharpaiGroup, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+  });
+  assetSlots.register('hand_pump', {
+    dimensions: { w: 0.5, h: 1.4, d: 0.5 },
+    hide: houseHandPumpGroup.children.slice(),
+    placements: [{ container: houseHandPumpGroup, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+  });
 
   // TEMPORARY end-to-end test slot (queue item 1's required test) — named
   // "ceramic_pot" to match the model that already exists at
@@ -525,6 +536,35 @@ async function main() {
     return boxes;
   }
 
+  // Item 3 (house interior) — the only place the player's Y ever changes: the game
+  // otherwise has no vertical movement/gravity at all (every other surface is y=0).
+  // The staircase ramps smoothly from ground to roof height by Z position; the roof
+  // itself only "catches" the player if they're already most of the way up (arrived
+  // via the stairs) — without that check, just walking around *underneath* the roof,
+  // inside the ground-floor rooms (same X/Z footprint, different Y), would wrongly
+  // teleport them up to it.
+  function groundHeightAt(x, z, currentY) {
+    const s = HOUSE_STAIRS;
+    const halfW = s.width / 2;
+    const zMin = Math.min(s.zStart, s.zEnd);
+    const zMax = Math.max(s.zStart, s.zEnd);
+    if (x > s.x - halfW && x < s.x + halfW && z >= zMin && z <= zMax) {
+      const t = (s.zStart - z) / (s.zStart - s.zEnd);
+      return THREE.MathUtils.clamp(t, 0, 1) * s.yTop;
+    }
+    const roofHalfW = HOUSE_BLOCK.w / 2 + 0.3;
+    const roofHalfD = HOUSE_BLOCK.d / 2 + 0.3;
+    // West edge extended to include the staircase's own top landing (s.x sits
+    // outside the roof's own footprint, west of the wall it climbs) — without this,
+    // stepping off the top step landed just outside "on the roof" and fell straight
+    // back to y=0 (found by actually walking the stairs end to end, not by
+    // inspection — see docs/parked.md).
+    const roofMinX = Math.min(HOUSE_BLOCK.cx - roofHalfW, s.x - halfW);
+    const onRoofFootprint = x > roofMinX && x < HOUSE_BLOCK.cx + roofHalfW && z > HOUSE_BLOCK.cz - roofHalfD && z < HOUSE_BLOCK.cz + roofHalfD;
+    if (onRoofFootprint && currentY > s.yTop * 0.5) return s.yTop;
+    return 0;
+  }
+
   function nearestMountable() {
     let nearest = null;
     let nearestDist = Infinity;
@@ -696,6 +736,7 @@ async function main() {
         player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         resolveCollisions(player.position, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
+        player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
         audio.setSurface(surfaceAt(player.position.x, player.position.z));
 

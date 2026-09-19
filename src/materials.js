@@ -162,7 +162,7 @@ export function ensureUv2(geometry) {
  * always writes a `color` attribute (white when no tint) so merge candidates never
  * differ by attribute shape.
  */
-function bakeFlatTintColors(geometry, tint, tintStrength = 1) {
+export function bakeFlatTintColors(geometry, tint, tintStrength = 1) {
   const count = geometry.attributes.position.count;
   const colors = new Float32Array(count * 3);
   const c = tint ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength) : new THREE.Color(1, 1, 1);

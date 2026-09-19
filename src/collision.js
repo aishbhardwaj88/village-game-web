@@ -1,4 +1,4 @@
-import { HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, WALL_THICKNESS } from './village.js';
+import { HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, WALL_THICKNESS, HOUSE_BLOCK, HOUSE_DOOR_Z, HOUSE_DOOR_WIDTH, HOUSE_PARTITION_Z, HOUSE_PARTITION_DOOR_WIDTH } from './village.js';
 
 /**
  * Simple axis-aligned box colliders — no physics engine. Player and vehicles are
@@ -50,12 +50,33 @@ function footprintWithDoorNotch(cx, cz, w, d, doorFace, doorWidth, recess = WALL
 function buildStaticColliders() {
   const boxes = [];
 
-  // House block: 10x8 at (cx, cz-3), door on the south face (per src/village.js).
+  // House block: item 3 made it walkable — 4 real thin perimeter walls (a genuine
+  // gap at the front door, not the notched-solid-mass every other building here
+  // still uses) plus the interior partition's own doorway, matching
+  // src/village.js's buildHouse() exactly (both read from the same HOUSE_BLOCK/
+  // HOUSE_DOOR_*/HOUSE_PARTITION_* constants, so they can't drift apart).
   {
-    const cx = HOUSE_CENTER.x;
-    const cz = HOUSE_CENTER.z - 3;
-    boxes.push(...footprintWithDoorNotch(cx, cz, 10, 8, 'south', 1.3));
-    // Low compound walls, east/west courtyard edges (thin — treat as strips).
+    const { cx, cz, w, d } = HOUSE_BLOCK;
+    const hw = w / 2;
+    const hd = d / 2;
+    const t = WALL_THICKNESS / 2;
+    const doorHalf = HOUSE_DOOR_WIDTH / 2;
+    // South wall (door), 2 segments.
+    boxes.push({ minX: cx - hw, maxX: cx - doorHalf, minZ: HOUSE_DOOR_Z - t, maxZ: HOUSE_DOOR_Z + t });
+    boxes.push({ minX: cx + doorHalf, maxX: cx + hw, minZ: HOUSE_DOOR_Z - t, maxZ: HOUSE_DOOR_Z + t });
+    // North wall, solid.
+    boxes.push({ minX: cx - hw, maxX: cx + hw, minZ: cz - hd - t, maxZ: cz - hd + t });
+    // East/west walls, solid.
+    boxes.push({ minX: cx - hw - t, maxX: cx - hw + t, minZ: cz - hd, maxZ: cz + hd });
+    boxes.push({ minX: cx + hw - t, maxX: cx + hw + t, minZ: cz - hd, maxZ: cz + hd });
+    // Interior partition, its own doorway.
+    const pDoorHalf = HOUSE_PARTITION_DOOR_WIDTH / 2;
+    boxes.push({ minX: cx - hw, maxX: cx - pDoorHalf, minZ: HOUSE_PARTITION_Z - t, maxZ: HOUSE_PARTITION_Z + t });
+    boxes.push({ minX: cx + pDoorHalf, maxX: cx + hw, minZ: HOUSE_PARTITION_Z - t, maxZ: HOUSE_PARTITION_Z + t });
+    // Low compound walls, east/west courtyard edges (thin — treat as strips). The
+    // staircase (src/village.js HOUSE_STAIRS) deliberately has no collider here — the
+    // player has to be able to walk onto it; height comes from main.js's
+    // groundHeightAt(), not from being blocked/stepped over.
     boxes.push({ minX: HOUSE_CENTER.x - 9 - 0.15, maxX: HOUSE_CENTER.x - 9 + 0.15, minZ: HOUSE_CENTER.z - 7, maxZ: HOUSE_CENTER.z + 7 });
     boxes.push({ minX: HOUSE_CENTER.x + 9 - 0.15, maxX: HOUSE_CENTER.x + 9 + 0.15, minZ: HOUSE_CENTER.z - 7, maxZ: HOUSE_CENTER.z + 7 });
   }

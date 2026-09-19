@@ -5,6 +5,16 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-19, new 10-item queue, items 1-3 done:** Asset slot system (drop a .glb in
+`public/assets/models/`, auto-detected/scaled/grounded, tested end to end with the
+ceramic pot — item 1, `9e9456e`); procedural trees, fixed a real "flat cards" bug via
+spherical normals (item 2, `f5671c5`); house interior — walkable, 2 real rooms, a
+staircase to the roof (new player Y-height system, see `docs/parked.md`), 9 draw calls
+(item 3). 109/150 draw calls, 4.72MB assets, grounding clean, zero console errors.
+Next: item 4 (school interior).
+
+---
+
 **2026-09-18, 13-item queue complete:** Items 1-12 done, item 13 partial (day-end
 lighting done, puncture shop skipped — draw-call budget at 149/150 with no margin).
 All committed to `main`, nothing pushed. Final: 17.6k triangles, 149/150 draw calls,

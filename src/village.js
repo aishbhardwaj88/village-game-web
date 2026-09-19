@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor } from './materials.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment } from './paths.js';
 import { BuildingKit } from './buildingKit.js';
@@ -79,65 +80,288 @@ function addWallBox(group, width, height, depth, materialName, position, seed, o
   return mesh;
 }
 
+/**
+ * Item 3 (house interior) — a wall with a real, centred doorway-width gap: 2 actual
+ * wall segments, not the decorative reveal-over-solid-mass every exterior door
+ * elsewhere in this file uses (kit.addOpening) — those were never meant to be walked
+ * through, this one has to be. `axis` is which world axis the wall's own length runs
+ * along; `thickness` is the wall's own depth (the other horizontal axis).
+ */
+function addGappedWall(group, { axis, length, height, thickness, cx, cz, gapWidth, materialName, tint, seedBase }) {
+  const segLen = (length - gapWidth) / 2;
+  if (axis === 'x') {
+    addWallBox(group, segLen, height, thickness, materialName, { x: cx - length / 2 + segLen / 2, y: height / 2, z: cz }, seedBase, { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addWallBox(group, segLen, height, thickness, materialName, { x: cx + length / 2 - segLen / 2, y: height / 2, z: cz }, seedBase + 1, { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  } else {
+    addWallBox(group, thickness, height, segLen, materialName, { x: cx, y: height / 2, z: cz - length / 2 + segLen / 2 }, seedBase, { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addWallBox(group, thickness, height, segLen, materialName, { x: cx, y: height / 2, z: cz + length / 2 - segLen / 2 }, seedBase + 1, { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  }
+}
+
+/** Just the frame (jambs + lintel) around a real doorway — no reveal (there's real
+ * daylight/interior behind a real gap, not a fake recessed backing) and no door leaf
+ * (the player has to see/walk through, not find a closed panel). Doorway width runs
+ * along X for every door in this file. */
+function addDoorFrameX(kit, center, width, height, wallThickness) {
+  const frameW = 0.1;
+  for (const side of [-1, 1]) {
+    kit.addTrimBar({ x: center.x + (side * width) / 2, y: center.y + height / 2, z: center.z }, { x: frameW, y: height, z: wallThickness + 0.02 });
+  }
+  kit.addTrimBar({ x: center.x, y: center.y + height + frameW / 2, z: center.z }, { x: width + frameW * 2, y: frameW, z: wallThickness + 0.02 });
+}
+
+/** A solid masonry-look staircase (steps solid down to the ground, not floating
+ * slabs) — one merged mesh regardless of step count. Runs along Z, climbing as z
+ * decreases from `zStart`. */
+function buildStaircase(x, zStart, steps, stepDepth, stepRise, stepWidth, materialName, tint) {
+  const geos = [];
+  for (let i = 0; i < steps; i++) {
+    const stepHeight = (i + 1) * stepRise;
+    const geo = ensureUv2(new THREE.BoxGeometry(stepWidth, stepHeight, stepDepth));
+    const z = zStart - (i + 0.5) * stepDepth;
+    geo.applyMatrix4(new THREE.Matrix4().makeTranslation(x, stepHeight / 2, z));
+    geos.push(geo);
+  }
+  const merged = mergeGeometries(geos);
+  bakeFlatTintColors(merged, tint, WALL_TINT_STRENGTH);
+  const material = getTiledMaterial(materialName, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const mesh = new THREE.Mesh(merged, material);
+  mesh.name = 'house_stairs';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+// Item 3 (house interior) — exact layout, shared between buildHouse (geometry),
+// buildHouseInteriorProps (furniture), and src/collision.js (colliders must match
+// this file's actual wall positions since they're hand-authored, same rule every
+// other building here already follows).
+export const HOUSE_BLOCK = { w: 10, h: 6, d: 8, cx: HOUSE_CENTER.x, cz: HOUSE_CENTER.z - 3 };
+export const HOUSE_DOOR_Z = HOUSE_BLOCK.cz + HOUSE_BLOCK.d / 2;
+export const HOUSE_DOOR_WIDTH = 1.3;
+export const HOUSE_PARTITION_Z = HOUSE_BLOCK.cz + 0.6; // front room (entry) / back room
+export const HOUSE_PARTITION_DOOR_WIDTH = 1.1;
+export const HOUSE_ROOF_Y = HOUSE_BLOCK.h + 0.15;
+export const HOUSE_STAIRS = {
+  x: HOUSE_BLOCK.cx - HOUSE_BLOCK.w / 2 - 0.9,
+  zStart: HOUSE_BLOCK.cz + HOUSE_BLOCK.d / 2, // ground level, south end
+  zEnd: HOUSE_BLOCK.cz - HOUSE_BLOCK.d / 2, // roof level, north end
+  width: 1.2,
+  yTop: HOUSE_ROOF_Y,
+};
+
+const TULSI_GREEN = 0x4a7a3a;
+const CLOTH_COLORS = [0xd8d0b8, 0x5a7a9a, 0x8a3a3a];
+
+/**
+ * Item 3's furniture list, built as plain geometry (no time spent on detail — same
+ * "placeholder" spirit as src/vehicles.js). `charpai` and `hand_pump` are each kept
+ * in their own small Group (self-merged to one draw call, but not folded into the
+ * building's own merged walls) so the asset-slot system (item 1, src/assetSlots.js)
+ * can hide each independently once a real model exists for that slot; everything
+ * else here (trunk, shelf + vessels, tulsi platform, clothesline) isn't a named slot,
+ * so it's merged straight into one shared "misc" group instead.
+ */
+function buildHouseInteriorProps(houseGroup) {
+  const { cx: blockCx, cz: blockCz, w: blockW } = HOUSE_BLOCK;
+
+  // Charpai — front room, against its west wall.
+  const charpaiGroup = new THREE.Group();
+  charpaiGroup.name = 'charpai';
+  const charpaiCx = blockCx - 3.4;
+  const charpaiCz = (HOUSE_PARTITION_Z + HOUSE_DOOR_Z) / 2;
+  const charpaiTopY = 0.42;
+  const frame = texturedBox(0.9, 0.08, 1.9, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
+  frame.position.set(charpaiCx, charpaiTopY, charpaiCz);
+  charpaiGroup.add(frame);
+  for (const [lx, lz] of [
+    [-0.4, -0.85],
+    [0.4, -0.85],
+    [-0.4, 0.85],
+    [0.4, 0.85],
+  ]) {
+    const leg = texturedBox(0.06, charpaiTopY - 0.04, 0.06, 'wood', { tint: 0x4a3a28, tileSize: 1 });
+    leg.position.set(charpaiCx + lx, (charpaiTopY - 0.04) / 2, charpaiCz + lz);
+    charpaiGroup.add(leg);
+  }
+  mergeGroupByMaterial(charpaiGroup);
+  houseGroup.add(charpaiGroup);
+
+  // Hand pump — courtyard, clear of the staircase (which sits further west).
+  const handPumpGroup = new THREE.Group();
+  handPumpGroup.name = 'hand_pump';
+  const pumpX = HOUSE_CENTER.x - 2.5;
+  const pumpZ = HOUSE_CENTER.z + 5.5;
+  const pumpBase = texturedBox(0.4, 0.15, 0.4, 'metal', { tint: 0x3a3a3a, tileSize: 1 });
+  pumpBase.position.set(pumpX, 0.075, pumpZ);
+  handPumpGroup.add(pumpBase);
+  const pumpPipe = texturedBox(0.09, 1.1, 0.09, 'metal', { tint: 0x2a2a2a, tileSize: 1 });
+  pumpPipe.position.set(pumpX, 0.15 + 0.55, pumpZ);
+  handPumpGroup.add(pumpPipe);
+  const pumpHandle = texturedBox(0.5, 0.07, 0.07, 'metal', { tint: 0x2a2a2a, tileSize: 1 });
+  pumpHandle.position.set(pumpX - 0.25, 1.3, pumpZ);
+  pumpHandle.rotation.z = 0.3;
+  handPumpGroup.add(pumpHandle);
+  const pumpSpout = texturedBox(0.07, 0.3, 0.07, 'metal', { tint: 0x2a2a2a, tileSize: 1 });
+  pumpSpout.position.set(pumpX, 0.75, pumpZ + 0.18);
+  pumpSpout.rotation.x = 0.5;
+  handPumpGroup.add(pumpSpout);
+  mergeGroupByMaterial(handPumpGroup);
+  houseGroup.add(handPumpGroup);
+
+  // Everything else — merged once into `misc`, not individually referenceable.
+  const misc = new THREE.Group();
+
+  // Steel trunk — back room, near its west wall.
+  const trunk = texturedBox(1.1, 0.55, 0.6, 'metal', { tint: 0x5a6068, tileSize: 1 });
+  trunk.position.set(blockCx - 3.5, 0.275, blockCz - 2.8);
+  misc.add(trunk);
+
+  // Shelf + vessels — back room, against its east wall.
+  const shelfX = blockCx + blockW / 2 - 0.3;
+  const shelf = texturedBox(0.3, 1.7, 1.8, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
+  shelf.position.set(shelfX, 0.85, blockCz - 1.5);
+  misc.add(shelf);
+  for (let i = 0; i < 3; i++) {
+    const vessel = texturedBox(0.22, 0.22, 0.22, 'terracotta', { tint: 0xb5693f, tileSize: 1 });
+    vessel.position.set(shelfX - 0.05, 1.55, blockCz - 2.1 + i * 0.55);
+    misc.add(vessel);
+  }
+
+  // Tulsi platform — courtyard, clear of the door's direct path.
+  const tulsiX = HOUSE_CENTER.x + 3;
+  const tulsiZ = HOUSE_CENTER.z + 4.5;
+  const tulsiBase = texturedThickBox(0.7, 0.5, 0.7, 'concrete', { tint: CONCRETE_NEUTRAL });
+  tulsiBase.position.set(tulsiX, 0.25, tulsiZ);
+  misc.add(tulsiBase);
+  const tulsiStem = texturedBox(0.06, 0.5, 0.06, 'crop', { tint: TULSI_GREEN, tileSize: 1 });
+  tulsiStem.position.set(tulsiX, 0.75, tulsiZ);
+  misc.add(tulsiStem);
+  for (const [dx, dz, dy] of [
+    [0, 0, 1.05],
+    [0.15, 0.1, 0.95],
+    [-0.15, -0.08, 0.98],
+    [0.1, -0.15, 1.15],
+  ]) {
+    const leaf = texturedBox(0.22, 0.16, 0.22, 'crop', { tint: TULSI_GREEN, tileSize: 1 });
+    leaf.position.set(tulsiX + dx, dy, tulsiZ + dz);
+    misc.add(leaf);
+  }
+
+  // Clothesline — two posts, a line, a few pieces of drying cloth.
+  const lineY = 1.5;
+  const postAX = HOUSE_CENTER.x + 1.5;
+  const postBX = HOUSE_CENTER.x + 4.8;
+  const lineZ = HOUSE_CENTER.z + 6.2;
+  for (const px of [postAX, postBX]) {
+    const post = texturedBox(0.08, lineY, 0.08, 'wood', { tint: 0x4a3a28, tileSize: 1 });
+    post.position.set(px, lineY / 2, lineZ);
+    misc.add(post);
+  }
+  const line = texturedBox(postBX - postAX, 0.02, 0.02, 'wood', { tint: 0x2a2a2a, tileSize: 1 });
+  line.position.set((postAX + postBX) / 2, lineY, lineZ);
+  misc.add(line);
+  const clothSpan = postBX - postAX - 0.4;
+  for (let i = 0; i < 3; i++) {
+    const cloth = texturedBox(0.55, 0.6, 0.03, 'wood', { tint: CLOTH_COLORS[i], tileSize: 1 });
+    cloth.position.set(postAX + 0.3 + (i / 2) * clothSpan, lineY - 0.32, lineZ);
+    cloth.rotation.y = (i - 1) * 0.15;
+    misc.add(cloth);
+  }
+
+  mergeGroupByMaterial(misc);
+  for (const child of [...misc.children]) houseGroup.add(child);
+
+  return { charpaiGroup, handPumpGroup };
+}
+
 function buildHouse(kit) {
   const group = new THREE.Group();
   group.name = 'house_compound';
   const cx = HOUSE_CENTER.x;
   const cz = HOUSE_CENTER.z;
+  const { w: blockW, h: blockH, d: blockD, cx: blockCx, cz: blockCz } = HOUSE_BLOCK;
+  const seedBase = blockCx * 3.1 + blockCz * 1.7;
 
-  // Courtyard: 18m (x) x 14m (z), cement floor, centred exactly on the given point.
+  // Courtyard: 18m (x) x 14m (z), cement floor, open to the sky, centred exactly on
+  // the given point.
   const floor = texturedFloor(18, 14, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, 0.015, cz);
   group.add(floor);
 
-  // Two-storey house block along the courtyard's north edge, front door facing south
-  // (toward the lane / +z).
-  const blockW = 10;
-  const blockH = 6;
-  const blockD = 8;
-  const blockCx = cx;
-  const blockCz = cz - 3; // north side of the 14m-deep courtyard (cz-7 .. cz+7)
-  addWallBox(group, blockW, blockH, blockD, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz }, blockCx * 3.1 + blockCz * 1.7, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  // Ground-floor house block, walkable (item 3): 4 real perimeter walls (a genuine
+  // gap at the front door — see addGappedWall's doc comment) plus an interior
+  // partition splitting it into a front room (just inside the door) and a back room,
+  // each with its own real doorway. A staircase (below) climbs from the courtyard up
+  // to the flat roof, which already existed and now doubles as the interior ceiling.
+  addGappedWall(group, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_DOOR_Z, gapWidth: HOUSE_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE, seedBase });
+  addWallBox(group, blockW, blockH, WALL_THICKNESS, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz - blockD / 2 }, seedBase + 10, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(group, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx - blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 11, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(group, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx + blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 12, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addGappedWall(group, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_PARTITION_Z, gapWidth: HOUSE_PARTITION_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE, seedBase: seedBase + 20 });
 
-  // Painted skirt band along the base of the wall, plus a proud structural plinth
-  // right at the ground line (deeper, neutral — real plinths are usually exposed
-  // concrete regardless of the wall's own paint colour).
+  // Interior floor + a false ceiling (the real roof, below, sits well above it) so
+  // the rooms read as human-scaled rather than as tall as the full exterior mass.
+  const interiorFloor = texturedFloor(blockW - WALL_THICKNESS * 2, blockD - WALL_THICKNESS * 2, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
+  interiorFloor.rotation.x = -Math.PI / 2;
+  interiorFloor.position.set(blockCx, 0.02, blockCz);
+  group.add(interiorFloor);
+  const ceilingY = 3.15;
+  addThickBox(group, blockW - WALL_THICKNESS * 2, 0.1, blockD - WALL_THICKNESS * 2, 'concrete', { x: blockCx, y: ceilingY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+
+  // Painted skirt band along the base of each wall segment (matching each one's own
+  // length/gap so it never fills a doorway), plus a proud structural plinth right at
+  // the ground line.
   const houseBandH = 1.0;
-  addBox(group, blockW + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  const doorSegLen = (blockW - HOUSE_DOOR_WIDTH) / 2;
+  addBox(group, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx - blockW / 2 + doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx + blockW / 2 - doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, blockW + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz - blockD / 2 }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx - blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx + blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   kit.addPlinthRing(blockCx, blockCz, blockW, blockD, WALL_THICKNESS);
   kit.addCornerPilasters(blockCx, blockCz, blockW, blockD, blockH, WALL_THICKNESS);
 
   // Flat concrete roof with a parapet lip — overhangs the wall by 0.3m, visible edge.
   const overhang = 0.3;
-  const roofY = blockH + 0.15;
-  addThickBox(group, blockW + overhang * 2, 0.3, blockD + overhang * 2, 'concrete', { x: blockCx, y: roofY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
-  const parapetY = roofY + 0.55;
+  addThickBox(group, blockW + overhang * 2, 0.3, blockD + overhang * 2, 'concrete', { x: blockCx, y: HOUSE_ROOF_Y, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  const parapetY = HOUSE_ROOF_Y + 0.55;
   addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz - blockD / 2 - 0.1 }, { tint: CONCRETE_NEUTRAL });
   addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz + blockD / 2 + 0.1 }, { tint: CONCRETE_NEUTRAL });
   addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx - blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
   addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx + blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
 
-  // Front door, south face: recessed reveal, frame, lintel and leaf, real wall
-  // thickness expressed as the reveal depth.
-  const doorZ = blockCz + blockD / 2;
-  kit.addOpening({ center: { x: blockCx, y: 0, z: doorZ }, width: 1.3, height: 2.2, wallThickness: WALL_THICKNESS, widthAxis: 'x', isDoor: true });
-  kit.addStep({ x: blockCx, y: 0.08, z: doorZ + 0.35 }, { x: 1.6, y: 0.16, z: 0.5 });
-  kit.addSwitchboard({ x: blockCx + 1.4, y: 1.4, z: doorZ + 0.02 });
+  // Front door + interior doorway — frame only (jambs + lintel), no reveal/leaf,
+  // since both are real passages now (see addDoorFrameX's doc comment).
+  addDoorFrameX(kit, { x: blockCx, y: 0, z: HOUSE_DOOR_Z }, HOUSE_DOOR_WIDTH, 2.2, WALL_THICKNESS);
+  addDoorFrameX(kit, { x: blockCx, y: 0, z: HOUSE_PARTITION_Z }, HOUSE_PARTITION_DOOR_WIDTH, 2.1, WALL_THICKNESS);
+  kit.addStep({ x: blockCx, y: 0.08, z: HOUSE_DOOR_Z + 0.35 }, { x: 1.6, y: 0.16, z: 0.5 });
+  kit.addSwitchboard({ x: blockCx + 1.4, y: 1.4, z: HOUSE_DOOR_Z + 0.02 });
   kit.addDrainpipe({ x: blockCx - blockW / 2 - 0.05, y: blockH / 2, z: blockCz - blockD / 2 - 0.05 }, blockH);
+
+  // Staircase, courtyard side of the west wall, climbing from the ground up to the
+  // roof (item 3's "staircase to the roof").
+  const s = HOUSE_STAIRS;
+  const stairSteps = 10;
+  const stairDepth = (s.zStart - s.zEnd) / stairSteps;
+  group.add(buildStaircase(s.x, s.zStart, stairSteps, stairDepth, s.yTop / stairSteps, s.width, 'concrete', CONCRETE_NEUTRAL));
 
   // Low compound walls, east/west courtyard edges (south stays open onto the lane).
   const wallH = 1.6;
   addWall(group, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   addWall(group, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
-  // Task 2 (draw-call budget) — the wall/band/compound-wall meshes above all share
-  // one 'plaster' Material now (tint baked into vertex colour, see materials.js),
-  // and the floor/roof/parapets all share one 'concrete' Material, so this folds
-  // house_compound's ~10 meshes down to ~2 without moving a single vertex.
+  // Task 2 (draw-call budget) — every plaster-family mesh above shares one Material
+  // (tint baked into vertex colour, see materials.js), and every concrete-family one
+  // shares another, so this folds house_compound's ~20 meshes down to ~2. Runs
+  // before the interior props below are added, so they get their own (small) merge
+  // groups instead of being swept into these two.
   mergeGroupByMaterial(group);
 
-  return group;
+  const { charpaiGroup, handPumpGroup } = buildHouseInteriorProps(group);
+
+  return { group, charpaiGroup, handPumpGroup };
 }
 
 function buildSchool(kit) {
@@ -288,12 +512,13 @@ export function buildHeroZone(scene) {
   group.name = 'hero_zone';
   const kit = new BuildingKit(200);
   group.add(buildLane());
-  group.add(buildHouse(kit));
+  const house = buildHouse(kit);
+  group.add(house.group);
   group.add(buildSchool(kit));
   group.add(buildHalwai(kit));
   kit.finalize(group);
   scene.add(group);
-  return group;
+  return { group, charpaiGroup: house.charpaiGroup, handPumpGroup: house.handPumpGroup };
 }
 
 export { HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER };
