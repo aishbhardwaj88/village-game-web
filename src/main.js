@@ -36,7 +36,7 @@ import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
-import { buildTeaStall, buildGeneralStore, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
+import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildSignboards } from './signboards.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
@@ -125,21 +125,24 @@ async function main() {
     tulsiWaterMesh,
   } = buildHeroZone(scene, buildingKit);
 
-  // Two more Places V1 locations (item 9) on the lane between the house and the
-  // school, with clearance either side (see docs/parked.md for the exact placement
-  // reasoning — neither has a LAYOUT.md, dimensions/names read off the reference
-  // orthographic images instead).
+  // Places V1 locations (item 9) on the lanes near the hero zone — neither has a
+  // LAYOUT.md, dimensions/names read off the reference orthographic images instead
+  // (see docs/parked.md). The tea stall stays on the house-school lane where item 9
+  // put it; the general store moved (headroom-pass item 3, docs/parked.md) onto the
+  // lane between the hero zone and the bazaar (buildBazaarLane()'s own BEND
+  // waypoint, src/bazaar.js), east of it, facing the lane.
   const shopsGroup = new THREE.Group();
   shopsGroup.name = 'shops';
   const TEA_SHOP_POS = { x: -52, z: 78 };
   const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
-  const STORE_POS = { x: -38, z: 90 };
-  const STORE_ROT = -Math.PI / 2; // east of the lane, facing west
+  const STORE_POS = { x: -52, z: 20 };
+  const STORE_ROT = -Math.PI / 2; // east of the hero-zone-to-bazaar lane, facing west
   shopsGroup.add(buildTeaStall(TEA_SHOP_POS, TEA_SHOP_ROT));
   shopsGroup.add(buildGeneralStore(STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
+  shopsGroup.add(buildGeneralStoreGoods(STORE_POS, STORE_ROT));
   scene.add(shopsGroup);
 
   // Signboards (item 10) — not awaited inline (same reasoning as loadEnvironment

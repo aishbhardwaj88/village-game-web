@@ -75,6 +75,83 @@ export function buildGeneralStore(position, rotationY = 0) {
   return group;
 }
 
+/** General store interior — shelves of packets, tins and snack jars, visible through
+ * the front counter-window (headroom-pass item 3, docs/parked.md; the store has no
+ * walkable interior — see that entry — so this is dressing seen from outside, same
+ * as the bazaar's own shop interiors, src/bazaar.js buildBazaarInteriors()). All
+ * packets share one merged 'wood' draw call, all tins/jars a second merged 'metal'
+ * one — "instanced" in the same sense this whole codebase has used it throughout
+ * (many repeated small props folded into one draw call via a shared vertex-coloured
+ * Material, not a literal THREE.InstancedMesh — same technique, same one-draw-call
+ * result). No real brand names, logos, or text on any of it. */
+export function buildGeneralStoreGoods(position, rotationY = 0) {
+  const world = new THREE.Matrix4().makeRotationY(rotationY).setPosition(position.x, 0, position.z);
+  const backZ = -STORE.d / 2 + 0.12;
+
+  const packetTints = [PALETTE.mustard, PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue, PALETTE.greyGreen, 0xb8a23c];
+  const packetGeos = [];
+  const shelfGeos = [];
+  const tierYs = [0.45, 1.05, 1.65];
+  for (const tierY of tierYs) {
+    // The shelf plank itself.
+    const shelf = new THREE.BoxGeometry(STORE.w - 0.5, 0.04, 0.35);
+    ensureUv2(shelf);
+    bakeFlatTintColors(shelf, PALETTE.woodTrim, 1);
+    shelf.applyMatrix4(new THREE.Matrix4().setPosition(0, tierY, backZ).premultiply(world));
+    shelfGeos.push(shelf);
+
+    // A row of small packet boxes sitting on it, varied size/tint so it doesn't read
+    // as one repeated identical prop.
+    const count = 7;
+    for (let i = 0; i < count; i++) {
+      const px = -((STORE.w - 0.6) / 2) + (i / (count - 1)) * (STORE.w - 0.6);
+      const pw = 0.16 + (i % 3) * 0.03;
+      const ph = 0.14 + ((i + 1) % 3) * 0.03;
+      const box = new THREE.BoxGeometry(pw, ph, 0.14);
+      ensureUv2(box);
+      bakeFlatTintColors(box, packetTints[i % packetTints.length], 1);
+      box.applyMatrix4(new THREE.Matrix4().setPosition(px, tierY + 0.02 + ph / 2, backZ + 0.05).premultiply(world));
+      packetGeos.push(box);
+    }
+  }
+  const woodGeos = [...shelfGeos, ...packetGeos];
+  const woodMaterial = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const woodMesh = new THREE.Mesh(mergeGeometries(woodGeos), woodMaterial);
+  woodMesh.name = 'general_store_shelves';
+  woodMesh.castShadow = true;
+  woodMesh.receiveShadow = true;
+
+  // Tins (short, wide) and snack jars (tall, narrow) clustered on the side shelf.
+  const tinTints = [0xb0b4b8, 0x8f8878, 0xc9a24f, 0x9aa6ad];
+  const tinGeos = [];
+  const sideX = STORE.w / 2 - 0.35;
+  for (let i = 0; i < 6; i++) {
+    const isJar = i % 2 === 0;
+    const r = isJar ? 0.06 : 0.09;
+    const h = isJar ? 0.22 : 0.13;
+    const cyl = new THREE.CylinderGeometry(r, r, h, 8);
+    ensureUv2(cyl);
+    bakeFlatTintColors(cyl, tinTints[i % tinTints.length], 1);
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    cyl.applyMatrix4(
+      new THREE.Matrix4().setPosition(sideX - col * 0.18, 0.45 + h / 2, backZ + 0.5 + row * 0.22).premultiply(world)
+    );
+    tinGeos.push(cyl);
+  }
+  const tinMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const tinMesh = new THREE.Mesh(mergeGeometries(tinGeos), tinMaterial);
+  tinMesh.name = 'general_store_tins_and_jars';
+  tinMesh.castShadow = true;
+  tinMesh.receiveShadow = true;
+
+  const group = new THREE.Group();
+  group.name = 'general_store_goods';
+  group.add(woodMesh);
+  group.add(tinMesh);
+  return group;
+}
+
 /** Both shops' serving counters, merged into one draw call — plain unit-tiled wood
  * material (not texturedBox's per-size repeat, which would give each counter its own
  * material and defeat the merge) since these are small enough that one tile each
