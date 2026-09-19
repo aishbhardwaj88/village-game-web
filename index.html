@@ -115,7 +115,8 @@
       #start-overlay.hidden {
         display: none;
       }
-      #play-btn {
+      #play-btn,
+      #continue-btn {
         display: none;
         align-items: baseline;
         gap: 10px;
@@ -130,16 +131,26 @@
         cursor: pointer;
         box-shadow: 0 10px 26px rgba(42, 24, 16, 0.3);
       }
-      #play-btn:active {
+      #play-btn:active,
+      #continue-btn:active {
         transform: scale(0.96);
       }
-      #play-btn .play-en {
+      #play-btn .play-en,
+      #continue-btn .play-en {
         font-size: 1.15rem;
       }
-      #play-btn .play-hi {
+      #play-btn .play-hi,
+      #continue-btn .play-hi {
         font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         font-size: 0.78rem;
         opacity: 0.8;
+      }
+      /* Item 7 (save/continue) — Continue sits above Play, which becomes the smaller
+         "New game" once a save exists (see #start-overlay.ready #continue-btn.available
+         ~ #play-btn below); with no save, Continue never gets `.available` and stays
+         display:none, so the title screen looks exactly as it did before this item. */
+      #continue-btn {
+        margin: 0 0 12px;
       }
       #start-overlay-hint {
         opacity: 0.7;
@@ -152,6 +163,17 @@
       }
       #start-overlay.ready #play-btn {
         display: inline-flex;
+      }
+      #start-overlay.ready #continue-btn.available {
+        display: inline-flex;
+      }
+      #start-overlay.ready #continue-btn.available ~ #play-btn {
+        background: transparent;
+        color: #4a2e18;
+        box-shadow: none;
+        padding: 10px 28px;
+        font-weight: 600;
+        border: 1.5px solid rgba(42, 24, 16, 0.35);
       }
       #start-overlay.ready #start-overlay-hint {
         display: block;
@@ -775,6 +797,10 @@
         <p id="subtitle-en">An afternoon in Amrai Khera</p>
         <p id="subtitle-hi">अमराई खेड़ा में एक दोपहर</p>
         <div id="progress-track"><div id="progress-fill"></div></div>
+        <button id="continue-btn" type="button">
+          <span class="play-en">Continue</span>
+          <span class="play-hi">जारी रखें</span>
+        </button>
         <button id="play-btn" type="button">
           <span class="play-en">Play</span>
           <span class="play-hi">खेलें</span>

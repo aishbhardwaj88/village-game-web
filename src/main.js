@@ -27,6 +27,7 @@ import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 import { applyQuality, loadSavedQuality, saveQuality } from './quality.js';
+import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 
@@ -391,13 +392,22 @@ async function main() {
 
   const audio = new AudioEngine();
   let started = false;
+  const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
   setupStartOverlay({
     isTouch: touch,
-    onStart: () => {
+    hasSave: !!savedGame,
+    onStart: (isContinue) => {
       started = true;
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
       loadDeferredContent();
+
+      if (isContinue) {
+        // Continue (item 7) — resumes quest progress, skips the new-player tutorial.
+        continueFromSave(savedGame);
+        return;
+      }
+
       // One-time tutorial (item 2) — how to move and how to interact, dismissed by
       // the very next key or tap rather than needing a deliberate click on the panel.
       // Deferred a beat: the pointerdown that just started the game would otherwise
@@ -476,8 +486,30 @@ async function main() {
     objectiveHiEl.textContent = text.hi;
     objectiveEnEl.textContent = text.en;
     objectivePanel.classList.toggle('visible', quest.step !== QUEST_STEPS.ALL_COMPLETE);
+    // Item 7 (save/continue) — every quest-step change (interactions.js's
+    // onObjectiveChange) and both reset paths below call this, so a save is always in
+    // sync with real progress without a separate save-trigger call anywhere else.
+    // Gated on `started`: this function also runs once during initial setup, before
+    // the title screen's Play/Continue choice is even made — saving there would
+    // silently overwrite a real save with NOT_STARTED on every page load.
+    if (started) saveGame({ questStep: quest.step, quality: currentQuality });
   }
   updateObjective();
+
+  // Continue (item 7) — restores quest.step only; world/NPC positions reset to their
+  // normal spawn, same as a fresh game (see docs/parked.md for why). The one exception
+  // is the sister: HAVE_SISTER means she should already be following, so she's placed
+  // beside the player's own spawn point rather than left waiting at the school.
+  function continueFromSave(saved) {
+    if (!saved || !Object.values(QUEST_STEPS).includes(saved.questStep)) return;
+    quest.step = saved.questStep;
+    if (quest.step === QUEST_STEPS.HAVE_SISTER) {
+      sisterFollowing = true;
+      sisterNpc.position.set(-48, 0, 23);
+      sisterNpc.rotation.y = 0;
+    }
+    updateObjective();
+  }
 
   // Task 4 — errand 1's completion isn't the end of the game any more (the second
   // errand unlocks from talking to Maa again), so that card shows only "Continue"

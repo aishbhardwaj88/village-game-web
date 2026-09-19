@@ -59,32 +59,46 @@ export function setupLoadingScreen() {
 
 /**
  * Shows the title screen, requests pointer lock on desktop, and reveals touch
- * controls on touch devices. Resolves once the player taps/clicks the Play button —
- * disabled (CSS `display: none`, see index.html `#start-overlay.ready #play-btn`)
- * until setupLoadingScreen() has marked the overlay "ready" (assets loaded, or the
- * safety timeout fired). `onStart` is called synchronously inside the pointerdown
- * handler — callers that need to unlock a Web Audio AudioContext (iOS/Safari requires
- * this inside a user gesture) should create/resume it there, not after an await.
+ * controls on touch devices. Resolves once the player taps/clicks Play/New game (or
+ * Continue, when `hasSave` is true) — disabled (CSS `display: none`, see index.html
+ * `#start-overlay.ready #play-btn`) until setupLoadingScreen() has marked the overlay
+ * "ready" (assets loaded, or the safety timeout fired). `onStart(isContinue)` is
+ * called synchronously inside the pointerdown handler — callers that need to unlock a
+ * Web Audio AudioContext (iOS/Safari requires this inside a user gesture) should
+ * create/resume it there, not after an await.
  */
-export function setupStartOverlay({ isTouch, onStart }) {
+export function setupStartOverlay({ isTouch, hasSave, onStart }) {
   const overlay = document.getElementById('start-overlay');
   const touchControls = document.getElementById('touch-controls');
   const playBtn = document.getElementById('play-btn');
+  const continueBtn = document.getElementById('continue-btn');
   const hint = document.getElementById('start-overlay-hint');
 
   hint.textContent = isTouch ? '' : 'WASD to move · Esc to pause';
 
-  const start = () => {
+  // Item 7 (save/continue) — a save only relabels "Play" to "New game" and reveals
+  // "Continue" above it; with no save, the title screen is unchanged from before.
+  if (hasSave) {
+    playBtn.querySelector('.play-en').textContent = 'New game';
+    playBtn.querySelector('.play-hi').textContent = 'नया खेल';
+    continueBtn.classList.add('available');
+  }
+
+  const start = (isContinue) => {
     if (!overlay.classList.contains('ready')) return;
-    playBtn.removeEventListener('pointerdown', start);
+    playBtn.removeEventListener('pointerdown', startNew);
+    continueBtn.removeEventListener('pointerdown', startContinue);
     overlay.classList.add('hidden');
 
     if (isTouch) {
       touchControls.classList.add('active');
     }
 
-    onStart();
+    onStart(isContinue);
   };
+  const startNew = () => start(false);
+  const startContinue = () => start(true);
 
-  playBtn.addEventListener('pointerdown', start);
+  playBtn.addEventListener('pointerdown', startNew);
+  continueBtn.addEventListener('pointerdown', startContinue);
 }
