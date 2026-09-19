@@ -5,6 +5,19 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-19, new 10-item queue, items 7-9 done:** Save/continue via localStorage —
+title screen offers Continue (restores quest.step) alongside New game when a save
+exists (item 7, `f79b798`). Audio mix pass — rebalanced the tractor/bike/footstep
+levels that were dominating everything else, added dialogue-open ducking and a pause
+menu master volume slider (item 8, `837ff8a`). Full sweep playtest — both errands
+end to end, house/school interiors, lane/shops, field driving, a real wall-collision
+test, zero console errors; two initial script false-positives investigated and ruled
+out (not game bugs, see docs/parked.md), no fixes needed (item 9, no code changes).
+111/150 draw calls, 25.8k triangles, 4.72MB assets, grounding clean. Next: item 10
+(docs).
+
+---
+
 **2026-09-19, new 10-item queue, items 4-6 done:** School interior — one real
 walkable classroom in the west wing, benches/blackboard/teacher's table, bell now
 visible on its post (item 4, `9326d4c`). Five new interactions wired through the
