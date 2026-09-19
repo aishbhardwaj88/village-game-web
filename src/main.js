@@ -12,7 +12,8 @@ import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
-import { resolveCollisions, vehicleFootprintBox } from './collision.js';
+import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
+import { buildTrees, defaultTreePlacements } from './trees.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION } from './interactions.js';
@@ -193,12 +194,19 @@ async function main() {
   const waypointArrowEl = document.getElementById('waypoint-arrow');
   const waypointArrowShapeEl = document.getElementById('waypoint-arrow-shape');
 
+  // Trees (task queue item 2) — see src/trees.js for the procedural leaf-texture/
+  // cross-plane/instancing approach. Cheap enough (6 draw calls total, no texture
+  // download) to build eagerly alongside the hero zone rather than deferring.
+  const { group: treesGroup, colliders: treeColliders } = buildTrees(defaultTreePlacements());
+  scene.add(treesGroup);
+  addStaticColliders(treeColliders.map((t) => ({ minX: t.x - t.radius, maxX: t.x + t.radius, minZ: t.z - t.radius, maxZ: t.z + t.radius })));
+
   const camRig = new ThirdPersonCamera(camera, player);
   // Buildings the camera should never clip through (item 1) — raycast against the
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup, shopsGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
+  const cameraObstacles = [heroZoneGroup, shopsGroup, treesGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 

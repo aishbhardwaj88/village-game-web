@@ -105,6 +105,14 @@ function buildStaticColliders() {
 
 export const STATIC_COLLIDERS = buildStaticColliders();
 
+/** Adds more boxes to the shared static collider list after the fact — for content
+ * built outside village.js/shops.js that still needs to block movement the same way
+ * (queue item 2's tree trunks, main.js — trees are placed at runtime, not known when
+ * this module's own buildStaticColliders() list above is built). */
+export function addStaticColliders(boxes) {
+  STATIC_COLLIDERS.push(...boxes);
+}
+
 /** Push a circle (in the XZ plane) out of a box if it overlaps, returning true if a
  * correction was applied. Pushing out along the shallowest penetration axis (not
  * straight back toward the circle's previous position) is what produces sliding. */
