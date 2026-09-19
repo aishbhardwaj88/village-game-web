@@ -739,6 +739,7 @@ async function main() {
     },
     onRestart: restartErrand,
     onQualityChange: setQuality,
+    onVolumeChange: (v) => audio.setMasterVolume(v),
     onShowCredits: showCredits,
   });
 
@@ -769,6 +770,10 @@ async function main() {
       childWalk(dt);
       if (sisterFollowing) sisterFollow(dt);
       MAA_POSITION.copy(maaNpc.position);
+
+      // Item 8 (audio mix pass) — the whole mix ducks under the dialogue panel,
+      // same as it would duck under actual voice lines if there were any.
+      audio.setDialogueOpen(dialogue.isOpen);
 
       if (dialogue.isOpen) {
         // Dialogue pauses movement/interaction entirely — it advances only on

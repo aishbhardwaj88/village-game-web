@@ -613,6 +613,16 @@
         color: #2a1810;
         border-color: #f2b25c;
       }
+      /* Item 8 (audio mix pass) — master volume slider, styled to match the quality
+         buttons above it: same warm accent colour on the filled track/thumb. */
+      #volume-row {
+        margin: 16px 0 4px;
+      }
+      #volume-slider {
+        width: 100%;
+        accent-color: #f2b25c;
+        cursor: pointer;
+      }
 
       /* --- Credits screen (task 5) — same warm palette-built gradient as the title
          screen (#start-overlay), not the pause menu's dark utility-panel look; reachable
@@ -750,6 +760,11 @@
               <button class="quality-btn" type="button" data-quality="medium">Medium</button>
               <button class="quality-btn" type="button" data-quality="low">Low</button>
             </div>
+          </div>
+          <div id="volume-row">
+            <p class="quality-label-en">Volume</p>
+            <p class="quality-label-hi">आवाज़</p>
+            <input id="volume-slider" type="range" min="0" max="100" value="100" />
           </div>
           <button id="pause-credits-btn" class="panel-btn secondary" type="button" style="margin-top: 16px">
             <span class="btn-en">Credits</span><span class="btn-hi">श्रेय</span>

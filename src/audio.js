@@ -13,6 +13,11 @@ function createNoiseBuffer(ctx, seconds) {
   return buffer;
 }
 
+// Item 8 (queue) — the pre-mix-pass level; the pause menu's master volume slider and
+// the dialogue-open duck both multiply this, they don't replace it, so a user who
+// never touches the slider hears exactly what every earlier item already tuned.
+const BASE_MASTER_GAIN = 0.55;
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -33,6 +38,9 @@ export class AudioEngine {
 
     this._nextDogAt = 10 + Math.random() * 20; // first bark after a while, not immediately
     this._dogTimer = 0;
+
+    this._masterVolume = 1; // pause menu slider, 0-1 (item 8)
+    this._duckFactor = 1; // ducked while the dialogue panel is open (item 8)
   }
 
   start() {
@@ -41,11 +49,34 @@ export class AudioEngine {
     if (!Ctx) return;
     this.ctx = new Ctx();
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.55;
+    this.master.gain.value = BASE_MASTER_GAIN * this._masterVolume * this._duckFactor;
     this.master.connect(this.ctx.destination);
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.started = true;
     this._startAmbience();
+  }
+
+  _applyMasterGain() {
+    if (!this.started) return;
+    this.master.gain.setTargetAtTime(BASE_MASTER_GAIN * this._masterVolume * this._duckFactor, this.ctx.currentTime, 0.25);
+  }
+
+  /** Pause menu master volume slider (item 8) — 0-1, multiplies every sound at once
+   * since everything in this file already routes through `this.master`. */
+  setMasterVolume(v) {
+    this._masterVolume = Math.max(0, Math.min(1, v));
+    this._applyMasterGain();
+  }
+
+  /** "Sits under dialogue" (item 8) — the whole mix ducks a bit while the dialogue
+   * panel is open, same one master gain, so nothing needs per-sound ducking logic.
+   * Safe to call every frame with the same value; setTargetAtTime is a no-op ramp to
+   * an unchanged target. */
+  setDialogueOpen(isOpen) {
+    const factor = isOpen ? 0.55 : 1;
+    if (factor === this._duckFactor) return;
+    this._duckFactor = factor;
+    this._applyMasterGain();
   }
 
   setWalking(isWalking, speedRatio = 1) {
@@ -133,12 +164,16 @@ export class AudioEngine {
    * tap with a quick decay; soft field soil is duller/lower with a slightly longer,
    * more diffuse decay; lane dirt (the default) sits between the two. */
   _playFootstep(t, surface = 'dirt') {
+    // Item 8 mix pass: footsteps fire on almost every step, more often than any other
+    // sound in the game, so even a moderate peak reads as loud in practice — trimmed
+    // from 0.22-0.25 so they sit under the vehicle/interaction one-shots instead of
+    // washing them out.
     const profile =
       surface === 'cement'
-        ? { freq: 650, q: 1.4, gain: 0.22, decay: 0.06 }
+        ? { freq: 650, q: 1.4, gain: 0.16, decay: 0.06 }
         : surface === 'soil'
-          ? { freq: 140, q: 0.6, gain: 0.22, decay: 0.13 }
-          : { freq: 220, q: 0.9, gain: 0.25, decay: 0.09 };
+          ? { freq: 140, q: 0.6, gain: 0.16, decay: 0.13 }
+          : { freq: 220, q: 0.9, gain: 0.18, decay: 0.09 };
 
     const noise = this.ctx.createBufferSource();
     noise.buffer = createNoiseBuffer(this.ctx, 0.16);
@@ -187,7 +222,10 @@ export class AudioEngine {
     filter.frequency.value = 300;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.5, t + 0.008);
+    // Item 8 mix pass: was 0.5, the loudest one-shot in the whole file by a wide
+    // margin (footsteps peak ~0.18, everything else under 0.2) — the tractor engine
+    // firing every ~0.13-0.45s at that level dominated any other sound near it.
+    gain.gain.exponentialRampToValueAtTime(0.28, t + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
     osc.connect(filter).connect(gain).connect(this.master);
     osc.start(t);
@@ -200,7 +238,8 @@ export class AudioEngine {
     osc.frequency.value = 90 + speedRatio * 30;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.35, t + 0.005);
+    // Item 8 mix pass: was 0.35, same reasoning as the tractor chug above.
+    gain.gain.exponentialRampToValueAtTime(0.22, t + 0.005);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
     osc.connect(gain).connect(this.master);
     osc.start(t);
