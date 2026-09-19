@@ -5,6 +5,19 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-19, 4-bug playtest round complete:** Bike drove backward on W (front/rear
+were built swapped — `b328d40`). E was double-bound with trolley attach/detach, both a
+missing key-repeat guard and a hardcoded "E" badge on what was really an F-only action
+(`d0c3326`). Diagnosed "objects float at a low camera angle" as a missing omnidirectional
+contact-shadow cue (not a real Y-position or ground-dip bug — verified programmatically)
+and added one InstancedMesh decal system (`fb334b6`). Trees removed entirely — exhaustive
+Poly Haven (every tree model 150k-3.9M triangles) + Sketchfab (found suitable candidates,
+blocked by an auth-gated download) search documented in docs/parked.md, no replacement
+found (`3ef356f`). Final: 100/120 draw calls, ~24k triangles, grounding clean, zero
+console errors. All 4 commits on `main`, nothing pushed.
+
+---
+
 **2026-09-19, new 10-item queue complete (items 1-10):** Item 10 (docs) updated
 `CLAUDE.md` (§1 world summary refreshed, still 135/150 lines), `docs/look-standard.md`
 (trees/dust rendering techniques + final draw-call number), `docs/CREDITS.md` (ceramic
