@@ -1,4 +1,17 @@
-import { HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, WALL_THICKNESS, HOUSE_BLOCK, HOUSE_DOOR_Z, HOUSE_DOOR_WIDTH, HOUSE_PARTITION_Z, HOUSE_PARTITION_DOOR_WIDTH } from './village.js';
+import {
+  HOUSE_CENTER,
+  SCHOOL_CENTER,
+  HALWAI_CENTER,
+  WALL_THICKNESS,
+  HOUSE_BLOCK,
+  HOUSE_DOOR_Z,
+  HOUSE_DOOR_WIDTH,
+  HOUSE_PARTITION_Z,
+  HOUSE_PARTITION_DOOR_WIDTH,
+  SCHOOL_ROOM,
+  SCHOOL_ROOM_DOOR_X,
+  SCHOOL_ROOM_DOOR_WIDTH,
+} from './village.js';
 
 /**
  * Simple axis-aligned box colliders — no physics engine. Player and vehicles are
@@ -86,8 +99,25 @@ function buildStaticColliders() {
     const cx = SCHOOL_CENTER.x;
     const cz = SCHOOL_CENTER.z;
     boxes.push(...footprintWithDoorNotch(cx, cz + 9, 24, 6, 'south', 1.1)); // back block, door faces +z (south, toward yard)
-    boxes.push(...footprintWithDoorNotch(cx - 12, cz, 6, 18, 'east', 1.1)); // west wing, door faces +x
     boxes.push(...footprintWithDoorNotch(cx + 12, cz, 6, 18, 'west', 1.1)); // east wing, door faces -x
+
+    // West wing — item 4's walkable classroom: real thin perimeter walls (a genuine
+    // gap at the door) instead of the notched-solid-mass every other school block
+    // still uses, matching src/village.js's buildSchoolClassroom() exactly (both
+    // read from the same SCHOOL_ROOM/SCHOOL_ROOM_DOOR_* constants).
+    {
+      const { cx: rx, cz: rz, w, d } = SCHOOL_ROOM;
+      const hw = w / 2;
+      const hd = d / 2;
+      const t = WALL_THICKNESS / 2;
+      const doorHalf = SCHOOL_ROOM_DOOR_WIDTH / 2;
+      boxes.push({ minX: rx - hw - t, maxX: rx - hw + t, minZ: rz - hd, maxZ: rz + hd }); // west wall, solid
+      boxes.push({ minX: rx - hw, maxX: rx + hw, minZ: rz - hd - t, maxZ: rz - hd + t }); // north wall, solid
+      boxes.push({ minX: rx - hw, maxX: rx + hw, minZ: rz + hd - t, maxZ: rz + hd + t }); // south wall, solid
+      // East wall (door), 2 segments.
+      boxes.push({ minX: SCHOOL_ROOM_DOOR_X - t, maxX: SCHOOL_ROOM_DOOR_X + t, minZ: rz - hd, maxZ: rz - doorHalf });
+      boxes.push({ minX: SCHOOL_ROOM_DOOR_X - t, maxX: SCHOOL_ROOM_DOOR_X + t, minZ: rz + doorHalf, maxZ: rz + hd });
+    }
   }
 
   // Halwai: only 2 real walls (north, east) — no door, both other sides fully open.

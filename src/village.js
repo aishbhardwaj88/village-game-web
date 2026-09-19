@@ -364,6 +364,84 @@ function buildHouse(kit) {
   return { group, charpaiGroup, handPumpGroup };
 }
 
+/** Same reasoning as addDoorFrameX (house, above) but for a doorway whose width runs
+ * along Z instead of X — this room's one real door faces east/west, not north/south. */
+function addDoorFrameZ(kit, center, width, height, wallThickness) {
+  const frameW = 0.1;
+  for (const side of [-1, 1]) {
+    kit.addTrimBar({ x: center.x, y: center.y + height / 2, z: center.z + (side * width) / 2 }, { x: wallThickness + 0.02, y: height, z: frameW });
+  }
+  kit.addTrimBar({ x: center.x, y: center.y + height + frameW / 2, z: center.z }, { x: wallThickness + 0.02, y: frameW, z: width + frameW * 2 });
+}
+
+// Item 4 (school interior) — the west wing is the one walkable classroom; exact
+// layout shared with src/collision.js the same way HOUSE_* is.
+export const SCHOOL_ROOM = { w: 6, h: 3.4, d: 18, cx: SCHOOL_CENTER.x - 12, cz: SCHOOL_CENTER.z };
+export const SCHOOL_ROOM_DOOR_X = SCHOOL_ROOM.cx + SCHOOL_ROOM.w / 2; // east face, toward the yard
+export const SCHOOL_ROOM_DOOR_WIDTH = 1.1;
+
+/** The walkable classroom, item 4: real east-facing doorway (a genuine gap, like the
+ * house — see addGappedWall's doc comment), solid north/south/west walls, a
+ * blackboard + teacher's table/chair at the north end, benches in rows facing them,
+ * a wall chart on the west wall. Same plaster/cement treatment as every other block
+ * here, folded into buildSchool's own merge pass — see mergeGroupByMaterial below. */
+function buildSchoolClassroom(group, kit) {
+  const { w, h, d, cx: rx, cz: rz } = SCHOOL_ROOM;
+  const seedBase = rx * 3.1 + rz * 1.7;
+  const overhang = 0.3;
+  const bandH = 0.9;
+
+  addGappedWall(group, { axis: 'z', length: d, height: h, thickness: WALL_THICKNESS, cx: SCHOOL_ROOM_DOOR_X, cz: rz, gapWidth: SCHOOL_ROOM_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_SCHOOL, seedBase });
+  addWallBox(group, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz - d / 2 }, seedBase + 10, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(group, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz + d / 2 }, seedBase + 11, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(group, WALL_THICKNESS, h, d, 'plaster', { x: rx - w / 2, y: h / 2, z: rz }, seedBase + 12, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+
+  // Floor + false ceiling (the real roof, below, sits well above).
+  const floor = texturedFloor(w - WALL_THICKNESS * 2, d - WALL_THICKNESS * 2, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(rx, 0.02, rz);
+  group.add(floor);
+  addThickBox(group, w - WALL_THICKNESS * 2, 0.1, d - WALL_THICKNESS * 2, 'concrete', { x: rx, y: 2.9, z: rz }, { tint: CONCRETE_NEUTRAL });
+
+  // Band, matching each wall segment's own length/gap.
+  addBox(group, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz - d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz + d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, WALL_THICKNESS + 0.06, bandH, d + 0.06, 'plaster', { x: rx - w / 2, y: bandH / 2, z: rz }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  const doorSegLen = (d - SCHOOL_ROOM_DOOR_WIDTH) / 2;
+  addBox(group, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz - d / 2 + doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(group, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz + d / 2 - doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  kit.addPlinthRing(rx, rz, w, d, WALL_THICKNESS);
+  kit.addCornerPilasters(rx, rz, w, d, h, WALL_THICKNESS);
+  addThickBox(group, w + overhang * 2, 0.25, d + overhang * 2, 'concrete', { x: rx, y: h + 0.125, z: rz }, { tint: CONCRETE_NEUTRAL });
+
+  // Real door + a step; a decorative window on the solid west wall (like every
+  // other window in this file — not a passage, so the usual fake opening is fine).
+  addDoorFrameZ(kit, { x: SCHOOL_ROOM_DOOR_X, y: 0, z: rz }, SCHOOL_ROOM_DOOR_WIDTH, 2.1, WALL_THICKNESS);
+  kit.addStep({ x: SCHOOL_ROOM_DOOR_X + 0.3, y: 0.08, z: rz }, { x: 0.45, y: 0.16, z: 1.4 });
+  kit.addOpening({ center: { x: rx - w / 2, y: 0, z: rz + 5 }, width: 1.3, height: 1.3, wallThickness: WALL_THICKNESS, widthAxis: 'z', sill: 1.1 });
+  kit.addDrainpipe({ x: rx - w / 2 - 0.05, y: h / 2, z: rz - d / 2 - 0.05 }, h);
+
+  // Furniture: blackboard + teacher's table/chair at the north end (the "front" of
+  // the room), benches in rows facing them, a wall chart on the west wall.
+  const blackboard = texturedBox(2.4, 1.1, 0.06, 'wood', { tint: 0x1c2a22, tileSize: 1 });
+  blackboard.position.set(rx, 1.7, rz - d / 2 + 0.15);
+  group.add(blackboard);
+  const teacherTable = texturedBox(1.1, 0.75, 0.5, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
+  teacherTable.position.set(rx, 0.375, rz - d / 2 + 1.6);
+  group.add(teacherTable);
+  const teacherChair = texturedBox(0.4, 0.75, 0.4, 'wood', { tint: 0x4a3a28, tileSize: 1 });
+  teacherChair.position.set(rx, 0.375, rz - d / 2 + 2.4);
+  group.add(teacherChair);
+  const chart = texturedBox(1.2, 0.9, 0.04, 'wood', { tint: 0xdcd0a8, tileSize: 1 });
+  chart.position.set(rx - w / 2 + 0.1, 1.6, rz + 2);
+  group.add(chart);
+  for (let row = 0; row < 5; row++) {
+    const bench = texturedBox(3.4, 0.42, 0.35, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
+    bench.position.set(rx - 0.4, 0.21, rz - d / 2 + 4 + row * 2.3);
+    group.add(bench);
+  }
+}
+
 function buildSchool(kit) {
   const group = new THREE.Group();
   group.name = 'school_compound';
@@ -379,11 +457,13 @@ function buildSchool(kit) {
   const bandH = 0.9;
   const overhang = 0.3;
 
-  // Back (north) classroom block, plus two side wings — a U open south onto the yard.
+  // Back (north) classroom block, plus the east wing — solid mass with decorative
+  // fake openings, same as every other building here (see docs/parked.md's 2026-09-15
+  // "real wall thickness" entry). The west wing is the one walkable classroom (item 4,
+  // built separately below) so it's not in this generic loop.
   // Heights vary slightly between blocks so the skyline isn't one flat line.
   const blocks = [
     { w: 24, d: 6, x: cx, z: cz + 12 - 3, h: 3.7, doorAxis: 'x', doorSign: 1, windows: 2 }, // back, faces yard (+z)
-    { w: 6, d: 18, x: cx - 15 + 3, z: cz, h: 3.4, doorAxis: 'z', doorSign: 1, windows: 1 }, // west wing, faces yard (+x)
     { w: 6, d: 18, x: cx + 15 - 3, z: cz, h: 3.6, doorAxis: 'z', doorSign: -1, windows: 1 }, // east wing, faces yard (-x)
   ];
 
@@ -416,6 +496,8 @@ function buildSchool(kit) {
 
     kit.addDrainpipe({ x: b.x - b.w / 2 - 0.05, y: b.h / 2, z: b.z - b.d / 2 - 0.05 }, b.h);
   }
+
+  buildSchoolClassroom(group, kit);
 
   // Steel gate at the yard's south (open) entrance.
   const gateZ = cz - 12;
