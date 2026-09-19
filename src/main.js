@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
-import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS } from './player.js';
+import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER } from './village.js';
+import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField } from './field.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
@@ -211,6 +212,104 @@ async function main() {
   loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_1k.hdr').catch((err) =>
     console.error('Failed to load environment HDRI', err)
   );
+
+  // Asset slots (queue item 1) — every registration below just reads each object's
+  // already-public handles (vehicle.group/.bodyPivot/.wheels/etc, all exposed since
+  // items 1-3 of the earlier queue); src/vehicles.js itself is untouched, per this
+  // queue's "do not rebuild vehicle geometry" instruction. Fire-and-forget, same
+  // reasoning as loadEnvironment above — a slow/missing model never blocks startup.
+  // See src/assetSlots.js and docs/asset-slots.md.
+  const assetSlots = createAssetSlotRegistry();
+  {
+    const tractor = vehicles.find((v) => v.preset.kind === 'tractor');
+    const cart = vehicles.find((v) => v.preset.kind === 'cart');
+    const bike = vehicles.find((v) => v.preset.kind === 'bike');
+    const trolley = tractor.trolley;
+
+    assetSlots.register('tractor', {
+      dimensions: tractor.preset.body,
+      hide: [tractor.bodyPivot, ...tractor.rearWheels, ...tractor.frontWheels],
+      placements: [{ container: tractor.group, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+    });
+    assetSlots.register('trolley', {
+      dimensions: { w: 2.0, h: 1.5, d: 3.5 }, // src/vehicles.js TR.bedW/bedLen + wallH+floorY
+      hide: trolley.group.children.filter((c) => !trolley.wheels.includes(c)),
+      placements: [{ container: trolley.group, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+    });
+    assetSlots.register('cart', {
+      dimensions: cart.preset.body,
+      hide: [cart.bodyPivot, ...cart.wheels],
+      placements: [{ container: cart.group, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+    });
+    {
+      // Both bullocks share one model — src/vehicles.js merges their static (non-leg)
+      // geometry into one draw call (task 2 of the earlier queue), so the "everything
+      // but bodyPivot/wheels" trick used above finds that merged mesh here too.
+      const knownCartChildren = [cart.bodyPivot, ...cart.wheels];
+      const bullocksStaticGroup = cart.group.children.find((c) => !knownCartChildren.includes(c));
+      const bullockOffsets = [-0.42, 0.42]; // src/vehicles.js buildCartGroup's `side * 0.42`
+      assetSlots.register('bullock', {
+        dimensions: { w: 0.6, h: 1.6, d: 2.2 }, // body + head/neck + legs, src/vehicles.js BULLOCK_* consts
+        hide: [bullocksStaticGroup, ...cart.bullocks[0].userData.legs, ...cart.bullocks[1].userData.legs],
+        placements: bullockOffsets.map((x) => ({ container: cart.group, position: new THREE.Vector3(x, 0, 0), rotationY: 0 })),
+      });
+    }
+    assetSlots.register('bike', {
+      dimensions: bike.preset.body,
+      hide: [bike.bodyPivot, bike.frontWheel, bike.rearWheel],
+      placements: [{ container: bike.group, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+    });
+  }
+  {
+    const halwaiShopGroup = heroZoneGroup.children.find((c) => c.name === 'halwai_shop');
+    assetSlots.register('halwai_kiosk', {
+      dimensions: { w: 5.5, h: 3.5, d: 4.5 }, // src/village.js buildHalwai's width/height/depth
+      hide: halwaiShopGroup.children.slice(),
+      placements: [{ container: halwaiShopGroup, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: 0 }],
+    });
+  }
+  const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
+  assetSlots.register('player', {
+    dimensions: PERSON_DIMENSIONS,
+    hide: [player.children[0]], // the capsule mesh — keep the group itself (camera rig target, position driver)
+    placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+  });
+  for (const [name, npc] of [
+    ['maa', maaNpc],
+    ['halwai', halwaiNpc],
+    ['teacher', teacherNpc],
+    ['sister', sisterNpc],
+  ]) {
+    assetSlots.register(name, {
+      dimensions: PERSON_DIMENSIONS,
+      hide: [npc.userData.mesh],
+      placements: [{ container: npc, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+    });
+  }
+  // charpai/hand_pump slots are registered once queue item 3 builds their
+  // placeholders (they don't exist yet) — see docs/parked.md.
+
+  // TEMPORARY end-to-end test slot (queue item 1's required test) — named
+  // "ceramic_pot" to match the model that already exists at
+  // public/assets/models/ceramic_pot.glb (used elsewhere for the halwai's own pots,
+  // loaded directly rather than through this system — unrelated, just the same
+  // source file), so detection finds it immediately without adding a new file. A
+  // bright, obviously-fake magenta box stands in for "the placeholder" here — proves
+  // detect -> load -> scale -> ground -> place -> hide-the-placeholder end to end.
+  // Safe to remove once a real slot needs testing instead; costs one draw call.
+  const testPotPlaceholder = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xff00ff }));
+  testPotPlaceholder.position.set(HOUSE_CENTER.x + 3, 0.2, HOUSE_CENTER.z + 2);
+  testPotPlaceholder.castShadow = true;
+  scene.add(testPotPlaceholder);
+  assetSlots.register('ceramic_pot', {
+    dimensions: { w: 0.5, h: 0.6, d: 0.5 },
+    hide: [testPotPlaceholder],
+    placements: [{ container: scene, position: testPotPlaceholder.position.clone(), rotationY: 0 }],
+  });
+
+  assetSlots.resolveAll().then((results) => {
+    if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
+  });
 
   function onResize() {
     const preset = applyQuality(currentQuality, { renderer, sun, isTouch: touch }); // re-reads the pixel ratio cap; shadow map dispose here is a harmless no-op if size didn't change
