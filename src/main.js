@@ -14,7 +14,8 @@ import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
-import { resolveCollisions, vehicleFootprintBox } from './collision.js';
+import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
+import { buildBazaarRow, bazaarColliders } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
@@ -145,6 +146,14 @@ async function main() {
     .then((mesh) => shopsGroup.add(mesh))
     .catch((err) => console.error('Failed to build signboards', err));
 
+  // Bazaar row (new request) — Places V1/bazaar_row/LAYOUT.md is the authority; see
+  // src/bazaar.js for the full build. Real gameplay content (not distant scenery), so
+  // built eagerly with the rest of the hero zone, not deferred like the field/
+  // background houses.
+  const bazaarGroup = buildBazaarRow();
+  scene.add(bazaarGroup);
+  addStaticColliders(bazaarColliders());
+
   const vehicles = spawnVehicles(scene);
 
   const player = createPlayer();
@@ -257,7 +266,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup, shopsGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
+  const cameraObstacles = [heroZoneGroup, shopsGroup, bazaarGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
