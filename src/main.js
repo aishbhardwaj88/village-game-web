@@ -15,7 +15,7 @@ import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
-import { buildBazaarRow, bazaarColliders } from './bazaar.js';
+import { buildBazaarRow, bazaarColliders, buildBazaarCountersAndShutters, buildBazaarSignboards } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
@@ -153,6 +153,10 @@ async function main() {
   const bazaarGroup = buildBazaarRow();
   scene.add(bazaarGroup);
   addStaticColliders(bazaarColliders());
+  bazaarGroup.add(buildBazaarCountersAndShutters());
+  buildBazaarSignboards()
+    .then((mesh) => bazaarGroup.add(mesh))
+    .catch((err) => console.error('Failed to build bazaar signboards', err));
 
   const vehicles = spawnVehicles(scene);
 
