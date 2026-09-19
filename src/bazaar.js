@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
-import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
+import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { BuildingKit } from './buildingKit.js';
-import { mergeGroupByMaterial } from './mergeUtils.js';
+import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
+import { buildStripSegment } from './paths.js';
 
 /**
  * Bazaar row — Places V1/bazaar_row/LAYOUT.md is the authority for counts, names,
@@ -772,4 +773,37 @@ export function chowkColliders() {
   const chabZ = CHOWK_CENTER.z + 2;
   boxes.push({ minX: chabX - 1.3, maxX: chabX + 1.3, minZ: chabZ - 1.3, maxZ: chabZ + 1.3 });
   return boxes;
+}
+
+// --- Item 5: connect the lane from the hero zone to the bazaar. Same treatment as
+// every other lane in the village (src/paths.js buildStripSegment — a bumpy, jittered
+// strip, never a flat straight ribbon) — a 2-segment bend from the house down to the
+// chowk (a single straight shot would cross the "no straight lines" rule) plus one
+// long segment running the length of the bazaar's own frontage, so the tractor/cart
+// can drive from one end of the row to the other, not just up to the chowk and no
+// further. All 3 segments merge into ONE draw call, same as the field track loop. ---
+
+// Bugfix (found via a scripted drive test, not inspection): the lane's own start
+// point must be a real, open, vehicle-width point, not just any point the existing
+// lane network's geometry happens to touch. HOUSE_CENTER itself sits inside the
+// house's z=[32,40] footprint, essentially at the doorway threshold — the 1.3m door
+// gap is wide enough for the player on foot but not for a ~2m-wide tractor, so a
+// vehicle spawned/driven there gets stuck fighting wall collision every frame (speed
+// climbs normally, position barely moves — the tell-tale sign, not a rendering bug).
+// `{x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7}` is the same courtyard point
+// src/field.js's own LANE_JOIN already uses to spur the existing lane to the track —
+// proven open, real vehicles already use it.
+const BAZAAR_LANE_START = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 };
+const BAZAAR_LANE_BEND = { x: -58, z: 22 };
+const BAZAAR_LANE_ARRIVE = { x: -58, z: 8 }; // just north-east of the chowk plaza
+const BAZAAR_LANE_ROW_WIDTH = 6;
+
+export function buildBazaarLane() {
+  const rowFrontageStart = { x: BAZAAR_WEST_X + 2, z: 8 }; // just past unit 1's west end
+  const segments = [
+    buildStripSegment(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
+    buildStripSegment(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { seed: 42, ruts: true }),
+    buildStripSegment(BAZAAR_LANE_ARRIVE, rowFrontageStart, BAZAAR_LANE_ROW_WIDTH, { seed: 43, ruts: true }),
+  ];
+  return mergeMeshList(segments, 'bazaar_lane');
 }

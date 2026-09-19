@@ -25,6 +25,7 @@ import {
   buildTeaStallChowkSign,
   buildChowkPlaza,
   chowkColliders,
+  buildBazaarLane,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
@@ -172,6 +173,10 @@ async function main() {
   bazaarGroup.add(buildTeaStallChowk());
   bazaarGroup.add(buildChowkPlaza());
   addStaticColliders(chowkColliders());
+
+  // Item 5 — the lane extension itself (a bumpy, curved strip, never a straight
+  // ribbon), connecting the existing hero-zone lane to the bazaar/chowk.
+  bazaarGroup.add(buildBazaarLane());
   buildTeaStallChowkSign()
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build chowk tea stall sign', err));
