@@ -16,7 +16,12 @@ export class InputController {
     this.yawDelta = 0;
     this.pitchDelta = 0;
     this._interactPressed = false; // edge-triggered, consumed via consumeInteract()
-    this._attachPressed = false; // trolley attach/detach (queue item 2) — F on desktop, the same tap target on touch
+    // Bugfix 2/4: trolley attach/detach used to share E/the interact tap target with
+    // mount/dismount (a stray keydown-autorepeat frame during a held E could dismount
+    // instead of attach, or vice versa — see the keydown guards below). Now a fully
+    // separate edge-triggered flag/key: F on desktop, its own tap target on touch
+    // (#attach-hint, shown only when main.js says attach/detach is actually possible).
+    this._attachPressed = false;
 
     this._keys = new Set();
     this._pointerLocked = false;
@@ -27,6 +32,7 @@ export class InputController {
       this._setupDesktop();
     }
     this._setupInteractButton();
+    this._setupAttachButton();
   }
 
   /** Mount/dismount vehicles: E on desktop, the on-screen button on touch. Returns
@@ -37,9 +43,9 @@ export class InputController {
     return pressed;
   }
 
-  /** Trolley attach/detach: F on desktop (separate from E so dismounting still works
-   * independently); on touch there's no second physical button, so main.js treats a
-   * tap on the shared prompt as this action when that's what the prompt is showing. */
+  /** Trolley attach/detach (bugfix 2/4): F on desktop, its own #attach-hint tap
+   * target on touch (see _setupAttachButton below) — fully separate from
+   * consumeInteract()/E, never shared. */
   consumeAttach() {
     const pressed = this._attachPressed;
     this._attachPressed = false;
@@ -66,10 +72,34 @@ export class InputController {
       });
     } else {
       window.addEventListener('keydown', (e) => {
+        // Bugfix 2/4: a held key fires repeated keydown events (native OS key-repeat)
+        // — without this guard, holding E past the first frame kept re-arming
+        // _interactPressed on every repeat event, which tick() (a fresh frame each
+        // time) read as a brand new press: mount, then immediately dismount on the
+        // very next repeat event, then remount, flickering for as long E stayed held.
+        // Same risk for F, guarded the same way even though nothing hit it yet.
+        if (e.repeat) return;
         if (e.code === 'KeyE') this._interactPressed = true;
         if (e.code === 'KeyF') this._attachPressed = true;
       });
     }
+  }
+
+  /** Trolley attach/detach's own on-screen target (bugfix 2/4) — index.html
+   * #attach-hint, a second copy of the same badge+text widget #interact-hint uses,
+   * shown/hidden by main.js only when attaching or detaching is actually possible
+   * right now (never a permanent second button cluttering the screen). Desktop's F
+   * key is wired above in _setupInteractButton; this only wires the touch tap. */
+  _setupAttachButton() {
+    const hint = document.getElementById('attach-hint');
+    if (!hint || !this.touch) return;
+    hint.classList.add('touch-target');
+    const badge = document.getElementById('attach-key-badge');
+    if (badge) badge.textContent = 'TAP';
+    hint.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this._attachPressed = true;
+    });
   }
 
   get pointerLocked() {

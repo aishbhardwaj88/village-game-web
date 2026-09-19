@@ -465,6 +465,25 @@ async function main() {
     interactHint.classList.remove('visible', 'pulse');
   }
 
+  // Bugfix 2/4 — trolley attach/detach's own prompt (index.html #attach-hint), fully
+  // separate from the mount/dismount one above: different DOM element, different key
+  // badge (F, not E), different InputController flag (consumeAttach(), not
+  // consumeInteract()). Shown only on the frames attaching/detaching is actually
+  // possible, same shape as setInteractPrompt/hideInteractPrompt but no pulse.
+  const attachHint = document.getElementById('attach-hint');
+  const attachHiEl = document.getElementById('attach-hi');
+  const attachEnEl = document.getElementById('attach-en');
+
+  function setAttachPrompt(hi, en) {
+    attachHiEl.textContent = hi;
+    attachEnEl.textContent = en;
+    attachHint.classList.add('visible');
+  }
+
+  function hideAttachPrompt() {
+    attachHint.classList.remove('visible');
+  }
+
   let mountedVehicle = null;
 
   const dialogue = new Dialogue();
@@ -775,6 +794,12 @@ async function main() {
       // same as it would duck under actual voice lines if there were any.
       audio.setDialogueOpen(dialogue.isOpen);
 
+      // Bugfix 2/4 — default the attach/detach prompt to hidden every frame; only the
+      // mounted-tractor branch below re-shows it, on the specific frames it applies.
+      // Simpler and more robust than remembering to hide it in every other branch
+      // (dialogue/sitting/lying/walking) whenever mountedVehicle stops being a tractor.
+      hideAttachPrompt();
+
       if (dialogue.isOpen) {
         // Dialogue pauses movement/interaction entirely — it advances only on
         // click/tap/Space (handled inside Dialogue itself), not E.
@@ -786,43 +811,56 @@ async function main() {
         setInteractPrompt('खड़े हो जाएं', 'Stand up');
         if (interactPressed) standUpFromLying();
       } else if (mountedVehicle) {
-        mountedVehicle.update(dt, input);
-        mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        mountedVehicle.group.position.z = THREE.MathUtils.clamp(mountedVehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        const p = mountedVehicle.preset;
+        // Bugfix 2/4 — a stable snapshot for this whole frame: `dismount()` below
+        // sets the outer `mountedVehicle` to null, and it must run LAST in this
+        // branch (E is unconditional now, see below) — reading the outer variable
+        // again after that point would throw. Every read in this branch uses
+        // `vehicle`, never `mountedVehicle`, until the final dismount() call.
+        const vehicle = mountedVehicle;
+        vehicle.update(dt, input);
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        const p = vehicle.preset;
         const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
-        resolveCollisions(mountedVehicle.group.position, vehicleRadius, otherVehicleBoxes(mountedVehicle));
-        audio.setVehicle(mountedVehicle.preset.kind, mountedVehicle.speed / mountedVehicle.preset.maxSpeed);
+        resolveCollisions(vehicle.group.position, vehicleRadius, otherVehicleBoxes(vehicle));
+        audio.setVehicle(vehicle.preset.kind, vehicle.speed / vehicle.preset.maxSpeed);
 
-        // Trolley attach/detach (item 2) — F on desktop, the shared tap target on
-        // touch when that's the prompt showing; E always dismounts on desktop
-        // regardless (kept independent so getting off the tractor never needs a
-        // detour through the trolley prompt).
-        const candidateTrolley = mountedVehicle.trolley || looseTrolley;
-        if (p.kind === 'tractor' && !mountedVehicle.trolley && candidateTrolley) {
-          const hitchDist = mountedVehicle.hitchWorldPoint.distanceTo(candidateTrolley.hitchWorldPoint);
-          const eligible = mountedVehicle.speed < -0.05 && hitchDist < p.attachRadius;
-          if (eligible) {
-            setInteractPrompt('ट्रॉली जोड़ें', 'Attach trolley');
-            if (touch ? interactPressed : attachPressed) {
-              mountedVehicle.attachTrolley(candidateTrolley);
-              looseTrolley = null;
+        // Trolley attach/detach (bugfix 2/4) — entirely separate from mount/dismount
+        // below: its own key (F desktop / #attach-hint's own tap target on touch,
+        // both via consumeAttach()), its own prompt (setAttachPrompt/hideAttachPrompt),
+        // shown only on the frames it's actually possible. The two used to share E/one
+        // prompt, which is what let mounting (or a held E's native key-repeat)
+        // interfere with attaching/detaching.
+        if (p.kind === 'tractor') {
+          const candidateTrolley = vehicle.trolley || looseTrolley;
+          if (!vehicle.trolley && candidateTrolley) {
+            const hitchDist = vehicle.hitchWorldPoint.distanceTo(candidateTrolley.hitchWorldPoint);
+            const eligible = vehicle.speed < -0.05 && hitchDist < p.attachRadius;
+            if (eligible) {
+              setAttachPrompt('ट्रॉली जोड़ें', 'Attach trolley');
+              if (attachPressed) {
+                vehicle.attachTrolley(candidateTrolley);
+                looseTrolley = null;
+              }
+            } else {
+              hideAttachPrompt();
+            }
+          } else if (vehicle.trolley) {
+            setAttachPrompt('ट्रॉली अलग करें', 'Detach trolley');
+            if (attachPressed) {
+              looseTrolley = vehicle.detachTrolley();
             }
           } else {
-            setInteractPrompt('उतर जाएं', 'Dismount');
-            if (interactPressed) dismount();
-          }
-        } else if (p.kind === 'tractor' && mountedVehicle.trolley) {
-          setInteractPrompt('ट्रॉली अलग करें', 'Detach trolley');
-          if (touch ? interactPressed : attachPressed) {
-            looseTrolley = mountedVehicle.detachTrolley();
-          } else if (!touch && interactPressed) {
-            dismount();
+            hideAttachPrompt();
           }
         } else {
-          setInteractPrompt('उतर जाएं', 'Dismount');
-          if (interactPressed) dismount();
+          hideAttachPrompt();
         }
+
+        // E is ALWAYS just mount/dismount now, unconditionally — must run last in
+        // this branch (see the note where `vehicle` is captured, above).
+        setInteractPrompt('उतर जाएं', 'Dismount');
+        if (interactPressed) dismount();
       } else {
         forward.set(-Math.sin(camRig.yaw), 0, -Math.cos(camRig.yaw));
         right.set(Math.cos(camRig.yaw), 0, -Math.sin(camRig.yaw));
