@@ -14,8 +14,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
-import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
-import { buildTrees, defaultTreePlacements } from './trees.js';
+import { resolveCollisions, vehicleFootprintBox } from './collision.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
@@ -205,12 +204,12 @@ async function main() {
   const waypointArrowEl = document.getElementById('waypoint-arrow');
   const waypointArrowShapeEl = document.getElementById('waypoint-arrow-shape');
 
-  // Trees (task queue item 2) — see src/trees.js for the procedural leaf-texture/
-  // cross-plane/instancing approach. Cheap enough (6 draw calls total, no texture
-  // download) to build eagerly alongside the hero zone rather than deferring.
-  const { group: treesGroup, colliders: treeColliders } = buildTrees(defaultTreePlacements());
-  scene.add(treesGroup);
-  addStaticColliders(treeColliders.map((t) => ({ minX: t.x - t.radius, maxX: t.x + t.radius, minZ: t.z - t.radius, maxZ: t.z + t.radius })));
+  // Bugfix 4/4 — procedural trees (src/trees.js) removed entirely. The brief called
+  // for replacing them with real CC0/CC BY models; after an exhaustive search (see
+  // docs/parked.md for the full list of what was checked and why each candidate was
+  // rejected) no suitable model could actually be obtained, so per the brief's own
+  // fallback ("remove trees from the scene entirely rather than shipping ones that
+  // look wrong") the whole feature is gone rather than kept in its rejected state.
 
   // Dust motes (task queue item 6) — one Points draw call, confined to outdoor
   // "zones" (lane, track loop, field, open courtyards) so interiors stay dust-free
@@ -258,7 +257,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup, shopsGroup, treesGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
+  const cameraObstacles = [heroZoneGroup, shopsGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
