@@ -16,6 +16,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
+import { buildTemple, buildFlowerStall, templeColliders } from './temple.js';
 import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
 import {
   buildBazaarRow,
@@ -194,6 +195,16 @@ async function main() {
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build bazaar signboards', err));
 
+  // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
+  // north of the field/track, reachable by a lane spur (item 4). See src/temple.js
+  // for the full build and docs/parked.md for the placement reasoning.
+  const templeGroup = new THREE.Group();
+  templeGroup.name = 'temple_area';
+  templeGroup.add(buildTemple(buildingKit));
+  templeGroup.add(buildFlowerStall());
+  scene.add(templeGroup);
+  addStaticColliders(templeColliders());
+
   // First flush of the shared kit — makes hero zone + bazaar trim/plinth/etc visible
   // right away (including behind the title screen, before Play is clicked). A second
   // flush happens in loadDeferredContent() once the background houses have added
@@ -312,7 +323,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
-  const cameraObstacles = [heroZoneGroup, shopsGroup, bazaarGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
+  const cameraObstacles = [heroZoneGroup, shopsGroup, bazaarGroup, templeGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
 
@@ -497,7 +508,7 @@ async function main() {
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
-    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
+    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
       skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water'],
     });
     cameraObstacles.push(villageStaticGroup);
