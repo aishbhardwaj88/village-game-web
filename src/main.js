@@ -15,7 +15,17 @@ import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
-import { buildBazaarRow, bazaarColliders, buildBazaarCountersAndShutters, buildBazaarSignboards, buildBazaarInteriors } from './bazaar.js';
+import {
+  buildBazaarRow,
+  bazaarColliders,
+  buildBazaarCountersAndShutters,
+  buildBazaarSignboards,
+  buildBazaarInteriors,
+  buildTeaStallChowk,
+  buildTeaStallChowkSign,
+  buildChowkPlaza,
+  chowkColliders,
+} from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
 import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
@@ -155,6 +165,16 @@ async function main() {
   addStaticColliders(bazaarColliders());
   bazaarGroup.add(buildBazaarCountersAndShutters());
   bazaarGroup.add(buildBazaarInteriors());
+
+  // Chowk (item 4) — the second tea stall (Places V1/tea_stall_chowk/), a chabutra,
+  // benches, a few plastic chairs, east of the bazaar row with open ground left
+  // around it for future content.
+  bazaarGroup.add(buildTeaStallChowk());
+  bazaarGroup.add(buildChowkPlaza());
+  addStaticColliders(chowkColliders());
+  buildTeaStallChowkSign()
+    .then((mesh) => bazaarGroup.add(mesh))
+    .catch((err) => console.error('Failed to build chowk tea stall sign', err));
   buildBazaarSignboards()
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build bazaar signboards', err));

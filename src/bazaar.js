@@ -565,3 +565,211 @@ export function buildBazaarInteriors() {
 
   return group;
 }
+
+// --- Item 4: the chowk — the second tea stall from
+// Places V1/tea_stall_chowk/ (no LAYOUT.md there either, only
+// MAIN_tea_stall_chowk_orthos.png/_views.png — dimensions/name/counter-height read
+// off the orthos' own printed callouts, same as item 9 of an earlier queue read
+// tea_stall/general_store off their orthos). "यादव चाय नाश्ता / Yadav Chai Nashta",
+// 6m wide x 3.5m deep, roof edge 2.8m, counter 0.9m, solid back wall only (open on
+// the other 3 sides, post-supported), teal counter/posts, cream/ochre walls — the
+// same materials/palette law as the rest of the village. ---
+
+export const CHOWK_TEA = { w: 6, d: 3.5, roofEdgeH: 2.8, counterH: 0.9, backWallH: 2.8 };
+export const CHOWK_TEA_POS = { x: -55, z: 10 };
+export const CHOWK_TEA_ROT = -Math.PI / 2; // faces west, toward the bazaar row
+export const CHOWK_CENTER = { x: -54, z: 13 }; // the open plaza itself — chabutra/seating live here
+
+function chowkWorldMatrix() {
+  return new THREE.Matrix4().makeRotationY(CHOWK_TEA_ROT).setPosition(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z);
+}
+
+/** Walls + roof + counter + posts, merged into 2 draw calls (plaster wall; teal
+ * metal-family counter+posts+roof share one, same per-vertex-tint merge trick as
+ * everywhere else in this file). */
+export function buildTeaStallChowk() {
+  const group = new THREE.Group();
+  group.name = 'tea_stall_chowk';
+  const world = chowkWorldMatrix();
+  const { w, d, roofEdgeH, counterH, backWallH } = CHOWK_TEA;
+
+  // Solid back wall only (local +Z) — every other side stays open, post-supported.
+  const backWallMesh = texturedWallBox(w, backWallH, WALL_THICKNESS, 'plaster', {
+    tint: PALETTE.cream,
+    tileSize: 1.5,
+    tintStrength: WALL_TINT_STRENGTH,
+    seed: CHOWK_TEA_POS.x * 3.1,
+  });
+  const wallLocal = new THREE.Matrix4().makeTranslation(0, backWallH / 2, d / 2 - WALL_THICKNESS / 2);
+  const wallGeo = backWallMesh.geometry.clone().applyMatrix4(wallLocal).applyMatrix4(world);
+  const band = texturedWallBox(w + 0.02, 0.5, WALL_THICKNESS + 0.02, 'plaster', {
+    tint: darken(PALETTE.cream),
+    tileSize: 1.2,
+    tintStrength: WALL_TINT_STRENGTH + 0.15,
+    seed: CHOWK_TEA_POS.x * 5.3,
+  });
+  const bandLocal = new THREE.Matrix4().makeTranslation(0, 0.25, d / 2 - WALL_THICKNESS / 2);
+  const bandGeo = band.geometry.clone().applyMatrix4(bandLocal).applyMatrix4(world);
+  const wallMesh = new THREE.Mesh(mergeGeometries([wallGeo, bandGeo]), backWallMesh.material);
+  wallMesh.name = 'chowk_tea_wall';
+  wallMesh.castShadow = true;
+  wallMesh.receiveShadow = true;
+  group.add(wallMesh);
+
+  // Teal counter + posts + sloped roof, one merged 'metal' draw call. Raw
+  // BoxGeometry throughout (not texturedThickBox, which also bakes a uv2 + vertex-
+  // colour attribute pair that these plain, uniformly-tinted boxes don't carry) —
+  // mergeGeometries requires every input to share the same attribute set, and mixing
+  // the two broke it (found via the actual render throwing, not by inspection). One
+  // flat material tint (set directly on the material below, not per-vertex) covers
+  // the whole merged mesh since it's all one uniform teal here, unlike item 3's
+  // per-instance-tinted goods.
+  const teal = PALETTE.teal;
+  const tealGeos = [];
+  const counter = new THREE.BoxGeometry(w - 0.6, counterH, 0.5);
+  const counterLocal = new THREE.Matrix4().makeTranslation(0, counterH / 2, -d / 2 + 0.3);
+  tealGeos.push(counter.applyMatrix4(counterLocal).applyMatrix4(world));
+
+  for (const [px, pz, ph] of [
+    [-w / 2 + 0.1, -d / 2 + 0.1, roofEdgeH],
+    [w / 2 - 0.1, -d / 2 + 0.1, roofEdgeH],
+    [-w / 2 + 0.1, d / 2 - 0.1, backWallH + 0.5],
+    [w / 2 - 0.1, d / 2 - 0.1, backWallH + 0.5],
+  ]) {
+    const post = new THREE.BoxGeometry(0.1, ph, 0.1);
+    const postLocal = new THREE.Matrix4().makeTranslation(px, ph / 2, pz);
+    tealGeos.push(post.applyMatrix4(postLocal).applyMatrix4(world));
+  }
+
+  // Single-pitch sloped roof: low at the open front, high at the back wall.
+  const roofBackY = backWallH + 0.5;
+  const roofMidY = (roofEdgeH + roofBackY) / 2;
+  const roofTilt = Math.atan2(roofBackY - roofEdgeH, d);
+  const roofSlab = new THREE.BoxGeometry(w + 0.4, 0.06, d + 0.3);
+  roofSlab.rotateX(roofTilt);
+  const roofLocal = new THREE.Matrix4().makeTranslation(0, roofMidY, 0);
+  tealGeos.push(roofSlab.applyMatrix4(roofLocal).applyMatrix4(world));
+
+  const tealMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, tint: teal, roughness: 1 });
+  const tealMesh = new THREE.Mesh(mergeGeometries(tealGeos), tealMaterial);
+  tealMesh.name = 'chowk_tea_counter_roof';
+  tealMesh.castShadow = true;
+  tealMesh.receiveShadow = true;
+  group.add(tealMesh);
+
+  return group;
+}
+
+/** Bilingual sign for the chowk tea stall — "यादव चाय नाश्ता / Yadav Chai Nashta",
+ * spelled exactly as the orthos' own printed signboard reads. Its own small canvas/
+ * texture/mesh (one draw call) — not folded into the bazaar's 8-unit atlas, a
+ * different building entirely. Async, same pattern as every other signboard here. */
+export async function buildTeaStallChowkSign() {
+  await document.fonts.load('700 70px "Noto Sans Devanagari"');
+  await document.fonts.ready;
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#e8dcc4';
+  ctx.fillRect(0, 0, 1024, 512);
+  ctx.strokeStyle = '#8a6a4a';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(6, 6, 1012, 500);
+  ctx.fillStyle = '#2a2018';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '700 84px "Noto Sans Devanagari", sans-serif';
+  ctx.fillText('यादव चाय नाश्ता', 512, 210);
+  ctx.font = '600 44px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillText('Yadav Chai Nashta', 512, 340);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
+  const geo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, 0.6, 0.04);
+  const world = chowkWorldMatrix();
+  const local = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.55, -CHOWK_TEA.d / 2 - 0.05);
+  geo.applyMatrix4(local).applyMatrix4(world);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+  mesh.name = 'chowk_tea_sign';
+  return mesh;
+}
+
+/** The plaza itself: a chabutra (circular brick platform — no tree on it, see
+ * docs/parked.md for why this session has no licensed tree model to plant), a
+ * couple of benches, a few plastic chairs, with clear open ground left around all
+ * of it "for future content" per the brief. One merged draw call (wood family,
+ * per-vertex tint — chabutra deck, benches, and chairs all share it). */
+export function buildChowkPlaza() {
+  const group = new THREE.Group();
+  group.name = 'chowk_plaza';
+  const geos = [];
+  let material = null;
+
+  // Chabutra — a round brick kerb + a slightly raised deck, per the orthos' "Tree
+  // Platform 0.5m" callout (built as a plain seating platform here, no tree).
+  const chabX = CHOWK_CENTER.x - 3;
+  const chabZ = CHOWK_CENTER.z + 2;
+  const kerbSegs = 12;
+  const kerbR = 1.15;
+  for (let i = 0; i < kerbSegs; i++) {
+    const a0 = (i / kerbSegs) * Math.PI * 2;
+    const segMesh = texturedThickBox(0.55, 0.5, 0.25, 'terracotta', { tint: darken(PALETTE.terracotta), tileSize: 0.5, roughness: 1 });
+    material = material || segMesh.material;
+    const m = new THREE.Matrix4().makeRotationY(a0).setPosition(chabX + Math.sin(a0) * kerbR, 0.25, chabZ + Math.cos(a0) * kerbR);
+    geos.push(segMesh.geometry.clone().applyMatrix4(m));
+  }
+  const deckMesh = texturedThickBox(2.0, 0.06, 2.0, 'concrete', { tint: 0xd7d2c4, tileSize: 1, roughness: 1 });
+  const deckLocal = new THREE.Matrix4().makeTranslation(chabX, 0.53, chabZ);
+  geos.push(deckMesh.geometry.clone().applyMatrix4(deckLocal));
+
+  // Benches (2), maroon, near the stall's open front.
+  const benchMesh = texturedThickBox(1.4, 0.45, 0.4, 'wood', { tint: 0x6a2a2a, tileSize: 1, roughness: 1 });
+  material = material || benchMesh.material;
+  geos.push(benchMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(CHOWK_TEA_POS.x - 2.6, 0.225, CHOWK_TEA_POS.z - 1.5)));
+  geos.push(benchMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(CHOWK_TEA_POS.x - 2.6, 0.225, CHOWK_TEA_POS.z + 1.5)));
+
+  // A few plastic chairs — plain tinted boxes, same crude-but-legible scale the
+  // halwai's own plastic chairs already use elsewhere in this game.
+  const chairTints = [0xb23a3a, 0x3a9955, 0xb23a3a, 0x3a9955];
+  chairTints.forEach((tint, i) => {
+    const chairMesh = texturedThickBox(0.4, 0.4, 0.4, 'wood', { tint, tileSize: 1, roughness: 1 });
+    material = material || chairMesh.material;
+    const cx2 = CHOWK_TEA_POS.x - 4.5 + (i % 2) * 0.7;
+    const cz2 = CHOWK_TEA_POS.z - 0.6 + Math.floor(i / 2) * 0.7;
+    geos.push(chairMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(cx2, 0.2, cz2)));
+  });
+
+  const mesh = new THREE.Mesh(mergeGeometries(geos), material);
+  mesh.name = 'chowk_plaza_furniture';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  return group;
+}
+
+/** Colliders for the chowk — the tea stall's back wall + counter (blocks walk-
+ * through, same reasoning as the bazaar's own counters), the chabutra kerb. Chairs/
+ * benches are deliberately NOT solid (small enough, and low-stakes to walk through —
+ * matching how this game never bothered colliding the halwai's own plastic chairs). */
+export function chowkColliders() {
+  const world = chowkWorldMatrix();
+  const toWorld = (lx, lz) => {
+    const v = new THREE.Vector3(lx, 0, lz).applyMatrix4(world);
+    return { x: v.x, z: v.z };
+  };
+  const boxes = [];
+  const { w, d } = CHOWK_TEA;
+  const backA = toWorld(-w / 2, d / 2 - WALL_THICKNESS);
+  const backB = toWorld(w / 2, d / 2);
+  boxes.push({ minX: Math.min(backA.x, backB.x), maxX: Math.max(backA.x, backB.x), minZ: Math.min(backA.z, backB.z), maxZ: Math.max(backA.z, backB.z) });
+  const counterA = toWorld(-w / 2 + 0.3, -d / 2 + 0.05);
+  const counterB = toWorld(w / 2 - 0.3, -d / 2 + 0.55);
+  boxes.push({ minX: Math.min(counterA.x, counterB.x), maxX: Math.max(counterA.x, counterB.x), minZ: Math.min(counterA.z, counterB.z), maxZ: Math.max(counterA.z, counterB.z) });
+  const chabX = CHOWK_CENTER.x - 3;
+  const chabZ = CHOWK_CENTER.z + 2;
+  boxes.push({ minX: chabX - 1.3, maxX: chabX + 1.3, minZ: chabZ - 1.3, maxZ: chabZ + 1.3 });
+  return boxes;
+}
