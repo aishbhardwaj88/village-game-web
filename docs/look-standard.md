@@ -245,3 +245,20 @@ creating a new one. `tools/screenshot.js`'s grounding check skips any mesh flagg
 `userData.mergedStatic` (set by `mergeGroupByMaterial`) the same way it already skipped
 `shop_roofs`/`trim`/`plinth`/etc — a merged mesh folds sub-components of one or more
 objects together and is never a single "placed object" of its own.
+
+**2026-09-19 (10-item queue) result: 111/150 draw calls, ~25.8k triangles, 4.72MB
+assets** (procedural additions below have no asset-size cost). Two new rendering
+techniques added this session, neither a change to the renderer/colour law above:
+
+- **Procedural trees (`src/trees.js`)** — a canvas-generated soft-blob leaf-cluster
+  alpha texture (no download), 3 intersecting cross-planes per canopy (6 single-sided
+  planes, `side: THREE.FrontSide`, not `DoubleSide`), instanced per species (neem/
+  peepal/mango). The canopy reads as a flat card unless each vertex's normal is
+  overwritten to point away from the canopy's own centre (`applySphericalNormals()`)
+  — real per-plane-flat lighting under directional sun is the actual cause, not
+  z-fighting or a `DoubleSide` normal flip (both were tried and disproven first, see
+  `docs/parked.md`). One InstancedMesh pair (trunk, leaves) per species.
+- **Dust motes (`src/dust.js`)** — one `THREE.Points` object, canvas-generated soft-dot
+  texture, `NormalBlending`, `depthWrite: false`, low opacity (0.3). Positions are
+  fixed at build time across a handful of outdoor "zones" (rectangle or line-segment
+  shaped) rather than following the camera/player — see `docs/parked.md` for why.

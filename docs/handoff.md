@@ -5,6 +5,18 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-19, new 10-item queue complete (items 1-10):** Item 10 (docs) updated
+`CLAUDE.md` (§1 world summary refreshed, still 135/150 lines), `docs/look-standard.md`
+(trees/dust rendering techniques + final draw-call number), `docs/CREDITS.md` (ceramic
+pot back in the live scene as the asset-slot test piece). `docs/collaboration_lessons.md`
+deliberately skipped — carries uncommitted content from a parallel, unrelated user
+workflow (Gemini character art), no safe way here to stage only my own addition without
+risking that content (see `docs/parked.md`). Final state: 111/150 draw calls, ~25.8k
+triangles, 4.72MB assets, grounding clean, zero console errors across every run this
+session. All 10 commits on `main`, nothing pushed. Nothing else in flight.
+
+---
+
 **2026-09-19, new 10-item queue, items 7-9 done:** Save/continue via localStorage —
 title screen offers Continue (restores quest.step) alongside New game when a save
 exists (item 7, `f79b798`). Audio mix pass — rebalanced the tractor/bike/footstep

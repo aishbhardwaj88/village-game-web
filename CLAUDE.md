@@ -10,20 +10,29 @@ to GitHub Pages. The Unity project (`../Village nostalgia`) is the future downlo
 version — **never touch it from here.** `START_HERE.md` has the folder map.
 
 Current world: house/school/halwai/tea-stall/general-store hero zone + connecting lane
-(`src/village.js`, `src/shops.js`), a wheat/sabzi field with a dirt track loop
-(`src/field.js`), vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s exact
-measurements — walk/bike/tractor+detachable-trolley/bullock cart (`src/vehicles.js`),
-two errands (bring jalebi home, then take a tiffin to school and bring your sister
-home) with objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
-`src/interactions.js`, `src/waypoint.js`), NPCs with simple waypoint-loop/follow
-routines (`src/npcRoutines.js`), a title screen, pause menu with a live quality setting
-(`src/pause.js`, `src/quality.js`), and a credits screen generated from
-`docs/CREDITS.md` (`src/credits.js`), procedural Web Audio (`src/audio.js`), a gradient
-sky + HDRI-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
+(`src/village.js`, `src/shops.js`), procedural trees (`src/trees.js`), a wheat/sabzi
+field with a dirt track loop and fine dust motes (`src/field.js`, `src/dust.js`),
+vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s exact measurements —
+walk/bike/tractor+detachable-trolley/bullock cart (`src/vehicles.js`). The house and
+school each have one real walkable interior (courtyard/rooms/stairs-to-roof;
+one classroom) with their own interactions (lie on the charpai, pump water, water the
+tulsi, write on the blackboard, sit on a bench — `src/interactions.js`); a
+`src/assetSlots.js` registry auto-loads a real `.glb` in place of any placeholder,
+named per-object, once one exists (`docs/asset-slots.md`). Two errands (bring jalebi
+home, then take a tiffin to school and bring your sister home) with
+objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
+`src/interactions.js`, `src/waypoint.js`) that save/continue via localStorage
+(`src/save.js`); NPCs with simple waypoint-loop/follow routines
+(`src/npcRoutines.js`), a title screen, pause menu with a live quality setting and a
+master volume slider (`src/pause.js`, `src/quality.js`), and a credits screen
+generated from `docs/CREDITS.md` (`src/credits.js`), procedural Web Audio
+(`src/audio.js`, mixed/balanced, ducks under dialogue), a gradient sky +
+HDRI-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
 `reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m). **Draw-call budget:
-89/150 as of 2026-09-18's draw-call reduction pass (was 149/150 — see
-`docs/look-standard.md`'s Budgets section and `src/mergeUtils.js` before adding new
-static geometry; merge same-material meshes rather than one mesh per part).**
+111/150 as of 2026-09-19's 10-item queue (trees/interiors/dust added since the
+2026-09-18 draw-call reduction pass) — see `docs/look-standard.md`'s Budgets section
+and `src/mergeUtils.js` before adding new static geometry; merge same-material meshes
+rather than one mesh per part.**
 
 ## 2. Reference folders — read-only, never touched
 
