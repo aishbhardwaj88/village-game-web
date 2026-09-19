@@ -1,5 +1,14 @@
 import * as THREE from 'three';
-import { HOUSE_CENTER, HALWAI_CENTER, SCHOOL_CENTER } from './village.js';
+import {
+  HOUSE_CENTER,
+  HALWAI_CENTER,
+  SCHOOL_CENTER,
+  HOUSE_CHARPAI_POSITION,
+  HOUSE_HAND_PUMP_POSITION,
+  HOUSE_TULSI_POSITION,
+  SCHOOL_BLACKBOARD_POSITION,
+  SCHOOL_BENCH_POSITION,
+} from './village.js';
 import { QUEST_STEPS } from './quest.js';
 
 /**
@@ -189,5 +198,59 @@ registerInteraction({
   // "sitting" state (same E key) rather than through this registry — so this point
   // simply isn't offered again until the player stands up.
   available: (ctx) => !ctx.sitting,
+  onInteract: (ctx) => ctx.onSitDown?.(),
+});
+
+// --- new-queue item 5: interactions in the new spaces, none touch quest state ---
+
+registerInteraction({
+  id: 'house_charpai',
+  position: new THREE.Vector3(HOUSE_CHARPAI_POSITION.x, 0, HOUSE_CHARPAI_POSITION.z),
+  radius: 1.6,
+  label: { hi: 'लेट जाएं', en: 'Lie down' },
+  // Same reasoning as 'charpai' above — standing back up is main.js's own "lying"
+  // state (same E key), not a second registry entry.
+  available: (ctx) => !ctx.lying && !ctx.sitting,
+  onInteract: (ctx) => ctx.onLieDown?.(),
+});
+
+registerInteraction({
+  id: 'hand_pump',
+  position: new THREE.Vector3(HOUSE_HAND_PUMP_POSITION.x, 0, HOUSE_HAND_PUMP_POSITION.z),
+  radius: 1.6,
+  label: { hi: 'पानी खींचें', en: 'Pump water' },
+  onInteract: (ctx) => {
+    ctx.audio.playPump();
+    ctx.onPumpWater?.();
+  },
+});
+
+registerInteraction({
+  id: 'tulsi',
+  position: new THREE.Vector3(HOUSE_TULSI_POSITION.x, 0, HOUSE_TULSI_POSITION.z),
+  radius: 1.4,
+  label: { hi: 'तुलसी को पानी दें', en: 'Water the tulsi' },
+  onInteract: (ctx) => {
+    ctx.audio.playPump();
+    ctx.onWaterTulsi?.();
+  },
+});
+
+registerInteraction({
+  id: 'blackboard',
+  position: new THREE.Vector3(SCHOOL_BLACKBOARD_POSITION.x, 0, SCHOOL_BLACKBOARD_POSITION.z + 1.2),
+  radius: 1.8,
+  label: { hi: 'ब्लैकबोर्ड पर लिखें', en: 'Write on the blackboard' },
+  onInteract: (ctx) => {
+    ctx.dialogue.say([{ hi: 'अ से अनार, आ से आम।', en: 'A is for Anar (pomegranate), Aa is for Aam (mango).' }]);
+  },
+});
+
+registerInteraction({
+  id: 'school_bench',
+  position: new THREE.Vector3(SCHOOL_BENCH_POSITION.x, 0, SCHOOL_BENCH_POSITION.z),
+  radius: 1.4,
+  label: { hi: 'बेंच पर बैठें', en: 'Sit on the bench' },
+  available: (ctx) => !ctx.sitting && !ctx.lying,
   onInteract: (ctx) => ctx.onSitDown?.(),
 });

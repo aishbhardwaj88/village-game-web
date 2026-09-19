@@ -255,6 +255,43 @@ export class AudioEngine {
     noise.stop(t + duration + 0.05);
   }
 
+  /** A short pump-handle creak followed by a splash, for the hand pump interaction
+   * (item 5 of the current queue) — same filtered-noise-burst technique as
+   * playFrying above, just shaped differently (rising bandpass, then a lowpassed
+   * splash right after). */
+  playPump() {
+    if (!this.started) return;
+    const t = this.ctx.currentTime;
+
+    const creak = this.ctx.createBufferSource();
+    creak.buffer = createNoiseBuffer(this.ctx, 0.4);
+    const creakFilter = this.ctx.createBiquadFilter();
+    creakFilter.type = 'bandpass';
+    creakFilter.frequency.setValueAtTime(500, t);
+    creakFilter.frequency.exponentialRampToValueAtTime(1400, t + 0.3);
+    creakFilter.Q.value = 4;
+    const creakGain = this.ctx.createGain();
+    creakGain.gain.setValueAtTime(0.0001, t);
+    creakGain.gain.exponentialRampToValueAtTime(0.1, t + 0.08);
+    creakGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    creak.connect(creakFilter).connect(creakGain).connect(this.master);
+    creak.start(t);
+    creak.stop(t + 0.4);
+
+    const splash = this.ctx.createBufferSource();
+    splash.buffer = createNoiseBuffer(this.ctx, 0.5);
+    const splashFilter = this.ctx.createBiquadFilter();
+    splashFilter.type = 'lowpass';
+    splashFilter.frequency.value = 2200;
+    const splashGain = this.ctx.createGain();
+    splashGain.gain.setValueAtTime(0.0001, t + 0.3);
+    splashGain.gain.exponentialRampToValueAtTime(0.14, t + 0.38);
+    splashGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.75);
+    splash.connect(splashFilter).connect(splashGain).connect(this.master);
+    splash.start(t + 0.3);
+    splash.stop(t + 0.8);
+  }
+
   _playBirdChirp() {
     if (!this.started) return;
     const t = this.ctx.currentTime;

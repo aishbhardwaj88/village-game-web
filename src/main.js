@@ -16,7 +16,7 @@ import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './co
 import { buildTrees, defaultTreePlacements } from './trees.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
-import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION } from './interactions.js';
+import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -34,6 +34,8 @@ const MOVE_SPEED = 4.2; // m/s, walking pace
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
+const LIE_CAMERA_DISTANCE = 2.6; // lying on the charpai (new-queue item 5) — lower and closer than sitting
+const LIE_CAMERA_HEIGHT = 0.55;
 
 // Hindi names for the mount/dismount prompt (item 2) — vehicle presets only carry an
 // English label (src/vehicles.js), used for both the UI and internal preset lookups.
@@ -90,7 +92,13 @@ async function main() {
   // waits on. The field and background houses (visually distant, fog-hazed, not
   // needed for the errand) are built after the player has already started playing —
   // see loadDeferredContent() below, called from onStart.
-  const { group: heroZoneGroup, charpaiGroup: houseCharpaiGroup, handPumpGroup: houseHandPumpGroup } = buildHeroZone(scene);
+  const {
+    group: heroZoneGroup,
+    charpaiGroup: houseCharpaiGroup,
+    handPumpGroup: houseHandPumpGroup,
+    pumpWaterMesh,
+    tulsiWaterMesh,
+  } = buildHeroZone(scene);
 
   // Two more Places V1 locations (item 9) on the lane between the house and the
   // school, with clearance either side (see docs/parked.md for the exact placement
@@ -526,6 +534,8 @@ async function main() {
     onSisterCollected: () => {
       sisterFollowing = true;
     },
+    onPumpWater: () => flashWaterMesh(pumpWaterMesh),
+    onWaterTulsi: () => flashWaterMesh(tulsiWaterMesh),
   };
 
   function otherVehicleBoxes(excludeVehicle) {
@@ -629,6 +639,42 @@ async function main() {
 
   interactionCtx.onSitDown = sitDown;
 
+  // Lying on the charpai (item 5 of the current queue) — same "camera settles,
+  // ambience rises, same key stands back up" pattern as sitting above, just a lower
+  // camera (lying down, not sitting up). Mutually exclusive with `sitting` — the
+  // interaction system only offers one prompt at a time per position anyway.
+  let lying = false;
+
+  function lieDown() {
+    lying = true;
+    interactionCtx.lying = true;
+    camRig.distance = LIE_CAMERA_DISTANCE;
+    camRig.height = LIE_CAMERA_HEIGHT;
+    audio.setSitting(true);
+  }
+
+  function standUpFromLying() {
+    lying = false;
+    interactionCtx.lying = false;
+    camRig.distance = CAMERA_DISTANCE;
+    camRig.height = CAMERA_HEIGHT;
+    audio.setSitting(false);
+  }
+
+  interactionCtx.onLieDown = lieDown;
+
+  // Pump water / water the tulsi (item 5) — the "simple water effect" is a small
+  // pre-built mesh (src/village.js buildHouseInteriorProps), hidden by default and
+  // flashed visible briefly here; the sound is the actual effect, this is just a
+  // visual accent for it.
+  function flashWaterMesh(mesh) {
+    if (!mesh) return;
+    mesh.visible = true;
+    setTimeout(() => {
+      mesh.visible = false;
+    }, 1200);
+  }
+
   // Pause menu (task 2) — freezes the tick loop's game-logic block (see tick() below:
   // `if (started && !paused)`) but keeps rendering, so the world stays visible, just
   // still, behind the panel. Releases pointer lock while open (so the panel is
@@ -685,6 +731,9 @@ async function main() {
       } else if (sitting) {
         setInteractPrompt('खड़े हो जाएं', 'Stand up');
         if (interactPressed) standUp();
+      } else if (lying) {
+        setInteractPrompt('खड़े हो जाएं', 'Stand up');
+        if (interactPressed) standUpFromLying();
       } else if (mountedVehicle) {
         mountedVehicle.update(dt, input);
         mountedVehicle.group.position.x = THREE.MathUtils.clamp(mountedVehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
@@ -812,7 +861,8 @@ async function main() {
       vehicles,
       npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc],
       props: [bellProp],
-      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION },
+      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS },
+      interactionCtx,
       isSisterFollowing: () => sisterFollowing,
       dialogue,
       quest,
@@ -821,7 +871,12 @@ async function main() {
       dismount,
       sitDown,
       standUp,
+      lieDown,
+      standUpFromLying,
       isSitting: () => sitting,
+      isLying: () => lying,
+      pumpWaterMesh,
+      tulsiWaterMesh,
       setQuality,
       getQuality: () => currentQuality,
       isPaused: () => paused,

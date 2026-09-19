@@ -150,6 +150,21 @@ export const HOUSE_STAIRS = {
   yTop: HOUSE_ROOF_Y,
 };
 
+// Item 4 (school interior) — the west wing is the one walkable classroom; exact
+// layout shared with src/collision.js the same way HOUSE_* is.
+export const SCHOOL_ROOM = { w: 6, h: 3.4, d: 18, cx: SCHOOL_CENTER.x - 12, cz: SCHOOL_CENTER.z };
+export const SCHOOL_ROOM_DOOR_X = SCHOOL_ROOM.cx + SCHOOL_ROOM.w / 2; // east face, toward the yard
+export const SCHOOL_ROOM_DOOR_WIDTH = 1.1;
+
+// Item 5's new interaction points need these same positions — exported once here
+// (not recomputed) so buildHouseInteriorProps/buildSchoolClassroom and
+// src/interactions.js can never drift apart.
+export const HOUSE_CHARPAI_POSITION = { x: HOUSE_BLOCK.cx - 3.4, y: 0.42, z: (HOUSE_PARTITION_Z + HOUSE_DOOR_Z) / 2 };
+export const HOUSE_HAND_PUMP_POSITION = { x: HOUSE_CENTER.x - 2.5, y: 0, z: HOUSE_CENTER.z + 5.5 };
+export const HOUSE_TULSI_POSITION = { x: HOUSE_CENTER.x + 3, y: 0, z: HOUSE_CENTER.z + 4.5 };
+export const SCHOOL_BLACKBOARD_POSITION = { x: SCHOOL_ROOM.cx, y: 1.7, z: SCHOOL_ROOM.cz - SCHOOL_ROOM.d / 2 + 0.15 };
+export const SCHOOL_BENCH_POSITION = { x: SCHOOL_ROOM.cx - 0.4, y: 0, z: SCHOOL_ROOM.cz - SCHOOL_ROOM.d / 2 + 4 };
+
 const TULSI_GREEN = 0x4a7a3a;
 const CLOTH_COLORS = [0xd8d0b8, 0x5a7a9a, 0x8a3a3a];
 
@@ -168,8 +183,8 @@ function buildHouseInteriorProps(houseGroup) {
   // Charpai — front room, against its west wall.
   const charpaiGroup = new THREE.Group();
   charpaiGroup.name = 'charpai';
-  const charpaiCx = blockCx - 3.4;
-  const charpaiCz = (HOUSE_PARTITION_Z + HOUSE_DOOR_Z) / 2;
+  const charpaiCx = HOUSE_CHARPAI_POSITION.x;
+  const charpaiCz = HOUSE_CHARPAI_POSITION.z;
   const charpaiTopY = 0.42;
   const frame = texturedBox(0.9, 0.08, 1.9, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
   frame.position.set(charpaiCx, charpaiTopY, charpaiCz);
@@ -190,8 +205,8 @@ function buildHouseInteriorProps(houseGroup) {
   // Hand pump — courtyard, clear of the staircase (which sits further west).
   const handPumpGroup = new THREE.Group();
   handPumpGroup.name = 'hand_pump';
-  const pumpX = HOUSE_CENTER.x - 2.5;
-  const pumpZ = HOUSE_CENTER.z + 5.5;
+  const pumpX = HOUSE_HAND_PUMP_POSITION.x;
+  const pumpZ = HOUSE_HAND_PUMP_POSITION.z;
   const pumpBase = texturedBox(0.4, 0.15, 0.4, 'metal', { tint: 0x3a3a3a, tileSize: 1 });
   pumpBase.position.set(pumpX, 0.075, pumpZ);
   handPumpGroup.add(pumpBase);
@@ -229,8 +244,8 @@ function buildHouseInteriorProps(houseGroup) {
   }
 
   // Tulsi platform — courtyard, clear of the door's direct path.
-  const tulsiX = HOUSE_CENTER.x + 3;
-  const tulsiZ = HOUSE_CENTER.z + 4.5;
+  const tulsiX = HOUSE_TULSI_POSITION.x;
+  const tulsiZ = HOUSE_TULSI_POSITION.z;
   const tulsiBase = texturedThickBox(0.7, 0.5, 0.7, 'concrete', { tint: CONCRETE_NEUTRAL });
   tulsiBase.position.set(tulsiX, 0.25, tulsiZ);
   misc.add(tulsiBase);
@@ -272,7 +287,20 @@ function buildHouseInteriorProps(houseGroup) {
   mergeGroupByMaterial(misc);
   for (const child of [...misc.children]) houseGroup.add(child);
 
-  return { charpaiGroup, handPumpGroup };
+  // Water effect meshes (item 5's pump/tulsi interactions) — hidden by default,
+  // toggled visible briefly by src/main.js. Kept out of the merge groups above so
+  // each can be shown/hidden individually.
+  const pumpWaterMesh = texturedBox(0.05, 0.4, 0.05, 'metal', { tint: 0x6fa8c9, tileSize: 1 });
+  pumpWaterMesh.position.set(pumpX, 0.55, pumpZ + 0.18);
+  pumpWaterMesh.visible = false;
+  houseGroup.add(pumpWaterMesh);
+
+  const tulsiWaterMesh = texturedBox(0.5, 0.05, 0.5, 'metal', { tint: 0x6fa8c9, tileSize: 1 });
+  tulsiWaterMesh.position.set(tulsiX, 0.52, tulsiZ);
+  tulsiWaterMesh.visible = false;
+  houseGroup.add(tulsiWaterMesh);
+
+  return { charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh };
 }
 
 function buildHouse(kit) {
@@ -359,9 +387,9 @@ function buildHouse(kit) {
   // groups instead of being swept into these two.
   mergeGroupByMaterial(group);
 
-  const { charpaiGroup, handPumpGroup } = buildHouseInteriorProps(group);
+  const { charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh } = buildHouseInteriorProps(group);
 
-  return { group, charpaiGroup, handPumpGroup };
+  return { group, charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh };
 }
 
 /** Same reasoning as addDoorFrameX (house, above) but for a doorway whose width runs
@@ -374,11 +402,6 @@ function addDoorFrameZ(kit, center, width, height, wallThickness) {
   kit.addTrimBar({ x: center.x, y: center.y + height + frameW / 2, z: center.z }, { x: wallThickness + 0.02, y: frameW, z: width + frameW * 2 });
 }
 
-// Item 4 (school interior) — the west wing is the one walkable classroom; exact
-// layout shared with src/collision.js the same way HOUSE_* is.
-export const SCHOOL_ROOM = { w: 6, h: 3.4, d: 18, cx: SCHOOL_CENTER.x - 12, cz: SCHOOL_CENTER.z };
-export const SCHOOL_ROOM_DOOR_X = SCHOOL_ROOM.cx + SCHOOL_ROOM.w / 2; // east face, toward the yard
-export const SCHOOL_ROOM_DOOR_WIDTH = 1.1;
 
 /** The walkable classroom, item 4: real east-facing doorway (a genuine gap, like the
  * house — see addGappedWall's doc comment), solid north/south/west walls, a
@@ -424,7 +447,7 @@ function buildSchoolClassroom(group, kit) {
   // Furniture: blackboard + teacher's table/chair at the north end (the "front" of
   // the room), benches in rows facing them, a wall chart on the west wall.
   const blackboard = texturedBox(2.4, 1.1, 0.06, 'wood', { tint: 0x1c2a22, tileSize: 1 });
-  blackboard.position.set(rx, 1.7, rz - d / 2 + 0.15);
+  blackboard.position.set(SCHOOL_BLACKBOARD_POSITION.x, SCHOOL_BLACKBOARD_POSITION.y, SCHOOL_BLACKBOARD_POSITION.z);
   group.add(blackboard);
   const teacherTable = texturedBox(1.1, 0.75, 0.5, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
   teacherTable.position.set(rx, 0.375, rz - d / 2 + 1.6);
@@ -437,7 +460,7 @@ function buildSchoolClassroom(group, kit) {
   group.add(chart);
   for (let row = 0; row < 5; row++) {
     const bench = texturedBox(3.4, 0.42, 0.35, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
-    bench.position.set(rx - 0.4, 0.21, rz - d / 2 + 4 + row * 2.3);
+    bench.position.set(SCHOOL_BENCH_POSITION.x, 0.21, SCHOOL_BENCH_POSITION.z + row * 2.3);
     group.add(bench);
   }
 }
@@ -600,7 +623,13 @@ export function buildHeroZone(scene) {
   group.add(buildHalwai(kit));
   kit.finalize(group);
   scene.add(group);
-  return { group, charpaiGroup: house.charpaiGroup, handPumpGroup: house.handPumpGroup };
+  return {
+    group,
+    charpaiGroup: house.charpaiGroup,
+    handPumpGroup: house.handPumpGroup,
+    pumpWaterMesh: house.pumpWaterMesh,
+    tulsiWaterMesh: house.tulsiWaterMesh,
+  };
 }
 
 export { HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER };
