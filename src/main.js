@@ -6,7 +6,8 @@ import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM } from './village.js';
+import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildDust } from './dust.js';
@@ -223,6 +224,34 @@ async function main() {
     { cx: HALWAI_CENTER.x + 2, cz: HALWAI_CENTER.z + 3, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
   ]);
   scene.add(dust.points);
+
+  // Bugfix 3/4 — contact shadows: a cheap, omnidirectional "touching the ground" cue
+  // under every building/prop (static) and vehicle (updated each frame below), on top
+  // of the sun's own real shadow. See src/contactShadows.js's doc comment for the full
+  // diagnosis of why the real shadow alone wasn't enough at a low, close camera angle.
+  // Background houses aren't included (distant scenery, not something the player gets
+  // close/low to — see docs/parked.md).
+  const HALWAI_FOOTPRINT = { w: 4.5, d: 5.5 }; // src/village.js buildHalwai's own dimensions
+  const contactShadows = buildContactShadows(
+    [
+      { x: HOUSE_BLOCK.cx, z: HOUSE_BLOCK.cz, radiusX: HOUSE_BLOCK.w / 2 + 0.4, radiusZ: HOUSE_BLOCK.d / 2 + 0.4 },
+      { x: HALWAI_CENTER.x, z: HALWAI_CENTER.z, radiusX: HALWAI_FOOTPRINT.w / 2 + 0.4, radiusZ: HALWAI_FOOTPRINT.d / 2 + 0.4 },
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z + 9, radiusX: 12.4, radiusZ: 3.4 }, // school back block
+      { x: SCHOOL_CENTER.x + 12, z: SCHOOL_CENTER.z, radiusX: 3.4, radiusZ: 9.4 }, // school east wing
+      { x: SCHOOL_ROOM.cx, z: SCHOOL_ROOM.cz, radiusX: SCHOOL_ROOM.w / 2 + 0.4, radiusZ: SCHOOL_ROOM.d / 2 + 0.4 }, // school west wing (classroom)
+      { x: TEA_SHOP_POS.x, z: TEA_SHOP_POS.z, radiusX: TEA_DIMS.w / 2 + 0.4, radiusZ: TEA_DIMS.d / 2 + 0.4 },
+      { x: STORE_POS.x, z: STORE_POS.z, radiusX: STORE_DIMS.w / 2 + 0.4, radiusZ: STORE_DIMS.d / 2 + 0.4 },
+      { x: BELL_POSITION.x, z: BELL_POSITION.z, radiusX: 0.6, radiusZ: 0.6 },
+    ],
+    4 // dynamic slots: bike, tractor, cart, trolley — set each frame below
+  );
+  scene.add(contactShadows.mesh);
+  // The trolley spawns already attached to the tractor (src/vehicles.js
+  // spawnVehicles()) — grab a stable reference here, before any player detach action
+  // can null out tractorForShadows.trolley, so the shadow always has a live vehicle to
+  // read .group.position from regardless of attach state.
+  const tractorForShadows = vehicles.find((v) => v.preset.kind === 'tractor');
+  const trolleyForShadows = tractorForShadows.trolley;
 
   const camRig = new ThirdPersonCamera(camera, player);
   // Buildings the camera should never clip through (item 1) — raycast against the
@@ -902,6 +931,10 @@ async function main() {
       camRig.update();
       audio.update(dt);
       dust.update(dt, now / 1000);
+      contactShadows.update([
+        ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
+        { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },
+      ]);
       updateDayline(dayProgressForQuestStep(quest.step, QUEST_STEPS), dt);
       // Distant radio fade (item 7) — uses whatever the player is actually "at"
       // (on foot, or the vehicle they're driving/sitting on), not the camera, so it
