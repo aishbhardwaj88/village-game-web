@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { texturedWallBox, texturedThickBox, getTiledMaterial } from './materials.js';
+import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
@@ -401,4 +401,167 @@ export async function buildBazaarSignboards() {
   mesh.castShadow = true;
   mesh.name = 'bazaar_signboards';
   return mesh;
+}
+
+// --- Item 3: shop interiors — shelving, stacked goods, one signature element per
+// trade. Geometry and instancing only, no new systems. Draw-call budget is tight
+// (110/120 already after items 1-2), so every prop across all 8 shops folds into
+// just THREE merged meshes by shape/material family, not one mesh per prop: boxy
+// wood-family goods (shelving, crates, cloth bolts, medicine/phone boxes, the
+// sewing machine and chair bodies, the sabzi platform), cylindrical goods (sacks,
+// tins, pots, chair legs, the balance beam post — one shared 'terracotta' family,
+// close enough for small background props at this distance), and the bangle shop's
+// rings (torus, its own small batch since no other shop needs one). ---
+
+export function buildBazaarInteriors() {
+  const group = new THREE.Group();
+  group.name = 'bazaar_interiors';
+  const backInnerZ = BAZAAR_ROW_CZ + BAZAAR_UNIT_D / 2 - WALL_THICKNESS - 0.18;
+  const counterZ = BAZAAR_FRONT_Z + 0.6;
+  const wood = PALETTE.woodTrim;
+
+  // Local to this call (not module-level) so a second call — hot reload, or any
+  // future caller — never accumulates stale geometry from a previous run.
+  const boxGeos = [];
+  const cylGeos = [];
+  const torusGeos = [];
+
+  function pushBox(w, h, d, x, y, z, tint, rotY = 0) {
+    const mesh = texturedThickBox(w, h, d, 'wood', { tint, tileSize: Math.max(w, d, 0.4), roughness: 1 });
+    const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(x, y, z);
+    boxGeos.push(mesh.geometry.clone().applyMatrix4(m));
+  }
+
+  function pushCyl(radiusTop, radiusBottom, h, x, y, z, tint) {
+    const geo = new THREE.CylinderGeometry(radiusTop, radiusBottom, h, 10);
+    bakeFlatTintColors(geo, tint, 1);
+    geo.applyMatrix4(new THREE.Matrix4().setPosition(x, y, z));
+    cylGeos.push(geo);
+  }
+
+  function pushTorus(radius, tube, x, y, z, tint, rotX = Math.PI / 2) {
+    const geo = new THREE.TorusGeometry(radius, tube, 8, 16);
+    bakeFlatTintColors(geo, tint, 1);
+    const m = new THREE.Matrix4().makeRotationX(rotX).setPosition(x, y, z);
+    geo.applyMatrix4(m);
+    torusGeos.push(geo);
+  }
+
+  /** Shelving common to most units: 2 boards against the back wall. */
+  function addShelving(cx, tint) {
+    const w = BAZAAR_UNIT_W - 0.7;
+    pushBox(w, 0.05, 0.32, cx, 1.2, backInnerZ, tint);
+    pushBox(w, 0.05, 0.32, cx, 2.05, backInnerZ, tint);
+  }
+
+  BAZAAR_UNITS.forEach((unit, idx) => {
+    const cx = bazaarUnitCx(idx);
+    const left = cx - BAZAAR_UNIT_W / 2 + 0.5;
+    const right = cx + BAZAAR_UNIT_W / 2 - 0.5;
+
+    if (unit.trade === 'kirana') {
+      addShelving(cx, wood);
+      // Sacks on the floor, tins on the shelf.
+      pushCyl(0.22, 0.3, 0.55, left, 0.275, counterZ + 1.3, 0xc9a86a);
+      pushCyl(0.2, 0.28, 0.5, left + 0.5, 0.25, counterZ + 1.3, 0xb99456);
+      for (let i = 0; i < 5; i++) pushCyl(0.09, 0.09, 0.22, cx - 1.2 + i * 0.45, 2.16, backInnerZ + 0.1, 0x8a9aa0 + i * 0x040000);
+    } else if (unit.trade === 'sabzi') {
+      // Crates instead of shelving — a produce shop's goods sit low, in the open.
+      pushBox(0.7, 0.35, 0.5, left, 0.175, counterZ + 1.2, 0x4a7a3a);
+      pushBox(0.7, 0.35, 0.5, left + 0.85, 0.175, counterZ + 1.2, 0x6a8a3f);
+      pushBox(0.7, 0.35, 0.5, right - 0.35, 0.175, counterZ + 1.2, 0x8a3a2f);
+      // Signature: a hanging pan balance — post, beam, two pans.
+      const balX = cx;
+      pushCyl(0.03, 0.03, 1.6, balX, 1.5, backInnerZ + 0.3, 0x2a2a2a);
+      pushBox(0.9, 0.04, 0.04, balX, 2.25, backInnerZ + 0.3, 0x2a2a2a);
+      pushCyl(0.16, 0.13, 0.08, balX - 0.4, 1.85, backInnerZ + 0.3, 0xb08040);
+      pushCyl(0.16, 0.13, 0.08, balX + 0.4, 1.85, backInnerZ + 0.3, 0xb08040);
+    } else if (unit.trade === 'medical') {
+      addShelving(cx, wood);
+      pushBox(BAZAAR_UNIT_W - 0.7, 0.05, 0.32, cx, 2.6, backInnerZ, wood);
+      // A grid of small medicine boxes across the 3 shelves, muted pastel tints.
+      const medTints = [0xb8ccd8, 0xd8c8a8, 0xc8d8b8, 0xd8b8b8, 0xb8c8d8];
+      const shelfYs = [1.28, 2.13, 2.68];
+      shelfYs.forEach((sy, si) => {
+        for (let i = 0; i < 7; i++) {
+          pushBox(0.12, 0.08, 0.2, cx - 1.8 + i * 0.6, sy + 0.05, backInnerZ + 0.08, medTints[(i + si) % medTints.length]);
+        }
+      });
+    } else if (unit.trade === 'tailor') {
+      addShelving(cx, wood);
+      // Bolts of cloth — short horizontal cylinders in varied tints, stacked on the shelf.
+      const clothTints = [0xa83a4a, 0x3a5a8a, 0xc9a227, 0x4a7a5a, 0x8a4a8a];
+      clothTints.forEach((t, i) => pushCyl(0.14, 0.14, 0.5, cx - 1.4 + i * 0.7, 2.05 + 0.16, backInnerZ, t));
+      // Signature: a treadle sewing machine on the counter.
+      pushBox(0.5, 0.18, 0.28, cx, 1.02, counterZ - 0.05, 0x1a1a1a);
+      pushCyl(0.1, 0.1, 0.06, cx - 0.15, 0.88, counterZ - 0.05, 0x3a3a3a);
+      pushBox(0.04, 0.22, 0.04, cx + 0.18, 1.15, counterZ - 0.05, 0x2a2a2a);
+    } else if (unit.trade === 'barber') {
+      // Signature: mirror on the back wall + a chair.
+      pushBox(0.6, 0.8, 0.03, cx, 1.6, backInnerZ, 0xbfd0d8);
+      pushBox(1.0, 0.08, 0.35, cx, 0.95, backInnerZ + 0.3, wood);
+      const chairX = cx;
+      pushBox(0.42, 0.06, 0.42, chairX, 0.46, counterZ + 1.0, 0x8a2e2e);
+      pushBox(0.42, 0.5, 0.06, chairX, 0.75, counterZ + 1.2, 0x8a2e2e);
+      for (const [dx, dz] of [
+        [-0.18, -0.18],
+        [0.18, -0.18],
+        [-0.18, 0.18],
+        [0.18, 0.18],
+      ]) {
+        pushCyl(0.025, 0.025, 0.46, chairX + dx, 0.23, counterZ + 1.0 + dz, 0x2a2a2a);
+      }
+    } else if (unit.trade === 'mobile') {
+      addShelving(cx, wood);
+      const boxTints = [0x2a2a2a, 0x3a3a3a, 0x8a2e2e, 0x2a5a2a];
+      for (let i = 0; i < 6; i++) pushBox(0.16, 0.08, 0.1, cx - 1.5 + i * 0.5, 2.09, backInnerZ + 0.1, boxTints[i % boxTints.length]);
+      // Signature: a monitor on the counter.
+      pushBox(0.4, 0.3, 0.05, cx, 1.1, counterZ - 0.1, 0x1a1a1a);
+      pushBox(0.32, 0.22, 0.01, cx, 1.12, counterZ - 0.075, 0x3a5a6a);
+      pushBox(0.05, 0.1, 0.05, cx, 0.95, counterZ - 0.1, 0x1a1a1a);
+    } else if (unit.trade === 'bangle') {
+      // Signature: rods on the back wall with stacked glass-bangle rings.
+      const bangleTints = [0xc94f6a, 0x4f9fc9, 0xc9a227, 0x4fc98a, 0xa04fc9];
+      for (let rod = 0; rod < 3; rod++) {
+        const rx = cx - 1.3 + rod * 1.3;
+        pushCyl(0.02, 0.02, 1.1, rx, 1.6, backInnerZ + 0.25, 0x8a6a4a);
+        for (let i = 0; i < 8; i++) {
+          pushTorus(0.09, 0.015, rx, 1.15 + i * 0.065, backInnerZ + 0.25, bangleTints[(rod + i) % bangleTints.length]);
+        }
+      }
+    } else if (unit.trade === 'sweet') {
+      addShelving(cx, wood);
+      // Trays/tins of sweets — short wide cylinders, warm mithai tints, on the
+      // counter and the shelf.
+      const sweetTints = [0xd9922f, 0xc9701f, 0xe0b24a, 0xb85a1f];
+      for (let i = 0; i < 4; i++) pushCyl(0.16, 0.16, 0.14, left + i * 0.55, 1.07, counterZ - 0.1, sweetTints[i % sweetTints.length]);
+      for (let i = 0; i < 4; i++) pushCyl(0.14, 0.14, 0.12, cx - 1.2 + i * 0.7, 2.11, backInnerZ + 0.1, sweetTints[(i + 2) % sweetTints.length]);
+    }
+  });
+
+  if (boxGeos.length) {
+    const boxMat = texturedThickBox(1, 1, 1, 'wood', { tint: wood, tileSize: 1, roughness: 1 }).material;
+    const boxMesh = new THREE.Mesh(mergeGeometries(boxGeos), boxMat);
+    boxMesh.name = 'bazaar_interior_boxes';
+    boxMesh.castShadow = true;
+    boxMesh.receiveShadow = true;
+    group.add(boxMesh);
+  }
+  if (cylGeos.length) {
+    const cylMat = getTiledMaterial('terracotta', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+    const cylMesh = new THREE.Mesh(mergeGeometries(cylGeos), cylMat);
+    cylMesh.name = 'bazaar_interior_cylinders';
+    cylMesh.castShadow = true;
+    cylMesh.receiveShadow = true;
+    group.add(cylMesh);
+  }
+  if (torusGeos.length) {
+    const torusMat = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+    const torusMesh = new THREE.Mesh(mergeGeometries(torusGeos), torusMat);
+    torusMesh.name = 'bazaar_interior_rings';
+    torusMesh.castShadow = true;
+    group.add(torusMesh);
+  }
+
+  return group;
 }
