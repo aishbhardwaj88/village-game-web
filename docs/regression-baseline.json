@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-20T20:32:01.631Z",
+  "timestamp": "2026-09-20T21:48:22.137Z",
   "results": [
     {
       "name": "prompt badge renders in top-right region",
@@ -19,7 +19,7 @@
     {
       "name": "triangles under 400k",
       "pass": true,
-      "detail": "67175 triangles"
+      "detail": "67263 triangles"
     },
     {
       "name": "asset budget (tools/check-budget.js)",
@@ -34,7 +34,7 @@
     {
       "name": "player can walk",
       "pass": true,
-      "detail": "moved 1.68m"
+      "detail": "moved 2.10m"
     },
     {
       "name": "can mount and drive the bike",
@@ -44,17 +44,17 @@
     {
       "name": "can mount and drive the tractor",
       "pass": true,
-      "detail": "moved 3.57m in 8000ms"
+      "detail": "moved 2.45m in 8000ms"
     },
     {
       "name": "can mount and drive the cart",
       "pass": true,
-      "detail": "moved 3.62m in 8000ms"
+      "detail": "moved 3.96m in 8000ms"
     },
     {
       "name": "player can reach the bazaar",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 3.2m"
+      "detail": "distance to target went from 6.0m to 3.1m"
     },
     {
       "name": "player can reach the temple",
@@ -69,7 +69,7 @@
     {
       "name": "player can reach the field",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.6m"
+      "detail": "distance to target went from 6.0m to 2.4m"
     },
     {
       "name": "no console errors",
