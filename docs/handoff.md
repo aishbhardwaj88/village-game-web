@@ -5,6 +5,16 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-21, items 3-4 of 10 done:** Framed screenshot capture mode added
+(src/main.js frameObject()/unfreezeCamera(), tools/screenshot-prod.js framedShot()) —
+finds a named object, frames it filling the view, hides the player capsule. Used it to
+verify item 4: tractor+trolley driven into 5 buildings from 8 directions each (40 runs)
+plus a shallow-angle and reverse pass, zero negative clearances. Committed (c1da2e3,
+50c5113). Next: item 5 (attachment persistence, already looking correct from item 2 —
+confirming with the new framed mode), then items 6-9.
+
+---
+
 **2026-09-21, structural rework items 1-2 of 10 done:** Colliders now derived
 automatically from tagged real geometry (no hand-typed boxes anywhere); one swept
 movement resolver every body (player/vehicles/trolley/NPCs) routes through, with the
