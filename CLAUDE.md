@@ -128,18 +128,40 @@ loads the game headless, captures 3 preset camera angles into
 the images. Fix anything black, flat, washed-out, or broken before reporting the work
 as done** — don't rely on "it built" or "no console errors" alone.
 
-## 9. Scratch/test scripts
+## 9. Regression guard — permanent, added 2026-09-21 after a real regression
+
+A round of playtest-bug fixes (commit 87e53bf, "vehicles sink into the ground")
+looked correct in scripted screenshots but broke the tractor/trolley in real,
+continuous play — a wheel-rotation "fix" that was mathematically identical to
+the bug it claimed to fix, verified only by taking a single screenshot rather
+than by checking the thing that actually varies over time (accumulated spin).
+**One passing screenshot of one moment is not enough evidence for anything
+that changes over time or distance** (rotation that accumulates, a follow
+spring, a collision response) — check it across a real span of play, not one
+frame.
+
+`tools/regression-check.js` exists so this can't happen silently again. Before
+any commit that touches `src/vehicles.js`, `src/main.js`, `src/collision.js`,
+or anything else driving movement/physics: run
+`npm run build && node tools/regression-check.js` and treat any item that was
+passing in `docs/regression-baseline.json` and now fails as a regression that
+must be fixed before moving on to anything else — never patch on top of a
+regression, and never re-save the baseline over a real regression just to make
+the script pass. Only pass `--save-baseline` after you've personally looked at
+a screenshot confirming the new behaviour is actually correct.
+
+## 10. Scratch/test scripts
 
 Never `rm` a file you created for a one-off check (a throwaway Playwright script, a
 test screenshot). Write it into `tmp/` (git-ignored) and leave it there — don't delete
 it afterward.
 
-## 10. Git
+## 11. Git
 
 Commit on `main` with clear messages. **Never push** — the user pushes manually via
 GitHub Desktop. Never touch `../Village nostalgia` or the reference folders (§2).
 
-## 11. Report format — end every reply with this exact line
+## 12. Report format — end every reply with this exact line
 
 ```
 LINK: <url or 'not yet'>. YOU: <exactly what I must do, or 'nothing'>. NEXT: <what I will do next>.
