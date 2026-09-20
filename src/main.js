@@ -19,7 +19,6 @@ import { buildBackgroundHouses } from './scenery.js';
 import {
   buildTemple,
   buildFlowerStall,
-  templeColliders,
   buildTempleLane,
   TEMPLE_POS,
   PLINTH as TEMPLE_PLINTH,
@@ -27,17 +26,15 @@ import {
   PEEPAL_PLATFORM_RADIUS,
   FLOWER_STALL_POS,
 } from './temple.js';
-import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
+import { resolveCollisions, vehicleFootprintBox, initStaticColliders } from './collision.js';
 import {
   buildBazaarRow,
-  bazaarColliders,
   buildBazaarCountersAndShutters,
   buildBazaarSignboards,
   buildBazaarInteriors,
   buildTeaStallChowk,
   buildTeaStallChowkSign,
   buildChowkPlaza,
-  chowkColliders,
   buildBazaarLane,
   BAZAAR_UNITS,
   bazaarUnitCx,
@@ -213,7 +210,6 @@ async function main() {
   // background houses.
   const bazaarGroup = buildBazaarRow(buildingKit);
   scene.add(bazaarGroup);
-  addStaticColliders(bazaarColliders());
   bazaarGroup.add(buildBazaarCountersAndShutters());
   bazaarGroup.add(buildBazaarInteriors());
 
@@ -222,7 +218,6 @@ async function main() {
   // around it for future content.
   bazaarGroup.add(buildTeaStallChowk());
   bazaarGroup.add(buildChowkPlaza());
-  addStaticColliders(chowkColliders());
 
   // Item 5 — the lane extension itself (a bumpy, curved strip, never a straight
   // ribbon), connecting the existing hero-zone lane to the bazaar/chowk.
@@ -260,7 +255,6 @@ async function main() {
   templeGroup.add(buildFlowerStall());
   templeGroup.add(buildTempleLane());
   scene.add(templeGroup);
-  addStaticColliders(templeColliders());
 
   // First flush of the shared kit — makes hero zone + bazaar trim/plinth/etc visible
   // right away (including behind the title screen, before Play is clicked). A second
@@ -583,6 +577,14 @@ async function main() {
       skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water'],
     });
     cameraObstacles.push(villageStaticGroup);
+
+    // Structural fix (playtest) — derive every static collider from the real,
+    // now-fully-built scene graph, once, here (after the merges above, which
+    // themselves preserve each source wall/counter's real collider — see
+    // src/mergeUtils.js). Nothing in this codebase hand-types a collider box
+    // matched to a building's coordinates anymore; if a building moves, this
+    // picks up the new position automatically because it reads the same mesh.
+    initStaticColliders(scene);
   }
 
   const audio = new AudioEngine();

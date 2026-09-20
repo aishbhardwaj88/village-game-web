@@ -565,8 +565,10 @@ function buildHalwai(kit) {
   kit.addDrainpipe({ x: xBack + 0.05, y: height / 2, z: zLeft - 0.05 }, height);
   kit.addSwitchboard({ x: xBack - 0.02, y: 1.4, z: cz + 1.5 }, Math.PI / 2);
 
-  // Kadhai platform: 0.9m deep band nearest the street.
-  addBox(group, 0.9, 0.4, width, 'concrete', { x: xFront + 0.45, y: 0.2, z: cz }, { tint: KADHAI_PLATFORM_TINT, tintStrength: WALL_TINT_STRENGTH });
+  // Kadhai platform: 0.9m deep band nearest the street — tall/solid enough at the
+  // front to be worth blocking (playtest structural fix: tagged here, at the
+  // source, instead of a hand-typed matching box in src/collision.js).
+  addBox(group, 0.9, 0.4, width, 'concrete', { x: xFront + 0.45, y: 0.2, z: cz }, { tint: KADHAI_PLATFORM_TINT, tintStrength: WALL_TINT_STRENGTH }).userData.collider = true;
 
   // Sweet display cabinet, in the 0.6m band after the 2.5m working aisle.
   addBox(group, 0.6, 1.6, 1.5, 'wood', { x: xBack - 0.55, y: 0.8, z: cz - 1 }, { tint: WOOD_DOOR, tileSize: 1 });

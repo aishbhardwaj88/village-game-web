@@ -257,6 +257,10 @@ export function texturedWall(width, height, materialName, opts = {}) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
+  // Structural fix (playtest) — same reasoning as texturedWallBox() below: tag
+  // here, once, so every real wall automatically has a real collider derived
+  // from its own geometry (see buildCollidersFromScene() in src/collision.js).
+  mesh.userData.collider = opts.collider !== false;
   return mesh;
 }
 
@@ -409,5 +413,15 @@ export function texturedWallBox(width, height, depth, materialName, opts = {}) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
+  // Structural fix (playtest): every solid wall in the game is built through this
+  // one function — tagging its output here, instead of hand-typing a matching box
+  // in src/collision.js, is what makes a collider move/resize/appear automatically
+  // whenever the wall itself does. src/mergeUtils.js's merge functions read this
+  // tag before folding the mesh away for draw calls and carry the real geometry's
+  // world-space box forward as userData.colliderBoxes on whatever mesh actually
+  // ends up in the scene; src/collision.js's buildCollidersFromScene() reads
+  // whichever of the two it finds. Pass `collider: false` for the rare wall that
+  // must not block movement (there are none currently).
+  mesh.userData.collider = opts.collider !== false;
   return mesh;
 }

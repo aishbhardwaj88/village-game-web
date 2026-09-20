@@ -4,6 +4,7 @@ import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment } from './paths.js';
+import { colliderBoxFromTransform } from './collision.js';
 
 /**
  * Bazaar row — Places V1/bazaar_row/LAYOUT.md is the authority for counts, names,
@@ -55,28 +56,11 @@ export function bazaarBoundaryXs() {
   return xs;
 }
 
-/** AABB colliders for the whole row — back wall, all 9 party walls, and (once item 2
- * adds counters) each unit's counter blocks entry past the open shopfront, the same
- * way the existing halwai/tea-stall/general-store shops already work (open front,
- * solid counter, no walk-in interior). Exported so main.js can register them via
- * src/collision.js's addStaticColliders() without duplicating these numbers. */
-export function bazaarColliders() {
-  const boxes = [];
-  const backZ = BAZAAR_ROW_CZ + BAZAAR_UNIT_D / 2;
-  // Back wall — one long thin box the full row length.
-  boxes.push({ minX: BAZAAR_WEST_X, maxX: BAZAAR_EAST_X, minZ: backZ - WALL_THICKNESS, maxZ: backZ });
-  // Party walls (9), each thin in X, spanning the unit depth in Z.
-  for (const x of bazaarBoundaryXs()) {
-    boxes.push({ minX: x - WALL_THICKNESS / 2, maxX: x + WALL_THICKNESS / 2, minZ: BAZAAR_ROW_CZ - BAZAAR_UNIT_D / 2, maxZ: backZ });
-  }
-  // Counters (item 2) — placed a little inside the front edge, block walk-through.
-  const counterZ = BAZAAR_FRONT_Z + 0.6;
-  for (let idx = 0; idx < 8; idx++) {
-    const cx = bazaarUnitCx(idx);
-    boxes.push({ minX: cx - BAZAAR_UNIT_W / 2 + 0.3, maxX: cx + BAZAAR_UNIT_W / 2 - 0.3, minZ: counterZ - 0.3, maxZ: counterZ + 0.3 });
-  }
-  return boxes;
-}
+// Structural fix (playtest): bazaarColliders() — a hand-typed box per back-wall
+// segment, party wall and counter, matched by eye to the numbers below — is
+// gone. Every one of those meshes now tags/collects its own real collider at
+// the point it's built (see buildBazaarRow()/buildBazaarCountersAndShutters()
+// above), read automatically by src/collision.js's buildCollidersFromScene().
 
 /**
  * The terrace shell: back wall (8 segments, own tint/height per unit — this is what
@@ -99,6 +83,7 @@ export function buildBazaarRow(kit) {
   // merged into one draw call (texturedWallBox always shares the 'plaster' material
   // cache regardless of tint/height — see src/materials.js). ---
   const wallGeos = [];
+  const backWallColliders = [];
   let sharedWallMaterial = null;
   BAZAAR_UNITS.forEach((unit, idx) => {
     const cx = bazaarUnitCx(idx);
@@ -111,6 +96,11 @@ export function buildBazaarRow(kit) {
     sharedWallMaterial = wallMesh.material;
     const local = new THREE.Matrix4().makeTranslation(cx, unit.wallHeight / 2, backZ - WALL_THICKNESS / 2);
     wallGeos.push(wallMesh.geometry.clone().applyMatrix4(local));
+    // This mesh is about to be merged away by the manual mergeGeometries() below,
+    // not src/mergeUtils.js's own merge functions (which do this automatically) —
+    // same reasoning as src/materials.js's collider tag, just collected by hand
+    // here since this call site builds its own merged mesh directly.
+    backWallColliders.push(colliderBoxFromTransform(BAZAAR_UNIT_W, WALL_THICKNESS, local));
 
     // Ochre/darker base band along this unit's own back wall, per LAYOUT.md — a
     // deeper shade of the SAME hue (law, docs/look-standard.md), not a separate
@@ -130,6 +120,7 @@ export function buildBazaarRow(kit) {
   backWallMesh.name = 'bazaar_back_wall';
   backWallMesh.castShadow = true;
   backWallMesh.receiveShadow = true;
+  backWallMesh.userData.colliderBoxes = backWallColliders;
   group.add(backWallMesh);
 
   // --- Party walls (9): thin dividers running the full unit depth. A uniform height
@@ -137,6 +128,7 @@ export function buildBazaarRow(kit) {
   // carries the visible stepped skyline. ---
   const partyH = Math.max(...BAZAAR_UNITS.map((u) => u.wallHeight)) + 0.05;
   const partyGeos = [];
+  const partyWallColliders = [];
   let partyMaterial = null;
   for (const x of bazaarBoundaryXs()) {
     const wallMesh = texturedWallBox(WALL_THICKNESS, partyH, BAZAAR_UNIT_D, 'plaster', {
@@ -148,11 +140,13 @@ export function buildBazaarRow(kit) {
     partyMaterial = wallMesh.material;
     const local = new THREE.Matrix4().makeTranslation(x, partyH / 2, BAZAAR_ROW_CZ);
     partyGeos.push(wallMesh.geometry.clone().applyMatrix4(local));
+    partyWallColliders.push(colliderBoxFromTransform(WALL_THICKNESS, BAZAAR_UNIT_D, local));
   }
   const partyWallMesh = new THREE.Mesh(mergeGeometries(partyGeos), partyMaterial);
   partyWallMesh.name = 'bazaar_party_walls';
   partyWallMesh.castShadow = true;
   partyWallMesh.receiveShadow = true;
+  partyWallMesh.userData.colliderBoxes = partyWallColliders;
   group.add(partyWallMesh);
 
   // --- Roof: 8 slabs, each capping its own unit's wall height (this is the real
@@ -281,6 +275,7 @@ export function buildBazaarCountersAndShutters() {
   const frontZ = BAZAAR_FRONT_Z;
 
   const counterGeos = [];
+  const counterColliders = [];
   let counterMaterial = null;
   const shutterGeos = [];
   let shutterMaterial = null;
@@ -292,6 +287,11 @@ export function buildBazaarCountersAndShutters() {
     counterMaterial = counterMesh.material;
     const counterLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_COUNTER_H / 2, frontZ + 0.6);
     counterGeos.push(counterMesh.geometry.clone().applyMatrix4(counterLocal));
+    // The counter blocks walk/drive-through past each unit's open (wall-less)
+    // shopfront — same collider-tagging reasoning as the walls, see
+    // src/materials.js's texturedWallBox(); texturedThickBox() doesn't tag itself
+    // (used for lots of non-blocking trim too), so it's collected by hand here.
+    counterColliders.push(colliderBoxFromTransform(counterW, 0.5, counterLocal));
 
     // Rolled-open shutter — a thick horizontal bundle tucked just under the lintel,
     // in this unit's own LAYOUT.md trade colour. Reads as "open" (not blocking the
@@ -307,6 +307,7 @@ export function buildBazaarCountersAndShutters() {
   counterMeshMerged.name = 'bazaar_counters';
   counterMeshMerged.castShadow = true;
   counterMeshMerged.receiveShadow = true;
+  counterMeshMerged.userData.colliderBoxes = counterColliders;
   group.add(counterMeshMerged);
 
   const shutterMeshMerged = new THREE.Mesh(mergeGeometries(shutterGeos), shutterMaterial);
@@ -619,6 +620,7 @@ export function buildTeaStallChowk() {
   });
   const wallLocal = new THREE.Matrix4().makeTranslation(0, backWallH / 2, d / 2 - WALL_THICKNESS / 2);
   const wallGeo = backWallMesh.geometry.clone().applyMatrix4(wallLocal).applyMatrix4(world);
+  const wallWorldMatrix = new THREE.Matrix4().multiplyMatrices(world, wallLocal);
   const band = texturedWallBox(w + 0.02, 0.5, WALL_THICKNESS + 0.02, 'plaster', {
     tint: darken(PALETTE.cream),
     tileSize: 1.2,
@@ -631,6 +633,7 @@ export function buildTeaStallChowk() {
   wallMesh.name = 'chowk_tea_wall';
   wallMesh.castShadow = true;
   wallMesh.receiveShadow = true;
+  wallMesh.userData.colliderBoxes = [colliderBoxFromTransform(w, WALL_THICKNESS, wallWorldMatrix)];
   group.add(wallMesh);
 
   // Teal counter + posts + sloped roof, one merged 'metal' draw call. Raw
@@ -645,6 +648,7 @@ export function buildTeaStallChowk() {
   const tealGeos = [];
   const counter = new THREE.BoxGeometry(w - 0.6, counterH, 0.5);
   const counterLocal = new THREE.Matrix4().makeTranslation(0, counterH / 2, -d / 2 + 0.3);
+  const counterWorldMatrix = new THREE.Matrix4().multiplyMatrices(world, counterLocal);
   tealGeos.push(counter.applyMatrix4(counterLocal).applyMatrix4(world));
 
   for (const [px, pz, ph] of [
@@ -676,6 +680,9 @@ export function buildTeaStallChowk() {
   tealMesh.name = 'chowk_tea_counter_roof';
   tealMesh.castShadow = true;
   tealMesh.receiveShadow = true;
+  // Only the counter (blocks walk/drive-through past the open front) — posts and
+  // the sloped roof above head height are deliberately not solid.
+  tealMesh.userData.colliderBoxes = [colliderBoxFromTransform(w - 0.6, 0.5, counterWorldMatrix)];
   group.add(tealMesh);
 
   return group;
@@ -764,35 +771,18 @@ export function buildChowkPlaza() {
   });
 
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);
+  // Chabutra kerb — a real (if approximate) collider derived from the same
+  // kerbR/chabX/chabZ driving the 12 real kerb-segment meshes above, not a
+  // separately hand-typed box (playtest structural fix). Chairs/benches are
+  // deliberately not solid (small, low-stakes to walk through — matching how
+  // this game never bothered colliding the halwai's own plastic chairs).
+  mesh.userData.colliderBoxes = [{ minX: chabX - kerbR, maxX: chabX + kerbR, minZ: chabZ - kerbR, maxZ: chabZ + kerbR }];
+
   mesh.name = 'chowk_plaza_furniture';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   group.add(mesh);
   return group;
-}
-
-/** Colliders for the chowk — the tea stall's back wall + counter (blocks walk-
- * through, same reasoning as the bazaar's own counters), the chabutra kerb. Chairs/
- * benches are deliberately NOT solid (small enough, and low-stakes to walk through —
- * matching how this game never bothered colliding the halwai's own plastic chairs). */
-export function chowkColliders() {
-  const world = chowkWorldMatrix();
-  const toWorld = (lx, lz) => {
-    const v = new THREE.Vector3(lx, 0, lz).applyMatrix4(world);
-    return { x: v.x, z: v.z };
-  };
-  const boxes = [];
-  const { w, d } = CHOWK_TEA;
-  const backA = toWorld(-w / 2, d / 2 - WALL_THICKNESS);
-  const backB = toWorld(w / 2, d / 2);
-  boxes.push({ minX: Math.min(backA.x, backB.x), maxX: Math.max(backA.x, backB.x), minZ: Math.min(backA.z, backB.z), maxZ: Math.max(backA.z, backB.z) });
-  const counterA = toWorld(-w / 2 + 0.3, -d / 2 + 0.05);
-  const counterB = toWorld(w / 2 - 0.3, -d / 2 + 0.55);
-  boxes.push({ minX: Math.min(counterA.x, counterB.x), maxX: Math.max(counterA.x, counterB.x), minZ: Math.min(counterA.z, counterB.z), maxZ: Math.max(counterA.z, counterB.z) });
-  const chabX = CHOWK_CENTER.x - 3;
-  const chabZ = CHOWK_CENTER.z + 2;
-  boxes.push({ minX: chabX - 1.3, maxX: chabX + 1.3, minZ: chabZ - 1.3, maxZ: chabZ + 1.3 });
-  return boxes;
 }
 
 // --- Item 5: connect the lane from the hero zone to the bazaar. Same treatment as

@@ -12,6 +12,24 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * merged mesh has no way to move its parts independently afterwards.
  */
 
+/** Reads whatever collider information a source object (about to be merged away)
+ * carries — either `userData.collider === true` on a real, never-yet-merged leaf
+ * mesh (its own live world-space box is computed here, from the same
+ * geometry+matrixWorld the merge itself is about to bake in), or
+ * `userData.colliderBoxes` already computed by an EARLIER merge pass this object
+ * itself was the output of — and appends whatever it finds to `into`. This is how
+ * a building's real solid geometry stays the single source of truth for its
+ * collider even after one or several passes of draw-call merging: see
+ * src/collision.js's buildCollidersFromScene(), which reads the same
+ * `userData.colliderBoxes` this leaves on the final merged mesh. */
+function collectColliderBoxes(obj, into) {
+  if (obj.userData.collider === true) {
+    const box = new THREE.Box3().setFromObject(obj, true);
+    if (isFinite(box.min.x)) into.push({ minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z });
+  }
+  if (Array.isArray(obj.userData.colliderBoxes)) into.push(...obj.userData.colliderBoxes);
+}
+
 /** Merges every mesh descendant of `group` (InstancedMesh excluded — those are
  * already one draw call) that shares a Material, replacing them with one merged
  * Mesh per material added as a new direct child of `group`. Geometry is baked
@@ -20,17 +38,18 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 export function mergeGroupByMaterial(group) {
   group.updateWorldMatrix(true, true);
 
-  const buckets = new Map(); // material -> { geometries, castShadow, receiveShadow }
+  const buckets = new Map(); // material -> { geometries, castShadow, receiveShadow, colliderBoxes }
   const toRemove = [];
 
   group.traverse((obj) => {
     if (obj === group) return;
     if (!obj.isMesh || obj.isInstancedMesh) return;
     let bucket = buckets.get(obj.material);
-    if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false }));
+    if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
     bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
     bucket.castShadow = bucket.castShadow || obj.castShadow;
     bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
+    collectColliderBoxes(obj, bucket.colliderBoxes);
     toRemove.push(obj);
   });
 
@@ -48,6 +67,7 @@ export function mergeGroupByMaterial(group) {
     // own, so tools/screenshot.js's whole-object grounding check skips anything
     // flagged this way, the same way it already skips shop_roofs/trim/plinth/etc.
     mesh.userData.mergedStatic = true;
+    if (bucket.colliderBoxes.length) mesh.userData.colliderBoxes = bucket.colliderBoxes;
     group.add(mesh);
   }
 }
@@ -79,10 +99,11 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
       if (obj !== root && skipNames.includes(obj.name)) return;
       if (obj.isMesh && !obj.isInstancedMesh) {
         let bucket = buckets.get(obj.material);
-        if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false }));
+        if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
         bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
         bucket.castShadow = bucket.castShadow || obj.castShadow;
         bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
+        collectColliderBoxes(obj, bucket.colliderBoxes);
         toRemove.push(obj);
       }
       for (const child of obj.children) walk(child);
@@ -99,6 +120,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     mesh.castShadow = bucket.castShadow;
     mesh.receiveShadow = bucket.receiveShadow;
     mesh.userData.mergedStatic = true; // see mergeGroupByMaterial's own comment on this flag
+    if (bucket.colliderBoxes.length) mesh.userData.colliderBoxes = bucket.colliderBoxes;
     dest.add(mesh);
   }
 }

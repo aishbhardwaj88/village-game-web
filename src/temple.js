@@ -4,6 +4,7 @@ import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment } from './paths.js';
+import { colliderBoxFromTransform } from './collision.js';
 
 /**
  * Village mandir + flower stall (headroom-pass task item 2, docs/parked.md).
@@ -75,19 +76,35 @@ export function buildTemple(kit) {
     texturedWallBox(westSegLen, BOUNDARY_H, WALL_THICKNESS, 'plaster', { tint: WALL_TINT, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH, seed: 44.5 }),
     texturedWallBox(westSegLen, BOUNDARY_H, WALL_THICKNESS, 'plaster', { tint: WALL_TINT, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH, seed: 55.9 }),
   ];
+  const boundarySegments = [
+    { w: PLOT.w, d: WALL_THICKNESS, matrix: new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz0) }, // south
+    { w: PLOT.w, d: WALL_THICKNESS, matrix: new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz1) }, // north
+    { w: WALL_THICKNESS, d: PLOT.d, matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx1, BOUNDARY_H / 2, TEMPLE_POS.z) }, // east
+    {
+      w: WALL_THICKNESS,
+      d: westSegLen,
+      matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z - GATE_W / 2 - westSegLen / 2),
+    },
+    {
+      w: WALL_THICKNESS,
+      d: westSegLen,
+      matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z + GATE_W / 2 + westSegLen / 2),
+    },
+  ];
   const boundaryGeos = [
-    boundaryMeshes[0].geometry.clone().applyMatrix4(new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz0)),
-    boundaryMeshes[1].geometry.clone().applyMatrix4(new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz1)),
-    boundaryMeshes[2]
-      .geometry.clone()
-      .applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx1, BOUNDARY_H / 2, TEMPLE_POS.z)),
-    westMeshes[0].geometry.clone().applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z - GATE_W / 2 - westSegLen / 2)),
-    westMeshes[1].geometry.clone().applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z + GATE_W / 2 + westSegLen / 2)),
+    boundaryMeshes[0].geometry.clone().applyMatrix4(boundarySegments[0].matrix),
+    boundaryMeshes[1].geometry.clone().applyMatrix4(boundarySegments[1].matrix),
+    boundaryMeshes[2].geometry.clone().applyMatrix4(boundarySegments[2].matrix),
+    westMeshes[0].geometry.clone().applyMatrix4(boundarySegments[3].matrix),
+    westMeshes[1].geometry.clone().applyMatrix4(boundarySegments[4].matrix),
   ];
   const boundaryMesh = new THREE.Mesh(mergeGeometries(boundaryGeos), boundaryMeshes[0].material);
   boundaryMesh.name = 'temple_boundary_wall';
   boundaryMesh.castShadow = true;
   boundaryMesh.receiveShadow = true;
+  // Note the real gap at the west (entrance) face — two separate segments flanking
+  // GATE_W, not one hand-typed notched box (playtest structural fix).
+  boundaryMesh.userData.colliderBoxes = boundarySegments.map((s) => colliderBoxFromTransform(s.w, s.d, s.matrix));
   group.add(boundaryMesh);
 
   // --- Raised plinth (kit.addPlinthSegment as one solid slab, not a ring — this is
@@ -107,9 +124,18 @@ export function buildTemple(kit) {
   // deity figures, no religious imagery" instruction), sitting on the plinth's
   // east half. ---
   const shrineWallMesh = texturedWallBox(SHRINE.w, SHRINE.h, SHRINE.d, 'plaster', { tint: WALL_TINT, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH, seed: 66.2 });
-  const shrineGeo = shrineWallMesh.geometry
-    .clone()
-    .applyMatrix4(new THREE.Matrix4().setPosition(SHRINE.cx, PLINTH.h + SHRINE.h / 2, TEMPLE_POS.z));
+  const shrineMatrix = new THREE.Matrix4().setPosition(SHRINE.cx, PLINTH.h + SHRINE.h / 2, TEMPLE_POS.z);
+  const shrineGeo = shrineWallMesh.geometry.clone().applyMatrix4(shrineMatrix);
+  // Pre-existing bug found while wiring up collision (unrelated to this task, fixed
+  // in passing): this geometry was computed but never added to the scene — the
+  // shrine's own walls were invisible, only ever colliding on an object nobody
+  // could see, via this file's own now-removed hand-written templeColliders().
+  const shrineMesh = new THREE.Mesh(shrineGeo, shrineWallMesh.material);
+  shrineMesh.name = 'temple_shrine_wall';
+  shrineMesh.castShadow = true;
+  shrineMesh.receiveShadow = true;
+  shrineMesh.userData.colliderBoxes = [colliderBoxFromTransform(SHRINE.w, SHRINE.d, shrineMatrix)];
+  group.add(shrineMesh);
   kit.addOpening({
     center: { x: SHRINE.cx - SHRINE.w / 2, y: PLINTH.h, z: TEMPLE_POS.z },
     width: 1.1,
@@ -281,30 +307,11 @@ export function buildFlowerStall() {
   return group;
 }
 
-/** Colliders — the temple's boundary wall (with the entrance gate left open) and the
- * shrine block itself (the porch's open pillars are deliberately not solid, same
- * reasoning as every other porch/awning post in this game). */
-export function templeColliders() {
-  const boxes = [];
-  const bx0 = TEMPLE_POS.x - PLOT.w / 2;
-  const bx1 = TEMPLE_POS.x + PLOT.w / 2;
-  const bz0 = TEMPLE_POS.z - PLOT.d / 2;
-  const bz1 = TEMPLE_POS.z + PLOT.d / 2;
-  const t = WALL_THICKNESS;
-  boxes.push({ minX: bx0, maxX: bx1, minZ: bz0 - t / 2, maxZ: bz0 + t / 2 }); // south
-  boxes.push({ minX: bx0, maxX: bx1, minZ: bz1 - t / 2, maxZ: bz1 + t / 2 }); // north
-  boxes.push({ minX: bx1 - t / 2, maxX: bx1 + t / 2, minZ: bz0, maxZ: bz1 }); // east
-  const westSegLen = (PLOT.d - GATE_W) / 2;
-  boxes.push({ minX: bx0 - t / 2, maxX: bx0 + t / 2, minZ: bz0, maxZ: bz0 + westSegLen }); // west, south segment
-  boxes.push({ minX: bx0 - t / 2, maxX: bx0 + t / 2, minZ: bz1 - westSegLen, maxZ: bz1 }); // west, north segment
-  boxes.push({
-    minX: SHRINE.cx - SHRINE.w / 2,
-    maxX: SHRINE.cx + SHRINE.w / 2,
-    minZ: TEMPLE_POS.z - SHRINE.d / 2,
-    maxZ: TEMPLE_POS.z + SHRINE.d / 2,
-  });
-  return boxes;
-}
+// Structural fix (playtest): templeColliders() — a hand-typed box per wall
+// segment, matched by eye to the numbers above — is gone. The boundary wall and
+// the shrine wall (see buildTemple() above) now tag/collect their own real
+// colliders at the point they're built, read automatically by
+// src/collision.js's buildCollidersFromScene().
 
 /** Item 4 (tie the village together) — the new lane spur connecting the hero-zone
  * corridor to the temple's west gate / the flower stall. Same bent-waypoint-chain,

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
+import { colliderBoxFromTransform } from './collision.js';
 
 /**
  * Two more Places V1 locations (queue item 9) — no LAYOUT.md exists for either (only
@@ -162,6 +163,7 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
   const teaGeo = new THREE.BoxGeometry(teaW, TEA.counterTopY, 0.5);
   const teaLocal = new THREE.Matrix4().makeTranslation(0, TEA.counterTopY / 2, TEA.d / 2 - 0.5);
   const teaWorld = new THREE.Matrix4().makeRotationY(teaRotationY).setPosition(teaPosition.x, 0, teaPosition.z);
+  const teaCounterMatrix = new THREE.Matrix4().multiplyMatrices(teaWorld, teaLocal);
   teaGeo.applyMatrix4(teaLocal).applyMatrix4(teaWorld);
 
   const storeOpeningWidth = STORE.w - 1.0;
@@ -191,6 +193,12 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'shop_counters_and_posts';
+  // Only the tea stall's counter (its only solid side is the back wall — this is
+  // what actually blocks walking in through its open front, same as the bazaar's
+  // own counters). The general store's counter sits inside its own full solid
+  // wall collider (buildShopWalls() above) already, so tagging it too would just
+  // be a redundant duplicate box.
+  mesh.userData.colliderBoxes = [colliderBoxFromTransform(teaW, 0.5, teaCounterMatrix)];
   return mesh;
 }
 
@@ -211,6 +219,7 @@ export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRo
   const teaLocal = new THREE.Matrix4().makeTranslation(0, TEA.postH / 2, -TEA.d / 2 + WALL_THICKNESS / 2);
   const teaWorld = new THREE.Matrix4().makeRotationY(teaRotationY).setPosition(teaPosition.x, 0, teaPosition.z);
   const teaGeo = teaWallMesh.geometry.clone().applyMatrix4(teaLocal).applyMatrix4(teaWorld);
+  const teaWallMatrix = new THREE.Matrix4().multiplyMatrices(teaWorld, teaLocal);
 
   const storeWallMesh = texturedWallBox(STORE.w, STORE.h, STORE.d, 'plaster', {
     tint: PALETTE.cream,
@@ -221,11 +230,17 @@ export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRo
   const storeLocal = new THREE.Matrix4().makeTranslation(0, STORE.h / 2, 0);
   const storeWorld = new THREE.Matrix4().makeRotationY(storeRotationY).setPosition(storePosition.x, 0, storePosition.z);
   const storeGeo = storeWallMesh.geometry.clone().applyMatrix4(storeLocal).applyMatrix4(storeWorld);
+  const storeWallMatrix = new THREE.Matrix4().multiplyMatrices(storeWorld, storeLocal);
 
   const mesh = new THREE.Mesh(mergeGeometries([teaGeo, storeGeo]), teaWallMesh.material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'shop_walls';
+  // Structural fix (playtest): this replaces a hand-typed box in src/collision.js
+  // that went stale the first time STORE_POS moved — these two boxes are derived
+  // from the exact width/depth/transform already driving the real wall geometry
+  // two lines up, so they cannot drift from it again.
+  mesh.userData.colliderBoxes = [colliderBoxFromTransform(TEA.w, WALL_THICKNESS, teaWallMatrix), colliderBoxFromTransform(STORE.w, STORE.d, storeWallMatrix)];
   return mesh;
 }
 

@@ -1,173 +1,90 @@
-import {
-  HOUSE_CENTER,
-  SCHOOL_CENTER,
-  HALWAI_CENTER,
-  WALL_THICKNESS,
-  HOUSE_BLOCK,
-  HOUSE_DOOR_Z,
-  HOUSE_DOOR_WIDTH,
-  HOUSE_PARTITION_Z,
-  HOUSE_PARTITION_DOOR_WIDTH,
-  SCHOOL_ROOM,
-  SCHOOL_ROOM_DOOR_X,
-  SCHOOL_ROOM_DOOR_WIDTH,
-} from './village.js';
+import * as THREE from 'three';
 
 /**
  * Simple axis-aligned box colliders — no physics engine. Player and vehicles are
  * circles in the XZ plane (see resolveCollisions); each box pushes the circle out
  * along the shallowest penetration axis, which is what produces "slide along the
- * surface" instead of a hard stop. Field crops/grass are not solid (per the brief) —
- * they simply have no entry here.
+ * surface" instead of a hard stop.
  *
- * Building box values are hand-matched to src/village.js's actual geometry (not
- * derived from the meshes at runtime) so a door/window opening can leave a real gap —
- * the visual walls are solid-mass boxes with a *fake* recessed opening (see
- * docs/parked.md), so collision needs its own notched shape, not the mesh bounds.
- * If village.js's building dimensions ever change, update the matching entry here.
+ * Structural fix (playtest): this file used to hand-type a box per building,
+ * matched by eye to src/village.js/shops.js/bazaar.js/temple.js's own numbers —
+ * which is exactly how the general store's collider went stale when the store
+ * moved and nobody remembered to update the copy living here. There is now
+ * exactly one way a collider comes into existence: something in the actual scene
+ * graph is tagged solid (`mesh.userData.collider = true`, set once, at the
+ * source, by src/materials.js's texturedWall()/texturedWallBox() — the two
+ * functions every real wall in this game is built through) and
+ * buildCollidersFromScene() below reads its real, current, transformed geometry.
+ * A wall that moves, resizes, or gets added later needs no matching edit here —
+ * there is nothing here left to edit. Field crops/grass are not solid (per the
+ * brief) — they are simply never tagged.
  */
 
-/** A rectangular footprint with a door-width notch on one face, as 2-3 AABBs: two
- * full-depth boxes flanking the door, plus a box for the rest of the footprint set
- * back by `recess` from the door face so the door reads as a shallow alcove, matching
- * the visual reveal depth, rather than a full passage into solid mass. */
-function footprintWithDoorNotch(cx, cz, w, d, doorFace, doorWidth, recess = WALL_THICKNESS) {
-  const boxes = [];
-  const hw = w / 2;
-  const hd = d / 2;
-  const hdoor = doorWidth / 2;
+const _box3 = new THREE.Box3();
+const _corner = new THREE.Vector3();
 
-  if (doorFace === 'north' || doorFace === 'south') {
-    // Door on a Z-face; width runs along X.
-    boxes.push({ minX: cx - hw, maxX: cx - hdoor, minZ: cz - hd, maxZ: cz + hd }); // left of door
-    boxes.push({ minX: cx + hdoor, maxX: cx + hw, minZ: cz - hd, maxZ: cz + hd }); // right of door
-    const backZmin = doorFace === 'south' ? cz - hd : cz - hd + recess;
-    const backZmax = doorFace === 'south' ? cz + hd - recess : cz + hd;
-    boxes.push({ minX: cx - hdoor, maxX: cx + hdoor, minZ: backZmin, maxZ: backZmax });
-  } else {
-    // Door on an X-face ('east'/'west'); width runs along Z.
-    boxes.push({ minX: cx - hw, maxX: cx + hw, minZ: cz - hd, maxZ: cz - hdoor }); // "left" of door
-    boxes.push({ minX: cx - hw, maxX: cx + hw, minZ: cz + hdoor, maxZ: cz + hd }); // "right" of door
-    // The recess cuts into whichever side the door is actually on: 'east' (door at
-    // max X) recesses maxX; 'west' (door at min X) recesses minX. This was backwards
-    // before — it recessed the far/blank wall and left a full-depth gap through to
-    // the actual door face, which is how the tractor drove straight into the school's
-    // side wings (see docs/parked.md).
-    const backXmin = doorFace === 'east' ? cx - hw : cx - hw + recess;
-    const backXmax = doorFace === 'east' ? cx + hw - recess : cx + hw;
-    boxes.push({ minX: backXmin, maxX: backXmax, minZ: cz - hdoor, maxZ: cz + hdoor });
-  }
-  return boxes;
-}
-
-function buildStaticColliders() {
-  const boxes = [];
-
-  // House block: item 3 made it walkable — 4 real thin perimeter walls (a genuine
-  // gap at the front door, not the notched-solid-mass every other building here
-  // still uses) plus the interior partition's own doorway, matching
-  // src/village.js's buildHouse() exactly (both read from the same HOUSE_BLOCK/
-  // HOUSE_DOOR_*/HOUSE_PARTITION_* constants, so they can't drift apart).
-  {
-    const { cx, cz, w, d } = HOUSE_BLOCK;
-    const hw = w / 2;
-    const hd = d / 2;
-    const t = WALL_THICKNESS / 2;
-    const doorHalf = HOUSE_DOOR_WIDTH / 2;
-    // South wall (door), 2 segments.
-    boxes.push({ minX: cx - hw, maxX: cx - doorHalf, minZ: HOUSE_DOOR_Z - t, maxZ: HOUSE_DOOR_Z + t });
-    boxes.push({ minX: cx + doorHalf, maxX: cx + hw, minZ: HOUSE_DOOR_Z - t, maxZ: HOUSE_DOOR_Z + t });
-    // North wall, solid.
-    boxes.push({ minX: cx - hw, maxX: cx + hw, minZ: cz - hd - t, maxZ: cz - hd + t });
-    // East/west walls, solid.
-    boxes.push({ minX: cx - hw - t, maxX: cx - hw + t, minZ: cz - hd, maxZ: cz + hd });
-    boxes.push({ minX: cx + hw - t, maxX: cx + hw + t, minZ: cz - hd, maxZ: cz + hd });
-    // Interior partition, its own doorway.
-    const pDoorHalf = HOUSE_PARTITION_DOOR_WIDTH / 2;
-    boxes.push({ minX: cx - hw, maxX: cx - pDoorHalf, minZ: HOUSE_PARTITION_Z - t, maxZ: HOUSE_PARTITION_Z + t });
-    boxes.push({ minX: cx + pDoorHalf, maxX: cx + hw, minZ: HOUSE_PARTITION_Z - t, maxZ: HOUSE_PARTITION_Z + t });
-    // Low compound walls, east/west courtyard edges (thin — treat as strips). The
-    // staircase (src/village.js HOUSE_STAIRS) deliberately has no collider here — the
-    // player has to be able to walk onto it; height comes from main.js's
-    // groundHeightAt(), not from being blocked/stepped over.
-    boxes.push({ minX: HOUSE_CENTER.x - 9 - 0.15, maxX: HOUSE_CENTER.x - 9 + 0.15, minZ: HOUSE_CENTER.z - 7, maxZ: HOUSE_CENTER.z + 7 });
-    boxes.push({ minX: HOUSE_CENTER.x + 9 - 0.15, maxX: HOUSE_CENTER.x + 9 + 0.15, minZ: HOUSE_CENTER.z - 7, maxZ: HOUSE_CENTER.z + 7 });
-  }
-
-  // School: 3 blocks, each with a door on its yard-facing wall.
-  {
-    const cx = SCHOOL_CENTER.x;
-    const cz = SCHOOL_CENTER.z;
-    boxes.push(...footprintWithDoorNotch(cx, cz + 9, 24, 6, 'south', 1.1)); // back block, door faces +z (south, toward yard)
-    boxes.push(...footprintWithDoorNotch(cx + 12, cz, 6, 18, 'west', 1.1)); // east wing, door faces -x
-
-    // West wing — item 4's walkable classroom: real thin perimeter walls (a genuine
-    // gap at the door) instead of the notched-solid-mass every other school block
-    // still uses, matching src/village.js's buildSchoolClassroom() exactly (both
-    // read from the same SCHOOL_ROOM/SCHOOL_ROOM_DOOR_* constants).
-    {
-      const { cx: rx, cz: rz, w, d } = SCHOOL_ROOM;
-      const hw = w / 2;
-      const hd = d / 2;
-      const t = WALL_THICKNESS / 2;
-      const doorHalf = SCHOOL_ROOM_DOOR_WIDTH / 2;
-      boxes.push({ minX: rx - hw - t, maxX: rx - hw + t, minZ: rz - hd, maxZ: rz + hd }); // west wall, solid
-      boxes.push({ minX: rx - hw, maxX: rx + hw, minZ: rz - hd - t, maxZ: rz - hd + t }); // north wall, solid
-      boxes.push({ minX: rx - hw, maxX: rx + hw, minZ: rz + hd - t, maxZ: rz + hd + t }); // south wall, solid
-      // East wall (door), 2 segments.
-      boxes.push({ minX: SCHOOL_ROOM_DOOR_X - t, maxX: SCHOOL_ROOM_DOOR_X + t, minZ: rz - hd, maxZ: rz - doorHalf });
-      boxes.push({ minX: SCHOOL_ROOM_DOOR_X - t, maxX: SCHOOL_ROOM_DOOR_X + t, minZ: rz + doorHalf, maxZ: rz + hd });
-    }
-  }
-
-  // Halwai: only 2 real walls (north, east) — no door, both other sides fully open.
-  {
-    const cx = HALWAI_CENTER.x;
-    const cz = HALWAI_CENTER.z;
-    const width = 5.5;
-    const depth = 4.5;
-    const t = WALL_THICKNESS;
-    const xBack = cx + depth / 2;
-    const zLeft = cz - width / 2;
-    boxes.push({ minX: cx - depth / 2, maxX: xBack, minZ: zLeft - t / 2, maxZ: zLeft + t / 2 }); // north wall
-    boxes.push({ minX: xBack - t / 2, maxX: xBack + t / 2, minZ: zLeft, maxZ: cz + width / 2 }); // east wall
-    // Kadhai platform (a low box, but tall/solid enough at the front to be worth blocking).
-    boxes.push({ minX: cx - depth / 2, maxX: cx - depth / 2 + 0.9, minZ: cz - width / 2, maxZ: cz + width / 2 });
-  }
-
-  // Background houses (src/scenery.js) — simple solid footprints, no doors modelled.
-  for (const p of [
-    { x: -115, z: 15, w: 9, d: 7 },
-    { x: 25, z: 128, w: 8, d: 8 },
-    { x: -95, z: 165, w: 10, d: 7 },
+/** For a wall/box segment about to be merged away by src/mergeUtils.js's ad-hoc
+ * (non-mergeGroupByMaterial) merge pattern — src/bazaar.js's back wall and party
+ * walls, src/shops.js's buildShopWalls(), src/temple.js's boundary — computes its
+ * world-space AABB collider from the exact width/depth and placement matrix
+ * already being used to bake its real geometry, so the two can never drift apart.
+ * Only X/Z matter (colliders are 2D); `matrix` is the full world placement
+ * (local offset already composed with the building's own position/rotation, same
+ * convention every one of those call sites already uses for its geometry). */
+export function colliderBoxFromTransform(width, depth, matrix) {
+  const hw = width / 2;
+  const hd = depth / 2;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const [x, z] of [
+    [-hw, -hd],
+    [hw, -hd],
+    [-hw, hd],
+    [hw, hd],
   ]) {
-    boxes.push({ minX: p.x - p.w / 2, maxX: p.x + p.w / 2, minZ: p.z - p.d / 2, maxZ: p.z + p.d / 2 });
+    _corner.set(x, 0, z).applyMatrix4(matrix);
+    minX = Math.min(minX, _corner.x);
+    maxX = Math.max(maxX, _corner.x);
+    minZ = Math.min(minZ, _corner.z);
+    maxZ = Math.max(maxZ, _corner.z);
   }
+  return { minX, maxX, minZ, maxZ };
+}
 
-  // Tea stall + general store (src/shops.js, item 9) — simple solid footprints
-  // (world-space AABB, accounting for each one's 90°/-90° placement rotation — a
-  // rotateY(θ) maps local (x,z) half-extents to world (|z|,|x|) half-extents at
-  // θ=±90°, i.e. swapped, not the local w×d as authored).
-  boxes.push({ minX: -53.25, maxX: -50.75, minZ: 76, maxZ: 80 }); // tea stall, 2.5(x) x 4(z) world footprint
-  // General store — playtest bug 2: this box was never updated when STORE_POS moved
-  // from its old {x:-38,z:90} to its current {x:-52,z:20} (src/main.js), so the
-  // store's real location had zero collision protection and the tractor/trolley
-  // drove straight through the wall there. Recomputed from the current STORE_POS/
-  // STORE_ROT and STORE.w/d (src/shops.js), same 90°-rotation swap as the comment
-  // above establishes.
-  boxes.push({ minX: -53.5, maxX: -50.5, minZ: 18.25, maxZ: 21.75 }); // general store, 3(x) x 3.5(z) world footprint
-
+/** Walks the whole scene ONCE, after every building has been added to it, and
+ * derives the complete static collider list from real geometry — every object
+ * tagged `userData.collider === true` (a real, still-standalone wall mesh)
+ * contributes its own live world-space box; every object carrying
+ * `userData.colliderBoxes` (an array — the result of one or more draw-call
+ * merges having folded several tagged source meshes together, see
+ * src/mergeUtils.js) contributes those directly, preserving real gaps between
+ * segments (a doorway, the open front of a shop) instead of flattening a whole
+ * run of separate walls into one solid span. Call once, after scene construction
+ * finishes (main.js) — not per-frame; the result only needs recomputing if
+ * something solid is added to the scene afterward. */
+export function buildCollidersFromScene(scene) {
+  const boxes = [];
+  scene.traverse((obj) => {
+    if (!obj.isMesh) return;
+    if (obj.userData.collider === true) {
+      _box3.setFromObject(obj, true);
+      if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+    }
+    if (Array.isArray(obj.userData.colliderBoxes)) boxes.push(...obj.userData.colliderBoxes);
+  });
   return boxes;
 }
 
-export const STATIC_COLLIDERS = buildStaticColliders();
+// Populated once by initStaticColliders() (main.js, after scene construction).
+// Kept as a plain mutable module-level array (not a getter/setter) so every
+// existing resolveCollisions() call site keeps working unchanged — this is the
+// one and only place that array is built.
+export let STATIC_COLLIDERS = [];
 
-/** Adds more boxes to the shared static collider list after the fact — for content
- * built outside village.js/shops.js that still needs to block movement the same way
- * (queue item 2's tree trunks, main.js — trees are placed at runtime, not known when
- * this module's own buildStaticColliders() list above is built). */
-export function addStaticColliders(boxes) {
-  STATIC_COLLIDERS.push(...boxes);
+export function initStaticColliders(scene) {
+  STATIC_COLLIDERS = buildCollidersFromScene(scene);
 }
 
 /** Push a circle (in the XZ plane) out of a box if it overlaps, returning true if a
@@ -208,6 +125,20 @@ function resolveCircleVsBox(pos, radius, box) {
 export function resolveCollisions(pos, radius, extraBoxes = []) {
   for (const box of STATIC_COLLIDERS) resolveCircleVsBox(pos, radius, box);
   for (const box of extraBoxes) resolveCircleVsBox(pos, radius, box);
+}
+
+/** True if a circle (pos, radius) overlaps any box in `boxes` — read-only test,
+ * used by the swept movement resolver (src/movement.js) to find the furthest
+ * point along a proposed path that's still clear, without mutating `pos`. */
+export function circleHitsAnyBox(pos, radius, boxes) {
+  for (const box of boxes) {
+    const closestX = Math.min(Math.max(pos.x, box.minX), box.maxX);
+    const closestZ = Math.min(Math.max(pos.z, box.minZ), box.maxZ);
+    const dx = pos.x - closestX;
+    const dz = pos.z - closestZ;
+    if (dx * dx + dz * dz < radius * radius) return true;
+  }
+  return false;
 }
 
 /** An axis-aligned box matching a vehicle's current footprint, for blocking other
