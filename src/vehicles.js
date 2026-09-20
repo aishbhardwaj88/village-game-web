@@ -506,7 +506,16 @@ export class Trolley {
 
     const restLength = TRACTOR_TOW_OFFSET_REST - this.brakeCompression;
     const tractorBackward = new THREE.Vector3(Math.sin(tractor.group.rotation.y), 0, Math.cos(tractor.group.rotation.y));
-    const targetPos = towPoint.clone().addScaledVector(tractorBackward, restLength);
+    // Bugfix (playtest bug 1): base this on the tractor's own body position, the
+    // same anchor spawnVehicles() uses for the initial placement
+    // (`tractor.group.position + tractorBackward * TRACTOR_TOW_OFFSET_REST`) — not
+    // `towPoint` (already offset from the body by the hitch's own local Z). Basing
+    // it on towPoint double-counted that offset, so the running target sat roughly
+    // one hitch-length further back than the trolley's own correct spawn position,
+    // and the spring chased a permanently-too-far target every frame. `towPoint`
+    // is still exactly right for the braking calc above and the yaw hinge below —
+    // both are genuinely about the physical hitch point, not the body anchor.
+    const targetPos = tractor.group.position.clone().addScaledVector(tractorBackward, restLength);
 
     // Slightly underdamped spring (c < 2*sqrt(k)) — a small, controlled overshoot,
     // not a bounce. Position first, then yaw hinges to face the tow point.
@@ -526,7 +535,16 @@ export class Trolley {
     const hingeZ = towPoint.z - this.group.position.z;
     const targetYaw = Math.atan2(-hingeX, -hingeZ);
     let yawDiff = targetYaw - this.yaw;
-    yawDiff = ((yawDiff + Math.PI) % (Math.PI * 2)) - Math.PI; // shortest angular path
+    // Shortest angular path, wrapped to [-PI, PI). The old `((d + PI) % (2*PI)) -
+    // PI` only wraps correctly when `d + PI` lands >= 0 — JS's `%` returns a
+    // negative result for a negative dividend (unlike Python's), so for any raw
+    // diff below -PI it was a silent no-op, leaving `yawDiff` many radians out of
+    // range. That fed a huge, wrong-direction torque into the spring below, which
+    // is what actually caused "the trolley doesn't follow" (bug 1 of this task) —
+    // found by direct per-frame instrumentation, not by inspection. The extra
+    // `+ Math.PI * 3` before the second `%` guarantees a non-negative dividend
+    // there regardless of how far out of range the input was.
+    yawDiff = ((yawDiff % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
     const kYaw = 11;
     const cYaw = 5.2;
     this.yawVel += (kYaw * yawDiff - cYaw * this.yawVel) * dt;
@@ -851,13 +869,25 @@ export class Vehicle {
     scene.add(this.group);
   }
 
-  /** Attaches a (currently unattached) Trolley instance to this tractor — item 2. */
+  /** Attaches a (currently unattached) Trolley instance to this tractor — item 2.
+   * Snaps its drawbar eye to the hitch point immediately (playtest bug 1: this used
+   * to just set the `attached` flag and leave the trolley wherever it already was —
+   * up to `attachRadius` away — letting the follow spring slowly drag it in from
+   * there instead of a real hitch-up). Same placement formula spawnVehicles() uses
+   * for the initial already-attached state, so a fresh attach and a fresh spawn
+   * produce an identical, exact (zero-gap) result. */
   attachTrolley(trolley) {
+    const tractorBackward = new THREE.Vector3(Math.sin(this.group.rotation.y), 0, Math.cos(this.group.rotation.y));
+    trolley.group.position.copy(this.group.position).addScaledVector(tractorBackward, TRACTOR_TOW_OFFSET_REST);
+    trolley.group.rotation.y = this.group.rotation.y;
+    trolley.yaw = this.group.rotation.y;
     this.trolley = trolley;
     trolley.attached = true;
     trolley.velX = 0;
     trolley.velZ = 0;
     trolley.yawVel = 0;
+    trolley.brakeCompression = 0;
+    this._prevSpeedForTrolley = this.speed;
   }
 
   /** Returns the detached Trolley instance so the caller (main.js) can keep a
