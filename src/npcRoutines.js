@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { resolveCollisions } from './collision.js';
+import { resolveMove } from './movement.js';
 import { NPC_RADIUS } from './npc.js';
 
 /**
@@ -35,7 +35,12 @@ export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeco
     }
 
     _toTarget.multiplyScalar(1 / dist); // normalize
-    npcGroup.position.addScaledVector(_toTarget, Math.min(speed * dt, dist));
+    // Structural fix (playtest, item 2) — this used to write position directly
+    // with no collision check at all (routes were hand-picked to avoid walls,
+    // so nothing ever caught a real bug here, but every moving body must go
+    // through the one resolver now regardless — see CLAUDE.md).
+    const step = Math.min(speed * dt, dist);
+    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
     const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
     // Shortest-path yaw damp so it doesn't spin the long way round.
     let diff = targetYaw - npcGroup.rotation.y;
@@ -77,13 +82,11 @@ export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance 
     if (dist > stopDistance) {
       _toFollowTarget.multiplyScalar(1 / dist);
       const step = Math.min(speed * dt, dist - stopDistance);
-      npcGroup.position.addScaledVector(_toFollowTarget, step);
+      resolveMove(npcGroup.position, _toFollowTarget.x * step, _toFollowTarget.z * step, NPC_RADIUS, []);
       const targetYaw = Math.atan2(_toFollowTarget.x, _toFollowTarget.z);
       let diff = targetYaw - npcGroup.rotation.y;
       diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
       npcGroup.rotation.y += diff * Math.min(1, dt * 4);
     }
-
-    resolveCollisions(npcGroup.position, NPC_RADIUS, []);
   };
 }

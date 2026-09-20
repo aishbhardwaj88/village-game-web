@@ -13,7 +13,8 @@ import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildDust } from './dust.js';
-import { spawnVehicles } from './vehicles.js';
+import { spawnVehicles, TROLLEY_COLLISION_RADIUS } from './vehicles.js';
+import { resolveMove, resolveTowedMove } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import {
@@ -26,7 +27,7 @@ import {
   PEEPAL_PLATFORM_RADIUS,
   FLOWER_STALL_POS,
 } from './temple.js';
-import { resolveCollisions, vehicleFootprintBox, initStaticColliders } from './collision.js';
+import { vehicleFootprintBox, initStaticColliders } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -1052,9 +1053,7 @@ async function main() {
         // again after that point would throw. Every read in this branch uses
         // `vehicle`, never `mountedVehicle`, until the final dismount() call.
         const vehicle = mountedVehicle;
-        vehicle.update(dt, input);
-        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.update(dt, input); // proposes vehicle.pendingDx/pendingDz — does not move it (see vehicles.js)
         const p = vehicle.preset;
         const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
         // Playtest bug 5: a vehicle blocked by a wall kept its internal `speed`
@@ -1068,9 +1067,17 @@ async function main() {
         // the position (a no-op graze under 1cm is not treated as a stop).
         const preCollisionX = vehicle.group.position.x;
         const preCollisionZ = vehicle.group.position.z;
-        resolveCollisions(vehicle.group.position, vehicleRadius, otherVehicleBoxes(vehicle));
+        // Structural fix (playtest, item 2) — the one swept movement resolver
+        // every moving body in this game goes through now, instead of writing
+        // the full delta directly and separately resolving only the endpoint
+        // (which a fast-moving vehicle could tunnel a thin wall between, in one
+        // frame).
+        resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         const collisionCorrection = Math.hypot(vehicle.group.position.x - preCollisionX, vehicle.group.position.z - preCollisionZ);
-        if (collisionCorrection > 0.01) {
+        const properlyBlocked = Math.hypot(vehicle.pendingDx, vehicle.pendingDz) - collisionCorrection > 0.01;
+        if (properlyBlocked) {
           vehicle.speed = 0;
           // Zeroing speed alone still leaves this frame's brake-dip body pitch/roll
           // (computed inside vehicle.update() above, before this correction was
@@ -1085,6 +1092,29 @@ async function main() {
           }
         }
         audio.setVehicle(vehicle.preset.kind, vehicle.speed / vehicle.preset.maxSpeed);
+
+        // Structural fix (playtest, item 2) — the towed trolley's own position:
+        // computed and resolved AFTER the tractor above, so it always rigidly
+        // targets the tractor's real (already-resolved) hitch point, never a
+        // stale pre-collision one. If the trolley is blocked short of that
+        // target, the shortfall is subtracted from the TRACTOR's position too —
+        // "when the trolley is blocked, the tractor is blocked with it" — instead
+        // of the trolley silently breaking its rigid link to slide along a wall
+        // on its own while the tractor keeps driving.
+        if (p.kind === 'tractor' && vehicle.trolley && vehicle.trolley.attached) {
+          const trolley = vehicle.trolley;
+          const trolleyPrevX = trolley.group.position.x;
+          const trolleyPrevZ = trolley.group.position.z;
+          trolley.updateYawHinge(dt, vehicle);
+          const target = trolley.hitchTargetPosition(vehicle);
+          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, target, TROLLEY_COLLISION_RADIUS, otherVehicleBoxes(vehicle));
+          if (Math.abs(shortfallX) > 1e-4 || Math.abs(shortfallZ) > 1e-4) {
+            vehicle.group.position.x -= shortfallX;
+            vehicle.group.position.z -= shortfallZ;
+            vehicle.speed = 0;
+          }
+          trolley.finishMoveStep(dt, trolleyPrevX, trolleyPrevZ);
+        }
 
         // Trolley attach/detach (bugfix 2/4) — entirely separate from mount/dismount
         // below: its own key (F desktop / #attach-hint's own tap target on touch,
@@ -1131,10 +1161,12 @@ async function main() {
         moveDir.addScaledVector(right, input.moveX);
         if (moveDir.lengthSq() > 1) moveDir.normalize();
 
-        player.position.addScaledVector(moveDir, MOVE_SPEED * dt);
+        // Structural fix (playtest, item 2) — swept resolveMove(), same as every
+        // other moving body, instead of moving the full step then resolving only
+        // the endpoint.
+        resolveMove(player.position, moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
         player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        resolveCollisions(player.position, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
         player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
         audio.setSurface(surfaceAt(player.position.x, player.position.z));

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { resolveCollisions } from './collision.js';
+import { resolveMove } from './movement.js';
 import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS } from './bazaar.js';
 
 /**
@@ -126,16 +126,17 @@ export function createBazaarLife() {
         }
       } else {
         _toTarget.multiplyScalar(1 / dist);
-        v.pos.addScaledVector(_toTarget, Math.min(SPEED * dt, dist));
+        const step = Math.min(SPEED * dt, dist);
+        // Structural fix (playtest, item 2) — the one swept resolver every
+        // moving body in this game goes through now (see CLAUDE.md); the
+        // hand-picked waypoints already route clear of counters/kerbs, this is
+        // the same safety net src/npcRoutines.js's own routines rely on.
+        resolveMove(v.pos, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
         const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
         let diff = targetYaw - v.rotY;
         diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
         v.rotY += diff * Math.min(1, dt * 4);
       }
-      // "Must not walk through walls... must respect the collision system" — the
-      // hand-picked waypoints already route clear of counters/kerbs, this is the
-      // same safety net src/npcRoutines.js's own createFollowRoutine relies on.
-      resolveCollisions(v.pos, NPC_RADIUS, []);
       setInstance(v.index, v.pos.x, NPC_HEIGHT / 2, v.pos.z, v.rotY);
     }
 

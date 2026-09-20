@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
-import { resolveCollisions } from './collision.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -500,7 +499,7 @@ const TRACTOR_TOW_OFFSET_REST = T.hitchZ - TR.hitchLocalZ; // trolley->tractor r
 // (bedLen x bedW), same convention main.js already uses for the tractor
 // (`Math.max(p.body.w, p.body.d) / 2`), so it gets the same "slide along a wall"
 // treatment instead of driving straight into one.
-const TROLLEY_COLLISION_RADIUS = Math.max(TR.bedLen, TR.bedW) / 2;
+export const TROLLEY_COLLISION_RADIUS = Math.max(TR.bedLen, TR.bedW) / 2;
 
 export class Trolley {
   constructor(position, rotationY = 0) {
@@ -528,57 +527,56 @@ export class Trolley {
   /** Position is rigid (drawbar eye exactly at the tractor's hitch point every
    * frame); only yaw follows a damped spring, which is what actually produces the
    * "cuts the corner... swings into place" trailing look on its own, without each
-   * turn case having to be hand-scripted. */
-  updateAttached(dt, tractor) {
+   * turn case having to be hand-scripted.
+   *
+   * Structural fix (playtest, item 2): this used to also write position and
+   * resolve its own collision, called from inside Vehicle.update() BEFORE the
+   * tractor's own move had been resolved — so the trolley would rigidly target
+   * wherever the tractor's still-unresolved position happened to be that frame,
+   * and its own collision push-out could leave it stranded (e.g. inside a
+   * building the tractor had already been stopped at, one frame earlier) with
+   * no mechanism to pull the tractor back to match. Position is now driven
+   * externally by main.js, AFTER the tractor's move is resolved, through
+   * src/movement.js's resolveTowedMove() — the one movement resolver every
+   * moving body in this game goes through — which reports back exactly how far
+   * short of the rigid target the trolley was blocked, so the caller can pull
+   * the tractor back by the same amount: "when the trolley is blocked, the
+   * tractor is blocked too." This method now only updates the yaw hinge. */
+  updateYawHinge(dt, tractor) {
     const towPoint = tractor.group.localToWorld(new THREE.Vector3(0, T.hitchY, T.hitchZ));
-
-    // Playtest bug C (this task) — the old position spring (see docs/parked.md's
-    // earlier playtest-bug-1 note, now superseded) approached the hitch but never
-    // exactly reached it, and visibly lost ground under sustained acceleration —
-    // a 100m drive opened up to a ~6m gap instead of staying "rigidly linked at
-    // the hitch" as a real hitch pin is. Rebuilt as two separate parts, matching
-    // that description literally: position is RIGID (the drawbar eye is placed
-    // exactly at the tractor's hitch point every single frame, by construction —
-    // there is nothing to lag), and only the trolley's OWN YAW hinges, via a
-    // damped spring toward "face the hitch point", which is what actually
-    // produces the trailing swing-into-turns look. `wrap()` keeps that spring's
-    // angle diff in [-PI, PI) — JS's `%` returns a negative result for a
-    // negative dividend (unlike Python's), so a naive `((d + PI) % (2*PI)) - PI`
-    // silently fails to wrap for sufficiently out-of-range input.
-    const prevX = this.group.position.x;
-    const prevZ = this.group.position.z;
-
     const hingeX = towPoint.x - this.group.position.x;
     const hingeZ = towPoint.z - this.group.position.z;
     const targetYaw = Math.atan2(-hingeX, -hingeZ);
     let yawDiff = targetYaw - this.yaw;
+    // Shortest angular path, wrapped to [-PI, PI) — JS's `%` returns a negative
+    // result for a negative dividend (unlike Python's), so a naive
+    // `((d + PI) % (2*PI)) - PI` silently fails to wrap for sufficiently
+    // out-of-range input (this is what caused an earlier "trolley doesn't
+    // follow" bug — see git history).
     yawDiff = ((yawDiff % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
     const kYaw = 11;
     const cYaw = 5.2;
     this.yawVel += (kYaw * yawDiff - cYaw * this.yawVel) * dt;
     this.yaw += this.yawVel * dt;
     this.group.rotation.y = this.yaw;
+  }
 
-    // Rigid link: place the drawbar eye (local (0, TR.hitchY, TR.hitchLocalZ),
-    // same point Trolley.hitchWorldPoint reads) exactly at the tractor's hitch
-    // point, given the yaw just computed above — i.e. solve group.position from
-    // "hitchWorldPoint === towPoint" rather than springing toward an
-    // approximation of it. Matches the localToWorld convention used everywhere
-    // else in this file (world offset of local (0,*,z) at yaw θ is
-    // (z*sin θ, *, z*cos θ)).
-    this.group.position.x = towPoint.x - TR.hitchLocalZ * Math.sin(this.yaw);
-    this.group.position.z = towPoint.z - TR.hitchLocalZ * Math.cos(this.yaw);
+  /** Where the drawbar eye (local (0, TR.hitchY, TR.hitchLocalZ), same point
+   * hitchWorldPoint reads) needs `this.group.position` to be for it to sit
+   * exactly on `tractor`'s hitch point, given the trolley's CURRENT yaw
+   * (updateYawHinge() should already have run this frame). Matches the
+   * localToWorld convention used everywhere else in this file (world offset of
+   * local (0,*,z) at yaw θ is (z*sin θ, *, z*cos θ)). */
+  hitchTargetPosition(tractor) {
+    const towPoint = tractor.group.localToWorld(new THREE.Vector3(0, T.hitchY, T.hitchZ));
+    return { x: towPoint.x - TR.hitchLocalZ * Math.sin(this.yaw), z: towPoint.z - TR.hitchLocalZ * Math.cos(this.yaw) };
+  }
 
-    // Playtest bug 2 — the towed trolley never had its own collision check at all
-    // (only the mounted vehicle and the player did, in main.js), so it drove
-    // straight through building walls. Same resolveCollisions() every other moving
-    // thing in this game uses, checked every frame while attached, sliding it along
-    // a wall (which does momentarily break the rigid link above — correct, a wall
-    // has to be able to stop the trolley even if the tractor is still pulling).
-    resolveCollisions(this.group.position, TROLLEY_COLLISION_RADIUS, []);
-
+  /** Bookkeeping after main.js has moved this.group.position for the frame
+   * (via resolveTowedMove()): derives an approximate speed from how far it
+   * actually got (for the wheel-roll rate) and rolls the wheels. */
+  finishMoveStep(dt, prevX, prevZ) {
     this.speed = Math.hypot(this.group.position.x - prevX, this.group.position.z - prevZ) / Math.max(dt, 0.0001);
-
     for (const w of this.wheels) updateWheel(w, { linearSpeed: this.speed, radius: TR.wheelDia / 2, dt });
   }
 
@@ -984,8 +982,14 @@ export class Vehicle {
     const yawDelta = -steer * p.turnRate * speedFactor * dt * Math.sign(this.speed || 1);
     this.group.rotation.y += yawDelta;
 
+    // Structural fix (playtest): this no longer writes position directly — it
+    // proposes a delta (this.pendingDx/pendingDz) for the caller (main.js) to
+    // pass through src/movement.js's resolveMove(), the one swept resolver
+    // every moving body in this game goes through. Nothing else may touch
+    // this.group.position for the forward-motion component.
     const forward = new THREE.Vector3(-Math.sin(this.group.rotation.y), 0, -Math.cos(this.group.rotation.y));
-    this.group.position.addScaledVector(forward, this.speed * dt);
+    this.pendingDx = forward.x * this.speed * dt;
+    this.pendingDz = forward.z * this.speed * dt;
 
     const steerAngle = -steer * p.maxSteerAngle;
 
@@ -1009,7 +1013,14 @@ export class Vehicle {
       for (const w of this.rearWheels) updateWheel(w, { linearSpeed: this.speed, radius: T.rearWheelDia / 2, dt });
       for (const w of this.frontWheels) updateWheel(w, { linearSpeed: this.speed, radius: T.frontWheelDia / 2, dt, steerAngle });
 
-      if (this.trolley && this.trolley.attached) this.trolley.updateAttached(dt, this);
+      // Structural fix (playtest): the towed trolley's own update — position,
+      // collision, and the "if the trolley's blocked, the tractor is blocked
+      // too" coupling — now happens in main.js, AFTER this tractor's own
+      // proposed move has been resolved (this.pendingDx/pendingDz, above).
+      // Computing it here, before that resolution, was the actual root cause
+      // behind an earlier "trolley left inside a building" report: the
+      // trolley would rigidly target wherever the tractor's UNRESOLVED
+      // position happened to be that frame.
     } else if (p.kind === 'cart') {
       // Slowest, heaviest: a side-to-side sway (not a lean-into-turn like the bike),
       // damped rather than a constant sine so it settles when stationary.
