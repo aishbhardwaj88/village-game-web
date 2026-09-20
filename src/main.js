@@ -64,6 +64,7 @@ import {
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
+import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildSignboards } from './signboards.js';
@@ -244,6 +245,11 @@ async function main() {
     else if (unit.trade === 'bangle') registerBangleTryOn(pos);
     else registerShopBuy(unit.trade, pos);
   });
+
+  // NPC life in the bazaar (this task's item 2) — one shared InstancedMesh, see
+  // src/bazaarLife.js.
+  const bazaarLife = createBazaarLife();
+  scene.add(bazaarLife.mesh);
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
   // north of the field/track, reachable by a lane spur (item 4). See src/temple.js
@@ -1015,6 +1021,7 @@ async function main() {
       childWalk(dt);
       if (sisterFollowing) sisterFollow(dt);
       MAA_POSITION.copy(maaNpc.position);
+      bazaarLife.update(dt);
 
       // Item 8 (audio mix pass) — the whole mix ducks under the dialogue panel,
       // same as it would duck under actual voice lines if there were any.
