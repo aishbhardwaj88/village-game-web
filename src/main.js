@@ -39,10 +39,29 @@ import {
   buildChowkPlaza,
   chowkColliders,
   buildBazaarLane,
+  BAZAAR_UNITS,
+  bazaarUnitCx,
+  BAZAAR_FRONT_Z,
+  BAZAAR_ROW_CZ,
+  CHOWK_TEA_POS,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
-import { findNearestInteraction, resolveLabel, MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS } from './interactions.js';
+import {
+  findNearestInteraction,
+  resolveLabel,
+  MAA_POSITION,
+  HALWAI_NPC_POSITION,
+  BELL_POSITION,
+  CHARPAI_POSITION,
+  TEACHER_POSITION,
+  SISTER_SCHOOL_POSITION,
+  INTERACTION_POINTS,
+  registerShopBuy,
+  registerSabziWeighing,
+  registerBangleTryOn,
+} from './interactions.js';
+import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { createBellProp } from './props.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -155,6 +174,12 @@ async function main() {
   shopsGroup.add(buildGeneralStoreGoods(STORE_POS, STORE_ROT));
   scene.add(shopsGroup);
 
+  // Shop interactions (this task) — the shared "buy", at each shop's own open
+  // counter side. The general store's is also errand 3's purchase step (see
+  // src/interactions.js's registerShopBuy doc comment).
+  registerShopBuy('general_store', new THREE.Vector3(STORE_POS.x - 2.5, 0, STORE_POS.z));
+  registerShopBuy('tea_stall', new THREE.Vector3(TEA_SHOP_POS.x + 2.5, 0, TEA_SHOP_POS.z));
+
   // Signboards (item 10) — not awaited inline (same reasoning as loadEnvironment
   // below: don't block the rest of scene setup on an async step); both boards share
   // one atlas texture/mesh, added once the canvas + font are ready.
@@ -208,6 +233,18 @@ async function main() {
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build bazaar signboards', err));
 
+  // Shop interactions (this task) — one shared "buy" at every bazaar counter except
+  // kirana (has its own dedicated wheat-errand interaction, src/interactions.js) and
+  // sabzi/bangle (their own signature interactions instead, right below). Position:
+  // same "just outside the counter" distance kirana's own point uses.
+  BAZAAR_UNITS.forEach((unit, idx) => {
+    const pos = new THREE.Vector3(bazaarUnitCx(idx), 0, BAZAAR_FRONT_Z - 1.5);
+    if (unit.trade === 'kirana') return;
+    if (unit.trade === 'sabzi') registerSabziWeighing(pos);
+    else if (unit.trade === 'bangle') registerBangleTryOn(pos);
+    else registerShopBuy(unit.trade, pos);
+  });
+
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
   // north of the field/track, reachable by a lane spur (item 4). See src/temple.js
   // for the full build and docs/parked.md for the placement reasoning.
@@ -237,6 +274,14 @@ async function main() {
   scene.add(maaNpc);
   const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
   scene.add(halwaiNpc);
+
+  // Third errand (this task) — Pitaji, stationary near the tractor/sack pile, and
+  // the sack pile itself (folds into the hero zone's own vertex-coloured 'wood'
+  // family, so it costs nothing extra — see src/wheatErrand.js).
+  const pitajiNpc = createNPC(0x4a5a3a, PITAJI_POSITION, Math.PI, 'npc_pitaji');
+  scene.add(pitajiNpc);
+  const sackCarrier = createSackCarrier(player);
+  heroZoneGroup.add(buildSackPile());
 
   // NPC life (item 8) — simple waypoint loops, no pathfinding. Maa wanders two spots
   // in the courtyard (one of them her interaction point); the halwai stirs in place
@@ -423,6 +468,7 @@ async function main() {
     ['halwai', halwaiNpc],
     ['teacher', teacherNpc],
     ['sister', sisterNpc],
+    ['pitaji', pitajiNpc],
   ]) {
     assetSlots.register(name, {
       dimensions: PERSON_DIMENSIONS,
@@ -636,6 +682,9 @@ async function main() {
   const objectivePanel = document.getElementById('objective-panel');
   const objectiveHiEl = document.getElementById('objective-hi');
   const objectiveEnEl = document.getElementById('objective-en');
+  const moneyPanel = document.getElementById('money-panel');
+  const moneyEnEl = document.getElementById('money-en');
+  const moneyHiEl = document.getElementById('money-hi');
   const endCard = document.getElementById('end-card');
   const endEnEl = document.getElementById('end-en');
   const endHiEl = document.getElementById('end-hi');
@@ -644,10 +693,19 @@ async function main() {
   const endCreditsBtn = document.getElementById('end-credits-btn');
 
   function updateObjective() {
-    const text = OBJECTIVE_TEXT[quest.step];
+    const entry = OBJECTIVE_TEXT[quest.step];
+    const text = typeof entry === 'function' ? entry(quest) : entry;
     objectiveHiEl.textContent = text.hi;
     objectiveEnEl.textContent = text.en;
     objectivePanel.classList.toggle('visible', quest.step !== QUEST_STEPS.ALL_COMPLETE);
+    // Third errand — money is shown only while it's actually relevant (from Pitaji's
+    // offer through the final end card), per this task's own instruction.
+    const moneyVisible = [QUEST_STEPS.LOADING_WHEAT, QUEST_STEPS.WHEAT_DELIVERED, QUEST_STEPS.BOUGHT_GOODS].includes(quest.step);
+    moneyPanel.classList.toggle('visible', moneyVisible);
+    if (moneyVisible) {
+      moneyEnEl.textContent = `Money: ₹${quest.money}`;
+      moneyHiEl.textContent = `पैसे: ₹${quest.money}`;
+    }
     // Item 7 (save/continue) — every quest-step change (interactions.js's
     // onObjectiveChange) and both reset paths below call this, so a save is always in
     // sync with real progress without a separate save-trigger call anywhere else.
@@ -670,16 +728,31 @@ async function main() {
       sisterNpc.position.set(-48, 0, 23);
       sisterNpc.rotation.y = 0;
     }
+    // Third errand — carried-sack meshes and the exact sack/money counts aren't part
+    // of the save (same simplification as every other mid-errand position reset on
+    // Continue, see the doc comment above this function's own earlier callers): if
+    // resuming mid-errand-3, restart it cleanly from Pitaji's offer rather than
+    // resuming with a count nothing on screen backs up.
+    if ([QUEST_STEPS.LOADING_WHEAT, QUEST_STEPS.WHEAT_DELIVERED, QUEST_STEPS.BOUGHT_GOODS].includes(quest.step)) {
+      quest.step = QUEST_STEPS.ERRAND2_COMPLETE;
+    }
+    quest.sacksCollected = 0;
+    quest.sacksDelivered = 0;
+    quest.money = 0;
     updateObjective();
   }
 
-  // Task 4 — errand 1's completion isn't the end of the game any more (the second
-  // errand unlocks from talking to Maa again), so that card shows only "Continue"
-  // (dismiss, keep playing); only the truly final card (both errands done) offers
-  // Play again + Credits — see src/quest.js's QUEST_STEPS doc comment.
+  // Task 4/this task — errand 1 and errand 2's own completions aren't the end of the
+  // game any more (the next errand unlocks from talking to Maa/Pitaji again), so
+  // those cards show only "Continue" (dismiss, keep playing); only the truly final
+  // card (all three errands done) offers Play again + Credits — see src/quest.js's
+  // QUEST_STEPS doc comment.
   function showEndCard(step) {
     const isFinal = step === QUEST_STEPS.ALL_COMPLETE;
     if (isFinal) {
+      endEnEl.textContent = 'All three errands are done. The afternoon is yours.';
+      endHiEl.textContent = 'तीनों काम हो गए। बाकी दोपहर तुम्हारी है।';
+    } else if (step === QUEST_STEPS.ERRAND2_COMPLETE) {
       endEnEl.textContent = 'Both errands are done. The afternoon is yours.';
       endHiEl.textContent = 'दोनों काम हो गए। बाकी दोपहर तुम्हारी है।';
     } else {
@@ -700,7 +773,11 @@ async function main() {
     if (quest.step === QUEST_STEPS.COMPLETE) return MAA_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_TIFFIN) return TEACHER_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_SISTER) return MAA_POSITION;
-    return null; // ALL_COMPLETE — both errands done, nowhere to point
+    if (quest.step === QUEST_STEPS.ERRAND2_COMPLETE) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.LOADING_WHEAT) return quest.sacksCollected > quest.sacksDelivered ? KIRANA_POSITION : SACK_PILE_POSITION;
+    if (quest.step === QUEST_STEPS.WHEAT_DELIVERED) return STORE_POS;
+    if (quest.step === QUEST_STEPS.BOUGHT_GOODS) return PITAJI_POSITION;
+    return null; // ALL_COMPLETE — all three errands done, nowhere to point
   }
 
   // Shared by the end card's "Play again" button and the pause menu's "Restart
@@ -712,6 +789,10 @@ async function main() {
     sisterFollowing = false;
     sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
     sisterNpc.rotation.y = 0;
+    quest.sacksCollected = 0;
+    quest.sacksDelivered = 0;
+    quest.money = 0;
+    sackCarrier.clearAll();
     updateObjective();
   }
 
@@ -744,6 +825,8 @@ async function main() {
     },
     onPumpWater: () => flashWaterMesh(pumpWaterMesh),
     onWaterTulsi: () => flashWaterMesh(tulsiWaterMesh),
+    tractor: tractorForShadows, // third errand — isTrolleyNearby() reads this live, see src/wheatErrand.js
+    sackCarrier,
   };
 
   function otherVehicleBoxes(excludeVehicle) {
@@ -1096,9 +1179,21 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc],
+      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc],
       props: [bellProp],
-      interactions: { MAA_POSITION, HALWAI_NPC_POSITION, BELL_POSITION, CHARPAI_POSITION, TEACHER_POSITION, SISTER_SCHOOL_POSITION, INTERACTION_POINTS },
+      interactions: {
+        MAA_POSITION,
+        HALWAI_NPC_POSITION,
+        BELL_POSITION,
+        CHARPAI_POSITION,
+        TEACHER_POSITION,
+        SISTER_SCHOOL_POSITION,
+        INTERACTION_POINTS,
+        PITAJI_POSITION,
+        SACK_PILE_POSITION,
+        KIRANA_POSITION,
+      },
+      sackCarrier,
       interactionCtx,
       isSisterFollowing: () => sisterFollowing,
       dialogue,

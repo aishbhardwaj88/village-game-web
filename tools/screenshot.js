@@ -311,10 +311,87 @@ async function main() {
       dd.interact();
     });
     await page.waitForTimeout(200);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> ERRAND2_COMPLETE
+    await page.waitForTimeout(300);
+    const stepErrand2Complete = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after bringing the sister home (should be errand2_complete):', stepErrand2Complete);
+    await page.screenshot({ path: resolve(shotsDir, 'errand2_end_card.png') });
+    console.log(`Captured errand2_end_card -> ${resolve(shotsDir, 'errand2_end_card.png')}`);
+
+    // Third errand (this task): dismiss errand 2's card (not final any more), talk to
+    // Pitaji -> LOADING_WHEAT, pick up and deliver all 3 sacks on foot (no trolley
+    // nearby, so one at a time), buy at the general store -> BOUGHT_GOODS, back to
+    // Pitaji -> ALL_COMPLETE, the true final card.
+    await page.click('#end-continue-btn');
+    await page.waitForTimeout(150);
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.PITAJI_POSITION.x, dd.interactions.PITAJI_POSITION.z + 1.5);
+      dd.camRig.yaw = 0;
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: resolve(shotsDir, 'pitaji_offer.png') });
+    console.log(`Captured pitaji_offer -> ${resolve(shotsDir, 'pitaji_offer.png')}`);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close Pitaji's line -> LOADING_WHEAT
+    await page.waitForTimeout(150);
+    const stepLoadingWheat = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after talking to Pitaji (should be loading_wheat):', stepLoadingWheat);
+
+    for (let i = 0; i < 3; i++) {
+      await page.evaluate(() => {
+        const dd = window.__dopahar;
+        dd.teleportPlayer(dd.interactions.SACK_PILE_POSITION.x, dd.interactions.SACK_PILE_POSITION.z + 1);
+        dd.camRig.update(10);
+        dd.interact();
+      });
+      await page.waitForTimeout(150);
+      if (i === 0) await page.screenshot({ path: resolve(shotsDir, 'sack_pickup.png') });
+      await page.evaluate(() => {
+        const dd = window.__dopahar;
+        dd.teleportPlayer(dd.interactions.KIRANA_POSITION.x, dd.interactions.KIRANA_POSITION.z + 1);
+        dd.camRig.update(10);
+        dd.interact();
+      });
+      await page.waitForTimeout(150);
+      await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
+      await page.waitForTimeout(150);
+    }
+    const stepWheatDelivered = await page.evaluate(() => window.__dopahar.quest.step);
+    const moneyAfterWheat = await page.evaluate(() => window.__dopahar.quest.money);
+    console.log('quest step after delivering all 3 sacks (should be wheat_delivered), money (should be 150):', stepWheatDelivered, moneyAfterWheat);
+    await page.screenshot({ path: resolve(shotsDir, 'wheat_delivered.png') });
+    console.log(`Captured wheat_delivered -> ${resolve(shotsDir, 'wheat_delivered.png')}`);
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(-52 - 2.5, 20); // general store's own buy point, src/main.js
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(150);
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
+    await page.waitForTimeout(150);
+    const stepBoughtGoods = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after buying at the general store (should be bought_goods):', stepBoughtGoods);
+
+    await page.evaluate(() => {
+      const dd = window.__dopahar;
+      dd.teleportPlayer(dd.interactions.PITAJI_POSITION.x, dd.interactions.PITAJI_POSITION.z + 1.5);
+      dd.camRig.yaw = 0;
+      dd.camRig.pitch = -0.1;
+      dd.camRig.distance = 5;
+      dd.camRig.update(10);
+      dd.interact();
+    });
+    await page.waitForTimeout(200);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> ALL_COMPLETE
     await page.waitForTimeout(300);
     const stepAllComplete = await page.evaluate(() => window.__dopahar.quest.step);
-    console.log('quest step after bringing the sister home (should be all_complete):', stepAllComplete);
+    console.log('quest step after telling Pitaji (should be all_complete):', stepAllComplete);
     await page.screenshot({ path: resolve(shotsDir, 'final_end_card.png') });
     console.log(`Captured final_end_card -> ${resolve(shotsDir, 'final_end_card.png')}`);
 

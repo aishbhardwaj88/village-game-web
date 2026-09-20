@@ -279,6 +279,41 @@
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
       }
 
+      /* --- Money (third errand) — shown only while that errand is active, top-right,
+         clear of the touch pause button above it. --- */
+      #money-panel {
+        position: fixed;
+        top: calc(70px + env(safe-area-inset-top));
+        right: calc(14px + env(safe-area-inset-right));
+        z-index: 45;
+        background: rgba(16, 11, 8, 0.68);
+        border-radius: 10px;
+        padding: 6px 14px;
+        color: #f8ead0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        pointer-events: none;
+        display: none;
+        text-align: right;
+      }
+      #money-panel.visible {
+        display: block;
+      }
+      #money-en {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.3;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      }
+      #money-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.68rem;
+        opacity: 0.8;
+        margin: 2px 0 0;
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
       /* --- End card (item 3) --- */
       #end-card {
         position: fixed;
@@ -763,6 +798,10 @@
       <div id="objective-panel">
         <p id="objective-en"></p>
         <p id="objective-hi"></p>
+      </div>
+      <div id="money-panel">
+        <p id="money-en"></p>
+        <p id="money-hi"></p>
       </div>
       <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
       <div id="pause-overlay">

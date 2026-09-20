@@ -331,6 +331,63 @@ export class AudioEngine {
     splash.stop(t + 0.8);
   }
 
+  /** Sabzi shop's pan-balance weighing (shop interactions task) — a short metallic
+   * creak as the beam tips, then a soft settling thud. Same filtered-noise-burst
+   * technique as playPump above. */
+  playWeighingScale() {
+    if (!this.started) return;
+    const t = this.ctx.currentTime;
+
+    const creak = this.ctx.createBufferSource();
+    creak.buffer = createNoiseBuffer(this.ctx, 0.3);
+    const creakFilter = this.ctx.createBiquadFilter();
+    creakFilter.type = 'bandpass';
+    creakFilter.frequency.setValueAtTime(900, t);
+    creakFilter.frequency.exponentialRampToValueAtTime(500, t + 0.25);
+    creakFilter.Q.value = 6;
+    const creakGain = this.ctx.createGain();
+    creakGain.gain.setValueAtTime(0.0001, t);
+    creakGain.gain.exponentialRampToValueAtTime(0.09, t + 0.05);
+    creakGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    creak.connect(creakFilter).connect(creakGain).connect(this.master);
+    creak.start(t);
+    creak.stop(t + 0.32);
+
+    const thud = this.ctx.createOscillator();
+    thud.type = 'sine';
+    thud.frequency.setValueAtTime(180, t + 0.28);
+    thud.frequency.exponentialRampToValueAtTime(90, t + 0.42);
+    const thudGain = this.ctx.createGain();
+    thudGain.gain.setValueAtTime(0.0001, t + 0.28);
+    thudGain.gain.exponentialRampToValueAtTime(0.15, t + 0.31);
+    thudGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    thud.connect(thudGain).connect(this.master);
+    thud.start(t + 0.28);
+    thud.stop(t + 0.52);
+  }
+
+  /** Bangle shop's signature interaction — a bright cluster of short glass-like
+   * chimes (a handful of high sine tones, staggered), same oscillator technique as
+   * _playBell above. */
+  playBangleJingle() {
+    if (!this.started) return;
+    const t = this.ctx.currentTime;
+    const freqs = [2400, 2800, 3100, 2600, 3400];
+    freqs.forEach((freq, i) => {
+      const start = t + i * 0.045;
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.06, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
+      osc.connect(gain).connect(this.master);
+      osc.start(start);
+      osc.stop(start + 0.24);
+    });
+  }
+
   _playBirdChirp() {
     if (!this.started) return;
     const t = this.ctx.currentTime;
