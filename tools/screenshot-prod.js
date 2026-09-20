@@ -107,6 +107,32 @@ async function main() {
       return filePath;
     }
 
+    // Structural fix 3/3 (playtest) — the framed capture mode. Finds `objectName`
+    // anywhere in the scene, points the raw camera at it from `opts.angleDeg`/
+    // `opts.elevationDeg` at a distance computed to fill ~`opts.fill` (default
+    // 0.7) of the frame, hides the player capsule, and screenshots — see
+    // src/main.js's frameObject()/unfreezeCamera() for the actual math. `setup`
+    // runs first (e.g. mount + drive a vehicle into position) with the normal
+    // player camera still active, exactly like shot()'s own `extra`. Every
+    // acceptance screenshot for bugs A-E uses this, not shot() — a chase-cam
+    // shot cannot prove an object is intact/whole/correctly proportioned the
+    // way a framed one can.
+    async function framedShot(label, objectName, opts = {}, setup) {
+      if (setup) await setup();
+      const frameInfo = await page.evaluate(({ objectName, opts }) => window.__dopahar.frameObject(objectName, opts), { objectName, opts });
+      if (!frameInfo.found) {
+        console.error(`framedShot: object "${objectName}" not found in the scene — no screenshot taken.`);
+        return null;
+      }
+      for (let i = 0; i < 8; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+      await page.waitForTimeout(150);
+      const filePath = resolve(shotsDir, `${label}.png`);
+      await page.screenshot({ path: filePath });
+      await page.evaluate(() => window.__dopahar.unfreezeCamera());
+      console.log(`Captured (framed) ${label} -> ${filePath} — object "${objectName}" bbox size ${JSON.stringify(frameInfo.size)}, camera distance ${frameInfo.distance.toFixed(2)}m`);
+      return filePath;
+    }
+
     // Tractor spawns (-51,0,25) yaw=PI (src/vehicles.js spawnVehicles()). Bike spawns
     // (-48,0,28) yaw=0. General store is at (-52,0,20), open/counter side facing -x
     // (src/main.js STORE_ROT=-PI/2).

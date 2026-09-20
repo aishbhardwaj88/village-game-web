@@ -1282,6 +1282,7 @@ async function main() {
       pauseMenu,
       Box3: THREE.Box3,
       Matrix4: THREE.Matrix4,
+      Vector3: THREE.Vector3,
       // For scripted feature screenshots (tools/screenshot.js) — teleport near an
       // interaction point and trigger it without needing to actually walk there.
       teleportPlayer: (x, z) => player.position.set(x, 0, z),
@@ -1289,6 +1290,54 @@ async function main() {
         if (mountedVehicle) return;
         const nearestPoint = findNearestInteraction(player.position, interactionCtx);
         if (nearestPoint) nearestPoint.onInteract(interactionCtx);
+      },
+      // Structural fix 3/3 (playtest) — a real "framed screenshot" capture mode.
+      // Every prior acceptance screenshot this session used the player's own
+      // third-person rig, which chases the player and was repeatedly unusable
+      // as evidence (the player's own capsule filling the frame, a random part
+      // of a vehicle in extreme close-up, the target object off-screen or tiny
+      // in the distance). frameObject(name, opts) finds a named object anywhere
+      // in the scene, computes its real world bounding box, and points the RAW
+      // camera at its centre from a chosen angle/elevation at a distance
+      // computed to fill most of the frame — bypassing camRig (frozen via
+      // camRig.update = () => {} so the game's own per-frame render loop can't
+      // overwrite this positioning before the screenshot is taken) and hiding
+      // the player capsule entirely. unfreezeCamera() restores normal play.
+      frameObject: (name, { angleDeg = 0, elevationDeg = 12, fill = 0.7 } = {}) => {
+        let target = null;
+        scene.traverse((o) => {
+          if (o.name === name) target = o;
+        });
+        if (!target) return { found: false };
+        const box = new THREE.Box3().setFromObject(target, true);
+        if (!isFinite(box.min.x)) return { found: false };
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const radius = Math.max(size.length() / 2, 0.05);
+        const vFov = THREE.MathUtils.degToRad(camera.fov);
+        const dist = radius / fill / Math.tan(vFov / 2);
+        const angleRad = THREE.MathUtils.degToRad(angleDeg);
+        const elevRad = THREE.MathUtils.degToRad(elevationDeg);
+        camera.position.set(
+          center.x + dist * Math.sin(angleRad) * Math.cos(elevRad),
+          center.y + dist * Math.sin(elevRad),
+          center.z + dist * Math.cos(angleRad) * Math.cos(elevRad)
+        );
+        camera.lookAt(center);
+        camera.updateProjectionMatrix();
+        player.visible = false;
+        if (!camRig._frameObjectOrigUpdate) camRig._frameObjectOrigUpdate = camRig.update.bind(camRig);
+        camRig.update = () => {};
+        return {
+          found: true,
+          center: { x: center.x, y: center.y, z: center.z },
+          size: { x: size.x, y: size.y, z: size.z },
+          distance: dist,
+        };
+      },
+      unfreezeCamera: () => {
+        if (camRig._frameObjectOrigUpdate) camRig.update = camRig._frameObjectOrigUpdate;
+        player.visible = true;
       },
     };
   }
