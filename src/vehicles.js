@@ -98,28 +98,25 @@ function pbox(w, h, d, color, roughness = 0.85, metalness = 0) {
 
 /**
  * A steerable, spinning road wheel (tractor/trolley/bike): an outer `steer` pivot
- * (rotation.y turns it left/right, at ground-projected axle position), containing a
- * `roll` pivot (rotation.z=90° orients the cylinder's natural Y-spin-axis to the
- * world X axis — an axle running left-right) wrapping the actual tyre+rim mesh, which
- * spins via `roll.rotation.x` each frame (see updateWheelRoll). Two nested pivots
- * keep "point the wheel" and "spin the wheel" independent, since three.js Euler
- * rotations don't compose the way naive single-mesh rotation math would need.
+ * (rotation.y turns it left/right, at ground-projected axle position) containing a
+ * middle `orient` pivot (a FIXED rotation.z=90° that orients the cylinder's
+ * natural Y-spin-axis to the world X axis — an axle running left-right), which in
+ * turn contains the `roll` pivot wrapping the actual tyre+rim mesh and spinning
+ * via `roll.rotation.y` each frame (see updateWheel) — Y, not X, because Y is the
+ * tyre cylinder's own rotational-symmetry axis: rotating about it never moves the
+ * axle direction `orient` just fixed, for any amount of accumulated spin. Three
+ * separate pivots (not one mesh with two Euler components set on it) because
+ * three.js composes one Euler's x/y/z into a single fixed-order matrix, not as
+ * independent rotations — spin and orientation living on the same object's Euler
+ * triple tumbles the effective axis as spin accumulates (confirmed the hard way;
+ * see CLAUDE.md's regression-guard rule).
  */
 function createRoadWheel({ radius, width, ribbed = false }) {
   const steer = new THREE.Group();
-  // Playtest bug 5 root cause: `roll` used to carry BOTH the fixed 90°-about-Z
-  // "lay the cylinder on its side" orientation AND the continuously-incrementing
-  // per-frame spin in the SAME Euler triple (rotation.z set once, rotation.x
-  // mutated every frame after). Three.js composes one Euler's x/y/z as a single
-  // matrix in a fixed axis order, not as independent rotations — so as spin (x)
-  // accumulated over a real drive, it progressively tumbled the wheel's effective
-  // axis away from horizontal (it does NOT stay "spin about a fixed sideways
-  // axis"), visually distorting the wheel and growing its bounding box well past
-  // its true radius, which is what the grounding check was catching. Splitting
-  // the fixed orientation onto a parent group and the per-frame spin onto its own
-  // child, each with only ONE non-zero Euler axis, makes them compose as two
-  // separate matrices (parent * child) instead of one combined Euler, which is
-  // what "spin about the wheel's own already-reoriented axis" actually requires.
+  // `orient`/`roll` split — see this function's own doc comment above for why
+  // (a fixed orientation and a per-frame spin need to be two separate Object3D
+  // transforms, not two components of one Euler) and updateWheel() for why the
+  // spin itself has to be about local Y specifically.
   const orient = new THREE.Group();
   orient.rotation.z = Math.PI / 2;
   steer.add(orient);
@@ -178,7 +175,21 @@ function createSpokedWheel(radius, width, spokeCount = 8) {
 /** Advances a wheel's rolling spin (angular velocity = linear speed / radius) and,
  * for front wheels, its steer angle. Called once per wheel per frame. */
 function updateWheel(wheel, { linearSpeed, radius, dt, steerAngle = null }) {
-  wheel.userData.roll.rotation.x += (linearSpeed / radius) * dt;
+  // Playtest bug B root cause: this used `.rotation.x` — but the CylinderGeometry
+  // tyre's own rotational-symmetry axis is local Y (three.js cylinders default to
+  // an axis along Y), and `orient`'s fixed Rz(90°) parent transform only keeps
+  // that Y axis pointing sideways (a valid axle direction) for as long as the
+  // child's OWN rotation never moves off Y. Spinning about local X instead swept
+  // the effective world axle direction around as spin accumulated — at spin=0 it
+  // reads as a normal horizontal axle, but by spin=90° the "wheel" has tumbled to
+  // lie flat, spinning like a turntable, before sweeping back near spin=180°. A
+  // few seconds of real driving accumulates well past 90°, so this was reliably
+  // visible in real play (not in the single-screenshot checks that first
+  // "fixed" playtest bug 5 — see CLAUDE.md's regression-guard rule). Rotating
+  // about local Y instead never moves the Y axis itself (a rotation never moves
+  // its own axis), so the parent's fixed Rz(90°) keeps the axle exactly
+  // horizontal for every possible spin value, not just spin=0.
+  wheel.userData.roll.rotation.y += (linearSpeed / radius) * dt;
   if (steerAngle !== null) wheel.rotation.y = steerAngle;
 }
 
