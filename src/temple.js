@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
-import { mergeGroupByMaterial } from './mergeUtils.js';
+import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
+import { buildStripSegment } from './paths.js';
 
 /**
  * Village mandir + flower stall (headroom-pass task item 2, docs/parked.md).
@@ -299,4 +300,33 @@ export function templeColliders() {
     maxZ: TEMPLE_POS.z + SHRINE.d / 2,
   });
   return boxes;
+}
+
+/** Item 4 (tie the village together) — the new lane spur connecting the hero-zone
+ * corridor to the temple's west gate / the flower stall. Same bent-waypoint-chain,
+ * baked-bump/rut technique as every other lane in this game (src/village.js's
+ * buildLane(), src/bazaar.js's buildBazaarLane()) — never a single straight segment,
+ * and never a hard edge where it meets open ground (the strip's own edge already
+ * fades via the same bump noise every other lane segment uses). 6m wide, matching
+ * the hero-zone and bazaar lanes, so the tractor+trolley and the bullock cart have
+ * the same clearance here they already have everywhere else.
+ *
+ * Forks off the house->halwai lane segment at its midpoint (-44, 50.5) — BEFORE
+ * reaching the halwai, not east of it. A first version forked at (-32, 64), east of
+ * HALWAI_CENTER: since the halwai's only 2 real walls are its north and east ones
+ * (src/collision.js), a straight line from anywhere near its open west/south sides
+ * out to a point due east of it runs straight through that east wall's own
+ * collider. Found by the scripted drive test (item 4's own docs/parked.md entry),
+ * not by inspection — same discipline this whole session has used throughout. */
+const TEMPLE_LANE_START = { x: -44, z: 50.5 };
+const TEMPLE_LANE_BEND = { x: -12, z: 55 };
+const TEMPLE_LANE_ARRIVE = { x: 2, z: 51 }; // temple's west gate opening / beside the flower stall
+const TEMPLE_LANE_WIDTH = 6;
+
+export function buildTempleLane() {
+  const segments = [
+    buildStripSegment(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, { seed: 71, ruts: true }),
+    buildStripSegment(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, { seed: 72, ruts: true }),
+  ];
+  return mergeMeshList(segments, 'temple_lane');
 }

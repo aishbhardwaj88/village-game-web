@@ -16,7 +16,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
-import { buildTemple, buildFlowerStall, templeColliders } from './temple.js';
+import { buildTemple, buildFlowerStall, templeColliders, buildTempleLane } from './temple.js';
 import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
 import {
   buildBazaarRow,
@@ -205,6 +205,7 @@ async function main() {
   templeGroup.name = 'temple_area';
   templeGroup.add(buildTemple(buildingKit));
   templeGroup.add(buildFlowerStall());
+  templeGroup.add(buildTempleLane());
   scene.add(templeGroup);
   addStaticColliders(templeColliders());
 
