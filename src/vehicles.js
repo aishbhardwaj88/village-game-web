@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { resolveCollisions } from './collision.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -466,6 +467,11 @@ function buildTrolleyGroup() {
 }
 
 const TRACTOR_TOW_OFFSET_REST = T.hitchZ - TR.hitchLocalZ; // trolley->tractor rest distance when attached, hitch-to-hitch
+// Playtest bug 2 — a circle-vs-box approximation of the trolley's own footprint
+// (bedLen x bedW), same convention main.js already uses for the tractor
+// (`Math.max(p.body.w, p.body.d) / 2`), so it gets the same "slide along a wall"
+// treatment instead of driving straight into one.
+const TROLLEY_COLLISION_RADIUS = Math.max(TR.bedLen, TR.bedW) / 2;
 
 export class Trolley {
   constructor(position, rotationY = 0) {
@@ -529,6 +535,14 @@ export class Trolley {
     const prevZ = this.group.position.z;
     this.group.position.x += this.velX * dt;
     this.group.position.z += this.velZ * dt;
+
+    // Playtest bug 2 — the towed trolley never had its own collision check at all
+    // (only the mounted vehicle and the player did, in main.js), so it drove
+    // straight through building walls. Same resolveCollisions() every other moving
+    // thing in this game uses, checked every frame while attached, sliding it along
+    // a wall rather than letting the spring pull it inside one.
+    resolveCollisions(this.group.position, TROLLEY_COLLISION_RADIUS, []);
+
     this.speed = Math.hypot(this.group.position.x - prevX, this.group.position.z - prevZ) / Math.max(dt, 0.0001);
 
     const hingeX = towPoint.x - this.group.position.x;

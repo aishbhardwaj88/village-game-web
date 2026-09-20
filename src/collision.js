@@ -149,7 +149,13 @@ function buildStaticColliders() {
   // rotateY(θ) maps local (x,z) half-extents to world (|z|,|x|) half-extents at
   // θ=±90°, i.e. swapped, not the local w×d as authored).
   boxes.push({ minX: -53.25, maxX: -50.75, minZ: 76, maxZ: 80 }); // tea stall, 2.5(x) x 4(z) world footprint
-  boxes.push({ minX: -39.5, maxX: -36.5, minZ: 88.25, maxZ: 91.75 }); // general store, 3(x) x 3.5(z) world footprint
+  // General store — playtest bug 2: this box was never updated when STORE_POS moved
+  // from its old {x:-38,z:90} to its current {x:-52,z:20} (src/main.js), so the
+  // store's real location had zero collision protection and the tractor/trolley
+  // drove straight through the wall there. Recomputed from the current STORE_POS/
+  // STORE_ROT and STORE.w/d (src/shops.js), same 90°-rotation swap as the comment
+  // above establishes.
+  boxes.push({ minX: -53.5, maxX: -50.5, minZ: 18.25, maxZ: 21.75 }); // general store, 3(x) x 3.5(z) world footprint
 
   return boxes;
 }
