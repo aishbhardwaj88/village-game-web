@@ -721,6 +721,21 @@ const B = {
   wheelDia: 0.6,
 };
 
+/** A thin box spanning exactly between two points in the Y-Z plane (the bike is
+ * symmetric in X, so every frame tube is centred on x=0) — computes its own length,
+ * midpoint and tilt from the two endpoints instead of a hand-picked rotation.x, so
+ * adjacent tubes actually meet at their shared joint (bottom bracket, head tube,
+ * rear axle) rather than approximating it and leaving a gap. */
+function tubeBetween(y1, z1, y2, z2, thickness, color, roughness = 0.6, metalness = 0.3) {
+  const dy = y2 - y1;
+  const dz = z2 - z1;
+  const length = Math.hypot(dy, dz);
+  const tube = pbox(thickness, thickness, length, color, roughness, metalness);
+  tube.position.set(0, (y1 + y2) / 2, (z1 + z2) / 2);
+  tube.rotation.x = Math.atan2(-dy, dz);
+  return tube;
+}
+
 function buildBikeGroup() {
   const group = new THREE.Group();
 
@@ -753,34 +768,64 @@ function buildBikeGroup() {
   const frontAxleZ = B.length / 2 - 0.25;
   const rearAxleZ = -B.length / 2 + 0.25;
 
-  // Main frame tube (rear axle to seat/head area) + down tube (to the front fork).
-  const topTube = pbox(0.04, 0.04, 0.75, V.bikeFrame, 0.6, 0.3);
-  topTube.position.set(0, wheelR + 0.42, -0.05);
-  topTube.rotation.x = -0.12;
+  // Playtest bug 4: the old frame was 3 short, 3-4cm-thin tubes that didn't reach
+  // each other OR the rear axle — from 3m away it read as loose parts (two wheels,
+  // a floating tank) because there was no continuous silhouette connecting them.
+  // Rebuilt as a real diamond-ish frame — every joint below is a shared point two
+  // tubes both end at, and every tube reaches an axle or another tube, so the
+  // frame reads as one connected shape. Tubes are 6cm thick (real bike tubes are
+  // ~3cm) — thin enough to still read as a bike, thick enough that a 3-4cm tube
+  // doesn't vanish to a hairline at typical camera distance.
+  const bbY = wheelR - 0.02; // bottom bracket (pedal centre) — just below axle height
+  const bbZ = -0.15;
+  const headY = wheelR + 0.78; // head tube top, below the handlebar
+  const headZ = frontAxleZ - 0.2;
+  const seatTopY = wheelR + 0.72;
+  const seatTopZ = -0.6;
+  const tubeThickness = 0.06;
+
+  const seatTube = tubeBetween(bbY, bbZ, seatTopY, seatTopZ, tubeThickness, V.bikeFrame);
+  bodyPivot.add(seatTube);
+  const topTube = tubeBetween(seatTopY, seatTopZ, headY, headZ, tubeThickness, V.bikeFrame);
   bodyPivot.add(topTube);
-  const downTube = pbox(0.045, 0.045, 0.7, V.bikeFrame, 0.6, 0.3);
-  downTube.position.set(0, wheelR + 0.28, 0.15);
-  downTube.rotation.x = 0.55;
+  const downTube = tubeBetween(bbY, bbZ, headY, headZ, tubeThickness, V.bikeFrame);
   bodyPivot.add(downTube);
-
-  const tank = pbox(0.16, 0.14, 0.32, 0x8a1f1f, 0.55, 0.2);
-  tank.position.set(0, wheelR + 0.52, -0.1);
-  bodyPivot.add(tank);
-
-  const seat = pbox(0.14, 0.06, 0.26, V.seat, 0.9);
-  seat.position.set(0, wheelR + 0.62, -0.42);
-  bodyPivot.add(seat);
-
-  const handlebar = pbox(0.36, 0.03, 0.03, 0x1c1c1c, 0.5, 0.4);
-  handlebar.position.set(0, wheelR + 0.72, frontAxleZ - 0.15);
-  bodyPivot.add(handlebar);
-  const forkTube = pbox(0.03, 0.55, 0.03, V.bikeFrame, 0.6, 0.3);
-  forkTube.position.set(0, wheelR + 0.42, frontAxleZ - 0.1);
-  forkTube.rotation.x = 0.18;
+  const chainStay = tubeBetween(bbY, bbZ, wheelR, rearAxleZ, tubeThickness, V.bikeFrame);
+  bodyPivot.add(chainStay);
+  const seatStay = tubeBetween(seatTopY, seatTopZ, wheelR, rearAxleZ, tubeThickness, V.bikeFrame);
+  bodyPivot.add(seatStay);
+  const forkTube = tubeBetween(headY, headZ, wheelR, frontAxleZ, tubeThickness, V.bikeFrame);
   bodyPivot.add(forkTube);
 
-  // Task 2 (draw-call budget) — the 3 bikeFrame-coloured tubes merge into one draw
-  // call; tank/seat/handlebar stay their own single meshes (unique material each).
+  const tank = pbox(0.16, 0.14, 0.32, 0x8a1f1f, 0.55, 0.2);
+  tank.position.set(0, (bbY + headY) / 2 + 0.1, (bbZ + headZ) / 2 - 0.05);
+  bodyPivot.add(tank);
+
+  const seat = pbox(0.16, 0.07, 0.28, V.seat, 0.9);
+  seat.position.set(0, seatTopY + 0.05, seatTopZ - 0.04);
+  bodyPivot.add(seat);
+
+  const handlebar = pbox(0.4, 0.035, 0.035, 0x1c1c1c, 0.5, 0.4);
+  handlebar.position.set(0, headY + 0.14, headZ);
+  bodyPivot.add(handlebar);
+
+  // Pedals (acceptance: "pedals at the centre") — a crank bar through the bottom
+  // bracket plus a pedal block at each end, opposite sides so it reads as a crank,
+  // not a single stray bar.
+  const crank = pbox(0.34, 0.035, 0.035, 0x1c1c1c, 0.5, 0.4);
+  crank.rotation.z = Math.PI / 2;
+  crank.position.set(0, bbY, bbZ);
+  bodyPivot.add(crank);
+  const pedalGeoOffsets = [0.17, -0.17];
+  for (const px of pedalGeoOffsets) {
+    const pedal = pbox(0.05, 0.02, 0.1, 0x1c1c1c, 0.6, 0.2);
+    pedal.position.set(px, bbY - 0.03, bbZ);
+    bodyPivot.add(pedal);
+  }
+
+  // Task 2 (draw-call budget) — every bikeFrame-coloured tube merges into one draw
+  // call; tank/seat/handlebar/crank/pedals stay their own single meshes (each a
+  // distinct colour, so grouping by material still folds the two pedals together).
   mergeGroupByMaterial(bodyPivot);
 
   const frontWheel = createRoadWheel({ radius: wheelR, width: 0.09, ribbed: true });
