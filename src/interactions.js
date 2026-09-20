@@ -335,8 +335,10 @@ registerInteraction({
   label: (ctx) =>
     ctx.quest.sacksCollected - ctx.quest.sacksDelivered > 0
       ? { hi: 'बोरी उतारें', en: 'Unload the sack' }
-      : { hi: 'किराना दुकानदार से बात करें', en: 'Talk to the kirana shopkeeper' },
-  available: (ctx) => ctx.quest.step === QUEST_STEPS.LOADING_WHEAT || ctx.quest.step === QUEST_STEPS.WHEAT_DELIVERED,
+      : { hi: 'खरीदें', en: 'Buy something' },
+  // Always available (item 3 brief: the shared buy works "at any shop counter",
+  // kirana included) — the sack-delivery case only applies while actually carrying
+  // one, same as every other step of this errand.
   onInteract: (ctx) => {
     const { quest, dialogue } = ctx;
     const carrying = quest.sacksCollected - quest.sacksDelivered;
@@ -350,10 +352,11 @@ registerInteraction({
       } else {
         dialogue.say([{ hi: 'एक और बोरी लाना बाकी है।', en: 'A few more sacks to go.' }], () => ctx.onObjectiveChange?.());
       }
-    } else if (quest.step === QUEST_STEPS.WHEAT_DELIVERED) {
-      dialogue.say([{ hi: 'शुक्रिया, गेहूं अच्छा है!', en: 'Thanks, good wheat!' }]);
     } else {
-      dialogue.say([{ hi: 'पहले बोरी लेकर आओ।', en: 'Bring a sack first.' }]);
+      // Same shared "buy" as every other shop counter — see registerShopBuy below.
+      const options = BUY_ITEMS.kirana;
+      const item = options[Math.floor(Math.random() * options.length)];
+      dialogue.say([{ hi: `${item.hi} लिया — ₹${item.price}`, en: `Bought ${item.en} — ₹${item.price}` }]);
     }
   },
 });
