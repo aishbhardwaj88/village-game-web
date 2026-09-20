@@ -5,6 +5,15 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-20, 7-item autonomous task, items 3-5 done:** Shop interactions closed out
+(kirana now falls through to the shared buy outside the sack-carrying moment). Dayline
+extended to span all 3 errands (was frozen at full warmth after errand 1) — start/end
+values recorded in look-standard.md. Mobile re-verified at 390x844/360x800: 57-59 draw
+calls, well under 120, no new reduction lever needed. 94 draw calls overall, zero
+console errors. Next: item 6 (full sweep) then item 7 (docs).
+
+---
+
 **2026-09-20, 7-item autonomous task, items 1-2 done:** Third errand (wheat sacks to
 the bazaar) built entirely on the existing quest/dialogue/waypoint/interaction
 registries — one at a time on foot, up to 3 at once if the trolley's parked by the
