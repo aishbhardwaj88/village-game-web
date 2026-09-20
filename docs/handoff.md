@@ -5,6 +5,16 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-21, item 9 of 10 done, item 10 not attempted (time):** Full sweep — both
+interiors, field track, bazaar walk — found no real bugs; one apparent "player stuck at
+the house" was my own test approaching the wrong (solid) side, corrected and
+re-verified clean. Final regression baseline saved (14/15, draw-calls-129 the only
+miss). Committed (0b349b2, 1ad4f76). Item 10 (draw calls back under 120; investigate
+signboards/shopfronts) not attempted — out of session time after items 1-9; both need
+dedicated attention rather than a rushed pass. Full session report follows in chat.
+
+---
+
 **2026-09-21, items 5-8 of 10 done:** Item 5 (attachment persistence) verified with no
 code change needed — item 2's coupling already keeps it correct through dismount/walk-
 away/remount/drive, framed screenshots confirm 0cm hitch gap at every step. Item 6
