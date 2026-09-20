@@ -5,6 +5,21 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-21, items 5-8 of 10 done:** Item 5 (attachment persistence) verified with no
+code change needed — item 2's coupling already keeps it correct through dismount/walk-
+away/remount/drive, framed screenshots confirm 0cm hitch gap at every step. Item 6
+(wheels) re-verified with the framed mode at 0/90/180/270° roll — visually and
+numerically identical at all four (axle width constant, only the polygon-facet ~1.5%
+wobble). Item 7 (bicycle) confirmed upright, frame square, wheels aligned. Item 8
+(proportions) measured all four vehicles against LAYOUT.md: fixed a real miss (bike
+width 0.4m vs its own declared 0.7m spec — the constant was never wired to any part);
+reported-not-corrected the tractor's steering-wheel height (2.18m vs 2.60m, a
+pre-existing documented LAYOUT.md self-contradiction, forcing it would look unrealistic).
+Committed (50c5113, af7cfc3, c80f0f6). Next: item 9 (full sweep), then item 10 if time
+remains (draw calls 129->120, signboards/shopfronts).
+
+---
+
 **2026-09-21, items 3-4 of 10 done:** Framed screenshot capture mode added
 (src/main.js frameObject()/unfreezeCamera(), tools/screenshot-prod.js framedShot()) —
 finds a named object, frames it filling the view, hides the player capsule. Used it to
