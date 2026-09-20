@@ -107,9 +107,24 @@ function pbox(w, h, d, color, roughness = 0.85, metalness = 0) {
  */
 function createRoadWheel({ radius, width, ribbed = false }) {
   const steer = new THREE.Group();
+  // Playtest bug 5 root cause: `roll` used to carry BOTH the fixed 90°-about-Z
+  // "lay the cylinder on its side" orientation AND the continuously-incrementing
+  // per-frame spin in the SAME Euler triple (rotation.z set once, rotation.x
+  // mutated every frame after). Three.js composes one Euler's x/y/z as a single
+  // matrix in a fixed axis order, not as independent rotations — so as spin (x)
+  // accumulated over a real drive, it progressively tumbled the wheel's effective
+  // axis away from horizontal (it does NOT stay "spin about a fixed sideways
+  // axis"), visually distorting the wheel and growing its bounding box well past
+  // its true radius, which is what the grounding check was catching. Splitting
+  // the fixed orientation onto a parent group and the per-frame spin onto its own
+  // child, each with only ONE non-zero Euler axis, makes them compose as two
+  // separate matrices (parent * child) instead of one combined Euler, which is
+  // what "spin about the wheel's own already-reoriented axis" actually requires.
+  const orient = new THREE.Group();
+  orient.rotation.z = Math.PI / 2;
+  steer.add(orient);
   const roll = new THREE.Group();
-  roll.rotation.z = Math.PI / 2;
-  steer.add(roll);
+  orient.add(roll);
 
   const tireSegments = ribbed ? 14 : 18;
   const tire = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, tireSegments), mat(V.tire, 0.95));
@@ -129,9 +144,12 @@ function createRoadWheel({ radius, width, ribbed = false }) {
  * see docs/parked.md) plus a small separate hub cap. */
 function createSpokedWheel(radius, width, spokeCount = 8) {
   const steer = new THREE.Group();
+  // Same fixed-orientation/spin split as createRoadWheel() above, same reason.
+  const orient = new THREE.Group();
+  orient.rotation.z = Math.PI / 2;
+  steer.add(orient);
   const roll = new THREE.Group();
-  roll.rotation.z = Math.PI / 2;
-  steer.add(roll);
+  orient.add(roll);
 
   const rimMat = mat(V.timber, 0.9);
   const parts = [];

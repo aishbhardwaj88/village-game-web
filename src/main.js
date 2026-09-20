@@ -1055,7 +1055,33 @@ async function main() {
         vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         const p = vehicle.preset;
         const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
+        // Playtest bug 5: a vehicle blocked by a wall kept its internal `speed`
+        // slowly damping toward 0 over several more seconds (this project's vehicles
+        // accelerate/decelerate deliberately slowly) even though resolveCollisions
+        // was pinning its position at the wall the whole time — the still-large
+        // deceleration kept the tractor's brake-dip body pitch (kind === 'tractor'
+        // branch below) clamped near its max for that entire tail, sinking its nose
+        // corner below ground. A real vehicle stops on contact, not several seconds
+        // later, so zero `speed` immediately when collision actually had to correct
+        // the position (a no-op graze under 1cm is not treated as a stop).
+        const preCollisionX = vehicle.group.position.x;
+        const preCollisionZ = vehicle.group.position.z;
         resolveCollisions(vehicle.group.position, vehicleRadius, otherVehicleBoxes(vehicle));
+        const collisionCorrection = Math.hypot(vehicle.group.position.x - preCollisionX, vehicle.group.position.z - preCollisionZ);
+        if (collisionCorrection > 0.01) {
+          vehicle.speed = 0;
+          // Zeroing speed alone still leaves this frame's brake-dip body pitch/roll
+          // (computed inside vehicle.update() above, before this correction was
+          // known) damping back to level over the next several frames — while the
+          // player holds the throttle into the wall, speed keeps re-ramping up from
+          // 0 and getting rezeroed every frame, so the dip never gets a chance to
+          // relax. A vehicle pinned against a wall should read as stopped, not mid-
+          // dive, so snap the body level immediately instead of waiting for it.
+          if (vehicle.bodyPivot) {
+            vehicle.bodyPivot.rotation.x = 0;
+            vehicle.bodyPivot.rotation.z = 0;
+          }
+        }
         audio.setVehicle(vehicle.preset.kind, vehicle.speed / vehicle.preset.maxSpeed);
 
         // Trolley attach/detach (bugfix 2/4) — entirely separate from mount/dismount
