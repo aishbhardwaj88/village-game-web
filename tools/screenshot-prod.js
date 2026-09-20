@@ -249,7 +249,11 @@ async function main() {
 
       function checkWholeObject(object, label) {
         if (!object) return;
-        box.setFromObject(object);
+        // `precise=true` — see tools/regression-check.js's checkWholeObject for
+        // why: the default "fast" path over-estimates the AABB of an off-axis-
+        // rotated mesh (any wheel not at a multiple of 90°) by transforming its
+        // local bounding BOX's corners rather than its actual vertices.
+        box.setFromObject(object, true);
         if (!isFinite(box.min.y)) return;
         const diff = box.min.y;
         if (Math.abs(diff) > TOLERANCE) {
