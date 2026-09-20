@@ -27,7 +27,7 @@ import {
   PEEPAL_PLATFORM_RADIUS,
   FLOWER_STALL_POS,
 } from './temple.js';
-import { vehicleFootprintBox, initStaticColliders } from './collision.js';
+import { vehicleFootprintBox, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -1339,6 +1339,10 @@ async function main() {
         if (camRig._frameObjectOrigUpdate) camRig.update = camRig._frameObjectOrigUpdate;
         player.visible = true;
       },
+      // Item 4 acceptance measurement — "report the minimum distance between
+      // each collider pair; any negative value is a failure."
+      minDistanceToColliders: (pos, radius) => minSignedDistanceToColliders(pos, radius, STATIC_COLLIDERS),
+      staticColliderCount: () => STATIC_COLLIDERS.length,
     };
   }
 }

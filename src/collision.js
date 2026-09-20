@@ -141,6 +141,24 @@ export function circleHitsAnyBox(pos, radius, boxes) {
   return false;
 }
 
+/** The signed distance from a circle (pos, radius) to the nearest of `boxes` —
+ * positive if clear, negative (by how much) if actually penetrating. Read-only,
+ * for verification/acceptance measurement (item 4's "report the minimum
+ * distance between each collider pair; any negative value is a failure"), not
+ * used by the resolver itself. */
+export function minSignedDistanceToColliders(pos, radius, boxes) {
+  let min = Infinity;
+  for (const box of boxes) {
+    const closestX = Math.min(Math.max(pos.x, box.minX), box.maxX);
+    const closestZ = Math.min(Math.max(pos.z, box.minZ), box.maxZ);
+    const dx = pos.x - closestX;
+    const dz = pos.z - closestZ;
+    const dist = Math.hypot(dx, dz) - radius;
+    if (dist < min) min = dist;
+  }
+  return min;
+}
+
 /** An axis-aligned box matching a vehicle's current footprint, for blocking other
  * vehicles/the player while this one is parked (or just driving around). */
 export function vehicleFootprintBox(vehicle) {
