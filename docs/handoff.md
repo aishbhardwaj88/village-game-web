@@ -1,7 +1,18 @@
 # Handoff log
 
-Two-line status written after every 3rd completed queue item, so an interrupted run
+Two-line status written after every 2nd completed queue item, so an interrupted run
 can resume without re-reading the whole session. Newest entry at the top.
+
+---
+
+**2026-09-20, 7-item autonomous task, items 1-2 done:** Third errand (wheat sacks to
+the bazaar) built entirely on the existing quest/dialogue/waypoint/interaction
+registries — one at a time on foot, up to 3 at once if the trolley's parked by the
+pile. Also built item 3's shared "buy" + sabzi/bangle signature interactions early
+(errand 3 needed the general-store purchase step). NPC life in the bazaar (8
+shopkeepers + 4 villagers + 1 seated) as one InstancedMesh, +1 draw call. 94 draw
+calls, zero console errors. Next: item 3's remaining two signature interactions are
+already done — continuing with item 4 (time and light).
 
 ---
 

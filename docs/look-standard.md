@@ -198,6 +198,18 @@ levers (fewer shaded pixels via pixel ratio, smaller/tighter shadow pass, fewer 
 screen post-effect passes) rather than a number measured on real hardware; re-verify on
 an actual phone before relying on any fps target being met.
 
+**Re-verified after the third errand + bazaar NPC life** (performance/mobile task,
+same method, both required sizes — 390×844 and 360×800, both 3x-DPR, `hasTouch`/
+`isMobile`): quality still auto-selects `medium` on touch, shadow map still reads back
+`768` (the medium-touch preset), zero console errors on either size. Draw calls: 59 at
+390×844, 57 at 360×800 (both well under the 120 target — lower than the ~94 desktop
+number, since the mobile camera's default framing happens to have less of the scene in
+frustum). Since neither draw calls nor the (unmeasurable-here) frame rate showed any
+sign of trouble, no new reduction lever (shadow distance/texture size/NPC count) was
+added — the existing quality presets already had enough headroom for everything this
+task added. Re-verify on real hardware if a future addition pushes draw calls much
+closer to 120 on touch specifically.
+
 **Task 3 (mobile pass) fixes**, all verified via Playwright touch emulation at both
 390×844 and 360×800 (`tmp/mobile_pass.mjs`):
 - The dialogue panel (near-full-width, bottom:20px) overlapped the joystick on touch —
