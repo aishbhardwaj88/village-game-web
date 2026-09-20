@@ -9,30 +9,41 @@ Vite, vanilla JS, no framework. Runs from a link on phone and desktop browsers, 
 to GitHub Pages. The Unity project (`../Village nostalgia`) is the future downloadable
 version — **never touch it from here.** `START_HERE.md` has the folder map.
 
-Current world: house/school/halwai/tea-stall/general-store hero zone + connecting lane
-(`src/village.js`, `src/shops.js`), procedural trees (`src/trees.js`), a wheat/sabzi
-field with a dirt track loop and fine dust motes (`src/field.js`, `src/dust.js`),
-vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s exact measurements —
-walk/bike/tractor+detachable-trolley/bullock cart (`src/vehicles.js`). The house and
-school each have one real walkable interior (courtyard/rooms/stairs-to-roof;
-one classroom) with their own interactions (lie on the charpai, pump water, water the
-tulsi, write on the blackboard, sit on a bench — `src/interactions.js`); a
-`src/assetSlots.js` registry auto-loads a real `.glb` in place of any placeholder,
-named per-object, once one exists (`docs/asset-slots.md`). Two errands (bring jalebi
-home, then take a tiffin to school and bring your sister home) with
-objective/dialogue/waypoint UI (`src/quest.js`, `src/dialogue.js`,
-`src/interactions.js`, `src/waypoint.js`) that save/continue via localStorage
-(`src/save.js`); NPCs with simple waypoint-loop/follow routines
-(`src/npcRoutines.js`), a title screen, pause menu with a live quality setting and a
-master volume slider (`src/pause.js`, `src/quality.js`), and a credits screen
-generated from `docs/CREDITS.md` (`src/credits.js`), procedural Web Audio
+Current world: a hero zone (house/school/halwai/tea-stall — `src/village.js`,
+`src/shops.js`) connected by lane to a bazaar row of 8 trade-specific shops + a chowk
+(second tea stall, chabutra) + a village mandir/flower stall (`src/bazaar.js`,
+`src/temple.js`) and a general store on the bazaar approach lane (`src/shops.js`); no
+trees (removed — exhaustive CC0/CC BY search found nothing under budget, see
+`docs/parked.md`). A wheat/sabzi field with a dirt track loop and fine dust motes
+(`src/field.js`, `src/dust.js`); vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s
+exact measurements — walk/bike/tractor+detachable-trolley/bullock cart
+(`src/vehicles.js`). The house and school each have one real walkable interior
+(courtyard/rooms/stairs-to-roof; one classroom) with their own interactions (lie on the
+charpai, pump water, water the tulsi, write on the blackboard, sit on a bench —
+`src/interactions.js`); a `src/assetSlots.js` registry auto-loads a real `.glb` in
+place of any placeholder, named per-object, once one exists (`docs/asset-slots.md`).
+**Three errands** (bring jalebi home; take a tiffin to school and bring your sister
+home; load wheat sacks — one at a time on foot, up to 3 via the trolley — deliver them
+to the kirana shop, buy something at the general store, report to Pitaji —
+`src/wheatErrand.js`) with objective/dialogue/waypoint/money UI (`src/quest.js`,
+`src/dialogue.js`, `src/interactions.js`, `src/waypoint.js`) that save/continue via
+localStorage (`src/save.js`); a shared "buy" interaction at every shop counter plus two
+signature ones (sabzi pan-balance weighing, bangle try-on). NPCs with simple
+waypoint-loop/follow routines (`src/npcRoutines.js`) — the hero zone's Maa/halwai/
+child/teacher/sister/Pitaji, plus the bazaar's 8 shopkeepers + 4 villagers + 1 seated as
+one shared `InstancedMesh` (`src/bazaarLife.js`). One continuous afternoon
+(`src/dayline.js`) warms sun/sky/fog gradually across all three errands, start/end
+values in `docs/look-standard.md`. A title screen, pause menu with a live quality
+setting and a master volume slider (`src/pause.js`, `src/quality.js`), and a credits
+screen generated from `docs/CREDITS.md` (`src/credits.js`), procedural Web Audio
 (`src/audio.js`, mixed/balanced, ducks under dialogue), a gradient sky +
 HDRI-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
-`reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m). **Draw-call budget:
-111/150 as of 2026-09-19's 10-item queue (trees/interiors/dust added since the
-2026-09-18 draw-call reduction pass) — see `docs/look-standard.md`'s Budgets section
-and `src/mergeUtils.js` before adding new static geometry; merge same-material meshes
-rather than one mesh per part.**
+`reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m) where MAP.md gives
+one (bazaar/temple placements read off orthos or picked on open ground instead — see
+`docs/parked.md`). **Draw-call budget: 94/150 as of 2026-09-20's NPC-life/errand-3
+task — see `docs/look-standard.md`'s Budgets section and `src/mergeUtils.js` before
+adding new static geometry; merge same-material meshes rather than one mesh per part,
+and instance repeated NPCs/props (`src/bazaarLife.js` is the reference pattern).**
 
 ## 2. Reference folders — read-only, never touched
 

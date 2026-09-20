@@ -5,6 +5,17 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-20, 7-item autonomous task complete (items 1-7):** Third errand (wheat to
+the bazaar, both on-foot and trolley paths), bazaar NPC life (13 NPCs as 1 draw call),
+shared+signature shop interactions, dayline spanning all 3 errands, mobile re-verified
+(57-59 draw calls at both phone sizes), full sweep (zero real bugs, 2 self-caught test
+mistakes documented), and this docs pass (CLAUDE.md refreshed to the current world —
+was stale since before this session even started — and now 146/150 lines). 94 draw
+calls, ~54k triangles, 4.72MB assets, grounding clean, zero console errors. All 10
+commits on `main`, nothing pushed. Next: awaiting review/push.
+
+---
+
 **2026-09-20, 7-item autonomous task, items 3-5 done:** Shop interactions closed out
 (kirana now falls through to the shared buy outside the sack-carrying moment). Dayline
 extended to span all 3 errands (was frozen at full warmth after errand 1) — start/end
