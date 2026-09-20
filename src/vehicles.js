@@ -514,10 +514,7 @@ export class Trolley {
     this.attached = false;
     this.yaw = rotationY;
     this.yawVel = 0;
-    this.velX = 0;
-    this.velZ = 0;
     this.speed = 0; // approximate, for wheel roll while attached
-    this.brakeCompression = 0;
   }
 
   get hitchWorldPoint() {
@@ -528,71 +525,59 @@ export class Trolley {
     scene.add(this.group);
   }
 
-  /** Damped-spring follow — see the module doc comment for why a spring (not a lerp)
-   * is what produces "cuts the corner... overshoots slightly and settles" for free,
-   * rather than needing each case hand-scripted. */
+  /** Position is rigid (drawbar eye exactly at the tractor's hitch point every
+   * frame); only yaw follows a damped spring, which is what actually produces the
+   * "cuts the corner... swings into place" trailing look on its own, without each
+   * turn case having to be hand-scripted. */
   updateAttached(dt, tractor) {
     const towPoint = tractor.group.localToWorld(new THREE.Vector3(0, T.hitchY, T.hitchZ));
 
-    const speedDelta = tractor.speed - tractor._prevSpeedForTrolley;
-    tractor._prevSpeedForTrolley = tractor.speed;
-    const braking = Math.max(0, -speedDelta / Math.max(dt, 0.001));
-    this.brakeCompression = THREE.MathUtils.damp(this.brakeCompression, Math.min(braking * 0.05, 0.55), 6, dt);
-
-    const restLength = TRACTOR_TOW_OFFSET_REST - this.brakeCompression;
-    const tractorBackward = new THREE.Vector3(Math.sin(tractor.group.rotation.y), 0, Math.cos(tractor.group.rotation.y));
-    // Bugfix (playtest bug 1): base this on the tractor's own body position, the
-    // same anchor spawnVehicles() uses for the initial placement
-    // (`tractor.group.position + tractorBackward * TRACTOR_TOW_OFFSET_REST`) — not
-    // `towPoint` (already offset from the body by the hitch's own local Z). Basing
-    // it on towPoint double-counted that offset, so the running target sat roughly
-    // one hitch-length further back than the trolley's own correct spawn position,
-    // and the spring chased a permanently-too-far target every frame. `towPoint`
-    // is still exactly right for the braking calc above and the yaw hinge below —
-    // both are genuinely about the physical hitch point, not the body anchor.
-    const targetPos = tractor.group.position.clone().addScaledVector(tractorBackward, restLength);
-
-    // Slightly underdamped spring (c < 2*sqrt(k)) — a small, controlled overshoot,
-    // not a bounce. Position first, then yaw hinges to face the tow point.
-    const k = 13;
-    const c = 6.2;
-    const dx = targetPos.x - this.group.position.x;
-    const dz = targetPos.z - this.group.position.z;
-    this.velX += (k * dx - c * this.velX) * dt;
-    this.velZ += (k * dz - c * this.velZ) * dt;
+    // Playtest bug C (this task) — the old position spring (see docs/parked.md's
+    // earlier playtest-bug-1 note, now superseded) approached the hitch but never
+    // exactly reached it, and visibly lost ground under sustained acceleration —
+    // a 100m drive opened up to a ~6m gap instead of staying "rigidly linked at
+    // the hitch" as a real hitch pin is. Rebuilt as two separate parts, matching
+    // that description literally: position is RIGID (the drawbar eye is placed
+    // exactly at the tractor's hitch point every single frame, by construction —
+    // there is nothing to lag), and only the trolley's OWN YAW hinges, via a
+    // damped spring toward "face the hitch point", which is what actually
+    // produces the trailing swing-into-turns look. `wrap()` keeps that spring's
+    // angle diff in [-PI, PI) — JS's `%` returns a negative result for a
+    // negative dividend (unlike Python's), so a naive `((d + PI) % (2*PI)) - PI`
+    // silently fails to wrap for sufficiently out-of-range input.
     const prevX = this.group.position.x;
     const prevZ = this.group.position.z;
-    this.group.position.x += this.velX * dt;
-    this.group.position.z += this.velZ * dt;
-
-    // Playtest bug 2 — the towed trolley never had its own collision check at all
-    // (only the mounted vehicle and the player did, in main.js), so it drove
-    // straight through building walls. Same resolveCollisions() every other moving
-    // thing in this game uses, checked every frame while attached, sliding it along
-    // a wall rather than letting the spring pull it inside one.
-    resolveCollisions(this.group.position, TROLLEY_COLLISION_RADIUS, []);
-
-    this.speed = Math.hypot(this.group.position.x - prevX, this.group.position.z - prevZ) / Math.max(dt, 0.0001);
 
     const hingeX = towPoint.x - this.group.position.x;
     const hingeZ = towPoint.z - this.group.position.z;
     const targetYaw = Math.atan2(-hingeX, -hingeZ);
     let yawDiff = targetYaw - this.yaw;
-    // Shortest angular path, wrapped to [-PI, PI). The old `((d + PI) % (2*PI)) -
-    // PI` only wraps correctly when `d + PI` lands >= 0 — JS's `%` returns a
-    // negative result for a negative dividend (unlike Python's), so for any raw
-    // diff below -PI it was a silent no-op, leaving `yawDiff` many radians out of
-    // range. That fed a huge, wrong-direction torque into the spring below, which
-    // is what actually caused "the trolley doesn't follow" (bug 1 of this task) —
-    // found by direct per-frame instrumentation, not by inspection. The extra
-    // `+ Math.PI * 3` before the second `%` guarantees a non-negative dividend
-    // there regardless of how far out of range the input was.
     yawDiff = ((yawDiff % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
     const kYaw = 11;
     const cYaw = 5.2;
     this.yawVel += (kYaw * yawDiff - cYaw * this.yawVel) * dt;
     this.yaw += this.yawVel * dt;
     this.group.rotation.y = this.yaw;
+
+    // Rigid link: place the drawbar eye (local (0, TR.hitchY, TR.hitchLocalZ),
+    // same point Trolley.hitchWorldPoint reads) exactly at the tractor's hitch
+    // point, given the yaw just computed above — i.e. solve group.position from
+    // "hitchWorldPoint === towPoint" rather than springing toward an
+    // approximation of it. Matches the localToWorld convention used everywhere
+    // else in this file (world offset of local (0,*,z) at yaw θ is
+    // (z*sin θ, *, z*cos θ)).
+    this.group.position.x = towPoint.x - TR.hitchLocalZ * Math.sin(this.yaw);
+    this.group.position.z = towPoint.z - TR.hitchLocalZ * Math.cos(this.yaw);
+
+    // Playtest bug 2 — the towed trolley never had its own collision check at all
+    // (only the mounted vehicle and the player did, in main.js), so it drove
+    // straight through building walls. Same resolveCollisions() every other moving
+    // thing in this game uses, checked every frame while attached, sliding it along
+    // a wall (which does momentarily break the rigid link above — correct, a wall
+    // has to be able to stop the trolley even if the tractor is still pulling).
+    resolveCollisions(this.group.position, TROLLEY_COLLISION_RADIUS, []);
+
+    this.speed = Math.hypot(this.group.position.x - prevX, this.group.position.z - prevZ) / Math.max(dt, 0.0001);
 
     for (const w of this.wheels) updateWheel(w, { linearSpeed: this.speed, radius: TR.wheelDia / 2, dt });
   }
@@ -601,8 +586,6 @@ export class Trolley {
    * following, keep current transform and zero out velocities so it doesn't drift. */
   detach() {
     this.attached = false;
-    this.velX = 0;
-    this.velZ = 0;
     this.yawVel = 0;
   }
 }
@@ -935,7 +918,6 @@ export class Vehicle {
       this.rearWheels = built.rearWheels;
       this.frontWheels = built.frontWheels;
       this.trolley = null; // attached via attachTrolley() (item 2) — starts unattached
-      this._prevSpeedForTrolley = 0;
     } else if (p.kind === 'bike') {
       this.frontWheel = built.frontWheel;
       this.rearWheel = built.rearWheel;
@@ -971,11 +953,7 @@ export class Vehicle {
     trolley.yaw = this.group.rotation.y;
     this.trolley = trolley;
     trolley.attached = true;
-    trolley.velX = 0;
-    trolley.velZ = 0;
     trolley.yawVel = 0;
-    trolley.brakeCompression = 0;
-    this._prevSpeedForTrolley = this.speed;
   }
 
   /** Returns the detached Trolley instance so the caller (main.js) can keep a
