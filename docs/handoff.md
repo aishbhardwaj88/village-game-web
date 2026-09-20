@@ -5,6 +5,15 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-09-21, structural rework items 1-2 of 10 done:** Colliders now derived
+automatically from tagged real geometry (no hand-typed boxes anywhere); one swept
+movement resolver every body (player/vehicles/trolley/NPCs) routes through, with the
+tractor-trolley pair coupled so a blocked trolley blocks the tractor too. Regression
+check 14/15 (unchanged). Committed (8012c13, 369b7a8). Next: item 3, framed screenshot
+capture mode, then items 4-9 verified with it.
+
+---
+
 **2026-09-20, 7-item autonomous task complete (items 1-7):** Third errand (wheat to
 the bazaar, both on-foot and trolley paths), bazaar NPC life (13 NPCs as 1 draw call),
 shared+signature shop interactions, dayline spanning all 3 errands, mobile re-verified
