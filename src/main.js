@@ -1139,7 +1139,7 @@ async function main() {
         ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
         { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },
       ]);
-      updateDayline(dayProgressForQuestStep(quest.step, QUEST_STEPS), dt);
+      updateDayline(dayProgressForQuestStep(quest.step), dt);
       // Distant radio fade (item 7) — uses whatever the player is actually "at"
       // (on foot, or the vehicle they're driving/sitting on), not the camera, so it
       // doesn't fade with a wide third-person zoom.

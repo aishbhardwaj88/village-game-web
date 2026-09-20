@@ -22,13 +22,31 @@ const END = {
 
 const _tmpColor = new THREE.Color();
 
-/** 0 at NOT_STARTED, 1 at COMPLETE — front-loaded less, so most of the warmth lands
- * in the second half of the errand rather than spreading evenly across all 3 steps. */
-export function dayProgressForQuestStep(step, QUEST_STEPS) {
-  if (step === QUEST_STEPS.NOT_STARTED) return 0;
-  if (step === QUEST_STEPS.HAVE_MONEY) return 0.4;
-  if (step === QUEST_STEPS.HAVE_JALEBI) return 0.7;
-  return 1; // COMPLETE
+/**
+ * 0 at NOT_STARTED, 1 at ALL_COMPLETE — one continuous afternoon spanning all three
+ * errands (time/light task), not just the first. Each named step gets a fixed point
+ * along the curve, in play order; the values are front-loaded less within each
+ * errand (most of that errand's own warmth lands in its second half) but the *rate*
+ * across errands is otherwise even — three errands of roughly similar length should
+ * warm the sky by roughly a third each, not have errand 1 alone spend the whole
+ * budget the way the original 2-step curve did.
+ */
+const STEP_PROGRESS = {
+  not_started: 0,
+  have_money: 0.08,
+  have_jalebi: 0.15,
+  complete: 0.22,
+  have_tiffin: 0.32,
+  have_sister: 0.42,
+  errand2_complete: 0.52,
+  loading_wheat: 0.68,
+  wheat_delivered: 0.85,
+  bought_goods: 0.93,
+  all_complete: 1,
+};
+
+export function dayProgressForQuestStep(step) {
+  return STEP_PROGRESS[step] ?? 1;
 }
 
 /** Call once per frame with the target progress (0..1) and dt — smoothly damps

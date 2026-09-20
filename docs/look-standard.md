@@ -48,6 +48,24 @@ shadow-side surfaces read near-black. See docs/parked.md for why.
 | HDRI | Poly Haven `camdeboo_road` 1K — **lighting/IBL only** (`scene.environment`), never `scene.background` (see docs/parked.md) |
 | `scene.environmentIntensity` | `0.45` — tames the HDRI's very hot sun disk in specular reflections; see docs/parked.md before raising this |
 
+## Dayline — one continuous afternoon across all three errands (`src/dayline.js`)
+
+Sun/sky/fog drift smoothly from the values above (bright mid-afternoon, the game's
+default state at `NOT_STARTED`) toward a low golden-hour look by `ALL_COMPLETE` (end
+of the third errand) — `THREE.MathUtils.damp(current, targetProgress, 0.35, dt)`
+toward a target set by `dayProgressForQuestStep(quest.step)`'s fixed 0-1 point per
+named quest step (front-loaded less within each errand, evenly spread across all
+three — see the function's own doc comment). Never reaches full darkness — the end
+state is still a lit, warm-blue-zenith sky, not night.
+
+| | Start (`NOT_STARTED`, progress 0) | End (`ALL_COMPLETE`, progress 1) |
+|---|---|---|
+| Sun elevation | `20°` (law, matches `createSun()` above) | `9°` — lower, longer shadows |
+| Sun colour | `0xfff1d6` (matches the sky shader's own sun tint) | `0xffb877` — warmer, more orange |
+| Sky horizon colour | `0xf6dcae` | `0xe8935a` |
+| Sky zenith colour | `0x3f6fa3` | `0x2a3f66` — deeper, still clearly blue, never black |
+| Fog colour | = sky horizon colour (`0xf6dcae`) | = sky horizon colour (`0xe8935a`) |
+
 ## Post-processing (`src/postfx.js`, pmndrs `postprocessing`, one `EffectPass`)
 
 | Effect | Settings |
