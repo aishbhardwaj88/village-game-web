@@ -815,7 +815,11 @@ function buildBikeGroup() {
   seat.position.set(0, seatTopY + 0.05, seatTopZ - 0.04);
   bodyPivot.add(seat);
 
-  const handlebar = pbox(0.4, 0.035, 0.035, 0x1c1c1c, 0.5, 0.4);
+  // Item 8 (proportions): was 0.4m wide — B.width (0.7m, LAYOUT.md's own overall
+  // bike width) was declared but never actually driven into any part's own
+  // dimension, so the built bike's real overall width (governed entirely by
+  // this, the single widest part) came out 43% narrower than spec.
+  const handlebar = pbox(B.width, 0.035, 0.035, 0x1c1c1c, 0.5, 0.4);
   handlebar.position.set(0, headY + 0.14, headZ);
   bodyPivot.add(handlebar);
 
