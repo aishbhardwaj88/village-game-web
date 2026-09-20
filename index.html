@@ -279,13 +279,9 @@
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
       }
 
-      /* --- Money (third errand) — shown only while that errand is active, top-right,
-         clear of the touch pause button above it. --- */
+      /* --- Money (third errand) — shown only while that errand is active. Positioned
+         by #top-right-stack (see below), not on its own. --- */
       #money-panel {
-        position: fixed;
-        top: calc(70px + env(safe-area-inset-top));
-        right: calc(14px + env(safe-area-inset-right));
-        z-index: 45;
         background: rgba(16, 11, 8, 0.68);
         border-radius: 10px;
         padding: 6px 14px;
@@ -429,21 +425,17 @@
         letter-spacing: 0.08em;
       }
 
-      /* --- Interaction prompt (item 2) — a key badge + bilingual label, centre-lower,
-         doubling as the large tap target on touch. Replaces the old tiny bottom hint
-         and the separate bottom-right circular tap button.
-         Bugfix 2/4: #attach-hint is a second, independent copy of this same widget,
-         positioned a little higher so it can show at the same time as #interact-hint
-         (e.g. "E: Dismount" below, "F: Attach trolley" above it) — trolley attach/
-         detach used to share the mount/dismount prompt+key entirely, which is why
-         mounting could be mistaken for (or interfere with) attaching. --- */
+      /* --- Interaction prompt (item 2) — a key badge + bilingual label, doubling as
+         the large tap target on touch. Positioned by #top-right-stack (see below) —
+         never by projecting a world position to screen space; a prompt's on-screen
+         place must not depend on where the object it refers to is.
+         Bugfix 2/4: #attach-hint is a second, independent copy of this same widget so
+         it can show at the same time as #interact-hint (e.g. "F: Attach trolley"
+         above "E: Dismount") — trolley attach/detach used to share the mount/dismount
+         prompt+key entirely, which is why mounting could be mistaken for (or
+         interfere with) attaching. --- */
       #interact-hint,
       #attach-hint {
-        position: fixed;
-        left: 50%;
-        bottom: 26vh;
-        transform: translateX(-50%);
-        z-index: 47;
         display: none;
         align-items: center;
         gap: 12px;
@@ -454,9 +446,6 @@
         padding: 8px 22px 8px 8px;
         pointer-events: none;
         box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32);
-      }
-      #attach-hint {
-        bottom: 34vh;
       }
       #interact-hint.visible,
       #attach-hint.visible {
@@ -470,7 +459,7 @@
       }
       #interact-hint.touch-target:active,
       #attach-hint.touch-target:active {
-        transform: translateX(-50%) scale(0.96);
+        transform: scale(0.96);
       }
       #interact-key-badge,
       #attach-key-badge {
@@ -517,25 +506,36 @@
       }
       @keyframes interactPulseOnce {
         0% {
-          transform: translateX(-50%) scale(1);
+          transform: scale(1);
         }
         35% {
-          transform: translateX(-50%) scale(1.08);
+          transform: scale(1.08);
         }
         100% {
-          transform: translateX(-50%) scale(1);
+          transform: scale(1);
         }
       }
       #interact-hint.pulse {
         animation: interactPulseOnce 0.5s ease-out;
       }
 
-      /* --- Pause button (touch only, top-right) --- */
-      #pause-btn-touch {
+      /* --- All top-right HUD badges (item 2/pause/money) — one fixed stack, anchored
+         top-right, right-aligned, stacking vertically as members become visible.
+         Nothing in here is ever positioned from a 3D world position. --- */
+      #top-right-stack {
         position: fixed;
-        top: calc(14px + env(safe-area-inset-top));
-        right: calc(14px + env(safe-area-inset-right));
-        z-index: 48;
+        top: calc(16px + env(safe-area-inset-top));
+        right: calc(16px + env(safe-area-inset-right));
+        z-index: 47;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        pointer-events: none;
+      }
+
+      /* --- Pause button (touch only) --- */
+      #pause-btn-touch {
         width: 44px;
         height: 44px;
         border-radius: 50%;
@@ -780,30 +780,32 @@
         </div>
         <div id="look-zone"></div>
       </div>
-      <div id="interact-hint">
-        <div id="interact-key-badge">E</div>
-        <div>
-          <p id="interact-en"></p>
-          <p id="interact-hi"></p>
-        </div>
-      </div>
-      <div id="attach-hint">
-        <div id="attach-key-badge">F</div>
-        <div>
-          <p id="attach-en"></p>
-          <p id="attach-hi"></p>
-        </div>
-      </div>
       <div id="waypoint-arrow"><div id="waypoint-arrow-shape"></div></div>
       <div id="objective-panel">
         <p id="objective-en"></p>
         <p id="objective-hi"></p>
       </div>
-      <div id="money-panel">
-        <p id="money-en"></p>
-        <p id="money-hi"></p>
+      <div id="top-right-stack">
+        <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
+        <div id="attach-hint">
+          <div id="attach-key-badge">F</div>
+          <div>
+            <p id="attach-en"></p>
+            <p id="attach-hi"></p>
+          </div>
+        </div>
+        <div id="interact-hint">
+          <div id="interact-key-badge">E</div>
+          <div>
+            <p id="interact-en"></p>
+            <p id="interact-hi"></p>
+          </div>
+        </div>
+        <div id="money-panel">
+          <p id="money-en"></p>
+          <p id="money-hi"></p>
+        </div>
       </div>
-      <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
       <div id="pause-overlay">
         <div id="pause-panel" class="panel-card">
           <p class="panel-title-en">Paused</p>
