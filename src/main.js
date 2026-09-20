@@ -16,7 +16,17 @@ import { buildDust } from './dust.js';
 import { spawnVehicles } from './vehicles.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
-import { buildTemple, buildFlowerStall, templeColliders, buildTempleLane } from './temple.js';
+import {
+  buildTemple,
+  buildFlowerStall,
+  templeColliders,
+  buildTempleLane,
+  TEMPLE_POS,
+  PLINTH as TEMPLE_PLINTH,
+  PEEPAL_PLATFORM_POS,
+  PEEPAL_PLATFORM_RADIUS,
+  FLOWER_STALL_POS,
+} from './temple.js';
 import { resolveCollisions, vehicleFootprintBox, addStaticColliders } from './collision.js';
 import {
   buildBazaarRow,
@@ -311,6 +321,11 @@ async function main() {
       { x: TEA_SHOP_POS.x, z: TEA_SHOP_POS.z, radiusX: TEA_DIMS.w / 2 + 0.4, radiusZ: TEA_DIMS.d / 2 + 0.4 },
       { x: STORE_POS.x, z: STORE_POS.z, radiusX: STORE_DIMS.w / 2 + 0.4, radiusZ: STORE_DIMS.d / 2 + 0.4 },
       { x: BELL_POSITION.x, z: BELL_POSITION.z, radiusX: 0.6, radiusZ: 0.6 },
+      // Item 2/6 (temple + flower stall) — one shadow for the whole raised plinth
+      // (shrine + porch sit on it), one for the peepal chabutra, one for the stall.
+      { x: TEMPLE_POS.x, z: TEMPLE_POS.z, radiusX: TEMPLE_PLINTH.w / 2 + 0.4, radiusZ: TEMPLE_PLINTH.d / 2 + 0.4 },
+      { x: PEEPAL_PLATFORM_POS.x, z: PEEPAL_PLATFORM_POS.z, radiusX: PEEPAL_PLATFORM_RADIUS + 0.3, radiusZ: PEEPAL_PLATFORM_RADIUS + 0.3 },
+      { x: FLOWER_STALL_POS.x, z: FLOWER_STALL_POS.z, radiusX: 1.5, radiusZ: 1.3 },
     ],
     4 // dynamic slots: bike, tractor, cart, trolley — set each frame below
   );

@@ -27,8 +27,12 @@ import { buildStripSegment } from './paths.js';
  */
 export const TEMPLE_POS = { x: 8, z: 52 }; // entrance faces west (-x), toward the approach lane
 
-const PLOT = { w: 12, d: 10 }; // boundary wall footprint
-const PLINTH = { w: 6, d: 5, h: 0.4 };
+export const PLOT = { w: 12, d: 10 }; // boundary wall footprint
+export const PLINTH = { w: 6, d: 5, h: 0.4 };
+// Peepal chabutra centre — exported so main.js can give it its own contact shadow
+// (item 6, verify) without duplicating this offset.
+export const PEEPAL_PLATFORM_POS = { x: TEMPLE_POS.x + PLOT.w / 2 + 2.5, z: TEMPLE_POS.z };
+export const PEEPAL_PLATFORM_RADIUS = 1.4;
 const SHRINE = { w: 2.6, d: 2.6, h: 2.6, cx: TEMPLE_POS.x + 1.5 }; // east half of the plinth
 const PORCH = { w: 3, d: 2.2, h: 2.6, cx: TEMPLE_POS.x - 1.5 }; // west half, toward the entrance
 const ROOF_Y = SHRINE.h;
@@ -183,11 +187,11 @@ export function buildTemple(kit) {
   // chowk's (src/bazaar.js buildChowkPlaza), left EMPTY (no tree — see docs/parked.md
   // on why: no licensed tree model exists this session, same reasoning as the
   // chowk's own chabutra) and explicitly reserved for one. ---
-  const chabX = TEMPLE_POS.x + PLOT.w / 2 + 2.5;
-  const chabZ = TEMPLE_POS.z;
+  const chabX = PEEPAL_PLATFORM_POS.x;
+  const chabZ = PEEPAL_PLATFORM_POS.z;
   const kerbGeos = [];
   const kerbSegs = 14;
-  const kerbR = 1.4;
+  const kerbR = PEEPAL_PLATFORM_RADIUS;
   for (let i = 0; i < kerbSegs; i++) {
     const a0 = (i / kerbSegs) * Math.PI * 2;
     pushBox(kerbGeos, 0.6, 0.5, 0.25, chabX + Math.sin(a0) * kerbR, 0.25, chabZ + Math.cos(a0) * kerbR, darken(PALETTE.terracotta));
