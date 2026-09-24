@@ -76,18 +76,28 @@ export function buildTemple(kit) {
     texturedWallBox(westSegLen, BOUNDARY_H, WALL_THICKNESS, 'plaster', { tint: WALL_TINT, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH, seed: 44.5 }),
     texturedWallBox(westSegLen, BOUNDARY_H, WALL_THICKNESS, 'plaster', { tint: WALL_TINT, tileSize: 1.5, tintStrength: WALL_TINT_STRENGTH, seed: 55.9 }),
   ];
+  // Structural fix (item 1c, collider-coverage audit) — w/d here must match the
+  // LOCAL (pre-rotation) box each matrix is built for, same as the geometry
+  // above (texturedWallBox(PLOT.d, ..., WALL_THICKNESS) for east,
+  // texturedWallBox(westSegLen, ..., WALL_THICKNESS) for the west segments):
+  // local X = the wall's long run, local Z = its thickness, THEN the Y
+  // rotation carries that into world Z-long/X-thin. These three entries had
+  // w/d swapped, so colliderBoxFromTransform's rotated corners came out
+  // long-in-X/thin-in-Z instead of long-in-Z/thin-in-X — a real ~10m
+  // collider-less gap along the east and west boundary walls (tools/collider-
+  // audit.js caught it; the visual wall was always there, nothing solid was).
   const boundarySegments = [
     { w: PLOT.w, d: WALL_THICKNESS, matrix: new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz0) }, // south
     { w: PLOT.w, d: WALL_THICKNESS, matrix: new THREE.Matrix4().setPosition(TEMPLE_POS.x, BOUNDARY_H / 2, bz1) }, // north
-    { w: WALL_THICKNESS, d: PLOT.d, matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx1, BOUNDARY_H / 2, TEMPLE_POS.z) }, // east
+    { w: PLOT.d, d: WALL_THICKNESS, matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx1, BOUNDARY_H / 2, TEMPLE_POS.z) }, // east
     {
-      w: WALL_THICKNESS,
-      d: westSegLen,
+      w: westSegLen,
+      d: WALL_THICKNESS,
       matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z - GATE_W / 2 - westSegLen / 2),
     },
     {
-      w: WALL_THICKNESS,
-      d: westSegLen,
+      w: westSegLen,
+      d: WALL_THICKNESS,
       matrix: new THREE.Matrix4().makeRotationY(Math.PI / 2).setPosition(bx0, BOUNDARY_H / 2, TEMPLE_POS.z + GATE_W / 2 + westSegLen / 2),
     },
   ];

@@ -542,6 +542,8 @@ async function main() {
   // Streamed in after the player starts (queue item 6) — see the comment where
   // heroZoneGroup/vehicles are built above.
   let deferredContentLoaded = false;
+  let buildingFootprints = []; // tools/collider-audit.js / tools/trolley-drive-test.js — see loadDeferredContent()
+  let preMergeColliderCount = 0; // item 1d — see loadDeferredContent()
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
@@ -571,6 +573,58 @@ async function main() {
     // was colliding against for occlusion, and this merge empties them of everything
     // except the skipped subtrees, so without this the camera would start clipping
     // through every merged wall/roof.
+    // tools/collider-audit.js / tools/trolley-drive-test.js — snapshot each
+    // building's real world-space footprint from its own geometry, one bbox
+    // per direct named child of each static root, WHILE those children still
+    // hold their own meshes (the merge below strips every mesh out of them,
+    // leaving empty named Groups that would give Box3.setFromObject nothing to
+    // measure). Never hand-typed: reads the same live geometry the merge is
+    // about to fold away.
+    buildingFootprints = [];
+    for (const root of [heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup]) {
+      for (const child of root.children) {
+        if (!child.name) continue;
+        const box = new THREE.Box3().setFromObject(child, true);
+        if (isFinite(box.min.x)) {
+          buildingFootprints.push({
+            name: child.name,
+            root: root.name,
+            minX: box.min.x,
+            maxX: box.max.x,
+            minZ: box.min.z,
+            maxZ: box.max.z,
+          });
+        } else {
+          // No mesh geometry directly under this child (e.g. buildTeaStall()/
+          // buildGeneralStore()'s own small named group is just a position
+          // anchor — the real wall meshes it stands at were added to a shared
+          // sibling like `shop_walls`). Still worth a 1m marker footprint
+          // around its real world position so tools/trolley-drive-test.js has
+          // a real, geometry-derived approach target for it.
+          child.updateWorldMatrix(true, false);
+          const p = new THREE.Vector3().setFromMatrixPosition(child.matrixWorld);
+          if (isFinite(p.x)) {
+            buildingFootprints.push({ name: child.name, root: root.name, minX: p.x - 1, maxX: p.x + 1, minZ: p.z - 1, maxZ: p.z + 1 });
+          }
+        }
+      }
+    }
+
+    // Item 1d — count every collider box tagged on a source mesh BEFORE the
+    // merge below folds it away, so it can be compared against
+    // STATIC_COLLIDERS.length after initStaticColliders() runs (see
+    // getStaticColliders()). Same two tag conventions mergeUtils.js's
+    // collectColliderBoxes() reads: a live `userData.collider === true` leaf
+    // (1 box, computed here) or an already-collected `userData.colliderBoxes`
+    // array from an earlier per-building merge pass (its own length).
+    preMergeColliderCount = 0;
+    for (const root of [heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup]) {
+      root.traverse((obj) => {
+        if (obj.userData.collider === true) preMergeColliderCount += 1;
+        if (Array.isArray(obj.userData.colliderBoxes)) preMergeColliderCount += obj.userData.colliderBoxes.length;
+      });
+    }
+
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
@@ -1339,10 +1393,101 @@ async function main() {
         if (camRig._frameObjectOrigUpdate) camRig.update = camRig._frameObjectOrigUpdate;
         player.visible = true;
       },
+      // Item 1e — same as frameObject() above, but unions several named
+      // objects' boxes first (e.g. the tractor AND the trolley, two separate
+      // top-level objects with no shared parent to frame as one) so both are
+      // guaranteed fully in shot together.
+      frameObjects: (names, { angleDeg = 0, elevationDeg = 12, fill = 0.7 } = {}) => {
+        const box = new THREE.Box3();
+        let any = false;
+        for (const name of names) {
+          scene.traverse((o) => {
+            if (o.name !== name) return;
+            const b = new THREE.Box3().setFromObject(o, true);
+            if (isFinite(b.min.x)) {
+              box.union(b);
+              any = true;
+            }
+          });
+        }
+        if (!any) return { found: false };
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const radius = Math.max(size.length() / 2, 0.05);
+        const vFov = THREE.MathUtils.degToRad(camera.fov);
+        const dist = radius / fill / Math.tan(vFov / 2);
+        const angleRad = THREE.MathUtils.degToRad(angleDeg);
+        const elevRad = THREE.MathUtils.degToRad(elevationDeg);
+        camera.position.set(
+          center.x + dist * Math.sin(angleRad) * Math.cos(elevRad),
+          center.y + dist * Math.sin(elevRad),
+          center.z + dist * Math.cos(angleRad) * Math.cos(elevRad)
+        );
+        camera.lookAt(center);
+        camera.updateProjectionMatrix();
+        player.visible = false;
+        if (!camRig._frameObjectOrigUpdate) camRig._frameObjectOrigUpdate = camRig.update.bind(camRig);
+        camRig.update = () => {};
+        return { found: true, center: { x: center.x, y: center.y, z: center.z }, size: { x: size.x, y: size.y, z: size.z }, distance: dist };
+      },
       // Item 4 acceptance measurement — "report the minimum distance between
       // each collider pair; any negative value is a failure."
       minDistanceToColliders: (pos, radius) => minSignedDistanceToColliders(pos, radius, STATIC_COLLIDERS),
       staticColliderCount: () => STATIC_COLLIDERS.length,
+      // tools/collider-audit.js — the raw box list, for auditing coverage against
+      // real visual geometry (not just re-checking the boxes against themselves).
+      getStaticColliders: () => STATIC_COLLIDERS.map((b) => ({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ })),
+      // tools/collider-audit.js / tools/trolley-drive-test.js — real per-building
+      // footprints captured from geometry just before the static merge (see
+      // loadDeferredContent()).
+      getBuildingFootprints: () => buildingFootprints,
+      getPreMergeColliderCount: () => preMergeColliderCount,
+      // tools/trolley-drive-test.js — places a vehicle (and, for a tractor with an
+      // attached trolley, snaps the trolley back to its rest position behind it)
+      // without needing a real mount/drive-there flow.
+      teleportVehicle: (kind, x, z, yaw = 0) => {
+        const v = vehicles.find((v) => v.preset.kind === kind);
+        if (!v) return false;
+        v.group.position.set(x, 0, z);
+        v.group.rotation.y = yaw;
+        v.speed = 0;
+        if (v.trolley) v.attachTrolley(v.trolley);
+        return true;
+      },
+      // tools/trolley-drive-test.js — a deterministic, fixed-dt single step of
+      // EXACTLY the tractor+trolley physics the real per-frame loop above runs
+      // (mountedVehicle branch, lines ~1080-1142): vehicle.update() ->
+      // resolveMove() -> trolley.updateYawHinge()/hitchTargetPosition() ->
+      // resolveTowedMove() -> shortfall-pulls-tractor-back. Calls the same
+      // movement.js/vehicles.js functions untouched, just without the
+      // mount/UI/audio/attach-prompt bookkeeping around them, so the test can
+      // step frame-by-frame with a fixed dt instead of depending on real
+      // wall-clock frame pacing.
+      stepTractorTrolleyPhysics: (dt = 1 / 60, throttleZ = -1, steerX = 0) => {
+        const vehicle = vehicles.find((v) => v.preset.kind === 'tractor');
+        if (!vehicle) return null;
+        vehicle.update(dt, { moveZ: throttleZ, moveX: steerX });
+        const p = vehicle.preset;
+        const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
+        resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        if (vehicle.trolley && vehicle.trolley.attached) {
+          const trolley = vehicle.trolley;
+          const trolleyPrevX = trolley.group.position.x;
+          const trolleyPrevZ = trolley.group.position.z;
+          trolley.updateYawHinge(dt, vehicle);
+          const target = trolley.hitchTargetPosition(vehicle);
+          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, target, TROLLEY_COLLISION_RADIUS, otherVehicleBoxes(vehicle));
+          if (Math.abs(shortfallX) > 1e-4 || Math.abs(shortfallZ) > 1e-4) {
+            vehicle.group.position.x -= shortfallX;
+            vehicle.group.position.z -= shortfallZ;
+            vehicle.speed = 0;
+          }
+          trolley.finishMoveStep(dt, trolleyPrevX, trolleyPrevZ);
+        }
+        return { x: vehicle.group.position.x, z: vehicle.group.position.z, speed: vehicle.speed };
+      },
     };
   }
 }
