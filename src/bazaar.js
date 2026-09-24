@@ -220,9 +220,11 @@ export function buildBazaarRow(kit) {
 
   // --- Continuous front step/plinth, per LAYOUT.md ("a low continuous step runs the
   // length of the front") — reuses BuildingKit's shared plinth instance, same as
-  // every other building's plinth ring. ---
-  const stepH = 0.15;
-  kit.addStep({ x: awningCx, y: stepH / 2, z: frontZ - 0.25 }, { x: awningLen, y: stepH, z: 0.5 });
+  // every other building's plinth ring. Item 2c (shopfronts read flat): a touch
+  // taller/deeper than the original so its own shadow actually reads at a normal
+  // viewing distance — still "low" per LAYOUT.md, not a full porch step. ---
+  const stepH = 0.2;
+  kit.addStep({ x: awningCx, y: stepH / 2, z: frontZ - 0.3 }, { x: awningLen, y: stepH, z: 0.6 });
   // A shallow interior floor slab per unit (concrete), set slightly proud of the step.
   const floorGeos = [];
   BAZAAR_UNITS.forEach((unit, idx) => {
@@ -243,13 +245,15 @@ export function buildBazaarRow(kit) {
   // --- Lintel band + jamb trim per unit front (item 1's "recessed openings with a
   // lintel band" rule, adapted: the front has no wall to cut a hole into — see the
   // file doc comment — so this is a header beam across the opening plus trim on the
-  // flanking party walls' inner front edge, at BuildingKit's shared trim colour). ---
+  // flanking party walls' inner front edge, at BuildingKit's shared trim colour).
+  // Item 2c (shopfronts read flat): thickened from the original 0.1x0.1/0.08x0.08 —
+  // too thin to cast a visible shadow at normal viewing distance. ---
   BAZAAR_UNITS.forEach((unit, idx) => {
     const cx = bazaarUnitCx(idx);
     const openingW = BAZAAR_UNIT_W - WALL_THICKNESS - 0.2;
-    kit.addTrimBar({ x: cx, y: BAZAAR_AWNING_EDGE_H - 0.05, z: frontZ - 0.02 }, { x: openingW, y: 0.1, z: 0.1 });
+    kit.addTrimBar({ x: cx, y: BAZAAR_AWNING_EDGE_H - 0.07, z: frontZ - 0.02 }, { x: openingW, y: 0.16, z: 0.16 });
     for (const side of [-1, 1]) {
-      kit.addTrimBar({ x: cx + (side * openingW) / 2, y: BAZAAR_AWNING_EDGE_H / 2, z: frontZ - 0.02 }, { x: 0.08, y: BAZAAR_AWNING_EDGE_H, z: 0.08 });
+      kit.addTrimBar({ x: cx + (side * openingW) / 2, y: BAZAAR_AWNING_EDGE_H / 2, z: frontZ - 0.02 }, { x: 0.12, y: BAZAAR_AWNING_EDGE_H, z: 0.12 });
     }
   });
 
@@ -293,13 +297,24 @@ export function buildBazaarCountersAndShutters() {
     // (used for lots of non-blocking trim too), so it's collected by hand here.
     counterColliders.push(colliderBoxFromTransform(counterW, 0.5, counterLocal));
 
-    // Rolled-open shutter — a thick horizontal bundle tucked just under the lintel,
-    // in this unit's own LAYOUT.md trade colour. Reads as "open" (not blocking the
-    // opening) since it sits high and doesn't extend down.
+    // Item 2c (shopfronts read flat) — a solid housing box the shutter rolls up
+    // into, set back slightly from the opening plane (a real recess, not a flat
+    // cutout), dark neutral so it doesn't compete with each unit's own trade
+    // colour on the bundle below it. Same 'metal' family/repeat as the shutter
+    // bundle (tint is vertex-baked, not a separate Material — see materials.js's
+    // doc comment) so this stays inside the shutter mesh's one draw call.
     const openingW = BAZAAR_UNIT_W - WALL_THICKNESS - 0.2;
-    const shutterMesh = texturedThickBox(openingW, 0.22, 0.16, 'metal', { tint: unit.shutter, tileSize: 1, roughness: 1 });
-    shutterMaterial = shutterMesh.material;
-    const shutterLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.16, frontZ - 0.02);
+    const housingMesh = texturedThickBox(openingW, 0.3, 0.2, 'metal', { tint: darken(PALETTE.woodTrim, 0.55), tileSize: 1, roughness: 1 });
+    shutterMaterial = housingMesh.material;
+    const housingLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.15, frontZ + 0.03);
+    shutterGeos.push(housingMesh.geometry.clone().applyMatrix4(housingLocal));
+
+    // Rolled-open shutter — a thick horizontal bundle tucked just under the
+    // housing, in this unit's own LAYOUT.md trade colour, sitting slightly
+    // forward of it (real depth between the two, not coplanar). Reads as "open"
+    // (not blocking the opening) since it sits high and doesn't extend down.
+    const shutterMesh = texturedThickBox(openingW - 0.06, 0.26, 0.18, 'metal', { tint: unit.shutter, tileSize: 1, roughness: 1 });
+    const shutterLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.32, frontZ - 0.04);
     shutterGeos.push(shutterMesh.geometry.clone().applyMatrix4(shutterLocal));
   });
 
@@ -318,11 +333,15 @@ export function buildBazaarCountersAndShutters() {
   return group;
 }
 
-const SIGN_ATLAS_COLS = 4;
+// Item 2a (draw-call budget) — 5x2 grid: 8 bazaar-unit cells + 1 for the chowk tea
+// stall's own sign (cell index 8), one shared atlas/mesh/draw-call instead of two
+// separate ones. Cell 9 is unused (drawn as plain background, never mapped to).
+const SIGN_ATLAS_COLS = 5;
 const SIGN_ATLAS_ROWS = 2;
 const SIGN_CELL = 512;
 const SIGN_ATLAS_W = SIGN_CELL * SIGN_ATLAS_COLS;
 const SIGN_ATLAS_H = SIGN_CELL * SIGN_ATLAS_ROWS;
+const CHOWK_SIGN_CELL_INDEX = 8;
 
 function drawBazaarSign(ctx, col, row, hi, en) {
   const x = col * SIGN_CELL;
@@ -361,6 +380,10 @@ async function buildBazaarSignAtlas() {
     const row = Math.floor(idx / SIGN_ATLAS_COLS);
     drawBazaarSign(ctx, col, row, unit.hi, unit.en);
   });
+  // Chowk tea stall's own sign — "यादव चाय नाश्ता / Yadav Chai Nashta", spelled
+  // exactly as the orthos' own printed signboard reads. A different building from
+  // the bazaar row, but sharing this atlas (item 2a) cuts a whole extra draw call.
+  drawBazaarSign(ctx, CHOWK_SIGN_CELL_INDEX % SIGN_ATLAS_COLS, Math.floor(CHOWK_SIGN_CELL_INDEX / SIGN_ATLAS_COLS), 'यादव चाय नाश्ता', 'Yadav Chai Nashta');
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
@@ -391,9 +414,10 @@ function mapFrontFaceToAtlasCell(geometry, col, row) {
   uv.needsUpdate = true;
 }
 
-/** All 8 bilingual signboards, one merged mesh sharing one atlas texture — spellings
- * taken from LAYOUT.md's table (never the reference image, which renders garbled
- * English). Mounted above each unit's own roof/parapet (its own varied height, so the
+/** All 8 bazaar-unit bilingual signboards PLUS the chowk tea stall's own sign (item
+ * 2a — one shared atlas/mesh/draw call instead of two), spellings taken from
+ * LAYOUT.md's table (never the reference image, which renders garbled English).
+ * Mounted above each unit's own roof/parapet (its own varied height, so the
  * boards ride the stepped skyline like the reference orthos show), not on the awning
  * fascia — a board at fascia height sits almost exactly where the awning's own
  * high/wall-attached edge reaches (3.4m), which hid the whole board behind the sloped
@@ -413,6 +437,15 @@ export async function buildBazaarSignboards() {
     const local = new THREE.Matrix4().makeTranslation(cx, boardY, BAZAAR_FRONT_Z - 0.05);
     geos.push(geo.applyMatrix4(local));
   });
+  // Item 2a — the chowk tea stall's board, sharing this same atlas/mesh (was its
+  // own separate buildTeaStallChowkSign() mesh/draw call).
+  {
+    const chowkGeo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, 0.6, 0.04);
+    mapFrontFaceToAtlasCell(chowkGeo, CHOWK_SIGN_CELL_INDEX % SIGN_ATLAS_COLS, Math.floor(CHOWK_SIGN_CELL_INDEX / SIGN_ATLAS_COLS));
+    const chowkWorld = chowkWorldMatrix();
+    const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.55, -CHOWK_TEA.d / 2 - 0.05);
+    geos.push(chowkGeo.applyMatrix4(chowkLocal).applyMatrix4(chowkWorld));
+  }
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);
   mesh.castShadow = true;
   mesh.name = 'bazaar_signboards';
@@ -688,42 +721,6 @@ export function buildTeaStallChowk() {
   return group;
 }
 
-/** Bilingual sign for the chowk tea stall — "यादव चाय नाश्ता / Yadav Chai Nashta",
- * spelled exactly as the orthos' own printed signboard reads. Its own small canvas/
- * texture/mesh (one draw call) — not folded into the bazaar's 8-unit atlas, a
- * different building entirely. Async, same pattern as every other signboard here. */
-export async function buildTeaStallChowkSign() {
-  await document.fonts.load('700 70px "Noto Sans Devanagari"');
-  await document.fonts.ready;
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#e8dcc4';
-  ctx.fillRect(0, 0, 1024, 512);
-  ctx.strokeStyle = '#8a6a4a';
-  ctx.lineWidth = 8;
-  ctx.strokeRect(6, 6, 1012, 500);
-  ctx.fillStyle = '#2a2018';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = '700 84px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText('यादव चाय नाश्ता', 512, 210);
-  ctx.font = '600 44px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText('Yadav Chai Nashta', 512, 340);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
-  const geo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, 0.6, 0.04);
-  const world = chowkWorldMatrix();
-  const local = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.55, -CHOWK_TEA.d / 2 - 0.05);
-  geo.applyMatrix4(local).applyMatrix4(world);
-  const mesh = new THREE.Mesh(geo, material);
-  mesh.castShadow = true;
-  mesh.name = 'chowk_tea_sign';
-  return mesh;
-}
 
 /** The plaza itself: a chabutra (circular brick platform — no tree on it, see
  * docs/parked.md for why this session has no licensed tree model to plant), a

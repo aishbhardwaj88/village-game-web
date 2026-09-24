@@ -179,11 +179,27 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
     return g.applyMatrix4(local).applyMatrix4(teaWorld);
   });
 
+  // Item 2c (shopfronts read flat) — a lintel header over the general store's
+  // counter-window opening (the tea stall has no wall to put one over — open on
+  // 3 sides, per the file doc comment) and a low front step/threshold at both
+  // shops, same reasoning as the bazaar row's own step/lintel (buildBazaarRow).
+  const storeLintelGeo = new THREE.BoxGeometry(storeOpeningWidth + 0.1, 0.16, 0.16);
+  const storeLintelLocal = new THREE.Matrix4().makeTranslation(0, STORE.counterTopY + 0.95, STORE.d / 2 + 0.14);
+  storeLintelGeo.applyMatrix4(storeLintelLocal).applyMatrix4(storeWorld);
+
+  const teaStepGeo = new THREE.BoxGeometry(TEA.w - 0.1, 0.14, 0.55);
+  const teaStepLocal = new THREE.Matrix4().makeTranslation(0, 0.07, TEA.d / 2 - 0.25);
+  teaStepGeo.applyMatrix4(teaStepLocal).applyMatrix4(teaWorld);
+
+  const storeStepGeo = new THREE.BoxGeometry(storeOpeningWidth + 0.2, 0.14, 0.4);
+  const storeStepLocal = new THREE.Matrix4().makeTranslation(0, 0.07, STORE.d / 2 + 0.4);
+  storeStepGeo.applyMatrix4(storeStepLocal).applyMatrix4(storeWorld);
+
   // Headroom pass (docs/parked.md) — tint baked into vertex colour (not the
   // material) so this shares the one cached 'wood' Material every other wood-family
   // object in the village uses, letting the village-wide merge (main.js) fold this
   // in too, instead of paying its own separate draw call.
-  const counterGeos = [teaGeo, storeGeo, ...postGeos];
+  const counterGeos = [teaGeo, storeGeo, ...postGeos, storeLintelGeo, teaStepGeo, storeStepGeo];
   for (const g of counterGeos) {
     ensureUv2(g);
     bakeFlatTintColors(g, TEA.tealTint, 1);

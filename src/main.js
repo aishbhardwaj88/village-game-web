@@ -34,7 +34,6 @@ import {
   buildBazaarSignboards,
   buildBazaarInteriors,
   buildTeaStallChowk,
-  buildTeaStallChowkSign,
   buildChowkPlaza,
   buildBazaarLane,
   BAZAAR_UNITS,
@@ -223,9 +222,8 @@ async function main() {
   // Item 5 — the lane extension itself (a bumpy, curved strip, never a straight
   // ribbon), connecting the existing hero-zone lane to the bazaar/chowk.
   bazaarGroup.add(buildBazaarLane());
-  buildTeaStallChowkSign()
-    .then((mesh) => bazaarGroup.add(mesh))
-    .catch((err) => console.error('Failed to build chowk tea stall sign', err));
+  // Item 2a (draw-call budget) — the chowk tea stall's sign now shares the bazaar's
+  // own signboard atlas/mesh (one draw call instead of two); see buildBazaarSignboards().
   buildBazaarSignboards()
     .then((mesh) => bazaarGroup.add(mesh))
     .catch((err) => console.error('Failed to build bazaar signboards', err));
