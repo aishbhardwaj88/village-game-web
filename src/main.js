@@ -13,8 +13,8 @@ import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildDust } from './dust.js';
-import { spawnVehicles, TROLLEY_COLLISION_RADIUS } from './vehicles.js';
-import { resolveMove, resolveTowedMove } from './movement.js';
+import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
+import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses } from './scenery.js';
 import {
@@ -27,7 +27,7 @@ import {
   PEEPAL_PLATFORM_RADIUS,
   FLOWER_STALL_POS,
 } from './temple.js';
-import { vehicleFootprintBox, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS } from './collision.js';
+import { vehicleFootprintBox, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -1107,7 +1107,6 @@ async function main() {
         const vehicle = mountedVehicle;
         vehicle.update(dt, input); // proposes vehicle.pendingDx/pendingDz — does not move it (see vehicles.js)
         const p = vehicle.preset;
-        const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
         // Playtest bug 5: a vehicle blocked by a wall kept its internal `speed`
         // slowly damping toward 0 over several more seconds (this project's vehicles
         // accelerate/decelerate deliberately slowly) even though resolveCollisions
@@ -1124,7 +1123,22 @@ async function main() {
         // the full delta directly and separately resolving only the endpoint
         // (which a fast-moving vehicle could tunnel a thin wall between, in one
         // frame).
-        resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+        //
+        // Bugfix (defect 2 of the real playtest regression, screenshot evidence):
+        // a circle can't correctly represent the tractor's own rectangular body
+        // either — the tractor is now resolved as a true oriented box, at its real
+        // half-extents and current yaw, exactly like the trolley below (see
+        // src/collision.js). Bike/cart stay circles (their own report didn't flag
+        // them and neither produced a reproducible failure — see
+        // tools/trolley-corner-test.js), but with the circumscribing half-diagonal
+        // radius (Math.hypot, not the old Math.max) so their own corners are never
+        // outside their own collision circle either.
+        if (p.kind === 'tractor') {
+          resolveOrientedMove(vehicle.group.position, vehicle.group.rotation.y, vehicle.pendingDx, vehicle.pendingDz, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
+        } else {
+          const vehicleRadius = Math.hypot(p.body.w, p.body.d) / 2;
+          resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+        }
         vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         const collisionCorrection = Math.hypot(vehicle.group.position.x - preCollisionX, vehicle.group.position.z - preCollisionZ);
@@ -1159,10 +1173,19 @@ async function main() {
           const trolleyPrevZ = trolley.group.position.z;
           trolley.updateYawHinge(dt, vehicle);
           const target = trolley.hitchTargetPosition(vehicle);
-          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, target, TROLLEY_COLLISION_RADIUS, otherVehicleBoxes(vehicle));
+          // Bugfix (defect 2): resolved as the trolley's real oriented bed
+          // footprint (half-extents, at its current yaw), not a circle.
+          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, trolley.group.rotation.y, target, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, otherVehicleBoxes(vehicle));
           if (Math.abs(shortfallX) > 1e-4 || Math.abs(shortfallZ) > 1e-4) {
             vehicle.group.position.x -= shortfallX;
             vehicle.group.position.z -= shortfallZ;
+            // Bugfix (defect 3 of the real playtest regression): this used to
+            // write the tractor's position directly and never resolve it —
+            // pulling the tractor back by the trolley's shortfall can itself
+            // walk the tractor into a wall or another vehicle behind it, with
+            // nothing to catch that. Route it through the same oriented
+            // resolver every other write to this position goes through.
+            resolveOrientedCollisions(vehicle.group.position, vehicle.group.rotation.y, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
             vehicle.speed = 0;
           }
           trolley.finishMoveStep(dt, trolleyPrevX, trolleyPrevZ);
@@ -1435,6 +1458,14 @@ async function main() {
       // tools/collider-audit.js — the raw box list, for auditing coverage against
       // real visual geometry (not just re-checking the boxes against themselves).
       getStaticColliders: () => STATIC_COLLIDERS.map((b) => ({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ })),
+      // tools/trolley-corner-test.js / tools/trolley-drive-test.js — the exact
+      // half-extents the collision resolver protects for the trolley (the real
+      // 3.5 x 2.0 BED, same definition the bug report's own fix formula used —
+      // hypot(bedLen,bedW)/2 — not the whole visual group, which also includes a
+      // thin steel drawbar/hitch-eye projecting 1.2m past the bed's front edge
+      // and is not part of this fix's scope). Exposed so test ground truth can't
+      // silently drift from what the resolver actually promises.
+      getTrolleyHalfExtents: () => ({ halfW: TROLLEY_HALF_WIDTH, halfD: TROLLEY_HALF_LENGTH }),
       // tools/collider-audit.js / tools/trolley-drive-test.js — real per-building
       // footprints captured from geometry just before the static merge (see
       // loadDeferredContent()).
@@ -1466,8 +1497,9 @@ async function main() {
         if (!vehicle) return null;
         vehicle.update(dt, { moveZ: throttleZ, moveX: steerX });
         const p = vehicle.preset;
-        const vehicleRadius = Math.max(p.body.w, p.body.d) / 2;
-        resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+        // Mirrors the real loop's tractor-resolution exactly (see the
+        // mountedVehicle branch above) — oriented box, not a circle.
+        resolveOrientedMove(vehicle.group.position, vehicle.group.rotation.y, vehicle.pendingDx, vehicle.pendingDz, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
         vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         if (vehicle.trolley && vehicle.trolley.attached) {
@@ -1476,10 +1508,11 @@ async function main() {
           const trolleyPrevZ = trolley.group.position.z;
           trolley.updateYawHinge(dt, vehicle);
           const target = trolley.hitchTargetPosition(vehicle);
-          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, target, TROLLEY_COLLISION_RADIUS, otherVehicleBoxes(vehicle));
+          const { shortfallX, shortfallZ } = resolveTowedMove(trolley.group.position, trolley.group.rotation.y, target, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, otherVehicleBoxes(vehicle));
           if (Math.abs(shortfallX) > 1e-4 || Math.abs(shortfallZ) > 1e-4) {
             vehicle.group.position.x -= shortfallX;
             vehicle.group.position.z -= shortfallZ;
+            resolveOrientedCollisions(vehicle.group.position, vehicle.group.rotation.y, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
             vehicle.speed = 0;
           }
           trolley.finishMoveStep(dt, trolleyPrevX, trolleyPrevZ);

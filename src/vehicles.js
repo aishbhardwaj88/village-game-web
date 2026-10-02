@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { STATIC_COLLIDERS, resolveOrientedCollisions } from './collision.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -495,11 +496,17 @@ function buildTrolleyGroup() {
 }
 
 const TRACTOR_TOW_OFFSET_REST = T.hitchZ - TR.hitchLocalZ; // trolley->tractor rest distance when attached, hitch-to-hitch
-// Playtest bug 2 — a circle-vs-box approximation of the trolley's own footprint
-// (bedLen x bedW), same convention main.js already uses for the tractor
-// (`Math.max(p.body.w, p.body.d) / 2`), so it gets the same "slide along a wall"
-// treatment instead of driving straight into one.
-export const TROLLEY_COLLISION_RADIUS = Math.max(TR.bedLen, TR.bedW) / 2;
+// Bugfix (real playtest regression — trolley buried into a wall): a circle can
+// never correctly represent a 3.5 x 2.0 rectangle (its own corners sit at
+// hypot(1.75,1.0)=2.02m, outside a 1.75m-radius circle), so main.js now resolves
+// the trolley's movement as a true oriented box (src/collision.js's
+// resolveOrientedCollisions) using these half-extents directly, at the trolley's
+// current yaw — not an approximating circle at all. Half-extents, not a radius:
+// `TROLLEY_HALF_WIDTH` along the bed's local X (lateral), `TROLLEY_HALF_LENGTH`
+// along local Z (forward/back) — same local-axis convention this file's
+// hitchTargetPosition() and src/collision.js's colliderBoxFromTransform() use.
+export const TROLLEY_HALF_WIDTH = TR.bedW / 2;
+export const TROLLEY_HALF_LENGTH = TR.bedLen / 2;
 
 export class Trolley {
   constructor(position, rotationY = 0) {
@@ -953,6 +960,12 @@ export class Vehicle {
     trolley.group.position.copy(this.group.position).addScaledVector(tractorBackward, TRACTOR_TOW_OFFSET_REST);
     trolley.group.rotation.y = this.group.rotation.y;
     trolley.yaw = this.group.rotation.y;
+    // Bugfix (defect 3 of the real playtest regression): this computed position
+    // used to be written with no collision check at all — a real hitch-up right
+    // next to a wall could place the trolley straight inside it. Push it clear
+    // (as an oriented box, not a circle) if the computed spot happens to overlap
+    // real geometry; a no-op in the ordinary case where it doesn't.
+    resolveOrientedCollisions(trolley.group.position, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
     this.trolley = trolley;
     trolley.attached = true;
     trolley.yawVel = 0;
@@ -1079,6 +1092,11 @@ export function spawnVehicles(scene) {
   const trolleySpawnPos = tractor.group.position.clone().addScaledVector(tractorBackward, TRACTOR_TOW_OFFSET_REST);
   const trolley = new Trolley(trolleySpawnPos, tractor.group.rotation.y);
   trolley.addToScene(scene);
+  // attachTrolley() below already pushes the trolley clear of STATIC_COLLIDERS if
+  // its computed position overlaps real geometry (defect 3 fix) — this call is
+  // likely a no-op here (the hero-zone spawn point is open ground), but it's the
+  // same code path a mid-game attach goes through, so there's nothing special-
+  // cased about this initial placement.
   tractor.attachTrolley(trolley);
 
   const cart = new Vehicle('cart', new THREE.Vector3(-36, 0, 50), Math.PI * 0.5);

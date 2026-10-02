@@ -155,6 +155,116 @@ export function resolveCollisions(pos, radius, extraBoxes = []) {
   }
 }
 
+// Bugfix (defect 2 of the real playtest regression): a circle can never correctly
+// represent the trolley's real 3.5 x 2.0 bed (or the tractor's own rectangular
+// body) — TROLLEY_COLLISION_RADIUS used Math.max(bedLen,bedW)/2=1.75m, but the
+// bed's own corners sit at a true half-diagonal of hypot(1.75,1.0)=2.02m from its
+// centre, outside that circle. Any approximation using a single radius is either
+// too fat (blocks a gate it should fit through) or too thin (its own real corners
+// can be inside a wall while the circle reads clear) for a 3.5 x 2.0 rectangle.
+// This is a proper oriented-box (the real bed footprint, at its current yaw) vs
+// axis-aligned-box (every STATIC_COLLIDERS/extraBoxes entry) separating-axis test
+// — exact, not an approximation — used for the trolley and the tractor body.
+// For two boxes in 2D there are only 4 possible separating axes: the AABB's own
+// two axes, and the oriented box's own two local axes (each box has only two
+// distinct edge normals). `halfW`/`halfD` are the oriented box's half-extents
+// along its LOCAL X (lateral/width) and LOCAL Z (forward/length) axes — same
+// convention this file's colliderBoxFromTransform() and src/vehicles.js already
+// use. World direction of local X at yaw θ is (cosθ,-sinθ); local Z is
+// (sinθ,cosθ) — derived from the same localToWorld convention src/vehicles.js's
+// hitchTargetPosition() documents ("local (0,*,z) at yaw θ is (z sinθ, *, z cosθ)").
+function resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box) {
+  const cx = (box.minX + box.maxX) / 2;
+  const cz = (box.minZ + box.maxZ) / 2;
+  const ex = (box.maxX - box.minX) / 2;
+  const ez = (box.maxZ - box.minZ) / 2;
+  const dx = pos.x - cx;
+  const dz = pos.z - cz;
+
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  const axes = [
+    { x: 1, z: 0 },
+    { x: 0, z: 1 },
+    { x: cosY, z: -sinY }, // oriented box's local X (width) axis, in world space
+    { x: sinY, z: cosY }, // oriented box's local Z (length) axis, in world space
+  ];
+
+  let minOverlap = Infinity;
+  let minAxis = null;
+  let minSign = 1;
+
+  for (const axis of axes) {
+    const aabbProj = Math.abs(ex * axis.x) + Math.abs(ez * axis.z);
+    const obbProj = Math.abs(halfW * (cosY * axis.x - sinY * axis.z)) + Math.abs(halfD * (sinY * axis.x + cosY * axis.z));
+    const centerDist = dx * axis.x + dz * axis.z;
+    const overlap = aabbProj + obbProj - Math.abs(centerDist);
+    if (overlap <= 0) return false; // this axis separates the two boxes — no collision
+    if (overlap < minOverlap) {
+      minOverlap = overlap;
+      minAxis = axis;
+      minSign = centerDist >= 0 ? 1 : -1;
+    }
+  }
+
+  // Minimum-translation-vector push: move along whichever axis had the smallest
+  // overlap, away from the box's centre.
+  pos.x += minAxis.x * minOverlap * minSign;
+  pos.z += minAxis.z * minOverlap * minSign;
+  return true;
+}
+
+/** Oriented-box equivalent of resolveCollisions() — same iterate-to-convergence
+ * fix (defect 1), applied with the exact rectangular footprint instead of a
+ * circle (defect 2). Used for the trolley and the tractor body. */
+export function resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes = []) {
+  for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
+    let corrected = false;
+    for (const box of STATIC_COLLIDERS) {
+      if (resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box)) corrected = true;
+    }
+    for (const box of extraBoxes) {
+      if (resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box)) corrected = true;
+    }
+    if (!corrected) break;
+  }
+}
+
+/** Read-only oriented-box overlap test — returns the first offending box (or
+ * null if clear). Used by the dev-mode per-frame penetration guard (main.js) to
+ * report which collider a vehicle/trolley is overlapping, and available for any
+ * caller that needs a "would this be blocked" check without moving `pos`. */
+export function orientedBoxOverlapsAnyBox(pos, yaw, halfW, halfD, boxes) {
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  const axes = [
+    { x: 1, z: 0 },
+    { x: 0, z: 1 },
+    { x: cosY, z: -sinY },
+    { x: sinY, z: cosY },
+  ];
+  for (const box of boxes) {
+    const cx = (box.minX + box.maxX) / 2;
+    const cz = (box.minZ + box.maxZ) / 2;
+    const ex = (box.maxX - box.minX) / 2;
+    const ez = (box.maxZ - box.minZ) / 2;
+    const dx = pos.x - cx;
+    const dz = pos.z - cz;
+    let overlapping = true;
+    for (const axis of axes) {
+      const aabbProj = Math.abs(ex * axis.x) + Math.abs(ez * axis.z);
+      const obbProj = Math.abs(halfW * (cosY * axis.x - sinY * axis.z)) + Math.abs(halfD * (sinY * axis.x + cosY * axis.z));
+      const centerDist = dx * axis.x + dz * axis.z;
+      if (aabbProj + obbProj - Math.abs(centerDist) <= 0) {
+        overlapping = false;
+        break;
+      }
+    }
+    if (overlapping) return box;
+  }
+  return null;
+}
+
 /** True if a circle (pos, radius) overlaps any box in `boxes` — read-only test,
  * used by the swept movement resolver (src/movement.js) to find the furthest
  * point along a proposed path that's still clear, without mutating `pos`. */

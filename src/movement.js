@@ -1,4 +1,4 @@
-import { resolveCollisions, circleHitsAnyBox, STATIC_COLLIDERS } from './collision.js';
+import { resolveCollisions, resolveOrientedCollisions, circleHitsAnyBox, STATIC_COLLIDERS } from './collision.js';
 
 /**
  * Structural fix 2/3 (playtest): the single movement resolver. Before this,
@@ -35,6 +35,24 @@ export function resolveMove(pos, dx, dz, radius, extraBoxes = []) {
   }
 }
 
+/** Oriented-box equivalent of resolveMove() — same swept-substep sweep, but using
+ * the body's exact rectangular footprint (halfW along local X, halfD along local
+ * Z, at the given `yaw`) instead of an approximating circle. Used for the trolley
+ * and the tractor (src/vehicles.js/main.js) — a 3.5 x 2.0 rectangle can't be
+ * correctly represented by any single-radius circle (see src/collision.js). */
+export function resolveOrientedMove(pos, yaw, dx, dz, halfW, halfD, extraBoxes = []) {
+  const dist = Math.hypot(dx, dz);
+  if (dist < 1e-6) return;
+  const steps = Math.max(1, Math.ceil(dist / MAX_SUBSTEP));
+  const stepX = dx / steps;
+  const stepZ = dz / steps;
+  for (let i = 0; i < steps; i++) {
+    pos.x += stepX;
+    pos.z += stepZ;
+    resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes);
+  }
+}
+
 /** True if a circle at `pos` (radius) currently overlaps any static collider or
  * any of `extraBoxes` — a read-only check, used where a caller needs to know
  * "would this be blocked" without committing to moving there (the tractor
@@ -52,10 +70,15 @@ export function positionBlocked(pos, radius, extraBoxes = []) {
  * how far short (`shortfallX/Z`) so the caller can pull the TRACTOR back by
  * the same amount — "when the trolley is blocked, the tractor is blocked
  * too" (this task's item 2), rather than the trolley silently detaching from
- * its hitch point to slide along a wall on its own. */
-export function resolveTowedMove(pos, targetPos, radius, extraBoxes = []) {
+ * its hitch point to slide along a wall on its own.
+ *
+ * Bugfix (real playtest regression): resolves as an oriented box at the
+ * trolley's current `yaw` with real half-extents (`halfW`/`halfD`), not a
+ * circle — see resolveOrientedMove()/src/collision.js for why a 3.5 x 2.0
+ * rectangle can't be correctly represented by any single-radius circle. */
+export function resolveTowedMove(pos, yaw, targetPos, halfW, halfD, extraBoxes = []) {
   const dx = targetPos.x - pos.x;
   const dz = targetPos.z - pos.z;
-  resolveMove(pos, dx, dz, radius, extraBoxes);
+  resolveOrientedMove(pos, yaw, dx, dz, halfW, halfD, extraBoxes);
   return { shortfallX: targetPos.x - pos.x, shortfallZ: targetPos.z - pos.z };
 }
