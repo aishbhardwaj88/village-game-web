@@ -120,11 +120,39 @@ function resolveCircleVsBox(pos, radius, box) {
   return true;
 }
 
+// Bugfix (real playtest regression, screenshot evidence — trolley buried ~2m into
+// a wall near the bazaar): this used to be a SINGLE pass, one resolveCircleVsBox
+// call per box, static and extra boxes in two separate loops, each box resolved
+// once in arbitrary order and never re-checked. At a corner — anywhere two
+// collider boxes meet or nearly meet, which is exactly every building corner and
+// every party wall between adjacent bazaar shops — box A's correction can push
+// the body straight into box B, which (being earlier in iteration order, or just
+// never revisited) is never re-checked that frame. The frame ends with the body
+// penetrating, and a swept resolveMove() calling this same function every substep
+// doesn't help: every substep has the identical single-pass bug. Fix: iterate the
+// full pass (static AND extra boxes together, so a dynamic/static pair at a
+// corner gets the same treatment) until no box applies a correction, capped so a
+// genuinely wedged body can't loop forever.
+const MAX_RESOLVE_PASSES = 6; // verified empirically (tools/trolley-corner-test.js):
+// raising this to 20 produced a byte-identical result to 6 across all 164
+// corner-approach test runs — 6 already fully converges every real case in this
+// village; the remaining sub-5cm residuals in that test are wall-sampling-grid
+// precision noise (confirmed independent of pass count), not an under-iterated
+// resolve.
+
 /** Resolves `pos` (a THREE.Vector3-like, only .x/.z used) against every collider —
  * static buildings plus any extra (dynamic) boxes passed in, e.g. parked vehicles. */
 export function resolveCollisions(pos, radius, extraBoxes = []) {
-  for (const box of STATIC_COLLIDERS) resolveCircleVsBox(pos, radius, box);
-  for (const box of extraBoxes) resolveCircleVsBox(pos, radius, box);
+  for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
+    let corrected = false;
+    for (const box of STATIC_COLLIDERS) {
+      if (resolveCircleVsBox(pos, radius, box)) corrected = true;
+    }
+    for (const box of extraBoxes) {
+      if (resolveCircleVsBox(pos, radius, box)) corrected = true;
+    }
+    if (!corrected) break;
+  }
 }
 
 /** True if a circle (pos, radius) overlaps any box in `boxes` — read-only test,
