@@ -898,6 +898,41 @@ async function main() {
     return boxes;
   }
 
+  // Item 4 (real playtest regression) — a permanent dev-mode guard, not a one-off
+  // test: every frame, checks whether any vehicle, the trolley, or the player is
+  // actually overlapping a real wall (STATIC_COLLIDERS, derived from real wall
+  // geometry — see src/collision.js) and logs it, with position/yaw and the
+  // offending box, instead of this only being caught by a human noticing a
+  // screenshot. resolveMove()/resolveCollisions() are supposed to make this
+  // impossible; if this ever fires, that guarantee has broken again. Dev-mode
+  // only (isDevMode()) — cheap SAT checks against ~59 boxes, not something to run
+  // for every real player.
+  function devCheckPenetration() {
+    for (const v of vehicles) {
+      const p = v.preset;
+      let hit;
+      if (p.kind === 'tractor') {
+        hit = orientedBoxOverlapsAnyBox(v.group.position, v.group.rotation.y, p.body.w / 2, p.body.d / 2, STATIC_COLLIDERS);
+        if (hit) console.warn(`[collision guard] ${v.group.name} overlaps a wall: pos=(${v.group.position.x.toFixed(2)},${v.group.position.z.toFixed(2)}) yaw=${v.group.rotation.y.toFixed(2)} box=X[${hit.minX.toFixed(2)},${hit.maxX.toFixed(2)}] Z[${hit.minZ.toFixed(2)},${hit.maxZ.toFixed(2)}]`);
+        if (v.trolley && v.trolley.attached) {
+          const t = v.trolley;
+          const thit = orientedBoxOverlapsAnyBox(t.group.position, t.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
+          if (thit) console.warn(`[collision guard] trolley overlaps a wall: pos=(${t.group.position.x.toFixed(2)},${t.group.position.z.toFixed(2)}) yaw=${t.group.rotation.y.toFixed(2)} box=X[${thit.minX.toFixed(2)},${thit.maxX.toFixed(2)}] Z[${thit.minZ.toFixed(2)},${thit.maxZ.toFixed(2)}]`);
+        }
+      } else {
+        const radius = Math.hypot(p.body.w, p.body.d) / 2;
+        hit = orientedBoxOverlapsAnyBox(v.group.position, 0, radius, radius, STATIC_COLLIDERS); // circle ~= axis-aligned square of the same radius, close enough for a diagnostic
+        if (hit) console.warn(`[collision guard] ${v.group.name} overlaps a wall: pos=(${v.group.position.x.toFixed(2)},${v.group.position.z.toFixed(2)}) box=X[${hit.minX.toFixed(2)},${hit.maxX.toFixed(2)}] Z[${hit.minZ.toFixed(2)},${hit.maxZ.toFixed(2)}]`);
+      }
+    }
+    if (looseTrolley) {
+      const hit = orientedBoxOverlapsAnyBox(looseTrolley.group.position, looseTrolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
+      if (hit) console.warn(`[collision guard] detached trolley overlaps a wall: pos=(${looseTrolley.group.position.x.toFixed(2)},${looseTrolley.group.position.z.toFixed(2)}) box=X[${hit.minX.toFixed(2)},${hit.maxX.toFixed(2)}] Z[${hit.minZ.toFixed(2)},${hit.maxZ.toFixed(2)}]`);
+    }
+    const playerHit = orientedBoxOverlapsAnyBox(player.position, 0, PLAYER_COLLISION_RADIUS, PLAYER_COLLISION_RADIUS, STATIC_COLLIDERS);
+    if (playerHit) console.warn(`[collision guard] player overlaps a wall: pos=(${player.position.x.toFixed(2)},${player.position.z.toFixed(2)}) box=X[${playerHit.minX.toFixed(2)},${playerHit.maxX.toFixed(2)}] Z[${playerHit.minZ.toFixed(2)},${playerHit.maxZ.toFixed(2)}]`);
+  }
+
   // Item 3 (house interior) — the only place the player's Y ever changes: the game
   // otherwise has no vertical movement/gravity at all (every other surface is y=0).
   // The staircase ramps smoothly from ground to roof height by Z position; the roof
@@ -1266,6 +1301,8 @@ async function main() {
           }
         }
       }
+
+      if (isDevMode()) devCheckPenetration();
 
       camRig.update();
       audio.update(dt);

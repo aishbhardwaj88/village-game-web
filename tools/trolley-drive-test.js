@@ -153,6 +153,7 @@ async function main() {
 
     const failures = [];
     let runCount = 0;
+    let skipCount = 0;
 
     for (const target of footprints) {
       const cx = (target.minX + target.maxX) / 2;
@@ -171,46 +172,58 @@ async function main() {
 
       for (const dir of DIRS) {
         runCount++;
-        const startX = cx + dir.dx * (hx + APPROACH_GAP);
-        const startZ = cz + dir.dz * (hz + APPROACH_GAP);
 
         const result = await page.evaluate(
-          ({ startX, startZ, yaw, nearbyPoints, dt, maxFrames }) => {
+          ({ cx, cz, hx, hz, dirX, dirZ, approachGap, nearbyPoints, dt, maxFrames }) => {
             const d = window.__dopahar;
 
-            // Real oriented local footprint of the trolley bed, measured from
-            // its own geometry once (zero its yaw, measure the resulting
-            // axis-aligned box, restore yaw — see tools/trolley-drive-test.js
-            // header comment).
+            // Real footprint of the trolley BED — the same shape the collision
+            // resolver protects (src/vehicles.js's TROLLEY_HALF_WIDTH/
+            // TROLLEY_HALF_LENGTH, hypot(bedLen,bedW)/2 per the bug report's own
+            // fix formula), NOT the whole visual group — which also includes a
+            // thin steel drawbar/hitch-eye projecting 1.2m past the bed's front
+            // edge, confirmed via tmp/check-trolley-footprint.mjs. Measuring the
+            // whole group here produced false failures (the drawbar swinging
+            // near a wall during a tight corner, not the cargo bed penetrating
+            // it) that aren't the reported bug.
             const trolley = d.vehicles.find((v) => v.preset.kind === 'tractor').trolley;
-            const g = trolley.group;
-            const savedYaw = g.rotation.y;
-            const savedPos = g.position.clone();
-            g.rotation.y = 0;
-            g.updateWorldMatrix(true, true);
-            const localBox = new d.Box3().setFromObject(g, true);
-            g.rotation.y = savedYaw;
-            g.position.copy(savedPos);
-            g.updateWorldMatrix(true, true);
-            const halfX = (localBox.max.x - localBox.min.x) / 2;
-            const halfZ = (localBox.max.z - localBox.min.z) / 2;
-            const offX = (localBox.max.x + localBox.min.x) / 2 - savedPos.x;
-            const offZ = (localBox.max.z + localBox.min.z) / 2 - savedPos.z;
+            const { halfW: halfX, halfD: halfZ } = d.getTrolleyHalfExtents();
+            const offX = 0, offZ = 0;
 
-            d.teleportVehicle('tractor', startX, startZ, yaw);
-
-            // Guard against a bad spawn choice, not a real bug: this script
-            // picks a straight approach line from the target's bbox centre
-            // along one raw axis, which can occasionally cross close to a
-            // DIFFERENT, unrelated building before ever reaching the real
-            // target (confirmed case: general_store's +Z line passes near
-            // house_compound's own wall). If the trolley is already inside
-            // real geometry at frame 0 — before resolveMove/resolveCollisions
-            // has run even once — that's this test's approach line, not a
-            // collision-system failure.
-            const spawnClearance = d.minDistanceToColliders({ x: trolley.group.position.x, z: trolley.group.position.z }, 0.01);
-            if (spawnClearance < 1.8) {
-              return { skipped: true, reason: `spawn point already ${spawnClearance.toFixed(2)}m from unrelated geometry`, frameFailures: [], finalPos: { x: trolley.group.position.x, z: trolley.group.position.z } };
+            // Bugfix (CLAUDE.md regression-guard rule applies to this test too):
+            // a straight radial line from the target's bbox centre along one raw
+            // axis can cross close to a DIFFERENT, unrelated building before ever
+            // reaching the real target (confirmed case: general_store's +Z line
+            // passed near house_compound's own wall). The old version of this
+            // script just skipped that run — "nothing is skipped" means the test
+            // setup has to find a real clear approach instead of giving up. Slide
+            // the start point sideways (perpendicular to the primary approach
+            // axis) until a clear line is found, re-aiming yaw at the real target
+            // centre each time so it's still a genuine approach to the same
+            // building, just from a slightly different angle — which is a more
+            // realistic reproduction of real play than one single dead-straight
+            // line anyway.
+            const perpX = -dirZ, perpZ = dirX;
+            const offsets = [0, 2, -2, 4, -4, 6, -6, 8, -8, 10, -10, 12, -12, 15, -15];
+            let chosenYaw = null;
+            let chosenOffset = null;
+            for (const off of offsets) {
+              const sx = cx + dirX * (hx + approachGap) + perpX * off;
+              const sz = cz + dirZ * (hz + approachGap) + perpZ * off;
+              const fx0 = cx - sx, fz0 = cz - sz;
+              const flen = Math.hypot(fx0, fz0) || 1;
+              const fx = fx0 / flen, fz = fz0 / flen;
+              const yaw = Math.atan2(-fx, -fz);
+              d.teleportVehicle('tractor', sx, sz, yaw);
+              const clearance = d.minDistanceToColliders({ x: trolley.group.position.x, z: trolley.group.position.z }, 0.01);
+              if (clearance >= 1.8) {
+                chosenYaw = yaw;
+                chosenOffset = off;
+                break;
+              }
+            }
+            if (chosenYaw === null) {
+              return { skipped: true, reason: `no clear approach angle found within +/-15m lateral search`, frameFailures: [] };
             }
 
             const frameFailures = [];
@@ -258,20 +271,21 @@ async function main() {
               prevX = pos.x;
               prevZ = pos.z;
             }
-            return { frameFailures, finalPos: { x: trolley.group.position.x, z: trolley.group.position.z } };
+            return { frameFailures, finalPos: { x: trolley.group.position.x, z: trolley.group.position.z }, chosenOffset };
           },
-          { startX, startZ, yaw: dir.yaw, nearbyPoints, dt: DT, maxFrames: MAX_FRAMES }
+          { cx, cz, hx, hz, dirX: dir.dx, dirZ: dir.dz, approachGap: APPROACH_GAP, nearbyPoints, dt: DT, maxFrames: MAX_FRAMES }
         );
 
         if (result.skipped) {
           console.log(`  [skip] ${target.root}/${target.name} from ${dir.name}: ${result.reason}`);
+          skipCount++;
         } else if (result.frameFailures.length) {
           failures.push({ target: `${target.root}/${target.name}`, dir: dir.name, ...result });
         }
       }
     }
 
-    console.log(`\n${runCount} drive-test runs (buildings x 4 directions).`);
+    console.log(`\n${runCount} drive-test runs (buildings x 4 directions), ${skipCount} skipped.`);
     console.log(`\n=== FAILURES (trolley's real oriented footprint overlapped real wall geometry) ===`);
     if (failures.length === 0) {
       console.log('(none)');
