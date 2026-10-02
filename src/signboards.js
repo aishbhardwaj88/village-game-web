@@ -47,6 +47,14 @@ async function buildAtlasTexture(teaHi, teaEn, storeHi, storeEn) {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
+  // Bugfix (item 2, real playtest report — signboards illegible at play
+  // distance/angle): a signboard is seen at a raking angle far more often than
+  // square-on (walking past, not standing in front of it), and the default
+  // anisotropy of 1 lets three.js's mipmap selection collapse the text into a
+  // flat blur under that minification — same fix already applied to every
+  // tiled ground/wall texture in this codebase (src/materials.js, src/scene.js),
+  // just never applied to this canvas texture.
+  texture.anisotropy = 8;
   return texture;
 }
 

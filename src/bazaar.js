@@ -387,6 +387,14 @@ async function buildBazaarSignAtlas() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
+  // Bugfix (item 2, real playtest report — signboards illegible at play
+  // distance/angle): same fix as src/signboards.js — anisotropy defaulted to 1,
+  // which lets three.js's mipmap selection collapse the text into a flat blur
+  // at the raking angle a board is actually seen from while walking past (not
+  // square-on), confirmed via tools/signboard-legibility-check.mjs. Every tiled
+  // ground/wall texture in this codebase already sets this (src/materials.js,
+  // src/scene.js); this canvas texture just never had it.
+  texture.anisotropy = 8;
   return texture;
 }
 
