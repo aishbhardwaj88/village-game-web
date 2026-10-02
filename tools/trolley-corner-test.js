@@ -86,6 +86,27 @@ async function main() {
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(1200);
 
+    // No-teleport spawn assertion (tools/spawn-check.js's own check, run here too
+    // per the real playtest bug it guards against — a vehicle/trolley spawned
+    // inside a building with zero player input, which every teleport-based test
+    // in this repo had silently skipped over by moving vehicles before ever
+    // checking their real spawn position). Runs BEFORE this script's own first
+    // teleportVehicle() call, so a future bad default spawn can't hide behind it.
+    const spawnOk = await page.evaluate(() => {
+      const d = window.__dopahar;
+      for (const v of d.vehicles) {
+        const p = v.preset;
+        const r = Math.hypot(p.body.w, p.body.d) / 2;
+        if (d.minDistanceToColliders({ x: v.group.position.x, z: v.group.position.z }, r) < 0) return false;
+        if (v.trolley) {
+          const half = d.getTrolleyHalfExtents();
+          if (d.minDistanceToColliders({ x: v.trolley.group.position.x, z: v.trolley.group.position.z }, Math.hypot(half.halfW, half.halfD)) < 0) return false;
+        }
+      }
+      return true;
+    });
+    if (!spawnOk) throw new Error('A vehicle or the trolley spawned overlapping a static collider at t=0 — run tools/spawn-check.js for details.');
+
     const colliders = await page.evaluate(() => window.__dopahar.getStaticColliders());
     console.log(`${colliders.length} static colliders.`);
 

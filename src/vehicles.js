@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
-import { STATIC_COLLIDERS, resolveOrientedCollisions } from './collision.js';
+import { STATIC_COLLIDERS, orientedBoxOverlapsAnyBox } from './collision.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -954,21 +954,34 @@ export class Vehicle {
    * up to `attachRadius` away — letting the follow spring slowly drag it in from
    * there instead of a real hitch-up). Same placement formula spawnVehicles() uses
    * for the initial already-attached state, so a fresh attach and a fresh spawn
-   * produce an identical, exact (zero-gap) result. */
+   * produce an identical, exact (zero-gap) result.
+   *
+   * Bugfix (real playtest bug — not a driving bug: the trolley spawned inside the
+   * general store with zero player input, because this exact placement formula
+   * ran unchecked at spawn too). This used to write the computed position
+   * unconditionally, then (a later, since-reverted fix) push it clear with the
+   * resolver if blocked. Nudging after the fact is wrong here specifically:
+   * the whole point of this function is the drawbar eye landing EXACTLY on the
+   * hitch point (zero-gap), and silently relocating it elsewhere to dodge a wall
+   * would visibly break that connection. So: check first, and if the computed
+   * rest position is blocked, don't attach at all — return false, leave the
+   * trolley and this.trolley untouched, and let the caller (main.js) keep
+   * showing the attach prompt so the player can back up to a clear spot and
+   * try again, instead of silently teleporting the trolley somewhere odd. */
   attachTrolley(trolley) {
     const tractorBackward = new THREE.Vector3(Math.sin(this.group.rotation.y), 0, Math.cos(this.group.rotation.y));
-    trolley.group.position.copy(this.group.position).addScaledVector(tractorBackward, TRACTOR_TOW_OFFSET_REST);
+    const restX = this.group.position.x + tractorBackward.x * TRACTOR_TOW_OFFSET_REST;
+    const restZ = this.group.position.z + tractorBackward.z * TRACTOR_TOW_OFFSET_REST;
+    if (orientedBoxOverlapsAnyBox({ x: restX, z: restZ }, this.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS)) {
+      return false;
+    }
+    trolley.group.position.set(restX, this.group.position.y, restZ);
     trolley.group.rotation.y = this.group.rotation.y;
     trolley.yaw = this.group.rotation.y;
-    // Bugfix (defect 3 of the real playtest regression): this computed position
-    // used to be written with no collision check at all — a real hitch-up right
-    // next to a wall could place the trolley straight inside it. Push it clear
-    // (as an oriented box, not a circle) if the computed spot happens to overlap
-    // real geometry; a no-op in the ordinary case where it doesn't.
-    resolveOrientedCollisions(trolley.group.position, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
     this.trolley = trolley;
     trolley.attached = true;
     trolley.yawVel = 0;
+    return true;
   }
 
   /** Returns the detached Trolley instance so the caller (main.js) can keep a
@@ -1079,7 +1092,19 @@ export function spawnVehicles(scene) {
   bike.addToScene(scene);
   vehicles.push(bike);
 
-  const tractor = new Vehicle('tractor', new THREE.Vector3(-51, 0, 25), Math.PI);
+  // Bugfix (real playtest bug, not a driving bug — found with zero player input:
+  // load the game, click Play, touch nothing): the tractor used to spawn at
+  // (-51, 25). The general store (src/main.js's STORE_POS {x:-52,z:20}) and this
+  // spawn point were placed independently, 4.6m apart along Z — exactly the
+  // tractor-to-trolley tow offset — so the rigidly-towed trolley landed inside the
+  // store's own collider (clearance -2.02m) every single time, with nothing to
+  // ever move it out since nothing drives it there. (-45, 26) is verified clear
+  // against the real built scene (tools/spawn-check.js; checked via
+  // window.__dopahar.minDistanceToColliders against every real static collider,
+  // not eyeballed): tractor clearance 3.9m, trolley clearance 3.48m, 3.6m from
+  // the next-nearest other vehicle (the bike). Still on the same lane, still
+  // "near the player's house" (HOUSE_CENTER {x:-48,z:39}) as the original intent.
+  const tractor = new Vehicle('tractor', new THREE.Vector3(-45, 0, 26), Math.PI);
   tractor.addToScene(scene);
   vehicles.push(tractor);
 
@@ -1092,12 +1117,16 @@ export function spawnVehicles(scene) {
   const trolleySpawnPos = tractor.group.position.clone().addScaledVector(tractorBackward, TRACTOR_TOW_OFFSET_REST);
   const trolley = new Trolley(trolleySpawnPos, tractor.group.rotation.y);
   trolley.addToScene(scene);
-  // attachTrolley() below already pushes the trolley clear of STATIC_COLLIDERS if
-  // its computed position overlaps real geometry (defect 3 fix) — this call is
-  // likely a no-op here (the hero-zone spawn point is open ground), but it's the
-  // same code path a mid-game attach goes through, so there's nothing special-
-  // cased about this initial placement.
-  tractor.attachTrolley(trolley);
+  // attachTrolley() now REFUSES (returns false, leaves the trolley where the
+  // Trolley constructor above put it) rather than place it somewhere blocked —
+  // this should never fire given the verified-clear spawn point above, but if a
+  // future change to the spawn coordinates or the store's position breaks that,
+  // this is the loud signal (not a silently-broken attach): the startup assertion
+  // right after initStaticColliders() (src/main.js) also independently catches an
+  // unattached/overlapping trolley at this exact moment.
+  if (!tractor.attachTrolley(trolley)) {
+    console.error('[spawn guard] trolley spawn position is blocked — tractor spawned without its trolley attached. Check the tractor/trolley spawn coordinates in spawnVehicles() against the current building layout.');
+  }
 
   const cart = new Vehicle('cart', new THREE.Vector3(-36, 0, 50), Math.PI * 0.5);
   cart.addToScene(scene);

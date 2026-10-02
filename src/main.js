@@ -261,7 +261,54 @@ async function main() {
   // their own pieces to the same kit.
   buildingKit.finalize(scene);
 
+  // Bugfix (real playtest bug — the trolley spawned inside the general store with
+  // zero player input): spawnVehicles() below needs real, current static colliders
+  // to place the trolley safely, but initStaticColliders() used to run much later
+  // (inside loadDeferredContent(), after background houses/field load) — so
+  // STATIC_COLLIDERS was still empty at spawn time and any collision check there
+  // was a silent no-op. Every building that matters for vehicle spawn placement
+  // (hero zone, shops incl. the general store, bazaar, temple) is already built
+  // and tagged by this point, so build the collider list now; loadDeferredContent()
+  // still rebuilds it again once background houses/field are added, picking up
+  // the complete final set for real gameplay.
+  initStaticColliders(scene);
+
   const vehicles = spawnVehicles(scene);
+
+  // Item 3 (real playtest bug — the trolley spawned inside the general store
+  // with zero player input, never caught because every existing test only
+  // ever checked position after a teleport, never the real spawn path) — a
+  // loud, ONE-TIME startup assertion, separate from devCheckPenetration()'s
+  // ongoing per-frame guard (which starts later, inside the tick loop, long
+  // after this moment). Runs right here, the instant every vehicle's spawn
+  // position is final and STATIC_COLLIDERS is known — before a single frame of
+  // gameplay, before the title screen is even interactive. console.error (not
+  // .warn): a vehicle spawning inside a building is a shipped bug, not a
+  // transient physics graze. Checks each vehicle's own real oriented footprint
+  // (actual body half-extents/yaw, not an approximating circle) and the
+  // trolley's real bed footprint.
+  if (isDevMode()) {
+    for (const v of vehicles) {
+      const p = v.preset;
+      const hit = orientedBoxOverlapsAnyBox(v.group.position, v.group.rotation.y, p.body.w / 2, p.body.d / 2, STATIC_COLLIDERS);
+      if (hit) {
+        console.error(
+          `[spawn guard] ${v.group.name} spawned overlapping a static collider: pos=(${v.group.position.x.toFixed(2)},${v.group.position.z.toFixed(2)}) box=X[${hit.minX.toFixed(2)},${hit.maxX.toFixed(2)}] Z[${hit.minZ.toFixed(2)},${hit.maxZ.toFixed(2)}]`
+        );
+      }
+      if (v.trolley) {
+        const t = v.trolley;
+        const thit = orientedBoxOverlapsAnyBox(t.group.position, t.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
+        if (thit) {
+          console.error(
+            `[spawn guard] trolley spawned overlapping a static collider: pos=(${t.group.position.x.toFixed(2)},${t.group.position.z.toFixed(2)}) box=X[${thit.minX.toFixed(2)},${thit.maxX.toFixed(2)}] Z[${thit.minZ.toFixed(2)},${thit.maxZ.toFixed(2)}]`
+          );
+        }
+      } else if (v.preset.kind === 'tractor') {
+        console.error('[spawn guard] tractor spawned without a trolley attached — the trolley spawn position must be blocked (see Vehicle.attachTrolley()).');
+      }
+    }
+  }
 
   const player = createPlayer();
   player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
@@ -1239,8 +1286,13 @@ async function main() {
             const eligible = vehicle.speed < -0.05 && hitchDist < p.attachRadius;
             if (eligible) {
               setAttachPrompt('ट्रॉली जोड़ें', 'Attach trolley');
-              if (attachPressed) {
-                vehicle.attachTrolley(candidateTrolley);
+              // attachTrolley() now refuses (returns false) if the trolley's
+              // computed rest position is blocked, rather than placing it there —
+              // only clear looseTrolley / count this as attached on success, so a
+              // blocked attach leaves the trolley exactly where it was and the
+              // prompt still showing, instead of silently doing nothing while the
+              // UI acts like it worked.
+              if (attachPressed && vehicle.attachTrolley(candidateTrolley)) {
                 looseTrolley = null;
               }
             } else {
