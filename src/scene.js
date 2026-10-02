@@ -20,12 +20,16 @@ export function loadTexture(loader, url, { srgb = false, repeat = 1 } = {}) {
   return tex;
 }
 
-export function createGround() {
+export function createGround({ grassTint = null, dampSpots = [] } = {}) {
   const repeat = GROUND_SIZE / GROUND_TILE_METRES;
   const geometry = ensureUv2(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1));
   const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });
   material.aoMapIntensity = 0.8;
-  applyGroundNoiseDetail(material); // Fix 4/4 (playtest pass) — see materials.js
+  // Fix 4/4 (playtest pass) + item 3a (real playtest report — "the village reads
+  // as desert") — grassTint/dampSpots are village-specific (real palette colour,
+  // real hand-pump position), supplied by the caller (main.js) rather than
+  // imported here, so this stays a generic renderer-setup module.
+  applyGroundNoiseDetail(material, { grassTint, dampSpots });
 
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;

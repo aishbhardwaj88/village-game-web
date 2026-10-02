@@ -90,11 +90,44 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
  * texture: it's per-pixel (no mip/tiling artefacts of its own) and needs zero extra
  * network fetches.
  */
-export function applyGroundNoiseDetail(material, { noiseCellMetres = 30, detailTileMultiplier = 22, detailFadeMetres = 8 } = {}) {
+export function applyGroundNoiseDetail(
+  material,
+  {
+    noiseCellMetres = 30,
+    detailTileMultiplier = 22,
+    detailFadeMetres = 8,
+    // Item 3a (real playtest report — "the village reads as desert", no ground
+    // variation at all) — patchy dry-grass tint and a couple of fixed damp spots,
+    // same technique as the noise/detail pass above (one more onBeforeCompile
+    // block, no new texture asset, no extra draw call or geometry). `grassTint`
+    // is a hex colour (this codebase's fixed PALETTE — see src/village.js); left
+    // null, no grass pass is compiled at all (the field's own ground material,
+    // src/field.js, doesn't want grass patches in a tilled field).
+    grassTint = null,
+    grassCellMetres = 3.2,
+    grassCoverage = 0.42, // 0-1 — roughly the fraction of ground area a patch covers
+    // Up to 2 fixed localised damp patches (e.g. near the hand pump) — {x,z,radius,tint}.
+    dampSpots = [],
+  } = {}
+) {
+  const grass = grassTint ? new THREE.Color(grassTint) : null;
+  const spot0 = dampSpots[0] || null;
+  const spot1 = dampSpots[1] || null;
+
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uNoiseScale = { value: 1 / noiseCellMetres };
     shader.uniforms.uDetailScale = { value: detailTileMultiplier };
     shader.uniforms.uDetailFade = { value: detailFadeMetres };
+    shader.uniforms.uGrassEnabled = { value: grass ? 1 : 0 };
+    shader.uniforms.uGrassScale = { value: 1 / grassCellMetres };
+    shader.uniforms.uGrassCoverage = { value: grassCoverage };
+    shader.uniforms.uGrassTint = { value: grass ? new THREE.Vector3(grass.r, grass.g, grass.b) : new THREE.Vector3(0, 0, 0) };
+    shader.uniforms.uDampPos0 = { value: new THREE.Vector2(spot0 ? spot0.x : 0, spot0 ? spot0.z : 0) };
+    shader.uniforms.uDampRadius0 = { value: spot0 ? spot0.radius : 0 };
+    shader.uniforms.uDampTint0 = { value: spot0 ? new THREE.Color(spot0.tint).toArray() : [1, 1, 1] };
+    shader.uniforms.uDampPos1 = { value: new THREE.Vector2(spot1 ? spot1.x : 0, spot1 ? spot1.z : 0) };
+    shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
+    shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_g;')
@@ -108,6 +141,16 @@ export function applyGroundNoiseDetail(material, { noiseCellMetres = 30, detailT
         uniform float uNoiseScale;
         uniform float uDetailScale;
         uniform float uDetailFade;
+        uniform float uGrassEnabled;
+        uniform float uGrassScale;
+        uniform float uGrassCoverage;
+        uniform vec3 uGrassTint;
+        uniform vec2 uDampPos0;
+        uniform float uDampRadius0;
+        uniform vec3 uDampTint0;
+        uniform vec2 uDampPos1;
+        uniform float uDampRadius1;
+        uniform vec3 uDampTint1;
 
         float groundHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
         float groundValueNoise(vec2 p) {
@@ -135,13 +178,33 @@ export function applyGroundNoiseDetail(material, { noiseCellMetres = 30, detailT
             vec3 detailColor = texture2D(map, vMapUv * uDetailScale).rgb;
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * detailColor * 1.5, detailMix * 0.5);
           }
+
+          if (uGrassEnabled > 0.5) {
+            // Two octaves — a coarse one to cluster patches (never an even scatter,
+            // item 3b's own rule applied here to the ground tint too), a finer one
+            // so each patch's own edge reads as ragged, not a smooth disc.
+            float grassCoarse = groundValueNoise(vWorldPos_g.xz * uGrassScale);
+            float grassFine = groundValueNoise(vWorldPos_g.xz * uGrassScale * 3.3 + 17.0);
+            float grassN = grassCoarse * 0.7 + grassFine * 0.3;
+            float grassMask = smoothstep(1.0 - uGrassCoverage - 0.08, 1.0 - uGrassCoverage + 0.08, grassN);
+            // Partial strength (0.55, not 1.0) — the gravel texture's own grain stays
+            // visible under the tint, reading as sparse dry grass over bare ground,
+            // not a solid lawn (art-direction law — sun-faded, never lush).
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uGrassTint, grassMask * 0.55);
+          }
+
+          float damp0 = 1.0 - smoothstep(0.0, max(uDampRadius0, 0.001), distance(vWorldPos_g.xz, uDampPos0));
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint0, damp0);
+          float damp1 = 1.0 - smoothstep(0.0, max(uDampRadius1, 0.001), distance(vWorldPos_g.xz, uDampPos1));
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint1, damp1);
         }`
       );
   };
   // Distinct cache key per material instance sharing this hook, so three.js doesn't
   // reuse a compiled program from a material that didn't request the noise/detail
   // pass (or vice versa).
-  material.customProgramCacheKey = () => `ground-noise-detail-v1-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}`;
+  material.customProgramCacheKey = () =>
+    `ground-noise-detail-v2-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}`;
   return material;
 }
 

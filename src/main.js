@@ -6,12 +6,14 @@ import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, SKY_HORIZON_COLOR } from './sky.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
+import { buildVegetation, lanesideClusters } from './vegetation.js';
+import { buildTrees } from './trees.js';
 import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
@@ -26,6 +28,10 @@ import {
   PEEPAL_PLATFORM_POS,
   PEEPAL_PLATFORM_RADIUS,
   FLOWER_STALL_POS,
+  TEMPLE_LANE_START,
+  TEMPLE_LANE_BEND,
+  TEMPLE_LANE_ARRIVE,
+  TEMPLE_LANE_WIDTH,
 } from './temple.js';
 import { vehicleFootprintBox, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
 import {
@@ -41,6 +47,13 @@ import {
   BAZAAR_FRONT_Z,
   BAZAAR_ROW_CZ,
   CHOWK_TEA_POS,
+  BAZAAR_LANE_START,
+  BAZAAR_LANE_BEND,
+  BAZAAR_LANE_ARRIVE,
+  BAZAAR_LANE_ROW_WIDTH,
+  BAZAAR_ROW_FRONTAGE_START,
+  BAZAAR_WEST_X,
+  BAZAAR_EAST_X,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
@@ -105,7 +118,15 @@ async function main() {
   const scene = createScene();
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
 
-  const ground = createGround();
+  // Item 3a (real playtest report — "the village reads as desert", flat grey
+  // gravel in every direction) — patchy dry-grass tint across the open ground
+  // plus a darker damp patch around the hand pump (src/village.js's
+  // HOUSE_HAND_PUMP_POSITION), both shader-only (no new geometry/texture asset,
+  // no new draw call — see applyGroundNoiseDetail in src/materials.js).
+  const ground = createGround({
+    grassTint: PALETTE.greyGreen,
+    dampSpots: [{ x: HOUSE_HAND_PUMP_POSITION.x, z: HOUSE_HAND_PUMP_POSITION.z, radius: 2.2, tint: darken(0xffffff, 0.75) }],
+  });
   scene.add(ground);
 
   const sun = createSun(touch);
@@ -593,6 +614,65 @@ async function main() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
     const fieldGroup = buildField(scene);
+
+    // Item 3c (real playtest report — "the village reads as desert", "a village
+    // called Amrai Khera has no plants in it") — 3 simple placeholder tree
+    // species (src/trees.js), code-built, no new asset. Placements use real,
+    // already-defined position constants (never invented coordinates): the
+    // peepal goes exactly where the temple chabutra's own platform was already
+    // built to hold a tree through (PEEPAL_PLATFORM_POS — see docs/parked.md's
+    // "Bazaar item 4" entry, built without one for lack of a licensed model);
+    // neem trees sit clear of the house/school compound walls (wallH=1.6
+    // courtyard walls at HOUSE_CENTER.x +/- 9, school similarly — offset well
+    // past that); babool trees sit just outside the field track loop's own
+    // corners (TRACK_CORNERS), offset outward from FIELD_CENTER.
+    templeGroup.add(buildTrees([{ kind: 'peepal', x: PEEPAL_PLATFORM_POS.x, z: PEEPAL_PLATFORM_POS.z, rotationY: 0.4, seed: 5 }]));
+    heroZoneGroup.add(
+      buildTrees([
+        { kind: 'neem', x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z - 4, rotationY: 1.1, seed: 11 },
+        { kind: 'neem', x: SCHOOL_CENTER.x - 12, z: SCHOOL_CENTER.z + 6, rotationY: 2.3, seed: 12 },
+      ])
+    );
+    fieldGroup.add(
+      buildTrees([
+        { kind: 'babool', x: TRACK_CORNERS[3].x - 4, z: TRACK_CORNERS[3].z - 4, rotationY: 0.7, seed: 21 }, // SW corner
+        { kind: 'babool', x: TRACK_CORNERS[1].x + 4, z: TRACK_CORNERS[1].z + 4, rotationY: 2.9, seed: 22 }, // NE corner
+        { kind: 'babool', x: TRACK_CORNERS[2].x + 4, z: TRACK_CORNERS[2].z - 4, rotationY: 1.6, seed: 23 }, // SE corner — NOT the NW corner (TRACK_CORNERS[0], {-40,25}), which sits only ~5m from the relocated tractor spawn (-45,26, item 1) and put a tree awkwardly right behind the parked tractor
+      ])
+    );
+
+    // Item 3b — low vegetation (grass tufts + scrub bushes), instanced (one
+    // draw call per kind regardless of instance count — src/vegetation.js),
+    // clustered (never an even scatter) along both edges of every real lane
+    // segment the village actually has (same start/end/width those lanes are
+    // built from, src/paths.js's buildStripSegment — never invented
+    // coordinates) plus a few clusters against real building wall bases.
+    const vegAnchors = [
+      ...lanesideClusters(HOUSE_CENTER, HALWAI_CENTER, 6),
+      ...lanesideClusters(HALWAI_CENTER, SCHOOL_CENTER, 6),
+      ...lanesideClusters(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH),
+      ...lanesideClusters(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH),
+      ...lanesideClusters(BAZAAR_LANE_ARRIVE, BAZAAR_ROW_FRONTAGE_START, BAZAAR_LANE_ROW_WIDTH),
+      ...lanesideClusters(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH),
+      ...lanesideClusters(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH),
+      ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 20, margin: 2 }),
+      ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 20, margin: 2 }),
+      // A few clusters at real building wall bases — house compound's own low
+      // courtyard walls (x = HOUSE_CENTER.x +/- 9), the bazaar row's own west
+      // end (BAZAAR_WEST_X), the temple's east boundary (near TEMPLE_POS).
+      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z - 2, radius: 1.6, count: 6 },
+      { x: HOUSE_CENTER.x + 9.6, z: HOUSE_CENTER.z + 2, radius: 1.6, count: 6 },
+      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ, radius: 1.8, count: 7 },
+      { x: TEMPLE_POS.x + 9, z: TEMPLE_POS.z - 2, radius: 1.6, count: 5 },
+    ];
+    const scrubAnchors = [
+      ...lanesideClusters(TRACK_CORNERS[1], TRACK_CORNERS[2], 5, { everyMetres: 18, margin: 2.2, count: 3 }),
+      ...lanesideClusters(TRACK_CORNERS[3], TRACK_CORNERS[0], 5, { everyMetres: 18, margin: 2.2, count: 3 }),
+      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 3 },
+      { x: BAZAAR_EAST_X + 1.5, z: BAZAAR_ROW_CZ, radius: 1.5, count: 4 },
+    ];
+    scene.add(buildVegetation(vegAnchors, scrubAnchors));
+
     const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too

@@ -339,10 +339,12 @@ export function buildFlowerStall() {
  * out to a point due east of it runs straight through that east wall's own
  * collider. Found by the scripted drive test (item 4's own docs/parked.md entry),
  * not by inspection — same discipline this whole session has used throughout. */
-const TEMPLE_LANE_START = { x: -44, z: 50.5 };
-const TEMPLE_LANE_BEND = { x: -12, z: 55 };
-const TEMPLE_LANE_ARRIVE = { x: 2, z: 51 }; // temple's west gate opening / beside the flower stall
-const TEMPLE_LANE_WIDTH = 6;
+// Exported (item 3b — vegetation needs real lane geometry to cluster along);
+// values unchanged.
+export const TEMPLE_LANE_START = { x: -44, z: 50.5 };
+export const TEMPLE_LANE_BEND = { x: -12, z: 55 };
+export const TEMPLE_LANE_ARRIVE = { x: 2, z: 51 }; // temple's west gate opening / beside the flower stall
+export const TEMPLE_LANE_WIDTH = 6;
 
 export function buildTempleLane() {
   const segments = [

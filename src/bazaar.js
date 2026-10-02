@@ -808,13 +808,17 @@ export function buildChowkPlaza() {
 // `{x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7}` is the same courtyard point
 // src/field.js's own LANE_JOIN already uses to spur the existing lane to the track —
 // proven open, real vehicles already use it.
-const BAZAAR_LANE_START = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 };
-const BAZAAR_LANE_BEND = { x: -58, z: 22 };
-const BAZAAR_LANE_ARRIVE = { x: -58, z: 8 }; // just north-east of the chowk plaza
-const BAZAAR_LANE_ROW_WIDTH = 6;
+// Exported (item 3b, real playtest report — vegetation needs real lane geometry
+// to cluster along, not invented coordinates) — values unchanged, just visible
+// to src/main.js now.
+export const BAZAAR_LANE_START = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 };
+export const BAZAAR_LANE_BEND = { x: -58, z: 22 };
+export const BAZAAR_LANE_ARRIVE = { x: -58, z: 8 }; // just north-east of the chowk plaza
+export const BAZAAR_LANE_ROW_WIDTH = 6;
+export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: 8 }; // just past unit 1's west end
 
 export function buildBazaarLane() {
-  const rowFrontageStart = { x: BAZAAR_WEST_X + 2, z: 8 }; // just past unit 1's west end
+  const rowFrontageStart = BAZAAR_ROW_FRONTAGE_START;
   const segments = [
     buildStripSegment(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
     buildStripSegment(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { seed: 42, ruts: true }),
