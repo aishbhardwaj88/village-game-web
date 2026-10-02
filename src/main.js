@@ -77,6 +77,7 @@ import { createBellProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
+import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
 import { buildSignboards } from './signboards.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
@@ -191,6 +192,29 @@ async function main() {
   shopsGroup.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
   shopsGroup.add(buildGeneralStoreGoods(STORE_POS, STORE_ROT));
+
+  // Item 4 ("keep building the village") — 3 more abadi-core locations from
+  // MAP.md's "Places inside the abadi" list: post office, ration shop, atta
+  // chakki. Placed on open ground just west of the bazaar lane's own
+  // START->BEND run (src/bazaar.js's BAZAAR_LANE_BEND {-58,22} /
+  // BAZAAR_LANE_ARRIVE {-58,8}, lane width 6 — these sit at x=-65, 4m clear of
+  // the lane's own west edge at x=-61), all facing east (+X) toward it — a
+  // small new cluster distinct from the general-store/tea-stall pair further
+  // north and the bazaar row further west/south. No walkable interior (none
+  // feeds a quest).
+  const POST_OFFICE_POS = { x: -65, z: 19 };
+  const RATION_SHOP_POS = { x: -65, z: 14 };
+  const ATTA_CHAKKI_POS = { x: -65, z: 9 };
+  const NEW_SHOPS_ROT = Math.PI / 2; // faces +X, toward the bazaar lane
+  shopsGroup.add(buildPostOffice(POST_OFFICE_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(buildRationShop(RATION_SHOP_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(buildAttaChakki(ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(buildNewShopWalls(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(buildNewShopRoofs(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(buildNewShopProps(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  buildNewShopSignboards(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT)
+    .then((mesh) => shopsGroup.add(mesh))
+    .catch((err) => console.error('Failed to build new-shop signboards', err));
   scene.add(shopsGroup);
 
   // Shop interactions (this task) — the shared "buy", at each shop's own open
@@ -198,6 +222,12 @@ async function main() {
   // src/interactions.js's registerShopBuy doc comment).
   registerShopBuy('general_store', new THREE.Vector3(STORE_POS.x - 2.5, 0, STORE_POS.z));
   registerShopBuy('tea_stall', new THREE.Vector3(TEA_SHOP_POS.x + 2.5, 0, TEA_SHOP_POS.z));
+  // NEW_SHOPS_ROT = +PI/2 faces +X (forward=(-sin(yaw),0,-cos(yaw)), this
+  // game's convention — see tools/trolley-drive-test.js's own derivation),
+  // opposite of STORE_ROT's -X, so the interaction point sits on the +X side
+  // here, not -X like the general store's.
+  registerShopBuy('post_office', new THREE.Vector3(POST_OFFICE_POS.x + 2.5, 0, POST_OFFICE_POS.z));
+  registerShopBuy('ration_shop', new THREE.Vector3(RATION_SHOP_POS.x + 2.5, 0, RATION_SHOP_POS.z));
 
   // Signboards (item 10) — not awaited inline (same reasoning as loadEnvironment
   // below: don't block the rest of scene setup on an async step); both boards share

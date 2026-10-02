@@ -381,6 +381,11 @@ const BUY_ITEMS = {
   barber: [{ hi: 'बाल कटवाना', en: 'a haircut', price: 30 }],
   mobile: [{ hi: 'टॉक टाइम', en: 'talk time', price: 20 }],
   sweet: [{ hi: 'मिठाई', en: 'sweets', price: 60 }],
+  post_office: [{ hi: 'डाक टिकट', en: 'postage stamps', price: 15 }],
+  ration_shop: [
+    { hi: 'गेहूं', en: 'wheat', price: 25 },
+    { hi: 'चीनी', en: 'sugar', price: 30 },
+  ],
 };
 
 /** One shared interaction, called once per shop counter (src/main.js) with that
