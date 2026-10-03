@@ -108,6 +108,11 @@ export function applyGroundNoiseDetail(
     grassCoverage = 0.42, // 0-1 — roughly the fraction of ground area a patch covers
     // Up to 2 fixed localised damp patches (e.g. near the hand pump) — {x,z,radius,tint}.
     dampSpots = [],
+    // Atmosphere task — the large-scale patch tint already existed but read as one
+    // flat grey-brown; this multiplies its contrast range (src/atmosphere.js's
+    // groundContrastMultiplier) without changing the noise pattern or adding any
+    // new texture/geometry. 1 = the original (unmultiplied) contrast.
+    patchContrast = 1,
   } = {}
 ) {
   const grass = grassTint ? new THREE.Color(grassTint) : null;
@@ -128,6 +133,7 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uDampPos1 = { value: new THREE.Vector2(spot1 ? spot1.x : 0, spot1 ? spot1.z : 0) };
     shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
     shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
+    shader.uniforms.uPatchContrast = { value: patchContrast };
 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_g;')
@@ -151,6 +157,7 @@ export function applyGroundNoiseDetail(
         uniform vec2 uDampPos1;
         uniform float uDampRadius1;
         uniform vec3 uDampTint1;
+        uniform float uPatchContrast;
 
         float groundHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
         float groundValueNoise(vec2 p) {
@@ -169,7 +176,13 @@ export function applyGroundNoiseDetail(
         `#include <map_fragment>
         {
           float largeN = groundValueNoise(vWorldPos_g.xz * uNoiseScale);
-          vec3 patchTint = vec3(0.92, 0.9, 0.86) + largeN * vec3(0.16, 0.14, 0.09);
+          // Atmosphere task — the swing around the midpoint is scaled by
+          // uPatchContrast (src/atmosphere.js's groundContrastMultiplier) so the
+          // ground reads with real tonal variation instead of one flat colour,
+          // without changing the noise pattern itself or the baseline brightness.
+          vec3 patchBase = vec3(1.0, 0.97, 0.905);
+          vec3 patchRange = vec3(0.16, 0.14, 0.09);
+          vec3 patchTint = patchBase + (largeN - 0.5) * patchRange * uPatchContrast;
           diffuseColor.rgb *= patchTint;
 
           float camDist = distance(vWorldPos_g, cameraPosition);
@@ -204,7 +217,7 @@ export function applyGroundNoiseDetail(
   // reuse a compiled program from a material that didn't request the noise/detail
   // pass (or vice versa).
   material.customProgramCacheKey = () =>
-    `ground-noise-detail-v2-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}`;
+    `ground-noise-detail-v3-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}`;
   return material;
 }
 

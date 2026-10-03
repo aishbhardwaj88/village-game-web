@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { getActiveAtmosphere, DAYLINE_END } from './atmosphere.js';
 
 /**
  * Day-end sequence (queue item 13, stretch goal): the light warms further and
@@ -6,18 +7,28 @@ import * as THREE from 'three';
  * "dopahar" (afternoon) drifting toward evening, matching the errand's own "before
  * evening" line. Ties to quest progress, not a real clock, since there's no save
  * system and the whole errand is ~5 minutes.
+ *
+ * START is the active atmosphere preset (src/atmosphere.js) — whichever afternoon
+ * treatment is live. END is expressed as a DELTA from START (not a hardcoded
+ * absolute "evening" state), so this arc's shape (elevation drops ~11deg, colours
+ * warm toward orange/deep blue) stays the same regardless of which preset is active.
  */
+const activePreset = getActiveAtmosphere();
 const START = {
-  elevationDeg: 20,
-  sunColor: new THREE.Color(0xfff1d6),
-  horizonColor: new THREE.Color(0xf6dcae),
-  zenithColor: new THREE.Color(0x3f6fa3),
+  elevationDeg: activePreset.sunElevationDeg,
+  sunColor: activePreset.sunColor.clone(),
+  horizonColor: activePreset.skyHorizonColor.clone(),
+  hazeColor: activePreset.skyHazeColor.clone(),
+  zenithColor: activePreset.skyZenithColor.clone(),
+  fogColor: activePreset.fogColor.clone(),
 };
 const END = {
-  elevationDeg: 9, // lower sun — longer shadows, warmer grazing light
-  sunColor: new THREE.Color(0xffb877),
-  horizonColor: new THREE.Color(0xe8935a),
-  zenithColor: new THREE.Color(0x2a3f66),
+  elevationDeg: START.elevationDeg + DAYLINE_END.elevationDeg,
+  sunColor: DAYLINE_END.sunColor.clone(),
+  horizonColor: DAYLINE_END.horizonColor.clone(),
+  hazeColor: DAYLINE_END.hazeColor.clone(),
+  zenithColor: DAYLINE_END.zenithColor.clone(),
+  fogColor: DAYLINE_END.fogColor.clone(),
 };
 
 const _tmpColor = new THREE.Color();
@@ -71,11 +82,15 @@ export function createDaylineController(sun, sky, scene) {
       sky.material.uniforms.sunColor.value.copy(_tmpColor);
       _tmpColor.copy(START.horizonColor).lerp(END.horizonColor, current);
       sky.material.uniforms.horizonColor.value.copy(_tmpColor);
-      const horizonNow = _tmpColor.clone();
+      _tmpColor.copy(START.hazeColor).lerp(END.hazeColor, current);
+      sky.material.uniforms.hazeColor.value.copy(_tmpColor);
       _tmpColor.copy(START.zenithColor).lerp(END.zenithColor, current);
       sky.material.uniforms.zenithColor.value.copy(_tmpColor);
 
-      if (scene.fog) scene.fog.color.copy(horizonNow);
+      if (scene.fog) {
+        _tmpColor.copy(START.fogColor).lerp(END.fogColor, current);
+        scene.fog.color.copy(_tmpColor);
+      }
     }
   };
 }

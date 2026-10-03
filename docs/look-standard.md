@@ -21,50 +21,82 @@ stale (update it in the same commit as any change).
 above is the only tone-mapping step. Running a second one in the `postprocessing`
 composer double-compresses highlights and reads as washed-out grey. See docs/parked.md.
 
-## Sun (`src/scene.js` `createSun()`)
+## Atmosphere — sky/sun/fog/ground presets (`src/atmosphere.js`)
 
-| Setting | Value |
-|---|---|
-| Colour | `0xfff1d6` (warm, ~4500K) |
-| Intensity | `3.2` |
-| Elevation | `20°` |
-| Shadow map size | `2048×2048` |
-| Shadow camera extent | ±60m, near 1 / far 200 |
+A real screenshot (`docs/shots/opening/candidate_b.png`) showed the previous sky/sun/
+fog values reading as a generic engine default, not "North Indian mid-to-late-
+afternoon, hot, hazy, slightly bleached, warm not golden": a flat 2-stop sky gradient,
+a 20° sun (near-sunset, long shadows), a uniform fog wash that pasted distant
+buildings onto the horizon instead of a true distance fade, and a flat ground tone.
+Fixed by consolidating every sky/sun/fog/ground-contrast value into
+`src/atmosphere.js`'s three named presets (`ATMOSPHERE_PRESETS.A/B/C`) — all three
+captured before/after at 5 fixed viewpoints (`docs/shots/atmosphere/{before,A,B,C}/`),
+judged at mid-distance, never close-up. **A ("Balanced afternoon") is live**
+(`ACTIVE_ATMOSPHERE` in `src/atmosphere.js`) — picked over B ("Heat haze", hazier/
+warmer, more dust) and C ("Clear high sun", crisper/cooler, least haze) because it's
+the only one that holds real depth of blue overhead *and* a clearly hazy/bleached
+horizon *and* a sun high enough for short, hard, midday-not-golden-hour shadows,
+without leaning hard enough into any one axis to undercut the other two. B and C stay
+in the code (switch `ACTIVE_ATMOSPHERE` to try them) and their shots stay committed.
+
+## Sun (`src/scene.js` `createSun(isTouch, preset)`)
+
+| Setting | Preset A (live) | Preset B | Preset C |
+|---|---|---|---|
+| Colour | `0xfff2db` | `0xffecc4` | `0xfff0d2` |
+| Intensity | `3.3` | `3.1` | `3.4` |
+| Elevation | `48°` — short, hard, midday shadows; was `20°` (read as near-sunset) | `42°` | `55°` |
+| Shadow map size | `2048×2048` (unchanged) |
+| Shadow camera extent | ±60m, near 1 / far 200 (unchanged) |
 
 ## Fill light (`src/main.js`)
 
-`THREE.HemisphereLight(0x6f96c2 /* sky */, 0x8a6a45 /* warm ground bounce */, 0.9)`.
-Needed because `scene.environmentIntensity` is kept low (below) — without this,
-shadow-side surfaces read near-black. See docs/parked.md for why.
+`THREE.HemisphereLight(0x6f96c2 /* sky */, 0x8a6a45 /* warm ground bounce */, 0.9)` —
+unchanged by this task. Needed because `scene.environmentIntensity` is kept low
+(below) — without this, shadow-side surfaces read near-black. See docs/parked.md.
 
 ## Sky and fog (`src/sky.js`, `src/scene.js`)
 
-| Setting | Value |
-|---|---|
-| Sky horizon colour | `0xf6dcae` (warm pale) |
-| Sky zenith colour | `0x3f6fa3` (deeper blue) |
-| Sky construction | Shader gradient dome, radius 400m, `smoothstep(-0.02, 0.22, dir.y)` between horizon/zenith (tightened from `-0.05, 0.45` — the sky now holds its zenith blue by ~13° of elevation instead of ~26°), plus a sun disc (`pow(sunDot, 800) * 2.2`) and a tight glow (`pow(sunDot, 24) * 0.3`), both tinted `0xfff1d6`, plus a screen-space hash dither (±1.5/255) to break up gradient banding |
-| Fog | `THREE.FogExp2`, colour = sky horizon colour, density `0.0085` |
-| HDRI | Poly Haven `camdeboo_road` 1K — **lighting/IBL only** (`scene.environment`), never `scene.background` (see docs/parked.md) |
-| `scene.environmentIntensity` | `0.45` — tames the HDRI's very hot sun disk in specular reflections; see docs/parked.md before raising this |
+| Setting | Preset A (live) | Preset B | Preset C |
+|---|---|---|---|
+| Sky horizon colour | `0xf2d9ab` | `0xf0d19e` | `0xf4ddb2` |
+| Sky haze colour (NEW — the mid-band) | `0xdcd0ba` | `0xe2cfac` | `0xd8cbae` |
+| Sky zenith colour | `0x3d6ea3` | `0x5a85ad` (lighter — heavier haze scatters blue out of the zenith too) | `0x2f5f93` (deepest/clearest) |
+| Dust/haze veil strength | `0.05` | `0.09` | `0.035` |
+| Fog colour | `0xe6d5ad` | `0xe9d6a8` | `0xe2cf9f` |
+| Fog density | `0.0052` | `0.0068` | `0.0044` — all down from the old flat `0.0085`, which pasted everything past ~60-80m onto a uniform wash instead of a true distance fade |
+| Ground patch-tint contrast multiplier | `1.35` | `1.25` | `1.3` — see `applyGroundNoiseDetail`'s `patchContrast` |
+
+Sky construction: shader gradient dome, radius 400m, now a real **3-stop** gradient
+(`horizon -> haze -> zenith`, two `smoothstep`s instead of one) plus a slow 2-octave
+direction-space value-noise dust/haze veil (masked to the lower sky, drifting via a
+`time` uniform at ~0.001-0.002/s — barely perceptible frame to frame) — reads as thin
+heat-haze streaks near the horizon, not a cloud layer. Sun disc (`pow(sunDot, 800) *
+2.2`) and glow (`pow(sunDot, 24) * 0.3`) unchanged, tinted to the preset's own sun
+colour. Screen-space hash dither (±1.5/255) unchanged.
+HDRI: Poly Haven `camdeboo_road` 1K, **lighting/IBL only** (`scene.environment`),
+never `scene.background` (see docs/parked.md); `scene.environmentIntensity = 0.45`,
+unchanged by this task.
 
 ## Dayline — one continuous afternoon across all three errands (`src/dayline.js`)
 
-Sun/sky/fog drift smoothly from the values above (bright mid-afternoon, the game's
-default state at `NOT_STARTED`) toward a low golden-hour look by `ALL_COMPLETE` (end
-of the third errand) — `THREE.MathUtils.damp(current, targetProgress, 0.35, dt)`
-toward a target set by `dayProgressForQuestStep(quest.step)`'s fixed 0-1 point per
-named quest step (front-loaded less within each errand, evenly spread across all
-three — see the function's own doc comment). Never reaches full darkness — the end
-state is still a lit, warm-blue-zenith sky, not night.
+Sun/sky/fog drift smoothly from the ACTIVE preset's values (the game's default state
+at `NOT_STARTED`) toward a low golden-hour look by `ALL_COMPLETE` (end of the third
+errand) — `THREE.MathUtils.damp(current, targetProgress, 0.35, dt)` toward a target
+set by `dayProgressForQuestStep(quest.step)`'s fixed 0-1 point per named quest step.
+Never reaches full darkness — the end state is still a lit, warm-blue-zenith sky, not
+night. The END state (`DAYLINE_END` in `src/atmosphere.js`) is unchanged from before
+this task — absolute evening colours, plus an elevation DELTA (`-11°`) applied to
+whichever preset is live, so the arc's shape stays the same regardless of preset.
 
-| | Start (`NOT_STARTED`, progress 0) | End (`ALL_COMPLETE`, progress 1) |
+| | Start (live preset A) | End (`ALL_COMPLETE`, progress 1) |
 |---|---|---|
-| Sun elevation | `20°` (law, matches `createSun()` above) | `9°` — lower, longer shadows |
-| Sun colour | `0xfff1d6` (matches the sky shader's own sun tint) | `0xffb877` — warmer, more orange |
-| Sky horizon colour | `0xf6dcae` | `0xe8935a` |
-| Sky zenith colour | `0x3f6fa3` | `0x2a3f66` — deeper, still clearly blue, never black |
-| Fog colour | = sky horizon colour (`0xf6dcae`) | = sky horizon colour (`0xe8935a`) |
+| Sun elevation | `48°` | `37°` (`48 - 11`) |
+| Sun colour | `0xfff2db` | `0xffb877` — warmer, more orange |
+| Sky horizon colour | `0xf2d9ab` | `0xe8935a` |
+| Sky haze colour | `0xdcd0ba` | `0xd9915f` |
+| Sky zenith colour | `0x3d6ea3` | `0x2a3f66` — deeper, still clearly blue, never black |
+| Fog colour | `0xe6d5ad` | `0xe09a66` |
 
 ## Post-processing (`src/postfx.js`, pmndrs `postprocessing`, one `EffectPass`)
 

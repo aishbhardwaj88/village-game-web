@@ -5,7 +5,8 @@ import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
-import { createSky, SKY_HORIZON_COLOR } from './sky.js';
+import { createSky, updateSky } from './sky.js';
+import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { mergeAcrossGroups } from './mergeUtils.js';
@@ -130,7 +131,8 @@ async function main() {
   });
   scene.add(ground);
 
-  const sun = createSun(touch);
+  const atmosphere = getActiveAtmosphere();
+  const sun = createSun(touch, atmosphere);
   scene.add(sun);
 
   // Pause menu quality setting (task 2) — default Medium on touch / High on desktop,
@@ -145,9 +147,9 @@ async function main() {
   // diffuse IBL fill, so this hemisphere light replaces it explicitly.
   scene.add(new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9));
 
-  const sky = createSky(sun.position);
+  const sky = createSky(sun.position, atmosphere);
   scene.add(sky);
-  applyFog(scene, SKY_HORIZON_COLOR.getHex());
+  applyFog(scene, atmosphere);
 
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.
@@ -1583,6 +1585,7 @@ async function main() {
       camRig.update();
       audio.update(dt);
       dust.update(dt, now / 1000);
+      updateSky(sky, now / 1000);
       contactShadows.update([
         ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
         { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },

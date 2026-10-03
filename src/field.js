@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
+import { getActiveAtmosphere } from './atmosphere.js';
 import { mergeMeshList } from './mergeUtils.js';
 
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
@@ -44,7 +45,7 @@ function buildFieldGround() {
     tint: FIELD_GOLD,
     roughness: 1,
   });
-  applyGroundNoiseDetail(material); // Fix 4/4 (playtest pass) — see materials.js
+  applyGroundNoiseDetail(material, { patchContrast: getActiveAtmosphere().groundContrastMultiplier }); // Fix 4/4 (playtest pass) — see materials.js
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(FIELD_CENTER.x, 0.02, FIELD_CENTER.z);

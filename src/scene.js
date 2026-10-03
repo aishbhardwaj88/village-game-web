@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
+import { getActiveAtmosphere } from './atmosphere.js';
 
 export const GROUND_SIZE = 480; // metres — big enough for the hero zone + field + track
 const GROUND_TILE_METRES = 5; // real-world metres per ground texture tile
@@ -29,7 +30,7 @@ export function createGround({ grassTint = null, dampSpots = [] } = {}) {
   // as desert") — grassTint/dampSpots are village-specific (real palette colour,
   // real hand-pump position), supplied by the caller (main.js) rather than
   // imported here, so this stays a generic renderer-setup module.
-  applyGroundNoiseDetail(material, { grassTint, dampSpots });
+  applyGroundNoiseDetail(material, { grassTint, dampSpots, patchContrast: getActiveAtmosphere().groundContrastMultiplier });
 
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;
@@ -38,10 +39,13 @@ export function createGround({ grassTint = null, dampSpots = [] } = {}) {
   return ground;
 }
 
-export function createSun(isTouch = false) {
-  // Warm ~4500K sun at 20 degrees elevation.
-  const sun = new THREE.DirectionalLight(0xfff1d6, 3.2);
-  const elevationDeg = 20;
+export function createSun(isTouch = false, preset) {
+  // Mid-to-late-afternoon sun — angle/colour/intensity come from the active
+  // src/atmosphere.js preset (see docs/look-standard.md for the chosen values and
+  // why: high enough for short, hard shadows, warm-white rather than golden-hour
+  // orange).
+  const sun = new THREE.DirectionalLight(preset.sunColor.getHex(), preset.sunIntensity);
+  const elevationDeg = preset.sunElevationDeg;
   const elevationRad = THREE.MathUtils.degToRad(elevationDeg);
   const distance = 80;
   sun.position.set(
@@ -91,7 +95,12 @@ export async function loadEnvironment(renderer, scene, hdriUrl) {
   return envMap;
 }
 
-export function applyFog(scene, horizonColorHex) {
-  // Matches sky.js's SKY_HORIZON_COLOR so the ground fades into the sky with no seam.
-  scene.fog = new THREE.FogExp2(horizonColorHex, 0.0085);
+export function applyFog(scene, preset) {
+  // A real haze colour/density from the active atmosphere preset — see
+  // docs/look-standard.md. Lower density than the old flat 0.0085 (which pasted
+  // everything past ~60-80m onto a uniform wash instead of a true distance fade) —
+  // fogColor is deliberately NOT identical to the sky horizon colour in every preset
+  // any more (slightly different, so the ground-to-sky transition isn't a dead seam,
+  // while still reading as the same hazy air).
+  scene.fog = new THREE.FogExp2(preset.fogColor.getHex(), preset.fogDensity);
 }
