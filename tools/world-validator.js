@@ -533,18 +533,43 @@ async function main() {
     // routing wide around both (west, then north past both, then east) —
     // verified clear end-to-end in tmp/verify-sackpile-route2.mjs.
     const SACK_PILE_CHAIN = [{ x: -52, z: 25 }, { x: -52, z: 31 }, { x: -45, z: 31 }];
+    // HOUSE_INTERIOR_CHAIN — found when the opening-spawn task moved the player's
+    // real spawn point (src/main.js's OPENING_SPAWN); one candidate spawn (east of
+    // the house, x=-35) newly failed on 'house_charpai' and the house_compound
+    // building anchor, both genuinely inside the courtyard/house (reached only
+    // through the real front door at HOUSE_DOOR_Z — src/village.js). Root cause:
+    // the shared BYPASS chain's own generous WAYPOINT_RADIUS (4m) lets the walk
+    // "arrive" at its north-east waypoint anywhere within 4m of it, and depending
+    // on the APPROACH ANGLE (which depends on where the walk started, i.e. the
+    // spawn), that arrival point can end up pressed almost perpendicular into the
+    // courtyard's own east low compound wall (src/village.js, x=-39, z=[32,46]) —
+    // confirmed exactly via tmp/diagnose-candidateC-route.mjs: direct steering
+    // alone got stuck dead stationary there forever (not a budget issue — re-run
+    // with DOUBLE the frame budget, identical result). Fixed the same way as
+    // SCHOOL_CHAIN above: a real, verified-clear waypoint chain that goes north
+    // of the low wall's own z-range (open ground there, no wall) before coming
+    // back south through the actual door — tmp/verify-house-interior-route.mjs,
+    // every leg clear. Applies regardless of spawn, so it's not candidate-
+    // specific — every opening-spawn candidate benefits equally.
+    // Tight radii on the last 2 points — same lesson as SCHOOL_CHAIN: the default
+    // 4m WAYPOINT_RADIUS let the walk "arrive" anywhere in a 4m ball, which can
+    // land it off-centre from the real door gap (HOUSE_DOOR_WIDTH=1.3m, centred
+    // x=-48) before the final approach even starts.
+    const HOUSE_INTERIOR_CHAIN = [{ x: -48, z: 47 }, { x: -48, z: 41, r: 0.4 }, { x: -48, z: 38, r: 0.6 }];
     function routeFor(target) {
       const isBazaar = /bazaar|chowk|sabzi|medical|tailor|barber|mobile|kirana|sweet|bangle|post_office|ration_shop|atta_chakki/.test(target.name);
       const isTemple = /temple|flower/.test(target.name);
       const isSchoolRoom = /blackboard|school_bench/.test(target.name);
       const isSackPile = /sack_pile/.test(target.name);
-      const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom;
+      const isHouseInterior = /house_charpai|house_compound/.test(target.name);
+      const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom || isHouseInterior;
       const chain = [];
       if (needsBypass) chain.push(...BYPASS);
       if (isBazaar) chain.push(...BAZAAR_CHAIN);
       else if (isTemple) chain.push(...TEMPLE_CHAIN);
       else if (isSchoolRoom) chain.push(...SCHOOL_CHAIN);
       else if (isSackPile) chain.push(...SACK_PILE_CHAIN);
+      else if (isHouseInterior) chain.push(...HOUSE_INTERIOR_CHAIN);
       return chain;
     }
     for (const t of allTargets) t.waypoints = routeFor(t);

@@ -384,7 +384,16 @@ async function main() {
   }
 
   const player = createPlayer();
-  player.position.set(-48, 0, 25); // spawn just south of the house compound, facing it
+  // Opening spawn + camera facing — chosen (not the original (-48,25) facing north,
+  // which pointed the chase camera straight at the house block's solid, gapless
+  // south wall from 7m away, filling most of the opening frame with one flat
+  // surface) by comparing real untouched-camera screenshots of several candidates
+  // — see docs/shots/opening/ for the before/after and the two runners-up.
+  // House/lane/every building stayed exactly where they are; only the spawn point
+  // and the camera's own initial yaw moved.
+  const OPENING_SPAWN = { x: -60, z: 20 };
+  const OPENING_YAW = 2.9;
+  player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
 
   // Errand NPCs (item 1/3 brief) — placeholder capsules, same construction as the
@@ -502,6 +511,7 @@ async function main() {
   const trolleyForShadows = tractorForShadows.trolley;
 
   const camRig = new ThirdPersonCamera(camera, player);
+  camRig.yaw = OPENING_YAW; // see OPENING_SPAWN above — the camera's default yaw (Math.PI in the constructor) is what pointed the opening frame at the house's blind wall
   // Buildings the camera should never clip through (item 1) — raycast against the
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
