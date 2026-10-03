@@ -627,6 +627,66 @@ async function main() {
     placements: [{ container: scene, position: testPotPlaceholder.position.clone(), rotationY: 0 }],
   });
 
+  // TEMPORARY Tripo-day staging slots (October look-and-feel judgement task) — 6
+  // brand-new test slots, none of which replace any real gameplay object (unlike
+  // "tractor"/"halwai_kiosk"/etc above): a standalone lineup south of the chowk,
+  // open ground verified clear of every real collider (tmp/verify-staging-
+  // positions.mjs), purely so all 6 incoming Tripo models can be judged side by
+  // side at real scale. Same pattern as the ceramic_pot test slot above — simple
+  // code-built placeholder boxes (matte, correct documented size/facing — see
+  // docs/asset-slots.md), each labelled with a floating text sprite so a
+  // screenshot reads without guessing coordinates. Safe to remove once the real
+  // decision is made and the actual slots (whatever they turn out to be named)
+  // are wired at their real in-game positions instead.
+  function makeLabelSprite(text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    const texture = new THREE.CanvasTexture(canvas);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false }));
+    sprite.scale.set(2, 0.5, 1);
+    return sprite;
+  }
+  const TRIPO_STAGING_Z = 0;
+  const TRIPO_STAGING_SLOTS = [
+    { name: 'tripo_bush', x: -65, dims: { w: 1.0, h: 0.9, d: 1.0 }, color: 0x4a7c4a, rotationY: 0 },
+    { name: 'tripo_tree_neem', x: -58, dims: { w: 3.0, h: 4.5, d: 3.0 }, color: 0x3f6b3f, rotationY: 0 },
+    { name: 'tripo_tree_peepal', x: -51, dims: { w: 3.5, h: 5.5, d: 3.5 }, color: 0x356135, rotationY: 0 },
+    { name: 'tripo_mother', x: -44, dims: { w: 0.66, h: 1.65, d: 0.66 }, color: 0xc98ea0, rotationY: 0 }, // faces -Z, engine's person-forward convention
+    { name: 'tripo_tractor', x: -37, dims: { w: 1.9, h: 2.6, d: 3.5 }, color: 0xb23a2e, rotationY: 0 }, // faces -Z, nose forward (src/vehicles.js noseZ=-1.75)
+    // rotationY=0, open face -Z — same universal front convention as every other
+    // staging slot here (NOT the real in-game halwai_kiosk slot's own -X/rotationY=PI/2
+    // convention, which matches that building's own real, already-built geometry;
+    // this standalone judgement box has no such constraint, so it keeps the simpler
+    // convention rather than mixing two different axis-swap rules in one test lineup).
+    { name: 'tripo_halwai_kiosk', x: -30, dims: { w: 5.5, h: 3.5, d: 4.5 }, color: 0xd8b36a, rotationY: 0 },
+  ];
+  for (const s of TRIPO_STAGING_SLOTS) {
+    const placeholder = new THREE.Mesh(new THREE.BoxGeometry(s.dims.w, s.dims.h, s.dims.d), new THREE.MeshStandardMaterial({ color: s.color, roughness: 0.85 }));
+    placeholder.position.set(s.x, s.dims.h / 2, TRIPO_STAGING_Z);
+    placeholder.rotation.y = s.rotationY;
+    placeholder.castShadow = true;
+    placeholder.receiveShadow = true;
+    placeholder.name = `${s.name}_placeholder`;
+    const label = makeLabelSprite(s.name);
+    label.position.set(0, s.dims.h / 2 + 0.5, 0); // local to placeholder — box top + 0.5m
+    placeholder.add(label);
+    scene.add(placeholder);
+    assetSlots.register(s.name, {
+      dimensions: s.dims,
+      hide: [placeholder],
+      placements: [{ container: scene, position: new THREE.Vector3(s.x, 0, TRIPO_STAGING_Z), rotationY: s.rotationY }],
+    });
+  }
+
   assetSlots.resolveAll().then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
   });

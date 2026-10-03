@@ -21,6 +21,42 @@ import { getGLTFLoader } from './loaders.js';
 
 const MODEL_BASE = 'assets/models/';
 
+// Non-metal, non-glass floor: the highest of docs/art-rules-characters.md's own
+// per-category minimums (skin 0.75, cloth/hair 0.8, leather 0.6, plaster/wood
+// 0.7) — using the highest as a single universal floor is always compliant with
+// every category's own minimum at once, without having to reliably guess "is
+// this submesh skin, cloth, leather, or plaster" from an imported file alone.
+const MIN_ROUGHNESS_NON_METAL = 0.8;
+const METAL_ROUGHNESS_RANGE = [0.25, 0.45]; // art-rules-characters.md: "metal roughness 0.25-0.45 with metalness 1"
+const METAL_DETECT_THRESHOLD = 0.5; // a source metalness at/above this is assumed intentional (metal trim, not a shiny-plastic mistake)
+
+/**
+ * MATTE IS ENFORCED IN THE ENGINE, NOT IN THE IMAGE (docs/art-rules-characters.md)
+ * — a single enforcement pass over every loaded model's materials, so nothing
+ * imported can ship shinier than the art direction allows. Glass (detected via
+ * `transparent`/`transmission`, already a deliberate authoring choice) is left
+ * alone — it's the one other category allowed to be reflective, alongside metal.
+ * Mutates the material in place (shared across any clones of this slot, which is
+ * fine — they're all meant to look identical).
+ */
+function enforceMatteMaterial(material) {
+  if (!material || typeof material.roughness !== 'number') return; // not a PBR material (e.g. a line/points material) — nothing to clamp
+  const isGlass = material.transparent === true || (typeof material.transmission === 'number' && material.transmission > 0);
+  if (isGlass) return;
+  const isMetal = (material.metalness || 0) >= METAL_DETECT_THRESHOLD;
+  if (isMetal) {
+    material.metalness = 1;
+    material.roughness = THREE.MathUtils.clamp(material.roughness, METAL_ROUGHNESS_RANGE[0], METAL_ROUGHNESS_RANGE[1]);
+  } else {
+    material.metalness = 0;
+    material.roughness = Math.max(material.roughness, MIN_ROUGHNESS_NON_METAL);
+  }
+  // "no clearcoat, no sheen" — only present on MeshPhysicalMaterial (an upgrade
+  // GLTFLoader makes automatically when the source file uses those extensions).
+  if ('clearcoat' in material) material.clearcoat = 0;
+  if ('sheen' in material) material.sheen = 0;
+}
+
 async function urlExists(url) {
   try {
     const res = await fetch(url, { method: 'HEAD' });
@@ -69,6 +105,37 @@ export function createAssetSlotRegistry() {
 
     const source = gltf.scene;
 
+    // The source file's own ROTATION is untrusted at EVERY node, not just the
+    // root — an export tool's axis-convention mismatch can land on the scene
+    // root, on a child node, or both, and GLTFLoader wraps a single-root GLTF
+    // scene in its OWN identity Group, so `gltf.scene` itself is very often
+    // untransformed while the real (good or bad) rotation lives one level down
+    // on its child. Confirmed empirically, not assumed: resetting only
+    // `gltf.scene.rotation` did nothing (tmp/step1-facing-check.mjs still
+    // showed the test box facing backwards); baking the WORLD transform into
+    // flattened geometry was tried next and ALSO failed, for a different
+    // reason — flattening doesn't remove a bad rotation, it just bakes it
+    // permanently into vertex data, indistinguishable afterwards from a mesh
+    // that was genuinely modelled backwards (same empirical check, same
+    // result). The only fix that actually works: zero every node's LOCAL
+    // rotation, at every depth, BEFORE anything is measured — this is safe to
+    // do unconditionally for position/scale too (nothing here has or needs a
+    // skinned rig; swapped-in models are always static visual replacements,
+    // per this file's own "Animation" note in docs/asset-slots.md), but
+    // position/scale are already handled correctly regardless of nesting
+    // depth by the box-measurement-based correction a few lines down (solving
+    // for an absolute world-space result nets out the same no matter where in
+    // the hierarchy the error lives) — rotation has no equivalent "solve for
+    // the right absolute value" trick, so it has to be zeroed at the source,
+    // every node, before the slot's own documented rotationY (applied to the
+    // wrapper, at the bottom of this function) becomes the only rotation left.
+    // This still can't recover a model whose MESH DATA itself was authored
+    // facing the wrong way (as opposed to correct mesh data wrapped in a bad
+    // transform) — there is no bounding-box-only way to tell those apart; see
+    // docs/asset-slots.md's "Orientation" note and this task's own report.
+    source.traverse((o) => o.rotation.set(0, 0, 0));
+    source.updateMatrixWorld(true);
+
     // Ground + centre in local space, then uniformly scale to fit the slot's real-
     // world envelope — done on the (still unscaled) source once, before cloning per
     // placement, so every clone shares the same correct transform.
@@ -86,6 +153,8 @@ export function createAssetSlotRegistry() {
       if (o.isMesh) {
         o.castShadow = true;
         o.receiveShadow = true;
+        if (Array.isArray(o.material)) o.material.forEach(enforceMatteMaterial);
+        else enforceMatteMaterial(o.material);
       }
     });
 
