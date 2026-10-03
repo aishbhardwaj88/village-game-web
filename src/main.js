@@ -197,14 +197,36 @@ async function main() {
   // MAP.md's "Places inside the abadi" list: post office, ration shop, atta
   // chakki. Placed on open ground just west of the bazaar lane's own
   // START->BEND run (src/bazaar.js's BAZAAR_LANE_BEND {-58,22} /
-  // BAZAAR_LANE_ARRIVE {-58,8}, lane width 6 — these sit at x=-65, 4m clear of
-  // the lane's own west edge at x=-61), all facing east (+X) toward it — a
-  // small new cluster distinct from the general-store/tea-stall pair further
-  // north and the bazaar row further west/south. No walkable interior (none
-  // feeds a quest).
-  const POST_OFFICE_POS = { x: -65, z: 19 };
-  const RATION_SHOP_POS = { x: -65, z: 14 };
-  const ATTA_CHAKKI_POS = { x: -65, z: 9 };
+  // BAZAAR_LANE_ARRIVE {-58,8}, lane width 6, west edge at x=-61), all facing
+  // east (+X) toward it — a small new cluster distinct from the general-
+  // store/tea-stall pair further north and the bazaar row further
+  // west/south. No walkable interior (none feeds a quest).
+  //
+  // Bugfix (world-validator check 1/7): originally x=-65 — "4m clear of the
+  // lane's own west edge" was the only clearance actually checked at the
+  // time (via spawn-check.js/collider-audit.js, neither of which looks at
+  // NPCs). These 3 buildings are rotated 90 degrees to face the lane, which
+  // SWAPS which local dimension extends along world X — each building's
+  // real local `d` (depth, ~3m) becomes its world-X extent, not `w`. At
+  // x=-65 that put ration_shop's own east wall past BAZAAR_EAST_X=-64,
+  // overlapping unit 8's shopkeeper. First fix moved it to x=-70 — but that
+  // was STILL within the bazaar row's own x-span (BAZAAR_WEST_X=-100 to
+  // BAZAAR_EAST_X=-64) and every one of the row's 8 shopkeepers stands at
+  // the SAME z (BAZAAR_FRONT_Z+SHOPKEEPER_DEPTH=14.5, src/bazaarLife.js),
+  // spaced only 4.5m apart in x (bazaarUnitCx) — a 3m-wide wall collider
+  // anywhere in that x-range clips some unit's shopkeeper, just not
+  // necessarily the same one (confirmed: x=-70's ration_shop collider,
+  // [-71.5,-68.5]x[12.2,15.8], now clipped unit 6 at (-70.75,14.5) instead
+  // of unit 7 — a different NPC, same bug class). The real fix is to get
+  // the whole cluster OUT of the row's x-span and its z-band entirely, not
+  // nudge within it: moved south along the bazaar approach lane corridor
+  // (still facing +x toward it), to an area verified clear by direct
+  // minDistanceToColliders probing with the real building half-extents
+  // (tmp/scan-newshops-area.mjs + tmp/verify-newshops-reloc2.mjs) — 3.4m+
+  // clearance at every one of the 3 new centres.
+  const POST_OFFICE_POS = { x: -68, z: 26 };
+  const RATION_SHOP_POS = { x: -68, z: 31 };
+  const ATTA_CHAKKI_POS = { x: -68, z: 36 };
   const NEW_SHOPS_ROT = Math.PI / 2; // faces +X, toward the bazaar lane
   shopsGroup.add(buildPostOffice(POST_OFFICE_POS, NEW_SHOPS_ROT));
   shopsGroup.add(buildRationShop(RATION_SHOP_POS, NEW_SHOPS_ROT));
@@ -1088,6 +1110,28 @@ async function main() {
     }
     const playerHit = orientedBoxOverlapsAnyBox(player.position, 0, PLAYER_COLLISION_RADIUS, PLAYER_COLLISION_RADIUS, STATIC_COLLIDERS);
     if (playerHit) console.warn(`[collision guard] player overlaps a wall: pos=(${player.position.x.toFixed(2)},${player.position.z.toFixed(2)}) box=X[${playerHit.minX.toFixed(2)},${playerHit.maxX.toFixed(2)}] Z[${playerHit.minZ.toFixed(2)},${playerHit.maxZ.toFixed(2)}]`);
+
+    // World-validator check 1's live counterpart — named NPCs and the
+    // bazaar_life instanced villagers were the only "no wall overlap" gap
+    // this per-frame guard had (it only ever covered vehicles/trolley/
+    // player): a real NPC-overlapping-a-wall bug (a bazaar shopkeeper inside
+    // a relocated building's collider) shipped once and was only caught by
+    // tools/world-validator.js, not by playing the game with devtools open.
+    // Same radii as that check (src/npc.js's NPC_HEIGHT/2 doesn't apply
+    // here; these are the same real-world NPC footprint radii), console.warn
+    // only — cheap circle-vs-box distance checks, not a frame-budget
+    // concern at this NPC/instance count.
+    for (const npc of [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc]) {
+      const clearance = minSignedDistanceToColliders({ x: npc.position.x, z: npc.position.z }, 0.33, STATIC_COLLIDERS);
+      if (clearance < 0) console.warn(`[collision guard] ${npc.name} overlaps a wall: pos=(${npc.position.x.toFixed(2)},${npc.position.z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
+    }
+    const _m = new THREE.Matrix4();
+    for (let i = 0; i < bazaarLife.mesh.count; i++) {
+      bazaarLife.mesh.getMatrixAt(i, _m);
+      const x = _m.elements[12], z = _m.elements[14];
+      const clearance = minSignedDistanceToColliders({ x, z }, 0.32, STATIC_COLLIDERS);
+      if (clearance < 0) console.warn(`[collision guard] bazaar_life[${i}] overlaps a wall: pos=(${x.toFixed(2)},${z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
+    }
   }
 
   // Item 3 (house interior) — the only place the player's Y ever changes: the game
@@ -1717,6 +1761,27 @@ async function main() {
           trolley.finishMoveStep(dt, trolleyPrevX, trolleyPrevZ);
         }
         return { x: vehicle.group.position.x, z: vehicle.group.position.z, speed: vehicle.speed };
+      },
+      // tools/world-validator.js (check 6 — reachability) — a deterministic,
+      // fixed-dt single step of the on-foot player's REAL movement resolver
+      // (resolveMove -> clamp -> groundHeightAt, exactly the `else` branch of
+      // the real per-frame input handler above, minus UI/audio bookkeeping —
+      // same pattern as stepTractorTrolleyPhysics). Takes a world-space
+      // direction directly (not camera-relative input), since the caller
+      // computes "which way is the target" itself each step — local Vector3s,
+      // not the shared module-level forward/right/moveDir the real per-frame
+      // loop also uses, so this can't race with a real rAF tick running
+      // concurrently (harmless either way since no real key is held during a
+      // validator run, but cheap to keep fully isolated).
+      stepPlayerMove: (dt, dirX, dirZ) => {
+        const len = Math.hypot(dirX, dirZ);
+        const nx = len > 1e-6 ? dirX / len : 0;
+        const nz = len > 1e-6 ? dirZ / len : 0;
+        resolveMove(player.position, nx * MOVE_SPEED * dt, nz * MOVE_SPEED * dt, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
+        player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
+        return { x: player.position.x, z: player.position.z };
       },
     };
   }

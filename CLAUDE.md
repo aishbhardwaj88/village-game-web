@@ -150,18 +150,40 @@ regression, and never re-save the baseline over a real regression just to make
 the script pass. Only pass `--save-baseline` after you've personally looked at
 a screenshot confirming the new behaviour is actually correct.
 
-## 10. Scratch/test scripts
+## 10. World validator — permanent, added 2026-10-03
+
+`tools/world-validator.js` runs the UNTOUCHED village (load, click Play, advance the
+one blocking intro line, teleport/drive nothing) through 8 structural checks, and is
+wired into `npm run build` (`vite build && node tools/world-validator.js` —
+`npm run build:unchecked` skips it, for internal tooling only): no vehicle/trolley/NPC/
+player overlaps a wall; nothing floats; nothing is buried; every wall has collider
+coverage; every collider corresponds to real, visible geometry; every interaction
+point and building entrance is reachable on foot by the real movement resolver (not a
+straight line); no two buildings overlap; draw calls ≤140 and assets ≤40MB. It exits
+non-zero on any failure, which fails `npm run build`. A lighter live version of check 1
+(no vehicle/NPC/player overlaps a wall) also runs every frame in dev mode
+(`devCheckPenetration()` in `src/main.js`) and logs to the browser console — the other
+7 checks only run at build time.
+
+**Every future building, prop, vehicle, or imported model must pass this validator.**
+A new asset that breaks a check is not finished — fix it (or, if the check's own
+definition is wrong for a documented reason, say so in your report and fix the check,
+never silently loosen it to make a real problem disappear). `background_houses`
+material-bucket granularity is a known, documented exception to check 7 (see the
+check's own source comments) — it is not a precedent for excluding anything else.
+
+## 11. Scratch/test scripts
 
 Never `rm` a file you created for a one-off check (a throwaway Playwright script, a
 test screenshot). Write it into `tmp/` (git-ignored) and leave it there — don't delete
 it afterward.
 
-## 11. Git
+## 12. Git
 
 Commit on `main` with clear messages. **Never push** — the user pushes manually via
 GitHub Desktop. Never touch `../Village nostalgia` or the reference folders (§2).
 
-## 12. Report format — end every reply with this exact line
+## 13. Report format — end every reply with this exact line
 
 ```
 LINK: <url or 'not yet'>. YOU: <exactly what I must do, or 'nothing'>. NEXT: <what I will do next>.

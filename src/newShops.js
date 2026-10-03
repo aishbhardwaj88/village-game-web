@@ -272,6 +272,7 @@ function mapFrontFaceToCell(geometry, col) {
 export async function buildNewShopSignboards(postOfficePos, postOfficeRot, rationShopPos, rationShopRot, attaChakkiPos, attaChakkiRot) {
   const texture = await buildNewShopSignAtlas();
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
+  material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
   const geos = [];
   const placements = [
     [POST_OFFICE, postOfficePos, postOfficeRot, 0],

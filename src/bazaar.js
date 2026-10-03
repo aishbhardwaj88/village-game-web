@@ -434,6 +434,7 @@ function mapFrontFaceToAtlasCell(geometry, col, row) {
 export async function buildBazaarSignboards() {
   const texture = await buildBazaarSignAtlas();
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
+  material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
   const geos = [];
   BAZAAR_UNITS.forEach((unit, idx) => {
     const cx = bazaarUnitCx(idx);

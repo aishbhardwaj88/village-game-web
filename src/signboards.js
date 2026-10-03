@@ -88,6 +88,7 @@ function mapFrontFaceToAtlasHalf(geometry, half) {
 export async function buildSignboards(tea, store) {
   const texture = await buildAtlasTexture(tea.hi, tea.en, store.hi, store.en);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
+  material.name = 'signboard'; // world-validator (check 2) — wall/roof-mounted fixtures are correctly elevated above y=0 by design; named so that exclusion is precise, not a guess at merged-bucket identity
 
   const teaGeo = new THREE.BoxGeometry(tea.width, 0.5, 0.04);
   mapFrontFaceToAtlasHalf(teaGeo, 'left');

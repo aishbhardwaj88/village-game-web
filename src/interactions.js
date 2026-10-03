@@ -133,13 +133,20 @@ registerInteraction({
 });
 
 // --- item 5: two optional points, not part of the errand ---
-export const BELL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x - 5, 0, 116); // beside the back block's yard-facing door
+// Bugfix (world-validator check 1/6): the school's back classroom block
+// (src/village.js's buildSchool()) is a SOLID 24x6m mass at z=[112,118], not a
+// thin wall — these three positions all used z=113-116, which the validator's
+// real STATIC_COLLIDERS check confirmed is genuinely inside that solid block
+// (clearance exactly -NPC_RADIUS, i.e. these NPCs are centred ON the wall
+// boundary), not actually "beside the door" / "inside the yard" as the
+// original comments intended. Moved 6m south, clear of the block.
+export const BELL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x - 5, 0, 110); // beside the back block's yard-facing wall, in the open yard
 export const CHARPAI_POSITION = new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z + 5.5 / 2 + 0.85); // between the two chairs outside the halwai
 
 // --- task 4: second errand — the teacher and the school bell (already above) are the
 // two alternate ways to hand over the tiffin and collect the sister. ---
-export const TEACHER_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 116); // opposite side of the same yard-facing door as the bell
-export const SISTER_SCHOOL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 113); // beside the teacher, inside the yard — until collected
+export const TEACHER_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 110); // opposite side of the same yard-facing wall as the bell, in the open yard
+export const SISTER_SCHOOL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 4, 0, 107); // beside the teacher, inside the yard — until collected
 
 /** Shared by both alternate triggers below — advances the quest and tells main.js to
  * start the sister NPC following the player (src/npcRoutines.js createFollowRoutine,
