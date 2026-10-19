@@ -685,7 +685,11 @@ async function main() {
     const placeholder = new THREE.Mesh(new THREE.BoxGeometry(s.dims.w, s.dims.h, s.dims.d), new THREE.MeshStandardMaterial({ color: s.color, roughness: 0.85 }));
     placeholder.position.set(s.x, s.dims.h / 2, TRIPO_STAGING_Z);
     placeholder.rotation.y = s.rotationY;
-    placeholder.castShadow = true;
+    // No shadow casting here deliberately (draw-call headroom pass, BACKLOG item 1):
+    // this is a temporary side-by-side judgement lineup for comparing real Tripo
+    // downloads against their placeholder, not real scenery — each shadow-casting
+    // mesh costs a second (depth-only) draw call, and these 6 boxes don't need one.
+    placeholder.castShadow = false;
     placeholder.receiveShadow = true;
     placeholder.name = `${s.name}_placeholder`;
     const label = makeLabelSprite(s.name);

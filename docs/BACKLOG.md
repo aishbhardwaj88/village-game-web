@@ -17,10 +17,28 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
 
 ## 1. Headroom and hygiene (must happen before adding more static content)
 
-- [ ] Draw-call headroom pass - currently 139/140 (see `tmp/` build log, 2026-10-19),
-      effectively zero margin. Re-apply `mergeGroupByMaterial`/instancing discipline
-      (`src/mergeUtils.js`) across any ungrouped geometry; target back under 115 before
-      building M4-M7's new geometry (postman, darzi shop, monkey, baagh trees/props)
+- [x] Draw-call headroom pass, round 1 - investigated the full scene breakdown
+      (`tmp/draw-call-breakdown.mjs`, `tmp/draw_call_scene_dump2.mjs`). Finding: the
+      village/bazaar/temple/field static geometry and every vehicle body are ALREADY
+      fully merged by material (two prior dedicated passes, see `docs/parked.md`
+      2026-09-18/19) - there is no free, risk-free static-geometry merge left sitting
+      around. The one real waste found: the 6 October Tripo-comparison placeholder
+      boxes (non-gameplay, a temporary judgement lineup near the chowk) were casting
+      shadows, costing a second draw call each for no visual reason - turned that off
+      (`src/main.js`, `TRIPO_STAGING_SLOTS` loop). Result: 139 -> 133 draw calls
+      (world-validator's fixed-camera count), confirmed via `npm run build` (13/13
+      still pass) and `node tools/screenshot.js` (grounding/console clean). The
+      remaining big-ticket levers (consolidating vehicle body material-pair variety
+      from ~11 down further, or instancing vehicle wheels/NPCs) both carry real risk
+      per CLAUDE.md's regression-guard rule (wheel rotation specifically) or trade
+      away visual fidelity that a prior session deliberately chose - NOT done here.
+- [ ] Draw-call headroom, round 2 (if needed) - before building M4-M7's new geometry
+      (postman, darzi shop, monkey, baagh trees/props), build each one using the
+      existing `BuildingKit`/`mergeGroupByMaterial`/instancing patterns from the
+      start (never one mesh per part), and re-measure after each mission. Only revisit
+      vehicle-wheel/NPC instancing (see round 1's note above) if draw calls actually
+      threaten the 140 hard ceiling again - treat it as a dedicated, carefully-tested
+      task of its own if it becomes necessary, never a quick fix.
 - [ ] Refresh `docs/regression-baseline.json` - current one is dated 2026-09-20, predates
       all October structural work and the dashboard/story additions. Confirm `npm run
       build`, `npm run check-budget`, and a manual look at the result are all correct,
