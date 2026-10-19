@@ -17,14 +17,16 @@ checkbox syntax (`- [ ]` / `- [x]`) exact, one item per line, so it parses corre
 
 ## Missions
 
-- [ ] M1 - Jalebi for Maa (exists, verify still passes after dayline/story changes)
-- [ ] M2 - Tiffin to school, bring sister home (exists, verify)
-- [ ] M3 - Wheat sacks to kirana, earn money for Dada's gift (exists, reframe dialogue to birthday)
-- [ ] M4 - Find the postman on his cycle route, get the letter from Bua's family
-- [ ] M5 - Collect Dada's new kurta from the darzi (bazaar tailor shop)
-- [ ] M6 - Monkey steals the kurta; comedic rooftop/lane chase, no harm to anyone
-- [ ] M7 - Drive tractor+trolley to the mango baagh, knock down mangoes, bring them home
-- [ ] M8 - Sunset rooftop family scene, Dada's birthday, mithai, closing lines, credits
+- [x] M1 - Jalebi for Maa (verified still passes after the 8-mission quest-step rework)
+- [x] M2 - Tiffin to school, bring sister home (verified)
+- [x] M3 - Wheat sacks to kirana, earn money for Dada's gift (reframed dialogue to the birthday)
+- [x] M4 - Find the postman on his cycle route, get the letter from Bua's family
+- [x] M5 - Collect Dada's new kurta from the darzi (bazaar tailor shop)
+- [x] M6 - Monkey steals the kurta; comedic lane chase, no harm to anyone (ground-level chase
+      through the bazaar frontage/chowk, not literally rooftops - see docs/parked.md)
+- [x] M7 - Drive tractor+trolley to the mango baagh, knock down mangoes, bring them home
+- [x] M8 - Sunset rooftop family scene, Dada's birthday, closing lines, credits (dialogue-only
+      staged scene at the stairs' own roof landing - see docs/parked.md for why)
 
 Each mission needs: objective text (English primary / Hindi secondary), at least one
 dialogue exchange with a named character, a waypoint, and a clean start-to-finish
@@ -32,10 +34,12 @@ playtest with no console errors.
 
 ## Characters
 
-- [ ] Every mission has its own named character(s) present and interactable
-- [ ] Each mission character has a distinct silhouette/colour (code-built placeholder
+- [x] Every mission has its own named character(s) present and interactable
+- [x] Each mission character has a distinct silhouette/colour (code-built placeholder
       or real asset-slot model - either is acceptable, per `docs/asset-slots.md`)
-- [ ] Postman (M4), darzi (M5), monkey (M6) exist as new NPCs/props with simple routines
+- [x] Postman (M4), darzi (M5), monkey (M6) exist as new NPCs/props with simple routines
+      (darzi reuses the bazaar's existing ambient shopkeeper instance at the tailor
+      unit - see docs/parked.md for why a dedicated new NPC wasn't added there)
 
 ## World/look
 

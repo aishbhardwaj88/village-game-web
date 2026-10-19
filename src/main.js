@@ -15,6 +15,7 @@ import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildVegetation, lanesideClusters } from './vegetation.js';
 import { buildTrees } from './trees.js';
+import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
@@ -57,7 +58,7 @@ import {
   BAZAAR_EAST_X,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
-import { createWaypointLoop, createStirLoop, createFollowRoutine } from './npcRoutines.js';
+import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun } from './npcRoutines.js';
 import {
   findNearestInteraction,
   resolveLabel,
@@ -71,6 +72,11 @@ import {
   registerShopBuy,
   registerSabziWeighing,
   registerBangleTryOn,
+  registerDarziKurta,
+  linkPostmanPosition,
+  linkMonkeyPosition,
+  registerMangoKnock,
+  registerRoofEnding,
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
@@ -304,15 +310,20 @@ async function main() {
     .catch((err) => console.error('Failed to build bazaar signboards', err));
 
   // Shop interactions (this task) — one shared "buy" at every bazaar counter except
-  // kirana (has its own dedicated wheat-errand interaction, src/interactions.js) and
-  // sabzi/bangle (their own signature interactions instead, right below). Position:
-  // same "just outside the counter" distance kirana's own point uses.
+  // kirana (has its own dedicated wheat-errand interaction, src/interactions.js),
+  // sabzi/bangle (their own signature interactions), and tailor (M5's kurta pickup,
+  // docs/STORY.md). Position: same "just outside the counter" distance kirana's own
+  // point uses.
+  let DARZI_POSITION = null;
   BAZAAR_UNITS.forEach((unit, idx) => {
     const pos = new THREE.Vector3(bazaarUnitCx(idx), 0, BAZAAR_FRONT_Z - 1.5);
     if (unit.trade === 'kirana') return;
     if (unit.trade === 'sabzi') registerSabziWeighing(pos);
     else if (unit.trade === 'bangle') registerBangleTryOn(pos);
-    else registerShopBuy(unit.trade, pos);
+    else if (unit.trade === 'tailor') {
+      DARZI_POSITION = pos;
+      registerDarziKurta(pos);
+    } else registerShopBuy(unit.trade, pos);
   });
 
   // NPC life in the bazaar (this task's item 2) — one shared InstancedMesh, see
@@ -452,6 +463,66 @@ async function main() {
   scene.add(sisterNpc);
   let sisterFollowing = false;
   const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2 });
+
+  // M4 (docs/STORY.md) — the postman, cycling the same proven-clear hero-zone lane
+  // corridor the child already walks (HOUSE_CENTER's courtyard out to the point just
+  // west of the halwai's footprint — see childWalk's own doc comment above for why
+  // that particular midpoint is safe). A capsule NPC like every other named
+  // villager here, not an actual rigged bicycle — the "cycle round" is flavour text,
+  // not a new vehicle-NPC rendering system.
+  const postmanNpc = createNPC(0x8a6a2a, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_postman');
+  scene.add(postmanNpc);
+  const postmanWalk = createWaypointLoop(
+    postmanNpc,
+    [
+      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
+      { x: -44, z: 55 },
+    ],
+    { speed: 1.5, pauseSeconds: 2 }
+  );
+  linkPostmanPosition(postmanNpc.position);
+
+  // M6 (docs/STORY.md) — the monkey. Spawns out of the way (near the darzi, where
+  // M5/M6 actually happen) and stays invisible/inert until the snatch trigger below
+  // moves and shows it right next to the player. Its chase route stays on the
+  // bazaar's own front lane (BAZAAR_FRONT_Z - 1.5) and the open chowk plaza east of
+  // it — both already proven clear (every bazaar shop counter interaction sits on
+  // that same line; the chowk is explicitly open ground, src/bazaar.js).
+  const monkeyNpc = createNPC(0x6b4a33, { x: bazaarUnitCx(3), z: BAZAAR_FRONT_Z - 1.5 }, 0, 'npc_monkey');
+  monkeyNpc.scale.setScalar(0.55); // a monkey, not another villager
+  monkeyNpc.visible = false;
+  scene.add(monkeyNpc);
+  linkMonkeyPosition(monkeyNpc.position);
+  let monkeyChaseUpdate = null;
+
+  function startMonkeyChase() {
+    monkeyNpc.position.set(player.position.x, 0, player.position.z);
+    monkeyNpc.visible = true;
+    monkeyChaseUpdate = createWaypointRun(
+      monkeyNpc,
+      [
+        { x: player.position.x, z: player.position.z },
+        { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 1.5 },
+        { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4 },
+      ],
+      { speed: 2.4, pauseSeconds: 0.4 }
+    );
+    quest.step = QUEST_STEPS.KURTA_STOLEN;
+    updateObjective();
+    dialogue.say([{ hi: 'बंदर कुर्ता लेकर भाग गया!', en: 'A monkey snatched the kurta!' }]);
+  }
+
+  // M8 — the roof ending (docs/STORY.md). Registered at the stairs' own landing
+  // (HOUSE_STAIRS.x, not the roof footprint's geometric centre): collision in this
+  // game is 2D (x/z only, no height-awareness — confirmed by grep, and the same
+  // reason the roof parapet has no railing collision, CLAUDE.md/parked.md's own
+  // documented, accepted limitation), so the house's real west wall still blocks
+  // horizontal movement onto the rest of the roof slab even once elevated — the
+  // landing directly above the stairs is the only part of "the roof" actually
+  // walkable right now. Unreachable on foot at ground level at this x/z (solid
+  // wall/stair structure there), so only ever in range once the player has
+  // actually climbed the real stairs.
+  registerRoofEnding(new THREE.Vector3(HOUSE_STAIRS.x, 0, (HOUSE_STAIRS.zStart + HOUSE_STAIRS.zEnd) / 2));
 
   // Waypoint (item 4) — repositioned each frame to the current objective's target.
   const waypointGlow = createWaypointGlow();
@@ -769,6 +840,11 @@ async function main() {
       ])
     );
 
+    // M7 — the mango baagh (src/baagh.js, docs/STORY.md), open ground east of the
+    // track loop. Folds into the same shared tree draw call as every species above.
+    fieldGroup.add(buildTrees(MANGO_TREE_PLACEMENTS));
+    MANGO_KNOCK_POSITIONS.forEach((pos, i) => registerMangoKnock(String(i), pos));
+
     // Item 3b — low vegetation (grass tufts + scrub bushes), instanced (one
     // draw call per kind regardless of instance count — src/vegetation.js),
     // clustered (never an even scatter) along both edges of every real lane
@@ -1052,9 +1128,22 @@ async function main() {
     if ([QUEST_STEPS.LOADING_WHEAT, QUEST_STEPS.WHEAT_DELIVERED, QUEST_STEPS.BOUGHT_GOODS].includes(quest.step)) {
       quest.step = QUEST_STEPS.ERRAND2_COMPLETE;
     }
+    if ([QUEST_STEPS.FINDING_POSTMAN, QUEST_STEPS.HAVE_LETTER].includes(quest.step)) {
+      quest.step = QUEST_STEPS.ERRAND3_COMPLETE;
+    }
+    if ([QUEST_STEPS.GOING_TO_DARZI, QUEST_STEPS.HAVE_KURTA, QUEST_STEPS.KURTA_STOLEN, QUEST_STEPS.KURTA_RECOVERED].includes(quest.step)) {
+      quest.step = QUEST_STEPS.ERRAND4_COMPLETE;
+    }
+    if ([QUEST_STEPS.GOING_TO_BAAGH, QUEST_STEPS.KNOCKING_MANGOES, QUEST_STEPS.MANGOES_LOADED].includes(quest.step)) {
+      quest.step = QUEST_STEPS.ERRAND6_COMPLETE;
+    }
+    if (quest.step === QUEST_STEPS.GOING_TO_ROOF) {
+      quest.step = QUEST_STEPS.ERRAND7_COMPLETE;
+    }
     quest.sacksCollected = 0;
     quest.sacksDelivered = 0;
     quest.money = 0;
+    quest.mangoesCollected = 0;
     updateObjective();
   }
 
@@ -1063,14 +1152,22 @@ async function main() {
   // those cards show only "Continue" (dismiss, keep playing); only the truly final
   // card (all three errands done) offers Play again + Credits — see src/quest.js's
   // QUEST_STEPS doc comment.
+  const MID_END_CARD_TEXT = {
+    [QUEST_STEPS.ERRAND2_COMPLETE]: { en: 'Both errands are done. The afternoon is yours.', hi: 'दोनों काम हो गए। बाकी दोपहर तुम्हारी है।' },
+    [QUEST_STEPS.ERRAND3_COMPLETE]: { en: "Enough for Dada's gift. One more thing to do.", hi: 'दादा के तोहफे के लिए काफी हो गया। एक काम और बाकी है।' },
+    [QUEST_STEPS.ERRAND4_COMPLETE]: { en: "Bua's letter is home safe.", hi: 'बुआ की चिट्ठी घर पहुँच गई।' },
+    [QUEST_STEPS.ERRAND6_COMPLETE]: { en: 'The kurta made it home — monkey and all.', hi: 'कुर्ता घर पहुँच गया — बंदर के साथ भी।' },
+    [QUEST_STEPS.ERRAND7_COMPLETE]: { en: 'The trolley is full of mangoes.', hi: 'ट्रॉली आमों से भर गई।' },
+  };
+
   function showEndCard(step) {
     const isFinal = step === QUEST_STEPS.ALL_COMPLETE;
     if (isFinal) {
-      endEnEl.textContent = 'All three errands are done. The afternoon is yours.';
-      endHiEl.textContent = 'तीनों काम हो गए। बाकी दोपहर तुम्हारी है।';
-    } else if (step === QUEST_STEPS.ERRAND2_COMPLETE) {
-      endEnEl.textContent = 'Both errands are done. The afternoon is yours.';
-      endHiEl.textContent = 'दोनों काम हो गए। बाकी दोपहर तुम्हारी है।';
+      endEnEl.textContent = 'All eight errands are done. Happy birthday, Dada.';
+      endHiEl.textContent = 'आठों काम हो गए। जन्मदिन मुबारक हो, दादा।';
+    } else if (MID_END_CARD_TEXT[step]) {
+      endEnEl.textContent = MID_END_CARD_TEXT[step].en;
+      endHiEl.textContent = MID_END_CARD_TEXT[step].hi;
     } else {
       endEnEl.textContent = 'The jalebi made it home.';
       endHiEl.textContent = 'जलेबी घर पहुँच गई!';
@@ -1093,7 +1190,21 @@ async function main() {
     if (quest.step === QUEST_STEPS.LOADING_WHEAT) return quest.sacksCollected > quest.sacksDelivered ? KIRANA_POSITION : SACK_PILE_POSITION;
     if (quest.step === QUEST_STEPS.WHEAT_DELIVERED) return STORE_POS;
     if (quest.step === QUEST_STEPS.BOUGHT_GOODS) return PITAJI_POSITION;
-    return null; // ALL_COMPLETE — all three errands done, nowhere to point
+    if (quest.step === QUEST_STEPS.ERRAND3_COMPLETE) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.FINDING_POSTMAN) return postmanNpc.position;
+    if (quest.step === QUEST_STEPS.HAVE_LETTER) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.ERRAND4_COMPLETE) return MAA_POSITION;
+    if (quest.step === QUEST_STEPS.GOING_TO_DARZI) return DARZI_POSITION;
+    if (quest.step === QUEST_STEPS.HAVE_KURTA) return MAA_POSITION;
+    if (quest.step === QUEST_STEPS.KURTA_STOLEN) return monkeyNpc.position;
+    if (quest.step === QUEST_STEPS.KURTA_RECOVERED) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.ERRAND6_COMPLETE) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.GOING_TO_BAAGH) return BAAGH_POSITION;
+    if (quest.step === QUEST_STEPS.KNOCKING_MANGOES) return BAAGH_POSITION;
+    if (quest.step === QUEST_STEPS.MANGOES_LOADED) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.ERRAND7_COMPLETE) return PITAJI_POSITION;
+    if (quest.step === QUEST_STEPS.GOING_TO_ROOF) return HOUSE_CENTER;
+    return null; // ALL_COMPLETE — all eight errands done, nowhere to point
   }
 
   // Shared by the end card's "Play again" button and the pause menu's "Restart
@@ -1141,6 +1252,10 @@ async function main() {
     },
     onPumpWater: () => flashWaterMesh(pumpWaterMesh),
     onWaterTulsi: () => flashWaterMesh(tulsiWaterMesh),
+    onKurtaRecovered: () => {
+      monkeyNpc.visible = false;
+      monkeyChaseUpdate = null;
+    },
     tractor: tractorForShadows, // third errand — isTrolleyNearby() reads this live, see src/wheatErrand.js
     sackCarrier,
   };
@@ -1197,7 +1312,7 @@ async function main() {
     // here; these are the same real-world NPC footprint radii), console.warn
     // only — cheap circle-vs-box distance checks, not a frame-budget
     // concern at this NPC/instance count.
-    for (const npc of [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc]) {
+    for (const npc of [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc]) {
       const clearance = minSignedDistanceToColliders({ x: npc.position.x, z: npc.position.z }, 0.33, STATIC_COLLIDERS);
       if (clearance < 0) console.warn(`[collision guard] ${npc.name} overlaps a wall: pos=(${npc.position.x.toFixed(2)},${npc.position.z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
     }
@@ -1386,9 +1501,20 @@ async function main() {
       maaWalk(dt);
       halwaiStir(dt);
       childWalk(dt);
+      postmanWalk(dt);
       if (sisterFollowing) sisterFollow(dt);
       MAA_POSITION.copy(maaNpc.position);
       bazaarLife.update(dt);
+
+      // M6 (docs/STORY.md) — the monkey ambush triggers itself, not an interaction
+      // point: once the player has walked far enough from the darzi carrying the
+      // kurta, it snatches it. A simple distance check, not a trigger volume system —
+      // consistent with how little else in this codebase needs one.
+      if (quest.step === QUEST_STEPS.HAVE_KURTA && DARZI_POSITION) {
+        const d = Math.hypot(player.position.x - DARZI_POSITION.x, player.position.z - DARZI_POSITION.z);
+        if (d > 8) startMonkeyChase();
+      }
+      if (monkeyChaseUpdate) monkeyChaseUpdate(dt);
 
       // Item 8 (audio mix pass) — the whole mix ducks under the dialogue panel,
       // same as it would duck under actual voice lines if there were any.
@@ -1641,7 +1767,7 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc],
+      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc, monkeyNpc],
       props: [bellProp],
       interactions: {
         MAA_POSITION,

@@ -388,6 +388,38 @@ export class AudioEngine {
     });
   }
 
+  /** M7's "knock mangoes down" interaction — a short, soft, low thud (a branch
+   * shake, not an impact), same low-sine-drop technique as playWeighingScale's
+   * own thud above. */
+  playMangoThud() {
+    if (!this.started) return;
+    const t = this.ctx.currentTime;
+    const thud = this.ctx.createOscillator();
+    thud.type = 'sine';
+    thud.frequency.setValueAtTime(140, t);
+    thud.frequency.exponentialRampToValueAtTime(70, t + 0.16);
+    const thudGain = this.ctx.createGain();
+    thudGain.gain.setValueAtTime(0.0001, t);
+    thudGain.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+    thudGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    thud.connect(thudGain).connect(this.master);
+    thud.start(t);
+    thud.stop(t + 0.24);
+
+    const rustle = this.ctx.createBufferSource();
+    rustle.buffer = createNoiseBuffer(this.ctx, 0.3);
+    const rustleFilter = this.ctx.createBiquadFilter();
+    rustleFilter.type = 'highpass';
+    rustleFilter.frequency.value = 1800;
+    const rustleGain = this.ctx.createGain();
+    rustleGain.gain.setValueAtTime(0.0001, t);
+    rustleGain.gain.exponentialRampToValueAtTime(0.04, t + 0.03);
+    rustleGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    rustle.connect(rustleFilter).connect(rustleGain).connect(this.master);
+    rustle.start(t);
+    rustle.stop(t + 0.32);
+  }
+
   _playBirdChirp() {
     if (!this.started) return;
     const t = this.ctx.currentTime;

@@ -38,6 +38,7 @@ const BARK_COLOR_LIGHT = darken(PALETTE.woodTrim, 0.9);
 const LEAF_NEEM = new THREE.Color(darken(PALETTE.greyGreen, 0.42));
 const LEAF_PEEPAL = new THREE.Color(darken(PALETTE.greyGreen, 0.5));
 const LEAF_BABOOL = new THREE.Color(darken(PALETTE.greyGreen, 0.38)).lerp(new THREE.Color(PALETTE.mustard), 0.22); // dry, dusty acacia scrub — still visibly darker than the ground
+const LEAF_MANGO = new THREE.Color(darken(PALETTE.greyGreen, 0.44)).lerp(new THREE.Color(PALETTE.terracotta), 0.08); // dense, dark glossy canopy — a touch warmer than neem, still the same family
 
 function paintFlat(geometry, color) {
   const count = geometry.attributes.position.count;
@@ -166,6 +167,34 @@ export function buildBaboolTree(seed = 2) {
   return group;
 }
 
+/** Mango — M7's baagh (docs/STORY.md), the signature "knock mangoes down" tree.
+ * Dense, rounded, a bit shorter and bushier than the neem — reads as an orchard
+ * tree, not a shade tree. Same build pattern as the three species above. */
+export function buildMangoTree(seed = 3) {
+  const group = new THREE.Group();
+  group.name = 'tree_mango';
+  const rand = mulberry32(seed);
+  const height = 3.6 + rand() * 0.5;
+  const trunkGeo = buildTrunk(height * 0.5, 0.2, 0.13, BARK_COLOR);
+  const canopyParts = [];
+  const canopyY = height * 0.5;
+  const blobCount = 6;
+  for (let i = 0; i < blobCount; i++) {
+    const a = (i / blobCount) * Math.PI * 2;
+    const r = 0.95 + rand() * 0.3;
+    canopyParts.push(
+      buildCanopyBlob(Math.cos(a) * r * 0.85, canopyY + height * 0.2 + (rand() - 0.5) * 0.35, Math.sin(a) * r * 0.85, 1.1 + rand() * 0.25, 0.95, LEAF_MANGO)
+    );
+  }
+  canopyParts.push(buildCanopyBlob(0, canopyY + height * 0.34, 0, 1.25, 0.9, LEAF_MANGO));
+  const mesh = new THREE.Mesh(mergeAndColor([trunkGeo, ...canopyParts]), null);
+  mesh.name = 'tree_mango_mesh';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  return group;
+}
+
 // Deterministic tiny PRNG (not Math.random()) so repeated builds (e.g. a future
 // hot-reload) produce the same tree shape at the same seed — same technique
 // src/field.js's crop placement already uses for reproducible scatter.
@@ -180,10 +209,10 @@ function mulberry32(seed) {
   };
 }
 
-const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBaboolTree };
+const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBaboolTree, mango: buildMangoTree };
 
 /** Places a handful of real-location trees — `placements`:
- * [{ kind: 'neem'|'peepal'|'babool', x, z, rotationY, seed }]. One shared
+ * [{ kind: 'neem'|'peepal'|'babool'|'mango', x, z, rotationY, seed }]. One shared
  * MeshStandardMaterial (vertex-coloured, no map) for every tree regardless of
  * species/location, so this whole function costs at most the handful of
  * meshes it returns, not a draw call each — the caller merges them into the

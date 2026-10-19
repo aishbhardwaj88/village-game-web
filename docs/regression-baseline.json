@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-19T14:22:44.127Z",
+  "timestamp": "2026-10-19T15:14:47.361Z",
   "results": [
     {
       "name": "prompt badge renders in top-right region",
@@ -14,12 +14,12 @@
     {
       "name": "draw calls under 130",
       "pass": false,
-      "detail": "133 calls"
+      "detail": "134 calls"
     },
     {
       "name": "triangles under 400k",
       "pass": true,
-      "detail": "95531 triangles"
+      "detail": "97859 triangles"
     },
     {
       "name": "asset budget (tools/check-budget.js)",
@@ -27,29 +27,29 @@
       "detail": ""
     },
     {
-      "name": "all three errands complete end to end",
+      "name": "all eight missions complete end to end",
       "pass": true,
       "detail": "ended at step \"all_complete\""
     },
     {
       "name": "player can walk",
       "pass": true,
-      "detail": "moved 1.89m"
+      "detail": "moved 2.31m"
     },
     {
       "name": "can mount and drive the bike",
       "pass": true,
-      "detail": "moved 3.82m in 2500ms"
+      "detail": "moved 3.30m in 2500ms"
     },
     {
       "name": "can mount and drive the tractor",
       "pass": true,
-      "detail": "moved 3.88m in 8000ms"
+      "detail": "moved 4.03m in 8000ms"
     },
     {
       "name": "can mount and drive the cart",
       "pass": true,
-      "detail": "moved 3.53m in 8000ms"
+      "detail": "moved 3.62m in 8000ms"
     },
     {
       "name": "player can reach the bazaar",
@@ -59,7 +59,7 @@
     {
       "name": "player can reach the temple",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 3.1m"
+      "detail": "distance to target went from 6.0m to 2.8m"
     },
     {
       "name": "player can reach the school",
@@ -69,7 +69,7 @@
     {
       "name": "player can reach the field",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.6m"
+      "detail": "distance to target went from 6.0m to 2.8m"
     },
     {
       "name": "no console errors",

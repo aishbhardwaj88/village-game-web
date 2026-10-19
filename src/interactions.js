@@ -9,7 +9,7 @@ import {
   SCHOOL_BLACKBOARD_POSITION,
   SCHOOL_BENCH_POSITION,
 } from './village.js';
-import { QUEST_STEPS, SACK_TARGET } from './quest.js';
+import { QUEST_STEPS, SACK_TARGET, MANGO_TARGET } from './quest.js';
 import { SACK_PILE_POSITION, PITAJI_POSITION, KIRANA_POSITION, isTrolleyNearby } from './wheatErrand.js';
 
 /**
@@ -99,6 +99,16 @@ registerInteraction({
           ctx.onErrandComplete?.(QUEST_STEPS.ERRAND2_COMPLETE);
         }
       );
+    } else if (quest.step === QUEST_STEPS.ERRAND4_COMPLETE) {
+      dialogue.say(
+        [{ hi: 'दर्जी ने दादा का कुर्ता सिल दिया है — शाम को दुकान बंद होने से पहले ले आ।', en: "The darzi finished Dada's kurta — go get it before the shop closes for the evening." }],
+        () => {
+          quest.step = QUEST_STEPS.GOING_TO_DARZI;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.GOING_TO_DARZI || quest.step === QUEST_STEPS.HAVE_KURTA) {
+      dialogue.say([{ hi: 'दर्जी से कुर्ता ले आना मत भूलना।', en: "Don't forget to collect the kurta from the darzi." }]);
     } else {
       dialogue.say([{ hi: 'आज का सारा काम हो गया, बहुत शुक्रिया बेटा।', en: "All of today's work is done, thank you so much." }]);
     }
@@ -297,10 +307,72 @@ registerInteraction({
       dialogue.say([{ hi: 'अब जनरल स्टोर से कुछ खरीद लाओ।', en: 'Now go buy something from the general store.' }]);
     } else if (quest.step === QUEST_STEPS.BOUGHT_GOODS) {
       dialogue.say(
-        [{ hi: 'शाबाश बेटा! आज का सारा काम हो गया।', en: "Well done, beta! Today's work is all done." }],
+        [{ hi: 'शाबाश बेटा! दादा के तोहफे के लिए काफी पैसे हो गए।', en: "Well done, beta! That's enough for Dada's gift." }],
         () => {
-          quest.step = QUEST_STEPS.ALL_COMPLETE;
-          ctx.onErrandComplete?.(QUEST_STEPS.ALL_COMPLETE);
+          quest.step = QUEST_STEPS.ERRAND3_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ERRAND3_COMPLETE);
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.ERRAND3_COMPLETE) {
+      dialogue.say(
+        [
+          {
+            hi: 'पोस्टमैन के पास बुआ की चिट्ठी होनी चाहिए — वह अभी अपना चक्कर लगा रहा होगा। बाजार से आगे जाने से पहले उसे पकड़ लो।',
+            en: "The postman should have Bua's letter — he does his round about now. Catch him before he moves past the bazaar.",
+          },
+        ],
+        () => {
+          quest.step = QUEST_STEPS.FINDING_POSTMAN;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.FINDING_POSTMAN) {
+      dialogue.say([{ hi: 'पोस्टमैन लेन या बाजार में कहीं होगा।', en: 'The postman should be somewhere on the lane or in the bazaar.' }]);
+    } else if (quest.step === QUEST_STEPS.HAVE_LETTER) {
+      dialogue.say(
+        [{ hi: 'बुआ की लिखावट — वह कभी जन्मदिन नहीं भूलतीं। तोहफों के साथ रख दो।', en: "Bua's handwriting — she never misses a birthday. Put it with the gifts." }],
+        () => {
+          quest.step = QUEST_STEPS.ERRAND4_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ERRAND4_COMPLETE);
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.KURTA_RECOVERED) {
+      dialogue.say(
+        [{ hi: 'बंदर, सच में? चलो, आज रात दादा के पास कुर्ते के साथ एक किस्सा भी होगा।', en: 'A monkey, really? At least Dada will have a story to go with his kurta tonight.' }],
+        () => {
+          quest.step = QUEST_STEPS.ERRAND6_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ERRAND6_COMPLETE);
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.ERRAND6_COMPLETE) {
+      dialogue.say(
+        [
+          {
+            hi: 'ट्रैक्टर बाग ले जाओ — दादा को जन्मदिन की थाली में हमेशा ताज़े आम चाहिए होते हैं। ट्रॉली भर के ले आना।',
+            en: 'Take the tractor out to the baagh — Dada always wants fresh mangoes on his birthday table. Bring back a trolley-load.',
+          },
+        ],
+        () => {
+          quest.step = QUEST_STEPS.GOING_TO_BAAGH;
+          ctx.onObjectiveChange?.();
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.GOING_TO_BAAGH || quest.step === QUEST_STEPS.KNOCKING_MANGOES) {
+      dialogue.say([{ hi: 'बाग से आम ले आओ।', en: 'Bring back mangoes from the baagh.' }]);
+    } else if (quest.step === QUEST_STEPS.MANGOES_LOADED) {
+      dialogue.say(
+        [{ hi: 'इतने काफी हैं — दादा के पसंदीदा। अच्छा चलाया।', en: "That's plenty — Dada's favourite. Good driving." }],
+        () => {
+          quest.step = QUEST_STEPS.ERRAND7_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ERRAND7_COMPLETE);
+        }
+      );
+    } else if (quest.step === QUEST_STEPS.ERRAND7_COMPLETE) {
+      dialogue.say(
+        [{ hi: 'सब कुछ तैयार है। छत पर आओ — आज दादा का जन्मदिन है।', en: "Everything's ready. Come up to the roof — it's Dada's birthday." }],
+        () => {
+          quest.step = QUEST_STEPS.GOING_TO_ROOF;
+          ctx.onObjectiveChange?.();
         }
       );
     } else {
@@ -308,6 +380,115 @@ registerInteraction({
     }
   },
 });
+
+registerInteraction({
+  id: 'postman',
+  position: new THREE.Vector3(), // placeholder — main.js overwrites this with the postman NPC's own live position object before the game starts, so this point always tracks him
+  radius: 2.2,
+  label: { hi: 'पोस्टमैन से बात करें', en: 'Talk to the postman' },
+  available: (ctx) => ctx.quest.step === QUEST_STEPS.FINDING_POSTMAN,
+  onInteract: (ctx) => {
+    ctx.dialogue.say(
+      [
+        {
+          hi: 'अरे, जन्मदिन वाला घर! हाँ हाँ — एक चिट्ठी, बुआ के घर से आई है। संभल के, मोड़ना मत।',
+          en: 'Ah, the birthday house! Yes, yes — one letter, all the way from Bua\'s family. Careful, don\'t crumple it.',
+        },
+      ],
+      () => {
+        ctx.quest.step = QUEST_STEPS.HAVE_LETTER;
+        ctx.onObjectiveChange?.();
+      }
+    );
+  },
+});
+
+/** Called once from main.js with the postman NPC's own live position (a Vector3
+ * that keeps moving as he walks his route) — replaces the placeholder above so
+ * findNearestInteraction() always checks against where he actually is right now,
+ * same trick registerDarziKurta below doesn't need (the darzi never moves). */
+export function linkPostmanPosition(livePosition) {
+  const point = INTERACTION_POINTS.find((p) => p.id === 'postman');
+  if (point) point.position = livePosition;
+}
+
+registerInteraction({
+  id: 'monkey',
+  position: new THREE.Vector3(), // linked to the monkey NPC's live position, same trick as 'postman' above
+  radius: 2.2,
+  label: { hi: 'बंदर को पकड़ें', en: 'Catch up to the monkey' },
+  available: (ctx) => ctx.quest.step === QUEST_STEPS.KURTA_STOLEN,
+  onInteract: (ctx) => {
+    ctx.quest.step = QUEST_STEPS.KURTA_RECOVERED;
+    ctx.onObjectiveChange?.();
+    ctx.onKurtaRecovered?.();
+  },
+});
+
+/** Same live-position trick as linkPostmanPosition, for the monkey's NPC. */
+export function linkMonkeyPosition(livePosition) {
+  const point = INTERACTION_POINTS.find((p) => p.id === 'monkey');
+  if (point) point.position = livePosition;
+}
+
+// M7 — mango baagh (docs/STORY.md). `registerMangoKnock` is called once per
+// "marked tree"; each knock adds a few mangoes until MANGO_TARGET is reached,
+// at which point the errand itself advances — same shape as `sack_pile`'s
+// per-pickup counter above, reusing the existing counter/target pattern rather
+// than inventing a new one.
+export function registerMangoKnock(id, position, radius = 2.2) {
+  registerInteraction({
+    id: `mango_${id}`,
+    position,
+    radius,
+    label: { hi: 'पेड़ हिलाएं', en: 'Shake the tree' },
+    available: (ctx) => [QUEST_STEPS.GOING_TO_BAAGH, QUEST_STEPS.KNOCKING_MANGOES].includes(ctx.quest.step) && (ctx.quest.mangoesCollected ?? 0) < MANGO_TARGET,
+    onInteract: (ctx) => {
+      const { quest, dialogue } = ctx;
+      quest.step = QUEST_STEPS.KNOCKING_MANGOES;
+      quest.mangoesCollected = Math.min(MANGO_TARGET, (quest.mangoesCollected ?? 0) + 2);
+      ctx.audio.playMangoThud?.();
+      if (quest.mangoesCollected >= MANGO_TARGET) {
+        quest.step = QUEST_STEPS.MANGOES_LOADED;
+        dialogue.say([{ hi: 'ट्रॉली भर गई — घर वापस चलो।', en: "The trolley's full — head back home." }], () => ctx.onObjectiveChange?.());
+      } else {
+        ctx.onObjectiveChange?.();
+      }
+    },
+  });
+}
+
+// M8 — the ending (docs/STORY.md). A staged scene, not a new verb: reaching the
+// roof's own open footprint (only possible via the stairs the house interior
+// already has — see src/main.js groundHeightAt's comment on why standing at this
+// exact x/z is impossible at ground level) plays the closing family dialogue,
+// then rolls into the existing final-end-card/credits flow (ALL_COMPLETE is
+// unchanged by the 8-mission rework — see src/quest.js's own doc comment).
+export function registerRoofEnding(position, radius = 3) {
+  registerInteraction({
+    id: 'roof_ending',
+    position,
+    radius,
+    label: { hi: 'परिवार से मिलें', en: 'Join the family' },
+    available: (ctx) => ctx.quest.step === QUEST_STEPS.GOING_TO_ROOF,
+    onInteract: (ctx) => {
+      ctx.dialogue.say(
+        [
+          { hi: 'तुम सब, एक बूढ़े आदमी के लिए इतनी तैयारी।', en: "All of you, making such a fuss over an old man." },
+          { hi: 'हर साल, बाऊजी — और हर साल यही कहते हो।', en: "Every year, Bauji — and every year you say the same thing." },
+          { hi: 'चिट्ठी आई, कुर्ता आया, और आम भी — भाई ने आज सब किया!', en: "The letter came, the kurta came, and the mangoes — Bhai did everything today!" },
+          { hi: 'अपने बूढ़े दादा के लिए पूरे गाँव में दौड़ लगाई। आओ, बैठो — आज छत की सबसे अच्छी जगह तुम्हारी है।', en: 'Running all over the village for your old Dada. Come, sit — the best seat on the roof is yours tonight.' },
+          { hi: 'जन्मदिन मुबारक हो, बाऊजी।', en: 'Happy birthday, Bauji.' },
+          { hi: 'दोपहर — एक दोपहर, एक परिवार।', en: 'Dopahar — one afternoon, one family.' },
+        ],
+        () => {
+          ctx.quest.step = QUEST_STEPS.ALL_COMPLETE;
+          ctx.onErrandComplete?.(QUEST_STEPS.ALL_COMPLETE);
+        }
+      );
+    },
+  });
+}
 
 registerInteraction({
   id: 'sack_pile',
@@ -447,6 +628,44 @@ export function registerBangleTryOn(position, radius = 2.2) {
     onInteract: (ctx) => {
       ctx.audio.playBangleJingle?.();
       ctx.dialogue.say([{ hi: 'कांच की चूड़ियां खनक उठीं!', en: 'The glass bangles jingle!' }]);
+    },
+  });
+}
+
+/** Tailor shop's M5 signature interaction — handing over Dada's finished kurta.
+ * Same dual-mode shape as `kirana` above: the one specific quest moment
+ * (GOING_TO_DARZI) plus the ordinary shared "buy" (BUY_ITEMS.tailor) at every
+ * other time, so the shop still reads as a normal, always-open tailor. */
+export function registerDarziKurta(position, radius = 2.2) {
+  registerInteraction({
+    id: 'darzi_kurta',
+    position,
+    radius,
+    label: (ctx) =>
+      ctx.quest.step === QUEST_STEPS.GOING_TO_DARZI
+        ? { hi: 'कुर्ता ले लें', en: "Collect Dada's kurta" }
+        : { hi: 'खरीदें', en: 'Buy something' },
+    onInteract: (ctx) => {
+      const { quest, dialogue } = ctx;
+      if (quest.step === QUEST_STEPS.GOING_TO_DARZI) {
+        dialogue.say(
+          [
+            {
+              hi: 'दादा से कहना — हाथ से सिया है, दो बार हेम किया ताकि ठीक बैठे। उन्हें जन्मदिन मुबारक।',
+              en: "Tell your Dada — stitched by hand, hemmed twice so it sits right. Happy birthday to him.",
+            },
+          ],
+          () => {
+            quest.step = QUEST_STEPS.HAVE_KURTA;
+            ctx.onObjectiveChange?.();
+            ctx.onKurtaCollected?.();
+          }
+        );
+      } else {
+        const options = BUY_ITEMS.tailor;
+        const item = options[Math.floor(Math.random() * options.length)];
+        dialogue.say([{ hi: `${item.hi} लिया — ₹${item.price}`, en: `Bought ${item.en} — ₹${item.price}` }]);
+      }
     },
   });
 }

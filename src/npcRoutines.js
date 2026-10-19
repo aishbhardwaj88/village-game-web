@@ -63,6 +63,46 @@ export function createStirLoop(mesh, { rate = 1.6, amount = 0.14 } = {}) {
   };
 }
 
+/**
+ * Like createWaypointLoop, but stops and stays put at the last waypoint (calling
+ * `onDone` once) instead of looping back to the first — for one-shot scripted
+ * sequences (M6's monkey chase, docs/STORY.md) rather than an ambient wander.
+ */
+export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSeconds = 0.6, onDone } = {}) {
+  let index = 0;
+  let pauseTimer = 0;
+  let done = false;
+
+  return function update(dt) {
+    if (done) return;
+    const target = waypoints[index];
+    _toTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
+    const dist = _toTarget.length();
+
+    if (dist < 0.2) {
+      if (index >= waypoints.length - 1) {
+        done = true;
+        onDone?.();
+        return;
+      }
+      pauseTimer += dt;
+      if (pauseTimer >= pauseSeconds) {
+        pauseTimer = 0;
+        index += 1;
+      }
+      return;
+    }
+
+    _toTarget.multiplyScalar(1 / dist);
+    const step = Math.min(speed * dt, dist);
+    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
+    const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
+    let diff = targetYaw - npcGroup.rotation.y;
+    diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
+    npcGroup.rotation.y += diff * Math.min(1, dt * 4);
+  };
+}
+
 const _toFollowTarget = new THREE.Vector3();
 
 /**

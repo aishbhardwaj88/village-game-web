@@ -388,10 +388,25 @@ async function main() {
       dd.interact();
     });
     await page.waitForTimeout(200);
-    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> ALL_COMPLETE
+    await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); // close final line -> ERRAND3_COMPLETE (M1-M3 no longer end the game — M4-M8 continue, docs/STORY.md)
     await page.waitForTimeout(300);
+    const stepErrand3Complete = await page.evaluate(() => window.__dopahar.quest.step);
+    console.log('quest step after telling Pitaji (should be errand3_complete):', stepErrand3Complete);
+    await page.click('#end-continue-btn');
+    await page.waitForTimeout(150);
+
+    // M4-M7 aren't exercised by this visual-screenshot script (tools/
+    // regression-check.js's real walkthrough covers M1-M6 end to end) — jump
+    // straight to the true final state to check the end-card/credits UI itself,
+    // the same shortcut used nowhere else in this file on purpose, kept minimal.
+    await page.evaluate(() => {
+      const d = window.__dopahar;
+      d.quest.step = d.QUEST_STEPS.ALL_COMPLETE;
+      d.interactionCtx.onErrandComplete(d.QUEST_STEPS.ALL_COMPLETE);
+    });
+    await page.waitForTimeout(200);
     const stepAllComplete = await page.evaluate(() => window.__dopahar.quest.step);
-    console.log('quest step after telling Pitaji (should be all_complete):', stepAllComplete);
+    console.log('quest step after jumping to the true ending (should be all_complete):', stepAllComplete);
     await page.screenshot({ path: resolve(shotsDir, 'final_end_card.png') });
     console.log(`Captured final_end_card -> ${resolve(shotsDir, 'final_end_card.png')}`);
 

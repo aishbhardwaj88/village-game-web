@@ -7,9 +7,11 @@
  *  - every prompt badge renders inside the top-right region of the viewport
  *  - the whole-scene grounding check is empty
  *  - draw calls / triangles / asset size stay under budget
- *  - all three errands complete end to end, through the real interaction system
- *    (teleport + the same interact()/mount()/dismount() dev hooks a real E-press
- *    or mount action calls — not by writing quest.step directly)
+ *  - all six currently-built missions (M1-M6, docs/STORY.md) complete end to end,
+ *    through the real interaction system (teleport + the same interact()/mount()/
+ *    dismount() dev hooks a real E-press or mount action calls — not by writing
+ *    quest.step directly, except to fast-forward past the start of M1). M7/M8
+ *    aren't built yet — extend this walkthrough once they are.
  *  - no red console errors across the whole run
  *  - the player can walk, mount and drive each vehicle kind, and reach the
  *    bazaar, temple, school and field
@@ -266,8 +268,41 @@ async function main() {
         SACK_PILE: window.__dopahar.interactions.SACK_PILE_POSITION,
         KIRANA: window.__dopahar.interactions.KIRANA_POSITION,
         STORE: window.__dopahar.interactions.INTERACTION_POINTS.find((p) => p.id === 'buy_general_store')?.position,
+        DARZI: window.__dopahar.interactions.INTERACTION_POINTS.find((p) => p.id === 'darzi_kurta')?.position,
       }));
       const pos = await d();
+
+      async function goToLiveNpc(npcName, frames = 40) {
+        // M4/M6 (docs/STORY.md) — the postman and the monkey both move, so
+        // "walk there" means re-teleporting to wherever they currently are
+        // for a few real frames, the same convergence trick tmp/test_m4_m6.mjs
+        // used (kept here too, permanently, since this is now the one
+        // real regression check covering M4-M6). The monkey's chase route is
+        // longer/faster than the postman's short loop, so it needs more frames
+        // to actually catch up rather than just approach its starting point.
+        for (let i = 0; i < frames; i++) {
+          await page.evaluate((name) => {
+            const d = window.__dopahar;
+            const npc = d.npcs.find((n) => n.name === name);
+            d.teleportPlayer(npc.position.x, npc.position.z);
+          }, npcName);
+          await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+        }
+      }
+
+      // Maa walks her own small 2-point loop the whole time this walkthrough runs
+      // (src/main.js maaWalk) — by the time the M5 visit happens, minutes of real
+      // test time later, the `pos.MAA` snapshot captured once at the very top can be
+      // further than the interaction radius from where she actually is. Every
+      // earlier Maa visit in this walkthrough happens soon enough after that one
+      // snapshot that it hasn't mattered; use the live-position convergence instead
+      // of the stale snapshot for this one, since it comes last and furthest out.
+      async function goInteractLiveNpc(npcName) {
+        await goToLiveNpc(npcName);
+        await page.evaluate(() => window.__dopahar.interact());
+        await page.waitForTimeout(200);
+        await advanceDialogueUntilClosed();
+      }
 
       async function goInteract(p) {
         await page.evaluate(({ x, z }) => window.__dopahar.teleportPlayer(x, z), { x: p.x, z: p.z });
@@ -299,7 +334,67 @@ async function main() {
       }
       // quest.step should now be WHEAT_DELIVERED.
       if (pos.STORE) await goInteract(pos.STORE); // -> BOUGHT_GOODS
-      await goInteract(pos.PITAJI); // -> ALL_COMPLETE, terminal (no continue button)
+      await goInteract(pos.PITAJI); // -> ERRAND3_COMPLETE, shows a mid end card now (M1-M3 no longer end the game)
+      await page.click('#end-continue-btn').catch(() => {});
+      await page.waitForTimeout(200);
+
+      // Errand 4 (M4, docs/STORY.md): find the postman, bring the letter back.
+      await goInteract(pos.PITAJI); // ERRAND3_COMPLETE -> FINDING_POSTMAN
+      await goToLiveNpc('npc_postman');
+      await page.evaluate(() => window.__dopahar.interact());
+      await page.waitForTimeout(200);
+      await advanceDialogueUntilClosed(); // -> HAVE_LETTER
+      await goInteract(pos.PITAJI); // -> ERRAND4_COMPLETE
+
+      // Errand 5+6 (M5/M6): collect the kurta, walk away, the monkey auto-snatches,
+      // chase it down, report back.
+      await goInteractLiveNpc('npc_maa'); // ERRAND4_COMPLETE -> GOING_TO_DARZI
+      if (pos.DARZI) await goInteract(pos.DARZI); // -> HAVE_KURTA
+      await page.evaluate((p) => window.__dopahar.teleportPlayer(p.x - 15, p.z), pos.DARZI);
+      for (let i = 0; i < 20; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+      await page.waitForTimeout(200); // the tick loop's distance check should have fired -> KURTA_STOLEN
+      await goToLiveNpc('npc_monkey', 400);
+      await page.evaluate(() => window.__dopahar.interact());
+      await page.waitForTimeout(200); // -> KURTA_RECOVERED
+      await goInteract(pos.PITAJI); // -> ERRAND6_COMPLETE, shows a mid end card
+      await page.click('#end-continue-btn').catch(() => {});
+      await page.waitForTimeout(200);
+
+      // Errand 7 (M7): drive to the baagh (teleport stands in for the drive —
+      // vehicle driving itself is covered by the separate "can mount and drive
+      // the tractor" check below), knock all 3 marked trees, drive home.
+      await goInteract(pos.PITAJI); // ERRAND6_COMPLETE -> GOING_TO_BAAGH
+      const mangoPositions = await page.evaluate(() =>
+        window.__dopahar.interactions.INTERACTION_POINTS.filter((p) => p.id.startsWith('mango_')).map((p) => ({ x: p.position.x, z: p.position.z }))
+      );
+      for (const p of mangoPositions) await goInteract(p); // -> MANGOES_LOADED once all 3 are knocked
+      await goInteract(pos.PITAJI); // -> ERRAND7_COMPLETE, shows a mid end card
+      await page.click('#end-continue-btn').catch(() => {});
+      await page.waitForTimeout(200);
+
+      // Errand 8 (M8): the roof ending. Teleport to the stair base (same reasoning
+      // as tmp/test_m7_m8.mjs — a straight beeline from wherever the player is
+      // would hit a real wall long before finding the narrow stair corridor;
+      // tools/world-validator.js's own ROOF_CHAIN proves the full walk is
+      // possible, this only needs to prove the climb + ending dialogue work),
+      // then really climb via stepPlayerMove so groundHeightAt ramps Y for real.
+      await goInteract(pos.PITAJI); // ERRAND7_COMPLETE -> GOING_TO_ROOF
+      const roofPos = await page.evaluate(() => {
+        const pt = window.__dopahar.interactions.INTERACTION_POINTS.find((p) => p.id === 'roof_ending');
+        return { x: pt.position.x, z: pt.position.z };
+      });
+      await page.evaluate((p) => window.__dopahar.teleportPlayer(p.x, 39), roofPos);
+      for (let i = 0; i < 600; i++) {
+        await page.evaluate((p) => {
+          const d = window.__dopahar;
+          const dx = p.x - d.player.position.x, dz = p.z - d.player.position.z;
+          const len = Math.hypot(dx, dz) || 1;
+          d.stepPlayerMove(1 / 60, dx / len, dz / len);
+        }, roofPos);
+      }
+      await page.evaluate(() => window.__dopahar.interact());
+      await page.waitForTimeout(200);
+      await advanceDialogueUntilClosed(); // the ending's own multi-line sequence -> ALL_COMPLETE
 
       return page.evaluate(() => window.__dopahar.quest.step);
     }
@@ -310,7 +405,7 @@ async function main() {
     } catch (e) {
       walkthroughError = e.message;
     }
-    record('all three errands complete end to end', finalStep === 'all_complete', walkthroughError || `ended at step "${finalStep}"`);
+    record('all eight missions complete end to end', finalStep === 'all_complete', walkthroughError || `ended at step "${finalStep}"`);
 
     // ---------------------------------------------------------------------
     // 6. Player can walk.

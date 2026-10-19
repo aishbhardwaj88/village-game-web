@@ -556,20 +556,43 @@ async function main() {
     // land it off-centre from the real door gap (HOUSE_DOOR_WIDTH=1.3m, centred
     // x=-48) before the final approach even starts.
     const HOUSE_INTERIOR_CHAIN = [{ x: -48, z: 47 }, { x: -48, z: 41, r: 0.4 }, { x: -48, z: 38, r: 0.6 }];
+    // ROOF_CHAIN (M8, docs/STORY.md) — the house's real external stairway
+    // (src/village.js HOUSE_STAIRS) sits just outside (west of) the house's own
+    // west wall, at a fixed x running the whole way from ground (z=40) to roof
+    // height (z=32) — groundHeightAt() ramps height continuously across that
+    // whole z range, so one waypoint at the stair-top z is enough to "climb" it,
+    // no separate base/top stepping stones needed the way the narrow SCHOOL door
+    // did. Approach from the north (same proven-clear z=47 BYPASS/HOUSE_INTERIOR_
+    // CHAIN already use), then west past the house's own west wall (x=-53)
+    // before turning south down the stair corridor.
+    const ROOF_CHAIN = [{ x: -48, z: 47 }, { x: -54, z: 47 }, { x: -54, z: 34, r: 0.6 }];
+    const BAAGH_CHAIN = [
+      { x: -37, z: 30 },
+      { x: 20, z: -20 }, // FIELD_CENTER — open field interior, already on the way
+      { x: 80, z: -20 }, // the track loop's own NE-SE edge (src/field.js TRACK_CORNERS)
+      { x: 92, z: -20 }, // across open ground east of the track into the baagh
+    ];
     function routeFor(target) {
-      const isBazaar = /bazaar|chowk|sabzi|medical|tailor|barber|mobile|kirana|sweet|bangle|post_office|ration_shop|atta_chakki/.test(target.name);
+      // darzi_kurta/monkey (M5/M6, docs/STORY.md): darzi_kurta sits at the exact
+      // same position the generic 'tailor' buy point always has; monkey's initial
+      // (validator-run) position starts there too — both need the bazaar chain.
+      const isBazaar = /bazaar|chowk|sabzi|medical|tailor|darzi|monkey|barber|mobile|kirana|sweet|bangle|post_office|ration_shop|atta_chakki/.test(target.name);
       const isTemple = /temple|flower/.test(target.name);
       const isSchoolRoom = /blackboard|school_bench/.test(target.name);
       const isSackPile = /sack_pile/.test(target.name);
       const isHouseInterior = /house_charpai|house_compound/.test(target.name);
-      const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom || isHouseInterior;
+      const isRoof = /roof_ending/.test(target.name);
+      const isBaagh = /mango|baagh/.test(target.name);
+      const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom || isHouseInterior || isRoof || isBaagh;
       const chain = [];
+      if (isBaagh) return [...BAAGH_CHAIN]; // east of the house entirely — its own route, no north bypass needed
       if (needsBypass) chain.push(...BYPASS);
       if (isBazaar) chain.push(...BAZAAR_CHAIN);
       else if (isTemple) chain.push(...TEMPLE_CHAIN);
       else if (isSchoolRoom) chain.push(...SCHOOL_CHAIN);
       else if (isSackPile) chain.push(...SACK_PILE_CHAIN);
       else if (isHouseInterior) chain.push(...HOUSE_INTERIOR_CHAIN);
+      else if (isRoof) chain.push(...ROOF_CHAIN);
       return chain;
     }
     for (const t of allTargets) t.waypoints = routeFor(t);

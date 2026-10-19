@@ -34,25 +34,45 @@ const END = {
 const _tmpColor = new THREE.Color();
 
 /**
- * 0 at NOT_STARTED, 1 at ALL_COMPLETE — one continuous afternoon spanning all three
- * errands (time/light task), not just the first. Each named step gets a fixed point
- * along the curve, in play order; the values are front-loaded less within each
- * errand (most of that errand's own warmth lands in its second half) but the *rate*
- * across errands is otherwise even — three errands of roughly similar length should
- * warm the sky by roughly a third each, not have errand 1 alone spend the whole
- * budget the way the original 2-step curve did.
+ * 0 at NOT_STARTED, 1 at ALL_COMPLETE — one continuous afternoon spanning all EIGHT
+ * missions (docs/STORY.md), not just the first three. Each named step gets a fixed
+ * point along the curve, in play order, spread roughly evenly across the full
+ * mission list so no single mission spends a disproportionate share of the warmth
+ * budget — "dopahar" drifting gradually toward evening by the M8 rooftop scene.
  */
 const STEP_PROGRESS = {
+  // M1
   not_started: 0,
-  have_money: 0.08,
-  have_jalebi: 0.15,
-  complete: 0.22,
-  have_tiffin: 0.32,
-  have_sister: 0.42,
-  errand2_complete: 0.52,
-  loading_wheat: 0.68,
-  wheat_delivered: 0.85,
-  bought_goods: 0.93,
+  have_money: 0.04,
+  have_jalebi: 0.08,
+  complete: 0.11,
+  // M2
+  have_tiffin: 0.16,
+  have_sister: 0.2,
+  errand2_complete: 0.24,
+  // M3
+  loading_wheat: 0.31,
+  wheat_delivered: 0.38,
+  bought_goods: 0.42,
+  errand3_complete: 0.46,
+  // M4
+  finding_postman: 0.52,
+  have_letter: 0.56,
+  errand4_complete: 0.59,
+  // M5
+  going_to_darzi: 0.63,
+  have_kurta: 0.66,
+  // M6
+  kurta_stolen: 0.71,
+  kurta_recovered: 0.74,
+  errand6_complete: 0.77,
+  // M7
+  going_to_baagh: 0.82,
+  knocking_mangoes: 0.87,
+  mangoes_loaded: 0.91,
+  errand7_complete: 0.94,
+  // M8
+  going_to_roof: 0.98,
   all_complete: 1,
 };
 

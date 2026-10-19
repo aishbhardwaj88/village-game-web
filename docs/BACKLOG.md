@@ -32,18 +32,19 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
       from ~11 down further, or instancing vehicle wheels/NPCs) both carry real risk
       per CLAUDE.md's regression-guard rule (wheel rotation specifically) or trade
       away visual fidelity that a prior session deliberately chose - NOT done here.
-- [ ] Draw-call headroom, round 2 (if needed) - before building M4-M7's new geometry
-      (postman, darzi shop, monkey, baagh trees/props), build each one using the
-      existing `BuildingKit`/`mergeGroupByMaterial`/instancing patterns from the
-      start (never one mesh per part), and re-measure after each mission. Only revisit
-      vehicle-wheel/NPC instancing (see round 1's note above) if draw calls actually
-      threaten the 140 hard ceiling again - treat it as a dedicated, carefully-tested
-      task of its own if it becomes necessary, never a quick fix.
-- [ ] Refresh `docs/regression-baseline.json` - current one is dated 2026-09-20, predates
-      all October structural work and the dashboard/story additions. Confirm `npm run
-      build`, `npm run check-budget`, and a manual look at the result are all correct,
-      THEN `node tools/regression-check.js --save-baseline` (per CLAUDE.md §9 - only
-      after visually confirming correctness, never to paper over a real regression)
+- [x] Draw-call headroom, round 2 - not needed after all. M4-M8's new geometry (the
+      postman/monkey NPCs, the mango baagh's trees) reused the existing shared-material
+      merge patterns from the start (the darzi reuses the bazaar's existing ambient
+      shopkeeper instead of a new NPC; mango trees fold into `src/trees.js`'s one
+      shared draw call for free). Final count: 134/140 draw calls, 6 of headroom.
+      Revisit vehicle-wheel/NPC instancing (round 1's note) only if a future addition
+      actually threatens the 140 ceiling.
+- [x] Refresh `docs/regression-baseline.json` - done twice: once after the headroom
+      pass (133 draw calls, M1-M3 only), again after M4-M8 were built and verified
+      end to end through real interact()/dialogue/drive hooks (the walkthrough itself
+      was extended to cover all 8 missions, not just the original 3 - see
+      `tools/regression-check.js`). 14/15 - the one miss is the script's own
+      early-warning draw-call threshold (130), not the real 140 ceiling.
 - [x] Correction: `src/trees.js` is NOT dead code - `docs/STATUS_REPORT.md` (a prior
       read-only audit) and this file both repeated a stale 2026-09-19 claim without
       checking current `src/main.js`. It was removed 2026-09-19, then re-added
@@ -56,32 +57,54 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
 
 ## 2. Dayline across all 8 missions
 
-- [ ] Extend `src/dayline.js`/`src/quest.js` quest-step progress mapping to cover 8
-      steps instead of 3, so afternoon → sunset drift is smooth and complete only at
-      M8, not compressed into the first 3 missions
-- [ ] Verify the drift still reads correctly across a real playthrough (not one frame -
-      CLAUDE.md §9 regression-guard rule applies to anything that changes over time)
+- [x] Extend `src/dayline.js`/`src/quest.js` quest-step progress mapping to cover all
+      24 quest steps across 8 missions (was 11 steps/3 missions), evenly spread so
+      afternoon -> sunset drift completes only at the true `ALL_COMPLETE` (after M8)
+- [x] Verify the drift still reads correctly across a real playthrough, not one frame -
+      `tmp/test_dayline_8missions.mjs` sets quest.step to 9 points spread across the
+      full 8-mission chain, lets ~3s of real frames accumulate at each (so dayline's
+      own `damp()` actually converges) and screenshots + logs the sun colour each
+      time - confirmed progressive warming, not a snap-to-end or a stall partway
 
 ## 3. Missions 4-8 (build in story order)
 
-- [ ] M4 - postman NPC (cycle waypoint-loop route through lane/bazaar), find-and-catch
-      objective/dialogue/waypoint, letter pickup logic, quest-step wiring
-- [ ] M5 - darzi (tailor) bazaar shop: new unit, counter interaction, kurta pickup,
-      objective/dialogue/waypoint, quest-step wiring
-- [ ] M6 - monkey chase: snatch cutscene, 2-3 waypoint chase sequence, drop/recover
-      logic, comedic dialogue, quest-step wiring
-- [ ] M7 - mango baagh: new zone beyond the field, tractor+trolley drive-out, "knock
-      down mangoes" interaction (new verb), trolley cargo count, drive-home, dialogue,
-      quest-step wiring
-- [ ] M8 - ending: rooftop family scene (reuse house roof space), staged NPC placement,
-      fixed dialogue sequence, transition into existing credits screen
+- [x] M4 - postman NPC (waypoint-loop route, hero-zone lane corridor already proven
+      clear by the existing child NPC), find-and-catch via a live-tracked interaction
+      point, objective/dialogue/waypoint, letter pickup, quest-step wiring. Verified
+      end to end (`tmp/test_m4_m6.mjs`, `tools/regression-check.js`).
+- [x] M5 - darzi (tailor) bazaar shop: the unit already existed (bazaar unit 4,
+      `BAZAAR_UNITS`); added `registerDarziKurta` (kurta pickup + its normal "buy"
+      fallback), objective/dialogue/waypoint, quest-step wiring. Verified end to end.
+- [x] M6 - monkey chase: distance-triggered snatch (no proximity-volume system
+      needed - a simple tick-loop check), a bounded waypoint run along the bazaar's
+      own proven-clear frontage/chowk (`createWaypointRun`, new in `src/npcRoutines.js`),
+      catch-up interaction to recover, comedic dialogue, quest-step wiring. Verified
+      end to end including the real auto-trigger and chase.
+- [x] M7 - mango baagh: new zone east of the field/track (`src/baagh.js`), a 4th tree
+      species (`src/trees.js` `buildMangoTree`, folds into the existing shared tree
+      draw call for free), 3 marked "knock" interaction points with a mango counter
+      (reused the sack-pile counter pattern), drive-home, dialogue, quest-step wiring,
+      a real `playMangoThud` sound. Verified end to end including the real counter.
+- [x] M8 - ending: a staged dialogue-only scene at the real stairs' own roof landing
+      (see docs/parked.md for why that's the actual walkable "roof" spot, not the
+      full roof footprint - a 2D-collision finding, not a design choice), transitions
+      into the existing final-end-card/credits flow unchanged. Verified end to end
+      including a real stair climb (`stepPlayerMove`/`groundHeightAt`), not a teleport.
 
 ## 4. Characters
 
-- [ ] Postman: code-built NPC, distinct silhouette/colour, asset-slot registered
-- [ ] Darzi: code-built NPC, distinct silhouette/colour, asset-slot registered
-- [ ] Monkey: code-built NPC, distinct silhouette, asset-slot registered
-- [ ] Baagh keeper (optional flavour NPC for M7), if draw-call budget allows
+- [x] Postman: code-built NPC, distinct colour (brown/khaki), registered like every
+      other named NPC - real asset-slot model is a future Tripo-pipeline task, not
+      required for GAME_COMPLETE (either is acceptable per docs/asset-slots.md)
+- [x] Darzi: no new NPC - reuses the bazaar's existing ambient shopkeeper instance at
+      the tailor unit (`src/bazaarLife.js`), which already has a distinct position/
+      silhouette; adding a second, separate named NPC on top would have been pure
+      draw-call cost for no new silhouette, see docs/parked.md
+- [x] Monkey: code-built NPC, distinct colour + smaller scale (0.55x), hidden until
+      the M6 snatch, registered like every other named NPC
+- [ ] Baagh keeper (optional flavour NPC for M7) - not built, draw-call budget is
+      tight enough (134/140) that an optional flavour-only NPC isn't worth the cost
+      right now; revisit if headroom opens up (e.g. once draw-call round 2 happens)
 
 ## 5. Menus/ending polish
 
