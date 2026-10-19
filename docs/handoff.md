@@ -5,6 +5,25 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-10-19, missions 4-8 built and verified — all 8 missions now exist end to end:**
+Extended the quest-step chain from 3 to 8 missions (`src/quest.js`, `src/dayline.js`)
+and built M4 (postman/letter), M5 (darzi/kurta, reusing the existing bazaar tailor
+unit), M6 (monkey chase — a tick-loop distance trigger + a new bounded one-shot
+waypoint routine, `createWaypointRun`), M7 (mango baagh, a new zone + a 4th tree
+species that folds into the existing shared tree draw call for free), M8 (a staged
+ending at the real stairs' own roof landing — this game's collision is 2D/height-
+unaware, so the full roof footprint isn't actually walkable, only the strip above the
+stairs; found and worked around, not guessed). Fixed `tools/world-validator.js`'s
+reachability-chain classifier (new interaction ids didn't match its trade-name regex)
+and extended `tools/regression-check.js`'s own real walkthrough to drive all 8
+missions through actual interact()/dialogue/movement hooks — the permanent regression
+coverage going forward. 134/140 draw calls, 14/15 regression checks (the one miss is
+a known early-warning threshold, not the real ceiling). Committed (`d0f3da5`). Next:
+menu/polish pass (title/pause/credits re-check), mobile re-verification, then the
+fresh-subagent playthrough audit.
+
+---
+
 **2026-10-19, "finish the game" session starts — Phase 0 + dashboard + headroom round 1
 done:** Wrote `docs/GAME_COMPLETE.md` (content finish line, incl. an 8-mission
 checklist), `docs/STORY.md` (full M1-M8 story, bilingual dialogue for the 5 new

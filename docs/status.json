@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-19T20:05:00.000Z",
-  "drawCalls": 133,
+  "timestamp": "2026-10-19T21:05:00.000Z",
+  "drawCalls": 134,
   "drawCallLimit": 140,
-  "triangles": 95531,
+  "triangles": 97859,
   "triangleLimit": 400000,
   "assetsMB": 4.72,
   "assetsLimitMB": 40,
@@ -10,5 +10,5 @@
   "lastValidator": "pass",
   "lastRegression": "pass (14/15, draw-calls-under-130 is a known/documented early-warning miss, real ceiling is 140)",
   "lastCheckBudget": "pass",
-  "notes": "Regression baseline refreshed. Stale-docs cleanup done (CLAUDE.md trees claim corrected, handoff.md/parked.md updated). Starting missions 4-8 next."
+  "notes": "All 8 missions (M1-M8) built and verified end to end through real play. Dayline extended across the full chain. Next: menu/polish pass (BACKLOG section 5), mobile re-verification, then the fresh-subagent playthrough audit."
 }
