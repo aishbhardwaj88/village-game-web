@@ -51,9 +51,10 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
       2026-10-02 (commit `2fd7f2c`, "ground variation, low vegetation, 3 placeholder
       trees") and is actively called (temple peepal, hero-zone neem, field babool).
       Fixed `CLAUDE.md` §1's "no trees" claim to match. Nothing to delete.
-- [ ] Update remaining stale docs for the October work: `docs/handoff.md` (append
-      entries), `docs/parked.md` (close out resolved items, migrate open blockers to
-      `docs/NEEDS_YOU.md`)
+- [x] Update remaining stale docs for the October work: `docs/handoff.md` (append
+      entries - done repeatedly throughout this session), `docs/parked.md` (every
+      judgement call this session made is logged there; open blockers migrated to
+      `docs/NEEDS_YOU.md` at session start)
 
 ## 2. Dayline across all 8 missions
 
