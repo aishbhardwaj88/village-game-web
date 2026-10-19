@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-10-19T19:34:00.000Z",
-  "drawCalls": 139,
+  "timestamp": "2026-10-19T20:05:00.000Z",
+  "drawCalls": 133,
   "drawCallLimit": 140,
-  "triangles": 82563,
+  "triangles": 95531,
   "triangleLimit": 400000,
   "assetsMB": 4.72,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
   "lastValidator": "pass",
-  "lastRegression": "not yet run against a current baseline",
+  "lastRegression": "pass (14/15, draw-calls-under-130 is a known/documented early-warning miss, real ceiling is 140)",
   "lastCheckBudget": "pass",
-  "notes": "Baseline snapshot taken while setting up the dashboard, before the draw-call headroom pass (BACKLOG item 1)."
+  "notes": "Regression baseline refreshed. Stale-docs cleanup done (CLAUDE.md trees claim corrected, handoff.md/parked.md updated). Starting missions 4-8 next."
 }

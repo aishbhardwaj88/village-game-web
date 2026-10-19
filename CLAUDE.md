@@ -12,9 +12,11 @@ version — **never touch it from here.** `START_HERE.md` has the folder map.
 Current world: a hero zone (house/school/halwai/tea-stall — `src/village.js`,
 `src/shops.js`) connected by lane to a bazaar row of 8 trade-specific shops + a chowk
 (second tea stall, chabutra) + a village mandir/flower stall (`src/bazaar.js`,
-`src/temple.js`) and a general store on the bazaar approach lane (`src/shops.js`); no
-trees (removed — exhaustive CC0/CC BY search found nothing under budget, see
-`docs/parked.md`). A wheat/sabzi field with a dirt track loop and fine dust motes
+`src/temple.js`) and a general store on the bazaar approach lane (`src/shops.js`); a handful of
+procedural code-built trees (peepal/neem/babool, `src/trees.js`, re-added 2026-10-02
+after no licensed replacement could be retrieved — see `docs/parked.md`) plus low
+vegetation/ground variation (`src/vegetation.js`). A wheat/sabzi field with a dirt
+track loop and fine dust motes
 (`src/field.js`, `src/dust.js`); vehicles kitbashed to `Places V1/vehicles/LAYOUT.md`'s
 exact measurements — walk/bike/tractor+detachable-trolley/bullock cart
 (`src/vehicles.js`). The house and school each have one real walkable interior

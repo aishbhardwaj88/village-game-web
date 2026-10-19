@@ -5,6 +5,22 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-10-19, "finish the game" session starts — Phase 0 + dashboard + headroom round 1
+done:** Wrote `docs/GAME_COMPLETE.md` (content finish line, incl. an 8-mission
+checklist), `docs/STORY.md` (full M1-M8 story, bilingual dialogue for the 5 new
+missions), `docs/BACKLOG.md`, `docs/NEEDS_YOU.md` (migrated open blockers from
+`parked.md`), and `inbox/` for Gemini/Tripo drops. Fixed the deploy workflow (missing
+Playwright Chromium install). Built a local-only monitoring dashboard
+(`tools/dashboard/`, `Dopahar dashboard.command`) — no new deps, reads the repo live,
+handles uploads into `inbox/`. Draw-call headroom round 1: found both static geometry
+and vehicle bodies already fully merged from prior sessions; the one real win was
+turning off shadow-casting on the 6 non-gameplay Tripo judgement boxes (139 -> 133).
+Refreshed the stale regression baseline. Corrected a stale claim (`STATUS_REPORT.md`
+and this file's own old entries) that `src/trees.js` was dead code — it was re-added
+2026-10-02 and is live; fixed `CLAUDE.md` §1 to match. Next: missions 4-8.
+
+---
+
 **2026-09-21, item 9 of 10 done, item 10 not attempted (time):** Full sweep — both
 interiors, field track, bazaar walk — found no real bugs; one apparent "player stuck at
 the house" was my own test approaching the wrong (solid) side, corrected and

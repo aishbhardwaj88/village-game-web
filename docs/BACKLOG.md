@@ -44,10 +44,15 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
       build`, `npm run check-budget`, and a manual look at the result are all correct,
       THEN `node tools/regression-check.js --save-baseline` (per CLAUDE.md §9 - only
       after visually confirming correctness, never to paper over a real regression)
-- [ ] Update stale docs for the October work: `CLAUDE.md` §1 (add M4-M8 once built),
-      `docs/handoff.md` (append entries), `docs/parked.md` (close out resolved items,
-      migrate open blockers to `docs/NEEDS_YOU.md`)
-- [ ] Delete-or-quarantine `src/trees.js` (confirmed dead code per STATUS_REPORT.md §8)
+- [x] Correction: `src/trees.js` is NOT dead code - `docs/STATUS_REPORT.md` (a prior
+      read-only audit) and this file both repeated a stale 2026-09-19 claim without
+      checking current `src/main.js`. It was removed 2026-09-19, then re-added
+      2026-10-02 (commit `2fd7f2c`, "ground variation, low vegetation, 3 placeholder
+      trees") and is actively called (temple peepal, hero-zone neem, field babool).
+      Fixed `CLAUDE.md` §1's "no trees" claim to match. Nothing to delete.
+- [ ] Update remaining stale docs for the October work: `docs/handoff.md` (append
+      entries), `docs/parked.md` (close out resolved items, migrate open blockers to
+      `docs/NEEDS_YOU.md`)
 
 ## 2. Dayline across all 8 missions
 

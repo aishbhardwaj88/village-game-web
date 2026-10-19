@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-20T21:48:22.137Z",
+  "timestamp": "2026-10-19T14:22:44.127Z",
   "results": [
     {
       "name": "prompt badge renders in top-right region",
@@ -12,14 +12,14 @@
       "detail": ""
     },
     {
-      "name": "draw calls under 120",
+      "name": "draw calls under 130",
       "pass": false,
-      "detail": "129 calls"
+      "detail": "133 calls"
     },
     {
       "name": "triangles under 400k",
       "pass": true,
-      "detail": "67263 triangles"
+      "detail": "95531 triangles"
     },
     {
       "name": "asset budget (tools/check-budget.js)",
@@ -34,7 +34,7 @@
     {
       "name": "player can walk",
       "pass": true,
-      "detail": "moved 2.10m"
+      "detail": "moved 1.89m"
     },
     {
       "name": "can mount and drive the bike",
@@ -44,22 +44,22 @@
     {
       "name": "can mount and drive the tractor",
       "pass": true,
-      "detail": "moved 2.45m in 8000ms"
+      "detail": "moved 3.88m in 8000ms"
     },
     {
       "name": "can mount and drive the cart",
       "pass": true,
-      "detail": "moved 3.96m in 8000ms"
+      "detail": "moved 3.53m in 8000ms"
     },
     {
       "name": "player can reach the bazaar",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 3.1m"
+      "detail": "distance to target went from 6.0m to 3.3m"
     },
     {
       "name": "player can reach the temple",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.6m"
+      "detail": "distance to target went from 6.0m to 3.1m"
     },
     {
       "name": "player can reach the school",
@@ -69,7 +69,7 @@
     {
       "name": "player can reach the field",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.4m"
+      "detail": "distance to target went from 6.0m to 2.6m"
     },
     {
       "name": "no console errors",
