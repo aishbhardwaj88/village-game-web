@@ -14,6 +14,13 @@ The Unity project lives in ../Village nostalgia and is NOT deleted. It is the fu
     ambientcg/  CC0 textures already downloaded
 - tools/            fetch_assets.py (CC0 downloader), tripo_batch.py
 
+## To watch progress
+
+To watch progress, double-click `Dopahar dashboard.command` in this folder. It opens a
+page in your browser showing what's done, what's being worked on next, the latest
+screenshots, and anything that needs your input. You can also drag image or `.glb`
+files onto it to add them to the game — same as dropping them in `inbox/`.
+
 ## Rules carried over (non-negotiable)
 - No real brands, logos or real village names. No tobacco or alcohol. Era: nothing post-~2015.
 - Ordinary and mixed village like Panchayat: intact, sun-faded, lived-in. Never peeling, cracked, exposed brick, poverty-porn.

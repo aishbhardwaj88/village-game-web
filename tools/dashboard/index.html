@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dopahar progress</title>
+<style>
+  :root {
+    --bg: #faf7f1;
+    --panel: #ffffff;
+    --ink: #2a2622;
+    --ink-soft: #655f55;
+    --line: #e8e1d3;
+    --good: #2f8f5b;
+    --good-bg: #e7f5ec;
+    --tight: #b9860b;
+    --tight-bg: #fbf1dc;
+    --bad: #c24a3a;
+    --bad-bg: #fbe9e5;
+    --accent: #c0612f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--ink-soft); margin: 0 0 28px; font-size: 14px; }
+  section { margin-bottom: 32px; }
+  h2 { font-size: 16px; text-transform: none; margin: 0 0 12px; color: var(--ink); }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  /* Needs you */
+  #needs-you-section .panel { border-color: #e9d2b8; background: #fffaf2; }
+  .needs-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0e3cd;
+  }
+  .needs-item:last-child { border-bottom: none; }
+  .needs-text { font-weight: 600; font-size: 15px; }
+  .needs-item.done .needs-text { font-weight: 500; color: var(--ink-soft); text-decoration: line-through; }
+  .mark-done-btn {
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    background: white;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .mark-done-btn:hover { background: #f4efe3; }
+  .all-clear { color: var(--good); font-weight: 600; }
+
+  /* Progress */
+  .progress-row { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  .progress-track {
+    flex: 1;
+    height: 18px;
+    background: #efe8d8;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d98a4f, var(--accent));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .progress-pct { font-size: 15px; font-weight: 600; min-width: 48px; text-align: right; }
+  .current-task { font-size: 14px; color: var(--ink-soft); }
+  .current-task b { color: var(--ink); }
+
+  /* Missions */
+  .mission-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .mission-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--panel);
+  }
+  .mission-id { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .mission-desc { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; min-height: 36px; }
+  .status-pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .status-pill.done { background: var(--good-bg); color: var(--good); }
+  .status-pill.in-progress { background: var(--tight-bg); color: var(--tight); }
+  .status-pill.not-started { background: #f0ece2; color: var(--ink-soft); }
+
+  /* Health */
+  .health-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .health-tile {
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+  }
+  .health-tile.good { background: var(--good-bg); border-color: #cdebd9; }
+  .health-tile.tight { background: var(--tight-bg); border-color: #f0ddb3; }
+  .health-tile.bad { background: var(--bad-bg); border-color: #f2cfc8; }
+  .health-label { font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+  .health-value { font-size: 15px; font-weight: 700; }
+
+  /* Screenshots */
+  .shots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .shot-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    cursor: zoom-in;
+    background: #eee;
+  }
+  #lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 16, 10, 0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 24px;
+    cursor: zoom-out;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+  /* Upload */
+  #dropzone {
+    border: 2px dashed #d8c7a8;
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    color: var(--ink-soft);
+    background: #fffdf8;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  #dropzone.drag-over { background: #fbeedc; border-color: var(--accent); }
+  #dropzone input[type=file] { display: none; }
+  .browse-link { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  #note-field {
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 44px;
+  }
+  #upload-status { margin-top: 10px; font-size: 13px; }
+  #upload-status.ok { color: var(--good); }
+  #upload-status.err { color: var(--bad); }
+
+  /* Commits + inbox */
+  .commit-row, .inbox-row {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    align-items: baseline;
+  }
+  .commit-row:last-child, .inbox-row:last-child { border-bottom: none; }
+  .commit-hash { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-soft); }
+  .commit-date { color: var(--ink-soft); min-width: 86px; }
+  .inbox-name { font-weight: 600; }
+  .inbox-status { margin-left: auto; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
+  .inbox-status.waiting { background: var(--tight-bg); color: var(--tight); }
+  .inbox-status.used { background: var(--good-bg); color: var(--good); }
+  .empty-note { color: var(--ink-soft); font-size: 14px; }
+
+  footer { color: var(--ink-soft); font-size: 12px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dopahar progress</h1>
+  <p class="sub">A plain look at how the game is coming along. This page updates itself every 30 seconds.</p>
+
+  <section id="needs-you-section">
+    <h2>Needs you</h2>
+    <div class="panel" id="needs-you-panel"></div>
+  </section>
+
+  <section id="progress-section">
+    <h2>Overall progress</h2>
+    <div class="panel">
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+        <div class="progress-pct" id="progress-pct">0%</div>
+      </div>
+      <div class="current-task" id="current-task"></div>
+    </div>
+  </section>
+
+  <section id="missions-section">
+    <h2>Missions</h2>
+    <div class="mission-grid" id="mission-grid"></div>
+  </section>
+
+  <section id="health-section">
+    <h2>How the game is running</h2>
+    <div class="health-grid" id="health-grid"></div>
+  </section>
+
+  <section id="shots-section">
+    <h2>Latest screenshots</h2>
+    <div class="panel">
+      <div class="shots-grid" id="shots-grid"></div>
+    </div>
+  </section>
+
+  <section id="upload-section">
+    <h2>Add files</h2>
+    <div class="panel">
+      <div id="dropzone">
+        <p>Drag images or 3D model files here, or <span class="browse-link" id="browse-link">choose a file</span>.</p>
+        <p style="font-size:12px;">Accepted: png, jpg, jpeg, webp, glb. Up to 100MB.</p>
+        <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.webp,.glb">
+      </div>
+      <textarea id="note-field" placeholder="Optional note about this file (where it goes, what it's for)"></textarea>
+      <div id="upload-status"></div>
+    </div>
+  </section>
+
+  <section id="inbox-section">
+    <h2>Inbox</h2>
+    <div class="panel" id="inbox-panel"></div>
+  </section>
+
+  <section id="commits-section">
+    <h2>Recent work</h2>
+    <div class="panel" id="commits-panel"></div>
+  </section>
+
+  <footer>Dopahar local dashboard. Only visible on this computer.</footer>
+</div>
+
+<div id="lightbox"><img id="lightbox-img" src="" alt=""></div>
+
+<script>
+async function fetchState() {
+  const res = await fetch('/api/state');
+  if (!res.ok) throw new Error('Could not load status.');
+  return res.json();
+}
+
+function pct(done, total) {
+  if (!total) return 0;
+  return Math.round((done / total) * 100);
+}
+
+function renderNeedsYou(items) {
+  const panel = document.getElementById('needs-you-panel');
+  const open = items.filter((i) => i.status === 'open');
+  if (open.length === 0) {
+    panel.innerHTML = '<p class="all-clear">Nothing needs you right now. All clear.</p>';
+    return;
+  }
+  panel.innerHTML = open
+    .map(
+      (item) => `
+      <div class="needs-item">
+        <div class="needs-text">${escapeHtml(item.text)}</div>
+        <button class="mark-done-btn" data-index="${item.index}">Mark done</button>
+      </div>`
+    )
+    .join('');
+  panel.querySelectorAll('.mark-done-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        await fetch('/api/needs-you/done', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ index: Number(btn.dataset.index) }),
+        });
+        await refresh();
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Mark done';
+      }
+    });
+  });
+}
+
+function renderProgress(progress) {
+  const p = pct(progress.gameComplete.done, progress.gameComplete.total);
+  document.getElementById('progress-fill').style.width = p + '%';
+  document.getElementById('progress-pct').textContent = p + '%';
+  document.getElementById('current-task').innerHTML =
+    'Working on: <b>' + escapeHtml(progress.currentTask) + '</b>';
+}
+
+function renderMissions(missions) {
+  const grid = document.getElementById('mission-grid');
+  if (!missions.length) {
+    grid.innerHTML = '<p class="empty-note">No missions found yet.</p>';
+    return;
+  }
+  grid.innerHTML = missions
+    .map((m) => {
+      const cls = m.status.replace(' ', '-');
+      return `
+      <div class="mission-card">
+        <div class="mission-id">${escapeHtml(m.id)}</div>
+        <div class="mission-desc">${escapeHtml(m.desc)}</div>
+        <span class="status-pill ${cls}">${escapeHtml(capitalize(m.status))}</span>
+      </div>`;
+    })
+    .join('');
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function healthLevel(value, limit, lowerIsBetter = true) {
+  if (limit == null || value == null) return 'good';
+  const ratio = value / limit;
+  if (ratio <= 0.8) return 'good';
+  if (ratio <= 1.0) return 'tight';
+  return 'bad';
+}
+
+function renderHealth(health) {
+  const grid = document.getElementById('health-grid');
+  if (!health.available) {
+    grid.innerHTML = '<div class="health-tile tight"><div class="health-label">Status</div><div class="health-value">Not measured yet</div></div>';
+    return;
+  }
+  const tiles = [];
+  const speedLevel = healthLevel(health.drawCalls, health.drawCallLimit);
+  tiles.push({
+    label: 'Speed',
+    value: speedLevel === 'good' ? 'Good' : speedLevel === 'tight' ? 'Getting tight' : 'Needs work',
+    level: speedLevel,
+  });
+  const sizeLevel = healthLevel(health.assetsMB, health.assetsLimitMB);
+  tiles.push({
+    label: 'Download size',
+    value: sizeLevel === 'good' ? 'Good' : sizeLevel === 'tight' ? 'Getting large' : 'Too large',
+    level: sizeLevel,
+  });
+  const buildOk = health.lastBuild === 'pass';
+  tiles.push({ label: 'Last build', value: buildOk ? 'Passing' : 'Needs attention', level: buildOk ? 'good' : 'bad' });
+  const validatorOk = health.lastValidator === 'pass';
+  tiles.push({ label: 'World check', value: validatorOk ? 'Passing' : 'Needs attention', level: validatorOk ? 'good' : 'bad' });
+  tiles.push({ label: 'Last checked', value: health.timestamp ? new Date(health.timestamp).toLocaleString() : 'Unknown', level: 'good' });
+
+  grid.innerHTML = tiles
+    .map(
+      (t) => `
+      <div class="health-tile ${t.level}">
+        <div class="health-label">${escapeHtml(t.label)}</div>
+        <div class="health-value">${escapeHtml(t.value)}</div>
+      </div>`
+    )
+    .join('');
+}
+
+function renderShots(shots) {
+  const grid = document.getElementById('shots-grid');
+  if (!shots.images.length) {
+    grid.innerHTML = '<p class="empty-note">No screenshots yet.</p>';
+    return;
+  }
+  grid.innerHTML = shots.images
+    .map((src) => `<img class="shot-thumb" src="${escapeAttr(src)}" data-full="${escapeAttr(src)}">`)
+    .join('');
+  grid.querySelectorAll('.shot-thumb').forEach((img) => {
+    img.addEventListener('click', () => openLightbox(img.dataset.full));
+  });
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+document.getElementById('lightbox').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.remove('open');
+});
+
+function renderCommits(commits) {
+  const panel = document.getElementById('commits-panel');
+  if (!commits.length) {
+    panel.innerHTML = '<p class="empty-note">No commits found.</p>';
+    return;
+  }
+  panel.innerHTML = commits
+    .map(
+      (c) => `
+      <div class="commit-row">
+        <span class="commit-hash">${escapeHtml(c.hash)}</span>
+        <span class="commit-date">${escapeHtml(c.date)}</span>
+        <span>${escapeHtml(c.message)}</span>
+      </div>`
+    )
+    .join('');
+}
+
+function renderInbox(inbox) {
+  const panel = document.getElementById('inbox-panel');
+  if (!inbox.length) {
+    panel.innerHTML = '<p class="empty-note">Inbox is empty. Drop a file above any time.</p>';
+    return;
+  }
+  panel.innerHTML = inbox
+    .map(
+      (item) => `
+      <div class="inbox-row">
+        <span class="inbox-name">${escapeHtml(item.name)}</span>
+        ${item.destination ? `<span>went to ${escapeHtml(item.destination)}</span>` : ''}
+        <span class="inbox-status ${item.status}">${escapeHtml(capitalize(item.status))}</span>
+      </div>`
+    )
+    .join('');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[c]);
+}
+function escapeAttr(s) {
+  return escapeHtml(s);
+}
+
+async function refresh() {
+  try {
+    const state = await fetchState();
+    renderNeedsYou(state.needsYou);
+    renderProgress(state.progress);
+    renderMissions(state.missions);
+    renderHealth(state.health);
+    renderShots(state.shots);
+    renderCommits(state.commits);
+    renderInbox(state.inbox);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+refresh();
+setInterval(refresh, 30000);
+
+// Upload handling
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+const browseLink = document.getElementById('browse-link');
+const statusEl = document.getElementById('upload-status');
+
+browseLink.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) uploadFile(fileInput.files[0]);
+});
+
+['dragenter', 'dragover'].forEach((evt) =>
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+  })
+);
+['dragleave', 'drop'].forEach((evt) =>
+  dropzone.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+  })
+);
+dropzone.addEventListener('drop', (e) => {
+  const file = e.dataTransfer.files[0];
+  if (file) uploadFile(file);
+});
+
+async function uploadFile(file) {
+  statusEl.className = '';
+  statusEl.textContent = 'Uploading ' + file.name + '...';
+  const form = new FormData();
+  form.append('file', file);
+  const note = document.getElementById('note-field').value;
+  if (note) form.append('note', note);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.className = 'ok';
+      statusEl.textContent = 'Saved as ' + data.filename + '. The game session will pick it up soon.';
+      document.getElementById('note-field').value = '';
+      fileInput.value = '';
+      await refresh();
+    } else {
+      statusEl.className = 'err';
+      statusEl.textContent = data.error || 'Upload failed.';
+    }
+  } catch (err) {
+    statusEl.className = 'err';
+    statusEl.textContent = 'Upload failed: ' + err.message;
+  }
+}
+</script>
+</body>
+</html>
