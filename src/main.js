@@ -93,6 +93,7 @@ import { applyQuality, loadSavedQuality, saveQuality } from './quality.js';
 import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
+import { setupControlsHelp } from './controlsHelp.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -1240,6 +1241,14 @@ async function main() {
   }
   endCreditsBtn.addEventListener('click', showCredits);
 
+  // Controls help — same reachable-from-title-and-pause requirement as the credits
+  // screen, same two-trigger/one-overlay shape.
+  const controlsHelp = setupControlsHelp();
+  function showControlsHelp() {
+    controlsHelp.open();
+  }
+  document.getElementById('start-controls-btn').addEventListener('pointerdown', showControlsHelp);
+
   // Shared context passed to every interaction point's label()/available()/onInteract().
   const interactionCtx = {
     audio,
@@ -1474,6 +1483,7 @@ async function main() {
     onQualityChange: setQuality,
     onVolumeChange: (v) => audio.setMasterVolume(v),
     onShowCredits: showCredits,
+    onShowControls: showControlsHelp,
   });
 
   function tick(now) {

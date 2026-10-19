@@ -178,6 +178,34 @@
       #start-overlay.ready #start-overlay-hint {
         display: block;
       }
+      /* A small, unobtrusive text-style link — not another big call-to-action button
+         next to Play/Continue — reachable only once the title screen itself is ready. */
+      .secondary-link-btn {
+        display: none;
+        align-items: baseline;
+        gap: 6px;
+        margin: 10px 0 0;
+        font-family: inherit;
+        font-weight: 600;
+        color: #4a2e18;
+        background: transparent;
+        border: none;
+        padding: 6px 10px;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .secondary-link-btn .play-en {
+        font-size: 0.85rem;
+      }
+      .secondary-link-btn .play-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.68rem;
+        opacity: 0.75;
+      }
+      #start-overlay.ready #start-controls-btn {
+        display: inline-flex;
+      }
 
       /* --- FPS counter (dev flag only) --- */
       #fps-counter {
@@ -675,6 +703,37 @@
         cursor: pointer;
       }
 
+      /* --- Controls help screen — reachable from both the title screen and the pause
+         menu (two trigger buttons, one shared overlay), same dimmed-backdrop/
+         panel-card look as the pause menu itself. */
+      #controls-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 130; /* above the pause panel (90) and the credits screen (120), since either can open this */
+        background: rgba(10, 8, 6, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      #controls-overlay.visible {
+        display: flex;
+      }
+      .controls-row {
+        text-align: left;
+        margin: 0 0 14px;
+      }
+      .controls-en {
+        font-size: 0.9rem;
+        margin: 0;
+      }
+      .controls-hi {
+        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.72rem;
+        opacity: 0.7;
+        margin: 2px 0 0;
+      }
+
       /* --- Credits screen (task 5) — same warm palette-built gradient as the title
          screen (#start-overlay), not the pause menu's dark utility-panel look; reachable
          from the pause menu and shown after the final end card. Tall content (the
@@ -830,8 +889,25 @@
             <p class="quality-label-hi">आवाज़</p>
             <input id="volume-slider" type="range" min="0" max="100" value="100" />
           </div>
-          <button id="pause-credits-btn" class="panel-btn secondary" type="button" style="margin-top: 16px">
+          <button id="pause-controls-btn" class="panel-btn secondary" type="button" style="margin-top: 16px">
+            <span class="btn-en">Controls</span><span class="btn-hi">नियंत्रण</span>
+          </button>
+          <button id="pause-credits-btn" class="panel-btn secondary" type="button">
             <span class="btn-en">Credits</span><span class="btn-hi">श्रेय</span>
+          </button>
+        </div>
+      </div>
+      <div id="controls-overlay">
+        <div id="controls-panel" class="panel-card">
+          <p class="panel-title-en">Controls</p>
+          <p class="panel-title-hi">नियंत्रण</p>
+          <div class="controls-row"><p class="controls-en">Move: WASD or the on-screen joystick</p><p class="controls-hi">चलना: WASD या स्क्रीन पर जॉयस्टिक</p></div>
+          <div class="controls-row"><p class="controls-en">Look around: mouse or drag the screen</p><p class="controls-hi">चारों ओर देखना: माउस या स्क्रीन पर खींचें</p></div>
+          <div class="controls-row"><p class="controls-en">Interact: E or tap the prompt</p><p class="controls-hi">बातचीत: E या संकेत पर टैप करें</p></div>
+          <div class="controls-row"><p class="controls-en">Mount or dismount a vehicle: F or tap</p><p class="controls-hi">वाहन पर बैठें या उतरें: F या टैप करें</p></div>
+          <div class="controls-row"><p class="controls-en">Pause: Esc or the pause button</p><p class="controls-hi">रोकें: Esc या पॉज़ बटन</p></div>
+          <button id="controls-close-btn" class="panel-btn" type="button" style="margin-top: 16px">
+            <span class="btn-en">Close</span><span class="btn-hi">बंद करें</span>
           </button>
         </div>
       </div>
@@ -883,6 +959,10 @@
         <button id="play-btn" type="button">
           <span class="play-en">Play</span>
           <span class="play-hi">खेलें</span>
+        </button>
+        <button id="start-controls-btn" type="button" class="secondary-link-btn">
+          <span class="play-en">Controls</span>
+          <span class="play-hi">नियंत्रण</span>
         </button>
         <p id="start-overlay-hint"></p>
       </div>

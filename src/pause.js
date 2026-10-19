@@ -6,12 +6,13 @@ import { QUALITY_LEVELS } from './quality.js';
  * restarting the errand, showing credits) are callbacks supplied by main.js, which
  * owns that state.
  */
-export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits }) {
+export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits, onShowControls }) {
   const overlay = document.getElementById('pause-overlay');
   const touchBtn = document.getElementById('pause-btn-touch');
   const resumeBtn = document.getElementById('resume-btn');
   const restartBtn = document.getElementById('restart-btn');
   const creditsBtn = document.getElementById('pause-credits-btn');
+  const controlsBtn = document.getElementById('pause-controls-btn');
   const qualityBtns = Array.from(document.querySelectorAll('.quality-btn'));
   const volumeSlider = document.getElementById('volume-slider');
 
@@ -66,6 +67,10 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
 
   creditsBtn.addEventListener('pointerdown', () => {
     onShowCredits?.();
+  });
+
+  controlsBtn.addEventListener('pointerdown', () => {
+    onShowControls?.();
   });
 
   for (const btn of qualityBtns) {
