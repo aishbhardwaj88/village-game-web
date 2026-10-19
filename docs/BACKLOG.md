@@ -127,8 +127,13 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
 - [x] Mobile/touch controls re-verified with the new M4-M8 content in scene -
       `tmp/mobile_pass.mjs` re-run at both required sizes, zero console errors, no
       overlaps, the new controls-help link reads cleanly
-- [ ] Fresh-subagent playthrough audit against `docs/GAME_COMPLETE.md`, repeat until
-      clean (see CLAUDE.md pasted-instructions step 8 of THE LOOP) - next
+- [x] Fresh-subagent playthrough audit against `docs/GAME_COMPLETE.md` - clean on the
+      first pass (2026-10-19): 46/46 of its own checks, zero console errors, every
+      claim independently confirmed. See docs/GAME_COMPLETE.md's own final entry and
+      docs/parked.md for the one minor (dev-tooling-only, not fixed) finding.
+
+GAME_COMPLETE.md is fully ticked and audit-confirmed. Everything below this line is
+genuinely optional future polish, not required for "the game is done."
 
 ## Parked / needs-you items
 

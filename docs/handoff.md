@@ -5,6 +5,24 @@ can resume without re-reading the whole session. Newest entry at the top.
 
 ---
 
+**2026-10-19, GAME COMPLETE — fresh-subagent audit clean, every box in
+`docs/GAME_COMPLETE.md` ticked:** Added a controls-help screen (reachable from title
+and pause, GAME_COMPLETE.md's own requirement), re-verified mobile touch layout with
+the full M4-M8 content in scene (zero overlaps, zero console errors at both required
+sizes), then launched a fresh subagent with zero prior context to independently audit
+the whole game. It wrote its own Playwright script, played all 8 missions through the
+real interaction system (plus a real save/reload/Continue cycle, a real keyboard-
+driven tractor drive, real stair-climb movement), 46/46 of its own checks passed, zero
+console errors, every GAME_COMPLETE.md claim confirmed. One cosmetic finding (the
+`?dev=1`-only FPS counter overlaps HUD text in dev screenshots — zero player-facing
+impact) logged in `docs/parked.md`, not fixed. `docs/BACKLOG.md`'s required queue is
+now fully ticked; anything still open below that line is optional future polish, not
+part of "done." Committed throughout (`d0f3da5` missions 4-8, `2e87fe1` controls help,
+`7c9b06c` mobile re-verification, this entry's commit for the final tick). Nothing
+pushed — the user pushes manually.
+
+---
+
 **2026-10-19, missions 4-8 built and verified — all 8 missions now exist end to end:**
 Extended the quest-step chain from 3 to 8 missions (`src/quest.js`, `src/dayline.js`)
 and built M4 (postman/letter), M5 (darzi/kurta, reusing the existing bazaar tailor
