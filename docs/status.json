@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-19T19:34:00.000Z",
+  "drawCalls": 139,
+  "drawCallLimit": 140,
+  "triangles": 82563,
+  "triangleLimit": 400000,
+  "assetsMB": 4.72,
+  "assetsLimitMB": 40,
+  "lastBuild": "pass",
+  "lastValidator": "pass",
+  "lastRegression": "not yet run against a current baseline",
+  "lastCheckBudget": "pass",
+  "notes": "Baseline snapshot taken while setting up the dashboard, before the draw-call headroom pass (BACKLOG item 1)."
+}

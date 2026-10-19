@@ -14,3 +14,7 @@ Places V1/
 Characters V1/
 Mood board/
 reference-from-unity/
+
+# Dropbox for Gemini images / Tripo models — keep the README, ignore everything else
+inbox/*
+!inbox/README.md
