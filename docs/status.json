@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-19T21:05:00.000Z",
+  "timestamp": "2026-10-19T21:40:00.000Z",
   "drawCalls": 134,
   "drawCallLimit": 140,
   "triangles": 97859,
@@ -10,5 +10,5 @@
   "lastValidator": "pass",
   "lastRegression": "pass (14/15, draw-calls-under-130 is a known/documented early-warning miss, real ceiling is 140)",
   "lastCheckBudget": "pass",
-  "notes": "All 8 missions (M1-M8) built and verified end to end through real play. Dayline extended across the full chain. Next: menu/polish pass (BACKLOG section 5), mobile re-verification, then the fresh-subagent playthrough audit."
+  "notes": "All 8 missions built, a controls-help screen added, mobile re-verified. Every GAME_COMPLETE.md box ticked except the final fresh-subagent playthrough audit, launching next."
 }
