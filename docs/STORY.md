@@ -120,6 +120,12 @@ logic — build it as a scripted waypoint sequence with a simple monkey NPC (cod
 small quadruped-ish silhouette or a reused/rescaled placeholder), not a new systemic
 mechanic. Keep it short (under a minute of chase) so it doesn't read as frustrating.
 
+As built (2026-10-19): the chase runs along the bazaar's own frontage and the open
+chowk plaza, not literal rooftops — both are already-proven-clear ground, so the
+chase didn't need a new rooftop-traversal system. The bystander/banana-trade beat was
+simplified to a direct snatch + catch-up-to-recover (no extra dialogue line), kept
+short on purpose. See `docs/parked.md`'s 2026-10-19 entries for the full reasoning.
+
 ## M7 — Mango baagh run (new, signature verb: knock down mangoes)
 
 Drive the tractor + trolley out to the mango baagh (orchard) beyond the field, knock
@@ -142,6 +148,13 @@ new baagh zone; "knock down mangoes" is a new simple interaction (approach a mar
 tree, hold/tap interact, a few mango props detach and land, get picked up into a
 trolley-cargo count) — not a new physics system. Watch draw-call budget for the new
 trees/props.
+
+As built (2026-10-19): the knock itself is a counter increment + a sound
+(`playMangoThud`) at 3 marked trees, not a visible falling-mango prop/pickup — the
+same simplification the sack-pile/kirana counter in M3 already uses successfully.
+The tractor drive to the baagh isn't gated by any new path system; the baagh sits on
+open ground past the field's own track loop, reachable by driving across it like any
+other open ground in the village.
 
 ## M8 — Sunset: the birthday (ending)
 
@@ -166,6 +179,15 @@ Implementation note: reuse the house roof space already built for the courtyard/
 stairs-to-roof interior (`src/village.js`); this is a staged scene (NPCs placed, a
 short fixed dialogue sequence, no new interaction verbs needed) that transitions into
 the existing credits screen (`src/credits.js`).
+
+As built (2026-10-19): the ending triggers at the real stairs' own roof landing, not
+the whole roof footprint — this game's collision is 2D/height-unaware, so the house's
+own walls still block the rest of the roof slab even once elevated (see
+`docs/parked.md`'s 2026-10-19 entry). No family NPCs are physically placed up there
+(the landing is narrow, ~1.2m wide) — the scene is dialogue-only, narrated rather than
+staged with visible characters. It rolls into the existing final end card (which
+offers a "Credits" button, same as every other mission's end card), not literally
+auto-playing credits the moment the dialogue ends.
 
 ---
 
