@@ -108,20 +108,27 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
 
 ## 5. Menus/ending polish
 
-- [ ] Title screen New Game/Continue reflects 8-mission save state
-- [ ] Settings: confirm quality, volume, and a controls-help screen are all reachable
-      from both title and pause menu
-- [ ] Loading screen: confirm no black-frame flash with the added M4-M8 geometry
-- [ ] Credits screen: confirm it still generates correctly from `docs/CREDITS.md`
-      after any new asset credits are added
+- [x] Title screen New Game/Continue reflects 8-mission save state - `continueFromSave`
+      already handled this generically (any `QUEST_STEPS` value), confirmed by the
+      regression walkthrough completing a continue-from-mid-game load correctly
+- [x] Settings: controls-help screen now reachable from both title and pause menu
+      (`src/controlsHelp.js`); quality/volume stay pause-only on purpose, see
+      docs/parked.md
+- [x] Loading screen: confirmed no black-frame flash with the added M4-M8 geometry
+      (`node tools/screenshot.js`, mobile pass screenshots)
+- [x] Credits screen: confirmed it still generates correctly from `docs/CREDITS.md` -
+      no new licensed assets were added this session, nothing to add
 
 ## 6. Final verification
 
-- [ ] Full engineering gate sweep: `npm run build`, `npm run check-budget`,
-      `node tools/regression-check.js`, `node tools/screenshot.js` (look at every shot)
-- [ ] Mobile/touch controls re-verified with the new M4-M8 content in scene
+- [x] Full engineering gate sweep: `npm run build` (13/13), `npm run check-budget`
+      (pass), `node tools/regression-check.js` (14/15, known draw-call-threshold
+      miss), `node tools/screenshot.js` (looked at every shot, nothing broken)
+- [x] Mobile/touch controls re-verified with the new M4-M8 content in scene -
+      `tmp/mobile_pass.mjs` re-run at both required sizes, zero console errors, no
+      overlaps, the new controls-help link reads cleanly
 - [ ] Fresh-subagent playthrough audit against `docs/GAME_COMPLETE.md`, repeat until
-      clean (see CLAUDE.md pasted-instructions step 8 of THE LOOP)
+      clean (see CLAUDE.md pasted-instructions step 8 of THE LOOP) - next
 
 ## Parked / needs-you items
 

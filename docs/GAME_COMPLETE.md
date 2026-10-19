@@ -73,7 +73,11 @@ playtest with no console errors.
       triangles under 400k (97.9k), assets under 40MB (4.72MB)
 - [x] Zero console errors across a full 8-mission playthrough (verified repeatedly via
       tmp/test_m4_m6.mjs, tmp/test_m7_m8.mjs, tools/regression-check.js)
-- [ ] Mobile touch controls verified (on-screen joystick, tap-to-interact, legible HUD)
+- [x] Mobile touch controls verified (on-screen joystick, tap-to-interact, legible HUD)
+      - re-ran `tmp/mobile_pass.mjs` at both required sizes (390x844, 360x800) with
+      the new M4-M8 content/controls-help button in scene: zero console errors, no
+      UI overlaps (joystick/interact-hint/dialogue-panel/pause-button/objective-panel),
+      scroll/zoom still locked, the new "Controls" title-screen link reads cleanly
 
 ## Final audit
 
