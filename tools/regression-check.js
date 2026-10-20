@@ -15,6 +15,10 @@
  *  - no red console errors across the whole run
  *  - the player can walk, mount and drive each vehicle kind, and reach the
  *    bazaar, temple, school and field
+ *  - the trolley is solid to the player and to other vehicles, attached AND
+ *    detached, under real held-key driving/walking (not a teleported or
+ *    scripted position) — added after a real playtest bug where it had none
+ *    of that (see src/main.js's otherVehicleBoxes() bugfix comment)
  *
  * Usage:
  *   npm run build && node tools/regression-check.js            # compare vs baseline
@@ -497,7 +501,263 @@ async function main() {
     }
 
     // ---------------------------------------------------------------------
-    // 9. No red console errors across the whole run.
+    // 9. The trolley is solid to the PLAYER, in both the attached and the
+    //    detached state — a real playtest bug (not caught before because every
+    //    prior trolley test drove it by teleporting/scripting positions
+    //    directly, which can never exercise whether a resolver actually stops
+    //    real, continuous input). Root cause: src/main.js's otherVehicleBoxes()
+    //    never had ANY box for the trolley at all (it isn't a member of the
+    //    `vehicles` array) — see src/collision.js's orientedFootprintBox() and
+    //    the bugfix comment on otherVehicleBoxes() itself. Only the START
+    //    position of each approach below is set directly (same pattern the
+    //    "player can reach the landmark" checks above already use); the actual
+    //    approach is a real held KeyW, sampled continuously throughout (not a
+    //    single end-of-hold check) so a moment of tunneling mid-approach can't
+    //    hide behind a final position that happens to read clear.
+    // ---------------------------------------------------------------------
+    async function playerVsTrolleyApproaches(label) {
+      const trolley = await page.evaluate(() => window.__dopahar.currentTrolley());
+      if (!trolley) {
+        record(`trolley solid to player, no penetration (${label})`, false, 'no trolley found in the scene');
+        return;
+      }
+      const approaches = [
+        { dx: 0, dz: -6, yaw: Math.PI }, // from north
+        { dx: 0, dz: 6, yaw: 0 }, // from south
+        { dx: -6, dz: 0, yaw: -Math.PI / 2 }, // from west
+        { dx: 6, dz: 0, yaw: Math.PI / 2 }, // from east
+      ];
+      let worstClearance = Infinity; // most negative = worst penetration
+      let closestApproach = Infinity;
+      for (const a of approaches) {
+        await page.evaluate(
+          ({ x, z, yaw }) => {
+            const d = window.__dopahar;
+            d.teleportPlayer(x, z);
+            d.camRig.yaw = yaw;
+            d.camRig.update(10);
+          },
+          { x: trolley.x + a.dx, z: trolley.z + a.dz, yaw: a.yaw }
+        );
+        await page.keyboard.down('KeyW');
+        for (let i = 0; i < 20; i++) {
+          await page.waitForTimeout(150);
+          const clearance = await page.evaluate(() => window.__dopahar.playerDistanceToTrolley());
+          if (clearance < worstClearance) worstClearance = clearance;
+          if (clearance < closestApproach) closestApproach = clearance;
+        }
+        await page.keyboard.up('KeyW');
+        await page.waitForTimeout(200);
+      }
+      record(
+        `trolley solid to player, no penetration (${label})`,
+        worstClearance >= -0.05,
+        `worst clearance ${worstClearance.toFixed(3)}m across 4 real-walked approaches (negative = penetrating)`
+      );
+      record(
+        `trolley actually blocks the player, not coincidentally far away (${label})`,
+        closestApproach < 1.5,
+        `closest real approach got to ${closestApproach.toFixed(2)}m clearance`
+      );
+    }
+    await playerVsTrolleyApproaches('attached');
+
+    // ---------------------------------------------------------------------
+    // 10. Real-input tractor+trolley driving: into a building wall, sharp
+    //     turns while touching it, and reversing — sampled continuously across
+    //     the whole drive (CLAUDE.md's regression-guard rule: a single passing
+    //     frame/screenshot is not evidence for anything that accumulates over
+    //     time, like a swung-around trailer). Only the tractor's initial
+    //     FACING is set directly (aiming it at a real building footprint, read
+    //     from the live scene via getBuildingFootprints() — never hand-typed
+    //     coordinates); every metre of actual travel is real held W/A/S/D.
+    // ---------------------------------------------------------------------
+    async function sampleWhile(actionPromise, sampleFn, intervalMs = 100) {
+      const samples = [];
+      let stop = false;
+      const sampler = (async () => {
+        while (!stop) {
+          samples.push(await page.evaluate(sampleFn));
+          await page.waitForTimeout(intervalMs);
+        }
+      })();
+      await actionPromise;
+      stop = true;
+      await sampler;
+      return samples;
+    }
+
+    {
+      const tractorPos = await page.evaluate(() => {
+        const t = window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor');
+        return { x: t.group.position.x, z: t.group.position.z };
+      });
+      const nearestWall = await page.evaluate((tp) => {
+        const fps = window.__dopahar.getBuildingFootprints().filter((f) => f.root === 'hero_zone');
+        let best = null;
+        let bestD = Infinity;
+        for (const f of fps) {
+          const cx = (f.minX + f.maxX) / 2;
+          const cz = (f.minZ + f.maxZ) / 2;
+          const d = Math.hypot(cx - tp.x, cz - tp.z);
+          if (d < bestD) {
+            bestD = d;
+            best = { x: cx, z: cz };
+          }
+        }
+        return best;
+      }, tractorPos);
+
+      // Aim the tractor's real facing at the wall (position/driving stays 100%
+      // real input below) — same forward convention Vehicle.update() documents
+      // (forward = (-sin(yaw), -cos(yaw))): yaw = atan2(-dirX, -dirZ).
+      await page.evaluate(
+        ({ tp, wallPos }) => {
+          const d = window.__dopahar;
+          const v = d.vehicles.find((v) => v.preset.kind === 'tractor');
+          d.teleportPlayer(v.group.position.x, v.group.position.z);
+          const dirX = wallPos.x - tp.x;
+          const dirZ = wallPos.z - tp.z;
+          v.group.rotation.y = Math.atan2(-dirX, -dirZ);
+          v.speed = 0; // a directly-assigned facing must pair with zero speed — see test 12's own note
+          d.mount(v);
+        },
+        { tp: tractorPos, wallPos: nearestWall }
+      );
+
+      const trolleyWallSamples = await sampleWhile(
+        (async () => {
+          // Drive straight at the wall until contact (tractor accelerates
+          // slowly — this needs real headroom, same reasoning as this file's
+          // own VEHICLE_DRIVE_CHECKS.tractor holdMs).
+          await page.keyboard.down('KeyW');
+          await page.waitForTimeout(9000);
+          // Sharp turn each way while still rolling, right at the wall.
+          await page.keyboard.down('KeyD');
+          await page.waitForTimeout(2500);
+          await page.keyboard.up('KeyD');
+          await page.keyboard.down('KeyA');
+          await page.waitForTimeout(2500);
+          await page.keyboard.up('KeyA');
+          // Reverse away — the trolley now leads, straight toward whatever is
+          // behind the tractor's current facing.
+          await page.keyboard.up('KeyW');
+          await page.keyboard.down('KeyS');
+          await page.waitForTimeout(5000);
+          await page.keyboard.up('KeyS');
+        })(),
+        () => window.__dopahar.trolleyWallClearance()
+      );
+      await page.evaluate(() => window.__dopahar.dismount()).catch(() => {});
+
+      // Depth-based, same -0.05 tolerance as every other trolley check in
+      // this file — a strict boolean overlap test (tried first) flagged
+      // ordinary momentary wall-grazing during the sharp-turn segment as a
+      // false "tunnel", the same false-positive pattern already found and
+      // fixed for the vehicle-vs-trolley check below (see
+      // src/collision.js's orientedBoxClearance()/orientedBoxWorstClearance()
+      // doc comments).
+      const worstWallClearance = Math.min(...trolleyWallSamples);
+      record(
+        'attached trolley never tunnels into a wall during real driving (approach, sharp turns, reversing)',
+        worstWallClearance >= -0.05,
+        `worst clearance ${worstWallClearance.toFixed(3)}m across ${trolleyWallSamples.length} sampled frames (negative = penetrating)`
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // 11. Detach the trolley with a real F-press (the actual player control,
+    //     src/controls.js's consumeAttach() — no gating condition on detach
+    //     besides "mounted on a tractor that has one attached"), then re-run
+    //     the same real-walked player approaches against it in its new,
+    //     detached, standing-alone state.
+    // ---------------------------------------------------------------------
+    {
+      const tractorPos = await page.evaluate(() => {
+        const t = window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor');
+        return { x: t.group.position.x, z: t.group.position.z };
+      });
+      const beforeAttached = await page.evaluate(() => !!window.__dopahar.currentTrolley()?.attached);
+      await page.evaluate((tp) => {
+        const d = window.__dopahar;
+        const v = d.vehicles.find((v) => v.preset.kind === 'tractor');
+        d.teleportPlayer(tp.x, tp.z);
+        d.mount(v);
+      }, tractorPos);
+      await page.keyboard.press('KeyF');
+      await page.waitForTimeout(300);
+      const afterAttached = await page.evaluate(() => !!window.__dopahar.currentTrolley()?.attached);
+      await page.evaluate(() => window.__dopahar.dismount()).catch(() => {});
+      record('trolley detaches with a real F-press', beforeAttached && !afterAttached, `attached before=${beforeAttached}, after=${afterAttached}`);
+    }
+    await playerVsTrolleyApproaches('detached');
+
+    // ---------------------------------------------------------------------
+    // 12. The now-detached, standing-alone trolley is also solid to another
+    //     VEHICLE (the tractor, now without it) during real driving — not
+    //     just to the player (checks 9/11 above).
+    // ---------------------------------------------------------------------
+    {
+      const tractor = await page.evaluate(() => {
+        const t = window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor');
+        return { x: t.group.position.x, z: t.group.position.z };
+      });
+      const trolley = await page.evaluate(() => window.__dopahar.currentTrolley());
+      await page.evaluate(
+        ({ tp, trolleyPos }) => {
+          const d = window.__dopahar;
+          const v = d.vehicles.find((v) => v.preset.kind === 'tractor');
+          d.teleportPlayer(v.group.position.x, v.group.position.z);
+          const dirX = trolleyPos.x - tp.x;
+          const dirZ = trolleyPos.z - tp.z;
+          v.group.rotation.y = Math.atan2(-dirX, -dirZ);
+          // A directly test-assigned facing must pair with zero speed: this
+          // tractor can carry a large leftover negative (reversing) speed from
+          // test 10's own reverse maneuver, and `speed` is a scalar along
+          // whatever the CURRENT facing is — reassigning facing here without
+          // zeroing it manufactures a state no real player's steering could
+          // ever produce (orientation and velocity direction are always
+          // coupled in real play, since steering itself is speed-scaled; see
+          // Vehicle.update()). That manufactured state is exactly what
+          // produced this test's own false "penetration" failures before this
+          // fix (confirmed via tmp/trolley_diag.mjs and a captured
+          // [DEBUG worst clearance] dump showing speed=-2.09 while 'KeyW' was
+          // held the whole time) — not a real collision-resolver bug.
+          v.speed = 0;
+          d.mount(v);
+        },
+        { tp: tractor, trolleyPos: trolley }
+      );
+      let worstClearance = Infinity;
+      let worstDetail = null;
+      await page.keyboard.down('KeyW');
+      for (let i = 0; i < 70; i++) {
+        await page.waitForTimeout(150);
+        const sample = await page.evaluate(() => {
+          const d = window.__dopahar;
+          const v = d.vehicles.find((v) => v.preset.kind === 'tractor');
+          const t = d.currentTrolley();
+          return {
+            clearance: d.vehicleClearanceToTrolley('tractor'),
+            tx: v.group.position.x, tz: v.group.position.z, tyaw: v.group.rotation.y, speed: v.speed,
+            trolleyX: t.x, trolleyZ: t.z, trolleyYaw: t.yaw,
+            wallClearance: d.minDistanceToColliders({ x: v.group.position.x, z: v.group.position.z }, Math.hypot(v.preset.body.w, v.preset.body.d) / 2),
+          };
+        });
+        if (sample.clearance < worstClearance) { worstClearance = sample.clearance; worstDetail = sample; }
+      }
+      if (worstClearance < -0.05) console.log('[DEBUG worst clearance]', JSON.stringify(worstDetail));
+      await page.keyboard.up('KeyW');
+      await page.evaluate(() => window.__dopahar.dismount()).catch(() => {});
+      record(
+        'detached trolley is solid to another vehicle during real driving',
+        worstClearance >= -0.05,
+        `worst clearance ${worstClearance.toFixed(3)}m while driving the tractor at it (negative = penetrating)`
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // 13. No red console errors across the whole run.
     // ---------------------------------------------------------------------
     record('no console errors', consoleErrors.length === 0, consoleErrors.slice(0, 5).join(' | '));
 

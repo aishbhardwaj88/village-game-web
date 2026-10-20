@@ -565,6 +565,42 @@ export class Trolley {
     const cYaw = 5.2;
     this.yawVel += (kYaw * yawDiff - cYaw * this.yawVel) * dt;
     this.yaw += this.yawVel * dt;
+
+    // Bugfix (real playtest regression, found by tools/regression-check.js's
+    // own real-input driving test, not a teleport/scripted one — see
+    // CLAUDE.md's regression-guard rule): a real trolley's drawbar hitch has a
+    // mechanical swing limit. Nothing here was clamping this angle before, so
+    // a sustained, UNSTEERED reverse (exactly what a jackknifing real trailer
+    // does too — this is why reversing a real trailer is hard) could spin
+    // this spring's target past 90°+ relative to the tractor's own heading.
+    // hitchTargetPosition() below places the trolley rigidly AHEAD of the
+    // hitch point along the trolley's OWN yaw — at a large enough swing (up
+    // toward 180°, the trolley's front aiming back at the tractor instead of
+    // away from it), that rigid placement lands the trolley's body ON TOP OF
+    // the tractor's own (confirmed: tmp/trolley_coax_repro.mjs, reproducing a
+    // captured failing state, showed the tractor then driving clean through a
+    // trolley left in exactly that spot after a detach — not a resolver bug,
+    // a missing mechanical limit on an angle nothing had ever constrained).
+    // 45° (a realistic real-trailer swing limit before jackknife risk in its
+    // own right) was chosen over a more permissive first attempt at 75° after
+    // measuring the worst case by hand: hitchTargetPosition()'s own formula
+    // puts the trolley's body centre hypot(2.95 sinθ, hitchZ + 2.95 cosθ) from
+    // the tractor's origin at relative swing θ — at 75° that's only 3.73m,
+    // which the tractor's own ~1.99m and the trolley's own ~2.01m
+    // circumscribed half-diagonals can still bridge (confirmed: a real
+    // regression run still left a small -0.11m penetration at 75°). At 45° the
+    // same arithmetic gives 4.28m — clear of both half-diagonals combined
+    // (3.99m + wall-clock slop) with real margin, not just on paper.
+    const MAX_HITCH_SWING = Math.PI * (45 / 180);
+    let relativeYaw = this.yaw - tractor.group.rotation.y;
+    relativeYaw = ((relativeYaw % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+    if (relativeYaw > MAX_HITCH_SWING) {
+      this.yaw = tractor.group.rotation.y + MAX_HITCH_SWING;
+      this.yawVel = Math.min(this.yawVel, 0);
+    } else if (relativeYaw < -MAX_HITCH_SWING) {
+      this.yaw = tractor.group.rotation.y - MAX_HITCH_SWING;
+      this.yawVel = Math.max(this.yawVel, 0);
+    }
     this.group.rotation.y = this.yaw;
   }
 

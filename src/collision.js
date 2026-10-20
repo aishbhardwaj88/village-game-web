@@ -230,6 +230,60 @@ export function resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes = [
   }
 }
 
+/** Signed clearance between an oriented box (pos/yaw/halfW/halfD) and a single
+ * axis-aligned `box` — positive if a separating axis exists (the magnitude is
+ * the gap along whichever axis was cheapest to check, not necessarily the
+ * true Euclidean distance — a reasonable SAT-based proxy, same spirit as
+ * minSignedDistanceToColliders()'s circle-vs-box distance elsewhere in this
+ * file), negative (by the real penetration depth) if every axis overlaps.
+ * Used where a test needs a continuous, tolerance-comparable measure instead
+ * of orientedBoxOverlapsAnyBox()'s strict boolean — the push-out resolver
+ * itself only ever converges to approximately (not exactly) zero clearance,
+ * so a strict "any positive overlap on every axis" boolean flags normal,
+ * expected resting contact as a false "penetration". */
+export function orientedBoxClearance(x, z, yaw, halfW, halfD, box) {
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  const cx = (box.minX + box.maxX) / 2;
+  const cz = (box.minZ + box.maxZ) / 2;
+  const ex = (box.maxX - box.minX) / 2;
+  const ez = (box.maxZ - box.minZ) / 2;
+  const dx = x - cx;
+  const dz = z - cz;
+  const axes = [
+    { x: 1, z: 0 },
+    { x: 0, z: 1 },
+    { x: cosY, z: -sinY },
+    { x: sinY, z: cosY },
+  ];
+  let minOverlap = Infinity;
+  for (const axis of axes) {
+    const aabbProj = Math.abs(ex * axis.x) + Math.abs(ez * axis.z);
+    const obbProj = Math.abs(halfW * (cosY * axis.x - sinY * axis.z)) + Math.abs(halfD * (sinY * axis.x + cosY * axis.z));
+    const centerDist = dx * axis.x + dz * axis.z;
+    const overlap = aabbProj + obbProj - Math.abs(centerDist);
+    if (overlap <= 0) return -overlap; // this axis separates them — positive clearance
+    if (overlap < minOverlap) minOverlap = overlap;
+  }
+  return -minOverlap; // every axis overlaps — genuinely colliding; negative penetration depth
+}
+
+/** Worst (most negative) orientedBoxClearance() across every box in `boxes` —
+ * the depth-based equivalent of orientedBoxOverlapsAnyBox()'s strict boolean,
+ * for the same reason orientedBoxClearance() itself exists (a push-out
+ * resolver only ever converges to approximately zero clearance; a strict
+ * "any positive overlap" boolean flags ordinary resting contact as a false
+ * "overlap"). Positive = clear by that margin, negative = penetrating by
+ * that depth. */
+export function orientedBoxWorstClearance(x, z, yaw, halfW, halfD, boxes) {
+  let worst = Infinity;
+  for (const box of boxes) {
+    const clearance = orientedBoxClearance(x, z, yaw, halfW, halfD, box);
+    if (clearance < worst) worst = clearance;
+  }
+  return worst;
+}
+
 /** Read-only oriented-box overlap test — returns the first offending box (or
  * null if clear). Used by the dev-mode per-frame penetration guard (main.js) to
  * report which collider a vehicle/trolley is overlapping, and available for any
@@ -305,4 +359,39 @@ export function vehicleFootprintBox(vehicle) {
   const x = vehicle.group.position.x;
   const z = vehicle.group.position.z;
   return { minX: x - halfDiag, maxX: x + halfDiag, minZ: z - halfDiag, maxZ: z + halfDiag };
+}
+
+// Bugfix (real playtest bug, reproduced with real keyboard input, not teleports):
+// the trolley never had ANY box registered in src/main.js's otherVehicleBoxes()
+// (it isn't in the `vehicles` array — it's tracked separately as tractor.trolley/
+// looseTrolley), so the player, NPCs, and every other vehicle's own collision
+// resolve simply never knew it existed and walked/drove straight through it. This
+// is the trolley's real oriented footprint's exact axis-aligned bounding box —
+// tighter than vehicleFootprintBox()'s circumscribed-circle approximation above,
+// which is fine there (a cheap, parked-vehicle-shaped approximation) but would be
+// needlessly conservative for a 3.5 x 2.0 rectangle whose exact corners are
+// already known. Same local-point-at-yaw convention as hitchTargetPosition()/
+// colliderBoxFromTransform(): world offset of local (lx, lz) at yaw θ is
+// (lx·cosθ + lz·sinθ, lz·cosθ − lx·sinθ).
+export function orientedFootprintBox(x, z, yaw, halfW, halfD) {
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const [lx, lz] of [
+    [-halfW, -halfD],
+    [halfW, -halfD],
+    [-halfW, halfD],
+    [halfW, halfD],
+  ]) {
+    const wx = x + lx * cosY + lz * sinY;
+    const wz = z - lx * sinY + lz * cosY;
+    if (wx < minX) minX = wx;
+    if (wx > maxX) maxX = wx;
+    if (wz < minZ) minZ = wz;
+    if (wz > maxZ) maxZ = wz;
+  }
+  return { minX, maxX, minZ, maxZ };
 }

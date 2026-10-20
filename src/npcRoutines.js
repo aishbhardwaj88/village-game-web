@@ -16,7 +16,7 @@ const _toTarget = new THREE.Vector3();
  * `pauseSeconds` at each stop. Faces the direction of travel while moving. Returns an
  * update(dt) function — call once per frame.
  */
-export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeconds = 2.5 } = {}) {
+export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeconds = 2.5, getExtraBoxes = () => [] } = {}) {
   let index = 0;
   let pauseTimer = pauseSeconds * 0.5; // start mid-pause so NPCs don't all move in lockstep from frame 1
 
@@ -40,7 +40,7 @@ export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeco
     // so nothing ever caught a real bug here, but every moving body must go
     // through the one resolver now regardless — see CLAUDE.md).
     const step = Math.min(speed * dt, dist);
-    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
+    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
     const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
     // Shortest-path yaw damp so it doesn't spin the long way round.
     let diff = targetYaw - npcGroup.rotation.y;
@@ -68,7 +68,7 @@ export function createStirLoop(mesh, { rate = 1.6, amount = 0.14 } = {}) {
  * `onDone` once) instead of looping back to the first — for one-shot scripted
  * sequences (M6's monkey chase, docs/STORY.md) rather than an ambient wander.
  */
-export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSeconds = 0.6, onDone } = {}) {
+export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSeconds = 0.6, onDone, getExtraBoxes = () => [] } = {}) {
   let index = 0;
   let pauseTimer = 0;
   let done = false;
@@ -95,7 +95,7 @@ export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSecon
 
     _toTarget.multiplyScalar(1 / dist);
     const step = Math.min(speed * dt, dist);
-    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
+    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
     const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
     let diff = targetYaw - npcGroup.rotation.y;
     diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -113,7 +113,7 @@ const _toFollowTarget = new THREE.Vector3();
  * player/vehicles are (src/collision.js `resolveCollisions` — the actual "does not
  * pass through walls" behaviour; there's no separate avoidance system to write).
  */
-export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance = 2, speed = 1.8 } = {}) {
+export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance = 2, speed = 1.8, getExtraBoxes = () => [] } = {}) {
   return function update(dt) {
     const target = getTargetPosition();
     _toFollowTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
@@ -122,7 +122,7 @@ export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance 
     if (dist > stopDistance) {
       _toFollowTarget.multiplyScalar(1 / dist);
       const step = Math.min(speed * dt, dist - stopDistance);
-      resolveMove(npcGroup.position, _toFollowTarget.x * step, _toFollowTarget.z * step, NPC_RADIUS, []);
+      resolveMove(npcGroup.position, _toFollowTarget.x * step, _toFollowTarget.z * step, NPC_RADIUS, getExtraBoxes());
       const targetYaw = Math.atan2(_toFollowTarget.x, _toFollowTarget.z);
       let diff = targetYaw - npcGroup.rotation.y;
       diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;

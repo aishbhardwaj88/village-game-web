@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-19T15:14:47.361Z",
+  "timestamp": "2026-10-20T14:18:56.014Z",
   "results": [
     {
       "name": "prompt badge renders in top-right region",
@@ -14,12 +14,12 @@
     {
       "name": "draw calls under 130",
       "pass": false,
-      "detail": "134 calls"
+      "detail": "136 calls"
     },
     {
       "name": "triangles under 400k",
       "pass": true,
-      "detail": "97859 triangles"
+      "detail": "108543 triangles"
     },
     {
       "name": "asset budget (tools/check-budget.js)",
@@ -39,37 +39,72 @@
     {
       "name": "can mount and drive the bike",
       "pass": true,
-      "detail": "moved 3.30m in 2500ms"
+      "detail": "moved 3.40m in 2500ms"
     },
     {
       "name": "can mount and drive the tractor",
       "pass": true,
-      "detail": "moved 4.03m in 8000ms"
+      "detail": "moved 3.61m in 8000ms"
     },
     {
       "name": "can mount and drive the cart",
       "pass": true,
-      "detail": "moved 3.62m in 8000ms"
+      "detail": "moved 2.88m in 8000ms"
     },
     {
       "name": "player can reach the bazaar",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 3.3m"
+      "detail": "distance to target went from 6.0m to 3.5m"
     },
     {
       "name": "player can reach the temple",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.8m"
+      "detail": "distance to target went from 6.0m to 3.1m"
     },
     {
       "name": "player can reach the school",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 3.1m"
+      "detail": "distance to target went from 6.0m to 3.5m"
     },
     {
       "name": "player can reach the field",
       "pass": true,
-      "detail": "distance to target went from 6.0m to 2.8m"
+      "detail": "distance to target went from 6.0m to 3.1m"
+    },
+    {
+      "name": "trolley solid to player, no penetration (attached)",
+      "pass": true,
+      "detail": "worst clearance 0.440m across 4 real-walked approaches (negative = penetrating)"
+    },
+    {
+      "name": "trolley actually blocks the player, not coincidentally far away (attached)",
+      "pass": true,
+      "detail": "closest real approach got to 0.44m clearance"
+    },
+    {
+      "name": "attached trolley never tunnels into a wall during real driving (approach, sharp turns, reversing)",
+      "pass": true,
+      "detail": "worst clearance 0.000m across 182 sampled frames (negative = penetrating)"
+    },
+    {
+      "name": "trolley detaches with a real F-press",
+      "pass": true,
+      "detail": "attached before=true, after=false"
+    },
+    {
+      "name": "trolley solid to player, no penetration (detached)",
+      "pass": true,
+      "detail": "worst clearance 0.839m across 4 real-walked approaches (negative = penetrating)"
+    },
+    {
+      "name": "trolley actually blocks the player, not coincidentally far away (detached)",
+      "pass": true,
+      "detail": "closest real approach got to 0.84m clearance"
+    },
+    {
+      "name": "detached trolley is solid to another vehicle during real driving",
+      "pass": true,
+      "detail": "worst clearance -0.000m while driving the tractor at it (negative = penetrating)"
     },
     {
       "name": "no console errors",
