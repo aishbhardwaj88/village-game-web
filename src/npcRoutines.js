@@ -67,6 +67,13 @@ export function createStirLoop(mesh, { rate = 1.6, amount = 0.14 } = {}) {
  * Like createWaypointLoop, but stops and stays put at the last waypoint (calling
  * `onDone` once) instead of looping back to the first — for one-shot scripted
  * sequences (M6's monkey chase, docs/STORY.md) rather than an ambient wander.
+ *
+ * A waypoint may carry an optional `y` (default 0) — M6's chase uses this to send
+ * the monkey up onto a real bazaar roof slab and back down (docs/STORY.md: "across
+ * rooftops and lanes"). Height is eased toward the waypoint's `y` independently of
+ * the XZ collision resolver below (resolveMove is 2D, ground-plane only, same as
+ * every other NPC routine) — deliberately not run through collision at all: this is
+ * a short, scripted, comedic beat ("never a stat/damage system"), not a real climb.
  */
 export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSeconds = 0.6, onDone, getExtraBoxes = () => [] } = {}) {
   let index = 0;
@@ -78,6 +85,7 @@ export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSecon
     const target = waypoints[index];
     _toTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
     const dist = _toTarget.length();
+    npcGroup.position.y += ((target.y ?? 0) - npcGroup.position.y) * Math.min(1, dt * 1.5);
 
     if (dist < 0.2) {
       if (index >= waypoints.length - 1) {
