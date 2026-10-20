@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
+import { getTiledMaterial, ensureUv2 } from './materials.js';
 import { bazaarUnitCx, BAZAAR_FRONT_Z } from './bazaar.js';
 
 /**
@@ -22,17 +22,19 @@ export const PITAJI_POSITION = new THREE.Vector3(-48, 0, 31);
 // counter" distance every other shop interaction in this game uses.
 export const KIRANA_POSITION = new THREE.Vector3(bazaarUnitCx(0), 0, BAZAAR_FRONT_Z - 1.5);
 
-const SACK_TINT = 0xc2a468;
 const SACK_SIZE = { w: 0.42, h: 0.5, d: 0.34 };
 
 function sackGeometry() {
   const g = new THREE.BoxGeometry(SACK_SIZE.w, SACK_SIZE.h, SACK_SIZE.d);
   ensureUv2(g);
-  bakeFlatTintColors(g, SACK_TINT, 1);
   return g;
 }
 
-const sackMaterial = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+// docs/FINISH_LINE.md Step C — real jute sacking texture (was sharing the
+// village's 'wood' material purely for draw-call merging; jute is visually
+// distinct enough, and the sack is a small, clearly-visible, frequently-
+// handled prop across the whole M3 errand, that it earns its own material).
+const sackMaterial = getTiledMaterial('jute', { repeatX: 1.5, repeatY: 1.5, tint: 0xc9a85a, tintStrength: 0.5, roughness: 1 });
 
 /** A static decorative pile of 3 sacks at the yard pickup point, just outside the house — always shows
  * all 3 regardless of how many have actually been collected (a visible

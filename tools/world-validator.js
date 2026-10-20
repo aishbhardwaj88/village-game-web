@@ -215,7 +215,11 @@ async function main() {
         // found via the RAW run: "merged_8/9/10" at +2.7 to +3.05m, traced by
         // elimination (every object using an unnamed custom
         // MeshStandardMaterial in this codebase was one of these 3).
-        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard'];
+        // 'tin' (docs/FINISH_LINE.md Step C) — every current use is a roof or
+        // roof-like fixture (one background house's roof, the bazaar's own
+        // corrugated-tin awning), correctly elevated above the ground by
+        // design, same reasoning as 'signboard' above.
+        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin'];
         const mergedGroup = findByName(scene, 'village_static_merged');
         if (mergedGroup) {
           for (const child of mergedGroup.children) {
@@ -328,7 +332,9 @@ async function main() {
     const wallPoints = await sampleMaterialSurface("return name === 'plaster';");
     console.log(`${wallPoints.length / 2} real wall-surface sample points.`);
     console.log('Sampling real solid geometry for check 5 (every structural-material mesh)...');
-    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta'].includes(name);");
+    // 'brick' (docs/FINISH_LINE.md Step C, the chowk chabutra kerb) added
+    // alongside the existing structural-material families.
+    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick'].includes(name);");
     console.log(`${solidPoints.length / 2} real solid-surface sample points.`);
 
     // -------------------------------------------------------------------

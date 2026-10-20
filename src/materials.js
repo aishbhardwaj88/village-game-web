@@ -18,6 +18,13 @@ const SETS = {
   ground: { base: 'assets/textures/ground/', maps: ['color', 'normal', 'roughness', 'ao'] },
   crop: { base: 'assets/textures/crop/', maps: ['color', 'normal', 'roughness'] },
   lane: { base: 'assets/textures/lane/', maps: ['color', 'normal', 'roughness'] },
+  // docs/FINISH_LINE.md Step C — tin roofing, jute sacking, tarpaulin/canvas
+  // awning cloth, and intact (cared-for, never damaged/old) brick. See
+  // docs/CREDITS.md for source/licence.
+  tin: { base: 'assets/textures/tin/', maps: ['color', 'normal', 'roughness', 'ao'] },
+  jute: { base: 'assets/textures/jute/', maps: ['color', 'normal', 'roughness'] },
+  tarpaulin: { base: 'assets/textures/tarpaulin/', maps: ['color', 'normal', 'roughness'] },
+  brick: { base: 'assets/textures/brick/', maps: ['color', 'normal', 'roughness'] },
 };
 
 function loadRaw(url, srgb) {

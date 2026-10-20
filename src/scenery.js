@@ -37,8 +37,15 @@ export function buildBackgroundHouses(scene, kit) {
     block.position.set(p.x, p.h / 2, p.z);
     houseGroup.add(block);
 
-    const roof = texturedThickBox(p.w + 0.3, 0.25, p.d + 0.3, 'concrete', { tint: 0xd7d2c4 });
-    roof.position.set(p.x, p.h + 0.125, p.z);
+    // docs/FINISH_LINE.md Step C — the first background house gets a real tin
+    // roof instead of flat concrete, for the "vary prosperity... some plain"
+    // read (art-direction.md 7.1b) a village of identical flat concrete roofs
+    // doesn't have. Costs +1 draw call (splits off from the other two
+    // houses' shared 'concrete' roof material) — within budget.
+    const isTin = i === 0;
+    const roofH = isTin ? 0.08 : 0.25; // a tin sheet is thin, not a slab
+    const roof = texturedThickBox(p.w + 0.3, roofH, p.d + 0.3, isTin ? 'tin' : 'concrete', { tint: 0xd7d2c4, tintStrength: isTin ? 0 : 1 });
+    roof.position.set(p.x, p.h + roofH / 2, p.z);
     houseGroup.add(roof);
 
     group.add(houseGroup);

@@ -205,13 +205,16 @@ export function buildBazaarRow(kit) {
     const postLocal = new THREE.Matrix4().makeTranslation(x, awningFrontY / 2, awningOuterZ);
     awningGeos.push(post.applyMatrix4(postLocal));
   }
-  // Headroom pass (docs/parked.md) — vertex-colour tint so this shares the village's
-  // one cached 'metal' Material instead of its own direct-tint one.
+  // docs/FINISH_LINE.md Step C — real corrugated tin texture, matching what
+  // this whole feature is already named above ("corrugated-tin awning") —
+  // it had been built with the generic flat-tinted 'metal' set (shared with
+  // the school gate) the whole time. Same one-shared-Material pattern, so
+  // this costs nothing extra (still exactly one draw call for the awning).
   for (const g of awningGeos) {
     ensureUv2(g);
-    bakeFlatTintColors(g, 0x5c6a70, 1);
+    bakeFlatTintColors(g, 0xffffff, 0);
   }
-  const awningMaterial = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  const awningMaterial = getTiledMaterial('tin', { repeatX: awningLen / 2, repeatY: 1, roughness: 0.85, vertexColors: true });
   const awningMesh = new THREE.Mesh(mergeGeometries(awningGeos), awningMaterial);
   awningMesh.name = 'bazaar_awning';
   awningMesh.castShadow = true;
@@ -758,7 +761,14 @@ export function buildChowkPlaza() {
   const kerbR = 1.15;
   for (let i = 0; i < kerbSegs; i++) {
     const a0 = (i / kerbSegs) * Math.PI * 2;
-    const segMesh = texturedThickBox(0.55, 0.5, 0.25, 'terracotta', { tint: darken(PALETTE.terracotta), tileSize: 0.5, roughness: 1 });
+    // docs/FINISH_LINE.md Step C — real (CC0, intact/"modern"-tagged, never
+    // damaged) brick texture instead of tinted terracotta, matching what this
+    // function's own doc comment already called this ("a chabutra (circular
+    // brick platform)") — this is also the material the WHOLE merged mesh
+    // (kerb+deck+benches+chairs) ends up drawn with (`material = material ||
+    // ...` below takes whichever texturedThickBox call runs first), so this
+    // one swap is the real fix, at no extra draw-call cost.
+    const segMesh = texturedThickBox(0.55, 0.5, 0.25, 'brick', { tint: 0xffffff, tileSize: 0.6, tintStrength: 0, roughness: 0.95 });
     material = material || segMesh.material;
     const m = new THREE.Matrix4().makeRotationY(a0).setPosition(chabX + Math.sin(a0) * kerbR, 0.25, chabZ + Math.cos(a0) * kerbR);
     geos.push(segMesh.geometry.clone().applyMatrix4(m));
