@@ -324,3 +324,17 @@ techniques added this session, neither a change to the renderer/colour law above
   texture, `NormalBlending`, `depthWrite: false`, low opacity (0.3). Positions are
   fixed at build time across a handful of outdoor "zones" (rectangle or line-segment
   shaped) rather than following the camera/player — see `docs/parked.md` for why.
+
+**2026-10-20 (docs/FINISH_LINE.md Step 2, code-built people) result: 136/140 draw
+calls, ~108.5k triangles, 4.72MB assets** (was 134/140). Four new characters
+(`src/characters.js`, replacing the flat-capsule Maa/halwai/postman and adding a new
+Dada) each merge down to exactly ONE draw call — every part (skin, cloth, hair, trim)
+is baked with the same vertex-colour-tint pattern `src/vehicles.js` already established,
+sharing a single (roughness 0.85, metalness 0) material per character (a value that
+simultaneously satisfies every docs/art-rules-characters.md minimum: skin >=0.75,
+cotton/wool/hair >=0.8, leather >=0.6), so `mergeGroupByMaterial()` folds the whole
+figure into one mesh. Net cost: +2 draw calls only (3 characters replaced an existing
+1-draw-call capsule each, 1 — Dada — is wholly new). "Idle breathing"/"walk cycle" is a
+whole-body rock/bob on an inner pivot group (same technique as the vehicles' own body
+pitch/roll), not per-limb animation — the only approach compatible with a single merged
+mesh at this draw-call budget.

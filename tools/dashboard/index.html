@@ -243,6 +243,20 @@
     </div>
   </section>
 
+  <section id="tripo-key-section">
+    <h2>Tripo API key</h2>
+    <div class="panel">
+      <p style="font-size:13px; margin:0 0 10px; opacity:0.85;">
+        Saved only to a local <code>.env</code> file on this machine (never committed, never shown back here). See
+        docs/NEEDS_YOU.md for what it costs before adding one.
+      </p>
+      <div id="tripo-key-status" style="font-size:13px; margin-bottom:10px;"></div>
+      <input type="password" id="tripo-key-input" placeholder="Paste your Tripo API key" autocomplete="off" style="width:100%; box-sizing:border-box; padding:8px; font-size:13px; margin-bottom:8px;">
+      <button id="tripo-key-save">Save key</button>
+      <div id="tripo-key-msg" style="margin-top:8px; font-size:13px;"></div>
+    </div>
+  </section>
+
   <section id="inbox-section">
     <h2>Inbox</h2>
     <div class="panel" id="inbox-panel"></div>
@@ -451,6 +465,12 @@ function escapeAttr(s) {
   return escapeHtml(s);
 }
 
+function renderTripoKeyStatus(tripoKeySet) {
+  const el = document.getElementById('tripo-key-status');
+  el.textContent = tripoKeySet ? 'A key is saved.' : 'No key saved yet.';
+  el.style.color = tripoKeySet ? 'var(--good)' : 'inherit';
+}
+
 async function refresh() {
   try {
     const state = await fetchState();
@@ -461,6 +481,7 @@ async function refresh() {
     renderShots(state.shots);
     renderCommits(state.commits);
     renderInbox(state.inbox);
+    renderTripoKeyStatus(state.tripoKeySet);
   } catch (err) {
     console.error(err);
   }
@@ -495,6 +516,33 @@ fileInput.addEventListener('change', () => {
 dropzone.addEventListener('drop', (e) => {
   const file = e.dataTransfer.files[0];
   if (file) uploadFile(file);
+});
+
+// Tripo key handling — the input's value never gets logged or echoed back;
+// it's cleared immediately after a successful save.
+const tripoKeyInput = document.getElementById('tripo-key-input');
+const tripoKeyMsg = document.getElementById('tripo-key-msg');
+document.getElementById('tripo-key-save').addEventListener('click', async () => {
+  const key = tripoKeyInput.value.trim();
+  if (!key) return;
+  try {
+    const res = await fetch('/api/tripo-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      tripoKeyInput.value = '';
+      tripoKeyMsg.textContent = 'Saved.';
+      tripoKeyMsg.className = '';
+      renderTripoKeyStatus(true);
+    } else {
+      tripoKeyMsg.textContent = data.error || 'Save failed.';
+    }
+  } catch (err) {
+    tripoKeyMsg.textContent = 'Save failed: ' + err.message;
+  }
 });
 
 async function uploadFile(file) {

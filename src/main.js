@@ -35,7 +35,7 @@ import {
   TEMPLE_LANE_ARRIVE,
   TEMPLE_LANE_WIDTH,
 } from './temple.js';
-import { vehicleFootprintBox, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
+import { vehicleFootprintBox, orientedFootprintBox, orientedBoxClearance, orientedBoxWorstClearance, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -59,6 +59,26 @@ import {
 } from './bazaar.js';
 import { createNPC } from './npc.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun } from './npcRoutines.js';
+import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
+
+// Finish-line Step 2 — a code-built stylised character (src/characters.js) in
+// place of a flat capsule, for the four named NPCs the art director asked for
+// first (Maa, Dada, postman, halwai). Keeps the exact same contract
+// createNPC()'s capsule already had — a named Group with `.userData.mesh` set
+// to the one real visible mesh (so the existing asset-slot hide-list
+// (assetSlots.register below) and src/npcRoutines.js's waypoint/follow
+// rotation keep working completely unchanged — those only ever touch
+// `npcGroup.position`/`.rotation.y`, never caring what's inside. The returned
+// `animate(dt, isMoving)` is new — call it once per frame (main.js's render
+// loop below) to drive the character's own idle-breathing/walk-cycle rock.
+function buildCharacterNpc(key, position, rotationY, name) {
+  const { root, bodyPivot } = CHARACTER_BUILDERS[key]();
+  root.name = name;
+  root.position.set(position.x, 0, position.z);
+  root.rotation.y = rotationY;
+  root.userData.mesh = bodyPivot.children[0]; // the one merged draw call
+  return { root, animate: createHumanoidAnimator(bodyPivot) };
+}
 import {
   findNearestInteraction,
   resolveLabel,
@@ -410,12 +430,24 @@ async function main() {
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
 
-  // Errand NPCs (item 1/3 brief) — placeholder capsules, same construction as the
-  // player, positioned to match the interaction points in src/interactions.js.
-  const maaNpc = createNPC(0xa3453a, MAA_POSITION, 0, 'npc_maa');
+  // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
+  // in src/interactions.js. Maa/halwai are now the real code-built characters
+  // (docs/FINISH_LINE.md Step 2, src/characters.js) — a capsule no longer.
+  const maaBuilt = buildCharacterNpc('maa', MAA_POSITION, 0, 'npc_maa');
+  const maaNpc = maaBuilt.root;
   scene.add(maaNpc);
-  const halwaiNpc = createNPC(0xd8c9a0, HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
+  const maaAnim = { root: maaNpc, animate: maaBuilt.animate, prev: maaNpc.position.clone() };
+  const halwaiBuilt = buildCharacterNpc('halwai', HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
+  const halwaiNpc = halwaiBuilt.root;
   scene.add(halwaiNpc);
+  // Dada — stationary in the courtyard near Maa, per docs/FINISH_LINE.md's
+  // People section ("Maa and Dada at the house"). A few metres clear of her
+  // own 2-point waypoint loop (below) and of the house wall.
+  const DADA_POSITION = { x: MAA_POSITION.x + 3, z: MAA_POSITION.z };
+  const dadaBuilt = buildCharacterNpc('dada', DADA_POSITION, -Math.PI / 2, 'npc_dada');
+  const dadaNpc = dadaBuilt.root;
+  scene.add(dadaNpc);
+  const dadaAnim = { root: dadaNpc, animate: dadaBuilt.animate, prev: dadaNpc.position.clone() };
 
   // Third errand (this task) — Pitaji, stationary near the tractor/sack pile, and
   // the sack pile itself (folds into the hero zone's own vertex-coloured 'wood'
@@ -434,7 +466,7 @@ async function main() {
   const maaWalk = createWaypointLoop(maaNpc, [
     { x: MAA_POSITION.x, z: MAA_POSITION.z },
     { x: MAA_POSITION.x - 3, z: MAA_POSITION.z + 2 },
-  ]);
+  ], { getExtraBoxes: () => otherVehicleBoxes(null) });
   const halwaiStir = createStirLoop(halwaiNpc.userData.mesh);
 
   const childNpc = createNPC(0x6d8a9c, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_child');
@@ -446,7 +478,7 @@ async function main() {
       { x: -44, z: 55 }, // west of the halwai's footprint, not through it
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
     ],
-    { speed: 1.6, pauseSeconds: 3 }
+    { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
 
   // Optional interaction props (item 5) — not part of the errand.
@@ -463,23 +495,25 @@ async function main() {
   const sisterNpc = createNPC(0xc98ea0, SISTER_SCHOOL_POSITION, 0, 'npc_sister');
   scene.add(sisterNpc);
   let sisterFollowing = false;
-  const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2 });
+  const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2, getExtraBoxes: () => otherVehicleBoxes(null) });
 
   // M4 (docs/STORY.md) — the postman, cycling the same proven-clear hero-zone lane
   // corridor the child already walks (HOUSE_CENTER's courtyard out to the point just
   // west of the halwai's footprint — see childWalk's own doc comment above for why
-  // that particular midpoint is safe). A capsule NPC like every other named
-  // villager here, not an actual rigged bicycle — the "cycle round" is flavour text,
-  // not a new vehicle-NPC rendering system.
-  const postmanNpc = createNPC(0x8a6a2a, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_postman');
+  // that particular midpoint is safe). A real code-built character (src/characters.js)
+  // on foot, not an actual rigged bicycle — the "cycle round" is flavour text, not a
+  // new vehicle-NPC rendering system.
+  const postmanBuilt = buildCharacterNpc('postman', { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_postman');
+  const postmanNpc = postmanBuilt.root;
   scene.add(postmanNpc);
+  const postmanAnim = { root: postmanNpc, animate: postmanBuilt.animate, prev: postmanNpc.position.clone() };
   const postmanWalk = createWaypointLoop(
     postmanNpc,
     [
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
       { x: -44, z: 55 },
     ],
-    { speed: 1.5, pauseSeconds: 2 }
+    { speed: 1.5, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
   linkPostmanPosition(postmanNpc.position);
 
@@ -506,7 +540,7 @@ async function main() {
         { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 1.5 },
         { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4 },
       ],
-      { speed: 2.4, pauseSeconds: 0.4 }
+      { speed: 2.4, pauseSeconds: 0.4, getExtraBoxes: () => otherVehicleBoxes(null) }
     );
     quest.step = QUEST_STEPS.KURTA_STOLEN;
     updateObjective();
@@ -669,6 +703,8 @@ async function main() {
   for (const [name, npc] of [
     ['maa', maaNpc],
     ['halwai', halwaiNpc],
+    ['dada', dadaNpc],
+    ['postman', postmanNpc],
     ['teacher', teacherNpc],
     ['sister', sisterNpc],
     ['pitaji', pitajiNpc],
@@ -1269,10 +1305,28 @@ async function main() {
     sackCarrier,
   };
 
+  // Bugfix (real playtest bug, reproduced with real keyboard input — player walked
+  // straight through the trolley, and the trolley drove through buildings): this
+  // used to only ever push `vehicleFootprintBox(v)` for v in the `vehicles` array
+  // (bike/tractor/cart) — the trolley is tracked separately (tractor.trolley /
+  // looseTrolley below, never a member of `vehicles`), so it had NO box here at
+  // all, for ANY caller (the player's own resolveMove, every other vehicle's,
+  // and — see src/npcRoutines.js's getExtraBoxes — every NPC's). Nothing in the
+  // game could ever have detected a collision with it, attached or detached,
+  // regardless of how solid its own wall-vs-trolley resolve (resolveTowedMove,
+  // below) already was. Now always includes the trolley's real oriented
+  // footprint (orientedFootprintBox — exact, not vehicleFootprintBox's
+  // circumscribed-circle approximation), excluded only for the one tractor
+  // currently towing it (so its own tow-resolve isn't handed a box of itself).
   function otherVehicleBoxes(excludeVehicle) {
     const boxes = [];
     for (const v of vehicles) {
       if (v !== excludeVehicle) boxes.push(vehicleFootprintBox(v));
+    }
+    const owningTractor = vehicles.find((v) => v.trolley);
+    const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
+    if (trolley && excludeVehicle !== owningTractor) {
+      boxes.push(orientedFootprintBox(trolley.group.position.x, trolley.group.position.z, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH));
     }
     return boxes;
   }
@@ -1321,7 +1375,7 @@ async function main() {
     // here; these are the same real-world NPC footprint radii), console.warn
     // only — cheap circle-vs-box distance checks, not a frame-budget
     // concern at this NPC/instance count.
-    for (const npc of [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc]) {
+    for (const npc of [maaNpc, halwaiNpc, dadaNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc]) {
       const clearance = minSignedDistanceToColliders({ x: npc.position.x, z: npc.position.z }, 0.33, STATIC_COLLIDERS);
       if (clearance < 0) console.warn(`[collision guard] ${npc.name} overlaps a wall: pos=(${npc.position.x.toFixed(2)},${npc.position.z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
     }
@@ -1509,12 +1563,23 @@ async function main() {
       // interaction point and waypoint system both hold a reference to, so syncing it
       // here makes "talk to Maa" and the waypoint arrow/glow follow her as she walks.
       maaWalk(dt);
-      halwaiStir(dt);
+      halwaiStir(dt); // halwai's own idle animation (src/main.js) — not animate(), see buildCharacterNpc's doc comment
       childWalk(dt);
       postmanWalk(dt);
       if (sisterFollowing) sisterFollow(dt);
       MAA_POSITION.copy(maaNpc.position);
       bazaarLife.update(dt);
+
+      // Idle-breathing/walk-cycle rock (src/characters.js) for the three
+      // characters that actually move or stand around (halwai's own
+      // createStirLoop above already animates him) — "moving" is just "did
+      // this NPC's own position change noticeably since last frame", so this
+      // needs no extra plumbing into the waypoint/stationary logic above.
+      for (const c of [maaAnim, postmanAnim, dadaAnim]) {
+        const moved = c.prev.distanceTo(c.root.position) > 0.002;
+        c.prev.copy(c.root.position);
+        c.animate(dt, moved);
+      }
 
       // M6 (docs/STORY.md) — the monkey ambush triggers itself, not an interaction
       // point: once the player has walked far enough from the darzi carrying the
@@ -1777,7 +1842,7 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc, monkeyNpc],
+      npcs: [maaNpc, halwaiNpc, dadaNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc, monkeyNpc],
       props: [bellProp],
       interactions: {
         MAA_POSITION,
@@ -1922,6 +1987,57 @@ async function main() {
       // and is not part of this fix's scope). Exposed so test ground truth can't
       // silently drift from what the resolver actually promises.
       getTrolleyHalfExtents: () => ({ halfW: TROLLEY_HALF_WIDTH, halfD: TROLLEY_HALF_LENGTH }),
+      // tools/regression-check.js — real-keyboard-input trolley collision tests
+      // (added after the real playtest bug where the trolley had NO box at all
+      // in otherVehicleBoxes(), so nothing — player, NPCs, or any other
+      // vehicle — could ever detect colliding with it). These read the exact
+      // same ground truth the live resolver itself uses (the trolley/looseTrolley
+      // reference, TROLLEY_HALF_WIDTH/LENGTH, orientedFootprintBox,
+      // orientedBoxOverlapsAnyBox, STATIC_COLLIDERS) rather than re-deriving
+      // anything that could silently drift from what the game actually does.
+      currentTrolley: () => {
+        const owningTractor = vehicles.find((v) => v.trolley);
+        const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
+        if (!trolley) return null;
+        return { x: trolley.group.position.x, z: trolley.group.position.z, yaw: trolley.group.rotation.y, attached: trolley.attached };
+      },
+      // Depth-based (not a strict boolean — see orientedBoxWorstClearance()'s
+      // own doc comment for why a strict "any overlap" boolean flags ordinary
+      // resting/grazing contact as a false positive, the first version of
+      // this tried and caught by tools/regression-check.js's own test).
+      trolleyWallClearance: () => {
+        const owningTractor = vehicles.find((v) => v.trolley);
+        const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
+        if (!trolley) return Infinity;
+        return orientedBoxWorstClearance(trolley.group.position.x, trolley.group.position.z, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH, STATIC_COLLIDERS);
+      },
+      playerDistanceToTrolley: () => {
+        const owningTractor = vehicles.find((v) => v.trolley);
+        const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
+        if (!trolley) return Infinity;
+        const box = orientedFootprintBox(trolley.group.position.x, trolley.group.position.z, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH);
+        return minSignedDistanceToColliders(player.position, PLAYER_COLLISION_RADIUS, [box]);
+      },
+      // Signed clearance between ANOTHER vehicle's real oriented body (e.g. the
+      // tractor once it no longer owns this trolley, after a real detach) and
+      // the trolley's real footprint right now — exact, using the tractor's
+      // own real p.body.w/2, p.body.d/2 half-extents, the same ones
+      // resolveOrientedMove() itself resolves against (see the mountedVehicle
+      // branch above). Negative = penetrating by that depth, positive = clear
+      // by that margin — same convention as playerDistanceToTrolley()/
+      // minSignedDistanceToColliders(), so a test can apply the same small
+      // tolerance (an iterative push-out resolver only ever converges to
+      // approximately, not exactly, zero clearance — a strict boolean overlap
+      // test flags normal resting contact as a false "penetration").
+      vehicleClearanceToTrolley: (kind) => {
+        const v = vehicles.find((v) => v.preset.kind === kind);
+        if (!v) return Infinity;
+        const owningTractor = vehicles.find((v) => v.trolley);
+        const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
+        if (!trolley) return Infinity;
+        const box = orientedFootprintBox(trolley.group.position.x, trolley.group.position.z, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH);
+        return orientedBoxClearance(v.group.position.x, v.group.position.z, v.group.rotation.y, v.preset.body.w / 2, v.preset.body.d / 2, box);
+      },
       // tools/collider-audit.js / tools/trolley-drive-test.js — real per-building
       // footprints captured from geometry just before the static merge (see
       // loadDeferredContent()).

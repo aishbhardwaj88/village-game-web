@@ -1,3 +1,13 @@
+> **SUPERSEDED (2026-10-20).** This file's self-graded "complete" verdict was
+> reviewed by the art director and found premature — the actual game is
+> roughly 20% of the way to done, capsule placeholder people were accepted as
+> finished art, and this checklist's own bar was loosened mid-session rather
+> than held fixed. **`docs/FINISH_LINE.md` is now the one real definition of
+> done** — locked, boxes may only be ticked with a named screenshot as proof,
+> and the dashboard's progress bar now reads from it instead of from this
+> file. Everything below is kept for history only; do not treat it as current
+> status.
+
 # Game complete - definition of done
 
 Dopahar is "done" when every box below is ticked. This is the one content/narrative

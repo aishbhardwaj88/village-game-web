@@ -29,6 +29,8 @@ exactly as it does today.
 | `player.glb` | The player character | 0.7 × 2.0 × 0.7 |
 | `maa.glb` | Maa | 0.66 × 1.8 × 0.66 |
 | `halwai.glb` | The halwai | 0.66 × 1.8 × 0.66 |
+| `dada.glb` | Dada | 0.66 × 1.8 × 0.66 |
+| `postman.glb` | The postman | 0.66 × 1.8 × 0.66 |
 | `teacher.glb` | The teacher | 0.66 × 1.8 × 0.66 |
 | `sister.glb` | The sister | 0.66 × 1.8 × 0.66 |
 | `charpai.glb` | The charpai (rope bed), house front room | 0.9 × 0.5 × 1.9 |

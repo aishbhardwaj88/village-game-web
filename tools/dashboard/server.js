@@ -21,11 +21,19 @@ const PORT = 4321;
 const DOCS = path.join(ROOT, 'docs');
 const INBOX = path.join(ROOT, 'inbox');
 const SHOTS = path.join(DOCS, 'shots');
+// The dashboard's progress bar reads docs/FINISH_LINE.md (the real, locked
+// definition of done, added 2026-10-20 after docs/GAME_COMPLETE.md's
+// self-graded "complete" verdict was found premature — see that file's own
+// superseded notice). GAME_COMPLETE is kept only as a fallback for the
+// mission-by-mission breakdown below, which FINISH_LINE.md doesn't carry (it
+// tracks "all 8 missions" as a single checklist line, not per-mission).
+const FINISH_LINE = path.join(DOCS, 'FINISH_LINE.md');
 const GAME_COMPLETE = path.join(DOCS, 'GAME_COMPLETE.md');
 const BACKLOG = path.join(DOCS, 'BACKLOG.md');
 const NEEDS_YOU = path.join(DOCS, 'NEEDS_YOU.md');
 const STATUS_JSON = path.join(DOCS, 'status.json');
 const INBOX_LOG = path.join(DOCS, 'inbox-log.json');
+const ENV_FILE = path.join(ROOT, '.env'); // gitignored (see .gitignore) — TRIPO_API_KEY lives here only
 const INDEX_HTML = path.join(__dirname, 'index.html');
 
 const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.glb']);
@@ -38,6 +46,32 @@ async function readTextSafe(file, fallback = '') {
   } catch {
     return fallback;
   }
+}
+
+// Tripo API key storage (docs/FINISH_LINE.md Step 4J) — lives only in the
+// gitignored .env at the repo root, never in a file that could be committed,
+// never echoed back to the browser, never printed to a log. Preserves any
+// other lines already in .env (doesn't assume this is the only variable in
+// it).
+async function readEnvLines() {
+  try {
+    const text = await fsp.readFile(ENV_FILE, 'utf8');
+    return text.split('\n');
+  } catch {
+    return [];
+  }
+}
+
+async function hasTripoKey() {
+  const lines = await readEnvLines();
+  return lines.some((l) => /^TRIPO_API_KEY=.+/.test(l.trim()));
+}
+
+async function writeTripoKey(key) {
+  const lines = (await readEnvLines()).filter((l) => !/^TRIPO_API_KEY=/.test(l.trim()));
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+  lines.push(`TRIPO_API_KEY=${key}`);
+  await fsp.writeFile(ENV_FILE, lines.join('\n') + '\n', { mode: 0o600 });
 }
 
 async function readJsonSafe(file, fallback) {
@@ -116,9 +150,13 @@ async function getMissions() {
 }
 
 async function getProgress() {
-  const gcText = await readTextSafe(GAME_COMPLETE);
+  // Progress bar reads FINISH_LINE.md (the real, locked definition of done) —
+  // NOT GAME_COMPLETE.md, which is superseded. Field name kept as
+  // `gameComplete` for the existing index.html bindings; it's the finish-line
+  // count now, not the old file's.
+  const flText = await readTextSafe(FINISH_LINE);
   const backlogText = await readTextSafe(BACKLOG);
-  const gc = countCheckboxes(gcText);
+  const gc = countCheckboxes(flText);
   const bl = countCheckboxes(backlogText);
   const currentTask = firstUnticked(backlogText) || 'nothing left - backlog is clear';
   return {
@@ -150,9 +188,20 @@ async function getCommits() {
 async function getLatestShots() {
   try {
     const entries = await fsp.readdir(SHOTS, { withFileTypes: true });
-    const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
-    if (dirs.length === 0) return { folder: null, images: [] };
-    const latest = dirs[dirs.length - 1];
+    const dirNames = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    if (dirNames.length === 0) return { folder: null, images: [] };
+    // Bugfix: this used to pick the alphabetically-LAST folder name, which is
+    // not "latest" at all — docs/shots/ mixes hand-named reference folders
+    // (e.g. "wheel-diagnose") with tools/screenshot.js's own ISO-timestamp
+    // folders (e.g. "2026-10-20T..."), and a leading digit always sorts
+    // before a leading lowercase letter, so any hand-named folder present
+    // would permanently shadow every real screenshot run, forever. Real
+    // filesystem mtime is what "latest" actually means here.
+    const withMtime = await Promise.all(
+      dirNames.map(async (name) => ({ name, mtime: (await fsp.stat(path.join(SHOTS, name))).mtimeMs }))
+    );
+    withMtime.sort((a, b) => b.mtime - a.mtime);
+    const latest = withMtime[0].name;
     const files = await fsp.readdir(path.join(SHOTS, latest));
     const images = files.filter((f) => /\.(png|jpg|jpeg|webp)$/i.test(f)).sort();
     return { folder: latest, images: images.map((f) => `/shots/${latest}/${f}`) };
@@ -216,7 +265,7 @@ async function getInbox() {
 }
 
 async function buildState() {
-  const [progress, missions, commits, shots, health, needsYou, inbox] = await Promise.all([
+  const [progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet] = await Promise.all([
     getProgress(),
     getMissions(),
     getCommits(),
@@ -224,8 +273,9 @@ async function buildState() {
     getHealth(),
     getNeedsYou(),
     getInbox(),
+    hasTripoKey(),
   ]);
-  return { progress, missions, commits, shots, health, needsYou, inbox, generatedAt: new Date().toISOString() };
+  return { progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet, generatedAt: new Date().toISOString() };
 }
 
 function sanitizeFilename(name) {
@@ -441,6 +491,27 @@ const server = http.createServer(async (req, res) => {
       }
       const okResult = await markNeedsYouDone(index);
       sendJson(res, okResult ? 200 : 404, { ok: okResult });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/tripo-key') {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      let payload;
+      try {
+        payload = JSON.parse(body || '{}');
+      } catch {
+        sendJson(res, 400, { ok: false, error: 'Invalid JSON.' });
+        return;
+      }
+      const key = typeof payload.key === 'string' ? payload.key.trim() : '';
+      if (!key) {
+        sendJson(res, 400, { ok: false, error: 'No key provided.' });
+        return;
+      }
+      await writeTripoKey(key);
+      // Never echo the key back, never log it — only confirm success.
+      sendJson(res, 200, { ok: true });
       return;
     }
 
