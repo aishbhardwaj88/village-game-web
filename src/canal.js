@@ -40,7 +40,7 @@ const CANAL_MAX_X = 0;
 export const BRIDGE_X = -15; // right at the baagh (src/baagh.js BAAGH_CENTER x=-15)
 const BRIDGE_HALF_WIDTH = 4;
 
-const WATER_TINT = 0x2e4a4a;
+const WATER_TINT = 0x4f8587;
 const BANK_TINT = 0x8a7248;
 const BRIDGE_TINT = 0xb8b2a0;
 
@@ -72,10 +72,10 @@ export function buildCanal() {
   // assetSlots.js's enforceMatteMaterial clamp, which only applies to imported
   // Tripo/Blender models, not hand-authored code materials.
   const waterGeo = new THREE.PlaneGeometry(CANAL_MAX_X - CANAL_MIN_X, CANAL_HALF_WIDTH * 2);
-  const waterMat = new THREE.MeshStandardMaterial({ color: WATER_TINT, roughness: 0.35, metalness: 0.05 });
+  const waterMat = new THREE.MeshStandardMaterial({ color: WATER_TINT, roughness: 0.12, metalness: 0.1 });
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI / 2;
-  water.position.set((CANAL_MIN_X + CANAL_MAX_X) / 2, -0.2, CANAL_Z);
+  water.position.set((CANAL_MIN_X + CANAL_MAX_X) / 2, 0.05, CANAL_Z); // just above the ground plane so it actually renders, between the 0.35m-high banks
   water.name = 'canal_water';
   water.receiveShadow = true;
   group.add(water);
@@ -100,8 +100,8 @@ export function buildCanal() {
   // that this specific gap is a real, built crossing rather than just an opening
   // in the banks) plus two low parapet rails for a "real bridge" read.
   const deckSpanZ = CANAL_HALF_WIDTH * 2 + BANK_WIDTH * 2 + 0.6;
-  const deck = texturedThickBox(BRIDGE_HALF_WIDTH * 2, 0.3, deckSpanZ, 'concrete', { tint: BRIDGE_TINT, tileSize: 2 });
-  deck.position.set(BRIDGE_X, 0.02, CANAL_Z);
+  const deck = texturedThickBox(BRIDGE_HALF_WIDTH * 2, 0.3, deckSpanZ, 'concrete', { tint: BRIDGE_TINT, tileSize: 2, collider: false }); // the deck is what you drive ON — it must never be a solid box
+  deck.position.set(BRIDGE_X, -0.07, CANAL_Z); // top face at ~0.08, a hair above the water
   deck.name = 'canal_bridge_deck';
   deck.castShadow = false;
   group.add(deck);

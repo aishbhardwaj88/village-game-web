@@ -2049,7 +2049,11 @@ async function main() {
   }
   requestAnimationFrame(tick);
 
-  if (isDevMode()) {
+  // `?proof=1` exposes the same scripted-positioning hook as `?dev=1` but turns on NONE of
+  // dev mode's visible extras (no fps counter, no staging boxes, no penetration logging) —
+  // the render is exactly what a normal player sees; it exists only so proof screenshots
+  // (docs/shots/compare/*) can stand at a chosen spot without walking there.
+  if (isDevMode() || new URLSearchParams(window.location.search).has('proof')) {
     // mount/dismount exposed for scripted collision testing (tools/*, throwaway test
     // scripts) — real player/E-key flow works too, this just avoids needing the
     // player to walk into mount range for every test case.
