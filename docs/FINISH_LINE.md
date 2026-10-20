@@ -11,7 +11,7 @@
 ## People
 - [ ] Zero capsule/pill people anywhere in normal play
 - [ ] Every person has a head, torso, arms, legs, clothes matching their role and colour palette (docs/art-rules-characters.md, Characters V1 references), plus idle and walk animation
-- [ ] Mission cast present in person: Maa, Pitaji, sister, Dada, Dadi, halwai, teacher, postman, darzi, kirana owner, plus ambient villagers
+- [x] Mission cast present in person: Maa, Pitaji, sister, Dada, Dadi, halwai, teacher, postman, darzi, kirana owner, plus ambient villagers — docs/shots/m8-roof-family-2026-10-20T17-53-18-912Z/family_on_roof.png (Maa/Dada/Pitaji/sister/Dadi, the last new this session); the darzi and kirana owner are 2 of the 8 per-trade shopkeepers src/bazaarLife.js already places at every bazaar counter (each with its own trade-specific idle animation — the tailor's a quick stitching motion, the kirana owner's a counter-minding sway), plus its 4 ambient villagers + 1 seated; halwai/teacher/postman were already present from earlier work. Not a claim about visual quality — the separate "zero capsule/pill people" line below tracks that
 - [ ] Animals in the village: cows/buffalo, street dogs, the M6 monkey as a recognisable monkey
 - [ ] Final art: every character either approved code-built or swapped to an approved Tripo model through asset slots
 ## Vehicles
@@ -21,7 +21,7 @@
 ## Story and missions (docs/STORY.md)
 - [ ] All 8 missions playable start to end with real input
 - [x] M6 monkey chase goes across rooftops and lanes as written — docs/shots/m6-rooftop-chase-2026-10-20T17-45-37-999Z/monkey_on_roof_wide.png (the monkey standing correctly on the darzi unit's real roof slab, feet planted on the surface, not floating or buried) plus `node tools/regression-check.js`'s "all eight missions complete end to end" real-playthrough check still passing after the route change (21/22, no regressions) — src/main.js's startMonkeyChase now sends the monkey up onto bazaar unit 3's (the darzi's) own roof right where the snatch happens, east along the roofline, back down to the lane, then to the existing chowk recovery point, via a new optional per-waypoint `y` in src/npcRoutines.js's createWaypointRun
-- [ ] M8 ending: the whole family including Dada and Dadi together on the roof at sunset, birthday moment, closing lines, then credits
+- [x] M8 ending: the whole family including Dada and Dadi together on the roof at sunset, birthday moment, closing lines, then credits — docs/shots/m8-roof-family-2026-10-20T17-53-18-912Z/family_on_roof.png (Maa, Dada, Pitaji, sister, and a new Dadi all gathered on the real roof deck as the opening ending line plays, reached via the real GOING_TO_ROOF trigger + real interact()); src/dayline.js already reaches its warmest point at ALL_COMPLETE (0 at NOT_STARTED, 1 at ALL_COMPLETE, see its own doc comment) so sunset lighting was already tied to this moment before this session; the closing-lines -> end-card -> Credits-button flow is the pre-existing one, confirmed still working in the same test (node tools/regression-check.js's "all eight missions complete end to end" passes, no regressions)
 ## Shell
 - [ ] Title, new game/continue, settings (quality, volume, controls) reachable from title and pause, loading screen, HUD, ending, credits
 - [ ] Zero console errors in a full playthrough; world validator and regression check pass
