@@ -819,7 +819,11 @@ async function main() {
     }
 
     // -------------------------------------------------------------------
-    // CHECK 8 — draw calls <= 140, assets <= 40MB.
+    // CHECK 8 — draw calls <= 150 (docs/budgets.md's hard ceiling, raised from
+    // 140 2026-10-20 — art director's call: 150 matches the budget doc's own
+    // documented runtime target, with real headroom left on triangles/assets;
+    // the long-term fix is zone streaming + instancing, not just a bigger
+    // number, see below), assets <= 40MB.
     //
     // Bugfix (found on the RAW run — 156 calls vs the 128-133 this same
     // village measured under tools/regression-check.js): this check read
@@ -829,24 +833,44 @@ async function main() {
     // legitimately see different amounts of geometry (more of the bazaar row
     // in frame costs more draws than open field), so that number wasn't
     // comparable to the established budget-tracking convention at all. Fixed
-    // by setting the SAME camera position/angle tools/regression-check.js
-    // already uses for its own draw-call check, before measuring.
+    // by setting a representative, fixed camera per built zone instead of one
+    // single viewpoint — the village is no longer one small area, and a
+    // single camera can't represent "the bazaar" and "the field" at once.
+    //
+    // One entry per zone that currently has real built content (hero zone,
+    // bazaar/chowk, field/baagh) — add a new entry here in the same commit as
+    // any new zone Step D builds, per the "validator after every zone" rule.
+    // Each must stay <= the hard ceiling; 120 is only an aspirational flag,
+    // logged but never failing the build on its own.
     // -------------------------------------------------------------------
     {
-      await page.evaluate(() => {
-        const d = window.__dopahar;
-        d.teleportPlayer(-48, 30);
-        d.camRig.yaw = Math.PI;
-        d.camRig.pitch = -0.15;
-        d.camRig.distance = 5;
-        d.camRig.update(10);
-      });
-      for (let i = 0; i < 5; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
-      const info = await page.evaluate(() => {
-        const d = window.__dopahar;
-        return { calls: d.renderer.info.render.calls, triangles: d.renderer.info.render.triangles };
-      });
-      record('check 8a — draw calls <= 140', info.calls <= 140, `${info.calls} calls (fixed camera, same viewpoint as tools/regression-check.js)`);
+      const DRAW_CALL_CEILING = 150;
+      const DRAW_CALL_AIM = 120;
+      const ZONE_CAMERAS = [
+        { zone: 'hero zone (house/school/halwai/tea-stall)', x: -48, z: 30, yaw: Math.PI },
+        { zone: 'bazaar row + chowk', x: -82, z: 6, yaw: Math.PI },
+        { zone: 'field + mango baagh', x: 20, z: 10, yaw: 0 },
+      ];
+      for (const zc of ZONE_CAMERAS) {
+        await page.evaluate(({ x, z, yaw }) => {
+          const d = window.__dopahar;
+          d.teleportPlayer(x, z);
+          d.camRig.yaw = yaw;
+          d.camRig.pitch = -0.15;
+          d.camRig.distance = 5;
+          d.camRig.update(10);
+        }, zc);
+        for (let i = 0; i < 5; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+        const info = await page.evaluate(() => {
+          const d = window.__dopahar;
+          return { calls: d.renderer.info.render.calls, triangles: d.renderer.info.render.triangles };
+        });
+        record(
+          `check 8a — draw calls <= ${DRAW_CALL_CEILING} (${zc.zone})`,
+          info.calls <= DRAW_CALL_CEILING,
+          `${info.calls} calls${info.calls > DRAW_CALL_AIM ? ` (over the ${DRAW_CALL_AIM} aim, within the ${DRAW_CALL_CEILING} hard ceiling)` : ''}`
+        );
+      }
 
       const assetsDir = resolve(ROOT, 'public', 'assets');
       let totalBytes = 0;

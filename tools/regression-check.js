@@ -246,7 +246,7 @@ async function main() {
         const d = window.__dopahar;
         return { calls: d.renderer.info.render.calls, triangles: d.renderer.info.render.triangles };
       });
-      record('draw calls under 130', info.calls < 130, `${info.calls} calls`); // budget raised from 120, see docs/budgets.md's 150 hard ceiling
+      record('draw calls under 140', info.calls < 140, `${info.calls} calls`); // soft early-warning margin, 10 below docs/budgets.md's 150 hard ceiling (raised from 140 2026-10-20) — tools/world-validator.js's per-zone check 8a is the real hard gate
       record('triangles under 400k', info.triangles < 400000, `${info.triangles} triangles`);
     }
 

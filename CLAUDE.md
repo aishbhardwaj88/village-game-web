@@ -50,10 +50,17 @@ Audio (`src/audio.js`, mixed/balanced, ducks under dialogue), a gradient sky +
 HDRI-for-lighting-only (`src/sky.js`, `src/scene.js`). Coordinates match
 `reference-from-unity/MAP.md` / `WorldData/*.json` (1 unit = 1 m) where MAP.md gives
 one (bazaar/temple placements read off orthos or picked on open ground instead — see
-`docs/parked.md`). **Draw-call budget: 134/140 as of the 8-mission build (2026-10-19)
-— see `docs/look-standard.md`'s Budgets section and `src/mergeUtils.js` before
-adding new static geometry; merge same-material meshes rather than one mesh per part,
-and instance repeated NPCs/props (`src/bazaarLife.js` is the reference pattern).**
+`docs/parked.md`). **Draw-call budget: hard ceiling raised 140→150 (2026-10-20,
+art director's call) to match `docs/budgets.md`'s own documented runtime target —
+still enforced per-zone by `tools/world-validator.js`'s check 8a (one fixed camera
+per built zone, add a new one in the same commit as any new zone), aim 120 per zone,
+150 is the hard fail. 150 is not the real fix for the full MAP.md world, though: zone
+streaming (only build/show zones near the player) plus distance/frustum culling and
+instancing every repeated thing (animals, trees, crops, background houses, props via
+`InstancedMesh`) is the actual plan for Step D's zone-by-zone build-out — see
+`docs/look-standard.md`'s Budgets section and `src/mergeUtils.js` before adding new
+static geometry; merge same-material meshes rather than one mesh per part, and
+instance repeated NPCs/props (`src/bazaarLife.js` is the reference pattern).**
 
 ## 2. Reference folders — read-only, never touched
 
