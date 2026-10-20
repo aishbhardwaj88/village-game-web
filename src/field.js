@@ -4,6 +4,7 @@ import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { mergeMeshList } from './mergeUtils.js';
+import { BAAGH_CENTER, BAAGH_CLEARING_RADIUS } from './baagh.js';
 
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
 // spur connecting it back to the lane near the house (see docs/parked.md for why a
@@ -79,6 +80,10 @@ function buildCropRows() {
     const offset = r % 2 === 0 ? 0 : rowOffset;
     for (let c = 0; c < cols; c++) {
       const rx = FIELD_CENTER.x - halfX + c * spacing + offset;
+      // A real clearing around the mango baagh (src/baagh.js, moved 2026-10-21
+      // to sit inside this same crop rectangle) — otherwise wheat tufts would
+      // visually clip straight through the trunks/canopies.
+      if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
       dummy.position.set(rx, 0.275, rz);
       dummy.rotation.y = Math.sin(rx * 12.9 + rz * 7.1) * 0.3;
       dummy.updateMatrix();

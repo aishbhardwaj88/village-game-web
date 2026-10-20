@@ -572,11 +572,19 @@ async function main() {
     // CHAIN already use), then west past the house's own west wall (x=-53)
     // before turning south down the stair corridor.
     const ROOF_CHAIN = [{ x: -48, z: 47 }, { x: -54, z: 47 }, { x: -54, z: 34, r: 0.6 }];
+    // Updated 2026-10-21 — the baagh moved inside the field (src/baagh.js). Two
+    // earlier attempts both clipped the house's own east wall (HOUSE_BLOCK spans
+    // x=[-53,-43]): a diagonal straight off LANE_JOIN(-48,46) toward either
+    // (-20,40) or (-36,22) crosses x=-43 while z is still inside the house's own
+    // z=[32,40] wall span. Fixed by first moving east to x=-36 while still north
+    // of the house (z=46, proven-clear height), THEN turning south, so the wall
+    // is never crossed at all.
     const BAAGH_CHAIN = [
-      { x: -37, z: 30 },
-      { x: 20, z: -20 }, // FIELD_CENTER — open field interior, already on the way
-      { x: 80, z: -20 }, // the track loop's own NE-SE edge (src/field.js TRACK_CORNERS)
-      { x: 92, z: -20 }, // across open ground east of the track into the baagh
+      { x: -48, z: 46 }, // LANE_JOIN — the lane's own real anchor by the house
+      { x: -36, z: 46 }, // east past the house's own east wall, while still north of it
+      { x: -36, z: 22 }, // now safe to head south, clear of the wall and the parked tractor (-45,26)
+      { x: -15, z: 20 }, // east along the track's own north edge, toward the baagh's longitude
+      { x: -15, z: 15 }, // into the baagh's own clearing (src/baagh.js BAAGH_CENTER)
     ];
     function routeFor(target) {
       // darzi_kurta/monkey (M5/M6, docs/STORY.md): darzi_kurta sits at the exact
@@ -591,7 +599,7 @@ async function main() {
       const isBaagh = /mango|baagh/.test(target.name);
       const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom || isHouseInterior || isRoof || isBaagh;
       const chain = [];
-      if (isBaagh) return [...BAAGH_CHAIN]; // east of the house entirely — its own route, no north bypass needed
+      if (isBaagh) return [...BAAGH_CHAIN]; // its own route across the canal bridge, no north BYPASS needed
       if (needsBypass) chain.push(...BYPASS);
       if (isBazaar) chain.push(...BAZAAR_CHAIN);
       else if (isTemple) chain.push(...TEMPLE_CHAIN);
@@ -849,7 +857,7 @@ async function main() {
       const ZONE_CAMERAS = [
         { zone: 'hero zone (house/school/halwai/tea-stall)', x: -48, z: 30, yaw: Math.PI },
         { zone: 'bazaar row + chowk', x: -82, z: 6, yaw: Math.PI },
-        { zone: 'field + mango baagh', x: 20, z: 10, yaw: 0 },
+        { zone: 'field + mango baagh', x: -15, z: 20, yaw: 0 }, // 2026-10-21: re-centred near the baagh's new in-field position + the canal bridge (src/baagh.js, src/canal.js)
       ];
       for (const zc of ZONE_CAMERAS) {
         await page.evaluate(({ x, z, yaw }) => {

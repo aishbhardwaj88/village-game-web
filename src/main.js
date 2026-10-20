@@ -13,6 +13,7 @@ import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
+import { buildCanal } from './canal.js';
 import { buildVegetation, lanesideClusters, buildFlowerPatches } from './vegetation.js';
 import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
@@ -951,6 +952,13 @@ async function main() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
     const fieldGroup = buildField(scene);
+
+    // Wave 4 item 1 — the nahar (canal), MAP.md: "between the village and the
+    // family's own fields... a crossing". Standalone (not folded into any of the
+    // 5 merge-root groups above) since it's not a building and already merges its
+    // own ~4 draw calls locally (src/canal.js) — scene.traverse() for colliders
+    // still finds it regardless of where it's parented.
+    scene.add(buildCanal());
 
     // Item 3c (real playtest report — "the village reads as desert", "a village
     // called Amrai Khera has no plants in it") — 3 simple placeholder tree

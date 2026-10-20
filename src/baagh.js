@@ -1,14 +1,21 @@
 import * as THREE from 'three';
 
 /**
- * M7's mango baagh (docs/STORY.md) — open ground east of the field/track loop,
- * clear of everything else built so far (`src/field.js`'s TRACK_CORNERS top out at
- * x=80; nothing else in the village sits anywhere near x=90-115). Reached by
- * driving the tractor+trolley straight off the track's own NE-SE edge (x=80,
- * z=[-65,25]) across open ground — the game has no hard "must stay on the path"
- * rule anywhere else either, so no new drivable-surface system is needed.
+ * M7's mango baagh (docs/STORY.md). Moved 2026-10-21 (Wave 4 item 1 — "move the
+ * mango baagh to match MAP.md: north of the village, across the canal, next to
+ * the family's own khet, so every farm trip crosses the nahar") from its old spot
+ * east of the field/track loop (x=100, z=-20 — a dangling patch of open ground not
+ * actually connected to anything, reached only by driving straight off the track's
+ * own edge) to a real spot INSIDE the family's own field (src/field.js's crop
+ * rectangle), just south of the new canal crossing (src/canal.js — the single
+ * pukka bridge at x=-10). The route from the house now genuinely crosses the
+ * canal every time: house -> bridge (x=-43, z~33) -> south into the field -> the
+ * baagh. src/field.js's buildCropRows() carves a real clearing around this centre
+ * (BAAGH_CLEARING_RADIUS) so the wheat crop tufts don't visually clip through the
+ * mango trees.
  */
-export const BAAGH_CENTER = { x: 100, z: -20 };
+export const BAAGH_CENTER = { x: -15, z: 10 };
+export const BAAGH_CLEARING_RADIUS = 11; // covers the tree spread below (max |dx|/|dz| = 9) plus margin
 
 // A loose cluster of mango trees (src/trees.js's 'mango' species) around the
 // centre — three "marked" ones close to the natural tractor approach (west side,
