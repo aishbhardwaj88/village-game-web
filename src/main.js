@@ -102,7 +102,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createBellProp, createFlagpoleProp } from './props.js';
+import { createBellProp, createFlagpoleProp, createDonationBoard } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -204,6 +204,16 @@ async function main() {
     pumpWaterMesh,
     tulsiWaterMesh,
   } = buildHeroZone(scene, buildingKit);
+
+  // docs/MISSIONS_PLAN.md item 5 / MAP.md: "Donation board on the school's outer
+  // wall... Visible, readable, and it updates." Mounted on the one walkable
+  // classroom's real west (exterior) wall — SCHOOL_ROOM's own door is on the east
+  // side (SCHOOL_ROOM_DOOR_X), so the west face is unambiguously outer. Async (see
+  // createDonationBoard's own doc comment) — same .then()/.catch() pattern
+  // src/bazaar.js's buildBazaarSignboards() already uses.
+  createDonationBoard({ x: SCHOOL_ROOM.cx - SCHOOL_ROOM.w / 2 - 0.18, y: 2.2, z: SCHOOL_ROOM.cz }, -Math.PI / 2)
+    .then((board) => heroZoneGroup.add(board))
+    .catch((err) => console.error('Failed to build the donation board', err));
 
   // Places V1 locations (item 9) on the lanes near the hero zone — neither has a
   // LAYOUT.md, dimensions/names read off the reference orthographic images instead

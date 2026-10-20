@@ -109,3 +109,95 @@ export function createFlagpoleProp(position) {
 
   return group;
 }
+
+/**
+ * docs/MISSIONS_PLAN.md item 5 / reference-from-unity/MAP.md: "Donation board on
+ * the school's outer wall, showing real money raised for UP village primary
+ * schools. Visible, readable, and it updates." — "A painted board... 'Every rupee
+ * goes to village schools' (English + Hindi beneath) and an amount read from a
+ * small JSON file (public/data/donations.json, starts at 0). Scenery only, never a
+ * store." English-first here (not src/signboards.js's Devanagari-first exception —
+ * that rule is specifically for shop signboards painted in-world, CLAUDE.md
+ * section 4; this is an informational notice, so the general English-primary rule
+ * applies). Async (loads a font + fetches the JSON) — same pattern
+ * src/bazaar.js's buildBazaarSignboards() already uses; caller does
+ * `createDonationBoard(...).then((board) => group.add(board))`.
+ */
+export async function createDonationBoard(position, rotationY = 0) {
+  await document.fonts.load('700 40px "Noto Sans Devanagari"');
+  await document.fonts.ready;
+
+  let rupees = 0;
+  try {
+    const res = await fetch('data/donations.json');
+    const data = await res.json();
+    rupees = Number(data.rupees) || 0;
+  } catch {
+    // Scenery only — if the fetch fails for any reason, the board still reads
+    // correctly with the starting amount rather than not appearing at all.
+  }
+
+  const W = 900;
+  const H = 520;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#f4efe0';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#2f5a3a';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(8, 8, W - 16, H - 16);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1f3a28';
+  ctx.font = '700 52px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillText('Every rupee goes to', W / 2, 110);
+  ctx.fillText('village schools', W / 2, 172);
+  ctx.font = '600 38px "Noto Sans Devanagari", sans-serif';
+  ctx.fillText('हर रुपया गाँव के स्कूलों के लिए', W / 2, 240);
+  ctx.strokeStyle = '#c9a227';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.15, 280);
+  ctx.lineTo(W * 0.85, 280);
+  ctx.stroke();
+  ctx.fillStyle = '#8a2e2e';
+  ctx.font = '700 64px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillText(`₹${rupees.toLocaleString('en-IN')} raised`, W / 2, 380);
+  ctx.fillStyle = '#4a4238';
+  ctx.font = '500 30px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillText('for UP village primary schools', W / 2, 440);
+  ctx.font = '500 26px "Noto Sans Devanagari", sans-serif';
+  ctx.fillText('उत्तर प्रदेश के ग्रामीण प्राथमिक विद्यालयों के लिए', W / 2, 478);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9 });
+  // Same name every other wall-mounted signboard material in this codebase uses
+  // (src/bazaar.js/signboards.js/newShops.js) — purely a label src/mergeUtils.js
+  // bakes into the merged mesh's name (grouping itself is by material object
+  // identity, not this string, so this never merges with a DIFFERENT signboard's
+  // own distinct material/texture); tools/world-validator.js's "nothing floats"
+  // check specifically excludes anything named 'signboard*' as a correctly-
+  // elevated wall fixture, not a floating-object bug.
+  material.name = 'signboard';
+  const boardW = 3.0;
+  const boardH = (boardW * H) / W;
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(boardW, boardH, 0.05), material);
+  mesh.name = 'donation_board';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+
+  // Deliberately unnamed group — a sign bolted to an existing wall, not a second
+  // independent building; main.js's buildingFootprints computation already skips
+  // any unnamed direct child of a root group (see its own `if (!child.name)
+  // continue`), which is exactly the behaviour this needs (tools/world-
+  // validator.js's check 7 would otherwise misread it as two buildings
+  // coinciding — the board necessarily sits inside the wall's own footprint).
+  const group = new THREE.Group();
+  group.add(mesh);
+  group.position.set(position.x, position.y, position.z);
+  group.rotation.y = rotationY;
+  return group;
+}
