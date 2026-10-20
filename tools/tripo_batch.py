@@ -1,27 +1,41 @@
 #!/usr/bin/env python3
 """
-tripo_batch.py — turn a character's four view images into a rigged-ready .glb via the Tripo API.
+tripo_batch.py — turn a character/vehicle/building's reference view images into a
+.glb via the Tripo API, dropped straight into village-game-web's own asset-slot
+system (public/assets/models/<slot>.glb — see docs/asset-slots.md and
+src/assetSlots.js; nothing else needs editing for the swap to take effect).
 
-Usage (from the "Village nostalgia" folder):
+Usage (from the village-game-web repo root):
     python3 tools/tripo_batch.py postman            # generate + rig check
     python3 tools/tripo_batch.py postman --rig      # also auto-rig (biped) and save the rigged .glb
     python3 tools/tripo_batch.py postman --rig-only # rig the LAST generated model only (no new generation, ~30 cr)
-    python3 tools/tripo_batch.py --all              # every character that has a 3d_inputs set
+    python3 tools/tripo_batch.py --all              # every slot that has a 3d_inputs set
     python3 tools/tripo_batch.py --balance          # just print remaining API credits
+    python3 tools/tripo_batch.py tractor --dry-run  # print exactly what would be uploaded/requested
+                                                     # and the estimated credit cost — NO network calls,
+                                                     # NO credits spent, NOT EVEN a balance check.
     add --v2 to any command to use the older server (needed while credits sit in the Free Wallet)
     add --views=front,back to ignore other view files present in the folder
     add --ultra for Tripo's Ultra geometry (+20 credits) — off by default, polycount is reduced locally anyway
     add --texstd for standard texture quality (-10 credits) — background characters only
 
-Inputs:  any folder named 3d_inputs under "Characters V1" containing
-         <name>_front.png (required), <name>_left.png, <name>_right.png, <name>_back.png
-Outputs: VillageGame/Assets/Characters3D/<slug>.glb        (what the Unity swap pipeline reads)
+Inputs:  any folder named 3d_inputs* under "Characters V1" or "Places V1" (both
+         read-only reference folders per CLAUDE.md — this only ever reads from
+         them, the 3d_inputs* staging subfolders are themselves gitignored
+         derived files, same pattern already established for the postman)
+         containing <name>_front.png (required), <name>_left.png, <name>_right.png,
+         <name>_back.png — any subset is fine, a single `_front.png` alone just
+         becomes a single-image (not multiview) generation.
+Outputs: public/assets/models/<slot>.glb              (the real asset-slot swap path)
          <that 3d_inputs folder>/<name>_tripo_preview.png    (Tripo's own render, for a first look)
          tools/tripo_runs/<name>_<timestamp>.json            (full task log, task ids, credit info)
 
-Needs only Python 3 — no extra packages. Reads TRIPO_API_KEY from the .env file in the repo root.
+Needs only Python 3 — no extra packages. Reads TRIPO_API_KEY from the .env file in the repo root
+(the same file the dashboard's Tripo key box saves to) and refuses to run against a key that still
+looks like a placeholder/test value (see is_probably_real_key()) — a real key is always a long
+opaque token, never a short human-typed string like "fake-test-key-123" or "test".
 """
-import json, mimetypes, os, sys, time, uuid, urllib.request, urllib.error
+import json, mimetypes, os, re, sys, time, uuid, urllib.request, urllib.error
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,9 +44,23 @@ API_V2 = "https://api.tripo3d.ai/v2/openapi"   # older server; retired 1 Nov 202
 API = API_V3
 V2 = False
 MODEL_VERSION = "v3.1-20260211"
-OUT_DIR = ROOT / "VillageGame" / "Assets" / "Characters3D"
+# Bugfix: this pointed at a Unity-style "VillageGame/Assets/Characters3D" path
+# that doesn't exist anywhere in this repo (this is village-game-web, a
+# three.js/Vite project — CLAUDE.md: never touch the separate Unity project
+# from here, and this path isn't even that project's real name either, so it
+# would have just silently created a stray, meaningless folder). The real drop
+# point this project's swap pipeline actually reads is public/assets/models/
+# <slot>.glb — see docs/asset-slots.md / src/assetSlots.js.
+OUT_DIR = ROOT / "public" / "assets" / "models"
 RUNS_DIR = ROOT / "tools" / "tripo_runs"
 VIEW_ORDER = ["front", "left", "back", "right"]
+# Reference folders this reads 3d_inputs* staging subfolders from — read-only
+# per CLAUDE.md, this script only ever reads real art from them and writes
+# small derived/cropped view files into gitignored 3d_inputs* subfolders
+# alongside (the same pattern already established for the postman's own
+# Characters V1/people/villagers/3d_inputs), never the reference files
+# themselves.
+INPUT_REFERENCE_ROOTS = ["Characters V1", "Places V1"]
 
 
 def load_key():
@@ -45,12 +73,30 @@ def load_key():
     sys.exit(".env exists but has no TRIPO_API_KEY= line")
 
 
+def is_probably_real_key(key):
+    """A real Tripo API key is a long opaque token. Refuses short/human-typed
+    placeholder values (e.g. a test string saved while trying out the
+    dashboard's key box) so a dry run — or an accidental real run — can't be
+    mistaken for having a working key. Not a format guarantee from Tripo
+    itself, just a sanity floor: real keys seen in Tripo's own docs run well
+    over 20 characters."""
+    return len(key) >= 20 and not re.search(r"(?i)fake|test|placeholder|changeme|your.?key|xxx", key)
+
+
 KEY = None
+DRY_RUN = False    # --dry-run : print what would happen, touch no network, spend nothing
 ULTRA = False      # --ultra  : geometry_quality=detailed (+20 credits)
 TEX_STD = False    # --texstd : texture_quality=standard (-10 credits), for background characters
 
 
 def call(method, path, body=None, files=None):
+    # Hard safety gate: every single network call in this whole script funnels
+    # through here (balance, upload, generate, wait/poll, rig-check, rig) — if
+    # DRY_RUN is set and this is somehow still reached (it shouldn't be; the
+    # dry-run path below never calls it), refuse rather than silently spend
+    # real credits. Belt-and-braces, not the primary guarantee.
+    if DRY_RUN:
+        sys.exit(f"INTERNAL ERROR: call({method} {path}) reached with --dry-run set — refusing to hit the network. This is a bug in the dry-run path, not something to override.")
     url = f"{API}{path}"
     headers = {"Authorization": f"Bearer {KEY}",
                "User-Agent": "Mozilla/5.0 (Macintosh) village-batch/1.0",
@@ -143,14 +189,39 @@ def make_matte(glb_path):
 
 
 def find_inputs(name):
-    for folder in (ROOT / "Characters V1").rglob("3d_inputs"):
-        if (folder / f"{name}_front.png").exists():
-            return folder
+    # Bugfix: this only ever searched "Characters V1" — every vehicle/building
+    # slot (tractor, trolley, cart, bullock, halwai_kiosk) has its own
+    # reference art under "Places V1" instead, and would never have been
+    # found. Matches any folder literally named "3d_inputs" OR one that starts
+    # with it (e.g. "3d_inputs_cart", "3d_inputs_bullock" — village-game-web's
+    # own convention for giving two sub-assets that share one source image
+    # their own separate staging folders, same directory the postman's
+    # existing 3d_inputs_v1_lanky/3d_inputs_v2_tucked variants already used).
+    # Bugfix: this also required `_front.png` specifically to exist, but a
+    # perfectly usable multiview set can lack a clean front angle and still
+    # have back/left/right (the trolley's own reference sheets are exactly
+    # this — no clean front-on shot, three solid 3/4 angles instead). Any one
+    # of the four named views being present is enough to recognise the folder.
+    for ref_root in INPUT_REFERENCE_ROOTS:
+        base = ROOT / ref_root
+        if not base.exists():
+            continue
+        for folder in base.rglob("3d_inputs*"):
+            if not folder.is_dir():
+                continue
+            if any((folder / f"{name}_{view}.png").exists() for view in VIEW_ORDER):
+                return folder
     return None
 
 
 def slug(name):
-    return "".join(c for c in name.lower() if c.isalnum())
+    # Bugfix: stripping ALL non-alphanumerics (the original behaviour) turns
+    # "halwai_kiosk" into "halwaikiosk" — but src/assetSlots.js resolves a
+    # registered slot's model from EXACTLY `${slot.name}.glb`, underscore and
+    # all (see docs/asset-slots.md's own table: `halwai_kiosk.glb`), so that
+    # silently produced a file the game would never actually find. Lowercase
+    # and collapse whitespace to underscores; keep underscores themselves.
+    return "_".join(name.lower().split())
 
 
 def run_character(name, do_rig=False, views=None):
@@ -247,6 +318,54 @@ def run_character(name, do_rig=False, views=None):
 
 
 
+def estimate_credits(do_rig):
+    """Mirrors run_character()'s own `common` dict exactly (texture=True always
+    requested, so base is always the 30-credit "with texture" tier, never the
+    20-credit textureless one) — kept as one function so the dry-run estimate
+    can never silently drift from what a real run would actually request."""
+    base = 30
+    base += 0 if TEX_STD else 10   # texture_quality: standard (default here) vs detailed (+10)
+    base += 20 if ULTRA else 0     # geometry_quality: standard (default) vs detailed/Ultra (+20)
+    rig_check = 0                  # Tripo's own pricing page: Rig Check is free
+    rig = 25 if do_rig else 0      # Auto Rig, only spent if --rig AND the model turns out riggable
+    return base, rig_check, rig
+
+
+def dry_run_character(name, do_rig=False, views=None):
+    """No network calls anywhere in this function — not even balance(). Prints
+    exactly what a real run would upload and request, and the estimated
+    credit cost, purely from local files and the flags already parsed."""
+    folder = find_inputs(name)
+    if not folder:
+        print(f"!! no 3d_inputs folder with {name}_front.png — skipping")
+        return None
+    print(f"\n=== DRY RUN: {name}  (inputs: {folder.relative_to(ROOT)})")
+    wanted = views or VIEW_ORDER
+    provided = []
+    for view in VIEW_ORDER:
+        p = folder / f"{name}_{view}.png"
+        if view not in wanted:
+            print(f"  {view}: skipped (--views)")
+            continue
+        if p.exists():
+            size_kb = p.stat().st_size // 1024
+            print(f"  {view}: would upload {p.relative_to(ROOT)} ({size_kb} KB)")
+            provided.append(view)
+        else:
+            print(f"  {view}: not provided")
+    mode = "multiview_to_model" if len(provided) > 1 else "multiview_to_model (single view supplied — equivalent to image-to-3D)"
+    texture_quality = "standard" if TEX_STD else "detailed"
+    geometry_quality = "detailed" if ULTRA else "standard"
+    print(f"  would request: {mode}")
+    print(f"  settings: texture=true, pbr=true, texture_quality={texture_quality}, geometry_quality={geometry_quality}, orientation=align_image")
+    print(f"  would write: public/assets/models/{slug(name)}.glb")
+    base, rig_check, rig = estimate_credits(do_rig)
+    print(f"  would also request: rig-check (free)" + (", then auto-rig if riggable (+25 credits)" if do_rig else ""))
+    total = base + rig_check + rig
+    print(f"  estimated credits: {base} (generate) + {rig} (auto-rig) = {total}")
+    return total
+
+
 def rig_only(name):
     """Rig an already-generated model (no new generation, ~30 credits). Uses the newest run log's task id."""
     import glob
@@ -286,29 +405,62 @@ def rig_only(name):
     print(f"  credits after: {balance()}")
 
 def main():
-    global KEY, API, V2
-    KEY = load_key()
+    global KEY, API, V2, DRY_RUN
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     flags = {a for a in sys.argv[1:] if a.startswith("--")}
     global ULTRA, TEX_STD
     ULTRA, TEX_STD = "--ultra" in flags, "--texstd" in flags
+    DRY_RUN = "--dry-run" in flags
     if "--v2" in flags:
         API, V2 = API_V2, True
         print("Using the older Tripo server (v2) -- this is where the Free Wallet credits are spent")
-    balance()
-    if "--balance" in flags and not args:
-        return
+
     if "--all" in flags:
-        names = sorted({p.name[:-len("_front.png")] for p in (ROOT / "Characters V1").rglob("3d_inputs/*_front.png")})
-        print(f"Characters with inputs: {', '.join(names)}")
+        # Matches find_inputs()'s own relaxed rule — any one of the 4 named
+        # views counts, not just `_front.png` (the trolley's own reference set
+        # has no clean front angle at all, only back/left/right).
+        names = set()
+        for ref_root in INPUT_REFERENCE_ROOTS:
+            for view in VIEW_ORDER:
+                for p in (ROOT / ref_root).rglob(f"3d_inputs*/*_{view}.png"):
+                    names.add(p.name[: -len(f"_{view}.png")])
+        names = sorted(names)
+        print(f"Slots with inputs: {', '.join(names)}")
     else:
         names = args
     if not names:
-        sys.exit("Give a character name (e.g. postman), or --all")
+        sys.exit("Give a slot name (e.g. postman, tractor), or --all")
+
     views = None
     for f in flags:
         if f.startswith("--views="):
-            views = [v.strip() for v in f.split("=",1)[1].split(",") if v.strip()]
+            views = [v.strip() for v in f.split("=", 1)[1].split(",") if v.strip()]
+
+    if DRY_RUN:
+        # No .env, no key, no network, no credits check — this must work even
+        # before a real key exists (docs/tripo-batch-1.md's whole point).
+        print("--dry-run: no network calls will be made, no credits will be spent, no key is required.\n")
+        total = 0
+        for n in names:
+            cost = dry_run_character(n, do_rig="--rig" in flags, views=views)
+            if cost:
+                total += cost
+        print(f"\n=== DRY RUN TOTAL: {total} credits across {len(names)} item(s) ===")
+        return
+
+    # Real run from here on — this is the one place a real network call
+    # becomes possible, so this is also the one place that must refuse a
+    # missing or still-fake key.
+    KEY = load_key()
+    if not is_probably_real_key(KEY):
+        sys.exit(
+            "TRIPO_API_KEY in .env doesn't look like a real key (too short, or looks like a "
+            "placeholder/test value) — refusing to make any Tripo API call. Paste a real key "
+            "in the dashboard's Tripo key box first, or use --dry-run to plan without one."
+        )
+    balance()
+    if "--balance" in flags and not args:
+        return
     for n in names:
         if "--rig-only" in flags:
             rig_only(n)
