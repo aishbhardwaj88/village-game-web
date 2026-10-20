@@ -42,13 +42,36 @@ export function darken(hex, factor = 0.72) {
   return new THREE.Color(hex).multiplyScalar(factor).getHex();
 }
 
-const PLASTER_HOUSE = PALETTE.mustard;
+// Blender pipeline (2026-10-20) — off-by-one from PALETTE.mustard (same reasoning
+// as CONCRETE_HOUSE_ROOF above): src/bazaar.js's sabzi shop (unit 2) ALSO tints its
+// walls PALETTE.mustard, so without this the house's walls would merge into the
+// same shared bucket and hiding one would hide the other. Irrelevant once these
+// meshes are hidden behind the new Blender model anyway, but needed now so they
+// CAN be hidden without taking the sabzi shop's real, still-code-built walls with
+// them.
+const PLASTER_HOUSE = PALETTE.mustard + 1;
+// Also isolated (see PLASTER_HOUSE above) — the interior partition wall shares
+// PLASTER_HOUSE's own tint value by default, which would merge it into the SAME
+// bucket as the 4 exterior walls once those get locally pre-merged below. The
+// partition isn't part of the new Blender shell (interior, unaffected this pass)
+// and must stay visible on its own, so it needs its own distinct tint too.
+const PLASTER_HOUSE_PARTITION = PALETTE.mustard + 2;
 const PLASTER_HALWAI = PALETTE.terracotta;
 const PLASTER_SCHOOL = PALETTE.schoolYellow;
 const SCHOOL_BAND = darken(PALETTE.schoolYellow);
 const HOUSE_BAND = darken(PALETTE.mustard);
 const WOOD_DOOR = PALETTE.woodTrim;
 const CONCRETE_NEUTRAL = 0xd7d2c4; // already paler/less saturated than every palette value
+// Blender pipeline (2026-10-20) — visually identical to CONCRETE_NEUTRAL (off by 1 in
+// the blue channel, imperceptible) but a DIFFERENT tint value, so getTiledMaterial's
+// cache key gives the house's roof/parapet their own Material object instead of
+// sharing CONCRETE_NEUTRAL's — which merges into one shared bucket with every other
+// building's floor/roof/staircase in the village. Without this, hiding "the house's
+// roof" for the new Blender model would hide every other building's roof/floor too
+// (src/assetSlots.js's hide-list works on real scene objects, and a shared merged
+// mesh IS one real object). Only the house's roof/parapet use this — its floor/
+// ceiling (not replaced by Blender yet) still share CONCRETE_NEUTRAL as before.
+const CONCRETE_HOUSE_ROOF = 0xd7d2c5;
 const KADHAI_PLATFORM_TINT = darken(PALETTE.terracotta);
 
 function addBox(group, width, height, depth, materialName, position, opts = {}) {
@@ -332,11 +355,21 @@ function buildHouse(kit) {
   // partition splitting it into a front room (just inside the door) and a back room,
   // each with its own real doorway. A staircase (below) climbs from the courtyard up
   // to the flat roof, which already existed and now doubles as the interior ceiling.
-  addGappedWall(group, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_DOOR_Z, gapWidth: HOUSE_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE, seedBase });
-  addWallBox(group, blockW, blockH, WALL_THICKNESS, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz - blockD / 2 }, seedBase + 10, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addWallBox(group, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx - blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 11, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addWallBox(group, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx + blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 12, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addGappedWall(group, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_PARTITION_Z, gapWidth: HOUSE_PARTITION_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE, seedBase: seedBase + 20 });
+  // Blender pipeline (2026-10-20) — these 4 exterior walls are now replaced,
+  // visually, by tools/blender/build_house.py's house_shell.glb (real bevels,
+  // recessed door/windows, trim bands — docs/asset-slots.md's hide-list
+  // convention, same as every Tripo slot). Built into their own local sub-group
+  // and merged immediately below (not into the shared `group`) so the whole
+  // exterior shell is ONE cleanly-hideable, still-just-2-draw-call object,
+  // instead of getting folded into main.js's later VILLAGE-WIDE merge where it
+  // couldn't be isolated from other buildings at all.
+  const houseShellOld = new THREE.Group();
+  houseShellOld.name = 'house_shell_old';
+  addGappedWall(houseShellOld, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_DOOR_Z, gapWidth: HOUSE_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE, seedBase });
+  addWallBox(houseShellOld, blockW, blockH, WALL_THICKNESS, 'plaster', { x: blockCx, y: blockH / 2, z: blockCz - blockD / 2 }, seedBase + 10, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(houseShellOld, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx - blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 11, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(houseShellOld, WALL_THICKNESS, blockH, blockD, 'plaster', { x: blockCx + blockW / 2, y: blockH / 2, z: blockCz }, seedBase + 12, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addGappedWall(group, { axis: 'x', length: blockW, height: blockH, thickness: WALL_THICKNESS, cx: blockCx, cz: HOUSE_PARTITION_Z, gapWidth: HOUSE_PARTITION_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_HOUSE_PARTITION, seedBase: seedBase + 20 });
 
   // Interior floor + a false ceiling (the real roof, below, sits well above it) so
   // the rooms read as human-scaled rather than as tall as the full exterior mass.
@@ -347,31 +380,39 @@ function buildHouse(kit) {
   const ceilingY = 3.15;
   addThickBox(group, blockW - WALL_THICKNESS * 2, 0.1, blockD - WALL_THICKNESS * 2, 'concrete', { x: blockCx, y: ceilingY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
 
-  // Painted skirt band along the base of each wall segment (matching each one's own
-  // length/gap so it never fills a doorway), plus a proud structural plinth right at
-  // the ground line.
+  // Painted skirt band along the base of each wall segment — also superseded by
+  // the Blender shell's own trim bands (see houseShellOld above), so these go
+  // into the same hideable sub-group instead of the shared `group`.
   const houseBandH = 1.0;
   const doorSegLen = (blockW - HOUSE_DOOR_WIDTH) / 2;
-  addBox(group, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx - blockW / 2 + doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx + blockW / 2 - doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, blockW + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz - blockD / 2 }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx - blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx + blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(houseShellOld, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx - blockW / 2 + doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(houseShellOld, doorSegLen + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx + blockW / 2 - doorSegLen / 2, y: houseBandH / 2, z: HOUSE_DOOR_Z }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(houseShellOld, blockW + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz - blockD / 2 }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(houseShellOld, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx - blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(houseShellOld, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx + blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   kit.addPlinthRing(blockCx, blockCz, blockW, blockD, WALL_THICKNESS);
   kit.addCornerPilasters(blockCx, blockCz, blockW, blockD, blockH, WALL_THICKNESS);
 
   // Flat concrete roof with a parapet lip — overhangs the wall by 0.3m, visible edge.
+  // Into houseShellOld too (see its own comment above) — the roof's TOP surface is
+  // still the real walkable floor up there (same box, collider unaffected by
+  // visibility), just rendered by the new Blender model once this is hidden.
   const overhang = 0.3;
-  addThickBox(group, blockW + overhang * 2, 0.3, blockD + overhang * 2, 'concrete', { x: blockCx, y: HOUSE_ROOF_Y, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(houseShellOld, blockW + overhang * 2, 0.3, blockD + overhang * 2, 'concrete', { x: blockCx, y: HOUSE_ROOF_Y, z: blockCz }, { tint: CONCRETE_HOUSE_ROOF });
   const parapetY = HOUSE_ROOF_Y + 0.55;
-  addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz - blockD / 2 - 0.1 }, { tint: CONCRETE_NEUTRAL });
-  addThickBox(group, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz + blockD / 2 + 0.1 }, { tint: CONCRETE_NEUTRAL });
-  addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx - blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
-  addThickBox(group, 0.2, 0.8, blockD, 'concrete', { x: blockCx + blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_NEUTRAL });
+  addThickBox(houseShellOld, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz - blockD / 2 - 0.1 }, { tint: CONCRETE_HOUSE_ROOF });
+  addThickBox(houseShellOld, blockW + overhang * 2, 0.8, 0.2, 'concrete', { x: blockCx, y: parapetY, z: blockCz + blockD / 2 + 0.1 }, { tint: CONCRETE_HOUSE_ROOF });
+  addThickBox(houseShellOld, 0.2, 0.8, blockD, 'concrete', { x: blockCx - blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_HOUSE_ROOF });
+  addThickBox(houseShellOld, 0.2, 0.8, blockD, 'concrete', { x: blockCx + blockW / 2 - 0.1, y: parapetY, z: blockCz }, { tint: CONCRETE_HOUSE_ROOF });
+  mergeGroupByMaterial(houseShellOld); // 2 draw calls (plaster + concrete), isolated — see its own comment above
+  group.add(houseShellOld);
 
-  // Front door + interior doorway — frame only (jambs + lintel), no reveal/leaf,
-  // since both are real passages now (see addDoorFrameX's doc comment).
-  addDoorFrameX(kit, { x: blockCx, y: 0, z: HOUSE_DOOR_Z }, HOUSE_DOOR_WIDTH, 2.2, WALL_THICKNESS);
+  // Interior doorway — frame only (jambs + lintel), no reveal/leaf, since it's a
+  // real passage (see addDoorFrameX's doc comment). The FRONT door's own frame is
+  // no longer added here — tools/blender/build_house.py's Blender model builds its
+  // own door jamb/lintel/reveal geometry directly into the house_shell.glb (real
+  // bevels/recess, not a shared instanced trim bar), so a code-built frame at the
+  // exact same opening would just double up/z-fight with it.
   addDoorFrameX(kit, { x: blockCx, y: 0, z: HOUSE_PARTITION_Z }, HOUSE_PARTITION_DOOR_WIDTH, 2.1, WALL_THICKNESS);
   kit.addStep({ x: blockCx, y: 0.08, z: HOUSE_DOOR_Z + 0.35 }, { x: 1.6, y: 0.16, z: 0.5 });
   kit.addSwitchboard({ x: blockCx + 1.4, y: 1.4, z: HOUSE_DOOR_Z + 0.02 });

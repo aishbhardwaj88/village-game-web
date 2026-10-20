@@ -35,6 +35,7 @@ exactly as it does today.
 | `sister.glb` | The sister | 0.66 × 1.8 × 0.66 |
 | `charpai.glb` | The charpai (rope bed), house front room | 0.9 × 0.5 × 1.9 |
 | `hand_pump.glb` | The hand pump, house courtyard | 0.5 × 1.4 × 0.5 |
+| `house_shell.glb` | The house's exterior shell (walls/door/roof/parapet/bands/chajja) — Blender-built, `tools/blender/build_house.py`, not Tripo (see CLAUDE.md's art pivot note) | 10 × 7.1 × 8 |
 
 ### October Tripo-day staging slots
 

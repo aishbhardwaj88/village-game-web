@@ -27,13 +27,15 @@ export function createZoneManager(scene) {
   const zones = new Map();
 
   /**
-   * `build()` returns a THREE.Group (or Object3D) to add to the scene — called at
-   * most once per activation. `buildRadius` activates the zone; `teardownRadius`
-   * (defaults to 1.5x buildRadius, a hysteresis gap so straddling the boundary
-   * doesn't thrash build/dispose every frame) deactivates it again.
+   * `build()` returns a THREE.Group (or Object3D) to add to the scene, OR
+   * `{ group, onFrame(dt) }` when the zone's content needs a per-frame update
+   * (e.g. a slow grazing/idle sway on an InstancedMesh herd) — called at most once
+   * per activation. `buildRadius` activates the zone; `teardownRadius` (defaults to
+   * 1.5x buildRadius, a hysteresis gap so straddling the boundary doesn't thrash
+   * build/dispose every frame) deactivates it again.
    */
   function register(name, { x, z, buildRadius, teardownRadius = buildRadius * 1.5, build }) {
-    zones.set(name, { x, z, buildRadius, teardownRadius, build, group: null, active: false });
+    zones.set(name, { x, z, buildRadius, teardownRadius, build, group: null, active: false, onFrame: null });
   }
 
   function disposeObject(obj) {
@@ -48,12 +50,15 @@ export function createZoneManager(scene) {
 
   /** Call once per frame (or every few frames — zone crossings are infrequent and
    * the distance check itself is trivial) with the player's current x/z. */
-  function update(playerX, playerZ) {
+  function update(playerX, playerZ, dt = 0) {
     let changed = false;
     for (const zone of zones.values()) {
       const d = Math.hypot(playerX - zone.x, playerZ - zone.z);
       if (!zone.active && d <= zone.buildRadius) {
-        zone.group = zone.build();
+        const built = zone.build();
+        const isPlain = built.isObject3D;
+        zone.group = isPlain ? built : built.group;
+        zone.onFrame = isPlain ? null : built.onFrame || null;
         scene.add(zone.group);
         zone.active = true;
         changed = true;
@@ -61,8 +66,11 @@ export function createZoneManager(scene) {
         scene.remove(zone.group);
         disposeObject(zone.group);
         zone.group = null;
+        zone.onFrame = null;
         zone.active = false;
         changed = true;
+      } else if (zone.active && zone.onFrame) {
+        zone.onFrame(dt);
       }
     }
     if (changed) initStaticColliders(scene); // cheap full-scene rebuild, see doc comment above

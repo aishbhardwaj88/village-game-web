@@ -62,6 +62,28 @@ instancing every repeated thing (animals, trees, crops, background houses, props
 static geometry; merge same-material meshes rather than one mesh per part, and
 instance repeated NPCs/props (`src/bazaarLife.js` is the reference pattern).**
 
+**Art pivot (2026-10-21, art director's call): code-built primitive geometry
+(boxes/cylinders) for buildings reads as toys, not real structures. Tripo now makes
+ONLY people, vehicles, and trees. Every building, shop, wall, road, canal/bridge, and
+prop is modelled by hand in Blender instead** — `tools/blender/` (headless, installed
+to `~/Applications/Blender.app`, no sudo, run via `blender -b --python <script>.py`),
+one parametric Python script per asset built from `Places V1/*/LAYOUT.md`/`SCALE.md`
+numbers and reference photos: real bevels, wall thickness, roof overhang, chajjas,
+parapets, recessed doors/windows, CC0 PBR textures, baked vertex-colour AO, exported
+`.glb` and run through `tools/shrink.js`. The OLD code-built geometry for a converted
+building is kept as an invisible, un-merged, named sub-group (`<name>_old`, built via
+`mergeGroupByMaterial` locally then added to the global merge's `skipNames` in
+`main.js` — see `src/village.js`'s `buildHouse()` for the reference pattern) so the
+world validator/collisions stay exactly as before and the piece stays independently
+hideable once its real model loads through the same asset-slot system Tripo models
+use. First one done: the house shell (`tools/blender/build_house.py`,
+`public/assets/models/house_shell.glb`) — walls/door/roof/parapet/trim/chajja
+confirmed working in-game; decorative windows were built, confirmed correct in the
+exported file, but don't render in three.js for an unresolved reason and were cut for
+v1 (see `docs/parked.md`). Remaining build order: school, halwai, tea stall, general
+store, bazaar row (8 shops), temple complex, post office, ration shop, atta chakki,
+background houses, boundary walls, lanes/kerbs/drains, canal+bridge, then props.
+
 ## 2. Reference folders — read-only, never touched
 
 `Places V1/`, `Characters V1/`, `Mood board/`, `reference-from-unity/` live in this

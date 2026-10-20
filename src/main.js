@@ -753,6 +753,29 @@ async function main() {
       placements: [{ container: halwaiShopGroup, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: 0 }],
     });
   }
+  {
+    // Blender pipeline (2026-10-20) — the house's exterior shell (walls, bands,
+    // roof+parapet, all 4-sided real door/window detailing) now comes from
+    // tools/blender/build_house.py's house_shell.glb; src/village.js's own
+    // buildHouse() already folded everything it replaces into one locally-merged,
+    // easily-found 'house_shell_old' group (see that file's own comment on why —
+    // a village-wide merge would have made it impossible to isolate from other
+    // buildings sharing the same tint/material). Interior floor/ceiling/
+    // partition/furniture, the plinth/pilaster/drainpipe trim, and the stairs are
+    // all untouched real code geometry, still visible.
+    const houseShellOld = scene.getObjectByName('house_shell_old');
+    assetSlots.register('house_shell', {
+      dimensions: { w: HOUSE_BLOCK.w, h: 7.1, d: HOUSE_BLOCK.d }, // wall 6 + roof slab 0.3 + parapet 0.8, src/village.js's HOUSE_BLOCK/HOUSE_ROOF_Y
+      hide: houseShellOld ? [houseShellOld] : [],
+      // rotationY=PI — tools/blender/build_house.py builds the door on its own
+      // local +Y face (Blender's south/"door" axis); Blender's glTF export maps
+      // Blender +Y to glTF -Z, so a bare rotationY=0 would put the door on the
+      // NORTH face (world Z<cz) instead of the real HOUSE_DOOR_Z (cz+d/2,
+      // south). Confirmed empirically against the real in-game door position,
+      // not assumed — see this task's own screenshot proof.
+      placements: [{ container: scene, position: new THREE.Vector3(HOUSE_BLOCK.cx, 0, HOUSE_BLOCK.cz), rotationY: Math.PI }],
+    });
+  }
   const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
   assetSlots.register('player', {
     dimensions: PERSON_DIMENSIONS,
@@ -1125,7 +1148,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 
@@ -1154,23 +1177,26 @@ async function main() {
       build: () => {
         const group = new THREE.Group();
         group.name = 'zone_field_animals';
-        group.add(
-          createCattleHerd([
-            { x: -5, z: 20, rotationY: 0.3 },
-            { x: 3, z: 22, rotationY: -0.6 },
-            { x: 12, z: 19.5, rotationY: 1.2, buffalo: true },
-            { x: 20, z: 21.5, rotationY: -1.0 },
-            { x: 28, z: 20, rotationY: 0.5, buffalo: true },
-            { x: 36, z: 22, rotationY: -0.2 },
-          ])
-        );
-        group.add(
-          createDogPack([
-            { x: 8, z: 19, rotationY: 1.8 },
-            { x: 24, z: 22.5, rotationY: -1.4 },
-          ])
-        );
-        return group;
+        const cattle = createCattleHerd([
+          { x: -5, z: 20, rotationY: 0.3 },
+          { x: 3, z: 22, rotationY: -0.6 },
+          { x: 12, z: 19.5, rotationY: 1.2, buffalo: true },
+          { x: 20, z: 21.5, rotationY: -1.0 },
+          { x: 28, z: 20, rotationY: 0.5, buffalo: true },
+          { x: 36, z: 22, rotationY: -0.2 },
+        ]);
+        const dogs = createDogPack([
+          { x: 8, z: 19, rotationY: 1.8 },
+          { x: 24, z: 22.5, rotationY: -1.4 },
+        ]);
+        group.add(cattle.mesh, dogs.mesh);
+        return {
+          group,
+          onFrame: (dt) => {
+            cattle.update(dt);
+            dogs.update(dt);
+          },
+        };
       },
     });
   }
@@ -1994,7 +2020,7 @@ async function main() {
       // doesn't fade with a wide third-person zoom.
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
-      zoneManager.update(listenerPos.x, listenerPos.z);
+      zoneManager.update(listenerPos.x, listenerPos.z, dt);
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({

@@ -12,7 +12,7 @@ any real API call while `.env`'s `TRIPO_API_KEY` is empty or still looks like a
 placeholder (see `is_probably_real_key()`) — confirmed by trying a real (non-dry-run)
 call against the current fake test key, which it correctly refused.
 
-## The 9 items
+## The 8 items (reconciled 2026-10-21 — see note below)
 
 | # | Slot name | Output file | Reference image(s) used | Views | Rig? | Credits |
 |---|---|---|---|---|---|---|
@@ -23,11 +23,21 @@ call against the current fake test key, which it correctly refused.
 | 5 | `maa` | `maa.glb` | `Characters V1/people/_real/mother_real.png` — clean full-body front, neutral A-pose, empty hands | front only (single-image equivalent) | yes | 30 + 25 |
 | 6 | `dada` | `dada.glb` | `Characters V1/people/family1/family1_grandfather.jpg` — only reference available (front only) | front only (single-image equivalent) | yes | 30 + 25 |
 | 7 | `postman` | `postman.glb` | `Characters V1/people/villagers/3d_inputs_v2_tucked/` — already had a real 4-view set prepared in an earlier session | front, left, back, right | yes | 30 + 25 |
-| 8 | `halwai_kiosk` | `halwai_kiosk.glb` | `Places V1/halwai/MAIN_halwai_elevations.png` (2×2 labelled grid, cropped) | front, left (side-from-left), back | no | 30 |
-| 9 | `bike` | `bike.glb` | `Characters V1/props/postman_cycle.png` — two bikes side by side in one sheet, cropped into two separate views | front, left (two renders of the same bicycle, not a true front/side pair, but the best this sheet gives) | no | 30 |
+| 8 | `bike` | `bike.glb` | `Characters V1/props/postman_cycle.png` — two bikes side by side in one sheet, cropped into two separate views | front, left (two renders of the same bicycle, not a true front/side pair, but the best this sheet gives) | no | 30 |
 
-**Total: 345 credits = $3.45 (about Rs. 294 at 1 USD = 85.14 INR).** Confirmed by
-`tools/tripo_batch.py --dry-run` itself, not hand math — see "Dry-run output" below.
+**Total: 315 credits = $3.15 (about Rs. 268 at 1 USD = 85.14 INR).**
+
+### Reconciliation with the Blender pivot (2026-10-21)
+
+The art director's direction change made it explicit: **Tripo only makes people,
+vehicles, and trees — everything else (all buildings, including shops) is modelled
+by hand in Blender** (`tools/blender/`). `halwai_kiosk` was item 8 in the original
+9-item batch — it's a building, not a vehicle/person/tree, so it's been **removed
+from this Tripo batch** and moved to the Blender build order instead (it's already
+there: `tools/blender/` ORDER item 3, "house, school, halwai, tea stall..."). The
+remaining 8 items here (4 vehicles + 3 people + 1 bicycle) are all still valid Tripo
+candidates under the new rule and the plan for them is unchanged. Still zero API
+calls made.
 
 Settings used for every item: `--texstd` (standard texture quality, the cheaper
 30-credit tier — this is a judgement batch, not final production texture quality),
