@@ -102,7 +102,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createBellProp } from './props.js';
+import { createBellProp, createFlagpoleProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -508,6 +508,13 @@ async function main() {
   // Optional interaction props (item 5) — not part of the errand.
   const bellProp = createBellProp(BELL_POSITION);
   scene.add(bellProp);
+
+  // reference-from-unity/MAP.md: "Flagpole flying the Indian national flag, at the
+  // main chowk near the school/panchayat cluster... scenery only... no gameplay
+  // attached." Open yard ground, south-central (clear of both classroom blocks and
+  // the bell at SCHOOL_CENTER.x-5,110 — src/village.js's school_compound yard
+  // spans x:[-65,-35] z:[94,118]).
+  scene.add(createFlagpoleProp({ x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 8 }));
 
   // Second errand (task 4) — the teacher (a fixed interaction point, like maaNpc/
   // halwaiNpc above) and the sister (starts stationary at the school; once collected
