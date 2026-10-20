@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-10-20T00:00:00.000Z",
-  "drawCalls": 134,
+  "timestamp": "2026-10-20T14:15:00.000Z",
+  "drawCalls": 136,
   "drawCallLimit": 140,
-  "triangles": 97859,
+  "triangles": 108543,
   "triangleLimit": 400000,
   "assetsMB": 4.72,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
   "lastValidator": "pass",
-  "lastRegression": "pass (20/22, draw-calls-under-130 is a pre-existing known early-warning miss and investigating one intermittent trolley-vs-vehicle regression test result, real ceiling is 140)",
+  "lastRegression": "pass (21/22, draw-calls-under-130 is a pre-existing known early-warning miss, real ceiling is 140 - re-saved as the new baseline after 3 clean full-suite runs in a row)",
   "lastCheckBudget": "pass",
-  "notes": "NOT COMPLETE. docs/GAME_COMPLETE.md is superseded as of 2026-10-20 (self-graded verdict found premature by the art director — real completion is roughly 20%). docs/FINISH_LINE.md is now the one real, locked definition of done; the dashboard progress bar reads from it (0/21 ticked honestly). Working Step 1 of the finish-line work order: the real playtest trolley bug (player/NPCs/vehicles could walk/drive straight through the trolley in every state). Root cause found and fixed: src/main.js's otherVehicleBoxes() never carried a box for the trolley at all (it isn't a member of the `vehicles` array). Added permanent real-keyboard-input regression tests (tools/regression-check.js, no teleports) for player-vs-trolley (attached+detached) and tractor+trolley-vs-wall during real driving (turns, reversing) — all passing repeatedly. One test (detached trolley solid to another vehicle) is showing rare intermittent penetration depending on the exact leftover position/speed from the prior drive test; investigating before committing as fully fixed."
+  "notes": "NOT COMPLETE (roughly 20%). docs/GAME_COMPLETE.md is superseded; docs/FINISH_LINE.md is the one real, locked definition of done (0/21 ticked - nothing honestly meets a full compound item yet, even though real progress was made this session). Dashboard progress bar reads FINISH_LINE.md. Two commits landed this session: (1) the real trolley playtest bug - root cause was otherVehicleBoxes() never carrying any box for the trolley at all - fixed, plus a second real bug found by sustained real-input testing (the trolley's yaw-spring had no mechanical hitch-swing limit and could jackknife into the tractor during a long unsteered reverse) - fixed with a 45-degree clamp. Permanent real-keyboard-input regression tests added (no teleports), verified clean across 3 full-suite runs before saving the new baseline. (2) Maa/Dada/postman/halwai are now real code-built characters (src/characters.js, 1 draw call each) replacing capsules, placed in-game, screenshotted both standalone (people.html) and in real gameplay, asset-slot-registered for a future Tripo swap. NEEDS_YOU.md has the CODE-vs-TRIPO question with real Tripo API pricing, and the dashboard has a Tripo key box. Remaining capsules (child, teacher, sister, pitaji) and the monkey were not touched this session - out of this pass's scope. Nothing in FINISH_LINE.md's World/Look/Vehicles/Story/Shell sections has been independently re-verified this session; do not assume those are still accurate without checking."
 }
