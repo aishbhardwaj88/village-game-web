@@ -21,7 +21,7 @@ export function loadTexture(loader, url, { srgb = false, repeat = 1 } = {}) {
   return tex;
 }
 
-export function createGround({ grassTint = null, dampSpots = [] } = {}) {
+export function createGround({ grassTint = null, grassCoverage = undefined, dampSpots = [] } = {}) {
   const repeat = GROUND_SIZE / GROUND_TILE_METRES;
   const geometry = ensureUv2(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1));
   const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });
@@ -30,7 +30,9 @@ export function createGround({ grassTint = null, dampSpots = [] } = {}) {
   // as desert") — grassTint/dampSpots are village-specific (real palette colour,
   // real hand-pump position), supplied by the caller (main.js) rather than
   // imported here, so this stays a generic renderer-setup module.
-  applyGroundNoiseDetail(material, { grassTint, dampSpots, patchContrast: getActiveAtmosphere().groundContrastMultiplier });
+  const detailOpts = { grassTint, dampSpots, patchContrast: getActiveAtmosphere().groundContrastMultiplier };
+  if (grassCoverage !== undefined) detailOpts.grassCoverage = grassCoverage;
+  applyGroundNoiseDetail(material, detailOpts);
 
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;

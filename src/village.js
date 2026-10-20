@@ -24,6 +24,14 @@ export const PALETTE = {
   schoolYellow: 0xefdca8,
   greyGreen: 0xbcbfa8,
   woodTrim: 0x8a6a4a,
+  // Step E (docs/FINISH_LINE.md — "the village still reads as a desert... ground
+  // tone warmer and less grey", 2026-10-20) — a real, more saturated green for the
+  // ground's own patchy grass tint (src/materials.js's applyGroundNoiseDetail) and
+  // for flowering-plant foliage, distinct from greyGreen's deliberately dry/dusty
+  // starting point above. Still earthy, not neon — see Mood board/1.png.
+  grassGreen: 0x7c9452,
+  marigold: 0xe8963a,
+  bougainvillea: 0xc44d78,
 };
 export const WALL_TINT_STRENGTH = 0.3;
 export const WALL_THICKNESS = 0.22; // law — see docs/look-standard.md

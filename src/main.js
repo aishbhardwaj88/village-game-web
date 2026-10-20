@@ -13,7 +13,7 @@ import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
-import { buildVegetation, lanesideClusters } from './vegetation.js';
+import { buildVegetation, lanesideClusters, buildFlowerPatches } from './vegetation.js';
 import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
@@ -49,6 +49,7 @@ import {
   BAZAAR_FRONT_Z,
   BAZAAR_ROW_CZ,
   CHOWK_TEA_POS,
+  CHOWK_CENTER,
   BAZAAR_LANE_START,
   BAZAAR_LANE_BEND,
   BAZAAR_LANE_ARRIVE,
@@ -154,8 +155,13 @@ async function main() {
   // plus a darker damp patch around the hand pump (src/village.js's
   // HOUSE_HAND_PUMP_POSITION), both shader-only (no new geometry/texture asset,
   // no new draw call — see applyGroundNoiseDetail in src/materials.js).
+  // Step E (2026-10-20, art director: "the village still reads as a desert...
+  // ground tone warmer and less grey") — a real green patch tint (PALETTE.
+  // grassGreen) instead of the deliberately-dry greyGreen this started with, at
+  // higher coverage so it actually reads from a normal play distance.
   const ground = createGround({
-    grassTint: PALETTE.greyGreen,
+    grassTint: PALETTE.grassGreen,
+    grassCoverage: 0.58,
     dampSpots: [{ x: HOUSE_HAND_PUMP_POSITION.x, z: HOUSE_HAND_PUMP_POSITION.z, radius: 2.2, tint: darken(0xffffff, 0.75) }],
   });
   scene.add(ground);
@@ -935,17 +941,35 @@ async function main() {
     // past that); babool trees sit just outside the field track loop's own
     // corners (TRACK_CORNERS), offset outward from FIELD_CENTER.
     templeGroup.add(buildTrees([{ kind: 'peepal', x: PEEPAL_PLATFORM_POS.x, z: PEEPAL_PLATFORM_POS.z, rotationY: 0.4, seed: 5 }]));
+    // Step E (2026-10-20, art director — "the village still reads as a
+    // desert... instanced trees in clusters along lanes, around houses and the
+    // chowk") — several more neem trees in real clusters (2-3 trees close
+    // together, not single sentinels), still folding into the same shared
+    // tree_foliage draw call regardless of count. Real anchor points: the house/
+    // school courtyard edges (as before, now with a companion tree each), the
+    // halwai's own lane frontage, and the bazaar chowk (CHOWK_CENTER).
     heroZoneGroup.add(
       buildTrees([
         { kind: 'neem', x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z - 4, rotationY: 1.1, seed: 11 },
+        { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
         { kind: 'neem', x: SCHOOL_CENTER.x - 12, z: SCHOOL_CENTER.z + 6, rotationY: 2.3, seed: 12 },
+        { kind: 'neem', x: SCHOOL_CENTER.x - 9, z: SCHOOL_CENTER.z + 9, rotationY: 0.5, seed: 14 },
+        { kind: 'neem', x: HALWAI_CENTER.x + 3, z: HALWAI_CENTER.z - 5, rotationY: 1.8, seed: 15 },
+      ])
+    );
+    bazaarGroup.add(
+      buildTrees([
+        { kind: 'neem', x: CHOWK_CENTER.x - 6, z: CHOWK_CENTER.z + 5, rotationY: 0.9, seed: 16 },
+        { kind: 'neem', x: CHOWK_CENTER.x + 7, z: CHOWK_CENTER.z + 4, rotationY: 2.1, seed: 17 },
       ])
     );
     fieldGroup.add(
       buildTrees([
         { kind: 'babool', x: TRACK_CORNERS[3].x - 4, z: TRACK_CORNERS[3].z - 4, rotationY: 0.7, seed: 21 }, // SW corner
+        { kind: 'babool', x: TRACK_CORNERS[3].x - 7, z: TRACK_CORNERS[3].z - 2, rotationY: 1.3, seed: 24 },
         { kind: 'babool', x: TRACK_CORNERS[1].x + 4, z: TRACK_CORNERS[1].z + 4, rotationY: 2.9, seed: 22 }, // NE corner
         { kind: 'babool', x: TRACK_CORNERS[2].x + 4, z: TRACK_CORNERS[2].z - 4, rotationY: 1.6, seed: 23 }, // SE corner — NOT the NW corner (TRACK_CORNERS[0], {-40,25}), which sits only ~5m from the relocated tractor spawn (-45,26, item 1) and put a tree awkwardly right behind the parked tractor
+        { kind: 'babool', x: TRACK_CORNERS[2].x + 6, z: TRACK_CORNERS[2].z - 1, rotationY: 0.2, seed: 25 },
       ])
     );
 
@@ -960,31 +984,65 @@ async function main() {
     // segment the village actually has (same start/end/width those lanes are
     // built from, src/paths.js's buildStripSegment — never invented
     // coordinates) plus a few clusters against real building wall bases.
+    // Step E (2026-10-20, art director — "grass and low shrubs at wall bases and
+    // field edges", denser coverage) — same lane segments as before at higher
+    // density (shorter everyMetres, more per cluster), plus many more wall-base
+    // anchors: every side of the house/school courtyards, the halwai, both ends
+    // of the bazaar row, the chowk/chabutra, and the temple's remaining sides.
     const vegAnchors = [
-      ...lanesideClusters(HOUSE_CENTER, HALWAI_CENTER, 6),
-      ...lanesideClusters(HALWAI_CENTER, SCHOOL_CENTER, 6),
-      ...lanesideClusters(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH),
-      ...lanesideClusters(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH),
-      ...lanesideClusters(BAZAAR_LANE_ARRIVE, BAZAAR_ROW_FRONTAGE_START, BAZAAR_LANE_ROW_WIDTH),
-      ...lanesideClusters(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH),
-      ...lanesideClusters(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH),
-      ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 20, margin: 2 }),
-      ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 20, margin: 2 }),
-      // A few clusters at real building wall bases — house compound's own low
-      // courtyard walls (x = HOUSE_CENTER.x +/- 9), the bazaar row's own west
-      // end (BAZAAR_WEST_X), the temple's east boundary (near TEMPLE_POS).
-      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z - 2, radius: 1.6, count: 6 },
-      { x: HOUSE_CENTER.x + 9.6, z: HOUSE_CENTER.z + 2, radius: 1.6, count: 6 },
-      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ, radius: 1.8, count: 7 },
-      { x: TEMPLE_POS.x + 9, z: TEMPLE_POS.z - 2, radius: 1.6, count: 5 },
+      ...lanesideClusters(HOUSE_CENTER, HALWAI_CENTER, 6, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(HALWAI_CENTER, SCHOOL_CENTER, 6, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(BAZAAR_LANE_ARRIVE, BAZAAR_ROW_FRONTAGE_START, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 14, margin: 2 }),
+      ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 14, margin: 2 }),
+      // Wall-base clusters at real building perimeters.
+      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z - 2, radius: 1.6, count: 7 },
+      { x: HOUSE_CENTER.x + 9.6, z: HOUSE_CENTER.z + 2, radius: 1.6, count: 7 },
+      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z - 8, radius: 1.8, count: 6 },
+      { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z, radius: 1.8, count: 6 },
+      { x: SCHOOL_CENTER.x + 15, z: SCHOOL_CENTER.z + 5, radius: 1.8, count: 6 },
+      { x: HALWAI_CENTER.x - 4, z: HALWAI_CENTER.z + 3, radius: 1.5, count: 5 },
+      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ, radius: 1.8, count: 8 },
+      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ + 10, radius: 1.6, count: 6 },
+      { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 6, radius: 1.8, count: 6 },
+      { x: CHOWK_CENTER.x - 8, z: CHOWK_CENTER.z, radius: 1.6, count: 5 },
+      { x: TEMPLE_POS.x + 9, z: TEMPLE_POS.z - 2, radius: 1.6, count: 6 },
+      { x: TEMPLE_POS.x - 9, z: TEMPLE_POS.z + 3, radius: 1.6, count: 5 },
+      { x: TEMPLE_POS.x, z: TEMPLE_POS.z + 9, radius: 1.6, count: 5 },
     ];
     const scrubAnchors = [
-      ...lanesideClusters(TRACK_CORNERS[1], TRACK_CORNERS[2], 5, { everyMetres: 18, margin: 2.2, count: 3 }),
-      ...lanesideClusters(TRACK_CORNERS[3], TRACK_CORNERS[0], 5, { everyMetres: 18, margin: 2.2, count: 3 }),
-      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 3 },
-      { x: BAZAAR_EAST_X + 1.5, z: BAZAAR_ROW_CZ, radius: 1.5, count: 4 },
+      ...lanesideClusters(TRACK_CORNERS[1], TRACK_CORNERS[2], 5, { everyMetres: 12, margin: 2.2, count: 4 }),
+      ...lanesideClusters(TRACK_CORNERS[3], TRACK_CORNERS[0], 5, { everyMetres: 12, margin: 2.2, count: 4 }),
+      ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
+      ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
+      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 4 },
+      { x: BAZAAR_EAST_X + 1.5, z: BAZAAR_ROW_CZ, radius: 1.5, count: 5 },
+      { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z + 8, radius: 1.5, count: 4 },
     ];
     scene.add(buildVegetation(vegAnchors, scrubAnchors));
+
+    // Step E — "a few flowering plants (marigold, bougainvillea on walls)".
+    // Marigold at the temple and its own flower stall (the single most obvious
+    // real-world place marigolds would actually be), bougainvillea along the
+    // chowk/chabutra's seating wall. Kept away from the hero zone on purpose —
+    // CLAUDE.md's draw-call note asks for the hero zone's count to come DOWN,
+    // not up, and this is a genuinely new InstancedMesh (one more draw call
+    // wherever it's in view) rather than folding into an existing bucket.
+    scene.add(
+      buildFlowerPatches([
+        { x: FLOWER_STALL_POS.x - 1, z: FLOWER_STALL_POS.z + 1.5, color: PALETTE.marigold },
+        { x: FLOWER_STALL_POS.x + 1, z: FLOWER_STALL_POS.z + 1.5, color: PALETTE.marigold },
+        { x: TEMPLE_POS.x + 2, z: TEMPLE_POS.z - 6, color: PALETTE.marigold },
+        { x: TEMPLE_POS.x - 2, z: TEMPLE_POS.z - 6, color: PALETTE.marigold },
+        { x: CHOWK_CENTER.x + 3, z: CHOWK_CENTER.z - 4, color: PALETTE.bougainvillea },
+        { x: CHOWK_CENTER.x - 3, z: CHOWK_CENTER.z - 4, color: PALETTE.bougainvillea },
+        { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, color: PALETTE.bougainvillea },
+      ])
+    );
 
     const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference

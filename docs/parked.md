@@ -5,7 +5,6 @@ note it here, keep going), plus anything genuinely blocked.
 
 | Date | Item | What I did | Why |
 |---|---|---|---|
-| 2026-09-14 | Blender not installed (`/Applications/Blender.app` missing) | Skipped; not needed for anything in tonight's setup (no local mesh authoring yet). No sudo/install attempted. | Task said park missing local tools rather than install with sudo. Revisit when the asset pipeline needs hand-authored geometry. |
 | 2026-09-14 | `renderer.shadowMap.type` | Used `THREE.PCFShadowMap` instead of the requested PCFSoft. | three.js r186 removed `PCFSoftShadowMap` — it now silently aliases to `PCFShadowMap` with a console warning. Using `PCFShadowMap` directly is identical in practice and keeps the console clean. |
 | 2026-09-14 | Sky/environment loader | Used `HDRLoader` instead of `RGBELoader`. | `RGBELoader` is deprecated in this three.js version (console warning); `HDRLoader` is its documented replacement and reads the same `.hdr` files. |
 | 2026-09-14 | Frame delta timing | Used a manual `requestAnimationFrame` timestamp delta instead of `THREE.Clock`. | `THREE.Clock` is deprecated in r186 in favour of `THREE.Timer`, but `Timer` isn't exported from the package's public entry points yet (`three/examples/jsm` or the root module) — so there's no drop-in replacement to import. A manual delta avoids both the deprecation warning and a dependency on an unexported class. |

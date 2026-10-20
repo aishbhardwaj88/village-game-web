@@ -139,6 +139,62 @@ function buildInstancedKind(geometry, positions, { scaleMin, scaleMax }) {
   return mesh;
 }
 
+const WHITE = new THREE.Color(0xffffff);
+
+/**
+ * Step E (2026-10-20, art director — "a few flowering plants: marigold,
+ * bougainvillea on walls") — same blade-cluster technique as tuft/scrub, but the
+ * geometry is baked in plain WHITE (not green) so InstancedMesh.setColorAt can
+ * supply the REAL colour per instance cleanly (vertexColor * instanceColor, and
+ * white multiplies as a no-op) instead of muddying a green bake with an orange/
+ * pink tint multiplied on top. `positions` entries may carry their own `color`
+ * (a hex int); entries without one fall back to `defaultColors` (randomly
+ * chosen), same spirit as paintClusterColors above.
+ */
+function buildFlowerGeometry() {
+  const parts = buildBladeClusterGeometry({ bladeCount: 7, height: 0.26, width: 0.05, spread: 0.1, leanMax: 0.3, includeTwigs: false });
+  const geo = mergeGeometries(parts);
+  bakeFlatColor(geo, WHITE);
+  return geo;
+}
+
+function bakeFlatColor(geometry, color) {
+  const count = geometry.attributes.position.count;
+  const colorArray = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    colorArray[i * 3] = color.r;
+    colorArray[i * 3 + 1] = color.g;
+    colorArray[i * 3 + 2] = color.b;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+}
+
+/** `positions`: [{x, z, color}] — color is a hex int (e.g. PALETTE.marigold). */
+export function buildFlowerPatches(positions) {
+  if (!positions.length) return null;
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+  const mesh = new THREE.InstancedMesh(buildFlowerGeometry(), material, positions.length);
+  mesh.name = 'flowering_plants';
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  const m = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const s = new THREE.Vector3();
+  const c = new THREE.Color();
+  for (let i = 0; i < positions.length; i++) {
+    const p = positions[i];
+    const scale = 0.85 + Math.random() * 0.45;
+    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.random() * Math.PI * 2);
+    s.set(scale, scale, scale);
+    m.compose(new THREE.Vector3(p.x, p.y ?? 0, p.z), q, s);
+    mesh.setMatrixAt(i, m);
+    mesh.setColorAt(i, c.setHex(p.color));
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  return mesh;
+}
+
 /** Cluster anchors along BOTH edges of a real lane segment (the same
  * start/end/width every lane is actually built from, src/paths.js's
  * buildStripSegment) — offset outward from the lane's own half-width plus a
