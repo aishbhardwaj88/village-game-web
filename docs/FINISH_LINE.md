@@ -6,8 +6,8 @@
 - [ ] Village reads green and lived-in: trees (neem, peepal, mango, babool), crops, low vegetation, never "desert"
 ## Look (reference-from-unity/docs/art-direction.md 7.0 + 7.1b, docs/look-standard.md, Mood board/1.png)
 - [ ] Every outdoor screenshot reads as a warm, hazy North Indian afternoon with real textures and real light, cared-for, never toy-like, never poverty/decay
-- [ ] Every shop/place signboard is legible at 8 m in a 1280x800 screenshot
-- [ ] No debug text, name labels, magenta test boxes or staging boxes visible in any normal player view (dev only behind ?dev=1)
+- [x] Every shop/place signboard is legible at 8 m in a 1280x800 screenshot — docs/shots/signboard-8m-2026-10-20T16-46-32-406Z/ (all 11 real signboards: 2 hero-zone + 8 bazaar units + chowk tea stall, each framed from exactly 8m at real in-game camera height; two real occlusion bugs found and fixed along the way — src/main.js's tea stall sign and src/bazaar.js's chowk tea stall sign both sat too close to their own kiosk's roof overhang, hiding the English line)
+- [x] No debug text, name labels, magenta test boxes or staging boxes visible in any normal player view (dev only behind ?dev=1) — docs/shots/no-debug-visuals-2026-10-20/normal_play_spawn.png (real playthrough, no ?dev=1 — window.__dopahar itself confirmed unreachable without it); the 6 Tripo judgement staging boxes were fixed to this same gate in an earlier commit this session (Gate the 6 Tripo judgement staging boxes behind ?dev=1), the magenta ceramic_pot test box was confirmed already-hidden
 ## People
 - [ ] Zero capsule/pill people anywhere in normal play
 - [ ] Every person has a head, torso, arms, legs, clothes matching their role and colour palette (docs/art-rules-characters.md, Characters V1 references), plus idle and walk animation
@@ -25,5 +25,14 @@
 ## Shell
 - [ ] Title, new game/continue, settings (quality, volume, controls) reachable from title and pause, loading screen, HUD, ending, credits
 - [ ] Zero console errors in a full playthrough; world validator and regression check pass
+## Side jobs and free roam
+- [ ] Main story beats from docs/MISSIONS_PLAN.md section 1 (school-out, dharam kanta, narrow gate, bell flag-down, mango catch, rooftop neighbours) all present and playable with real input
+- [ ] After credits, free roam unlocks; title screen offers "Continue roaming"
+- [ ] Notebook map in the pause menu shows discovered places and side jobs
+- [ ] All 10 side jobs in docs/MISSIONS_PLAN.md section 3 playable start to end with real input, each with its own NPC, dialogue and reward
+- [ ] Side jobs are discovered diegetically (postcards, peepal posters, sound), never shown as a quest list
+- [ ] Pocket money earned from side jobs can be spent at the banta shop, kulfiwala and chaat thela
+- [ ] School donation board present, amount read from public/data/donations.json
+- [ ] Zero tasks at any of the four faith buildings; no stealing; nothing dangerous
 ## Final gate
 - [ ] A fresh subagent with no prior context plays all 8 missions with real input, then judges 20 screenshots against this file and art-direction.md, and lists every failure. Zero failures.

@@ -452,7 +452,15 @@ export async function buildBazaarSignboards() {
     const chowkGeo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, 0.6, 0.04);
     mapFrontFaceToAtlasCell(chowkGeo, CHOWK_SIGN_CELL_INDEX % SIGN_ATLAS_COLS, Math.floor(CHOWK_SIGN_CELL_INDEX / SIGN_ATLAS_COLS));
     const chowkWorld = chowkWorldMatrix();
-    const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.55, -CHOWK_TEA.d / 2 - 0.05);
+    // Bugfix (docs/FINISH_LINE.md Step B, real-camera check —
+    // tools/signboard-8m-check.mjs): +0.55 left the Devanagari line brushing
+    // right against the pavilion roof's own sloped near edge at a real 8m
+    // viewing distance (same category of issue as the hero-zone tea stall's
+    // own sign, just milder here) — the English line read fine, but the
+    // primary (larger, per CLAUDE.md's language-order law) line shouldn't be
+    // the one left tight to an edge. +0.8 gives it the same real clearance
+    // margin the tea stall's own fix uses.
+    const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.8, -CHOWK_TEA.d / 2 - 0.05);
     geos.push(chowkGeo.applyMatrix4(chowkLocal).applyMatrix4(chowkWorld));
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);

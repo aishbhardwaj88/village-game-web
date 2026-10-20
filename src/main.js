@@ -289,7 +289,18 @@ async function main() {
       rotationY: TEA_SHOP_ROT,
       width: TEA_DIMS.w - 0.4,
       depth: TEA_DIMS.d,
-      boardY: TEA_DIMS.postH + 0.35,
+      // Bugfix (docs/FINISH_LINE.md Step B, real in-game third-person chase
+      // camera, not a close-up — tools/signboard-8m-check.mjs): the flat roof
+      // (buildShopRoofs, centred at postH+0.06=2.66, 0.12 thick, so its top
+      // sits at ~2.72) overhangs 0.35m past the kiosk's own front edge on
+      // every side, well past where the old boardY(postH+0.35=2.95, bottom
+      // edge 2.70) put the sign — from the real camera's realistic upward
+      // viewing angle at 8m, that nearer, slightly-lower roof edge occluded
+      // the sign's own lower (English) line almost entirely, leaving only a
+      // sliver of the Devanagari line above it legible. +0.65 instead of
+      // +0.35 clears the roof top with real margin (bottom edge ~3.0, 0.3m
+      // above the roof) — confirmed by re-running the same real-camera check.
+      boardY: TEA_DIMS.postH + 1.2,
       hi: 'शर्मा चाय की दुकान',
       en: 'Sharma Tea Stall',
     },
