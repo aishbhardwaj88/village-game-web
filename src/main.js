@@ -7,7 +7,7 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
+import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
@@ -466,6 +466,17 @@ async function main() {
   // family, so it costs nothing extra — see src/wheatErrand.js).
   const pitajiNpc = createNPC(0x4a5a3a, PITAJI_POSITION, Math.PI, 'npc_pitaji');
   scene.add(pitajiNpc);
+
+  // M8 (docs/STORY.md) — Dadi. Not in STORY.md's own written dialogue (the ending
+  // scene's lines are Dada/Maa/sister/Pitaji only), but docs/FINISH_LINE.md's People
+  // and Story sections both separately require her presence ("Mission cast present
+  // in person: ... Dadi", "the whole family including Dada and Dadi together on the
+  // roof") — so she's there, silently, same tier as the other plain-capsule NPCs
+  // (child/teacher/sister/pitaji), not a new built character (the TRIPO people
+  // decision was "no more code people", not "no more NPCs of any kind").
+  const dadiNpc = createNPC(0x8a5a6e, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z }, 0, 'npc_dadi');
+  dadiNpc.visible = false;
+  scene.add(dadiNpc);
   const sackCarrier = createSackCarrier(player);
   heroZoneGroup.add(buildSackPile());
 
@@ -1337,6 +1348,26 @@ async function main() {
       monkeyNpc.visible = false;
       monkeyChaseUpdate = null;
     },
+    // M8 (docs/STORY.md) — called the moment the player reaches the roof, before the
+    // closing dialogue plays, so the family is already gathered when it starts.
+    // Freezes every ambient NPC routine (see endingSceneActive below) and moves the
+    // already-built family NPCs onto the real roof deck (HOUSE_BLOCK's own footprint,
+    // HOUSE_ROOF_Y) — nothing new built, the game is ending, their normal routines
+    // no longer matter.
+    onReachRoofEnding: () => {
+      endingSceneActive = true;
+      dadaNpc.position.set(HOUSE_CENTER.x, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 1);
+      dadaNpc.rotation.y = Math.PI * 0.75;
+      maaNpc.position.set(HOUSE_CENTER.x - 1.5, HOUSE_ROOF_Y, HOUSE_BLOCK.cz + 0.5);
+      maaNpc.rotation.y = Math.PI * 0.6;
+      pitajiNpc.position.set(HOUSE_CENTER.x + 1.5, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 0.5);
+      pitajiNpc.rotation.y = Math.PI * 1.1;
+      sisterNpc.position.set(HOUSE_CENTER.x + 1, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 2.5);
+      sisterNpc.rotation.y = Math.PI * 1.3;
+      dadiNpc.position.set(HOUSE_CENTER.x - 1, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 2);
+      dadiNpc.rotation.y = Math.PI * 0.9;
+      dadiNpc.visible = true;
+    },
     tractor: tractorForShadows, // third errand — isTrolleyNearby() reads this live, see src/wheatErrand.js
     sackCarrier,
   };
@@ -1522,6 +1553,7 @@ async function main() {
   // camera (lying down, not sitting up). Mutually exclusive with `sitting` — the
   // interaction system only offers one prompt at a time per position anyway.
   let lying = false;
+  let endingSceneActive = false; // M8 — true once the player reaches the roof; freezes every ambient NPC routine so the staged family tableau below isn't immediately undone by their normal waypoint loops
 
   function lieDown() {
     lying = true;
@@ -1598,11 +1630,16 @@ async function main() {
       // ambient world around the player. MAA_POSITION is the same Vector3 object the
       // interaction point and waypoint system both hold a reference to, so syncing it
       // here makes "talk to Maa" and the waypoint arrow/glow follow her as she walks.
-      maaWalk(dt);
-      halwaiStir(dt); // halwai's own idle animation (src/main.js) — not animate(), see buildCharacterNpc's doc comment
-      childWalk(dt);
-      postmanWalk(dt);
-      if (sisterFollowing) sisterFollow(dt);
+      // M8 — frozen once the roof ending starts (onReachRoofEnding above has already
+      // moved these NPCs onto the roof; their normal loops would otherwise walk them
+      // straight back to their usual ground-level spots on the very next frame).
+      if (!endingSceneActive) {
+        maaWalk(dt);
+        halwaiStir(dt); // halwai's own idle animation (src/main.js) — not animate(), see buildCharacterNpc's doc comment
+        childWalk(dt);
+        postmanWalk(dt);
+        if (sisterFollowing) sisterFollow(dt);
+      }
       MAA_POSITION.copy(maaNpc.position);
       bazaarLife.update(dt);
 
@@ -1878,7 +1915,7 @@ async function main() {
       player,
       camRig,
       vehicles,
-      npcs: [maaNpc, halwaiNpc, dadaNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc, monkeyNpc],
+      npcs: [maaNpc, halwaiNpc, dadaNpc, childNpc, teacherNpc, sisterNpc, pitajiNpc, postmanNpc, monkeyNpc, dadiNpc],
       props: [bellProp],
       interactions: {
         MAA_POSITION,

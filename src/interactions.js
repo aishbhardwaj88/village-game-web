@@ -472,6 +472,7 @@ export function registerRoofEnding(position, radius = 3) {
     label: { hi: 'परिवार से मिलें', en: 'Join the family' },
     available: (ctx) => ctx.quest.step === QUEST_STEPS.GOING_TO_ROOF,
     onInteract: (ctx) => {
+      ctx.onReachRoofEnding?.();
       ctx.dialogue.say(
         [
           { hi: 'तुम सब, एक बूढ़े आदमी के लिए इतनी तैयारी।', en: "All of you, making such a fuss over an old man." },
