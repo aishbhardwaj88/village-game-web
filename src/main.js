@@ -58,6 +58,7 @@ import {
   BAZAAR_EAST_X,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
+import { createMonkeyNPC } from './animals.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun } from './npcRoutines.js';
 import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
 
@@ -534,8 +535,10 @@ async function main() {
   // bazaar's own front lane (BAZAAR_FRONT_Z - 1.5) and the open chowk plaza east of
   // it — both already proven clear (every bazaar shop counter interaction sits on
   // that same line; the chowk is explicitly open ground, src/bazaar.js).
-  const monkeyNpc = createNPC(0x6b4a33, { x: bazaarUnitCx(3), z: BAZAAR_FRONT_Z - 1.5 }, 0, 'npc_monkey');
-  monkeyNpc.scale.setScalar(0.55); // a monkey, not another villager
+  // docs/FINISH_LINE.md Animals line — a real monkey shape (src/animals.js), not a
+  // tinted/scaled humanoid capsule. Built at its own correct real-world size, so no
+  // external scale hack is needed.
+  const monkeyNpc = createMonkeyNPC({ x: bazaarUnitCx(3), z: BAZAAR_FRONT_Z - 1.5 }, 0, 'npc_monkey');
   monkeyNpc.visible = false;
   scene.add(monkeyNpc);
   linkMonkeyPosition(monkeyNpc.position);
