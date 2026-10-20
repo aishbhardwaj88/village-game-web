@@ -111,3 +111,122 @@ export function createMonkeyNPC(position, rotationY = 0, name = 'npc_monkey') {
   group.rotation.y = rotationY;
   return group;
 }
+
+// ---------------------------------------------------------------------------
+// FINISH_LINE.md Animals line: "cows/buffalo, street dogs". Both are built as a
+// single shared geometry fed into an InstancedMesh (the src/bazaarLife.js pattern —
+// one draw call regardless of herd size), not one Mesh per animal. A neutral
+// near-white vertex colour on the hide (horns/hooves stay their own dark baked
+// tint) leaves room for InstancedMesh.setColorAt to supply the real per-instance
+// colour — cows tan/white, buffalo dark grey/black — so ONE bovine mesh covers
+// both animals MAP.md asks for, at the cost of one draw call rather than two.
+// Both are standing/idle only (no leg animation) — a real roaming/moving herd is a
+// bigger feature than this pass's "recognisable, present in the world" bar, same
+// trade-off this session already made for the monkey's running pose being static
+// per-frame rather than animated.
+// ---------------------------------------------------------------------------
+
+const HIDE_NEUTRAL = 0xd8d4c8; // near-white — InstancedMesh.setColorAt multiplies the real tint over this
+const HORN_DARK = 0x3a332a;
+
+/** Returns raw geometry (not a Mesh) — body/hump/neck/head/horns/4 static legs, same
+ * proportions as src/vehicles.js's buildBullock (a cow and a draft bullock are the
+ * same animal), merged into one shape suitable as an InstancedMesh base geometry. */
+export function buildBovineGeometry() {
+  const geos = [];
+  const bodyLen = 1.5;
+  const bodyW = 0.5;
+  const bodyH = 0.7;
+  const shoulderY = 1.25;
+  const legLen = 0.7;
+
+  geos.push(part(new THREE.BoxGeometry(bodyW, bodyH, bodyLen), new THREE.Matrix4().setPosition(0, shoulderY - bodyH / 2, 0), HIDE_NEUTRAL));
+  geos.push(part(new THREE.BoxGeometry(0.28, 0.18, 0.3), new THREE.Matrix4().setPosition(0, shoulderY + 0.1, bodyLen / 2 - 0.26), HIDE_NEUTRAL)); // shoulder hump
+  geos.push(part(new THREE.BoxGeometry(0.3, 0.3, 0.38), new THREE.Matrix4().setPosition(0, shoulderY - 0.1, bodyLen / 2 + 0.15), HIDE_NEUTRAL)); // neck
+  geos.push(part(new THREE.BoxGeometry(0.26, 0.28, 0.32), new THREE.Matrix4().setPosition(0, shoulderY, bodyLen / 2 + 0.42), HIDE_NEUTRAL)); // head
+  for (const side of [-1, 1]) {
+    const m = new THREE.Matrix4().makeRotationZ(side * 0.5).setPosition(side * 0.1, shoulderY + 0.2, bodyLen / 2 + 0.38);
+    geos.push(part(new THREE.ConeGeometry(0.03, 0.2, 6), m, HORN_DARK));
+  }
+  const legGeo = () => new THREE.BoxGeometry(0.12, legLen, 0.12);
+  for (const [lx, lz] of [
+    [-0.16, bodyLen / 2 - 0.15],
+    [0.16, bodyLen / 2 - 0.15],
+    [-0.16, -bodyLen / 2 + 0.15],
+    [0.16, -bodyLen / 2 + 0.15],
+  ]) {
+    geos.push(part(legGeo(), new THREE.Matrix4().setPosition(lx, legLen / 2, lz), HIDE_NEUTRAL));
+  }
+  return mergeGeometries(geos);
+}
+
+/** A simple standing dog — body, head, snout, ears, tail, 4 legs, one merged
+ * geometry, same InstancedMesh-base purpose as buildBovineGeometry(). Local +Z
+ * front, matching this file's other animals. */
+export function buildDogGeometry() {
+  const geos = [];
+  geos.push(part(new THREE.CapsuleGeometry(0.1, 0.28, 4, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0.32, 0), 0xffffff));
+  geos.push(part(new THREE.SphereGeometry(0.1, 8, 6), new THREE.Matrix4().setPosition(0, 0.4, 0.24), 0xffffff));
+  geos.push(part(new THREE.BoxGeometry(0.08, 0.07, 0.1), new THREE.Matrix4().setPosition(0, 0.35, 0.36), 0x3a332a)); // snout
+  for (const side of [-1, 1]) {
+    geos.push(part(new THREE.BoxGeometry(0.05, 0.1, 0.03), new THREE.Matrix4().makeRotationZ(side * 0.3).setPosition(side * 0.08, 0.5, 0.26), 0xffffff));
+  }
+  geos.push(boxBetween(P(0, 0.34, -0.22), P(0, 0.5, -0.38), 0.035, 0xffffff)); // tail, curled up
+  const legs = [
+    [P(-0.07, 0.3, 0.16), P(-0.07, 0, 0.16)],
+    [P(0.07, 0.3, 0.16), P(0.07, 0, 0.16)],
+    [P(-0.07, 0.3, -0.16), P(-0.07, 0, -0.16)],
+    [P(0.07, 0.3, -0.16), P(0.07, 0, -0.16)],
+  ];
+  for (const [hip, foot] of legs) geos.push(boxBetween(hip, foot, 0.045, 0xffffff));
+  return mergeGeometries(geos);
+}
+
+const COW_TINTS = [0xd9c9a0, 0xe8e0d0, 0xc4a876]; // tan/white — cow
+const BUFFALO_TINTS = [0x3a3a38, 0x2a2a28]; // dark grey/black — buffalo
+const DOG_TINTS = [0xb08858, 0x8a6a42, 0xc9b088];
+
+/** A stationary herd — real geometry, one InstancedMesh, real world positions (not
+ * decorative-only placeholders), covering both cows and buffalo via per-instance
+ * tint (see the module doc comment above). `placements` is a flat [{x,z,rotationY,
+ * buffalo}] list — `buffalo: true` picks a BUFFALO_TINTS colour instead of COW_TINTS,
+ * everything else about the shape is identical. */
+export function createCattleHerd(placements) {
+  const geometry = buildBovineGeometry();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
+  const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
+  mesh.name = 'cattle_herd';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const m = new THREE.Matrix4();
+  const color = new THREE.Color();
+  placements.forEach((p, i) => {
+    m.makeRotationY(p.rotationY ?? 0).setPosition(p.x, 0, p.z);
+    mesh.setMatrixAt(i, m);
+    const tints = p.buffalo ? BUFFALO_TINTS : COW_TINTS;
+    mesh.setColorAt(i, color.setHex(tints[i % tints.length]));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  return mesh;
+}
+
+/** A pack of stationary street dogs, same InstancedMesh pattern. */
+export function createDogPack(placements) {
+  const geometry = buildDogGeometry();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
+  const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
+  mesh.name = 'dog_pack';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const m = new THREE.Matrix4();
+  const color = new THREE.Color();
+  placements.forEach((p, i) => {
+    m.makeRotationY(p.rotationY ?? 0).setPosition(p.x, 0, p.z);
+    mesh.setMatrixAt(i, m);
+    mesh.setColorAt(i, color.setHex(DOG_TINTS[i % DOG_TINTS.length]));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  return mesh;
+}

@@ -58,7 +58,8 @@ import {
   BAZAAR_EAST_X,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
-import { createMonkeyNPC } from './animals.js';
+import { createMonkeyNPC, createCattleHerd, createDogPack } from './animals.js';
+import { createZoneManager } from './zoneManager.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun } from './npcRoutines.js';
 import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
 
@@ -899,6 +900,7 @@ async function main() {
   let deferredContentLoaded = false;
   let buildingFootprints = []; // tools/collider-audit.js / tools/trolley-drive-test.js — see loadDeferredContent()
   let preMergeColliderCount = 0; // item 1d — see loadDeferredContent()
+  let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
@@ -1059,6 +1061,43 @@ async function main() {
     // matched to a building's coordinates anymore; if a building moves, this
     // picks up the new position automatically because it reads the same mesh.
     initStaticColliders(scene);
+
+    // Zone streaming (src/zoneManager.js, CLAUDE.md's draw-call-budget plan) — the
+    // first real zone-streamed content: a stationary cattle herd + a few street
+    // dogs (docs/FINISH_LINE.md's Animals line), built only while the player is
+    // actually near the field, torn down again once they leave. Placed in the open
+    // margin between the crop rows and the dirt track's north side (src/field.js —
+    // crops span roughly x:[-33,73] z:[-58,18], the track's own north edge sits at
+    // z=25), clear of both. Decorative/static only this pass (no roaming, no
+    // vehicle-blocking collision) — a real moving herd is a bigger feature than
+    // this pass's "recognisable, present in the world" bar.
+    zoneManager = createZoneManager(scene);
+    zoneManager.register('field_animals', {
+      x: FIELD_CENTER.x,
+      z: 21,
+      buildRadius: 45,
+      build: () => {
+        const group = new THREE.Group();
+        group.name = 'zone_field_animals';
+        group.add(
+          createCattleHerd([
+            { x: -5, z: 20, rotationY: 0.3 },
+            { x: 3, z: 22, rotationY: -0.6 },
+            { x: 12, z: 19.5, rotationY: 1.2, buffalo: true },
+            { x: 20, z: 21.5, rotationY: -1.0 },
+            { x: 28, z: 20, rotationY: 0.5, buffalo: true },
+            { x: 36, z: 22, rotationY: -0.2 },
+          ])
+        );
+        group.add(
+          createDogPack([
+            { x: 8, z: 19, rotationY: 1.8 },
+            { x: 24, z: 22.5, rotationY: -1.4 },
+          ])
+        );
+        return group;
+      },
+    });
   }
 
   const audio = new AudioEngine();
@@ -1880,6 +1919,7 @@ async function main() {
       // doesn't fade with a wide third-person zoom.
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
+      zoneManager.update(listenerPos.x, listenerPos.z);
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({
