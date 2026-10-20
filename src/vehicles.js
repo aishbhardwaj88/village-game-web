@@ -716,11 +716,27 @@ function buildCartGroup() {
   const platform = pbox(C.platformW, 0.08, C.platformLen, V.timber, 0.9);
   platform.position.set(0, C.floorY - 0.04, 0);
   bodyPivot.add(platform);
-  // A low rim so it reads as a platform, not a floating plank.
+  // Step H (vehicle look pass) — raised to a real slatted side rail (was a 0.12m
+  // lip that read as a flat plank in-game, not the boxed timber bed every
+  // reference photo shows). Same V.timber/timberDark bucket, so the extra boxes
+  // fold into the existing merged draw call at zero added cost.
+  const RAIL_H = 0.38;
   for (const side of [-1, 1]) {
-    const rim = pbox(0.05, 0.12, C.platformLen, V.timber, 0.9);
-    rim.position.set((side * C.platformW) / 2, C.floorY + 0.02, 0);
+    const rim = pbox(0.05, RAIL_H, C.platformLen, V.timber, 0.9);
+    rim.position.set((side * C.platformW) / 2, C.floorY + RAIL_H / 2 - 0.04, 0);
     bodyPivot.add(rim);
+    // Fence-post uprights along the rail, like the reference's vertical slats.
+    for (const postZ of [-C.platformLen / 2 + 0.15, 0, C.platformLen / 2 - 0.15]) {
+      const post = pbox(0.07, RAIL_H + 0.1, 0.07, V.timberDark, 0.9);
+      post.position.set((side * C.platformW) / 2, C.floorY + RAIL_H / 2, postZ);
+      bodyPivot.add(post);
+    }
+  }
+  // Front and back end-boards closing the bed into a full box.
+  for (const endZ of [-1, 1]) {
+    const end = pbox(C.platformW - 0.1, RAIL_H, 0.05, V.timber, 0.9);
+    end.position.set(0, C.floorY + RAIL_H / 2 - 0.04, (endZ * C.platformLen) / 2);
+    bodyPivot.add(end);
   }
 
   // Task 3: raised to rest across the bullocks' shoulders (was at 0.8m — well below
