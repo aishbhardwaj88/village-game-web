@@ -32,7 +32,7 @@
 - [ ] All 10 side jobs in docs/MISSIONS_PLAN.md section 3 playable start to end with real input, each with its own NPC, dialogue and reward
 - [ ] Side jobs are discovered diegetically (postcards, peepal posters, sound), never shown as a quest list
 - [ ] Pocket money earned from side jobs can be spent at the banta shop, kulfiwala and chaat thela
-- [x] School donation board present, amount read from public/data/donations.json — docs/shots/donation-board-2026-10-20T19-31-15-107Z/donation_board.png (mounted on the classroom's real exterior wall, English-first + Hindi beneath, "₹0 raised" read live from the JSON file, src/props.js's createDonationBoard())
+- [x] School donation board present, amount read from public/data/donations.json — docs/shots/normal-mode-donation-board-2026-10-20T20-13-00/donation_board_normal_mode.jpg (real normal-play screenshot, no ?dev=1, real walked-to position — supersedes the original dev-mode shot at docs/shots/donation-board-2026-10-20T19-31-15-107Z/, kept for reference only, not used as proof): "Every rupee goes to village schools" + Hindi beneath + "₹0 raised" all legible, src/props.js's createDonationBoard()
 - [ ] Zero tasks at any of the four faith buildings; no stealing; nothing dangerous
 ## Final gate
 - [ ] A fresh subagent with no prior context plays all 8 missions with real input, then judges 20 screenshots against this file and art-direction.md, and lists every failure. Zero failures.
