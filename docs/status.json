@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-20T15:30:00.000Z",
+  "timestamp": "2026-10-21T02:00:00.000Z",
   "drawCalls": 136,
   "drawCallLimit": 140,
   "triangles": 108543,
@@ -8,7 +8,7 @@
   "assetsLimitMB": 40,
   "lastBuild": "pass",
   "lastValidator": "pass",
-  "lastRegression": "pass (21/22, draw-calls-under-130 is a pre-existing known early-warning miss, real ceiling is 140 - re-saved as the new baseline after 3 clean full-suite runs in a row)",
+  "lastRegression": "pass (21/22, draw-calls-under-130 is a pre-existing known early-warning miss, real ceiling is 140)",
   "lastCheckBudget": "pass",
-  "notes": "NOT COMPLETE (roughly 20%). docs/GAME_COMPLETE.md is superseded; docs/FINISH_LINE.md is the one real, locked definition of done (0/21 ticked - nothing honestly meets a full compound item yet, even though real progress was made this session). Dashboard progress bar reads FINISH_LINE.md. Three commits landed this session: (1) the real trolley playtest bug - root cause was otherVehicleBoxes() never carrying any box for the trolley at all - fixed, plus a second real bug found by sustained real-input testing (the trolley's yaw-spring had no mechanical hitch-swing limit and could jackknife into the tractor during a long unsteered reverse) - fixed with a 45-degree clamp. Permanent real-keyboard-input regression tests added (no teleports), verified clean across 3+ full-suite runs before saving the new baseline. (2) Maa/Dada/postman/halwai are now real code-built characters (src/characters.js, 1 draw call each) replacing capsules, placed in-game, screenshotted both standalone (people.html) and in real gameplay, asset-slot-registered for a future Tripo swap. NEEDS_YOU.md has the CODE-vs-TRIPO question with real Tripo API pricing, and the dashboard has a Tripo key box. (3) Step 4A: the 6 Tripo judgement staging boxes (tripo_bush/tree_neem/tree_peepal/mother/tractor/halwai_kiosk) plus their floating labels were showing to every real player, unconditionally - now gated behind ?dev=1 like every other dev-only hook; the magenta ceramic_pot test box was checked and confirmed already-hidden in practice (not assumed). Remaining capsules (child, teacher, sister, pitaji) and the monkey were not touched this session - out of this pass's scope. Nothing in FINISH_LINE.md's World/Look/Vehicles/Story/Shell sections has been independently re-verified this session; do not assume those are still accurate without checking. Step 4B (signboard legibility) and the rest of the work order are still open."
+  "notes": "NOT COMPLETE (roughly 20%). FINISH_LINE.md: 0/21 ticked. People decision: TRIPO (code people read as peg dolls) - 4 code people kept only as stand-ins, no more built in code. Tripo batch 1 fully prepped (docs/tripo-batch-1.md): 8 items, 315 credits, verified via tools/tripo_batch.py --dry-run (real flag, zero network calls). Zero Tripo API calls made - script refuses to run for real against the still-fake test key in .env. Bicycle has no reference image anywhere (flagged in NEEDS_YOU). Now working the main work order B-H (signboards, textures, full MAP.md world, trees/vegetation, animals, M6/M8 redo, vehicle look pass) continuously - see git log for what's actually landed, this file is updated each cycle but git history is the ground truth."
 }
