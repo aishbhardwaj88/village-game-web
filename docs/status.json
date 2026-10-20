@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T02:00:00.000Z",
+  "timestamp": "2026-10-20T16:50:00.000Z",
   "drawCalls": 136,
   "drawCallLimit": 140,
   "triangles": 108543,
@@ -10,5 +10,5 @@
   "lastValidator": "pass",
   "lastRegression": "pass (21/22, draw-calls-under-130 is a pre-existing known early-warning miss, real ceiling is 140)",
   "lastCheckBudget": "pass",
-  "notes": "NOT COMPLETE (roughly 20%). FINISH_LINE.md: 0/21 ticked. People decision: TRIPO (code people read as peg dolls) - 4 code people kept only as stand-ins, no more built in code. Tripo batch 1 fully prepped (docs/tripo-batch-1.md): 8 items, 315 credits, verified via tools/tripo_batch.py --dry-run (real flag, zero network calls). Zero Tripo API calls made - script refuses to run for real against the still-fake test key in .env. Bicycle has no reference image anywhere (flagged in NEEDS_YOU). Now working the main work order B-H (signboards, textures, full MAP.md world, trees/vegetation, animals, M6/M8 redo, vehicle look pass) continuously - see git log for what's actually landed, this file is updated each cycle but git history is the ground truth."
+  "notes": "NOT COMPLETE. FINISH_LINE.md: 2/29 ticked (signboard legibility at 8m, no debug/staging visuals in normal play - both with fresh screenshot proof this cycle). Found and fixed two real signboard occlusion bugs (hero tea stall + chowk tea stall signs sat too close to their own kiosk roofs, hiding text at real 8m viewing distance) - see tools/signboard-8m-check.mjs. A new locked doc appeared this session, docs/MISSIONS_PLAN.md, adding a large 'Side jobs and free roam' post-story scope (10 side jobs, notebook map, diegetic discovery) - its checklist is now copied into FINISH_LINE.md per its own instruction; the actual build-out is not started. Continuing the main B-H work order (textures/buildings next). Tripo: zero API calls made, batch 1 fully prepped (docs/tripo-batch-1.md), waiting on a real API key (not before tomorrow per instruction)."
 }
