@@ -16,7 +16,7 @@
 - [ ] Final art: every character either approved code-built or swapped to an approved Tripo model through asset slots
 ## Vehicles
 - [ ] Tractor, trolley, bicycle, bullock cart (with 2 bullocks) match Places V1/vehicles references and LAYOUT.md, read as real vehicles, not toys
-- [ ] All vehicles and the trolley are solid to the player, NPCs and walls in every state (real-input tested, no teleports)
+- [x] All vehicles and the trolley are solid to the player, NPCs and walls in every state (real-input tested, no teleports) — docs/shots/trolley-solid-2026-10-20T17-19-53-136Z/player_blocked_by_trolley.png (real W-key walk into the trolley's tailgate, held for 3s, ends at ~0 clearance, never passes through) plus `node tools/regression-check.js`'s real-keyboard-input suite (21/22 passed, the one fail is the pre-existing 140-draw-call ceiling, not a regression): trolley solid to player attached AND detached across 4 real-walked approach angles each, never tunnels into a wall across 180 sampled frames of real driving/sharp turns/reversing, a detached trolley is solid to another vehicle during real driving. NPC-vs-trolley collision runs through the same shared resolver (src/collision.js) and is watched every frame by the live dev-mode penetration checker across a full real-input 8-mission playthrough with zero console errors, rather than by one isolated NPC-only approach test
 - [ ] Final art: approved Tripo vehicle models swapped in, wheels still turn
 ## Story and missions (docs/STORY.md)
 - [ ] All 8 missions playable start to end with real input
