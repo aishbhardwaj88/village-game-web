@@ -20,7 +20,7 @@
 - [ ] Final art: approved Tripo vehicle models swapped in, wheels still turn
 ## Story and missions (docs/STORY.md)
 - [ ] All 8 missions playable start to end with real input
-- [ ] M6 monkey chase goes across rooftops and lanes as written
+- [x] M6 monkey chase goes across rooftops and lanes as written — docs/shots/m6-rooftop-chase-2026-10-20T17-45-37-999Z/monkey_on_roof_wide.png (the monkey standing correctly on the darzi unit's real roof slab, feet planted on the surface, not floating or buried) plus `node tools/regression-check.js`'s "all eight missions complete end to end" real-playthrough check still passing after the route change (21/22, no regressions) — src/main.js's startMonkeyChase now sends the monkey up onto bazaar unit 3's (the darzi's) own roof right where the snatch happens, east along the roofline, back down to the lane, then to the existing chowk recovery point, via a new optional per-waypoint `y` in src/npcRoutines.js's createWaypointRun
 - [ ] M8 ending: the whole family including Dada and Dadi together on the roof at sunset, birthday moment, closing lines, then credits
 ## Shell
 - [ ] Title, new game/continue, settings (quality, volume, controls) reachable from title and pause, loading screen, HUD, ending, credits
