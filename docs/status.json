@@ -1,14 +1,13 @@
 {
-  "timestamp": "2026-10-20T16:50:00.000Z",
-  "drawCalls": 136,
+  "timestamp": "2026-10-20T17:10:00.000Z",
+  "drawCalls": 140,
   "drawCallLimit": 140,
-  "triangles": 108543,
+  "triangles": 89615,
   "triangleLimit": 400000,
-  "assetsMB": 4.72,
+  "assetsMB": 5.63,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
-  "lastValidator": "pass",
-  "lastRegression": "pass (21/22, draw-calls-under-130 is a pre-existing known early-warning miss, real ceiling is 140)",
+  "lastValidator": "pass (13/13)",
   "lastCheckBudget": "pass",
-  "notes": "NOT COMPLETE. FINISH_LINE.md: 2/29 ticked (signboard legibility at 8m, no debug/staging visuals in normal play - both with fresh screenshot proof this cycle). Found and fixed two real signboard occlusion bugs (hero tea stall + chowk tea stall signs sat too close to their own kiosk roofs, hiding text at real 8m viewing distance) - see tools/signboard-8m-check.mjs. A new locked doc appeared this session, docs/MISSIONS_PLAN.md, adding a large 'Side jobs and free roam' post-story scope (10 side jobs, notebook map, diegetic discovery) - its checklist is now copied into FINISH_LINE.md per its own instruction; the actual build-out is not started. Continuing the main B-H work order (textures/buildings next). Tripo: zero API calls made, batch 1 fully prepped (docs/tripo-batch-1.md), waiting on a real API key (not before tomorrow per instruction)."
+  "notes": "NOT COMPLETE. FINISH_LINE.md: 2/29 ticked so far (signboard legibility, no debug visuals). Step C (textures) made real progress this cycle: added 4 new CC0 textures (tin, brick, jute, tarpaulin - all picked specifically for a clean/cared-for look, never damaged), applied to the bazaar's own corrugated-tin awning (was flat grey 'metal' the whole time), one background house's roof, the chowk chabutra (was tinted terracotta, doc comment already called it brick), and the wheat sacks (was flat 'wood'). IMPORTANT: draw calls are now at exactly 140/140, the hard ceiling - zero headroom left. Any future addition (Step D's world build-out, more characters, more props) MUST either find savings elsewhere first (more merging/instancing) or be designed as zero-extra-draw-call from the start (share an existing material bucket). Tarpaulin texture is registered but not yet applied anywhere - no natural fit found this pass. Roof-life props (water tanks/clotheslines/wires) and window/door depth from Step C's own brief are not done - deferred given the draw-call ceiling. A new locked doc, docs/MISSIONS_PLAN.md, added a large 'Side jobs and free roam' scope this session; its checklist is copied into FINISH_LINE.md, build-out not started. Tripo: zero API calls made, batch 1 fully prepped, waiting on a real key."
 }
