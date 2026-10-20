@@ -833,6 +833,12 @@ async function main() {
       // this standalone judgement box has no such constraint, so it keeps the simpler
       // convention rather than mixing two different axis-swap rules in one test lineup).
       { name: 'tripo_halwai_kiosk', x: -30, dims: { w: 5.5, h: 3.5, d: 4.5 }, color: 0xd8b36a, rotationY: 0 },
+      // Added per the art director's Tripo-trees answer (2026-10-20, no Sketchfab
+      // account — trees come from Tripo via these judgement slots instead): a 7th
+      // slot for the mango tree (M7's baagh, src/baagh.js), sized to roughly match
+      // src/trees.js's buildMangoTree() (~3.6-4.1m tall, rounder/lower canopy than
+      // the neem/peepal above).
+      { name: 'tripo_tree_mango', x: -23, dims: { w: 3.2, h: 4.2, d: 3.2 }, color: 0x4a7a3a, rotationY: 0 },
     ];
     for (const s of TRIPO_STAGING_SLOTS) {
       const placeholder = new THREE.Mesh(new THREE.BoxGeometry(s.dims.w, s.dims.h, s.dims.d), new THREE.MeshStandardMaterial({ color: s.color, roughness: 0.85 }));

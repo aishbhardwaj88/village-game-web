@@ -12,7 +12,7 @@ any real API call while `.env`'s `TRIPO_API_KEY` is empty or still looks like a
 placeholder (see `is_probably_real_key()`) — confirmed by trying a real (non-dry-run)
 call against the current fake test key, which it correctly refused.
 
-## The 8 items
+## The 9 items
 
 | # | Slot name | Output file | Reference image(s) used | Views | Rig? | Credits |
 |---|---|---|---|---|---|---|
@@ -24,8 +24,9 @@ call against the current fake test key, which it correctly refused.
 | 6 | `dada` | `dada.glb` | `Characters V1/people/family1/family1_grandfather.jpg` — only reference available (front only) | front only (single-image equivalent) | yes | 30 + 25 |
 | 7 | `postman` | `postman.glb` | `Characters V1/people/villagers/3d_inputs_v2_tucked/` — already had a real 4-view set prepared in an earlier session | front, left, back, right | yes | 30 + 25 |
 | 8 | `halwai_kiosk` | `halwai_kiosk.glb` | `Places V1/halwai/MAIN_halwai_elevations.png` (2×2 labelled grid, cropped) | front, left (side-from-left), back | no | 30 |
+| 9 | `bike` | `bike.glb` | `Characters V1/props/postman_cycle.png` — two bikes side by side in one sheet, cropped into two separate views | front, left (two renders of the same bicycle, not a true front/side pair, but the best this sheet gives) | no | 30 |
 
-**Total: 315 credits = $3.15 (about Rs. 268 at 1 USD = 85.14 INR).** Confirmed by
+**Total: 345 credits = $3.45 (about Rs. 294 at 1 USD = 85.14 INR).** Confirmed by
 `tools/tripo_batch.py --dry-run` itself, not hand math — see "Dry-run output" below.
 
 Settings used for every item: `--texstd` (standard texture quality, the cheaper
@@ -45,15 +46,18 @@ is explicit that reference images must show "a clean A-pose with EMPTY HANDS (pr
 separate models)". `mother_real.png` is the clean single reference that actually
 matches that rule, so Maa is a single-image generation, not multiview.
 
-## A real gap: the bicycle has no reference image at all
+## The bicycle reference, resolved (2026-10-20)
 
-`Places V1/vehicles/bike/` exists but is **empty** — no photo or render reference was
-ever produced for the bicycle, unlike every other vehicle. Generating from our own
-code-built placeholder would just feed Tripo a flat-coloured, toy-proportioned shape
-with no real material/surface information — it couldn't produce anything more "real"
-than what's already in the game, defeating the point. **Left out of this batch.**
-Logged in `docs/NEEDS_YOU.md` as its own item, asking for a reference image (a real
-photo or a clean render, front/side preferred) before a bicycle batch can be planned.
+`Places V1/vehicles/bike/` was empty — flagged as a gap in `docs/NEEDS_YOU.md`. The
+art director's answer: it wasn't actually missing, `Characters V1/props/
+postman_cycle.png` is a real bicycle reference. Checked `Characters V1/props/
+milkman_bike.png` too, which the same answer suggested as a second view — but it's
+actually a **motorcycle** (engine, exhaust, headlamp), not a pedal bicycle, and this
+game's bike preset (`src/vehicles.js` — no engine, 2.0×0.7×1.1m) is a plain cycle.
+Mixing a motorcycle image into a bicycle's multiview set would confuse the
+reconstruction, so it was **not** used — `postman_cycle.png` already shows two
+separate renders of the same bicycle in one sheet, cropped into
+`Places V1/vehicles/bike/3d_inputs/bike_{front,left}.png`, which is enough on its own.
 
 ## Script fixes made to `tools/tripo_batch.py`
 
@@ -82,13 +86,13 @@ funnels through refuses outright if `--dry-run` is set, as a hard backstop) and
 or still looks like a placeholder — the actual code-level guarantee behind "zero Tripo
 API calls until a real key exists," not just a promise to remember.
 
-## Dry-run output (captured verbatim, 2026-10-21 — zero credits spent, zero network calls)
+## Dry-run output (captured verbatim, 2026-10-20 — zero credits spent, zero network calls)
 
 ```
-$ python3 tools/tripo_batch.py tractor trolley cart bullock halwai_kiosk --texstd --dry-run
+$ python3 tools/tripo_batch.py tractor trolley cart bullock halwai_kiosk bike --texstd --dry-run
 --dry-run: no network calls will be made, no credits will be spent, no key is required.
 ...
-=== DRY RUN TOTAL: 150 credits across 5 item(s) ===
+=== DRY RUN TOTAL: 180 credits across 6 item(s) ===
 
 $ python3 tools/tripo_batch.py maa dada postman --texstd --rig --dry-run
 --dry-run: no network calls will be made, no credits will be spent, no key is required.
@@ -96,14 +100,14 @@ $ python3 tools/tripo_batch.py maa dada postman --texstd --rig --dry-run
 === DRY RUN TOTAL: 165 credits across 3 item(s) ===
 ```
 
-150 + 165 = **315 credits total**, under the 400-credit cap.
+180 + 165 = **345 credits total**, under the 400-credit cap.
 
 ## Running it for real, once a real key exists
 
 Two separate commands (rigging only makes sense for the 3 people):
 
 ```
-python3 tools/tripo_batch.py tractor trolley cart bullock halwai_kiosk --texstd
+python3 tools/tripo_batch.py tractor trolley cart bullock halwai_kiosk bike --texstd
 python3 tools/tripo_batch.py maa dada postman --texstd --rig
 ```
 

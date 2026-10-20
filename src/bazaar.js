@@ -41,7 +41,12 @@ export const BAZAAR_UNITS = [
   { n: 5, trade: 'barber', hi: 'नाई की दुकान', en: 'Barber Shop', shutter: 0x9fc0d4, wallTint: PALETTE.fadedBlue, wallHeight: 4.0 },
   { n: 6, trade: 'mobile', hi: 'मोबाइल और साइबर', en: 'Mobile and Cyber', shutter: 0x6b6f3a, wallTint: PALETTE.schoolYellow, wallHeight: 3.85 },
   { n: 7, trade: 'bangle', hi: 'मनिहारी की दुकान', en: 'Bangle Shop', shutter: 0x8a8a86, wallTint: PALETTE.greyGreen, wallHeight: 4.1 },
-  { n: 8, trade: 'sweet', hi: 'मिष्ठान भंडार', en: 'Sweet Shop', shutter: 0x8a2e2e, wallTint: PALETTE.cream, wallHeight: 3.95 },
+  // Converted from a second sweet shop (docs/NEEDS_YOU.md — "two sweet shops" was
+  // one too many for a small village; the lane halwai stays, this one became a
+  // puncture/cycle repair shop instead, 2026-10-20) — keeps the same cream wall
+  // tint (no new texture asset) with a worn-metal shutter colour instead of the
+  // old mithai red.
+  { n: 8, trade: 'puncture', hi: 'पंचर और साइकिल मरम्मत', en: 'Puncture and Cycle Repair', shutter: 0x5a5a52, wallTint: PALETTE.cream, wallHeight: 3.95 },
 ];
 
 /** Unit centre X, index 0-7. */
@@ -600,13 +605,27 @@ export function buildBazaarInteriors() {
           pushTorus(0.09, 0.015, rx, 1.15 + i * 0.065, backInnerZ + 0.25, bangleTints[(rod + i) % bangleTints.length]);
         }
       }
-    } else if (unit.trade === 'sweet') {
-      addShelving(cx, wood);
-      // Trays/tins of sweets — short wide cylinders, warm mithai tints, on the
-      // counter and the shelf.
-      const sweetTints = [0xd9922f, 0xc9701f, 0xe0b24a, 0xb85a1f];
-      for (let i = 0; i < 4; i++) pushCyl(0.16, 0.16, 0.14, left + i * 0.55, 1.07, counterZ - 0.1, sweetTints[i % sweetTints.length]);
-      for (let i = 0; i < 4; i++) pushCyl(0.14, 0.14, 0.12, cx - 1.2 + i * 0.7, 2.11, backInnerZ + 0.1, sweetTints[(i + 2) % sweetTints.length]);
+    } else if (unit.trade === 'puncture') {
+      // Converted from a second sweet shop (docs/NEEDS_YOU.md). Three signature
+      // props, all through the same three zero-extra-draw-call buckets every other
+      // unit's interior already shares (pushBox/pushCyl/pushTorus below merge into
+      // one mesh per category across all 8 units): a puncture tub with a tyre
+      // resting in it, a standing hand pump, and a cycle flipped upside down on its
+      // seat/handlebars for repair (wheels up) — the universal roadside-mechanic
+      // tableau.
+      pushCyl(0.32, 0.36, 0.3, cx - 1.1, 0.15, counterZ + 1.0, 0x6a6a62); // the tub
+      pushTorus(0.26, 0.055, cx - 1.1, 0.32, counterZ + 1.0, 0x1c1c1c); // tyre resting in the tub (face-up, default rotX)
+      pushCyl(0.045, 0.06, 0.05, cx - 1.1, 0.33, counterZ + 1.0, 0x8a8278); // tub base ring, under the tyre
+      pushCyl(0.03, 0.045, 0.72, cx + 1.1, 0.36, backInnerZ + 0.1, 0x8a1f1f); // standing hand pump, barrel
+      pushBox(0.22, 0.04, 0.05, cx + 1.1, 0.7, backInnerZ + 0.1, 0x2a2a2a); // pump handle
+      // Upside-down cycle on the back shelf: frame bar low, two wheels standing
+      // above it (same face-on torus orientation src/bazaar.js's bangle rods use).
+      pushBox(0.06, 0.06, 1.0, cx, 1.2, backInnerZ + 0.1, 0x2a3a42);
+      pushTorus(0.26, 0.05, cx - 0.5, 1.55, backInnerZ + 0.1, 0x1c1c1c);
+      pushTorus(0.26, 0.05, cx + 0.5, 1.55, backInnerZ + 0.1, 0x1c1c1c);
+      pushBox(0.05, 0.05, 0.35, cx - 0.5, 1.37, backInnerZ + 0.1, 0x3a3a3a);
+      pushBox(0.05, 0.05, 0.35, cx + 0.5, 1.37, backInnerZ + 0.1, 0x3a3a3a);
+      pushBox(0.22, 0.05, 0.14, cx, 1.02, backInnerZ + 0.1, 0x1a1a1a); // seat, resting on the (implicit) bench below
     }
   });
 
