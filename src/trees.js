@@ -290,6 +290,81 @@ const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBa
 const TREE_MATERIAL = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
 TREE_MATERIAL.name = 'tree_foliage';
 
+/** Alpha-cut leaf-sprig texture (white leaves so per-vertex colour tints them). */
+function makeLeafTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const rand = mulberry32(77);
+  for (let i = 0; i < 16; i++) {
+    const x = 14 + rand() * 100, y = 14 + rand() * 100, a = rand() * Math.PI;
+    const l = 15 + rand() * 9, w = 4.5 + rand() * 2.5;
+    const v = Math.floor(205 + rand() * 50);
+    g.fillStyle = `rgb(${v},${v},${v})`;
+    g.beginPath();
+    g.ellipse(x, y, l, w, a, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = 'rgba(120,120,120,1)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(x - Math.cos(a) * l, y - Math.sin(a) * l);
+    g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l);
+    g.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+let LEAF_MATERIAL = null;
+function leafMaterial() {
+  if (!LEAF_MATERIAL) {
+    LEAF_MATERIAL = new THREE.MeshStandardMaterial({ map: makeLeafTexture(), vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 });
+    LEAF_MATERIAL.name = 'tree_leaf_cards';
+  }
+  return LEAF_MATERIAL;
+}
+
+/** Scatter alpha-cut leaf cards over a tree's canopy surface (vertices that are green, not bark). */
+function buildLeafCards(geo, seed) {
+  const pos = geo.attributes.position, col = geo.attributes.color, nor = geo.attributes.normal;
+  const rand = mulberry32(seed * 31 + 5);
+  const P = [], U = [], C = [], I = [];
+  const n = new THREE.Vector3(), t1 = new THREE.Vector3(), t2 = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+  let q = 0;
+  for (let i = 0; i < pos.count; i += 16) {
+    const r = col.getX(i), g = col.getY(i), b = col.getZ(i);
+    if (g < r * 1.05) continue; // bark
+    n.set(nor.getX(i), nor.getY(i), nor.getZ(i)).normalize();
+    n.y = n.y * 0.6 + 0.25; n.normalize(); // lean cards up so they catch the sun
+    t1.crossVectors(n, up);
+    if (t1.lengthSq() < 1e-4) t1.set(1, 0, 0);
+    t1.normalize();
+    t2.crossVectors(n, t1).normalize();
+    const ang = rand() * Math.PI * 2, ca = Math.cos(ang), sa = Math.sin(ang);
+    const ax = t1.clone().multiplyScalar(ca).addScaledVector(t2, sa);
+    const ay = t2.clone().multiplyScalar(ca).addScaledVector(t1, -sa);
+    const s = 0.38 + rand() * 0.22;
+    const cx = pos.getX(i) + n.x * 0.06, cy = pos.getY(i) + n.y * 0.06, cz = pos.getZ(i) + n.z * 0.06;
+    const k = 0.85 + rand() * 0.35;
+    for (const [u, v] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      P.push(cx + (ax.x * u + ay.x * v) * s, cy + (ax.y * u + ay.y * v) * s, cz + (ax.z * u + ay.z * v) * s);
+      U.push((u + 1) / 2, (v + 1) / 2);
+      C.push(Math.min(1, r * k * 1.15), Math.min(1, g * k * 1.15), Math.min(1, b * k));
+    }
+    I.push(q, q + 1, q + 2, q, q + 2, q + 3);
+    q += 4;
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+  out.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2));
+  out.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
+  out.setIndex(I);
+  out.computeVertexNormals();
+  return out;
+}
+
 export function buildTrees(placements) {
   const material = TREE_MATERIAL;
   const group = new THREE.Group();
@@ -299,6 +374,11 @@ export function buildTrees(placements) {
     if (!builder) continue;
     const tree = builder(p.seed ?? 0);
     tree.children[0].material = material;
+    const cards = new THREE.Mesh(buildLeafCards(tree.children[0].geometry, p.seed ?? 0), leafMaterial());
+    cards.name = 'tree_leaf_cards';
+    cards.castShadow = true;
+    cards.receiveShadow = true;
+    tree.add(cards);
     tree.position.set(p.x, p.y ?? 0, p.z);
     tree.rotation.y = p.rotationY || 0;
     if (p.scale) tree.scale.setScalar(p.scale); // e.g. the small neem in the house courtyard's brick planter

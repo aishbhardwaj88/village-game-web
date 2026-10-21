@@ -219,7 +219,8 @@ async function main() {
         // roof-like fixture (one background house's roof, the bazaar's own
         // corrugated-tin awning), correctly elevated above the ground by
         // design, same reasoning as 'signboard' above.
-        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin'];
+        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards'];
+        // tree_leaf_cards: alpha-cut canopy foliage, airborne by nature; its trunks (tree_foliage bucket) are checked and grounded.
         const mergedGroup = findByName(scene, 'village_static_merged');
         if (mergedGroup) {
           for (const child of mergedGroup.children) {

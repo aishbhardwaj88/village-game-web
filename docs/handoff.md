@@ -28,6 +28,11 @@ Next: distance-hide Blender hero buildings, halwai/flower-stall/post-office comp
 ---
 
 # Handoff log
+**2026-10-22 (cycle 6):** Trees now carry alpha-cut leaf cards (procedural leaf-sprig texture, one extra draw call) over the canopy blobs in src/trees.js; validator exempts `tree_leaf_cards` from the floating check. Validator 15/15, regression 22/22. Inbox empty. Push still fails (no git login).
+Next: Blender tree rebuild with real branching + LODs, wind sway, more kachcha variants, PBR on lanes/canal.
+
+---
+
 **2026-10-21 (cycle 6):** Second kachcha mud homestead (same Blender model turned 180 deg, own cattle in its shed, own colliders) at (-64,-56) south-west of the first (src/scenery.js, shot docs/shots/kachcha2/k2.png). Validator all passed. Push still fails (no git login), live site not updated. Inbox empty.
 Regression 22/22: the earlier "player can walk" fail was headless slowness (~3 fps), not a real bug; the check now holds W for 6 s.
 Next: Blender tree rebuild, PBR on lanes/canal, animals models, lane life.
