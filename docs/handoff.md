@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 14):** No live-game change. Inbox empty. `git push` still fails (no GitHub login), so I stopped rather than stack more unpublished work (2 commits waiting).
+Next: once push works, free hero-zone draw calls, real cattle models, Blender tree rebuild.
+
+---
+
 **2026-10-22 (cycle 13):** No live-game change. Inbox empty; birds, smoke, hens, cattle, kids and walkers already in. `git push` still fails (no GitHub login), 1 commit waiting.
 Next: once push works, free hero-zone draw calls, real cattle models, Blender tree rebuild.
 
