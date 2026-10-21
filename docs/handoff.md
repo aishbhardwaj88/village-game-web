@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 7):** Butterflies fluttering over the field and homestead edges (src/ambient.js, one Points draw call, shown only within 60 m). Validator 15/15, regression 22/22. Inbox empty.
+Next: cattle in the sheds, Blender tree rebuild, PBR on lanes/canal, kids playing in lanes.
+
+---
+
 **2026-10-22 (cycle 6):** Hens/crows pecking about the two kachcha homesteads (src/ambient.js, one Points draw call, shown only within 45 m). Validator 15/15, regression 22/22. Inbox empty.
 Next: cattle in the sheds, Blender tree rebuild, PBR on lanes/canal, kids playing in lanes.
 

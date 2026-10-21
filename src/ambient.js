@@ -84,9 +84,33 @@ export function createAmbientLife() {
   hens.name = 'ambient_hens';
   hens.frustumCulled = false;
 
+  // --- butterflies fluttering over the field and homestead edges (one Points draw call, shown only within 60 m)
+  const flyTex = spriteTexture((ctx) => {
+    ctx.fillStyle = '#e8a43a';
+    ctx.beginPath();
+    ctx.ellipse(20, 28, 14, 10, -0.5, 0, Math.PI * 2);
+    ctx.ellipse(44, 28, 14, 10, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4a2c14';
+    ctx.fillRect(30, 18, 4, 22);
+  });
+  const patches = [
+    { x: 20, z: -10, n: 5 },
+    { x: -40, z: -30, n: 4 },
+    { x: 60, z: -35, n: 4 },
+  ];
+  const BN = patches.reduce((a, f) => a + f.n, 0);
+  const flyPos = new Float32Array(BN * 3);
+  const flyGeo = new THREE.BufferGeometry();
+  flyGeo.setAttribute('position', new THREE.BufferAttribute(flyPos, 3));
+  const flyMat = new THREE.PointsMaterial({ map: flyTex, size: 0.45, transparent: true, depthWrite: false, sizeAttenuation: true, alphaTest: 0.05 });
+  const flies = new THREE.Points(flyGeo, flyMat);
+  flies.name = 'ambient_butterflies';
+  flies.frustumCulled = false;
+
   const group = new THREE.Group();
   group.name = 'ambient_life';
-  group.add(birds, smoke, hens);
+  group.add(birds, smoke, hens, flies);
   let t = 0;
   function update(dt, px, pz) {
     t += dt;
@@ -110,6 +134,19 @@ export function createAmbientLife() {
         }
       });
       henGeo.attributes.position.needsUpdate = true;
+    }
+    flies.visible = patches.some((f) => Math.abs(f.x - px) < 60 && Math.abs(f.z - pz) < 60);
+    if (flies.visible) {
+      let k = 0;
+      patches.forEach((f, fi) => {
+        for (let i = 0; i < f.n; i++, k++) {
+          const ph = fi * 5 + i * 1.7;
+          flyPos[k * 3] = f.x + Math.sin(t * 0.3 + ph) * 7 + Math.sin(t * 1.1 + ph * 2) * 0.6;
+          flyPos[k * 3 + 1] = 1.1 + Math.sin(t * 2.2 + ph) * 0.35 + (i % 3) * 0.3;
+          flyPos[k * 3 + 2] = f.z + Math.cos(t * 0.25 + ph * 1.4) * 6 + Math.cos(t * 1.3 + ph) * 0.6;
+        }
+      });
+      flyGeo.attributes.position.needsUpdate = true;
     }
     const near = sources.some((s) => Math.abs(s.x - px) < 90 && Math.abs(s.z - pz) < 90);
     smoke.visible = near;
