@@ -453,6 +453,7 @@ function buildHouse(kit) {
   solid(3.7, 2.2, 3.7, 'wood', 7.1, -5.0, 0x5a4636); // cattle shed (whole footprint)
   solid(1.8, 2.25, 2.2, 'wood', 7.0, -1.8, 0x5a4636); // jhoola frame
   solid(2.0, 0.55, 2.0, 'brick', 7.0, 3.4, 0xa4563a); // tree planter
+  addWallBox(houseYardOld, 2.46, 3.2, 11.6, 'plaster', { x: cx - 7.88, y: 1.6, z: cz - 1.2 }, seedBase + 41, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH }); // west wing of rooms enclosing the aangan (build_house.py build_west_wing: x[-9.11,-6.8] z[-7,4.6]); addWallBox so it is a real tagged collider
   mergeGroupByMaterial(houseYardOld);
   group.add(houseYardOld);
 

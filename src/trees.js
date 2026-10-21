@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PALETTE, darken } from './village.js';
 
 /**
@@ -24,8 +24,8 @@ import { PALETTE, darken } from './village.js';
  * angle with no special-case shader work).
  */
 
-const BARK_COLOR = darken(PALETTE.woodTrim, 0.75);
-const BARK_COLOR_LIGHT = darken(PALETTE.woodTrim, 0.9);
+const BARK_COLOR = 0x3b2b22; // dark, damp-looking trunk (art review 2: darker trunks)
+const BARK_COLOR_LIGHT = 0x4a3a2e;
 // Bugfix: PALETTE.greyGreen (0xbcbfa8) is already a light, desaturated sage —
 // correct for a sun-faded WALL tint, but under this scene's warm sun + ACES
 // tone mapping + warm colour grade, a canopy built from it (or anything
@@ -35,10 +35,11 @@ const BARK_COLOR_LIGHT = darken(PALETTE.woodTrim, 0.9);
 // building). A markedly darker shade of the SAME hue (darken(), this
 // codebase's own established "deeper shade of the same hue, never a
 // different colour" rule) reads as foliage instead of wall.
-const LEAF_NEEM = new THREE.Color(darken(PALETTE.greyGreen, 0.42));
-const LEAF_PEEPAL = new THREE.Color(darken(PALETTE.greyGreen, 0.5));
-const LEAF_BABOOL = new THREE.Color(darken(PALETTE.greyGreen, 0.38)).lerp(new THREE.Color(PALETTE.mustard), 0.22); // dry, dusty acacia scrub — still visibly darker than the ground
-const LEAF_MANGO = new THREE.Color(darken(PALETTE.greyGreen, 0.44)).lerp(new THREE.Color(PALETTE.terracotta), 0.08); // dense, dark glossy canopy — a touch warmer than neem, still the same family
+// Art review 2 (2026-10-21): canopies were grey-beige. Real foliage greens now (sRGB hex).
+const LEAF_NEEM = new THREE.Color(0x4f8a34);
+const LEAF_PEEPAL = new THREE.Color(0x3f8a3c);
+const LEAF_BABOOL = new THREE.Color(0x76913f); // lighter olive acacia, still clearly green
+const LEAF_MANGO = new THREE.Color(0x2f6e2d);
 
 function paintFlat(geometry, color) {
   const count = geometry.attributes.position.count;
@@ -62,6 +63,7 @@ function buildTrunk(height, baseRadius, topRadius, barkHex, lean = 0) {
   // geometry breaks Box3/merge/raycast). Every part merged together here
   // needs to be in the same (non-indexed) state.
   const geo = new THREE.CylinderGeometry(topRadius, baseRadius, height, 7, 2).toNonIndexed();
+  geo.deleteAttribute('uv');
   geo.translate(0, height / 2, 0);
   if (lean) geo.rotateZ(lean);
   paintFlat(geo, new THREE.Color(barkHex));
@@ -70,11 +72,42 @@ function buildTrunk(height, baseRadius, topRadius, barkHex, lean = 0) {
 
 /** One faceted canopy "blob" at a given offset/radius — flattened in Y by
  * `squash` (1 = round, <1 = flatter, for an umbrella-shaped canopy). */
-function buildCanopyBlob(cx, cy, cz, radius, squash, color, detail = 0) {
-  const geo = new THREE.IcosahedronGeometry(radius, detail); // already non-indexed
-  geo.scale(1, squash, 1);
+function buildCanopyBlob(cx, cy, cz, radius, squash, color, detail = 1, sat = false) {
+  let geo = new THREE.IcosahedronGeometry(radius, detail);
+  geo.deleteAttribute('normal');
+  geo.deleteAttribute('uv');
+  geo = mergeVertices(geo);
+  // slightly lumpy, then smooth-shaded so the canopy reads as rounded foliage, not faceted rock
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const k = 1 + 0.08 * Math.sin(pos.getX(i) * 5.1 + pos.getZ(i) * 3.7 + cx * 7.3) * Math.cos(pos.getY(i) * 4.3 + cz);
+    pos.setXYZ(i, pos.getX(i) * k, pos.getY(i) * squash * k, pos.getZ(i) * k);
+  }
   geo.translate(cx, cy, cz);
-  paintFlat(geo, color);
+  geo.computeVertexNormals();
+  geo = geo.toNonIndexed();
+  // per-vertex colour: darker underneath, sunlit lighter top, small hue jitter per blob
+  const p2 = geo.attributes.position;
+  const colors = new Float32Array(p2.count * 3);
+  const fr = Math.abs(Math.sin(cx * 12.9 + cz * 78.2 + cy * 3.1) * 43758.5453) % 1;
+  const jit = 0.92 + 0.16 * fr;
+  const c = new THREE.Color();
+  for (let i = 0; i < p2.count; i++) {
+    const t = Math.min(1, Math.max(0, (p2.getY(i) - (cy - radius * squash)) / (2 * radius * squash)));
+    c.copy(color).multiplyScalar((0.62 + 0.55 * t) * jit);
+    colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  if (!sat && radius > 0.7) {
+    // satellite leaf clumps break the lollipop silhouette (art review 2: rounder but not blobby-perfect)
+    const parts = [geo];
+    for (let k = 0; k < 3; k++) {
+      const a = k * 2.399 + cx * 3.1 + cz;
+      const ry = 0.25 + 0.5 * ((k * 0.37 + fr) % 1);
+      parts.push(buildCanopyBlob(cx + Math.cos(a) * radius * 0.85, cy + (ry - 0.3) * radius * squash, cz + Math.sin(a) * radius * 0.85, radius * (0.42 + 0.12 * ((k + fr * 5) % 1)), 0.85, color, 0, true));
+    }
+    return mergeGeometries(parts, false);
+  }
   return geo;
 }
 

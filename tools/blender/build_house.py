@@ -718,6 +718,76 @@ def build_rangoli():
     return obj
 
 
+
+# ----------------------------------------------------------------------------- west wing (encloses the aangan)
+WX0, WX1 = -9.11, -6.8        # wing footprint x (west yard wall line .. just clear of the stair stringer)
+WZ0, WZ1 = -7.0, 4.6
+W_H = 3.05                    # slab underside; single storey
+
+
+def build_west_wing():
+    """Single-storey rooms along the west edge of the yard (review 1: the courtyard must be enclosed by rooms on
+    2-3 sides, U plan). Doors/windows face EAST into the aangan. Collision: village.js 'west wing' solid."""
+    old = FACE['E']
+    FACE['E'] = WX1
+    doors = [(-5.8, -4.6), (-1.7, -0.5), (2.2, 3.4)]
+    wins = [(-3.9, -2.9), (0.3, 1.3), (-6.7, -6.1)]
+    cs = [recess('E', a, b, 0, 2.3) for a, b in doors] + [recess('E', a, b, 1.0, 2.2) for a, b in wins]
+    for u in (-4.2, -0.6, 1.7, 3.9):
+        cs.append(recess('E', u - 0.075, u + 0.075, 2.55, 2.7, 0.07))
+    make_wall('wing_mass', 'E', cs, WZ0, WZ1, WX0, WX1, h1=W_H)
+    for a, b in doors:
+        double_door('E', a, b, 0, 2.3)
+    for a, b in wins:
+        louvre_window('E', a, b, 1.0, 2.2)
+    for u in (-4.2, -0.6, 1.7, 3.9):
+        wall_vent('E', u, 2.62)
+    # plinth, string course, roof slab, parapet + coping
+    add('plinth', wb('wing_plinth', WX1 - 0.04, WX1 + 0.06, WZ0, WZ1, 0, 0.5, 0.012))
+    add('trim', wb('wing_plinth_cap', WX1 - 0.05, WX1 + 0.07, WZ0, WZ1, 0.5, 0.55, 0.01))
+    add('trim', wb('wing_sc', WX1 - 0.04, WX1 + 0.06, WZ0, WZ1, 2.75, 2.95, 0.01))
+    add('trim', wb('wing_slab', WX0 - 0.15, WX1 + 0.2, WZ0 - 0.15, WZ1 + 0.15, W_H, W_H + 0.15, 0.015))
+    pt = 0.18
+    add('plaster', wb('wing_par_e', WX1 + 0.2 - pt, WX1 + 0.2, WZ0 - 0.15, WZ1 + 0.15, W_H + 0.15, W_H + 0.7, 0.01))
+    add('plaster', wb('wing_par_w', WX0 - 0.15, WX0 - 0.15 + pt, WZ0 - 0.15, WZ1 + 0.15, W_H + 0.15, W_H + 0.7, 0.01))
+    add('plaster', wb('wing_par_s', WX0 - 0.15, WX1 + 0.2, WZ1 + 0.15 - pt, WZ1 + 0.15, W_H + 0.15, W_H + 0.7, 0.01))
+    add('plaster', wb('wing_par_n', WX0 - 0.15, WX1 + 0.2, WZ0 - 0.15, WZ0 - 0.15 + pt, W_H + 0.15, W_H + 0.7, 0.01))
+    add('trim', wb('wing_cope', WX0 - 0.2, WX1 + 0.25, WZ0 - 0.2, WZ1 + 0.2, W_H + 0.7, W_H + 0.77, 0.01))
+    # chajja (sun-shade slab) over each door on little wood corbels
+    for a, b in doors:
+        add('trim', wb('chajja', WX1 - 0.02, WX1 + 0.75, a - 0.2, b + 0.2, 2.45, 2.53, 0.01))
+        for u in (a - 0.12, b + 0.12):
+            add('wood', limb('chajja_br', (WX1, u, 2.1), (WX1 + 0.65, u, 2.45), 0.06, 0.05))
+    # a verandah-edge step and marigold pots + a leafy plant in front
+    add('trim', wb('wing_step', WX1, WX1 + 0.45, WZ0 + 0.1, WZ1 - 0.1, 0, 0.08, 0.01))
+    for i, (a, b) in enumerate(doors):
+        pot(WX1 + 0.85, (a + b) / 2 + 0.75, 0.0, 0.2, 0.28, flower=MARI if i != 1 else None)
+    pot(WX1 + 0.85, -6.3, 0.0, 0.22, 0.32)
+    # roof terrace of the wing: pots + a drying-cloth line
+    for z in (-6.0, -4.5, -3.0, 0.0, 2.0, 3.8):
+        pot(WX1 - 0.25, z, W_H + 0.15, 0.13, 0.17, flower=MARI)
+    for k, z in enumerate((-2.2, -1.0, 0.2)):
+        pass
+    for z in (-6.2, 3.8):
+        add('wood', limb('line_post', (WX0 + 0.8, z, W_H + 0.15), (WX0 + 0.8, z, W_H + 1.5), 0.06, 0.06))
+    add('paint', limb('line', (WX0 + 0.8, -6.2, W_H + 1.45), (WX0 + 0.8, 3.8, W_H + 1.35), 0.012, 0.012), 0xDDDDDD)
+    for k, z in enumerate((-4.6, -2.8, -1.0, 0.8)):
+        add('paint', quad('cloth', [(WX0 + 0.78, z - 0.3, W_H + 1.38), (WX0 + 0.78, z + 0.3, W_H + 1.38), (WX0 + 0.78, z + 0.25, W_H + 0.75), (WX0 + 0.78, z - 0.25, W_H + 0.75)]), CLOTH[k % 4])
+    # creeper up the wing's south end
+    import random
+    rnd = random.Random(11)
+    pts = [(WX1 + 0.05, 4.45, 0.0), (WX1 + 0.1, 4.4, 1.0), (WX1 + 0.05, 4.3, 2.0), (WX1 + 0.1, 4.0, 2.9)]
+    for a, b in zip(pts, pts[1:]):
+        add('paint', limb('wvine', a, b, 0.04, 0.04), 0x4A3B25)
+    for i in range(45):
+        t = rnd.random() * (len(pts) - 1)
+        k = int(t)
+        f = t - k
+        a, b = pts[k], pts[min(k + 1, len(pts) - 1)]
+        add('paint', sphere('wvleaf', a[0] + (b[0] - a[0]) * f + rnd.uniform(0, 0.15), a[1] + (b[1] - a[1]) * f + rnd.uniform(-0.25, 0.1), a[2] + (b[2] - a[2]) * f + rnd.uniform(-0.1, 0.1), 0.1, 0.045, 0.075, 1), LEAF[rnd.randrange(4)])
+    FACE['E'] = old
+
+
 # ----------------------------------------------------------------------------- run
 build_walls()
 build_bands()
@@ -730,6 +800,7 @@ build_pump_platform()
 build_planter()
 build_jhoola()
 build_shed()
+build_west_wing()
 build_greenery_and_details()
 rangoli = build_rangoli()
 

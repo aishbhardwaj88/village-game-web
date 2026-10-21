@@ -2,80 +2,69 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
- * Shop signboards (queue item 10) — Devanagari larger on top, English smaller
- * beneath, generated as a canvas texture in code (so the spelling is exactly what the
- * reference images say, no image download). Both shops' signs share ONE canvas/
- * texture/mesh — a texture atlas, not one draw call per board — because the draw-call
- * budget had almost no headroom left after item 9 (see docs/parked.md). Only the tea
- * stall and general store get boards; the halwai has no documented name to put on one
- * (see docs/parked.md).
+ * Shop signboards — Devanagari larger on top, English smaller beneath (the one
+ * painted-board exception to CLAUDE.md's language order), generated as canvas
+ * textures in code so the spelling is exactly what the reference images say.
+ *
+ * Art review 1/2 (2026-10-21): the boards were blurred/faded/illegible. Root cause: each
+ * board was a SQUARE 512x512 atlas cell stretched over a ~4.4:1 wide board, squashing the
+ * text 4x vertically. Fix, shared by every Blender-building board (tea stall, general
+ * store, post office, ration shop, atta chakki): a WIDE cell (CELL_W x CELL_H, ~4.4:1,
+ * matching the board), bold high-contrast text auto-fitted to the cell width, one atlas
+ * per call (one draw call), anisotropy 8.
  */
 
-const ATLAS_W = 1024;
-const ATLAS_H = 512;
+export const SIGN_CELL_W = 1024;
+export const SIGN_CELL_H = 232;
 
-function drawSign(ctx, x, w, hi, en) {
-  const cx = x + w / 2;
-  ctx.fillStyle = '#2a2018';
-  ctx.font = '700 64px "Noto Sans Devanagari", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(hi, cx, ATLAS_H * 0.4);
-  ctx.font = '600 34px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText(en, cx, ATLAS_H * 0.72);
-}
-
-async function buildAtlasTexture(teaHi, teaEn, storeHi, storeEn) {
-  await document.fonts.load('700 64px "Noto Sans Devanagari"');
+/** entries: [{ hi, en, bg?, fg?, border? }] -> { texture, rows }. One row per board, stacked vertically. */
+export async function buildWideSignAtlas(entries) {
+  await document.fonts.load('700 100px "Noto Sans Devanagari"');
   await document.fonts.ready;
-
   const canvas = document.createElement('canvas');
-  canvas.width = ATLAS_W;
-  canvas.height = ATLAS_H;
+  canvas.width = SIGN_CELL_W;
+  canvas.height = SIGN_CELL_H * entries.length;
   const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#e8dcc4';
-  ctx.fillRect(0, 0, ATLAS_W, ATLAS_H);
-  ctx.strokeStyle = '#8a6a4a';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(3, 3, ATLAS_W / 2 - 6, ATLAS_H - 6);
-  ctx.strokeRect(ATLAS_W / 2 + 3, 3, ATLAS_W / 2 - 6, ATLAS_H - 6);
-
-  drawSign(ctx, 0, ATLAS_W / 2, teaHi, teaEn);
-  drawSign(ctx, ATLAS_W / 2, ATLAS_W / 2, storeHi, storeEn);
-
+  entries.forEach((e, row) => {
+    const y = row * SIGN_CELL_H;
+    ctx.fillStyle = e.bg || '#efe3c8';
+    ctx.fillRect(0, y, SIGN_CELL_W, SIGN_CELL_H);
+    ctx.strokeStyle = e.border || '#7a2a1a';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(8, y + 8, SIGN_CELL_W - 16, SIGN_CELL_H - 16);
+    ctx.fillStyle = e.fg || '#b3201a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const fit = (text, font, maxPx, startPx) => {
+      let px = startPx;
+      ctx.font = font(px);
+      while (ctx.measureText(text).width > maxPx && px > 20) { px -= 4; ctx.font = font(px); }
+    };
+    fit(e.hi, (px) => `700 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 90, 118);
+    ctx.fillText(e.hi, SIGN_CELL_W / 2, y + SIGN_CELL_H * 0.40);
+    ctx.fillStyle = e.fgEn || '#2a1a12';
+    fit(e.en, (px) => `700 ${px}px -apple-system, "Segoe UI", Helvetica, sans-serif`, SIGN_CELL_W - 90, 62);
+    ctx.fillText(e.en, SIGN_CELL_W / 2, y + SIGN_CELL_H * 0.78);
+  });
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  // Bugfix (item 2, real playtest report — signboards illegible at play
-  // distance/angle): a signboard is seen at a raking angle far more often than
-  // square-on (walking past, not standing in front of it), and the default
-  // anisotropy of 1 lets three.js's mipmap selection collapse the text into a
-  // flat blur under that minification — same fix already applied to every
-  // tiled ground/wall texture in this codebase (src/materials.js, src/scene.js),
-  // just never applied to this canvas texture.
   texture.anisotropy = 8;
-  return texture;
+  texture.needsUpdate = true;
+  return { texture, rows: entries.length };
 }
 
-/** Remaps a unit-cube BoxGeometry's UVs into one half (left/right) of the atlas —
- * only the +Z (front, visible) face needs the real atlas region; the rest can keep
- * whatever UV they already have, since they're edges/back nobody sees closely. */
-function mapFrontFaceToAtlasHalf(geometry, half) {
+/** Maps a BoxGeometry's +Z (front) face onto atlas row `row` of `rows`, filling the whole cell. */
+export function mapFrontFaceToRow(geometry, row, rows) {
   const uv = geometry.attributes.uv;
-  const uMin = half === 'left' ? 0.02 : 0.52;
-  const uMax = half === 'left' ? 0.48 : 0.98;
-  const groups = geometry.groups; // BoxGeometry: [+X,-X,+Y,-Y,+Z,-Z]
-  const frontGroup = groups[4];
+  const front = geometry.groups[4]; // BoxGeometry groups: [+X,-X,+Y,-Y,+Z,-Z]
+  const v0 = 1 - (row + 1) / rows;
+  const v1 = 1 - row / rows;
   const touched = new Uint8Array(uv.count);
-  for (let i = frontGroup.start; i < frontGroup.start + frontGroup.count; i++) {
-    // The front face's 2 triangles share vertices via the index buffer — guard so a
-    // shared vertex isn't remapped twice (which would double-transform its U value).
+  for (let i = front.start; i < front.start + front.count; i++) {
     const vi = geometry.index.array[i];
     if (touched[vi]) continue;
     touched[vi] = 1;
-    const u = uv.getX(vi); // 0..1 within the front face already
-    uv.setXY(vi, uMin + u * (uMax - uMin), uv.getY(vi));
+    uv.setXY(vi, uv.getX(vi), v0 + uv.getY(vi) * (v1 - v0));
   }
   uv.needsUpdate = true;
 }
@@ -86,18 +75,21 @@ function mapFrontFaceToAtlasHalf(geometry, half) {
  * board sits (matching the dimensions in src/shops.js).
  */
 export async function buildSignboards(tea, store) {
-  const texture = await buildAtlasTexture(tea.hi, tea.en, store.hi, store.en);
+  const { texture, rows } = await buildWideSignAtlas([
+    { hi: tea.hi, en: tea.en, bg: '#f0e4c6', fg: '#b3201a' },
+    { hi: store.hi, en: store.en, bg: '#f0e4c6', fg: '#b3201a' },
+  ]);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
   material.name = 'signboard'; // world-validator (check 2) — wall/roof-mounted fixtures are correctly elevated above y=0 by design; named so that exclusion is precise, not a guess at merged-bucket identity
 
   const teaGeo = new THREE.BoxGeometry(tea.width, 0.5, 0.04);
-  mapFrontFaceToAtlasHalf(teaGeo, 'left');
+  mapFrontFaceToRow(teaGeo, 0, rows);
   const teaLocal = new THREE.Matrix4().makeTranslation(0, tea.boardY, tea.depth / 2 - 0.06);
   const teaWorld = new THREE.Matrix4().makeRotationY(tea.rotationY).setPosition(tea.position.x, 0, tea.position.z);
   teaGeo.applyMatrix4(teaLocal).applyMatrix4(teaWorld);
 
   const storeGeo = new THREE.BoxGeometry(store.width, 0.55, 0.04);
-  mapFrontFaceToAtlasHalf(storeGeo, 'right');
+  mapFrontFaceToRow(storeGeo, 1, rows);
   const storeLocal = new THREE.Matrix4().makeTranslation(0, store.boardY, store.depth / 2 + 0.06);
   const storeWorld = new THREE.Matrix4().makeRotationY(store.rotationY).setPosition(store.position.x, 0, store.position.z);
   storeGeo.applyMatrix4(storeLocal).applyMatrix4(storeWorld);

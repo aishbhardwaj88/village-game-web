@@ -210,7 +210,11 @@ export function applyGroundNoiseDetail(
             // Partial strength (0.55, not 1.0) — the gravel texture's own grain stays
             // visible under the tint, reading as sparse dry grass over bare ground,
             // not a solid lawn (art-direction law — sun-faded, never lush).
-            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uGrassTint, grassMask * 0.55);
+            // Art review 2 (2026-10-21): the ground still read dry grey-brown, so patches are now real
+            // green (tint scaled by the ground's own luminance to keep texture grain), not a 55% multiply.
+            float gLum = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+            vec3 grassCol = uGrassTint * (0.55 + gLum * 1.5);
+            diffuseColor.rgb = mix(diffuseColor.rgb, grassCol, grassMask * 0.88);
           }
 
           float damp0 = 1.0 - smoothstep(0.0, max(uDampRadius0, 0.001), distance(vWorldPos_g.xz, uDampPos0));
@@ -224,7 +228,7 @@ export function applyGroundNoiseDetail(
   // reuse a compiled program from a material that didn't request the noise/detail
   // pass (or vice versa).
   material.customProgramCacheKey = () =>
-    `ground-noise-detail-v3-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}`;
+    `ground-noise-detail-v4-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}`;
   return material;
 }
 

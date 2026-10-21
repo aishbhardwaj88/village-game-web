@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { colliderBoxFromTransform } from './collision.js';
+import { buildWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 
 /**
  * Item 4 ("keep building the village") — 3 more abadi-core locations from
@@ -211,66 +212,17 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
 // in-world board in this game already does, including src/bazaar.js's row —
 // kept consistent with its immediate neighbours rather than applying the
 // opposite (UI) order to just these three boards.
-const SIGN_CELL = 512;
-const SIGN_COLS = 3;
-
-function drawSign(ctx, col, hi, en) {
-  const x = col * SIGN_CELL;
-  ctx.fillStyle = '#e8dcc4';
-  ctx.fillRect(x + 4, 4, SIGN_CELL - 8, SIGN_CELL - 8);
-  ctx.strokeStyle = '#8a6a4a';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(x + 4, 4, SIGN_CELL - 8, SIGN_CELL - 8);
-  const cx = x + SIGN_CELL / 2;
-  ctx.fillStyle = '#2a2018';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = '700 58px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText(hi, cx, SIGN_CELL * 0.42);
-  ctx.font = '600 30px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText(en, cx, SIGN_CELL * 0.7);
-}
-
-async function buildNewShopSignAtlas() {
-  await document.fonts.load('700 58px "Noto Sans Devanagari"');
-  await document.fonts.ready;
-  const canvas = document.createElement('canvas');
-  canvas.width = SIGN_CELL * SIGN_COLS;
-  canvas.height = SIGN_CELL;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#2a2018';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawSign(ctx, 0, 'डाकघर', 'Post Office');
-  drawSign(ctx, 1, 'राशन की दुकान', 'Ration Shop');
-  drawSign(ctx, 2, 'आटा चक्की', 'Atta Chakki');
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  texture.anisotropy = 8; // item 2's fix, applied from the start here
-  return texture;
-}
-
-function mapFrontFaceToCell(geometry, col) {
-  const uv = geometry.attributes.uv;
-  const uMin = (col + 0.02) / SIGN_COLS;
-  const uMax = (col + 0.98) / SIGN_COLS;
-  const groups = geometry.groups; // BoxGeometry: [+X,-X,+Y,-Y,+Z,-Z]
-  const frontGroup = groups[4]; // +Z — the front face every one of these 3 buildings opens toward
-  const touched = new Uint8Array(uv.count);
-  for (let i = frontGroup.start; i < frontGroup.start + frontGroup.count; i++) {
-    const vi = geometry.index.array[i];
-    if (touched[vi]) continue;
-    touched[vi] = 1;
-    uv.setXY(vi, uMin + uv.getX(vi) * (uMax - uMin), 0.02 + uv.getY(vi) * 0.96);
-  }
-  uv.needsUpdate = true;
-}
-
+// Art review 2: the old 512x512 square cells were stretched over 2.2x0.5 boards (text squashed
+// ~4x, illegible). Now the shared wide-cell atlas in src/signboards.js, same as every other board.
 /** All 3 boards, one shared atlas/mesh/draw call. Async (font/canvas) — not
  * awaited inline by the caller, same pattern as every other signboard build
  * function in this codebase. */
 export async function buildNewShopSignboards(postOfficePos, postOfficeRot, rationShopPos, rationShopRot, attaChakkiPos, attaChakkiRot) {
-  const texture = await buildNewShopSignAtlas();
+  const { texture, rows } = await buildWideSignAtlas([
+    { hi: 'डाकघर', en: 'Post Office', fg: '#b3201a' },
+    { hi: 'राशन की दुकान', en: 'Ration Shop', fg: '#1f5a2e' },
+    { hi: 'आटा चक्की', en: 'Atta Chakki', fg: '#1f3f8a' },
+  ]);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
   material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
   const geos = [];
@@ -281,7 +233,7 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
   ];
   for (const [dims, pos, rot, col] of placements) {
     const geo = new THREE.BoxGeometry(Math.min(dims.w - 0.5, 2.2), 0.5, 0.04);
-    mapFrontFaceToCell(geo, col);
+    mapFrontFaceToRow(geo, col, rows);
     const world = wallWorldMatrix(pos, rot).multiply(new THREE.Matrix4().makeTranslation(0, dims.h + 0.42, dims.d / 2 + 0.03));
     geo.applyMatrix4(world);
     geos.push(geo);
