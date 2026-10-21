@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 8):** Cattle resting in the two kachcha sheds (src/ambient.js, one Points draw call, shown only within 45 m). Build/validator + regression 22/22 pass. Inbox empty. Push still fails (no git login).
+Next: real cattle models, Blender tree rebuild, PBR on lanes/canal, kids playing in lanes.
+
+---
+
 **2026-10-22 (cycle 7):** Butterflies fluttering over the field and homestead edges (src/ambient.js, one Points draw call, shown only within 60 m). Validator 15/15, regression 22/22. Inbox empty.
 Next: cattle in the sheds, Blender tree rebuild, PBR on lanes/canal, kids playing in lanes.
 

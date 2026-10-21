@@ -108,9 +108,35 @@ export function createAmbientLife() {
   flies.name = 'ambient_butterflies';
   flies.frustumCulled = false;
 
+  // --- cattle resting in the two kachcha sheds (one Points draw call, shown only within 45 m). Local shed coords; homestead 2 is turned 180 deg.
+  const cowTex = spriteTexture((ctx) => {
+    ctx.fillStyle = '#c9b79a';
+    ctx.fillRect(14, 22, 34, 20);
+    ctx.fillRect(40, 14, 14, 16);
+    ctx.fillStyle = '#a58f6e';
+    ctx.fillRect(48, 12, 10, 10);
+    ctx.fillStyle = '#3a2b20';
+    ctx.fillRect(18, 42, 5, 10);
+    ctx.fillRect(40, 42, 5, 10);
+    ctx.fillRect(10, 24, 4, 14);
+    ctx.fillRect(54, 10, 3, 4);
+  }, 64);
+  const cows = [
+    { x: -62 + 3.9, z: -26 - 3.4 }, { x: -62 + 5.6, z: -26 - 3.4 },
+    { x: -64 - 4.2, z: -56 + 3.4 },
+  ];
+  const cowPos = new Float32Array(cows.length * 3);
+  cows.forEach((c, i) => { cowPos[i * 3] = c.x; cowPos[i * 3 + 1] = 0.55; cowPos[i * 3 + 2] = c.z; });
+  const cowGeo = new THREE.BufferGeometry();
+  cowGeo.setAttribute('position', new THREE.BufferAttribute(cowPos, 3));
+  const cowMat = new THREE.PointsMaterial({ map: cowTex, size: 1.5, transparent: true, depthWrite: false, sizeAttenuation: true, alphaTest: 0.05 });
+  const cowPts = new THREE.Points(cowGeo, cowMat);
+  cowPts.name = 'ambient_cattle';
+  cowPts.frustumCulled = false;
+
   const group = new THREE.Group();
   group.name = 'ambient_life';
-  group.add(birds, smoke, hens, flies);
+  group.add(birds, smoke, hens, flies, cowPts);
   let t = 0;
   function update(dt, px, pz) {
     t += dt;
@@ -122,6 +148,11 @@ export function createAmbientLife() {
       birdPos[i * 3 + 2] = 60 + Math.sin(a) * ring * 0.8;
     }
     birdGeo.attributes.position.needsUpdate = true;
+    cowPts.visible = cows.some((c) => Math.abs(c.x - px) < 45 && Math.abs(c.z - pz) < 45);
+    if (cowPts.visible) {
+      cows.forEach((c, i) => { cowPos[i * 3 + 1] = 0.55 + Math.sin(t * 0.8 + i * 2) * 0.012; });
+      cowGeo.attributes.position.needsUpdate = true;
+    }
     hens.visible = flocks.some((f) => Math.abs(f.x - px) < 45 && Math.abs(f.z - pz) < 45);
     if (hens.visible) {
       let k = 0;
