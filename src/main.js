@@ -748,10 +748,12 @@ async function main() {
   }
   {
     const halwaiShopGroup = heroZoneGroup.children.find((c) => c.name === 'halwai_shop');
-    assetSlots.register('halwai_kiosk', {
-      dimensions: { w: 5.5, h: 3.5, d: 4.5 }, // src/village.js buildHalwai's width/height/depth
-      hide: halwaiShopGroup.children.slice(),
-      placements: [{ container: halwaiShopGroup, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: 0 }],
+    // Blender halwai rebuild (2026-10-21, docs/halwai-checklist.md) — exact slot at HALWAI_CENTER; the
+    // old code-built walls/roof/platform/cabinet/chairs are the (hidden) collision backing.
+    assetSlots.register('halwai_compound', {
+      exact: true,
+      hide: [halwaiShopGroup],
+      placements: [{ container: scene, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: 0 }],
     });
   }
   {

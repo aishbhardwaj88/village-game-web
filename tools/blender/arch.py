@@ -273,6 +273,8 @@ def ring(name, cx, cz, h, R, r, axis='z', seg=18, tube=6):
             w = r * math.sin(b)                            # along the axle
             if axis == 'z':
                 wx, wz, hh = cx + u, cz + w, h + v
+            elif axis == 'y':          # horizontal ring (lying flat): u along wx, v along wz, w up
+                wx, wz, hh = cx + u, cz + v, h + w
             else:
                 wx, wz, hh = cx + w, cz + u, h + v
             row.append(bm.verts.new((wx, -wz, hh)))
@@ -327,3 +329,46 @@ def decal_quad(name, x0, x1, z0, z1, h, uv_rect, mat):
         uvl.data[loop.index].uv = (u, v)
     obj.data.materials.append(mat)
     return obj
+
+
+TERRACOTTA_TONES = [0xB5693F, 0xA85C36, 0xC27546]
+
+
+def clay_pot(kit, x, z, s=1.0, tone=None):
+    """A round-bellied clay pot (matka): squashed sphere body + short neck + rim."""
+    c = tone or TERRACOTTA_TONES[int(abs(x * 7 + z * 13)) % 3]
+    kit.add('paint', sphere('matka', x, z, 0.3 * s, 0.26 * s, 0.26 * s, 0.26 * s, 2), c)
+    kit.add('paint', cyl('matka_neck', x, z, 0.5 * s, 0.62 * s, 0.13 * s, 0.17 * s, 12), c)
+    kit.add('paint', cyl('matka_rim', x, z, 0.6 * s, 0.65 * s, 0.185 * s, 0.185 * s, 12), c)
+    kit.add('paint', cyl('matka_foot', x, z, 0.0, 0.1 * s, 0.12 * s, 0.17 * s, 10), c)
+
+
+def plastic_chair(kit, x, z, ang, colour, arms=False):
+    """Moulded plastic chair: seat, tilted back, four legs (ang = rotation about the vertical, 0 faces +wz... back at -wz)."""
+    ca, sa = math.cos(ang), math.sin(ang)
+
+    def p(dx, dz, hh):
+        return (x + dx * ca - dz * sa, z + dx * sa + dz * ca, hh)
+    kit.add('paint', limb('seat', p(0, 0, 0.45), p(0, 0, 0.5), 0.44, 0.44, 0.012), colour)
+    kit.add('paint', limb('back', p(0, -0.2, 0.5), p(0, -0.26, 0.9), 0.42, 0.04, 0.01), colour)
+    for dx in (-0.18, 0.18):
+        for dz in (-0.18, 0.18):
+            kit.add('paint', limb('leg', p(dx, dz, 0.0), p(dx * 1.05, dz * 1.05, 0.46), 0.04, 0.04), colour)
+    if arms:
+        for dx in (-0.22, 0.22):
+            kit.add('paint', limb('arm', p(dx, 0.2, 0.62), p(dx, -0.2, 0.62), 0.035, 0.035), colour)
+            kit.add('paint', limb('arm_post', p(dx, 0.2, 0.5), p(dx, 0.2, 0.62), 0.03, 0.03), colour)
+
+
+def dabba(kit, x, z, h, r=0.12, tall=0.28, colour=STEEL):
+    """Steel container with a lid."""
+    kit.add('paint', cyl('dabba', x, z, h, h + tall, r, r * 0.95, 12), colour)
+    kit.add('paint', cyl('dabba_lid', x, z, h + tall, h + tall + 0.03, r * 1.04, r * 1.04, 12), 0x8A8E93)
+    kit.add('paint', sphere('dabba_knob', x, z, h + tall + 0.06, 0.03, 0.03, 0.03, 1), 0x8A8E93)
+
+
+def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55):
+    """A flour/sugar sack: a slumped, tied-off bag."""
+    ca, sa = math.cos(ang), math.sin(ang)
+    kit.add('paint', limb('sack', (x, z, h), (x, z, h + hh), w, d, 0.06), colour)
+    kit.add('paint', sphere('sack_top', x, z, h + hh, w * 0.42, d * 0.42, 0.09, 1), colour)

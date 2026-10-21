@@ -620,6 +620,9 @@ function buildSchool(kit) {
 function buildHalwai(kit) {
   const group = new THREE.Group();
   group.name = 'halwai_shop';
+  // Blender halwai rebuild (2026-10-21, docs/halwai-checklist.md): all code geometry below is the
+  // INVISIBLE collision/validator backing (this whole 'halwai_shop' group is hidden by the slot); tools/blender/build_halwai.py's
+  // halwai_compound.glb draws the shop. (Collision: the roof slab is a 2D collider over the whole footprint.)
   const cx = HALWAI_CENTER.x;
   const cz = HALWAI_CENTER.z;
 
@@ -639,11 +642,6 @@ function buildHalwai(kit) {
   addThickBox(group, depth + overhang * 2, 0.25, width + overhang * 2, 'concrete', { x: cx, y: height + 0.125, z: cz }, { tint: CONCRETE_NEUTRAL }); // roof
 
   // Plinth + a single corner pilaster at the one real (north/east) corner.
-  kit.addPlinthSegment({ x: cx, y: 0.15, z: zLeft }, { x: depth + 0.1, y: 0.3, z: WALL_THICKNESS + 0.05 });
-  kit.addPlinthSegment({ x: xBack, y: 0.15, z: cz }, { x: WALL_THICKNESS + 0.05, y: 0.3, z: width + 0.1 });
-  kit.addTrimBar({ x: xBack, y: height / 2, z: zLeft }, { x: WALL_THICKNESS + 0.05, y: height, z: WALL_THICKNESS + 0.05 });
-  kit.addDrainpipe({ x: xBack + 0.05, y: height / 2, z: zLeft - 0.05 }, height);
-  kit.addSwitchboard({ x: xBack - 0.02, y: 1.4, z: cz + 1.5 }, Math.PI / 2);
 
   // Kadhai platform: 0.9m deep band nearest the street — tall/solid enough at the
   // front to be worth blocking (playtest structural fix: tagged here, at the
@@ -656,24 +654,6 @@ function buildHalwai(kit) {
   // Two plastic chairs outside the open (south) side.
   addBox(group, 0.4, 0.4, 0.4, 'wood', { x: cx - 0.5, y: 0.2, z: cz + width / 2 + 0.6 }, { tint: 0xb23a3a, tileSize: 1 });
   addBox(group, 0.4, 0.4, 0.4, 'wood', { x: cx + 0.5, y: 0.2, z: cz + width / 2 + 1.1 }, { tint: 0x3a9955, tileSize: 1 });
-
-  // Clay pots at the front-left, reusing the shrunk CC0 test asset from the pipeline.
-  getGLTFLoader().load('assets/models/ceramic_pot.glb', (gltf) => {
-    for (const [dx, dz] of [
-      [-0.6, -1.2],
-      [-0.9, -0.6],
-    ]) {
-      const pot = gltf.scene.clone(true);
-      pot.position.set(xFront - 0.3 + dx, 0, cz + dz);
-      pot.traverse((obj) => {
-        if (obj.isMesh) {
-          obj.castShadow = true;
-          obj.receiveShadow = true;
-        }
-      });
-      group.add(pot);
-    }
-  });
 
   // Task 2 (draw-call budget) — folds the 2 walls + roof into one 'plaster'/
   // 'concrete' pair, and the kadhai platform + cabinet + 2 chairs (three different
