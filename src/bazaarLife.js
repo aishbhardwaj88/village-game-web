@@ -48,6 +48,11 @@ const VILLAGER_LOOPS = [
   [{ x: -45.5, z: 71 }, { x: -45.5, z: 81 }],
   [{ x: -46.5, z: 86 }, { x: -48, z: 97 }],
   [{ x: -47, z: 51 }, { x: -45, z: 57 }],
+  // a few more walkers so the bazaar frontage and lane are not empty
+  [{ x: BAZAAR_WEST_X + 10, z: 11 }, { x: BAZAAR_WEST_X + 26, z: 11 }],
+  [{ x: BAZAAR_EAST_X - 10, z: 11 }, { x: BAZAAR_EAST_X - 26, z: 11 }],
+  [{ x: -46, z: 62 }, { x: -46.5, z: 69 }],
+  [{ x: -47.5, z: 99 }, { x: -46, z: 106 }],
 ];
 
 const SPEED = 1.1;
