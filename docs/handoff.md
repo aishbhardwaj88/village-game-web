@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 13):** No live-game change. Inbox empty; birds, smoke, hens, cattle, kids and walkers already in. `git push` still fails (no GitHub login), 1 commit waiting.
+Next: once push works, free hero-zone draw calls, real cattle models, Blender tree rebuild.
+
+---
+
 **2026-10-22 (cycle 12):** Neem and babool canopies shifted to deeper, dustier olive greens (src/trees.js). Build/validator and regression 22/22 pass. Inbox empty.
 Next: free hero-zone draw calls, real cattle models, Blender tree rebuild, PBR on lanes/canal.
 
