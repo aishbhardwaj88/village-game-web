@@ -55,7 +55,7 @@ const PLASTER_HOUSE = PALETTE.mustard + 1;
 // bucket as the 4 exterior walls once those get locally pre-merged below. The
 // partition isn't part of the new Blender shell (interior, unaffected this pass)
 // and must stay visible on its own, so it needs its own distinct tint too.
-const PLASTER_HOUSE_PARTITION = PALETTE.mustard + 2;
+const PLASTER_HOUSE_PARTITION = 0xbccad4 + 2; // limewash blue-grey to match the Blender compound's own interior wall faces
 const PLASTER_HALWAI = PALETTE.terracotta;
 const PLASTER_SCHOOL = PALETTE.schoolYellow;
 const SCHOOL_BAND = darken(PALETTE.schoolYellow);
@@ -345,10 +345,17 @@ function buildHouse(kit) {
 
   // Courtyard: 18m (x) x 14m (z), cement floor, open to the sky, centred exactly on
   // the given point.
+  // Blender house rebuild (2026-10-21, docs/house-checklist.md) — the courtyard floor, low
+  // compound walls and every new solid in the yard (south wall + gate, north returns, cattle
+  // shed, jhoola, tree planter) are built here as an INVISIBLE, locally-merged 'house_yard_old'
+  // group: it keeps the exact collision (and the validator's real-geometry backing) while
+  // tools/blender/build_house.py's house_compound.glb draws everything you actually see.
+  const houseYardOld = new THREE.Group();
+  houseYardOld.name = 'house_yard_old';
   const floor = texturedFloor(18, 14, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, 0.015, cz);
-  group.add(floor);
+  houseYardOld.add(floor);
 
   // Ground-floor house block, walkable (item 3): 4 real perimeter walls (a genuine
   // gap at the front door — see addGappedWall's doc comment) plus an interior
@@ -390,8 +397,8 @@ function buildHouse(kit) {
   addBox(houseShellOld, blockW + 0.06, houseBandH, WALL_THICKNESS + 0.06, 'plaster', { x: blockCx, y: houseBandH / 2, z: blockCz - blockD / 2 }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   addBox(houseShellOld, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx - blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   addBox(houseShellOld, WALL_THICKNESS + 0.06, houseBandH, blockD + 0.06, 'plaster', { x: blockCx + blockW / 2, y: houseBandH / 2, z: blockCz }, { tint: HOUSE_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  kit.addPlinthRing(blockCx, blockCz, blockW, blockD, WALL_THICKNESS);
-  kit.addCornerPilasters(blockCx, blockCz, blockW, blockD, blockH, WALL_THICKNESS);
+  // (the shared kit's plinth ring + corner pilasters are no longer added for the house —
+  // the Blender compound model has its own plinth band, pilasters and door step)
 
   // Flat concrete roof with a parapet lip — overhangs the wall by 0.3m, visible edge.
   // Into houseShellOld too (see its own comment above) — the roof's TOP surface is
@@ -414,28 +421,47 @@ function buildHouse(kit) {
   // bevels/recess, not a shared instanced trim bar), so a code-built frame at the
   // exact same opening would just double up/z-fight with it.
   addDoorFrameX(kit, { x: blockCx, y: 0, z: HOUSE_PARTITION_Z }, HOUSE_PARTITION_DOOR_WIDTH, 2.1, WALL_THICKNESS);
-  kit.addStep({ x: blockCx, y: 0.08, z: HOUSE_DOOR_Z + 0.35 }, { x: 1.6, y: 0.16, z: 0.5 });
   kit.addSwitchboard({ x: blockCx + 1.4, y: 1.4, z: HOUSE_DOOR_Z + 0.02 });
-  kit.addDrainpipe({ x: blockCx - blockW / 2 - 0.05, y: blockH / 2, z: blockCz - blockD / 2 - 0.05 }, blockH);
 
   // Staircase, courtyard side of the west wall, climbing from the ground up to the
   // roof (item 3's "staircase to the roof").
   const s = HOUSE_STAIRS;
   const stairSteps = 10;
   const stairDepth = (s.zStart - s.zEnd) / stairSteps;
-  group.add(buildStaircase(s.x, s.zStart, stairSteps, stairDepth, s.yTop / stairSteps, s.width, 'concrete', CONCRETE_NEUTRAL));
+  group.add(buildStaircase(s.x, s.zStart, stairSteps, stairDepth, s.yTop / stairSteps, s.width, 'concrete', 0xb4c1cd));
 
   // Low compound walls, east/west courtyard edges (south stays open onto the lane).
   const wallH = 1.6;
-  addWall(group, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addWall(group, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWall(houseYardOld, 14, wallH, 'plaster', { x: cx - 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWall(houseYardOld, 14, wallH, 'plaster', { x: cx + 9, y: wallH / 2, z: cz }, 'z', { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  // New solids drawn by the Blender model (offsets from HOUSE_CENTER — keep in sync with
+  // tools/blender/build_house.py): south boundary wall with a 2.6m gate gap at x=0 (just north
+  // of the lane waypoints at z=46 the validator walks), the two north returns, the cattle
+  // shed, the jhoola frame and the brick tree planter.
+  const yardWall = (len, x, z, alongX = true) => {
+    addWallBox(houseYardOld, alongX ? len : WALL_THICKNESS, wallH, alongX ? WALL_THICKNESS : len, 'plaster', { x: cx + x, y: wallH / 2, z: cz + z }, seedBase + 30 + x + z, { tint: PLASTER_HOUSE, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  };
+  yardWall(9.11 - 1.3, -(9.11 + 1.3) / 2, 6.4); // south wall, west of the gate
+  yardWall(9.11 - 1.3, (9.11 + 1.3) / 2, 6.4); // south wall, east of the gate
+  yardWall(2.51, -(9.11 + 6.6) / 2, -7); // north return, west yard
+  yardWall(4.0, (9.11 + 5.11) / 2, -7); // north return, east yard
+  const solid = (w, h, d, mat, x, z, tint) => {
+    const m = texturedThickBox(w, h, d, mat, { tileSize: 2, tint });
+    m.position.set(cx + x, h / 2, cz + z);
+    houseYardOld.add(m);
+  };
+  solid(3.7, 2.2, 3.7, 'wood', 7.1, -5.0, 0x5a4636); // cattle shed (whole footprint)
+  solid(1.8, 2.25, 2.2, 'wood', 7.0, -1.8, 0x5a4636); // jhoola frame
+  solid(2.0, 0.55, 2.0, 'brick', 7.0, 3.4, 0xa4563a); // tree planter
+  mergeGroupByMaterial(houseYardOld);
+  group.add(houseYardOld);
 
   // Task 2 (draw-call budget) — every plaster-family mesh above shares one Material
   // (tint baked into vertex colour, see materials.js), and every concrete-family one
   // shares another, so this folds house_compound's ~20 meshes down to ~2. Runs
   // before the interior props below are added, so they get their own (small) merge
   // groups instead of being swept into these two.
-  mergeGroupByMaterial(group);
+  mergeGroupByMaterial(group, { skipNames: ['house_shell_old', 'house_yard_old'] });
 
   const { charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh } = buildHouseInteriorProps(group);
 
@@ -658,7 +684,7 @@ function buildLane() {
   // buildStripSegment now bakes its own repeat/tint into the geometry (see
   // paths.js), so they merge into a single mesh instead of a 2-mesh group.
   const mesh = mergeMeshList(
-    [buildStripSegment(HOUSE_CENTER, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true })],
+    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true })],
     'lane'
   );
   return mesh;

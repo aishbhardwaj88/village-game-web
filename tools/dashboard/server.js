@@ -210,6 +210,28 @@ async function getLatestShots() {
   }
 }
 
+/** Art-director gate (2026-10-21): every Blender asset needs docs/shots/compare/<asset>.png
+ * (reference left, in-game normal-mode render right). Lists those plus every docs/*-checklist.md's
+ * ticked/total rows so the dashboard shows what is actually proven. */
+async function getCompare() {
+  const dir = path.join(SHOTS, 'compare');
+  let images = [];
+  try {
+    const files = await fsp.readdir(dir);
+    images = files.filter((f) => /\.(png|jpg|jpeg|webp)$/i.test(f)).sort().map((f) => ({ name: f.replace(/\.[^.]+$/, ''), url: `/shots/compare/${f}` }));
+  } catch {}
+  const checklists = [];
+  try {
+    for (const f of (await fsp.readdir(DOCS)).filter((n) => /-checklist\.md$/.test(n)).sort()) {
+      const text = await readTextSafe(path.join(DOCS, f));
+      const rows = text.split('\n').filter((l) => /^\|\s*\d+\s*\|/.test(l));
+      const done = rows.filter((l) => /\[x\]/i.test(l)).length;
+      checklists.push({ file: f, done, total: rows.length });
+    }
+  } catch {}
+  return { images, checklists };
+}
+
 async function getHealth() {
   const status = await readJsonSafe(STATUS_JSON, null);
   if (!status) {
@@ -265,7 +287,7 @@ async function getInbox() {
 }
 
 async function buildState() {
-  const [progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet] = await Promise.all([
+  const [progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet, compare] = await Promise.all([
     getProgress(),
     getMissions(),
     getCommits(),
@@ -274,8 +296,9 @@ async function buildState() {
     getNeedsYou(),
     getInbox(),
     hasTripoKey(),
+    getCompare(),
   ]);
-  return { progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet, generatedAt: new Date().toISOString() };
+  return { progress, missions, commits, shots, health, needsYou, inbox, tripoKeySet, compare, generatedAt: new Date().toISOString() };
 }
 
 function sanitizeFilename(name) {

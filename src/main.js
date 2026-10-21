@@ -755,26 +755,19 @@ async function main() {
     });
   }
   {
-    // Blender pipeline (2026-10-20) — the house's exterior shell (walls, bands,
-    // roof+parapet, all 4-sided real door/window detailing) now comes from
-    // tools/blender/build_house.py's house_shell.glb; src/village.js's own
-    // buildHouse() already folded everything it replaces into one locally-merged,
-    // easily-found 'house_shell_old' group (see that file's own comment on why —
-    // a village-wide merge would have made it impossible to isolate from other
-    // buildings sharing the same tint/material). Interior floor/ceiling/
-    // partition/furniture, the plinth/pilaster/drainpipe trim, and the stairs are
-    // all untouched real code geometry, still visible.
-    const houseShellOld = scene.getObjectByName('house_shell_old');
-    assetSlots.register('house_shell', {
-      dimensions: { w: HOUSE_BLOCK.w, h: 7.1, d: HOUSE_BLOCK.d }, // wall 6 + roof slab 0.3 + parapet 0.8, src/village.js's HOUSE_BLOCK/HOUSE_ROOF_Y
-      hide: houseShellOld ? [houseShellOld] : [],
-      // rotationY=PI — tools/blender/build_house.py builds the door on its own
-      // local +Y face (Blender's south/"door" axis); Blender's glTF export maps
-      // Blender +Y to glTF -Z, so a bare rotationY=0 would put the door on the
-      // NORTH face (world Z<cz) instead of the real HOUSE_DOOR_Z (cz+d/2,
-      // south). Confirmed empirically against the real in-game door position,
-      // not assumed — see this task's own screenshot proof.
-      placements: [{ container: scene, position: new THREE.Vector3(HOUSE_BLOCK.cx, 0, HOUSE_BLOCK.cz), rotationY: Math.PI }],
+    // Blender house rebuild (2026-10-21, docs/house-checklist.md) — the whole visible house
+    // compound (two-storey shell, balcony, roof terrace, courtyard floor + rangoli, gate,
+    // shed, jhoola, planter...) comes from tools/blender/build_house.py's house_compound.glb,
+    // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
+    // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
+    // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
+    const hideOld = ['house_shell_old', 'house_yard_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    assetSlots.register('house_compound', {
+      exact: true,
+      maskMaterials: ['hb_rangoli'],
+      noShadowMaterials: ['hb_floor', 'hb_rangoli'],
+      hide: hideOld,
+      placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: 0 }],
     });
   }
   const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
@@ -982,6 +975,8 @@ async function main() {
     heroZoneGroup.add(
       buildTrees([
         { kind: 'neem', x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z - 4, rotationY: 1.1, seed: 11 },
+        // the courtyard tree in its raised brick planter (docs/house-checklist.md item 7); planter top is y=0.55
+        { kind: 'neem', x: HOUSE_CENTER.x + 7, z: HOUSE_CENTER.z + 3.4, y: 0.5, scale: 0.5, rotationY: 0.7, seed: 17 },
         { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
         { kind: 'neem', x: SCHOOL_CENTER.x - 12, z: SCHOOL_CENTER.z + 6, rotationY: 2.3, seed: 12 },
         { kind: 'neem', x: SCHOOL_CENTER.x - 9, z: SCHOOL_CENTER.z + 9, rotationY: 0.5, seed: 14 },
@@ -1156,7 +1151,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 
@@ -2162,6 +2157,17 @@ async function main() {
           size: { x: size.x, y: size.y, z: size.z },
           distance: dist,
         };
+      },
+      // Free photo camera for docs/shots/compare/* (same angle as a Places V1 reference render):
+      // player hidden, camera rig frozen until unfreezeCamera().
+      photoCamera: ({ pos, target, fov = camera.fov }) => {
+        camera.position.set(pos[0], pos[1], pos[2]);
+        camera.fov = fov;
+        camera.lookAt(target[0], target[1], target[2]);
+        camera.updateProjectionMatrix();
+        player.visible = false;
+        if (!camRig._frameObjectOrigUpdate) camRig._frameObjectOrigUpdate = camRig.update.bind(camRig);
+        camRig.update = () => {};
       },
       unfreezeCamera: () => {
         if (camRig._frameObjectOrigUpdate) camRig.update = camRig._frameObjectOrigUpdate;

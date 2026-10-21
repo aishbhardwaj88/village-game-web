@@ -35,13 +35,17 @@ function collectColliderBoxes(obj, into) {
  * Mesh per material added as a new direct child of `group`. Geometry is baked
  * relative to `group` itself (group must have no parent transform yet — true for
  * every builder in this codebase, which runs before scene.add). */
-export function mergeGroupByMaterial(group) {
+export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
   group.updateWorldMatrix(true, true);
 
   const buckets = new Map(); // material -> { geometries, castShadow, receiveShadow, colliderBoxes }
   const toRemove = [];
 
-  group.traverse((obj) => {
+  // `skipNames`: named sub-groups (already locally merged, e.g. 'house_shell_old') to leave
+  // completely alone — folding them into this merge would make them un-hideable.
+  (function walk(obj) {
+    if (obj !== group && skipNames.includes(obj.name)) return;
+    for (const child of obj.children) walk(child);
     if (obj === group) return;
     if (!obj.isMesh || obj.isInstancedMesh) return;
     let bucket = buckets.get(obj.material);
@@ -51,7 +55,7 @@ export function mergeGroupByMaterial(group) {
     bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
     collectColliderBoxes(obj, bucket.colliderBoxes);
     toRemove.push(obj);
-  });
+  })(group);
 
   for (const obj of toRemove) obj.parent.remove(obj);
 

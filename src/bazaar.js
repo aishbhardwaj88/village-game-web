@@ -858,7 +858,12 @@ export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: 8 }; // just
 export function buildBazaarLane() {
   const rowFrontageStart = BAZAAR_ROW_FRONTAGE_START;
   const segments = [
-    buildStripSegment(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
+    // 2026-10-21 (house rebuild): the straight START->BEND diagonal sliced diagonally through the
+    // house compound's courtyard; drawn instead as two legs that stay outside the compound walls —
+    // west along the lane (z=47.5, just south of the gate wall) then north along x=-58 (the same
+    // route tools/world-validator.js's BAZAAR_CHAIN already walks). Constants above are unchanged.
+    buildStripSegment({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
+    buildStripSegment({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 44, ruts: true }),
     buildStripSegment(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { seed: 42, ruts: true }),
     buildStripSegment(BAZAAR_LANE_ARRIVE, rowFrontageStart, BAZAAR_LANE_ROW_WIDTH, { seed: 43, ruts: true }),
   ];

@@ -476,7 +476,11 @@ async function main() {
     // via minDistanceToColliders along the line, not guessed) — going via
     // (-58,47), just north of that tip, then straight down to BEND along a
     // constant x=-58 (which IS clear the whole way, also verified) avoids it.
-    const BAZAAR_CHAIN = [{ x: -48, z: 46 }, { x: -58, z: 47 }, { x: -58, z: 22 }, { x: -58, z: 8 }];
+    // 2026-10-21 (house rebuild): the compound now has a real south wall (z=45.4, gate gap x=-48+-1.3)
+    // and north returns, so a straight line from (-54,46) to (-58,22) — which used to cut through the
+    // compound's then-open south and north ends — is blocked. (-58,47) now needs a tight radius so the
+    // walk really reaches the clear x=-58 corridor outside the west wall before turning north.
+    const BAZAAR_CHAIN = [{ x: -48, z: 46 }, { x: -58, z: 47, r: 0.6 }, { x: -58, z: 22 }, { x: -58, z: 8 }];
     const TEMPLE_CHAIN = [{ x: -44, z: 50.5 }, { x: -12, z: 55 }, { x: 2, z: 51 }]; // TEMPLE_LANE_START/BEND/ARRIVE
     // SCHOOL_CHAIN — found AFTER the first check-6 run reported blackboard/
     // school_bench as "unreachable" (stuck at (-60.69,96.44), right against
@@ -571,7 +575,8 @@ async function main() {
     // did. Approach from the north (same proven-clear z=47 BYPASS/HOUSE_INTERIOR_
     // CHAIN already use), then west past the house's own west wall (x=-53)
     // before turning south down the stair corridor.
-    const ROOF_CHAIN = [{ x: -48, z: 47 }, { x: -54, z: 47 }, { x: -54, z: 34, r: 0.6 }];
+    // 2026-10-21 (house rebuild): the stairs' foot is now inside the compound, reached through the south gate.
+    const ROOF_CHAIN = [{ x: -48, z: 47, r: 0.6 }, { x: -48, z: 43, r: 0.6 }, { x: -54, z: 42.5, r: 0.6 }, { x: -54, z: 34, r: 0.6 }];
     // Updated 2026-10-21 — the baagh moved inside the field (src/baagh.js). Two
     // earlier attempts both clipped the house's own east wall (HOUSE_BLOCK spans
     // x=[-53,-43]): a diagonal straight off LANE_JOIN(-48,46) toward either
@@ -579,10 +584,12 @@ async function main() {
     // z=[32,40] wall span. Fixed by first moving east to x=-36 while still north
     // of the house (z=46, proven-clear height), THEN turning south, so the wall
     // is never crossed at all.
+    // 2026-10-21 (house rebuild): the old chain started at the lane (-48,46) and walked a straight line
+    // from the spawn THROUGH the compound's then-open north and south ends; with real boundary walls
+    // that line is blocked. The spawn (-60,20) is already on the field side of the house, so go
+    // straight east along z~21 (3m north of the parked tractor, clear of the house's north wall at z=32).
     const BAAGH_CHAIN = [
-      { x: -48, z: 46 }, // LANE_JOIN — the lane's own real anchor by the house
-      { x: -36, z: 46 }, // east past the house's own east wall, while still north of it
-      { x: -36, z: 22 }, // now safe to head south, clear of the wall and the parked tractor (-45,26)
+      { x: -40, z: 21 }, // north of the house and the parked tractor (-45,26)
       { x: -15, z: 20 }, // east along the track's own north edge, toward the baagh's longitude
       { x: -15, z: 15 }, // into the baagh's own clearing (src/baagh.js BAAGH_CENTER)
     ];

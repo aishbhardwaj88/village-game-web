@@ -1,3 +1,7 @@
+**2026-10-21, after commits 6a65f5e..house rebuild:** canal visible + crossable (real keys); house fully rebuilt in Blender (`tools/blender/make_house.sh`, `docs/house-checklist.md` 11/12, compare shot `docs/shots/compare/house.png`); `?proof=1` + `tools/proof-shot.mjs` / `tools/compare-shot.mjs` are the normal-mode screenshot tools; exact asset slots (`exact: true`) for buildings. Next: school per `docs/school-checklist.md`, same method (checklist -> Blender -> compare shot).
+
+---
+
 # Handoff log
 
 Two-line status written after every 2nd completed queue item, so an interrupted run

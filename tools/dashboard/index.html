@@ -223,6 +223,14 @@
     <div class="health-grid" id="health-grid"></div>
   </section>
 
+  <section id="compare-section">
+    <h2>Building compare shots (reference left, in-game right)</h2>
+    <div class="panel">
+      <div id="checklists"></div>
+      <div id="compare-grid"></div>
+    </div>
+  </section>
+
   <section id="shots-section">
     <h2>Latest screenshots</h2>
     <div class="panel">
@@ -394,6 +402,15 @@ function renderHealth(health) {
     .join('');
 }
 
+function renderCompare(compare) {
+  const cl = document.getElementById('checklists');
+  const grid = document.getElementById('compare-grid');
+  if (!compare) return;
+  cl.innerHTML = (compare.checklists || []).map((c) => `<p><b>${escapeAttr(c.file)}</b>: ${c.done}/${c.total} ticked</p>`).join('') || '<p class="empty-note">No building checklists yet.</p>';
+  grid.innerHTML = (compare.images || []).map((i) => `<p style="margin:12px 0 4px"><b>${escapeAttr(i.name)}</b></p><img class="shot-thumb" style="width:100%;max-width:1100px;height:auto" src="${escapeAttr(i.url)}" data-full="${escapeAttr(i.url)}">`).join('') || '<p class="empty-note">No compare shots yet.</p>';
+  grid.querySelectorAll('.shot-thumb').forEach((img) => img.addEventListener('click', () => openLightbox(img.dataset.full)));
+}
+
 function renderShots(shots) {
   const grid = document.getElementById('shots-grid');
   if (!shots.images.length) {
@@ -478,6 +495,7 @@ async function refresh() {
     renderProgress(state.progress);
     renderMissions(state.missions);
     renderHealth(state.health);
+    renderCompare(state.compare);
     renderShots(state.shots);
     renderCommits(state.commits);
     renderInbox(state.inbox);

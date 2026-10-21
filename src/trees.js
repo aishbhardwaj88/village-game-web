@@ -238,8 +238,9 @@ export function buildTrees(placements) {
     if (!builder) continue;
     const tree = builder(p.seed ?? 0);
     tree.children[0].material = material;
-    tree.position.set(p.x, 0, p.z);
+    tree.position.set(p.x, p.y ?? 0, p.z);
     tree.rotation.y = p.rotationY || 0;
+    if (p.scale) tree.scale.setScalar(p.scale); // e.g. the small neem in the house courtyard's brick planter
     group.add(tree);
   }
   return group;

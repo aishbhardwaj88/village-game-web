@@ -30,11 +30,19 @@ try {
   await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
   await page.waitForTimeout(2500);
   for (const s of shots) {
-    await page.evaluate(({ x, z, yaw = Math.PI, pitch = -0.15, distance = 5 }) => {
-      const d = window.__dopahar;
-      d.teleportPlayer(x, z);
-      d.camRig.yaw = yaw; d.camRig.pitch = pitch; d.camRig.distance = distance; d.camRig.update(10);
-    }, s);
+    if (s.cam) {
+      // free photo camera: {cam:{pos:[x,y,z],target:[x,y,z],fov}} — player teleported to (x,z) too so zone streaming builds around it
+      await page.evaluate(({ x, z, cam }) => { const d = window.__dopahar; d.unfreezeCamera(); d.teleportPlayer(x ?? cam.target[0], z ?? cam.target[2]); }, s);
+      await page.waitForTimeout(800);
+      await page.evaluate((cam) => window.__dopahar.photoCamera(cam), s.cam);
+    } else {
+      await page.evaluate(({ x, z, yaw = Math.PI, pitch = -0.15, distance = 5 }) => {
+        const d = window.__dopahar;
+        d.unfreezeCamera();
+        d.teleportPlayer(x, z);
+        d.camRig.yaw = yaw; d.camRig.pitch = pitch; d.camRig.distance = distance; d.camRig.update(10);
+      }, s);
+    }
     if (s.eval) await page.evaluate(s.eval);
     for (let i = 0; i < 10; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
     await page.waitForTimeout(300);

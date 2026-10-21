@@ -34,7 +34,13 @@ function buildTrack() {
   for (let i = 0; i < corners.length - 1; i++) {
     segments.push(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e, ruts: true }));
   }
-  segments.push(buildStripSegment(LANE_JOIN, TRACK_NW, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
+  // 2026-10-21 (house rebuild): the old straight LANE_JOIN->TRACK_NW diagonal ran straight through
+  // the house compound's courtyard. Drawn instead as two legs outside its walls — east along the
+  // lane (z=47.5, just south of the gate wall), then north along x=-36 up to the track corner:
+  // the same route tools/world-validator.js's BAAGH_CHAIN already walks.
+  const spurZ = LANE_JOIN.z + 1.5;
+  segments.push(buildStripSegment({ x: LANE_JOIN.x, z: spurZ }, { x: -36, z: spurZ }, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
+  segments.push(buildStripSegment({ x: -36, z: spurZ }, TRACK_NW, TRACK_WIDTH, { seed: 10.0, tint: 0xa88a5e, ruts: true }));
   return mergeMeshList(segments, 'field_track');
 }
 

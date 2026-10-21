@@ -289,7 +289,162 @@ def export_glb(objects, out_path, apply_transform=True):
         export_yup=True,
         export_apply=apply_transform,
         export_materials='EXPORT',
+        export_vertex_color='ACTIVE',  # the exporter's default ('MATERIAL') wrote all-white COLOR_0 for texture*attribute mixes
+        export_all_vertex_colors=False,
         export_image_format='WEBP',
         export_image_webp_fallback=False,
     )
     print(f'Exported {out_path}')
+
+
+# ---------------------------------------------------------------------------
+# World-offset helpers (added 2026-10-21, house rebuild). Building scripts that
+# are placed with an exact (unscaled, uncentred) asset slot author in the
+# game's own frame, relative to the building's anchor point:
+#   wx = world X offset (east +), wz = world Z offset (south +, the lane side),
+#   h  = height above ground.
+# Blender frame is (X=wx, Y=-wz, Z=h); glTF export maps Blender Y -> glTF -Z, so a
+# model exported this way drops into three.js at the anchor with rotationY=0 and
+# every wx/wz/h lands exactly where it was authored.
+# ---------------------------------------------------------------------------
+from mathutils import Vector, Matrix
+
+
+def _cols(obj):
+    return obj.data.color_attributes
+
+
+def colorize(obj, hex_color, attr='Col'):
+    """Flat vertex colour (sRGB hex, converted to linear) — for the vertex-colour 'paint' material."""
+    r, g, b = hex_to_linear_rgb(hex_color)
+    if attr not in _cols(obj):
+        _cols(obj).new(name=attr, type='BYTE_COLOR', domain='CORNER')
+    layer = _cols(obj)[attr]
+    n = len(obj.data.loops)
+    layer.data.foreach_set('color', [r, g, b, 1.0] * n)
+    _cols(obj).active_color = layer
+    return obj
+
+
+def wb(name, x0, x1, z0, z1, h0, h1, bevel=0.012, segments=2):
+    """Beveled box from world-offset min/max corners."""
+    if x1 < x0:
+        x0, x1 = x1, x0
+    if z1 < z0:
+        z0, z1 = z1, z0
+    return beveled_box(name, (x1 - x0, z1 - z0, h1 - h0), ((x0 + x1) / 2, -(z0 + z1) / 2, h0), bevel_width=bevel, bevel_segments=segments)
+
+
+def _xf(bm, matrix):
+    bmesh.ops.transform(bm, matrix=matrix, verts=bm.verts)
+
+
+def limb(name, p0, p1, t=0.08, t2=None, bevel=0.0):
+    """A square-section beam from p0 to p1, each (wx, wz, h) — posts, rails, rafters, chains."""
+    a = Vector((p0[0], -p0[1], p0[2]))
+    b = Vector((p1[0], -p1[1], p1[2]))
+    d = b - a
+    length = d.length
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=(t, t2 or t, length), verts=bm.verts)
+    if bevel > 0:
+        bmesh.ops.bevel(bm, geom=list(bm.edges), offset=bevel, segments=1, affect='EDGES', clamp_overlap=True)
+    rot = d.to_track_quat('Z', 'Y').to_matrix().to_4x4()
+    _xf(bm, Matrix.Translation((a + b) / 2) @ rot)
+    return new_bmesh_obj(name, bm)
+
+
+def cyl(name, cx, cz, h0, h1, r0, r1=None, seg=12, cap=True):
+    """Vertical cylinder/cone frustum, r0 at h0, r1 at h1."""
+    r1 = r0 if r1 is None else r1
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=cap, cap_tris=False, segments=seg, radius1=r0, radius2=r1, depth=h1 - h0)
+    bmesh.ops.translate(bm, vec=(cx, -cz, (h0 + h1) / 2), verts=bm.verts)
+    return new_bmesh_obj(name, bm)
+
+
+def sphere(name, cx, cz, h, rx, rz=None, rh=None, subdiv=1):
+    bm = bmesh.new()
+    bmesh.ops.create_icosphere(bm, subdivisions=subdiv, radius=1.0)
+    bmesh.ops.scale(bm, vec=(rx, rz or rx, rh or rx), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=(cx, -cz, h), verts=bm.verts)
+    return new_bmesh_obj(name, bm)
+
+
+def prism_x(name, x0, x1, profile):
+    """Extrude a (wz, h) polygon profile along world X from x0 to x1 — stair stringers, sloped roofs."""
+    bm = bmesh.new()
+    ring0 = [bm.verts.new((x0, -wz, h)) for wz, h in profile]
+    ring1 = [bm.verts.new((x1, -wz, h)) for wz, h in profile]
+    n = len(profile)
+    bm.faces.new(ring0)
+    bm.faces.new(list(reversed(ring1)))
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((ring0[i], ring0[j], ring1[j], ring1[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return new_bmesh_obj(name, bm)
+
+
+def prism_z(name, z0, z1, profile):
+    """Extrude a (wx, h) polygon profile along world Z from z0 to z1."""
+    bm = bmesh.new()
+    ring0 = [bm.verts.new((wx, -z0, h)) for wx, h in profile]
+    ring1 = [bm.verts.new((wx, -z1, h)) for wx, h in profile]
+    n = len(profile)
+    bm.faces.new(ring0)
+    bm.faces.new(list(reversed(ring1)))
+    for i in range(n):
+        j = (i + 1) % n
+        bm.faces.new((ring0[i], ring0[j], ring1[j], ring1[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return new_bmesh_obj(name, bm)
+
+
+def quad(name, pts):
+    """A flat quad/tri/ngon from (wx, wz, h) points (leaves, decals, kite sails)."""
+    bm = bmesh.new()
+    vs = [bm.verts.new((p[0], -p[1], p[2])) for p in pts]
+    bm.faces.new(vs)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return new_bmesh_obj(name, bm)
+
+
+def cut(target, cutters):
+    """Boolean-subtract each cutter (a box from wb()) from target, then delete the cutters."""
+    for c in cutters:
+        boolean_cut(target, c, apply_mod=True)
+    return target
+
+
+def uv_world(obj, scale=1.0):
+    """Box-projected UVs in real metres (1 tile per `scale` metre of the TEXTURE's own repeat)."""
+    box_uv(obj, (1, 1, 1))
+
+
+def make_paint_material(name='hb_paint'):
+    """Flat matte material driven entirely by the 'Col' vertex colour (pots, flowers, steel, cloth...)."""
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = 0.85
+    attr = nt.nodes.new('ShaderNodeAttribute')
+    attr.attribute_name = 'Col'
+    nt.links.new(attr.outputs['Color'], bsdf.inputs['Base Color'])
+    nt.links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+    return mat
+
+
+def make_flat_material(name, rgb_hex, roughness=0.9):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    bsdf = next(n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
+    r, g, b = hex_to_linear_rgb(rgb_hex)
+    bsdf.inputs['Base Color'].default_value = (r, g, b, 1)
+    bsdf.inputs['Roughness'].default_value = roughness
+    return mat

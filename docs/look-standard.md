@@ -338,3 +338,6 @@ figure into one mesh. Net cost: +2 draw calls only (3 characters replaced an exi
 whole-body rock/bob on an inner pivot group (same technique as the vehicles' own body
 pitch/roll), not per-limb animation — the only approach compatible with a single merged
 mesh at this draw-call budget.
+
+## House compound palette (2026-10-21, art director — Places V1 house reference)
+The house is pale blue-grey limewash (`hb_plaster` tint #BCD2E6 in vertex colour), plinth/string-course in darker blue-grey (#7A91AB / #AFC4D9), dark wood (#5A483E) doors/shutters/railings, brick planter, terracotta pots. This supersedes the mustard house tint for the house ONLY; other buildings keep PALETTE. Tints are baked into the Blender glb's vertex colours (the glTF exporter cannot carry a tint node) — see `tools/blender/build_house.py`.

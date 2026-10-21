@@ -87,8 +87,8 @@ export function createAssetSlotRegistry() {
    * placement; a few (e.g. `bullock`, one model shared by both animals) have more.
    * `hide` — every placeholder Object3D to hide once the model has loaded.
    */
-  function register(name, { dimensions, placements, hide }) {
-    slots.set(name, { name, dimensions, placements, hide: hide || [] });
+  function register(name, { dimensions, placements, hide, exact = false, maskMaterials = [], noShadowMaterials = [] }) {
+    slots.set(name, { name, dimensions, placements, hide: hide || [], exact, maskMaterials, noShadowMaterials });
   }
 
   async function resolveSlot(slot) {
@@ -139,20 +139,31 @@ export function createAssetSlotRegistry() {
     // Ground + centre in local space, then uniformly scale to fit the slot's real-
     // world envelope — done on the (still unscaled) source once, before cloning per
     // placement, so every clone shares the same correct transform.
-    const box = new THREE.Box3().setFromObject(source);
-    const size = box.getSize(new THREE.Vector3());
-    if (slot.dimensions && size.x > 0 && size.y > 0 && size.z > 0) {
-      const scale = Math.min(slot.dimensions.w / size.x, slot.dimensions.h / size.y, slot.dimensions.d / size.z);
-      if (isFinite(scale) && scale > 0) source.scale.setScalar(scale);
+    // `exact` slots (Blender buildings authored in the game's own frame, see
+    // tools/blender/build_house.py) are NOT fit-scaled or recentred: the model's origin is the
+    // placement point and every metre in the file is a metre in the world.
+    if (!slot.exact) {
+      const box = new THREE.Box3().setFromObject(source);
+      const size = box.getSize(new THREE.Vector3());
+      if (slot.dimensions && size.x > 0 && size.y > 0 && size.z > 0) {
+        const scale = Math.min(slot.dimensions.w / size.x, slot.dimensions.h / size.y, slot.dimensions.d / size.z);
+        if (isFinite(scale) && scale > 0) source.scale.setScalar(scale);
+      }
+      const groundedBox = new THREE.Box3().setFromObject(source);
+      source.position.x -= (groundedBox.min.x + groundedBox.max.x) / 2;
+      source.position.z -= (groundedBox.min.z + groundedBox.max.z) / 2;
+      source.position.y -= groundedBox.min.y;
     }
-    const groundedBox = new THREE.Box3().setFromObject(source);
-    source.position.x -= (groundedBox.min.x + groundedBox.max.x) / 2;
-    source.position.z -= (groundedBox.min.z + groundedBox.max.z) / 2;
-    source.position.y -= groundedBox.min.y;
     source.traverse((o) => {
       if (o.isMesh) {
-        o.castShadow = true;
+        const matName = o.material && o.material.name;
+        o.castShadow = !slot.noShadowMaterials.includes(matName);
         o.receiveShadow = true;
+        if (slot.maskMaterials.includes(matName)) {
+          o.material.transparent = false;
+          o.material.alphaTest = 0.5;
+          o.material.depthWrite = true;
+        }
         if (Array.isArray(o.material)) o.material.forEach(enforceMatteMaterial);
         else enforceMatteMaterial(o.material);
       }

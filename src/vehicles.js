@@ -58,6 +58,10 @@ function box(w, h, d, material) {
  */
 const paintCache = new Map(); // "roughness|metalness" -> Material
 function paint(roughness, metalness) {
+  // Draw-call budget (2026-10-21): the kitbash used ~15 near-identical roughness/metalness pairs,
+  // each its own Material = its own draw call (x2 with the shadow pass) on every vehicle. Snap to
+  // three classes — matte, semi-gloss paint, metal — so each vehicle merges to <=3 meshes.
+  if (metalness > 0.3) { roughness = 0.5; metalness = 0.5; } else if (roughness < 0.7) { roughness = 0.55; metalness = 0.2; } else { roughness = 0.88; metalness = 0; }
   const key = `${roughness}|${metalness}`;
   let m = paintCache.get(key);
   if (!m) {

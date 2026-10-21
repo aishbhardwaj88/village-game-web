@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-20T22:30:31.000Z",
+  "timestamp": "2026-10-21T06:30:00.000Z",
   "drawCallsByZone": {
-    "hero zone (house/school/halwai/tea-stall, incl. flagpole + donation board)": 149,
-    "bazaar row + chowk (incl. the puncture/cycle shop)": 123,
-    "field + mango baagh (incl. the cattle/dog zone + the new canal/bridge)": 109
+    "hero zone (house/school/halwai/tea-stall, incl. flagpole + donation board)": 142,
+    "bazaar row + chowk (incl. the puncture/cycle shop)": 118,
+    "field + mango baagh (incl. the cattle/dog zone + the canal/bridge)": 98
   },
   "drawCallCeiling": 150,
   "drawCallAim": 120,
@@ -12,9 +12,11 @@
   "assetsMB": 6.36,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
-  "lastValidator": "pass (15/15, 3 zone cameras all under the ceiling)",
-  "lastRegressionCheck": "pass, 20/22 x2 runs (the one real fail each time is a known-flaky trolley-detach timing check, not a regression - see docs/parked.md 2026-10-21; all 8 missions complete end to end both times)",
+  "lastValidator": "pass (15/15)",
+  "lastRegressionCheck": "pass 22/22 (run 4; runs 1-3 failed only on a fixed-window timing check, fixed - see docs/parked.md)",
   "lastCheckBudget": "pass",
-  "assetsRebuiltInBlender": ["house_shell.glb (walls/door-reveal/roof+parapet/trim/chajja - decorative windows built but cut for v1, see docs/parked.md)"],
-  "notes": "NOT COMPLETE. FINISH_LINE.md: 8/29 ticked (unchanged this cycle - everything built was infrastructure/backlog work, not a FINISH_LINE line with its own normal-mode proof shot yet). ART PIVOT (2026-10-21, art director): Tripo now makes ONLY people/vehicles/trees - every building is hand-modelled in Blender instead (tools/blender/, Blender 4.5.14 LTS installed to ~/Applications, headless). First asset done: the house's exterior shell (tools/blender/build_house.py) - confirmed working in-game (door reveal in the real south opening, closed-corner roof+parapet, trim bands, chajja); the old code-built shell kept as an invisible, locally-merged 'house_shell_old' sub-group so collision/world-validator stay exact. Decorative east/west windows were built, confirmed geometrically correct in the exported file (re-imported + per-material vertex dump), but don't render in-game for an unresolved reason - cut for v1 rather than spend more time chasing it (docs/parked.md). Animals reworked for Wave 4 item 4: cattle/dog geometry rebuilt with round capsule torsos/necks/legs instead of boxes (same technique as the earlier monkey rework), cow shoulder height tuned to ~1.4m, buffalo bulkier via a per-instance non-uniform scale on the same shared InstancedMesh (still one draw call), plus a slow idle grazing/sniffing sway (src/zoneManager.js's build() can now return {group, onFrame(dt)} for zone content needing a per-frame update). Canal + mango baagh move (Wave 4 item 1): the baagh moved from a dangling patch east of the field into the family's own field, next to a new canal+one-pukka-bridge crossing (src/canal.js) - deliberately narrower than MAP.md's literal full-width wording, since a first wider attempt broke 27/50 reachability targets by crossing several already-verified tools/world-validator.js routes that converge near the house; also found and fixed a real bug where the canal's shadow-casting (not its position) was what pushed hero-zone draw calls over budget. M7 re-tested end to end before and after the move, no regressions. Still pending: hero zone is still at 149/150 (Wave 4 item 5's 'get it back toward 120' not yet done - now more urgent since the house conversion + canal both landed there); normal-mode (no ?dev=1) re-verification of the 6 already-ticked FINISH_LINE items still citing dev-mode screenshots (signboards, mission-cast, animals, trolley-solid, M6-chase, M8-ending) - only the donation board has been redone this way; the rest of the Blender build order (school, halwai, tea stall, general store, 8 bazaar shops, temple, post office, ration shop, atta chakki, background houses, boundary walls, lanes/kerbs/drains, props) not started. Zero Tripo API calls made throughout. Next: continue the Blender order (school is the biggest remaining single piece - 3 wings, one real walkable classroom, a gate), or do the hero-zone draw-call reduction pass first since school lands in the same already-tight zone."
+  "assetsRebuiltInBlender": [
+    "house_compound.glb (whole house compound, replaces house_shell.glb) - house checklist 11/12, docs/house-checklist.md"
+  ],
+  "notes": "NOT COMPLETE. FINISH_LINE.md still 8/29 (no new line has its own normal-mode proof yet). This cycle: (1) canal fixed - water had been below the ground (invisible) and the bridge deck was a solid collider; normal-mode shots in docs/shots/normal-mode-canal-2026-10-21/, tractor+trolley and bullock cart both cross with real keys (tools/canal-crossing-test.mjs). (2) HOUSE REBUILT in Blender: two storeys, balcony with carved railing, roof terrace (mumty, tank, antenna, charpais, kite), rangoli courtyard, gate, cattle shed + cow, jhoola, planter, kitchen alcove; compare shot docs/shots/compare/house.png; checklist 11/12 (the planter's tree is still a code stand-in). Root cause of the old 'windows do not render' bug found: they were inside a solid wall, AND the 'hidden' old walls were never hidden (an outer merge swallowed them). (3) Lane/field spur strips that cut through the compound were redrawn outside it; validator route chains edited for the new real walls. Next: school (docs/school-checklist.md), then halwai, tea stall, general store, bazaar row, etc."
 }
