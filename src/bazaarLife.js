@@ -19,7 +19,7 @@ const NPC_RADIUS = 0.32;
 const NPC_HEIGHT = 1.7;
 
 const SHOPKEEPER_TINTS = [0xb08a5a, 0x6a8a5a, 0x8a5a6a, 0x5a7a8a, 0x9a7a4a, 0x7a5a8a, 0x9a9690, 0x8a6a3a];
-const VILLAGER_TINTS = [0x4a6a8a, 0xa06a4a, 0x6a4a8a, 0x8a8a4a];
+const VILLAGER_TINTS = [0x4a6a8a, 0xa06a4a, 0x6a4a8a, 0x8a8a4a, 0x7a3a3a, 0x3a6a5a];
 const SEATED_TINT = 0x7a5a4a;
 
 // A small lean-and-circle sway per trade (createStirLoop's own technique, applied
@@ -44,6 +44,10 @@ const VILLAGER_LOOPS = [
   [{ x: BAZAAR_WEST_X + 20, z: 9 }, { x: BAZAAR_WEST_X + 32, z: 9 }],
   [{ x: BAZAAR_EAST_X - 4, z: 9 }, { x: BAZAAR_EAST_X - 16, z: 9 }],
   [{ x: CHOWK_TEA_POS.x + 4, z: 7.5 }, { x: CHOWK_TEA_POS.x + 2, z: 18 }],
+  // village lane between the house and the school: neighbours out on errands
+  [{ x: -45.5, z: 71 }, { x: -45.5, z: 81 }],
+  [{ x: -46.5, z: 86 }, { x: -48, z: 97 }],
+  [{ x: -47, z: 51 }, { x: -45, z: 57 }],
 ];
 
 const SPEED = 1.1;

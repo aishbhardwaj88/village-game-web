@@ -247,7 +247,9 @@ async function main() {
       // that predates this task, confirmed from the source's own comment, not
       // a bug — excluded from the buried bucket specifically (not floating,
       // doesn't need that exclusion).
-      const BURIED_EXCLUDE_LABELS = new Set(['bazaar_life[12]']);
+      // The seated villager is always the LAST bazaar_life instance (index moves when villager loops are added).
+      const lastLife = out.filter((r) => r.label.startsWith('bazaar_life[')).map((r) => +r.label.slice(12, -1));
+      const BURIED_EXCLUDE_LABELS = new Set(lastLife.length ? ['bazaar_life[' + Math.max(...lastLife) + ']'] : []);
       const floating = out.filter((r) => r.lowestY > 0);
       const buried = out.filter((r) => r.lowestY < 0 && !BURIED_EXCLUDE_LABELS.has(r.label));
       record(`check 2 — nothing floats (${label})`, floating.length === 0, floating.length ? JSON.stringify(floating.slice(0, 15)) : `0 objects above +${TOLERANCE}m`);
