@@ -122,6 +122,7 @@ import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam } from './freeRoam.js';
 import { createSideJobs } from './sideJobs.js';
+import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -1061,6 +1062,8 @@ async function main() {
   let deferredContentLoaded = false;
   let buildingFootprints = []; // tools/collider-audit.js / tools/trolley-drive-test.js — see loadDeferredContent()
   let preMergeColliderCount = 0; // item 1d — see loadDeferredContent()
+  const ambientLife = createAmbientLife();
+  scene.add(ambientLife.group);
   let bgHousesGroup = null; // src/scenery.js — abadi rows, distance-culled per area each frame
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
   function loadDeferredContent() {
@@ -2268,6 +2271,7 @@ async function main() {
       zoneManager.update(listenerPos.x, listenerPos.z, dt);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
       freeRoam.update(dt);
+      ambientLife.update(dt, listenerPos.x, listenerPos.z);
       if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;

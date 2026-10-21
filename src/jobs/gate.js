@@ -7,9 +7,9 @@ import { buildGatePillars, gateColliders, part, mergeProp } from './props.js';
  * it never fails — bumping a pillar just costs seconds. Reward: Pitaji's praise + money (more for a fast run).
  */
 const GATE = { x: 30, z: 40 };
-const GAP = 3.2;
+const GAP = 4.0;
 const YARD_Z0 = GATE.z - 9; // the target zone, north of the gate
-const YARD_Z1 = GATE.z - 1.0; // trolley centre this far past the gate line = rear axle through
+const YARD_Z1 = GATE.z - 0.2; // trolley centre this far past the gate line = rear axle through
 
 export function registerGateJob(api, env) {
   const st = { stage: 'idle', t: 0, started: false };

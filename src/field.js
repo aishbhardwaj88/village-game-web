@@ -61,43 +61,72 @@ function buildFieldGround() {
   return mesh;
 }
 
-/** Crop rows as one InstancedMesh — a simple low-poly tuft repeated on a grid, offset
- * row-to-row so it reads as planted furrows rather than a rigid checkerboard. */
+/** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
+ * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
+ * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
+ * triangles each, no shadow casting. */
 function buildCropRows() {
-  const spacing = 3;
-  const rowOffset = 0.8;
+  const along = 1.0;
+  const between = 1.5;
   const halfX = FIELD_SIZE.x / 2 - 2;
   const halfZ = FIELD_SIZE.z / 2 - 2;
-  const cols = Math.floor((halfX * 2) / spacing);
-  const rows = Math.floor((halfZ * 2) / spacing);
+  const cols = Math.floor((halfX * 2) / along);
+  const rows = Math.floor((halfZ * 2) / between);
 
-  const geometry = ensureUv2(new THREE.BoxGeometry(0.18, 0.55, 0.18));
-  const material = getTiledMaterial('crop', { repeatX: 1, repeatY: 1, tint: 0xb8a23c, roughness: 1 });
+  const pos = [];
+  const col = [];
+  const base = new THREE.Color(0x4f5f1f);
+  const tipWheat = new THREE.Color(0xd2b84e);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.3;
+    const h = 0.55 + 0.22 * ((i * 37) % 5) / 4;
+    const lean = 0.12 + 0.1 * ((i * 17) % 3) / 2;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const r0 = 0.03;
+    // blade: base edge (perpendicular to the lean direction) up to a tip offset outward
+    const px = -sa * 0.045, pz = ca * 0.045;
+    const bx = ca * r0, bz = sa * r0;
+    pos.push(bx - px, 0, bz - pz, bx + px, 0, bz + pz, bx + ca * lean, h, bz + sa * lean);
+    col.push(base.r, base.g, base.b, base.r, base.g, base.b, tipWheat.r, tipWheat.g, tipWheat.b);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geometry.computeVertexNormals();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide });
+  material.name = 'crop';
   const mesh = new THREE.InstancedMesh(geometry, material, cols * rows);
-  mesh.castShadow = true;
+  mesh.castShadow = false;
   mesh.receiveShadow = true;
   mesh.name = 'crop_rows';
   mesh.userData.groundLevel = true; // every instance sits at ground level — see tools/screenshot.js
 
   const dummy = new THREE.Object3D();
+  const c = new THREE.Color();
   let index = 0;
   for (let r = 0; r < rows; r++) {
-    const rz = FIELD_CENTER.z - halfZ + r * spacing;
-    const offset = r % 2 === 0 ? 0 : rowOffset;
-    for (let c = 0; c < cols; c++) {
-      const rx = FIELD_CENTER.x - halfX + c * spacing + offset;
-      // A real clearing around the mango baagh (src/baagh.js, moved 2026-10-21
-      // to sit inside this same crop rectangle) — otherwise wheat tufts would
-      // visually clip straight through the trunks/canopies.
+    const rz = FIELD_CENTER.z - halfZ + r * between;
+    const sabzi = r % 3 === 2;
+    for (let k = 0; k < cols; k++) {
+      const rx = FIELD_CENTER.x - halfX + k * along + (r % 2) * 0.35;
+      // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
-      dummy.position.set(rx, 0.275, rz);
-      dummy.rotation.y = Math.sin(rx * 12.9 + rz * 7.1) * 0.3;
+      const j = Math.sin(rx * 12.9 + rz * 7.1);
+      dummy.position.set(rx + j * 0.12, 0, rz + Math.cos(rx * 5.3 + rz * 3.7) * 0.1);
+      dummy.rotation.y = j * 3;
+      const sc = 0.85 + 0.35 * (0.5 + 0.5 * Math.sin(rx * 3.1 - rz * 2.3));
+      dummy.scale.set(sc, sc * (sabzi ? 0.7 : 1), sc);
       dummy.updateMatrix();
-      mesh.setMatrixAt(index++, dummy.matrix);
+      mesh.setMatrixAt(index, dummy.matrix);
+      if (sabzi) c.setRGB(0.5, 1.25, 0.55);
+      else c.setRGB(0.92 + 0.1 * j, 0.95 + 0.08 * j, 0.85);
+      mesh.setColorAt(index, c);
+      index++;
     }
   }
   mesh.count = index;
   mesh.instanceMatrix.needsUpdate = true;
+  mesh.instanceColor.needsUpdate = true;
   return mesh;
 }
 
