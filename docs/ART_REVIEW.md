@@ -62,3 +62,14 @@ Nothing from review 1 has been reworked yet. Review 1 items stay open and come F
 - GROUND: still dry grey-brown everywhere. Add green grass patches and verges along lanes, around trees and buildings.
 - Draw calls (hero zone 145/150): YES to per-zone distance culling / LOD for Blender buildings so the rest of the village can be rebuilt. Do not drop building detail to fit.
 - References wanted (NEEDS_YOU): not needed from the user. Temple and new shops without references are fine as built; judge them against the look of the referenced buildings.
+
+## Review 3 (21 Oct 2026, ~09:00 IST)
+
+Still no "Reworked" lines: reviews 1 and 2 stay open and come FIRST.
+Good: bazaar signboards now clear the parapet (629c237), normal-mode re-proofs done.
+
+### Background houses - FAIL
+- References DO exist: Characters V1/buildings/house_1.png, house_2.png, house_3.png and Places V1/house/STYLE_ONLY_other_family_duplex.png. Rebuild the variants from these, with compare shots.
+- Layout: an Indian abadi is DENSE. Houses share walls, line narrow lanes in continuous rows, with small courtyards, steps, drains, charpais, cattle, hand pumps between them. Two lonely houses in an empty field reads wrong. Cluster them along the lane network per MAP.md.
+- Mix of 1 and 2 storeys, flat roofs with parapets and roof clutter (tanks, charpais, clotheslines), a few sloped tin/tile roofs; palette variety (limewash blue, cream, pink, mint) with ochre plinth bands.
+- Triangles now 332k of 400k: use LOD and instancing for the clusters.
