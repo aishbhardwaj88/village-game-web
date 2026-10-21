@@ -782,7 +782,7 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
@@ -794,7 +794,7 @@ async function main() {
   {
     // Blender bazaar row (2026-10-21, docs/bazaar-row-checklist.md): exact slot at the row centre (-82, 15);
     // the code row/shopfronts/interiors are the hidden collision backing.
-    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('bazaar_row', {
       exact: true,
       hide: bazaarOld,
@@ -1003,9 +1003,16 @@ async function main() {
 
   assetSlots.resolveAll().then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
-    // OFF by default: folding every hero-zone Blender building into one mesh per material saves draw calls but
-    // always draws all of them (+100k triangles); each building is already just 2-4 meshes. `?mergeblender=1` to try.
-    if (new URLSearchParams(window.location.search).has('mergeblender')) assetSlots.mergeSlotModels(['house_compound', 'school_compound', 'halwai_compound', 'tea_stall', 'general_store'], 'blender_hero', scene);
+    // Draw-call budget: fold each CLUSTER of Blender buildings into one mesh per material (src/assetSlots.js
+    // mergeSlotModels; exact because every Blender building shares the same CC0 sets with tints in vertex colours).
+    // Clusters, not the whole village, so frustum culling still drops far clusters: `?nomerge=1` to compare.
+    if (!new URLSearchParams(window.location.search).has('nomerge')) {
+      // Tight clusters only: the sun's shadow pass draws a whole merged mesh whenever any part is inside the
+      // +-60 m shadow box, so a mesh spanning half the village would double its full triangle count.
+      assetSlots.mergeSlotModels(['house_compound', 'general_store'], 'blender_house_row', scene);
+      assetSlots.mergeSlotModels(['halwai_compound', 'tea_stall', 'school_compound'], 'blender_halwai_row', scene);
+      assetSlots.mergeSlotModels(['bazaar_row', 'tea_stall_chowk', 'chowk_plaza', 'new_shops'], 'blender_bazaar', scene);
+    }
   });
 
   function onResize() {
@@ -1252,7 +1259,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 

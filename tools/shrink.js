@@ -43,7 +43,7 @@ async function main() {
   const ratio = triCountBefore > 0 ? Math.min(1, triangleBudget / triCountBefore) : 1;
 
   await document.transform(
-    dedup(),
+    dedup({ keepUniqueNames: true }), // keep hb_props distinct from hb_main (same textures, different shadow behaviour)
     weld(),
     simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.01 }),
     textureCompress({

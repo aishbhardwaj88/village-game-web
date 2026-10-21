@@ -44,3 +44,21 @@ General rules from review 1:
 
 ### Not yet reviewed
 Canal (note: water reads as flat swimming-pool blue; should be muddy green-brown nahar with sloped earth banks and gentle ripples; bridge needs concrete parapets), trees (must be green, not grey-beige).
+
+## Review 2 (21 Oct 2026, ~08:00 IST)
+
+Nothing from review 1 has been reworked yet. Review 1 items stay open and come FIRST.
+
+### Chowk, temple, flower stall - FIX (decent)
+- Temple: good shape and scale. Tree beside it is grey faceted polygons: must be green, rounder canopy.
+- Flower stall: good. Add more marigold garland colour.
+
+### Post office, ration shop, atta chakki - FIX
+- All three signboards are blurred and illegible: same signboard regression as review 1, fix in the shared signboard code path once for every Blender building.
+- The giant grey faceted tree in front of the camera hides the shot: trees green, and frame compare shots without anything blocking.
+
+### Village-wide (highest visual impact, do right after the review 1 items)
+- TREES: every code tree reads as grey-beige faceted rocks. Make them green (neem/peepal/mango greens), smoother rounded canopies, darker trunks. This single fix changes every screenshot.
+- GROUND: still dry grey-brown everywhere. Add green grass patches and verges along lanes, around trees and buildings.
+- Draw calls (hero zone 145/150): YES to per-zone distance culling / LOD for Blender buildings so the rest of the village can be rebuilt. Do not drop building detail to fit.
+- References wanted (NEEDS_YOU): not needed from the user. Temple and new shops without references are fine as built; judge them against the look of the referenced buildings.

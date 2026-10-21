@@ -29,12 +29,13 @@ from common import (
 # vertex colours: kinds plaster/plinth/trim/floor/apron/wood/concrete/paint all fold into it) plus, only where used,
 # a brick mesh and a corrugated-tin mesh (their textures carry real detail) and the transparent decals.
 MAIN_KINDS_TEXTURE = ('plaster', 0.5)
-OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8)}
+OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0)}
 
 
 class Kit:
-    def __init__(self):
+    def __init__(self, split_props=True):
         clear_scene()
+        self.split_props = split_props
         self.records = []   # (kind, obj, colour or None)
         self.extra = []     # objects exported as-is (decals), joined by the caller
 
@@ -53,17 +54,17 @@ class Kit:
         """Colour every object (per-kind sRGB tint from `tints['hb_<kind>']`, or its own paint colour) into a 'Base'
         vertex-colour layer, join into hb_main / hb_brick / hb_tin, box-UV, bake dirty-vertex AO, then write
         AO(soft) x Base x a smooth +-drift into the exported COLOR_0 layer."""
-        groups = {'main': [], 'brick': [], 'tin': []}
+        groups = {'main': [], 'props': [], 'brick': [], 'tin': [], 'terracotta': []}
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
             colorize(obj, color, attr='Base')
-            groups['brick' if kind == 'brick' else 'tin' if kind == 'tin' else 'main'].append(obj)
+            groups[kind if kind in ('brick', 'tin', 'terracotta') else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
         for g, objs in groups.items():
             if not objs:
                 continue
-            tex, rep = OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)
+            tex, rep = OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)  # 'props' (kind paint) = same plaster set, its own material so it can skip the shadow pass
             m = load_pbr_material('hb_' + g, tex, repeat=(rep, rep))
             wire_vertex_ao(m, strength=0.5)
             for o in objs:
@@ -240,11 +241,13 @@ def school_bag(kit, x, z, h, ang=0.0, colour=0xC0392B):
     kit.add('paint', limb('bag_strap', p(-0.1, 0.0, h + 0.3), p(0.1, 0.0, h + 0.3), 0.03, 0.12, 0.0), 0x1B1B1D)
 
 
-def ring(name, cx, cz, h, R, r, axis='z', seg=18, tube=6):
+def ring(name, cx, cz, h, R, r, axis='z', seg=None, tube=None):
     """A torus (tyres, rims) centred at world offsets (cx, cz, h). axis='z': the ring lies in the
     (wx, h) plane (axle along wz); axis='x': ring in the (wz, h) plane (axle along wx)."""
     import bmesh
     from common import new_bmesh_obj
+    seg = seg or max(8, min(18, int(10 + 18 * R)))     # small rings (bangles, tubes) stay cheap
+    tube = tube or (4 if r < 0.03 else 5)
     bm = bmesh.new()
     verts = []
     for i in range(seg):

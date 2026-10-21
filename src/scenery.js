@@ -1,67 +1,110 @@
 import * as THREE from 'three';
 import { texturedThickBox, texturedWallBox } from './materials.js';
-import { PALETTE, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
+import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { getGLTFLoader } from './loaders.js';
 
-// Item 10 — background houses beyond the fog line, so the village doesn't end
-// abruptly. Lane trees were removed — see docs/parked.md: no suitable CC0 canopy-
-// cluster cutout texture was found for a proper cross-plane billboard tree (ambientCG's
-// "LeafSet"/"Foliage" atlases are individual leaves and grass blades, not a dense
-// canopy silhouette), and the faceted icosahedron placeholder read as a toy prop.
+// Background houses beyond the hero zone, so the village doesn't end abruptly (docs/bg-houses-checklist.md).
+// 2026-10-21: four hand-modelled Blender variants (tools/blender/build_bg_houses.py) — A single-room flat roof,
+// B two-storey painted, C tin roof inside a yard wall, D mud-plaster house with a red clay tile roof — drawn as
+// InstancedMeshes (one draw per material per variant, however many placements). Collision + the world validator's
+// real-geometry backing stay as a hidden, locally-merged group of plain boxes ('bg_houses_old').
 
-// Fixed palette (law, see docs/look-standard.md), each a different colour.
-const HOUSE_TINTS = [PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue];
+// Footprint boxes in the variant's LOCAL frame (front = +z), matching the Blender scripts.
+const VARIANTS = {
+  a: { file: 'bg_house_a.glb', boxes: [{ x0: -2.75, x1: 2.75, z0: -2.5, z1: 2.5, h: 3.6 }] },
+  b: { file: 'bg_house_b.glb', boxes: [{ x0: -3, x1: 3, z0: -3, z1: 3, h: 6.6 }] },
+  c: {
+    file: 'bg_house_c.glb',
+    boxes: [
+      { x0: -2.25, x1: 2.25, z0: -4, z1: 0, h: 3.2 }, // the house
+      { x0: -4, x1: 4, z0: -4, z1: -3.8, h: 1.2 }, { x0: -4, x1: -3.8, z0: -4, z1: 4, h: 1.2 }, { x0: 3.8, x1: 4, z0: -4, z1: 4, h: 1.2 }, // yard walls (back, west, east)
+      { x0: -4, x1: -1.2, z0: 3.8, z1: 4, h: 1.2 }, { x0: 1.2, x1: 4, z0: 3.8, z1: 4, h: 1.2 }, // front, either side of the gate
+    ],
+  },
+  d: { file: 'bg_house_d.glb', boxes: [{ x0: -2.5, x1: 2.5, z0: -2.25, z1: 2.25, h: 2.9 }] },
+};
 
-/** A handful of simple flat-roofed boxes scattered past the hero zone, at a distance
- * fog (density 0.0085) mostly hazes over — same texture set as the hero zone, just
- * different tints, so it reads as "more village" rather than a different place. */
+// Clear of every lane/route (tools/world-validator.js chains), the field and the canal. yaw in quarter turns.
+const PLACEMENTS = [
+  { v: 'd', x: -115, z: 15, q: 1 },
+  { v: 'c', x: 25, z: 128, q: 2 },
+  { v: 'b', x: -95, z: 165, q: 2 },
+  { v: 'a', x: -118, z: 38, q: 1 },
+  { v: 'a', x: -85, z: 62, q: 1 },
+  { v: 'a', x: -22, z: 102, q: 3 },
+  { v: 'a', x: -20, z: 132, q: 2 },
+  { v: 'a', x: -75, z: 142, q: 2 },
+  { v: 'b', x: -62, z: 152, q: 2 },
+  { v: 'b', x: 12, z: 108, q: 3 },
+  { v: 'c', x: -112, z: 66, q: 1 },
+  { v: 'c', x: 32, z: 84, q: 3 },
+  { v: 'd', x: -100, z: 98, q: 1 },
+  { v: 'd', x: -18, z: 78, q: 3 },
+];
+
+function worldBox(p, b) {
+  const th = (p.q * Math.PI) / 2;
+  const c = Math.round(Math.cos(th)), s = Math.round(Math.sin(th));
+  const pts = [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]].map(([x, z]) => [p.x + x * c + z * s, p.z - x * s + z * c]);
+  return { minX: Math.min(...pts.map((q) => q[0])), maxX: Math.max(...pts.map((q) => q[0])), minZ: Math.min(...pts.map((q) => q[1])), maxZ: Math.max(...pts.map((q) => q[1])), h: b.h };
+}
+
 export function buildBackgroundHouses(scene, kit) {
   const group = new THREE.Group();
   group.name = 'background_houses';
 
-  const placements = [
-    { x: -115, z: 15, w: 9, d: 7, h: 4.5 },
-    { x: 25, z: 128, w: 8, d: 8, h: 4 },
-    { x: -95, z: 165, w: 10, d: 7, h: 5 },
-  ];
-
-  placements.forEach((p, i) => {
-    // Grouped per house (not added loose into `group`) so a whole-object grounding
-    // check (tools/screenshot.js) sees one "placed object" whose lowest point is the
-    // block's base — not the roof, checked in isolation, several metres up.
-    const houseGroup = new THREE.Group();
-    houseGroup.name = `background_house_${i}`;
-
-    const tint = HOUSE_TINTS[i % HOUSE_TINTS.length];
-    const block = texturedWallBox(p.w, p.h, p.d, 'plaster', { tint, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: p.x * 3.1 + p.z * 1.7 });
-    block.position.set(p.x, p.h / 2, p.z);
-    houseGroup.add(block);
-
-    // docs/FINISH_LINE.md Step C — the first background house gets a real tin
-    // roof instead of flat concrete, for the "vary prosperity... some plain"
-    // read (art-direction.md 7.1b) a village of identical flat concrete roofs
-    // doesn't have. Costs +1 draw call (splits off from the other two
-    // houses' shared 'concrete' roof material) — within budget.
-    const isTin = i === 0;
-    const roofH = isTin ? 0.08 : 0.25; // a tin sheet is thin, not a slab
-    const roof = texturedThickBox(p.w + 0.3, roofH, p.d + 0.3, isTin ? 'tin' : 'concrete', { tint: 0xd7d2c4, tintStrength: isTin ? 0 : 1 });
-    roof.position.set(p.x, p.h + roofH / 2, p.z);
-    houseGroup.add(roof);
-
-    group.add(houseGroup);
-
-    kit.addPlinthRing(p.x, p.z, p.w, p.d, WALL_THICKNESS);
-    kit.addCornerPilasters(p.x, p.z, p.w, p.d, p.h, WALL_THICKNESS);
+  // Hidden collision/validator backing: one plaster box per footprint box.
+  const old = new THREE.Group();
+  old.name = 'bg_houses_old';
+  old.visible = false;
+  PLACEMENTS.forEach((p) => {
+    for (const b of VARIANTS[p.v].boxes) {
+      const w = worldBox(p, b);
+      const mesh = texturedWallBox(w.maxX - w.minX, w.h, w.maxZ - w.minZ, 'plaster', { tint: PALETTE.cream, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: p.x * 3.1 + p.z * 1.7 });
+      mesh.position.set((w.minX + w.maxX) / 2, w.h / 2, (w.minZ + w.maxZ) / 2);
+      old.add(mesh);
+    }
   });
+  mergeGroupByMaterial(old);
+  group.add(old);
 
-  // Task 2 (draw-call budget) — the 3 houses' walls (different tints, baked into
-  // vertex colour) share one 'plaster' Material, and their 3 roofs (same tint)
-  // share one 'concrete' Material, so this crosses the per-house subgroups and
-  // folds 6 meshes down to 2. (Further folded into the village-wide merge in
-  // main.js, which now also picks these up — this local pass just keeps things
-  // tidy if that ever changes.) kit's instanced pieces are shared with the rest
-  // of the village and finalized once by the caller, not here.
-  mergeGroupByMaterial(group);
+  // The visible houses: one InstancedMesh per mesh of each variant's glb, per map region (so frustum culling can drop
+  // a whole far region instead of every instance always being drawn).
+  const loader = getGLTFLoader();
+  const region = (p) => `${p.x < -70 ? 'W' : 'E'}${p.z < 100 ? 'N' : 'S'}`;
+  for (const [key, def] of Object.entries(VARIANTS)) {
+    const mine = PLACEMENTS.filter((p) => p.v === key);
+    if (!mine.length) continue;
+    loader.load(`assets/models/${def.file}`, (gltf) => {
+      gltf.scene.updateMatrixWorld(true);
+      const regions = [...new Set(mine.map(region))];
+      for (const reg of regions) {
+        const list = mine.filter((p) => region(p) === reg);
+        gltf.scene.traverse((m) => {
+          if (!m.isMesh) return;
+          const inst = new THREE.InstancedMesh(m.geometry, m.material, list.length);
+          const tmp = new THREE.Matrix4();
+          const col = new THREE.Color();
+          list.forEach((p, i) => {
+            tmp.makeRotationY((p.q * Math.PI) / 2).setPosition(p.x, 0, p.z);
+            inst.setMatrixAt(i, tmp.multiply(m.matrixWorld.clone()));
+            const v = 0.95 + 0.05 * (((i * 7919 + key.charCodeAt(0) + reg.charCodeAt(0)) % 100) / 100);
+            inst.setColorAt(i, col.setRGB(v, v * (0.97 + 0.03 * ((i * 13) % 3)), v * 0.97));
+          });
+          inst.instanceMatrix.needsUpdate = true;
+          if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
+          inst.computeBoundingSphere();
+          inst.castShadow = false; // distant scenery, beyond the useful shadow range
+          inst.receiveShadow = true;
+          inst.userData.mergedStatic = true; // whole-object grounding check: roofs of these are elevated by design
+          inst.name = `bg_house_${key}_${reg}_${m.name || 'mesh'}`;
+          group.add(inst);
+        });
+      }
+    });
+  }
+
   scene.add(group);
   return group;
 }
