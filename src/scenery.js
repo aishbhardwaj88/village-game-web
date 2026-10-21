@@ -3,6 +3,7 @@ import { texturedThickBox, texturedWallBox } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getGLTFLoader } from './loaders.js';
+import { createCattleHerd } from './animals.js';
 
 // The abadi (docs/bg-houses-checklist.md, ART_REVIEW review 3): dense continuous ROWS of attached houses along a lane
 // network, not lonely single houses. Three Blender row models (tools/blender/build_abadi.py, modelled from Characters V1/
@@ -195,11 +196,21 @@ export function buildBackgroundHouses(scene, kit) {
     group.add(kachcha);
   });
 
+  // Cattle resting in the homestead's shed (open side faces +z, manger along the back wall).
+  const shedHerd = createCattleHerd([
+    { x: KACHCHA.x + 3.9, z: KACHCHA.z - 3.7, rotationY: Math.PI },
+    { x: KACHCHA.x + 5.6, z: KACHCHA.z - 3.6, rotationY: Math.PI * 0.93, buffalo: true },
+  ]);
+  shedHerd.mesh.name = 'kachcha_cattle';
+  group.add(shedHerd.mesh);
+
   // Called every frame from main.js with the player/vehicle position; the re-sort only runs after the player moved 4 m.
   group.userData.updateVisibility = (px, pz) => {
     lastX = px;
     lastZ = pz;
-    if (kachcha) kachcha.visible = Math.hypot(px - KACHCHA.x, pz - KACHCHA.z) < FAR_DIST;
+    const nearKachcha = Math.hypot(px - KACHCHA.x, pz - KACHCHA.z) < FAR_DIST;
+    if (kachcha) kachcha.visible = nearKachcha;
+    shedHerd.mesh.visible = nearKachcha;
     if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();
   };
 

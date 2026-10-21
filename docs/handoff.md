@@ -28,6 +28,11 @@ Next: distance-hide Blender hero buildings, halwai/flower-stall/post-office comp
 ---
 
 # Handoff log
+**2026-10-21 (cycle 6):** A cow and a buffalo now stand in the kachcha homestead's cattle shed (src/scenery.js, instanced, hidden when far). Validator passes; inbox empty. Push still fails (no git login), so live site is not updated.
+Next: 2-3 more kachcha variants near fields, Blender tree rebuild, PBR on lanes/canal.
+
+---
+
 
 Two-line status written after every 2nd completed queue item, so an interrupted run
 can resume without re-reading the whole session. Newest entry at the top.
