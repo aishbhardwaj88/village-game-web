@@ -433,7 +433,7 @@ async function main() {
     // before the static merge) rather than re-typing coordinates here.
     const buildingTargets = await page.evaluate(() => {
       const d = window.__dopahar;
-      const EXCLUDE = new Set(['lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation']);
+      const EXCLUDE = new Set(['new_shops_old', 'lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation']);
       return d
         .getBuildingFootprints()
         .filter((f) => !EXCLUDE.has(f.name) && f.root !== 'background_houses')

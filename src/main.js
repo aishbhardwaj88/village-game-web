@@ -293,9 +293,14 @@ async function main() {
   shopsGroup.add(buildPostOffice(POST_OFFICE_POS, NEW_SHOPS_ROT));
   shopsGroup.add(buildRationShop(RATION_SHOP_POS, NEW_SHOPS_ROT));
   shopsGroup.add(buildAttaChakki(ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(buildNewShopWalls(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(buildNewShopRoofs(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(buildNewShopProps(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  // Blender post office / ration shop / atta chakki (2026-10-21, docs/new-shops-checklist.md): the code shells are the
+  // INVISIBLE collision backing in 'new_shops_old'; one exact slot (anchored at the ration shop, rotated like them) draws all three.
+  const newShopsOld = new THREE.Group();
+  newShopsOld.name = 'new_shops_old';
+  newShopsOld.add(buildNewShopWalls(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  newShopsOld.add(buildNewShopRoofs(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  newShopsOld.add(buildNewShopProps(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
+  shopsGroup.add(newShopsOld);
   buildNewShopSignboards(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT)
     .then((mesh) => shopsGroup.add(mesh))
     .catch((err) => console.error('Failed to build new-shop signboards', err));
@@ -777,7 +782,7 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
@@ -789,7 +794,7 @@ async function main() {
   {
     // Blender bazaar row (2026-10-21, docs/bazaar-row-checklist.md): exact slot at the row centre (-82, 15);
     // the code row/shopfronts/interiors are the hidden collision backing.
-    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('bazaar_row', {
       exact: true,
       hide: bazaarOld,
@@ -827,6 +832,11 @@ async function main() {
       placements: [{ container: scene, position: new THREE.Vector3(FLOWER_STALL_POS.x, 0, FLOWER_STALL_POS.z), rotationY: 0 }],
     });
   }
+  assetSlots.register('new_shops', {
+    exact: true,
+    hide: [scene.getObjectByName('new_shops_old')].filter(Boolean),
+    placements: [{ container: scene, position: new THREE.Vector3(RATION_SHOP_POS.x, 0, RATION_SHOP_POS.z), rotationY: NEW_SHOPS_ROT }],
+  });
   {
     const teaOldGroup = scene.getObjectByName('tea_old');
     const storeOldGroup = scene.getObjectByName('store_old');
@@ -1242,7 +1252,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 
