@@ -80,6 +80,11 @@ export function bazaarBoundaryXs() {
 export function buildBazaarRow(kit) {
   const group = new THREE.Group();
   group.name = 'bazaar_row';
+  // Blender bazaar rebuild (2026-10-21, docs/bazaar-row-checklist.md): everything this function builds is the
+  // INVISIBLE collision/validator backing ('bazaar_row_old'); tools/blender/build_bazaar_row.py's bazaar_row.glb draws
+  // the terrace. (`group` stays the root the chowk, plaza and lane attach to.)
+  const old = new THREE.Group();
+  old.name = 'bazaar_row_old';
 
   const backZ = BAZAAR_ROW_CZ + BAZAAR_UNIT_D / 2;
   const frontZ = BAZAAR_FRONT_Z;
@@ -126,7 +131,7 @@ export function buildBazaarRow(kit) {
   backWallMesh.castShadow = true;
   backWallMesh.receiveShadow = true;
   backWallMesh.userData.colliderBoxes = backWallColliders;
-  group.add(backWallMesh);
+  old.add(backWallMesh);
 
   // --- Party walls (9): thin dividers running the full unit depth. A uniform height
   // (tallest unit + a hair) reads fine end-on — the back wall above is what actually
@@ -152,7 +157,7 @@ export function buildBazaarRow(kit) {
   partyWallMesh.castShadow = true;
   partyWallMesh.receiveShadow = true;
   partyWallMesh.userData.colliderBoxes = partyWallColliders;
-  group.add(partyWallMesh);
+  old.add(partyWallMesh);
 
   // --- Roof: 8 slabs, each capping its own unit's wall height (this is the real
   // "steps slightly between units" — a genuine stepped roofline, not just cosmetic),
@@ -185,7 +190,7 @@ export function buildBazaarRow(kit) {
   roofMesh.name = 'bazaar_roof';
   roofMesh.castShadow = true;
   roofMesh.receiveShadow = true;
-  group.add(roofMesh);
+  old.add(roofMesh);
 
   // --- Continuous sloped corrugated-tin awning on posts, whole frontage, per
   // LAYOUT.md — one metal draw call for both the awning slab and its posts. ---
@@ -224,7 +229,7 @@ export function buildBazaarRow(kit) {
   awningMesh.name = 'bazaar_awning';
   awningMesh.castShadow = true;
   awningMesh.receiveShadow = true;
-  group.add(awningMesh);
+  old.add(awningMesh);
 
   // --- Continuous front step/plinth, per LAYOUT.md ("a low continuous step runs the
   // length of the front") — reuses BuildingKit's shared plinth instance, same as
@@ -232,7 +237,6 @@ export function buildBazaarRow(kit) {
   // taller/deeper than the original so its own shadow actually reads at a normal
   // viewing distance — still "low" per LAYOUT.md, not a full porch step. ---
   const stepH = 0.2;
-  kit.addStep({ x: awningCx, y: stepH / 2, z: frontZ - 0.3 }, { x: awningLen, y: stepH, z: 0.6 });
   // A shallow interior floor slab per unit (concrete), set slightly proud of the step.
   const floorGeos = [];
   BAZAAR_UNITS.forEach((unit, idx) => {
@@ -248,7 +252,7 @@ export function buildBazaarRow(kit) {
   const floorMesh = new THREE.Mesh(mergeGeometries(floorGeos), roofMaterial); // shares the concrete material cache
   floorMesh.name = 'bazaar_floor';
   floorMesh.receiveShadow = true;
-  group.add(floorMesh);
+  old.add(floorMesh);
 
   // --- Lintel band + jamb trim per unit front (item 1's "recessed openings with a
   // lintel band" rule, adapted: the front has no wall to cut a hole into — see the
@@ -256,22 +260,11 @@ export function buildBazaarRow(kit) {
   // flanking party walls' inner front edge, at BuildingKit's shared trim colour).
   // Item 2c (shopfronts read flat): thickened from the original 0.1x0.1/0.08x0.08 —
   // too thin to cast a visible shadow at normal viewing distance. ---
-  BAZAAR_UNITS.forEach((unit, idx) => {
-    const cx = bazaarUnitCx(idx);
-    const openingW = BAZAAR_UNIT_W - WALL_THICKNESS - 0.2;
-    kit.addTrimBar({ x: cx, y: BAZAAR_AWNING_EDGE_H - 0.07, z: frontZ - 0.02 }, { x: openingW, y: 0.16, z: 0.16 });
-    for (const side of [-1, 1]) {
-      kit.addTrimBar({ x: cx + (side * openingW) / 2, y: BAZAAR_AWNING_EDGE_H / 2, z: frontZ - 0.02 }, { x: 0.12, y: BAZAAR_AWNING_EDGE_H, z: 0.12 });
-    }
-  });
 
   // --- Drainpipes/switchboards "here and there" (item 1), not on every unit. ---
-  kit.addDrainpipe({ x: bazaarBoundaryXs()[2], y: BAZAAR_UNITS[1].wallHeight / 2, z: backZ - 0.02 }, BAZAAR_UNITS[1].wallHeight);
-  kit.addDrainpipe({ x: bazaarBoundaryXs()[6], y: BAZAAR_UNITS[5].wallHeight / 2, z: backZ - 0.02 }, BAZAAR_UNITS[5].wallHeight);
-  kit.addSwitchboard({ x: bazaarUnitCx(3) + 1.5, y: 1.3, z: backZ - WALL_THICKNESS - 0.02 }, Math.PI);
-  kit.addSwitchboard({ x: bazaarUnitCx(6) - 1.5, y: 1.3, z: backZ - WALL_THICKNESS - 0.02 }, Math.PI);
 
-  mergeGroupByMaterial(group);
+  mergeGroupByMaterial(old);
+  group.add(old);
   return group;
 }
 

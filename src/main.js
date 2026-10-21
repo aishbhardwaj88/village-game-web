@@ -776,13 +776,23 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
       noShadowMaterials: ['hb_floor', 'hb_rangoli'],
       hide: hideOld,
       placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: 0 }],
+    });
+  }
+  {
+    // Blender bazaar row (2026-10-21, docs/bazaar-row-checklist.md): exact slot at the row centre (-82, 15);
+    // the code row/shopfronts/interiors are the hidden collision backing.
+    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    assetSlots.register('bazaar_row', {
+      exact: true,
+      hide: bazaarOld,
+      placements: [{ container: scene, position: new THREE.Vector3(-82, 0, 15), rotationY: 0 }],
     });
   }
   {
@@ -1200,7 +1210,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors'],
     });
     cameraObstacles.push(villageStaticGroup);
 
