@@ -22,3 +22,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Dense village houses (22 rows) are in. Please look at the live site after you push (docs/shots/compare/bg-houses.png shows them) and tell me if the look is right - nothing blocks on this. - status: open
 - Pushing to GitHub failed from the unattended run (no saved login for git push), so 3 commits are local only and the live site is not updated. Please run "gh auth login" or sign in once in Terminal, then "git push origin main" in the project folder. - status: open
 - Publishing is stuck: git push to GitHub fails (no saved login on this Mac), so the last 7 commits are not on the live site. Please run git push once in Terminal, or sign in with gh auth login. - status: open
+- Publishing: the computer has no GitHub login, so new work is committed locally but cannot be pushed to the live site. Run a one-time `gh auth login` in Terminal. - status: open
