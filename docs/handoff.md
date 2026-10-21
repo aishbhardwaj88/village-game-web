@@ -28,6 +28,9 @@ Next: distance-hide Blender hero buildings, halwai/flower-stall/post-office comp
 ---
 
 # Handoff log
+**2026-10-21 (cycle 6):** Second kachcha mud homestead (same Blender model turned 180 deg, own cattle in its shed, own colliders) at (-64,-56) south-west of the first (src/scenery.js, shot docs/shots/kachcha2/k2.png). Validator all passed. Push still fails (no git login), live site not updated. Inbox empty.
+Next: Blender tree rebuild, PBR on lanes/canal, animals models, lane life.
+
 **2026-10-21 (cycle 6):** A cow and a buffalo now stand in the kachcha homestead's cattle shed (src/scenery.js, instanced, hidden when far). Validator passes; inbox empty. Push still fails (no git login), so live site is not updated.
 Regression check 21/22: "player can walk" moves only 0.63m. It fails the same way with my change reverted, so it came from an earlier commit (suspect the cycle 4 lane neighbours or the kachcha colliders) and needs investigating first.
 Next: investigate that walk regression, then 2-3 more kachcha variants near fields, Blender tree rebuild, PBR on lanes/canal.

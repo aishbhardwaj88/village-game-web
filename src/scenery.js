@@ -50,6 +50,7 @@ const PLACEMENTS = [
 ];
 // Kachcha homestead (tools/blender/build_kachcha.py): mud-plaster walls + thatch, west of the field. Anchor = model origin.
 const KACHCHA = { x: -62, z: -26 };
+const KACHCHA2 = { x: -64, z: -56, q: 2 }; // second copy, turned 180 deg so the cattle shed faces the other way
 const KACHCHA_BOXES = [ // local footprints (x0,x1,z0,z1,h) — must match the Blender script
   [-6.06, 0.06, -5.56, -1.44, 2.45], // house (solid)
   [2.5, 6.9, -5.5, -5.2, 2.2], [6.6, 6.9, -5.5, -2.0, 2.2], [2.5, 2.8, -5.5, -3.2, 2.2], // cattle shed walls
@@ -107,10 +108,13 @@ export function buildBackgroundHouses(scene, kit) {
       old.add(mesh);
     }
   });
-  for (const [x0, x1, z0, z1, h] of KACHCHA_BOXES) {
-    const mesh = texturedWallBox(x1 - x0, h, z1 - z0, 'plaster', { tint: 0xb09572, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: 5.5 });
-    mesh.position.set(KACHCHA.x + (x0 + x1) / 2, h / 2, KACHCHA.z + (z0 + z1) / 2);
-    old.add(mesh);
+  for (const K of [{ ...KACHCHA, q: 0 }, KACHCHA2]) {
+    for (const [x0, x1, z0, z1, h] of KACHCHA_BOXES) {
+      const w = worldBox(K, { x0, x1, z0, z1, h });
+      const mesh = texturedWallBox(w.maxX - w.minX, h, w.maxZ - w.minZ, 'plaster', { tint: 0xb09572, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: 5.5 });
+      mesh.position.set((w.minX + w.maxX) / 2, h / 2, (w.minZ + w.maxZ) / 2);
+      old.add(mesh);
+    }
   }
   mergeGroupByMaterial(old);
   group.add(old);
@@ -188,12 +192,18 @@ export function buildBackgroundHouses(scene, kit) {
 
   // The kachcha homestead model (single placed copy; hidden beyond FAR_DIST).
   let kachcha = null;
+  let kachcha2 = null;
   getGLTFLoader().load('assets/models/kachcha_homestead.glb', (gltf) => {
     kachcha = gltf.scene;
     kachcha.name = 'kachcha_homestead';
     kachcha.position.set(KACHCHA.x, 0, KACHCHA.z);
     kachcha.traverse((m) => { if (m.isMesh) { m.userData.mergedStatic = true; m.receiveShadow = true; m.castShadow = m.material?.name !== 'hb_props'; } });
     group.add(kachcha);
+    kachcha2 = kachcha.clone(true);
+    kachcha2.name = 'kachcha_homestead_2';
+    kachcha2.position.set(KACHCHA2.x, 0, KACHCHA2.z);
+    kachcha2.rotation.y = Math.PI;
+    group.add(kachcha2);
   });
 
   // Cattle resting in the homestead's shed (open side faces +z, manger along the back wall).
@@ -203,6 +213,12 @@ export function buildBackgroundHouses(scene, kit) {
   ]);
   shedHerd.mesh.name = 'kachcha_cattle';
   group.add(shedHerd.mesh);
+  const shedHerd2 = createCattleHerd([
+    { x: KACHCHA2.x - 3.9, z: KACHCHA2.z + 3.7, rotationY: 0 },
+    { x: KACHCHA2.x - 5.6, z: KACHCHA2.z + 3.6, rotationY: Math.PI * -0.07, buffalo: true },
+  ]);
+  shedHerd2.mesh.name = 'kachcha_cattle_2';
+  group.add(shedHerd2.mesh);
 
   // Called every frame from main.js with the player/vehicle position; the re-sort only runs after the player moved 4 m.
   group.userData.updateVisibility = (px, pz) => {
@@ -211,6 +227,9 @@ export function buildBackgroundHouses(scene, kit) {
     const nearKachcha = Math.hypot(px - KACHCHA.x, pz - KACHCHA.z) < FAR_DIST;
     if (kachcha) kachcha.visible = nearKachcha;
     shedHerd.mesh.visible = nearKachcha;
+    const near2 = Math.hypot(px - KACHCHA2.x, pz - KACHCHA2.z) < FAR_DIST;
+    if (kachcha2) kachcha2.visible = near2;
+    shedHerd2.mesh.visible = near2;
     if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();
   };
 
