@@ -424,7 +424,8 @@ async function main() {
       // is noisy enough that 1200ms sat right at the 0.5m threshold (0.63m one
       // run, 0.42m the next, same unchanged code) and produced a false
       // regression. More hold time gives real headroom above that noise floor.
-      await page.waitForTimeout(2500);
+      // 2026-10-21: headless frame rate is now ~3 fps with the dense abadi (distance walked scales with frames), so hold 6s.
+      await page.waitForTimeout(6000);
       await page.keyboard.up('KeyW');
       const after = await page.evaluate(() => ({ x: window.__dopahar.player.position.x, z: window.__dopahar.player.position.z }));
       const moved = Math.hypot(after.x - before.x, after.z - before.z);
@@ -492,7 +493,8 @@ async function main() {
         target
       );
       await page.keyboard.down('KeyW');
-      await page.waitForTimeout(2500);
+      // 2026-10-21: headless frame rate is now ~3 fps with the dense abadi (distance walked scales with frames), so hold 6s.
+      await page.waitForTimeout(6000);
       await page.keyboard.up('KeyW');
       const after = await page.evaluate(() => ({ x: window.__dopahar.player.position.x, z: window.__dopahar.player.position.z }));
       const distBefore = Math.hypot(before.x - target.x, before.z - target.z);
