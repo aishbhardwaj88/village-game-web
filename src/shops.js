@@ -158,7 +158,7 @@ export function buildGeneralStoreGoods(position, rotationY = 0) {
  * material and defeat the merge) since these are small enough that one tile each
  * reads fine. Also carries the tea stall's two roof-support posts — same material
  * family, so folding them in here costs nothing extra (one more draw call saved). */
-export function buildShopCounters(teaPosition, teaRotationY, storePosition, storeRotationY) {
+export function buildShopCounters(teaPosition, teaRotationY, storePosition, storeRotationY, which = 'both') {
   const teaW = TEA.w - 0.3;
   const teaGeo = new THREE.BoxGeometry(teaW, TEA.counterTopY, 0.5);
   const teaLocal = new THREE.Matrix4().makeTranslation(0, TEA.counterTopY / 2, TEA.d / 2 - 0.5);
@@ -199,7 +199,7 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
   // material) so this shares the one cached 'wood' Material every other wood-family
   // object in the village uses, letting the village-wide merge (main.js) fold this
   // in too, instead of paying its own separate draw call.
-  const counterGeos = [teaGeo, storeGeo, ...postGeos, storeLintelGeo, teaStepGeo, storeStepGeo];
+  const counterGeos = [...(which !== 'store' ? [teaGeo, ...postGeos, teaStepGeo] : []), ...(which !== 'tea' ? [storeGeo, storeLintelGeo, storeStepGeo] : [])];
   for (const g of counterGeos) {
     ensureUv2(g);
     bakeFlatTintColors(g, TEA.tealTint, 1);
@@ -214,7 +214,7 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
   // own counters). The general store's counter sits inside its own full solid
   // wall collider (buildShopWalls() above) already, so tagging it too would just
   // be a redundant duplicate box.
-  mesh.userData.colliderBoxes = [colliderBoxFromTransform(teaW, 0.5, teaCounterMatrix)];
+  if (which !== 'store') mesh.userData.colliderBoxes = [colliderBoxFromTransform(teaW, 0.5, teaCounterMatrix)];
   return mesh;
 }
 
@@ -225,7 +225,7 @@ export function buildShopCounters(teaPosition, teaRotationY, storePosition, stor
  * roofs above. Each wall's own local offset within its shop is baked in first, then
  * the shop's own world position/rotation. Call once from main.js after both shops'
  * openings/counters/etc. are placed (those still read from these dimensions). */
-export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRotationY) {
+export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRotationY, which = 'both') {
   const teaWallMesh = texturedWallBox(TEA.w, TEA.postH, WALL_THICKNESS, 'plaster', {
     tint: PALETTE.cream,
     tileSize: 1.5,
@@ -248,7 +248,9 @@ export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRo
   const storeGeo = storeWallMesh.geometry.clone().applyMatrix4(storeLocal).applyMatrix4(storeWorld);
   const storeWallMatrix = new THREE.Matrix4().multiplyMatrices(storeWorld, storeLocal);
 
-  const mesh = new THREE.Mesh(mergeGeometries([teaGeo, storeGeo]), teaWallMesh.material);
+  const wantTea = which !== 'store';
+  const wantStore = which !== 'tea';
+  const mesh = new THREE.Mesh(mergeGeometries([...(wantTea ? [teaGeo] : []), ...(wantStore ? [storeGeo] : [])]), teaWallMesh.material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.name = 'shop_walls';
@@ -256,14 +258,14 @@ export function buildShopWalls(teaPosition, teaRotationY, storePosition, storeRo
   // that went stale the first time STORE_POS moved — these two boxes are derived
   // from the exact width/depth/transform already driving the real wall geometry
   // two lines up, so they cannot drift from it again.
-  mesh.userData.colliderBoxes = [colliderBoxFromTransform(TEA.w, WALL_THICKNESS, teaWallMatrix), colliderBoxFromTransform(STORE.w, STORE.d, storeWallMatrix)];
+  mesh.userData.colliderBoxes = [...(wantTea ? [colliderBoxFromTransform(TEA.w, WALL_THICKNESS, teaWallMatrix)] : []), ...(wantStore ? [colliderBoxFromTransform(STORE.w, STORE.d, storeWallMatrix)] : [])];
   return mesh;
 }
 
 /** Both shops' flat roofs, merged into a single draw call — same material (concrete,
  * neutral tint, default roughness), just two positioned boxes baked into one mesh.
  * Call once from main.js after both shops are placed. */
-export function buildShopRoofs(teaPosition, teaRotationY, storePosition, storeRotationY) {
+export function buildShopRoofs(teaPosition, teaRotationY, storePosition, storeRotationY, which = 'both') {
   const tint = 0xd7d2c4;
   const geoTea = new THREE.BoxGeometry(TEA.w + TEA.roofOverhang * 2, 0.12, TEA.d + TEA.roofOverhang * 2);
   const geoStore = new THREE.BoxGeometry(STORE.w + STORE.roofOverhang * 2, 0.25, STORE.d + STORE.roofOverhang * 2);
@@ -280,7 +282,7 @@ export function buildShopRoofs(teaPosition, teaRotationY, storePosition, storeRo
 
   // Headroom pass (docs/parked.md) — same vertex-colour-tint conversion as
   // buildShopCounters above, so this folds into the village-wide 'concrete' merge.
-  const roofGeos = [geoTea, geoStore];
+  const roofGeos = [...(which !== 'store' ? [geoTea] : []), ...(which !== 'tea' ? [geoStore] : [])];
   for (const g of roofGeos) {
     ensureUv2(g);
     bakeFlatTintColors(g, tint, 1);

@@ -25,96 +25,80 @@ from common import (
     make_paint_material, box_uv, ROOT,
 )
 
-TEXTURE_KINDS = {  # kind -> (texture set, uv repeat per metre-ish)
-    'plaster': ('plaster', 0.5), 'concrete': ('concrete', 0.5), 'wood': ('wood', 1.0),
-    'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'metal': ('metal', 0.8), 'terracotta': ('terracotta', 1.0),
-    'ground': ('ground', 0.35),
-}
-# kinds that share a texture collapse into one material at the end (tints live in vertex colours)
-SHARE = {'plinth': 'concrete', 'trim': 'concrete', 'floor': 'concrete', 'apron': 'concrete'}
+# Draw-call budget (2026-10-21): every building is ONE textured mesh ('hb_main', the CC0 plaster set, colour from
+# vertex colours: kinds plaster/plinth/trim/floor/apron/wood/concrete/paint all fold into it) plus, only where used,
+# a brick mesh and a corrugated-tin mesh (their textures carry real detail) and the transparent decals.
+MAIN_KINDS_TEXTURE = ('plaster', 0.5)
+OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8)}
 
 
 class Kit:
     def __init__(self):
         clear_scene()
-        self.G = {}
-        self.mats = {}
-        self.extra = []  # objects exported as-is (decals)
+        self.records = []   # (kind, obj, colour or None)
+        self.extra = []     # objects exported as-is (decals), joined by the caller
 
-    # ---- registry
     def add(self, kind, obj, color=None):
-        if kind == 'paint':
-            colorize(obj, color)
-        self.G.setdefault(kind, []).append(obj)
+        self.records.append((kind, obj, color))
         return obj
 
-    def _mat(self, kind):
-        if kind in self.mats:
-            return self.mats[kind]
-        if kind == 'paint':
-            m = make_paint_material('hb_paint')
-        else:
-            tex_kind = SHARE.get(kind, kind)
-            tex, rep = TEXTURE_KINDS[tex_kind]
-            m = load_pbr_material('hb_' + kind, tex, repeat=(rep, rep))
-            wire_vertex_ao(m, strength=0.5)
-        self.mats[kind] = m
-        return m
+    @property
+    def G(self):
+        out = {}
+        for k, o, _ in self.records:
+            out.setdefault(k, []).append(o)
+        return out
 
-    # ---- export
-    def finalize(self, out, tints, drift=None, ao_strength=0.5):
-        """Join per kind, box-UV, bake dirty-vertex AO, multiply the sRGB tints + a gentle drift into the
-        vertex colours (glTF can't carry tint nodes), merge kinds that share a texture, export."""
-        drift = drift or {}
-        textured, painted = [], []
-        for kind, objs in self.G.items():
+    def finalize(self, out, tints, drift=None, ao_strength=0.5, drift_amp=0.05):
+        """Colour every object (per-kind sRGB tint from `tints['hb_<kind>']`, or its own paint colour) into a 'Base'
+        vertex-colour layer, join into hb_main / hb_brick / hb_tin, box-UV, bake dirty-vertex AO, then write
+        AO(soft) x Base x a smooth +-drift into the exported COLOR_0 layer."""
+        groups = {'main': [], 'brick': [], 'tin': []}
+        for kind, obj, color in self.records:
+            if color is None:
+                color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
+            colorize(obj, color, attr='Base')
+            groups['brick' if kind == 'brick' else 'tin' if kind == 'tin' else 'main'].append(obj)
+        mats = {}
+        for g, objs in groups.items():
             if not objs:
                 continue
-            m = self._mat(kind)
+            tex, rep = OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)
+            m = load_pbr_material('hb_' + g, tex, repeat=(rep, rep))
+            wire_vertex_ao(m, strength=0.5)
             for o in objs:
                 o.data.materials.clear()
                 o.data.materials.append(m)
-            joined = join_objects(objs, 'hb_' + kind)
-            if kind == 'paint':
-                painted.append(joined)
-            else:
-                box_uv(joined, (1, 1, 1))
-                textured.append(joined)
-        tex_obj = None
-        if textured:
-            tex_obj = join_objects(textured, 'textured') if len(textured) > 1 else textured[0]
-            bake_dirty_vertex_colors(tex_obj)
-            slot_names = [ms.material.name for ms in tex_obj.material_slots]
-            layer = tex_obj.data.color_attributes['AO']
-            n = len(tex_obj.data.loops)
-            cols = [0.0] * (n * 4)
-            layer.data.foreach_get('color', cols)
-            verts = tex_obj.data.vertices
-            for poly in tex_obj.data.polygons:
-                name = slot_names[poly.material_index]
-                tr, tg, tb = hex_to_linear_rgb(int(tints.get(name, '#ffffff').lstrip('#'), 16))
-                d = drift.get(name, 0.04)
-                for li in poly.loop_indices:
-                    co = verts[tex_obj.data.loops[li].vertex_index].co
-                    v = 1.0 + d * math.sin(co.x * 0.9 + co.y * 1.3) * math.cos(co.z * 0.7 + co.x * 0.4) + d * 0.5 * math.sin(co.y * 3.1 + co.z * 2.3)
-                    for k, tk in ((0, tr), (1, tg), (2, tb)):
-                        ao = 1.0 - (1.0 - cols[li * 4 + k]) * ao_strength
-                        cols[li * 4 + k] = ao * tk * v
-            layer.data.foreach_set('color', cols)
-            tex_obj.data.color_attributes.active_color = layer
-            # collapse shared-texture kinds into one material slot
-            by_tex = {}
-            for i, nme in enumerate(slot_names):
-                kind = nme[3:]
-                by_tex.setdefault(SHARE.get(kind, kind), i)
-            for poly in tex_obj.data.polygons:
-                kind = slot_names[poly.material_index][3:]
-                poly.material_index = by_tex[SHARE.get(kind, kind)]
-            for tex_kind, i in by_tex.items():
-                tex_obj.material_slots[i].material.name = 'hb_' + tex_kind
-        export_glb(([tex_obj] if tex_obj else []) + painted + self.extra, out)
-        tris = sum(len(o.data.polygons) for o in ([tex_obj] if tex_obj else []) + painted + self.extra)
-        print('tri count', tris)
+        exports = []
+        for g, objs in groups.items():
+            if not objs:
+                continue
+            obj = join_objects(objs, 'hb_' + g)
+            box_uv(obj, (1, 1, 1))
+            me = obj.data
+            me.color_attributes.new(name='AO', type='BYTE_COLOR', domain='CORNER')
+            me.color_attributes.active_color = me.color_attributes['AO']
+            bake_dirty_vertex_colors(obj)
+            ao_layer = me.color_attributes['AO']
+            base_layer = me.color_attributes['Base']
+            n = len(me.loops)
+            ao = [0.0] * (n * 4)
+            base = [0.0] * (n * 4)
+            ao_layer.data.foreach_get('color', ao)
+            base_layer.data.foreach_get('color', base)
+            verts = me.vertices
+            for li in range(n):
+                co = verts[me.loops[li].vertex_index].co
+                v = 1.0 + drift_amp * math.sin(co.x * 0.9 + co.y * 1.3) * math.cos(co.z * 0.7 + co.x * 0.4) + drift_amp * 0.5 * math.sin(co.y * 3.1 + co.z * 2.3)
+                for k in range(3):
+                    a = 1.0 - (1.0 - ao[li * 4 + k]) * ao_strength
+                    ao[li * 4 + k] = min(1.0, a * base[li * 4 + k] * v)
+            ao_layer.data.foreach_set('color', ao)
+            me.color_attributes.active_color = ao_layer
+            me.color_attributes.remove(base_layer)
+            exports.append(obj)
+        export_glb(exports + self.extra, out)
+        print('tri count', sum(len(o.data.polygons) for o in exports + self.extra))
 
 
 class Bldg:

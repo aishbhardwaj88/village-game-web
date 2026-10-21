@@ -23,7 +23,7 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto(`${BASE}?proof=1`, { waitUntil: 'load' });
+  await page.goto(`${BASE}?proof=1${process.env.EXTRA_QS || ''}`, { waitUntil: 'load' });
   await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
   await page.click('#play-btn');
   await page.waitForTimeout(1500);

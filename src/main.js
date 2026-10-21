@@ -234,12 +234,25 @@ async function main() {
   const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
   const STORE_POS = { x: -52, z: 20 };
   const STORE_ROT = -Math.PI / 2; // east of the hero-zone-to-bazaar lane, facing west
-  shopsGroup.add(buildTeaStall(TEA_SHOP_POS, TEA_SHOP_ROT));
-  shopsGroup.add(buildGeneralStore(STORE_POS, STORE_ROT));
-  shopsGroup.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
-  shopsGroup.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
-  shopsGroup.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT));
-  shopsGroup.add(buildGeneralStoreGoods(STORE_POS, STORE_ROT));
+  // Blender tea stall + general store (2026-10-21, docs/tea-stall-checklist.md / docs/general-store-checklist.md):
+  // the code-built walls/roofs/counters/posts/goods are now the INVISIBLE collision backing in 'tea_old' + 'store_old'
+  // ('tea_old' / 'store_old', kept un-merged by the village-wide merge, hidden by the slots below); tools/blender/build_tea_stall.py and
+  // build_general_store.py draw what you see. The code signboards (src/signboards.js) stay.
+  const teaOld = new THREE.Group();
+  teaOld.name = 'tea_old';
+  teaOld.add(buildTeaStall(TEA_SHOP_POS, TEA_SHOP_ROT));
+  teaOld.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'tea'));
+  teaOld.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'tea'));
+  teaOld.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'tea'));
+  shopsGroup.add(teaOld);
+  const storeOld = new THREE.Group();
+  storeOld.name = 'store_old';
+  storeOld.add(buildGeneralStore(STORE_POS, STORE_ROT));
+  storeOld.add(buildShopWalls(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'store'));
+  storeOld.add(buildShopRoofs(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'store'));
+  storeOld.add(buildShopCounters(TEA_SHOP_POS, TEA_SHOP_ROT, STORE_POS, STORE_ROT, 'store'));
+  storeOld.add(buildGeneralStoreGoods(STORE_POS, STORE_ROT));
+  shopsGroup.add(storeOld);
 
   // Item 4 ("keep building the village") — 3 more abadi-core locations from
   // MAP.md's "Places inside the abadi" list: post office, ration shop, atta
@@ -763,13 +776,27 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
       noShadowMaterials: ['hb_floor', 'hb_rangoli'],
       hide: hideOld,
       placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: 0 }],
+    });
+  }
+  {
+    const teaOldGroup = scene.getObjectByName('tea_old');
+    const storeOldGroup = scene.getObjectByName('store_old');
+    assetSlots.register('tea_stall', {
+      exact: true,
+      hide: teaOldGroup ? [teaOldGroup] : [],
+      placements: [{ container: scene, position: new THREE.Vector3(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z), rotationY: TEA_SHOP_ROT }],
+    });
+    assetSlots.register('general_store', {
+      exact: true,
+      hide: storeOldGroup ? [storeOldGroup] : [],
+      placements: [{ container: scene, position: new THREE.Vector3(STORE_POS.x, 0, STORE_POS.z), rotationY: STORE_ROT }],
     });
   }
   {
@@ -924,6 +951,9 @@ async function main() {
 
   assetSlots.resolveAll().then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
+    // OFF by default: folding every hero-zone Blender building into one mesh per material saves draw calls but
+    // always draws all of them (+100k triangles); each building is already just 2-4 meshes. `?mergeblender=1` to try.
+    if (new URLSearchParams(window.location.search).has('mergeblender')) assetSlots.mergeSlotModels(['house_compound', 'school_compound', 'halwai_compound', 'tea_stall', 'general_store'], 'blender_hero', scene);
   });
 
   function onResize() {
@@ -1170,7 +1200,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 

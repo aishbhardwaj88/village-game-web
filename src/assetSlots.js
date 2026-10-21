@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
  * Queue item 1 — the pipeline a finished Tripo model drops straight into. A "slot" is
@@ -181,6 +182,7 @@ export function createAssetSlotRegistry() {
       wrapper.position.copy(p.position);
       wrapper.rotation.y = p.rotationY || 0;
       p.container.add(wrapper);
+      (slot.wrappers || (slot.wrappers = [])).push(wrapper);
     }
 
     for (const obj of slot.hide) obj.visible = false;
@@ -196,5 +198,69 @@ export function createAssetSlotRegistry() {
     return Promise.allSettled(Array.from(slots.values()).map(resolveSlot));
   }
 
-  return { register, resolveAll, slots };
+  /**
+   * Draw-call budget (2026-10-21) — folds every loaded Blender building of a zone into ONE mesh per
+   * material (hb_plaster, hb_concrete, hb_wood, hb_brick, hb_tin, hb_paint, hb_rangoli, hb_decal), instead of
+   * ~6 meshes per building. All the Blender buildings share the same CC0 texture sets with tints baked into
+   * vertex colours and real-metre UVs, so merging by material NAME is exact. Call after resolveAll().
+   * Only meaningful for `exact` slots (their geometry is already in world-aligned local space). Static only.
+   */
+  function mergeSlotModels(names, zoneName, scene) {
+    const unified = new Map(); // material name -> first material instance (shared textures from then on)
+    const buckets = new Map(); // `${materialName}|${castShadow}` -> { material, geos, cast }
+    const dead = [];
+    for (const name of names) {
+      const slot = slots.get(name);
+      if (!slot || !slot.wrappers) continue;
+      for (const wrapper of slot.wrappers) {
+        wrapper.updateWorldMatrix(true, true);
+        wrapper.traverse((o) => {
+          if (!o.isMesh || o.isSkinnedMesh) return;
+          const mat = o.material;
+          if (!mat || Array.isArray(mat)) return;
+          if (!unified.has(mat.name)) unified.set(mat.name, mat);
+          const shared = unified.get(mat.name);
+          const g = o.geometry.clone();
+          // dequantize (KHR_mesh_quantization int16/int8 normalized attributes) to plain float32 before baking the transform
+          for (const attrName of Object.keys(g.attributes)) {
+            if (!['position', 'normal', 'uv', 'color'].includes(attrName)) { g.deleteAttribute(attrName); continue; }
+            const a = g.attributes[attrName];
+            const f = new Float32Array(a.count * a.itemSize);
+            for (let i = 0; i < a.count; i++) for (let c = 0; c < a.itemSize; c++) f[i * a.itemSize + c] = a.getComponent(i, c);
+            g.setAttribute(attrName, new THREE.BufferAttribute(f, a.itemSize));
+          }
+          if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+          if (shared.vertexColors && !g.attributes.color) g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
+          g.applyMatrix4(o.matrixWorld);
+          const key = `${shared.name}|${o.castShadow}`;
+          let b = buckets.get(key);
+          if (!b) buckets.set(key, (b = { material: shared, geos: [], cast: o.castShadow }));
+          b.geos.push(g);
+          dead.push(o);
+        });
+      }
+    }
+    for (const o of dead) { o.parent && o.parent.remove(o); o.geometry.dispose(); }
+    for (const [key, b] of buckets) {
+      // a colour attribute with itemSize 4 (RGBA) must match across the bucket
+      const geos = b.geos;
+      const sizes = new Set(geos.map((g) => (g.attributes.color ? g.attributes.color.itemSize : 0)));
+      if (sizes.size > 1) for (const g of geos) if (g.attributes.color && g.attributes.color.itemSize === 4) {
+        const c = g.attributes.color; const f = new Float32Array(c.count * 3);
+        for (let i = 0; i < c.count; i++) { f[i * 3] = c.getX(i); f[i * 3 + 1] = c.getY(i); f[i * 3 + 2] = c.getZ(i); }
+        g.setAttribute('color', new THREE.BufferAttribute(f, 3));
+      }
+      const merged = mergeGeometries(geos, false);
+      if (!merged) { console.warn(`slot merge: could not merge "${key}"`); continue; }
+      for (const g of geos) g.dispose();
+      const mesh = new THREE.Mesh(merged, b.material);
+      mesh.name = `${zoneName}_${b.material.name}`;
+      mesh.castShadow = b.cast;
+      mesh.receiveShadow = true;
+      mesh.userData.mergedStatic = true;
+      scene.add(mesh);
+    }
+  }
+
+  return { register, resolveAll, slots, mergeSlotModels };
 }

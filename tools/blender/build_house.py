@@ -68,32 +68,12 @@ TANK = 0x1C1C1F
 CLOTH = [0xC0392B, 0x2E8B57, 0x3B5BA5, 0xE0B53A, 0xEEE6D2]
 COW = 0x8A5A3C
 
-clear_scene()
-
-plaster_mat = load_pbr_material('hb_plaster', 'plaster', repeat=(0.5, 0.5))
-plinth_mat = load_pbr_material('hb_plinth', 'concrete', repeat=(0.5, 0.5))
-trim_mat = load_pbr_material('hb_trim', 'concrete', repeat=(0.5, 0.5))
-wood_mat = load_pbr_material('hb_wood', 'wood', repeat=(1, 1))
-brick_mat = load_pbr_material('hb_brick', 'brick', repeat=(1.2, 1.2))
-floor_mat = load_pbr_material('hb_floor', 'concrete', repeat=(0.35, 0.35))
-paint_mat = make_paint_material('hb_paint')
-# sRGB multiply tints, applied as glTF baseColorFactor by tools/tint-glb.js (Blender's exporter drops tint nodes)
-import json
+from arch import Kit
+kit = Kit()
+add = kit.add
+# sRGB multiplies baked into vertex colours (kinds: plaster/plinth/trim/wood/brick/floor, paint carries its own colour)
 TINTS = {'hb_plaster': '#BCD2E6', 'hb_plinth': '#7A91AB', 'hb_trim': '#AFC4D9', 'hb_wood': '#5A483E',
-         'hb_brick': '#D98A68', 'hb_floor': '#B4C6D6'}  # sRGB multiplies, baked into vertex colours at the bottom of this file
-os.makedirs(os.path.join(ROOT, 'tmp'), exist_ok=True)
-json.dump(TINTS, open(os.path.join(ROOT, 'tmp', 'house_compound_tints.json'), 'w'))
-for m in (plaster_mat, plinth_mat, trim_mat, wood_mat, brick_mat):
-    wire_vertex_ao(m, strength=0.5)
-
-G = {k: [] for k in ('plaster', 'plinth', 'trim', 'wood', 'brick', 'floor', 'paint')}
-
-
-def add(kind, obj, color=None):
-    if kind == 'paint':
-        colorize(obj, color)
-    G[kind].append(obj)
-    return obj
+         'hb_brick': '#D98A68', 'hb_floor': '#B4C6D6'}
 
 
 def fb(name, face, u0, u1, d0, d1, h0, h1, bevel=0.01):
@@ -753,60 +733,5 @@ build_shed()
 build_greenery_and_details()
 rangoli = build_rangoli()
 
-mats = {'plaster': plaster_mat, 'plinth': plinth_mat, 'trim': trim_mat, 'wood': wood_mat, 'brick': brick_mat, 'floor': floor_mat, 'paint': paint_mat}
-textured, painted = [], []
-for kind, objs in G.items():
-    if not objs:
-        continue
-    for o in objs:
-        o.data.materials.clear()
-        o.data.materials.append(mats[kind])
-    joined = join_objects(objs, 'hb_' + kind)
-    if kind == 'paint':
-        painted.append(joined)
-    else:
-        box_uv(joined, (1, 1, 1))
-        textured.append(joined)
-# one textured mesh (multi-material) carries the baked AO; the paint mesh carries its own vertex colour
-tex_obj = join_objects(textured, 'house_textured') if len(textured) > 1 else textured[0]
-bake_dirty_vertex_colors(tex_obj)
-
-# Per-material sRGB tints are multiplied into the AO vertex colours (glTF/Blender can't carry a tint
-# node), plus a smooth +-5% brightness drift across the walls so big surfaces don't read as one flat
-# colour. plinth/trim/floor share one concrete texture, so they collapse into ONE material afterwards
-# (3 fewer draw calls) — their different colours live in the vertex colours.
-def srgb_hex_to_lin(h):
-    return hex_to_linear_rgb(int(h.lstrip('#'), 16))
-slot_names = [ms.material.name for ms in tex_obj.material_slots]
-print('COLOR ATTRS', [(a.name, a.data_type, a.domain) for a in tex_obj.data.color_attributes], 'active', tex_obj.data.color_attributes.active_color.name if tex_obj.data.color_attributes.active_color else None)
-layer = tex_obj.data.color_attributes['AO']
-n_loops = len(tex_obj.data.loops)
-cols = [0.0] * (n_loops * 4)
-layer.data.foreach_get('color', cols)
-verts = tex_obj.data.vertices
-DRIFT = {'hb_plaster': 0.05, 'hb_trim': 0.04, 'hb_plinth': 0.04, 'hb_floor': 0.05, 'hb_brick': 0.08, 'hb_wood': 0.1}
-for poly in tex_obj.data.polygons:
-    name = slot_names[poly.material_index]
-    tr, tg, tb = srgb_hex_to_lin(TINTS[name])
-    for li in poly.loop_indices:
-        co = verts[tex_obj.data.loops[li].vertex_index].co
-        d = DRIFT.get(name, 0.0)
-        v = 1.0 + d * math.sin(co.x * 0.9 + co.y * 1.3) * math.cos(co.z * 0.7 + co.x * 0.4) + d * 0.5 * math.sin(co.y * 3.1 + co.z * 2.3)
-        # soften the dirty-vertex AO to 60% strength, then apply the tint + drift
-        for k, tk in ((0, tr), (1, tg), (2, tb)):
-            ao = 1.0 - (1.0 - cols[li * 4 + k]) * 0.5
-            cols[li * 4 + k] = ao * tk * v
-layer.data.foreach_set('color', cols)
-tex_obj.data.color_attributes.active_color = layer
-tex_obj.data.color_attributes.render_color_index = list(tex_obj.data.color_attributes).index(layer)
-print('SAMPLE after', [tuple(round(c,3) for c in layer.data[i].color) for i in range(3)])
-concrete_idx = slot_names.index('hb_plinth')
-for poly in tex_obj.data.polygons:
-    if slot_names[poly.material_index] in ('hb_plinth', 'hb_trim', 'hb_floor'):
-        poly.material_index = concrete_idx
-plinth_mat.name = 'hb_concrete'
-json.dump({}, open(os.path.join(ROOT, 'tmp', 'house_compound_tints.json'), 'w'))  # nothing left for tools/tint-glb.js to do
-# hb_floor must not cast shadows; it shares hb_concrete now, so the slot's noShadow list can't single it out —
-# the floor is a flat plane at y=0.06 and costs nothing as a caster since everything above it is lit anyway.
-export_glb([tex_obj] + painted + [rangoli], OUT)
-print('tri count', sum(len(o.data.polygons) for o in [tex_obj] + painted + [rangoli]))
+kit.extra.append(rangoli)
+kit.finalize(OUT, TINTS, drift_amp=0.05, ao_strength=0.5)
