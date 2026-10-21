@@ -155,9 +155,33 @@ export function createAmbientLife() {
   kids.name = 'ambient_kids';
   kids.frustumCulled = false;
 
+  // --- villagers strolling the school end of the lane (one Points draw call, shown only within 25 m)
+  const walkTex = spriteTexture((ctx) => {
+    ctx.fillStyle = '#2b1d14';
+    ctx.beginPath(); ctx.arc(32, 9, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#b87a4c';
+    ctx.fillRect(27, 15, 10, 4);
+    ctx.fillStyle = '#cfc6b0';
+    ctx.fillRect(23, 19, 18, 24);
+    ctx.fillStyle = '#e8e2d2';
+    ctx.fillRect(25, 43, 14, 18);
+  });
+  const walkers = [
+    { x: -47.5, z0: 80, z1: 99, speed: 0.9, ph: 0 },
+    { x: -45.5, z0: 76, z1: 102, speed: 0.7, ph: 2.1 },
+    { x: -48.5, z0: 84, z1: 97, speed: 1.1, ph: 4.2 },
+  ];
+  const walkPos = new Float32Array(walkers.length * 3);
+  const walkGeo = new THREE.BufferGeometry();
+  walkGeo.setAttribute('position', new THREE.BufferAttribute(walkPos, 3));
+  const walkMat = new THREE.PointsMaterial({ map: walkTex, size: 1.8, transparent: true, depthWrite: false, sizeAttenuation: true, alphaTest: 0.05 });
+  const walk = new THREE.Points(walkGeo, walkMat);
+  walk.name = 'ambient_walkers';
+  walk.frustumCulled = false;
+
   const group = new THREE.Group();
   group.name = 'ambient_life';
-  group.add(birds, smoke, hens, flies, cowPts, kids);
+  group.add(birds, smoke, hens, flies, cowPts, kids, walk);
   let t = 0;
   function update(dt, px, pz) {
     t += dt;
@@ -183,6 +207,16 @@ export function createAmbientLife() {
         kidPos[i * 3 + 2] = kidSpot.z + Math.cos(t * 0.45 + ph * 1.6) * 2.6;
       }
       kidGeo.attributes.position.needsUpdate = true;
+    }
+    walk.visible = Math.abs(-47 - px) < 25 && Math.abs(90 - pz) < 25;
+    if (walk.visible) {
+      walkers.forEach((w, i) => {
+        const f = 0.5 - 0.5 * Math.cos(t * w.speed * 0.12 + w.ph); // eases at each turnaround
+        walkPos[i * 3] = w.x;
+        walkPos[i * 3 + 1] = 0.9 + Math.abs(Math.sin(t * 3.2 * w.speed + w.ph)) * 0.04;
+        walkPos[i * 3 + 2] = w.z0 + (w.z1 - w.z0) * f;
+      });
+      walkGeo.attributes.position.needsUpdate = true;
     }
     hens.visible = flocks.some((f) => Math.abs(f.x - px) < 45 && Math.abs(f.z - pz) < 45);
     if (hens.visible) {

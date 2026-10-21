@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 10):** Three villagers strolling the school end of the lane (src/ambient.js, one Points draw call, shown only within 25 m). Build/validator pass. Inbox empty. Push still fails (no git login).
+Next: real cattle models, Blender tree rebuild, PBR on lanes/canal.
+
+---
+
 **2026-10-22 (cycle 9):** Four kids playing tag in the lane near the halwai/tea stall (src/ambient.js, one Points draw call, shown only within 22 m so the hero zone stays at 150 draw calls). Validator 15/15.
 Next: merge ambient sprites into fewer draw calls, real cattle models, Blender tree rebuild, PBR on lanes/canal. Push still blocked (no git login).
 
