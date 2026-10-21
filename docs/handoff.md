@@ -1,3 +1,7 @@
+**2026-10-21, after commits to b65778d+:** all hero-zone + bazaar + chowk + temple + flower stall + 3 abadi shops are Blender models (see docs/status.json assetsRebuiltInBlender; checklists in docs/*-checklist.md; compare shots docs/shots/compare/). Method for the next building: write docs/<name>-checklist.md, `tools/blender/build_<name>.py` using arch.Kit, `tools/blender/make.sh <name> <slot>`, hide the old code geometry in a named `*_old` group + register an exact slot in src/main.js, shoot with tools/compare-shot.mjs, tick rows. Remaining: background houses (instanced), boundary walls/lanes/kerbs/drains, props, canal+bridge, then greening + MISSIONS_PLAN.md.
+
+---
+
 **2026-10-21, after commits 6a65f5e..house rebuild:** canal visible + crossable (real keys); house fully rebuilt in Blender (`tools/blender/make_house.sh`, `docs/house-checklist.md` 11/12, compare shot `docs/shots/compare/house.png`); `?proof=1` + `tools/proof-shot.mjs` / `tools/compare-shot.mjs` are the normal-mode screenshot tools; exact asset slots (`exact: true`) for buildings. Next: school per `docs/school-checklist.md`, same method (checklist -> Blender -> compare shot).
 
 ---

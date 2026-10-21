@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-21T06:30:00.000Z",
+  "timestamp": "2026-10-21T10:00:00.000Z",
   "drawCallsByZone": {
-    "hero zone (house/school/halwai/tea-stall, incl. flagpole + donation board)": 142,
-    "bazaar row + chowk (incl. the puncture/cycle shop)": 118,
-    "field + mango baagh (incl. the cattle/dog zone + the canal/bridge)": 98
+    "hero zone (house/school/halwai/tea-stall, general store ...)": 145,
+    "bazaar row + chowk": 120,
+    "field + mango baagh": 100
   },
   "drawCallCeiling": 150,
   "drawCallAim": 120,
@@ -13,10 +13,20 @@
   "assetsLimitMB": 40,
   "lastBuild": "pass",
   "lastValidator": "pass (15/15)",
-  "lastRegressionCheck": "pass 22/22 (run 4; runs 1-3 failed only on a fixed-window timing check, fixed - see docs/parked.md)",
+  "lastRegressionCheck": "pass 22/22 (run 7); the trolley checks were made frame-rate independent",
   "lastCheckBudget": "pass",
   "assetsRebuiltInBlender": [
-    "house_compound.glb (whole house compound, replaces house_shell.glb) - house checklist 11/12, docs/house-checklist.md"
+    "house_compound",
+    "school_compound",
+    "halwai_compound",
+    "tea_stall",
+    "general_store",
+    "bazaar_row (8 shops, awning, interiors)",
+    "tea_stall_chowk",
+    "chowk_plaza",
+    "temple",
+    "flower_stall",
+    "new_shops (post office, ration shop, atta chakki)"
   ],
-  "notes": "NOT COMPLETE. FINISH_LINE.md still 8/29 (no new line has its own normal-mode proof yet). This cycle: (1) canal fixed - water had been below the ground (invisible) and the bridge deck was a solid collider; normal-mode shots in docs/shots/normal-mode-canal-2026-10-21/, tractor+trolley and bullock cart both cross with real keys (tools/canal-crossing-test.mjs). (2) HOUSE REBUILT in Blender: two storeys, balcony with carved railing, roof terrace (mumty, tank, antenna, charpais, kite), rangoli courtyard, gate, cattle shed + cow, jhoola, planter, kitchen alcove; compare shot docs/shots/compare/house.png; checklist 11/12 (the planter's tree is still a code stand-in). Root cause of the old 'windows do not render' bug found: they were inside a solid wall, AND the 'hidden' old walls were never hidden (an outer merge swallowed them). (3) Lane/field spur strips that cut through the compound were redrawn outside it; validator route chains edited for the new real walls. Next: school (docs/school-checklist.md), then halwai, tea stall, general store, bazaar row, etc."
+  "notes": "NOT COMPLETE. FINISH_LINE.md 8/29 ticked (unchanged; no line has its own fresh normal-mode proof yet). Blender buildings done this session, each with a docs/*-checklist.md and a docs/shots/compare/<name>.png (reference left, normal-mode render right; shown on the dashboard): house (11/12), school (20/22, trees + swing-tyre tree pending Tripo), halwai, tea stall, general store, bazaar row (18/18), chowk tea stall + plaza, temple + flower stall, post office / ration shop / atta chakki. The last 5 groups have NO Places V1 reference image (temple, 3 abadi shops) - built from MAP.md; compare panels say so; the art director should supply references. Pipeline: tools/blender/arch.py Kit (one hb_main textured mesh per building + brick/tin only where used), make.sh <script> <slot>, exact asset slots (src/assetSlots.js `exact:true`), hidden *_old groups keep collision, tools/proof-shot.mjs + tools/compare-shot.mjs for normal-mode shots (?proof=1 = camera hook only). Not started: background house variants (instanced), boundary walls/lanes/kerbs/drains, props, canal+bridge in Blender, greening, side jobs, missions plan. Zero Tripo calls."
 }

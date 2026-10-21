@@ -433,7 +433,7 @@ async function main() {
     // before the static merge) rather than re-typing coordinates here.
     const buildingTargets = await page.evaluate(() => {
       const d = window.__dopahar;
-      const EXCLUDE = new Set(['new_shops_old', 'lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation']);
+      const EXCLUDE = new Set(['lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation']);
       return d
         .getBuildingFootprints()
         .filter((f) => !EXCLUDE.has(f.name) && f.root !== 'background_houses')
@@ -782,7 +782,7 @@ async function main() {
     {
       const out = await page.evaluate(() => {
         const d = window.__dopahar;
-        const EXCLUDE = new Set(['lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation', 'shop_walls', 'new_shop_walls', 'new_shop_roofs']);
+        const EXCLUDE = new Set(['new_shops_old', 'lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'trees', 'vegetation', 'shop_walls', 'new_shop_walls', 'new_shop_roofs']);
         const footprints = d.getBuildingFootprints().filter((f) => !EXCLUDE.has(f.name));
         // Real dimensions, src/shops.js / src/newShops.js (not invented).
         const REAL_DIMS = { tea_stall: { w: 4, d: 2.5 }, general_store: { w: 3.5, d: 3 }, post_office: { w: 3.2, d: 3 }, ration_shop: { w: 3.6, d: 3 }, atta_chakki: { w: 3, d: 2.8 } };
