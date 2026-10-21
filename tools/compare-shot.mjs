@@ -24,7 +24,14 @@ const NO_REF = refPath === '-' || refPath.startsWith('none:');
 const ref = NO_REF
   ? await sharp(Buffer.from(`<svg width="700" height="${H}"><rect width="700" height="${H}" fill="#3a3a3a"/><text x="350" y="${H / 2 - 20}" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="26" fill="#ddd">No Places V1 reference exists</text><text x="350" y="${H / 2 + 20}" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="20" fill="#aaa">${(refPath.startsWith('none:') ? refPath.slice(5) : 'built from MAP.md + the project brief').replace(/&/g, '&amp;')}</text></svg>`)).png().toBuffer()
   : await sharp(resolve(refPath)).resize({ height: H }).png().toBuffer();
-const game = await sharp(resolve(tmpDir, 'main.png')).resize({ height: H }).png().toBuffer();
+// GAME_CROP='y0,y1' (fractions of the frame height, optional): crop the render to a horizontal band so a long, low
+// subject (e.g. a 36 m shop row seen straight on) is compared at the reference's own aspect.
+let gameImg = sharp(resolve(tmpDir, 'main.png'));
+if (process.env.GAME_CROP) {
+  const [y0, y1] = process.env.GAME_CROP.split(',').map(Number);
+  gameImg = sharp(await gameImg.extract({ left: 0, top: Math.round(800 * y0), width: 1280, height: Math.round(800 * (y1 - y0)) }).toBuffer());
+}
+const game = await gameImg.resize({ height: H }).png().toBuffer();
 const rm = await sharp(ref).metadata();
 const gm = await sharp(game).metadata();
 const gap = 12;

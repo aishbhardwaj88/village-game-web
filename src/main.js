@@ -183,6 +183,12 @@ async function main() {
   // HDRI's very hot sun disk in specular reflections — that also dims the HDRI's own
   // diffuse IBL fill, so this hemisphere light replaces it explicitly.
   scene.add(new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9));
+  // Art review 1 (bazaar row): the sun sits on the +x/+z side, so every -z-facing front (the whole bazaar row, shop
+  // counters under the awning) was in flat shadow and read as a dark grey block. A weak warm bounce from the -z side, no
+  // shadows, no draw call, lifts those faces without touching the sun's shadows.
+  const bounceFill = new THREE.DirectionalLight(0xffe2b8, 0.55);
+  bounceFill.position.set(-20, 14, -60);
+  scene.add(bounceFill);
 
   const sky = createSky(sun.position, atmosphere);
   scene.add(sky);
