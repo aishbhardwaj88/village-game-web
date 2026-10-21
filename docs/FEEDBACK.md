@@ -18,7 +18,7 @@
   - Test: a screenshot of the main lane should read like a real North Indian village, not a toy.
 
 ## 21 Oct 2026 (art director)
-- Greens read lime/cartoon: shift grass and tree greens toward natural dusty olive and deep neem green, with variation.
+- Greens read lime/cartoon: shift grass and tree greens toward natural dusty olive and deep neem green, with variation. DONE 2026-10-21 (this commit)
 - Walls read flat: add soft colour variation, light AO and gentle weathering (cared-for, never broken) on every Blender building.
 - Lanes feel empty: add villagers walking, kids playing, cycles, cattle resting, chulha smoke, birds.
 - Abadi houses: add balconies with carved wood, potted plants, creepers and roof clutter like Characters V1/buildings/house_1.png.

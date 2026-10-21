@@ -36,10 +36,10 @@ const BARK_COLOR_LIGHT = 0x4a3a2e;
 // codebase's own established "deeper shade of the same hue, never a
 // different colour" rule) reads as foliage instead of wall.
 // Art review 2 (2026-10-21): canopies were grey-beige. Real foliage greens now (sRGB hex).
-const LEAF_NEEM = new THREE.Color(0x4f8a34);
-const LEAF_PEEPAL = new THREE.Color(0x3f8a3c);
-const LEAF_BABOOL = new THREE.Color(0x76913f); // lighter olive acacia, still clearly green
-const LEAF_MANGO = new THREE.Color(0x2f6e2d);
+const LEAF_NEEM = new THREE.Color(0x4b6b2e);
+const LEAF_PEEPAL = new THREE.Color(0x3a5f32);
+const LEAF_BABOOL = new THREE.Color(0x7a8442); // lighter olive acacia, still clearly green
+const LEAF_MANGO = new THREE.Color(0x294d27);
 
 function paintFlat(geometry, color) {
   const count = geometry.attributes.position.count;
@@ -94,7 +94,10 @@ function buildCanopyBlob(cx, cy, cz, radius, squash, color, detail = 1, sat = fa
   const c = new THREE.Color();
   for (let i = 0; i < p2.count; i++) {
     const t = Math.min(1, Math.max(0, (p2.getY(i) - (cy - radius * squash)) / (2 * radius * squash)));
-    c.copy(color).multiplyScalar((0.62 + 0.55 * t) * jit);
+    // leaf-clump noise + a warm olive/yellow lean on sunlit tops, cooler deep green underneath
+    const nz = 0.88 + 0.24 * (0.5 + 0.5 * Math.sin(p2.getX(i) * 6.3 + p2.getZ(i) * 4.1) * Math.cos(p2.getY(i) * 5.7 + p2.getX(i) * 2.3));
+    c.copy(color).multiplyScalar((0.58 + 0.55 * t) * jit * nz);
+    c.r *= 1 + 0.12 * t; c.b *= 1 - 0.1 * t;
     colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -230,7 +233,7 @@ export function buildMangoTree(seed = 3) {
 
 /** Eucalyptus — the tall, slim, pale-barked row behind the school (Places V1 school reference). A straight light trunk and a narrow,
  * drooping blue-green crown made of stacked elongated clumps. */
-const LEAF_EUCALYPTUS = new THREE.Color(0x5f8f5a);
+const LEAF_EUCALYPTUS = new THREE.Color(0x5c7550);
 export function buildEucalyptusTree(seed = 4) {
   const group = new THREE.Group();
   group.name = 'tree_eucalyptus';

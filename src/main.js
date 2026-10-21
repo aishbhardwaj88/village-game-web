@@ -166,7 +166,7 @@ async function main() {
   // grassGreen) instead of the deliberately-dry greyGreen this started with, at
   // higher coverage so it actually reads from a normal play distance.
   const ground = createGround({
-    grassTint: 0x6a9440,
+    grassTint: 0x7b8a4a,
     grassCoverage: 0.7,
     dampSpots: [{ x: HOUSE_HAND_PUMP_POSITION.x, z: HOUSE_HAND_PUMP_POSITION.z, radius: 2.2, tint: darken(0xffffff, 0.75) }],
   });

@@ -1,3 +1,8 @@
+**2026-10-21 (cycle 3):** Tree canopies and ground grass shifted from lime to dusty olive/deep neem green with per-leaf-clump variation (src/trees.js, grassTint in src/main.js). Validator + regression 22/22 pass. Inbox was empty.
+Next: kachcha mud houses with thatch, real PBR textures on remaining surfaces, Blender tree rebuild, lane life.
+
+---
+
 **2026-10-21 (cycle 2), after the deploy fix + ART_REVIEW rework:** CI now runs `build:unchecked` (15 min timeouts, no Playwright); validators stay local (`npm run build`, `node tools/regression-check.js`). Reworked house (west wing), bazaar front, school/tea stall/general store, signboards (shared wide-cell atlas in src/signboards.js), trees + ground green, and the abadi: 22 dense attached rows (`tools/blender/make_abadi.sh`, `src/scenery.js`, near/far LOD, hollow-shell colliders in 4 m pieces).
 Gotchas: world-validator's sampler is quadratic in triangle edge length (now deduped on a 0.1 m grid); rows' hidden colliders must stay small pieces. Hero zone draw calls sit AT 150.
 Next: distance-hide Blender hero buildings, halwai/flower-stall/post-office compare re-checks, canal colour, then docs/MISSIONS_PLAN.md side jobs.
