@@ -28,6 +28,11 @@ Next: distance-hide Blender hero buildings, halwai/flower-stall/post-office comp
 ---
 
 # Handoff log
+**2026-10-22:** Chulha smoke now rises from both kachcha homesteads (src/ambient.js, same Points draw call). Validator + regression 22/22. Inbox empty.
+Next: more kachcha variants, Blender tree rebuild, PBR on lanes/canal, lane life (kids, cycles).
+
+---
+
 **2026-10-22 (cycle 6):** Trees now carry alpha-cut leaf cards (procedural leaf-sprig texture, one extra draw call) over the canopy blobs in src/trees.js; validator exempts `tree_leaf_cards` from the floating check. Validator 15/15, regression 22/22. Inbox empty. Push still fails (no git login).
 Next: Blender tree rebuild with real branching + LODs, wind sway, more kachcha variants, PBR on lanes/canal.
 
