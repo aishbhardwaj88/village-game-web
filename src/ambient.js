@@ -134,9 +134,30 @@ export function createAmbientLife() {
   cowPts.name = 'ambient_cattle';
   cowPts.frustumCulled = false;
 
+  // --- kids playing tag in the lane near the halwai and tea stall (one Points draw call, shown only within 22 m, which keeps the hero-zone draw-call count under the ceiling)
+  const kidTex = spriteTexture((ctx) => {
+    ctx.fillStyle = '#2b1d14';
+    ctx.beginPath(); ctx.arc(32, 12, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c98a5a';
+    ctx.fillRect(27, 18, 10, 4);
+    ctx.fillStyle = '#d9d2c2';
+    ctx.fillRect(24, 22, 16, 18);
+    ctx.fillStyle = '#3b5a8a';
+    ctx.fillRect(25, 40, 6, 16);
+    ctx.fillRect(33, 40, 6, 16);
+  });
+  const kidSpot = { x: -45, z: 70, n: 4 };
+  const kidPos = new Float32Array(kidSpot.n * 3);
+  const kidGeo = new THREE.BufferGeometry();
+  kidGeo.setAttribute('position', new THREE.BufferAttribute(kidPos, 3));
+  const kidMat = new THREE.PointsMaterial({ map: kidTex, size: 1.1, transparent: true, depthWrite: false, sizeAttenuation: true, alphaTest: 0.05 });
+  const kids = new THREE.Points(kidGeo, kidMat);
+  kids.name = 'ambient_kids';
+  kids.frustumCulled = false;
+
   const group = new THREE.Group();
   group.name = 'ambient_life';
-  group.add(birds, smoke, hens, flies, cowPts);
+  group.add(birds, smoke, hens, flies, cowPts, kids);
   let t = 0;
   function update(dt, px, pz) {
     t += dt;
@@ -152,6 +173,16 @@ export function createAmbientLife() {
     if (cowPts.visible) {
       cows.forEach((c, i) => { cowPos[i * 3 + 1] = 0.55 + Math.sin(t * 0.8 + i * 2) * 0.012; });
       cowGeo.attributes.position.needsUpdate = true;
+    }
+    kids.visible = Math.abs(kidSpot.x - px) < 22 && Math.abs(kidSpot.z - pz) < 22;
+    if (kids.visible) {
+      for (let i = 0; i < kidSpot.n; i++) {
+        const ph = i * 1.9;
+        kidPos[i * 3] = kidSpot.x + Math.sin(t * 0.55 + ph) * 3.2 + Math.sin(t * 1.3 + ph * 2) * 0.6;
+        kidPos[i * 3 + 1] = 0.55 + Math.abs(Math.sin(t * 5 + ph * 3)) * 0.12;
+        kidPos[i * 3 + 2] = kidSpot.z + Math.cos(t * 0.45 + ph * 1.6) * 2.6;
+      }
+      kidGeo.attributes.position.needsUpdate = true;
     }
     hens.visible = flocks.some((f) => Math.abs(f.x - px) < 45 && Math.abs(f.z - pz) < 45);
     if (hens.visible) {
