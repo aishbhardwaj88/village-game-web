@@ -90,7 +90,7 @@ SIGNS.push({ label: 'chowk_tea_stall_Yadav_Chai_Nashta', pos: { x: -53.2, y: 3.6
 
 async function main() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const shotsDir = resolve(ROOT, 'docs', 'shots', `signboard-8m-${timestamp}`);
+  const shotsDir = resolve(ROOT, 'docs', 'shots', `normal-mode-signboard-8m-${timestamp}`);
   mkdirSync(shotsDir, { recursive: true });
 
   console.log('Starting `vite preview` against dist/...');
@@ -106,7 +106,7 @@ async function main() {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', (e) => console.error('pageerror:', e.message));
 
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?proof=1`, { waitUntil: 'load' });
     await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
     await page.click('#play-btn');
     await page.waitForTimeout(1500);

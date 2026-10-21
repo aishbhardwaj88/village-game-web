@@ -55,9 +55,10 @@ def shell():
         kit.add('trim', wb('lintel', c - UW / 2 + WT / 2, c + UW / 2 - WT / 2, FRONT - 0.04, FRONT + WT + 0.02, OPEN_H - 0.12, OPEN_H + 0.02, 0.008))
         # roof slab for this unit (stepped skyline) + parapet lip
         kit.add('trim', wb('roof', c - UW / 2 - 0.1, c + UW / 2 + 0.1, FRONT - 0.3, BACK + 0.3, h, h + 0.14, 0.012))
-        kit.add(wall_kind, wb('parapet_front', c - UW / 2 + 0.1, c + UW / 2 - 0.1, FRONT - 0.2, FRONT + WT - 0.05, h + 0.14, h + 0.6, 0.01))
+        # front parapet lip kept BEHIND the code signboard plane (z = FRONT - 0.05) and low, so the bilingual boards stay legible
+        kit.add(wall_kind, wb('parapet_front', c - UW / 2 + 0.1, c + UW / 2 - 0.1, FRONT + 0.05, FRONT + WT + 0.02, h + 0.14, h + 0.5, 0.01))
         kit.add(wall_kind, wb('parapet_back', c - UW / 2 + 0.1, c + UW / 2 - 0.1, BACK - WT, BACK + 0.1, h + 0.14, h + 0.6, 0.01))
-        kit.add('trim', wb('parapet_cap_f', c - UW / 2 + 0.06, c + UW / 2 - 0.06, FRONT - 0.24, FRONT + WT - 0.01, h + 0.6, h + 0.68, 0.01))
+        kit.add('trim', wb('parapet_cap_f', c - UW / 2 + 0.06, c + UW / 2 - 0.06, FRONT + 0.03, FRONT + WT + 0.04, h + 0.5, h + 0.56, 0.01))
         kit.add('trim', wb('parapet_cap_b', c - UW / 2 + 0.06, c + UW / 2 - 0.06, BACK - WT - 0.04, BACK + 0.14, h + 0.6, h + 0.68, 0.01))
         # interior floor, slightly proud, polished-concrete grey
         kit.add('floor', wb('floor', c - UW / 2 + 0.03, c + UW / 2 - 0.03, FRONT, BACK - WT, 0.0, 0.06, 0))
