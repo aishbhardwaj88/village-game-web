@@ -484,16 +484,16 @@ function addDoorFrameZ(kit, center, width, height, wallThickness) {
  * blackboard + teacher's table/chair at the north end, benches in rows facing them,
  * a wall chart on the west wall. Same plaster/cement treatment as every other block
  * here, folded into buildSchool's own merge pass — see mergeGroupByMaterial below. */
-function buildSchoolClassroom(group, kit) {
+function buildSchoolClassroom(group, schoolOld, kit) {
   const { w, h, d, cx: rx, cz: rz } = SCHOOL_ROOM;
   const seedBase = rx * 3.1 + rz * 1.7;
   const overhang = 0.3;
   const bandH = 0.9;
 
-  addGappedWall(group, { axis: 'z', length: d, height: h, thickness: WALL_THICKNESS, cx: SCHOOL_ROOM_DOOR_X, cz: rz, gapWidth: SCHOOL_ROOM_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_SCHOOL, seedBase });
-  addWallBox(group, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz - d / 2 }, seedBase + 10, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addWallBox(group, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz + d / 2 }, seedBase + 11, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addWallBox(group, WALL_THICKNESS, h, d, 'plaster', { x: rx - w / 2, y: h / 2, z: rz }, seedBase + 12, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addGappedWall(schoolOld, { axis: 'z', length: d, height: h, thickness: WALL_THICKNESS, cx: SCHOOL_ROOM_DOOR_X, cz: rz, gapWidth: SCHOOL_ROOM_DOOR_WIDTH, materialName: 'plaster', tint: PLASTER_SCHOOL, seedBase });
+  addWallBox(schoolOld, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz - d / 2 }, seedBase + 10, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(schoolOld, w, h, WALL_THICKNESS, 'plaster', { x: rx, y: h / 2, z: rz + d / 2 }, seedBase + 11, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addWallBox(schoolOld, WALL_THICKNESS, h, d, 'plaster', { x: rx - w / 2, y: h / 2, z: rz }, seedBase + 12, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
 
   // Floor + false ceiling (the real roof, below, sits well above).
   const floor = texturedFloor(w - WALL_THICKNESS * 2, d - WALL_THICKNESS * 2, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
@@ -503,22 +503,16 @@ function buildSchoolClassroom(group, kit) {
   addThickBox(group, w - WALL_THICKNESS * 2, 0.1, d - WALL_THICKNESS * 2, 'concrete', { x: rx, y: 2.9, z: rz }, { tint: CONCRETE_NEUTRAL });
 
   // Band, matching each wall segment's own length/gap.
-  addBox(group, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz - d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz + d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, WALL_THICKNESS + 0.06, bandH, d + 0.06, 'plaster', { x: rx - w / 2, y: bandH / 2, z: rz }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(schoolOld, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz - d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(schoolOld, w + 0.06, bandH, WALL_THICKNESS + 0.06, 'plaster', { x: rx, y: bandH / 2, z: rz + d / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(schoolOld, WALL_THICKNESS + 0.06, bandH, d + 0.06, 'plaster', { x: rx - w / 2, y: bandH / 2, z: rz }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
   const doorSegLen = (d - SCHOOL_ROOM_DOOR_WIDTH) / 2;
-  addBox(group, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz - d / 2 + doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  addBox(group, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz + d / 2 - doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-  kit.addPlinthRing(rx, rz, w, d, WALL_THICKNESS);
-  kit.addCornerPilasters(rx, rz, w, d, h, WALL_THICKNESS);
-  addThickBox(group, w + overhang * 2, 0.25, d + overhang * 2, 'concrete', { x: rx, y: h + 0.125, z: rz }, { tint: CONCRETE_NEUTRAL });
+  addBox(schoolOld, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz - d / 2 + doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addBox(schoolOld, WALL_THICKNESS + 0.06, bandH, doorSegLen + 0.06, 'plaster', { x: SCHOOL_ROOM_DOOR_X, y: bandH / 2, z: rz + d / 2 - doorSegLen / 2 }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  addThickBox(schoolOld, w + overhang * 2, 0.25, d + overhang * 2, 'concrete', { x: rx, y: h + 0.125, z: rz }, { tint: CONCRETE_NEUTRAL });
 
   // Real door + a step; a decorative window on the solid west wall (like every
   // other window in this file — not a passage, so the usual fake opening is fine).
-  addDoorFrameZ(kit, { x: SCHOOL_ROOM_DOOR_X, y: 0, z: rz }, SCHOOL_ROOM_DOOR_WIDTH, 2.1, WALL_THICKNESS);
-  kit.addStep({ x: SCHOOL_ROOM_DOOR_X + 0.3, y: 0.08, z: rz }, { x: 0.45, y: 0.16, z: 1.4 });
-  kit.addOpening({ center: { x: rx - w / 2, y: 0, z: rz + 5 }, width: 1.3, height: 1.3, wallThickness: WALL_THICKNESS, widthAxis: 'z', sill: 1.1 });
-  kit.addDrainpipe({ x: rx - w / 2 - 0.05, y: h / 2, z: rz - d / 2 - 0.05 }, h);
 
   // Furniture: blackboard + teacher's table/chair at the north end (the "front" of
   // the room), benches in rows facing them, a wall chart on the west wall.
@@ -547,11 +541,19 @@ function buildSchool(kit) {
   const cx = SCHOOL_CENTER.x;
   const cz = SCHOOL_CENTER.z;
 
-  // Yard: 30m (x) x 24m (z), cement floor, centred on the given point.
+  // Blender school rebuild (2026-10-21, docs/school-checklist.md): every wall/roof/band/yard solid is
+  // built into this INVISIBLE locally-merged 'school_old' group — it keeps the exact collision and the
+  // validator's real-geometry backing while tools/blender/build_school.py's school_compound.glb draws
+  // what you actually see. The classroom's interior (floor, false ceiling, benches, blackboard,
+  // teacher's table) stays visible code geometry in `group`.
+  const schoolOld = new THREE.Group();
+  schoolOld.name = 'school_old';
+
+  // Yard floor: no longer drawn (the Blender yard is bare packed earth like the reference) but kept as hidden geometry.
   const floor = texturedFloor(30, 24, 'concrete', { tileSize: 2, tint: CONCRETE_NEUTRAL });
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, 0.015, cz);
-  group.add(floor);
+  schoolOld.add(floor);
 
   const bandH = 0.9;
   const overhang = 0.3;
@@ -567,47 +569,50 @@ function buildSchool(kit) {
   ];
 
   for (const b of blocks) {
-    addWallBox(group, b.w, b.h, b.d, 'plaster', { x: b.x, y: b.h / 2, z: b.z }, b.x * 3.1 + b.z * 1.7, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-    addBox(group, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
-    addThickBox(group, b.w + overhang * 2, 0.25, b.d + overhang * 2, 'concrete', { x: b.x, y: b.h + 0.125, z: b.z }, { tint: CONCRETE_NEUTRAL });
-    kit.addPlinthRing(b.x, b.z, b.w, b.d, WALL_THICKNESS);
-    kit.addCornerPilasters(b.x, b.z, b.w, b.d, b.h, WALL_THICKNESS);
-
-    // Yard-facing wall: a door plus one or two windows either side.
-    const faceAxis = b.doorAxis === 'x' ? 'z' : 'x'; // the axis the wall's own face normal points along
-    const faceOffset = (b.doorSign * (faceAxis === 'z' ? b.d : b.w)) / 2;
-    const doorCenter = { x: b.x, y: 0, z: b.z };
-    doorCenter[faceAxis] += faceOffset;
-    kit.addOpening({ center: doorCenter, width: 1.1, height: 2.1, wallThickness: WALL_THICKNESS, widthAxis: b.doorAxis, isDoor: true });
-    const stepPos = { x: doorCenter.x, y: 0.08, z: doorCenter.z };
-    stepPos[faceAxis] += Math.sign(faceOffset) * 0.3;
-    const stepSize = faceAxis === 'z' ? { x: 1.4, y: 0.16, z: 0.45 } : { x: 0.45, y: 0.16, z: 1.4 };
-    kit.addStep(stepPos, stepSize);
-
-    const windowSpan = b.doorAxis === 'x' ? b.w : b.d;
-    for (let i = 0; i < b.windows; i++) {
-      const side = b.windows === 1 ? 1 : i === 0 ? -1 : 1;
-      const winCenter = { x: b.x, y: 0, z: b.z };
-      winCenter[b.doorAxis] += side * Math.min(windowSpan / 2 - 1.2, 3 + i * 0.2);
-      winCenter[faceAxis] += faceOffset;
-      kit.addOpening({ center: winCenter, width: 1.3, height: 1.3, wallThickness: WALL_THICKNESS, widthAxis: b.doorAxis, sill: 1.1 });
-    }
-
-    kit.addDrainpipe({ x: b.x - b.w / 2 - 0.05, y: b.h / 2, z: b.z - b.d / 2 - 0.05 }, b.h);
+    addWallBox(schoolOld, b.w, b.h, b.d, 'plaster', { x: b.x, y: b.h / 2, z: b.z }, b.x * 3.1 + b.z * 1.7, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addBox(schoolOld, b.w + 0.06, bandH, b.d + 0.06, 'plaster', { x: b.x, y: bandH / 2, z: b.z }, { tint: SCHOOL_BAND, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+    addThickBox(schoolOld, b.w + overhang * 2, 0.25, b.d + overhang * 2, 'concrete', { x: b.x, y: b.h + 0.125, z: b.z }, { tint: CONCRETE_NEUTRAL });
   }
 
-  buildSchoolClassroom(group, kit);
+  buildSchoolClassroom(group, schoolOld, kit);
 
-  // Steel gate at the yard's south (open) entrance.
-  const gateZ = cz - 12;
-  addBox(group, 0.15, 2.2, 0.15, 'metal', { x: cx - 4, y: 1.1, z: gateZ }, { tileSize: 1 });
-  addBox(group, 0.15, 2.2, 0.15, 'metal', { x: cx + 4, y: 1.1, z: gateZ }, { tileSize: 1 });
-  addBox(group, 8, 0.15, 0.15, 'metal', { x: cx, y: 2.1, z: gateZ }, { tileSize: 1 });
+  // New solids drawn by the Blender model (offsets from SCHOOL_CENTER — keep in sync with
+  // tools/blender/build_school.py): south boundary wall with a 4.8 m gate gap, wall returns at the four
+  // corners, verandah pillars, gate pillars, the brick tree ring, the vegetable-plot fence and the tin shed.
+  const WH = 1.6;
+  const wallAt = (len, x, z, alongX) => {
+    addWallBox(schoolOld, alongX ? len : WALL_THICKNESS, WH, alongX ? WALL_THICKNESS : len, 'plaster', { x: cx + x, y: WH / 2, z: cz + z }, cx * 3.1 + x + z, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  };
+  wallAt(15.11 - 2.7, -(15.11 + 2.7) / 2, -12, true); // south wall west of the gate
+  wallAt(15.11 - 2.7, (15.11 + 2.7) / 2, -12, true); // south wall east of the gate
+  wallAt(3.0, -15, -10.6, false); // west/east wall returns south of the wings
+  wallAt(3.0, 15, -10.6, false);
+  wallAt(3.0, -15, 10.6, false); // ...and north of them
+  wallAt(3.0, 15, 10.6, false);
+  wallAt(3.0, -13.5, 12, true); // north corner returns beside the main block
+  wallAt(3.0, 13.5, 12, true);
+  const pil = (x, z, w = 0.4, h = 3.6) => {
+    addWallBox(schoolOld, w, h, w, 'plaster', { x: cx + x, y: h / 2, z: cz + z }, cx * 3.1 + x * 7 + z, { tint: PLASTER_SCHOOL, tileSize: 2, tintStrength: WALL_TINT_STRENGTH });
+  };
+  for (const x of [-8, -4, 0, 4, 8]) pil(x, 4.0); // main verandah
+  for (const z of [-8, -4, 3.2]) { pil(7.0, z); pil(-6.89, z === 3.2 ? 4 : z); } // east + west wing verandahs
+  pil(-2.7, -12, 0.6, 2.5); // gate pillars
+  pil(2.7, -12, 0.6, 2.5);
+  const solid = (w, h, d, mat, x, z, tint) => {
+    const m = texturedThickBox(w, h, d, mat, { tileSize: 2, tint });
+    m.position.set(cx + x, h / 2, cz + z);
+    schoolOld.add(m);
+  };
+  solid(3.2, 0.9, 3.2, 'brick', -4.5, -6.2, 0xb5603e); // tree ring
+  solid(3.2, 1.0, 4.2, 'wood', 4.5, -6.4, 0x6a5238); // vegetable plot fence
+  solid(4.6, 2.2, 2.3, 'wood', 12.5, -10.65, 0x6a5238); // tin shed
 
   // Task 2 (draw-call budget) — folds the 3 wallBox + 3 band walls into one
   // 'plaster' mesh, the floor + 3 roofs into one 'concrete' mesh, and the 3 gate
   // bars into one 'metal' mesh (~13 meshes -> 3).
-  mergeGroupByMaterial(group);
+  mergeGroupByMaterial(schoolOld);
+  group.add(schoolOld);
+  mergeGroupByMaterial(group, { skipNames: ['school_old'] });
 
   return group;
 }

@@ -761,13 +761,24 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
       noShadowMaterials: ['hb_floor', 'hb_rangoli'],
       hide: hideOld,
       placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: 0 }],
+    });
+  }
+  {
+    // Blender school rebuild (2026-10-21, docs/school-checklist.md) — exact slot at SCHOOL_CENTER, the
+    // old walls/roofs/yard/pillar+wall solids are the hidden 'school_old' group (src/village.js).
+    const schoolOld = scene.getObjectByName('school_old');
+    assetSlots.register('school_compound', {
+      exact: true,
+      noShadowMaterials: ['hb_decal'],
+      hide: schoolOld ? [schoolOld] : [],
+      placements: [{ container: scene, position: new THREE.Vector3(SCHOOL_CENTER.x, 0, SCHOOL_CENTER.z), rotationY: 0 }],
     });
   }
   const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
@@ -813,15 +824,19 @@ async function main() {
   // bright, obviously-fake magenta box stands in for "the placeholder" here — proves
   // detect -> load -> scale -> ground -> place -> hide-the-placeholder end to end.
   // Safe to remove once a real slot needs testing instead; costs one draw call.
-  const testPotPlaceholder = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xff00ff }));
-  testPotPlaceholder.position.set(HOUSE_CENTER.x + 3, 0.2, HOUSE_CENTER.z + 2);
-  testPotPlaceholder.castShadow = true;
-  scene.add(testPotPlaceholder);
-  assetSlots.register('ceramic_pot', {
-    dimensions: { w: 0.5, h: 0.6, d: 0.5 },
-    hide: [testPotPlaceholder],
-    placements: [{ container: scene, position: testPotPlaceholder.position.clone(), rotationY: 0 }],
-  });
+  // 2026-10-21: dev-mode only — in normal play this stray clay pot sat in the middle of the
+  // rebuilt house courtyard (and cost 2 draw calls) for no gameplay reason.
+  if (isDevMode()) {
+    const testPotPlaceholder = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xff00ff }));
+    testPotPlaceholder.position.set(HOUSE_CENTER.x + 3, 0.2, HOUSE_CENTER.z + 2);
+    testPotPlaceholder.castShadow = true;
+    scene.add(testPotPlaceholder);
+    assetSlots.register('ceramic_pot', {
+      dimensions: { w: 0.5, h: 0.6, d: 0.5 },
+      hide: [testPotPlaceholder],
+      placements: [{ container: scene, position: testPotPlaceholder.position.clone(), rotationY: 0 }],
+    });
+  }
 
   // TEMPORARY Tripo-day staging slots (October look-and-feel judgement task) — 6
   // brand-new test slots, none of which replace any real gameplay object (unlike
@@ -977,9 +992,11 @@ async function main() {
         { kind: 'neem', x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z - 4, rotationY: 1.1, seed: 11 },
         // the courtyard tree in its raised brick planter (docs/house-checklist.md item 7); planter top is y=0.55
         { kind: 'neem', x: HOUSE_CENTER.x + 7, z: HOUSE_CENTER.z + 3.4, y: 0.5, scale: 0.5, rotationY: 0.7, seed: 17 },
+        // the school yard's neem in its raised brick ring (docs/school-checklist.md item 17); ring top y=0.26
+        { kind: 'neem', x: SCHOOL_CENTER.x - 4.5, z: SCHOOL_CENTER.z - 6.2, y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
         { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
-        { kind: 'neem', x: SCHOOL_CENTER.x - 12, z: SCHOOL_CENTER.z + 6, rotationY: 2.3, seed: 12 },
-        { kind: 'neem', x: SCHOOL_CENTER.x - 9, z: SCHOOL_CENTER.z + 9, rotationY: 0.5, seed: 14 },
+        { kind: 'neem', x: SCHOOL_CENTER.x - 10, z: SCHOOL_CENTER.z + 16, rotationY: 2.3, seed: 12 }, // behind the main block (these two used to stand INSIDE the wings, poking through the roofs)
+        { kind: 'neem', x: SCHOOL_CENTER.x + 6, z: SCHOOL_CENTER.z + 17, rotationY: 0.5, seed: 14 },
         { kind: 'neem', x: HALWAI_CENTER.x + 3, z: HALWAI_CENTER.z - 5, rotationY: 1.8, seed: 15 },
       ])
     );
@@ -1151,7 +1168,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old'],
     });
     cameraObstacles.push(villageStaticGroup);
 

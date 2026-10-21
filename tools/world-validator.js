@@ -522,8 +522,12 @@ async function main() {
     // and past the door — each hop short and axis-aligned enough that plain
     // direct steering (no sidestep needed) closes it exactly, verified
     // zero-sidestep in tmp/verify-school-stepstones.mjs.
+    // 2026-10-21 (school rebuild): the yard now has a real boundary wall with a 4.8m gate gap (x=-50+-2.4,
+    // z=94) so every route into it goes through the gate. East of the halwai (x=-37) down to z=88, then
+    // west to the gate line, through it, then the old stepping stones to the classroom door.
+    const SCHOOL_YARD_CHAIN = [{ x: -37, z: 88 }, { x: -50, z: 91, r: 0.6 }, { x: -50, z: 97, r: 0.6 }];
     const SCHOOL_CHAIN = [
-      { x: -37, z: 95 }, { x: -58.3, z: 100 },
+      ...SCHOOL_YARD_CHAIN, { x: -58.3, z: 100 },
       { x: -58.3, z: 106, r: 0.3 }, { x: -60, z: 106, r: 0.3 }, { x: -62, z: 106, r: 0.3 },
       { x: -62, z: 101, r: 0.6 },
     ];
@@ -601,10 +605,11 @@ async function main() {
       const isTemple = /temple|flower/.test(target.name);
       const isSchoolRoom = /blackboard|school_bench/.test(target.name);
       const isSackPile = /sack_pile/.test(target.name);
+      const isSchoolYard = /bell|teacher|sister|flag/.test(target.name);
       const isHouseInterior = /house_charpai|house_compound/.test(target.name);
       const isRoof = /roof_ending/.test(target.name);
       const isBaagh = /mango|baagh/.test(target.name);
-      const needsBypass = target.z > 30 || isBazaar || isTemple || isSchoolRoom || isHouseInterior || isRoof || isBaagh;
+      const needsBypass = target.z > 30 || isSchoolYard || isBazaar || isTemple || isSchoolRoom || isHouseInterior || isRoof || isBaagh;
       const chain = [];
       if (isBaagh) return [...BAAGH_CHAIN]; // its own route across the canal bridge, no north BYPASS needed
       if (needsBypass) chain.push(...BYPASS);
@@ -612,6 +617,7 @@ async function main() {
       else if (isTemple) chain.push(...TEMPLE_CHAIN);
       else if (isSchoolRoom) chain.push(...SCHOOL_CHAIN);
       else if (isSackPile) chain.push(...SACK_PILE_CHAIN);
+      else if (isSchoolYard) chain.push(...SCHOOL_YARD_CHAIN);
       else if (isHouseInterior) chain.push(...HOUSE_INTERIOR_CHAIN);
       else if (isRoof) chain.push(...ROOF_CHAIN);
       return chain;

@@ -706,6 +706,7 @@ function buildBullock(offsetX, offsetZ) {
     [0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
   ]) {
     const leg = pmesh(legGeo, V.bullockHide, 0.9);
+    leg.castShadow = false; // thin legs: their shadow is invisible next to the body's, and each leg is its own draw call twice over
     leg.position.set(offsetX + lx, BULLOCK_LEG_LEN / 2, offsetZ + lz);
     legs.push(leg);
   }
