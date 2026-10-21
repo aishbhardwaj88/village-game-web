@@ -364,9 +364,72 @@ export function createHumanoidAnimator(bodyPivot) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Generic villagers for the side jobs (docs/MISSIONS_PLAN.md): one parametric builder, same technique as the four named
+// characters above (one vertex-coloured material -> one draw call). Placeholder-grade people like the others — the real ones
+// come from Tripo once a key exists (docs/NEEDS_YOU.md).
+// ---------------------------------------------------------------------------
+function buildVillagerParts(parts, o) {
+  const skin = o.skin ?? 0xb98a62;
+  const k = o.scale ?? 1; // kids are ~0.72
+  const add = (m) => {
+    m.scale.multiplyScalar(1); // (kept for symmetry — scaling is applied to the whole pivot below)
+    parts.push(m);
+  };
+  // legs / lower garment
+  if (o.lower === 'lungi') {
+    add(taper(0, 0, 0.74, 0.17, 0.1, 0.2, o.lowerColor ?? 0xe9e4d4, 10));
+    for (const side of [-1, 1]) add(box(side * 0.07, 0.03, 0.05, 0.09, 0.03, 0.18, 0x6b4a32));
+  } else {
+    for (const side of [-1, 1]) {
+      add(taper(side * 0.075, 0, 0.8, 0.075, 0.07, 0.06, o.lowerColor ?? 0x4a5468, 8));
+      add(box(side * 0.075, 0.03, 0.05, 0.09, 0.03, 0.18, 0x3a2a20));
+    }
+    add(taper(0, 0, 0.78, 0.15, 0.9, 0.15, o.lowerColor ?? 0x4a5468, 10));
+  }
+  // torso + shirt
+  add(taper(0, 0, 0.88, 0.15, 1.28, 0.16, o.shirt ?? 0xd0c9b8, 10));
+  for (const side of [-1, 1]) add(sphere(side * 0.17, 1.25, 0, 0.06, o.shirt ?? 0xd0c9b8));
+  // arms
+  for (const side of [-1, 1]) {
+    add(taper(side * 0.21, 0, 1.25, 0.05, 1.0, 0.044, o.sleeves === false ? skin : (o.shirt ?? 0xd0c9b8), 8));
+    add(taper(side * 0.21, 0.04, 1.0, 0.04, 0.8, 0.032, skin, 8));
+    add(sphere(side * 0.2, 0.77, 0.05, 0.034, skin, 1, 1.2, 0.8));
+  }
+  // neck, head, hair / cap
+  add(taper(0, 0, 1.28, 0.05, 1.34, 0.055, skin, 8));
+  add(sphere(0, 1.44, 0, 0.105, skin, 0.95, 1, 0.92));
+  if (o.cap) {
+    add(sphere(0, 1.5, 0, 0.11, o.cap, 1.0, 0.7, 1.0));
+    if (o.turban) add(sphere(0, 1.53, 0, 0.125, o.cap, 1.05, 0.85, 1.05));
+  } else {
+    add(sphere(0, 1.485, -0.01, 0.108, o.hair ?? 0x1c1712, 0.98, 0.7, 1.0));
+  }
+  if (o.mustache) add(box(0, 1.4, 0.095, 0.1, 0.02, 0.02, 0x1c1712));
+  if (o.apron) add(box(0, 0.98, 0.17, 0.3, 0.4, 0.015, o.apron));
+  if (o.gamcha) add(taper(0.08, 0.01, 1.3, 0.05, 1.12, 0.03, o.gamcha, 6)); // cloth over the shoulder
+}
+
+export function buildVillager(opts = {}) {
+  const built = assemble((parts) => buildVillagerParts(parts, opts));
+  if (opts.scale && opts.scale !== 1) built.bodyPivot.scale.setScalar(opts.scale);
+  return built;
+}
+
 export const CHARACTER_BUILDERS = {
   maa: buildMaa,
   dada: buildDada,
   postman: buildPostman,
   halwai: buildHalwai,
+  // side-job villagers (docs/MISSIONS_PLAN.md section 3)
+  doodhwala: () => buildVillager({ skin: 0xa8795a, shirt: 0xf0ece0, lower: 'lungi', lowerColor: 0xeae4d0, cap: 0xf4f0e6, turban: true, mustache: true, gamcha: 0xc0392b }),
+  kulfiwala: () => buildVillager({ skin: 0xb98a62, shirt: 0x3b6ea5, lower: 'trousers', lowerColor: 0x3a3f4a, cap: 0xf4f0e6, mustache: true, apron: 0xede8da }),
+  chaatwala: () => buildVillager({ skin: 0xc4956a, shirt: 0xd9a21e, lower: 'lungi', lowerColor: 0x2e6e4a, hair: 0x1c1712, mustache: true, apron: 0xede8da, gamcha: 0xefe6cf }),
+  bantawala: () => buildVillager({ skin: 0xa8795a, shirt: 0xc0392b, lower: 'trousers', lowerColor: 0x2a2f3a, cap: 0xe8d8b0, mustache: true }),
+  kid_a: () => buildVillager({ scale: 0.72, skin: 0xb98a62, shirt: 0xd9382b, lower: 'trousers', lowerColor: 0x3a4a6e }),
+  kid_b: () => buildVillager({ scale: 0.68, skin: 0xc4956a, shirt: 0x2e86c1, lower: 'trousers', lowerColor: 0x5a5a3a }),
+  kid_c: () => buildVillager({ scale: 0.75, skin: 0xa8795a, shirt: 0x27ae60, lower: 'trousers', lowerColor: 0x3a3a4a }),
+  kid_d: () => buildVillager({ scale: 0.64, skin: 0xb98a62, shirt: 0xf2c21e, lower: 'trousers', lowerColor: 0x7a2f35 }),
+  shopkeeper: () => buildVillager({ skin: 0xb98a62, shirt: 0xe8e0c8, lower: 'trousers', lowerColor: 0x4a4a52, hair: 0x2a2a2a, mustache: true }),
+  villager_aunty: () => buildVillager({ skin: 0xc4956a, shirt: 0x8a2a5a, lower: 'lungi', lowerColor: 0x8a2a5a, hair: 0x1c1712, sleeves: true }),
 };

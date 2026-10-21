@@ -6,13 +6,14 @@ import { QUALITY_LEVELS } from './quality.js';
  * restarting the errand, showing credits) are callbacks supplied by main.js, which
  * owns that state.
  */
-export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits, onShowControls }) {
+export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits, onShowControls, onShowNotebook }) {
   const overlay = document.getElementById('pause-overlay');
   const touchBtn = document.getElementById('pause-btn-touch');
   const resumeBtn = document.getElementById('resume-btn');
   const restartBtn = document.getElementById('restart-btn');
   const creditsBtn = document.getElementById('pause-credits-btn');
   const controlsBtn = document.getElementById('pause-controls-btn');
+  const notebookBtn = document.getElementById('pause-notebook-btn');
   const qualityBtns = Array.from(document.querySelectorAll('.quality-btn'));
   const volumeSlider = document.getElementById('volume-slider');
 
@@ -73,6 +74,10 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
     onShowControls?.();
   });
 
+  notebookBtn.addEventListener('pointerdown', () => {
+    onShowNotebook?.();
+  });
+
   for (const btn of qualityBtns) {
     const level = btn.dataset.quality;
     if (!QUALITY_LEVELS.includes(level)) continue;
@@ -88,6 +93,7 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
 
   return {
     isOpen: () => open,
+    open: openPause,
     close: closePause,
   };
 }

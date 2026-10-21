@@ -52,6 +52,9 @@ export const QUEST_STEPS = {
   // M8 — sunset: the birthday (ending)
   GOING_TO_ROOF: 'going_to_roof', // go up to the roof — the whole family is waiting
   ALL_COMPLETE: 'all_complete', // all eight missions done — final end card + credits
+
+  // After the credits (docs/MISSIONS_PLAN.md section 2) — the village stays open: no clock, no main objective, side jobs + pocket money.
+  FREE_ROAM: 'free_roam',
 };
 
 const SACK_TARGET = 3;
@@ -89,6 +92,7 @@ export const OBJECTIVE_TEXT = {
   [QUEST_STEPS.ERRAND7_COMPLETE]: { hi: 'पिताजी से बात करो', en: 'Talk to Pitaji' },
   [QUEST_STEPS.GOING_TO_ROOF]: { hi: 'छत पर जाओ — सब इंतज़ार कर रहे हैं', en: 'Go up to the roof — everyone is waiting' },
   [QUEST_STEPS.ALL_COMPLETE]: { hi: 'आज का सारा काम हो गया', en: "Today's work is all done" },
+  [QUEST_STEPS.FREE_ROAM]: { hi: 'दोपहर तुम्हारी है — गाँव में घूमो', en: 'The afternoon is yours — wander the village' },
 };
 
 export function createQuestState() {
@@ -98,6 +102,14 @@ export function createQuestState() {
     sacksDelivered: 0,
     money: 0,
     mangoesCollected: 0,
+    // Free roam (docs/MISSIONS_PLAN.md): set once the story ends; all persisted by src/save.js.
+    storyDone: false,
+    pocket: 0, // pocket money earned by side jobs (separate from the M3 wheat money above)
+    discovered: [], // notebook-map ids of places and side jobs the player has found
+    jobsDone: {}, // side job id -> number of times completed
+    marbles: 0, // kanche pouch
+    kites: 0, // collected kites
+    mangoVarieties: [], // ids of mango varieties tasted
   };
 }
 

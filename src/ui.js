@@ -67,7 +67,7 @@ export function setupLoadingScreen() {
  * Web Audio AudioContext (iOS/Safari requires this inside a user gesture) should
  * create/resume it there, not after an await.
  */
-export function setupStartOverlay({ isTouch, hasSave, onStart }) {
+export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart }) {
   const overlay = document.getElementById('start-overlay');
   const touchControls = document.getElementById('touch-controls');
   const playBtn = document.getElementById('play-btn');
@@ -82,6 +82,11 @@ export function setupStartOverlay({ isTouch, hasSave, onStart }) {
     playBtn.querySelector('.play-en').textContent = 'New game';
     playBtn.querySelector('.play-hi').textContent = 'नया खेल';
     continueBtn.classList.add('available');
+    if (storyDone) {
+      // the story is finished (docs/MISSIONS_PLAN.md section 2): Continue becomes Continue roaming
+      continueBtn.querySelector('.play-en').textContent = 'Continue roaming';
+      continueBtn.querySelector('.play-hi').textContent = 'घूमते रहो';
+    }
   }
 
   const start = (isContinue) => {

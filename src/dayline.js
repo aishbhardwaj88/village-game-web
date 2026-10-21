@@ -74,6 +74,8 @@ const STEP_PROGRESS = {
   // M8
   going_to_roof: 0.98,
   all_complete: 1,
+  // free roam after the credits: the same warm afternoon as the middle of the story, not the sunset
+  free_roam: 0.5,
 };
 
 export function dayProgressForQuestStep(step) {

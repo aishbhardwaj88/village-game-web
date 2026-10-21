@@ -120,6 +120,7 @@ import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
+import { createFreeRoam } from './freeRoam.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -1334,6 +1335,7 @@ async function main() {
   setupStartOverlay({
     isTouch: touch,
     hasSave: !!savedGame,
+    storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
@@ -1428,6 +1430,15 @@ async function main() {
 
   // The errand (item 3) — one small in-memory state object, no save system.
   const quest = createQuestState();
+  // Free roam (docs/MISSIONS_PLAN.md): the part of the quest state that survives the story and is saved with it.
+  const roamSnapshot = () => ({ storyDone: quest.storyDone, pocket: quest.pocket, discovered: quest.discovered, jobsDone: quest.jobsDone, marbles: quest.marbles, kites: quest.kites, mangoVarieties: quest.mangoVarieties });
+  const freeRoam = createFreeRoam({
+    quest,
+    getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
+    onChange: () => {
+      if (started) saveGame({ questStep: quest.step, quality: currentQuality, roam: roamSnapshot() });
+    },
+  });
   const objectivePanel = document.getElementById('objective-panel');
   const objectiveHiEl = document.getElementById('objective-hi');
   const objectiveEnEl = document.getElementById('objective-en');
@@ -1440,6 +1451,7 @@ async function main() {
   const endContinueBtn = document.getElementById('end-continue-btn');
   const playAgainBtn = document.getElementById('play-again-btn');
   const endCreditsBtn = document.getElementById('end-credits-btn');
+  const endRoamBtn = document.getElementById('end-roam-btn');
 
   function updateObjective() {
     const entry = OBJECTIVE_TEXT[quest.step];
@@ -1450,10 +1462,14 @@ async function main() {
     // Third errand — money is shown only while it's actually relevant (from Pitaji's
     // offer through the final end card), per this task's own instruction.
     const moneyVisible = [QUEST_STEPS.LOADING_WHEAT, QUEST_STEPS.WHEAT_DELIVERED, QUEST_STEPS.BOUGHT_GOODS].includes(quest.step);
-    moneyPanel.classList.toggle('visible', moneyVisible);
+    const pocketVisible = quest.step === QUEST_STEPS.FREE_ROAM;
+    moneyPanel.classList.toggle('visible', moneyVisible || pocketVisible);
     if (moneyVisible) {
       moneyEnEl.textContent = `Money: ₹${quest.money}`;
       moneyHiEl.textContent = `पैसे: ₹${quest.money}`;
+    } else if (pocketVisible) {
+      moneyEnEl.textContent = `Pocket money: ₹${quest.pocket}`;
+      moneyHiEl.textContent = `जेब खर्च: ₹${quest.pocket}`;
     }
     // Item 7 (save/continue) — every quest-step change (interactions.js's
     // onObjectiveChange) and both reset paths below call this, so a save is always in
@@ -1461,7 +1477,7 @@ async function main() {
     // Gated on `started`: this function also runs once during initial setup, before
     // the title screen's Play/Continue choice is even made — saving there would
     // silently overwrite a real save with NOT_STARTED on every page load.
-    if (started) saveGame({ questStep: quest.step, quality: currentQuality });
+    if (started) saveGame({ questStep: quest.step, quality: currentQuality, roam: roamSnapshot() });
   }
   updateObjective();
 
@@ -1472,6 +1488,18 @@ async function main() {
   function continueFromSave(saved) {
     if (!saved || !Object.values(QUEST_STEPS).includes(saved.questStep)) return;
     quest.step = saved.questStep;
+    const roam = saved.roam || {};
+    quest.storyDone = !!roam.storyDone || quest.step === QUEST_STEPS.ALL_COMPLETE || quest.step === QUEST_STEPS.FREE_ROAM;
+    quest.pocket = roam.pocket || 0;
+    quest.discovered = Array.isArray(roam.discovered) ? roam.discovered : [];
+    quest.jobsDone = roam.jobsDone || {};
+    quest.marbles = roam.marbles || 0;
+    quest.kites = roam.kites || 0;
+    quest.mangoVarieties = Array.isArray(roam.mangoVarieties) ? roam.mangoVarieties : [];
+    if (quest.storyDone) {
+      startFreeRoam(); // "Continue roaming" — the village is open, no main objective
+      return;
+    }
     if (quest.step === QUEST_STEPS.HAVE_SISTER) {
       sisterFollowing = true;
       sisterNpc.position.set(-48, 0, 23);
@@ -1517,8 +1545,25 @@ async function main() {
     [QUEST_STEPS.ERRAND7_COMPLETE]: { en: 'The trolley is full of mangoes.', hi: 'ट्रॉली आमों से भर गई।' },
   };
 
+  // After the credits (docs/MISSIONS_PLAN.md section 2): the player wakes back in the village, no main objective, side jobs open.
+  function startFreeRoam() {
+    quest.step = QUEST_STEPS.FREE_ROAM;
+    quest.storyDone = true;
+    endingSceneActive = false; // the roof tableau is over: NPC routines run again
+    endCard.classList.remove('visible');
+    dadaNpc.position.set(DADA_POSITION.x, 0, DADA_POSITION.z);
+    dadaNpc.rotation.y = -Math.PI / 2;
+    dadiNpc.visible = false;
+    sisterFollowing = false;
+    sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
+    player.position.set(HOUSE_CENTER.x + 1.5, 0, HOUSE_CENTER.z + 4.5);
+    updateObjective();
+    freeRoam.toast('The afternoon is yours. Look around the village.', 'दोपहर तुम्हारी है। गाँव में घूमो।', 5200);
+  }
+
   function showEndCard(step) {
     const isFinal = step === QUEST_STEPS.ALL_COMPLETE;
+    if (isFinal) quest.storyDone = true; // saved by updateObjective/onChange: the title offers "Continue roaming" even if the tab closes at the credits
     if (isFinal) {
       endEnEl.textContent = 'All eight errands are done. Happy birthday, Dada.';
       endHiEl.textContent = 'आठों काम हो गए। जन्मदिन मुबारक हो, दादा।';
@@ -1530,6 +1575,7 @@ async function main() {
       endHiEl.textContent = 'जलेबी घर पहुँच गई!';
     }
     endContinueBtn.style.display = isFinal ? 'none' : 'flex';
+    endRoamBtn.style.display = isFinal ? 'flex' : 'none';
     playAgainBtn.style.display = isFinal ? 'flex' : 'none';
     endCreditsBtn.style.display = isFinal ? 'flex' : 'none';
     endCard.classList.add('visible');
@@ -1569,6 +1615,9 @@ async function main() {
   // see src/quest.js), including the sister's following state/position (task 4).
   function restartErrand() {
     quest.step = QUEST_STEPS.NOT_STARTED;
+    endingSceneActive = false;
+    dadaNpc.position.set(DADA_POSITION.x, 0, DADA_POSITION.z);
+    dadiNpc.visible = false;
     endCard.classList.remove('visible');
     sisterFollowing = false;
     sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
@@ -1585,6 +1634,7 @@ async function main() {
     updateObjective();
   });
   playAgainBtn.addEventListener('click', restartErrand);
+  endRoamBtn.addEventListener('click', startFreeRoam);
 
   // Credits (task 5) — reachable from the pause menu and shown after the final end
   // card. Doesn't need its own pause bookkeeping: opened from the pause menu, the
@@ -1879,6 +1929,15 @@ async function main() {
     onVolumeChange: (v) => audio.setMasterVolume(v),
     onShowCredits: showCredits,
     onShowControls: showControlsHelp,
+    onShowNotebook: () => freeRoam.openNotebook(),
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.code !== 'KeyN' || !started || e.repeat) return;
+    if (freeRoam.isOpen()) freeRoam.closeNotebook();
+    else {
+      if (!pauseMenu.isOpen()) pauseMenu.open();
+      freeRoam.openNotebook();
+    }
   });
 
   function tick(now) {
@@ -2149,6 +2208,7 @@ async function main() {
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
       zoneManager.update(listenerPos.x, listenerPos.z, dt);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
+      freeRoam.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
       if (teaSteam.points.visible) teaSteam.update(dt);
@@ -2217,6 +2277,8 @@ async function main() {
       dialogue,
       quest,
       QUEST_STEPS,
+      freeRoam,
+      startFreeRoam,
       mount,
       dismount,
       sitDown,

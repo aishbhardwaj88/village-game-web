@@ -21,9 +21,10 @@ export function loadSavedGame() {
   }
 }
 
-export function saveGame({ questStep, quality }) {
+/** `roam` = { storyDone, pocket, discovered, jobsDone } (free-roam state, docs/MISSIONS_PLAN.md) — optional so older callers/saves keep working. */
+export function saveGame({ questStep, quality, roam }) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ questStep, quality, savedAt: Date.now() }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ questStep, quality, roam, savedAt: Date.now() }));
   } catch (e) {
     // storage blocked/unavailable — session continues, just won't persist
   }
