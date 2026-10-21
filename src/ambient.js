@@ -57,9 +57,36 @@ export function createAmbientLife() {
   smoke.name = 'ambient_smoke';
   smoke.frustumCulled = false;
 
+  // --- ground birds: hens and crows pecking about near the homesteads and the chowk (one Points draw call)
+  const henTex = spriteTexture((ctx, sz) => {
+    ctx.fillStyle = '#7a4a2a';
+    ctx.beginPath();
+    ctx.ellipse(32, 38, 17, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(46, 24, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#b3382b';
+    ctx.fillRect(44, 15, 5, 5);
+    ctx.fillStyle = '#e0a93a';
+    ctx.fillRect(52, 24, 6, 3);
+  });
+  const flocks = [
+    { x: -60, z: -22, n: 4 },
+    { x: -66, z: -52, n: 3 },
+  ];
+  const HN = flocks.reduce((a, f) => a + f.n, 0);
+  const henPos = new Float32Array(HN * 3);
+  const henGeo = new THREE.BufferGeometry();
+  henGeo.setAttribute('position', new THREE.BufferAttribute(henPos, 3));
+  const henMat = new THREE.PointsMaterial({ map: henTex, size: 0.55, transparent: true, depthWrite: false, sizeAttenuation: true, alphaTest: 0.05 });
+  const hens = new THREE.Points(henGeo, henMat);
+  hens.name = 'ambient_hens';
+  hens.frustumCulled = false;
+
   const group = new THREE.Group();
   group.name = 'ambient_life';
-  group.add(birds, smoke);
+  group.add(birds, smoke, hens);
   let t = 0;
   function update(dt, px, pz) {
     t += dt;
@@ -71,6 +98,19 @@ export function createAmbientLife() {
       birdPos[i * 3 + 2] = 60 + Math.sin(a) * ring * 0.8;
     }
     birdGeo.attributes.position.needsUpdate = true;
+    hens.visible = flocks.some((f) => Math.abs(f.x - px) < 45 && Math.abs(f.z - pz) < 45);
+    if (hens.visible) {
+      let k = 0;
+      flocks.forEach((f, fi) => {
+        for (let i = 0; i < f.n; i++, k++) {
+          const ph = fi * 7 + i * 2.3;
+          henPos[k * 3] = f.x + Math.sin(t * 0.15 + ph) * 2.2 + Math.sin(t * 0.4 + ph * 2) * 0.4;
+          henPos[k * 3 + 1] = 0.3 + Math.max(0, Math.sin(t * 3.1 + ph * 3)) * 0.05;
+          henPos[k * 3 + 2] = f.z + Math.cos(t * 0.12 + ph * 1.3) * 2.0;
+        }
+      });
+      henGeo.attributes.position.needsUpdate = true;
+    }
     const near = sources.some((s) => Math.abs(s.x - px) < 90 && Math.abs(s.z - pz) < 90);
     smoke.visible = near;
     if (near) {
