@@ -111,6 +111,7 @@ import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
 import { buildSignboards } from './signboards.js';
+import { createSteam } from './steam.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -241,6 +242,9 @@ async function main() {
   const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
   const STORE_POS = { x: -52, z: 20 };
   const STORE_ROT = -Math.PI / 2; // east of the hero-zone-to-bazaar lane, facing west
+  // steam over the tea stall's kettle + big pot (art review 1). Model-local (x, wz) -> world via the stall's yaw (PI/2: x' = wz, z' = -x).
+  const teaSteam = createSteam([{ x: TEA_SHOP_POS.x + 0.7, y: 1.3, z: TEA_SHOP_POS.z + 0.3 }, { x: TEA_SHOP_POS.x + 0.76, y: 1.5, z: TEA_SHOP_POS.z + 0.97 }]);
+  scene.add(teaSteam.points);
   // Blender tea stall + general store (2026-10-21, docs/tea-stall-checklist.md / docs/general-store-checklist.md):
   // the code-built walls/roofs/counters/posts/goods are now the INVISIBLE collision backing in 'tea_old' + 'store_old'
   // ('tea_old' / 'store_old', kept un-merged by the village-wide merge, hidden by the slots below); tools/blender/build_tea_stall.py and
@@ -344,7 +348,7 @@ async function main() {
       // sliver of the Devanagari line above it legible. +0.65 instead of
       // +0.35 clears the roof top with real margin (bottom edge ~3.0, 0.3m
       // above the roof) — confirmed by re-running the same real-camera check.
-      boardY: TEA_DIMS.postH + 1.2,
+      boardY: 3.0, // stands on the Blender stall's sloped tin roof front (roof top there ~2.6): bottom edge 2.75 clears it, no support frame
       hi: 'शर्मा चाय की दुकान',
       en: 'Sharma Tea Stall',
     },
@@ -353,7 +357,7 @@ async function main() {
       rotationY: STORE_ROT,
       width: STORE_DIMS.w - 0.6,
       depth: STORE_DIMS.d,
-      boardY: STORE_DIMS.h - 0.1,
+      boardY: STORE_DIMS.h - 0.48, // art review 1: the Blender tin roof slopes through the old y=3.1 board; 2.72 sits just under the roof lip, fully visible
       hi: 'गुप्ता जनरल स्टोर',
       en: 'Gupta General Store',
     }
@@ -1052,6 +1056,7 @@ async function main() {
   let deferredContentLoaded = false;
   let buildingFootprints = []; // tools/collider-audit.js / tools/trolley-drive-test.js — see loadDeferredContent()
   let preMergeColliderCount = 0; // item 1d — see loadDeferredContent()
+  let bgHousesGroup = null; // src/scenery.js — abadi rows, distance-culled per area each frame
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
@@ -1092,6 +1097,10 @@ async function main() {
         // the school yard's neem in its raised brick ring (docs/school-checklist.md item 17); ring top y=0.26
         { kind: 'neem', x: SCHOOL_CENTER.x - 4.5, z: SCHOOL_CENTER.z - 6.2, y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
         { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
+        // the school yard's big shade tree with the tyre swing + stuck kite (tools/blender/build_school.py hangs them at this spot)
+        { kind: 'neem', x: SCHOOL_CENTER.x + 6.2, z: SCHOOL_CENTER.z - 1.0, scale: 1.35, rotationY: 0.3, seed: 31 },
+        // a row of tall eucalyptus behind the school building (reference: slim pale-barked trees along the back wall)
+        ...[-14, -9.5, -5, 4.5, 9, 13.5].map((dx, i) => ({ kind: 'eucalyptus', x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z + 14.5 + (i % 2) * 1.2, rotationY: i, seed: 40 + i })),
         { kind: 'neem', x: SCHOOL_CENTER.x - 10, z: SCHOOL_CENTER.z + 16, rotationY: 2.3, seed: 12 }, // behind the main block (these two used to stand INSIDE the wings, poking through the roofs)
         { kind: 'neem', x: SCHOOL_CENTER.x + 6, z: SCHOOL_CENTER.z + 17, rotationY: 0.5, seed: 14 },
         { kind: 'neem', x: HALWAI_CENTER.x + 3, z: HALWAI_CENTER.z - 5, rotationY: 1.8, seed: 15 },
@@ -1185,6 +1194,7 @@ async function main() {
     );
 
     const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
+    bgHousesGroup = backgroundHousesGroup;
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
 
@@ -2138,6 +2148,10 @@ async function main() {
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
       zoneManager.update(listenerPos.x, listenerPos.z, dt);
+      if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
+      // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
+      teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
+      if (teaSteam.points.visible) teaSteam.update(dt);
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({

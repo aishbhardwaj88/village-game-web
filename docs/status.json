@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-21T10:00:00.000Z",
+  "timestamp": "2026-10-21T15:30:00.000Z",
   "drawCallsByZone": {
-    "hero zone (house/school/halwai/tea-stall, general store ...)": 145,
-    "bazaar row + chowk": 120,
-    "field + mango baagh": 100
+    "hero zone (house/school/halwai/tea-stall, general store ...)": 150,
+    "bazaar row + chowk": 117,
+    "field + mango baagh": 91
   },
   "drawCallCeiling": 150,
   "drawCallAim": 120,
@@ -26,7 +26,8 @@
     "chowk_plaza",
     "temple",
     "flower_stall",
-    "new_shops (post office, ration shop, atta chakki)"
+    "new_shops (post office, ration shop, atta chakki)",
+    "abadi_row_a/b/c (+ _lod proxies)"
   ],
-  "notes": "NOT COMPLETE. FINISH_LINE.md 8/29 ticked (unchanged; no line has its own fresh normal-mode proof yet). Blender buildings done this session, each with a docs/*-checklist.md and a docs/shots/compare/<name>.png (reference left, normal-mode render right; shown on the dashboard): house (11/12), school (20/22, trees + swing-tyre tree pending Tripo), halwai, tea stall, general store, bazaar row (18/18), chowk tea stall + plaza, temple + flower stall, post office / ration shop / atta chakki. The last 5 groups have NO Places V1 reference image (temple, 3 abadi shops) - built from MAP.md; compare panels say so; the art director should supply references. Pipeline: tools/blender/arch.py Kit (one hb_main textured mesh per building + brick/tin only where used), make.sh <script> <slot>, exact asset slots (src/assetSlots.js `exact:true`), hidden *_old groups keep collision, tools/proof-shot.mjs + tools/compare-shot.mjs for normal-mode shots (?proof=1 = camera hook only). Not started: background house variants (instanced), boundary walls/lanes/kerbs/drains, props, canal+bridge in Blender, greening, side jobs, missions plan. Zero Tripo calls."
+  "notes": "NOT COMPLETE. Deploy fixed: CI now runs build:unchecked with 15-minute timeouts and no Playwright (validators stay a local gate). ART_REVIEW items reworked this cycle (each has a 'Reworked' line + compare shot): house (west wing encloses the aangan), bazaar row (front elevation, shutter boxes, warm bounce), background houses (22 dense attached rows, instanced with near/far LOD, build_abadi.py), signboards (wide-cell atlas fixes squashed text everywhere), school (eucalyptus row, tyre-swing tree, kite), tea stall (sign on roof, X frame gone, steam), general store (sign fully visible), trees green + smooth, ground green. Still open: halwai fascia/antenna re-check, flower stall marigold garlands, post office/ration/chakki re-framed compare shots, canal colour, Blender hero buildings distance-culling (hero zone is at the 150 ceiling). Validator sampler now dedupes on a 0.1 m grid (it crashed at 6M points with the dense rows). Zero Tripo calls (no real key)."
 }

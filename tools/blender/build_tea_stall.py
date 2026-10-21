@@ -38,12 +38,11 @@ def structure():
     kit.add('trim', wb('fascia', -2.36, 2.36, 1.58, 1.64, 2.44, 2.62, 0.004))
     # raised step across the front
     kit.add('apron', wb('step', -1.95, 1.95, 0.73, 1.28, 0, 0.14, 0.01))
-    # posts that carry the code sign board above the roof (board centre y=3.8, width 3.6, front plane z=1.19)
+    # the code sign board now stands directly ON the roof front (reference: board fixed to the roof edge, no frame): two short
+    # teal posts behind it, from the roof to the board's top (board centre y=3.0, width 3.6, front plane z=1.19). The old
+    # tall posts + cross brace + stays made an odd X frame (art review 1) and are gone.
     for x in (-1.55, 1.55):
-        kit.add('paint', limb('sign_post', (x, 1.08, 2.5), (x, 1.08, 4.12), 0.07, 0.07, 0.004), TEAL_D)
-    kit.add('paint', limb('sign_brace', (-1.7, 1.08, 3.55), (1.7, 1.08, 3.55), 0.05, 0.05), TEAL_D)
-    for x in (-1.55, 1.55):
-        kit.add('paint', limb('sign_stay', (x, 1.08, 3.4), (x * 0.8, -0.2, 2.8), 0.04, 0.04), TEAL_D)
+        kit.add('paint', limb('sign_post', (x, 1.08, 2.55), (x, 1.08, 3.2), 0.07, 0.07, 0.004), TEAL_D)
 
 
 def counter_and_goods():

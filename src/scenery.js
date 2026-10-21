@@ -4,44 +4,51 @@ import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getGLTFLoader } from './loaders.js';
 
-// Background houses beyond the hero zone, so the village doesn't end abruptly (docs/bg-houses-checklist.md).
-// 2026-10-21: four hand-modelled Blender variants (tools/blender/build_bg_houses.py) — A single-room flat roof,
-// B two-storey painted, C tin roof inside a yard wall, D mud-plaster house with a red clay tile roof — drawn as
-// InstancedMeshes (one draw per material per variant, however many placements). Collision + the world validator's
-// real-geometry backing stay as a hidden, locally-merged group of plain boxes ('bg_houses_old').
+// The abadi (docs/bg-houses-checklist.md, ART_REVIEW review 3): dense continuous ROWS of attached houses along a lane
+// network, not lonely single houses. Three Blender row models (tools/blender/build_abadi.py, modelled from Characters V1/
+// buildings/house_1-3 + the duplex style sheet) — each row is 4 houses sharing walls, two/one storey, balconies, roof tanks,
+// charpais, clotheslines, tin/tile roofs, a baada + hand pump — instanced along lanes from both sides. Drawn as
+// InstancedMeshes (one draw per material per row variant per area); areas beyond AREA_SHOW_DIST of the player are hidden
+// (zone-style distance culling, CLAUDE.md draw-call plan). Collision + the validator's real-geometry backing stay as a hidden,
+// locally-merged group of plain boxes ('bg_houses_old'), one per house footprint, taken from src/abadiBoxes.json.
+import ABADI_BOXES from './abadiBoxes.json';
+import { buildStripSegment } from './paths.js';
 
-// Footprint boxes in the variant's LOCAL frame (front = +z), matching the Blender scripts.
-const VARIANTS = {
-  a: { file: 'bg_house_a.glb', boxes: [{ x0: -2.75, x1: 2.75, z0: -2.5, z1: 2.5, h: 3.6 }] },
-  b: { file: 'bg_house_b.glb', boxes: [{ x0: -3, x1: 3, z0: -3, z1: 3, h: 6.6 }] },
-  c: {
-    file: 'bg_house_c.glb',
-    boxes: [
-      { x0: -2.25, x1: 2.25, z0: -4, z1: 0, h: 3.2 }, // the house
-      { x0: -4, x1: 4, z0: -4, z1: -3.8, h: 1.2 }, { x0: -4, x1: -3.8, z0: -4, z1: 4, h: 1.2 }, { x0: 3.8, x1: 4, z0: -4, z1: 4, h: 1.2 }, // yard walls (back, west, east)
-      { x0: -4, x1: -1.2, z0: 3.8, z1: 4, h: 1.2 }, { x0: 1.2, x1: 4, z0: 3.8, z1: 4, h: 1.2 }, // front, either side of the gate
-    ],
-  },
-  d: { file: 'bg_house_d.glb', boxes: [{ x0: -2.5, x1: 2.5, z0: -2.25, z1: 2.25, h: 2.9 }] },
+const ROWS = {
+  a: { file: 'abadi_row_a.glb', ...ABADI_BOXES.a },
+  b: { file: 'abadi_row_b.glb', ...ABADI_BOXES.b },
+  c: { file: 'abadi_row_c.glb', ...ABADI_BOXES.c },
 };
 
-// Clear of every lane/route (tools/world-validator.js chains), the field and the canal. yaw in quarter turns.
-const PLACEMENTS = [
-  { v: 'd', x: -115, z: 15, q: 1 },
-  { v: 'c', x: 25, z: 128, q: 2 },
-  { v: 'b', x: -95, z: 165, q: 2 },
-  { v: 'a', x: -118, z: 38, q: 1 },
-  { v: 'a', x: -85, z: 62, q: 1 },
-  { v: 'a', x: -22, z: 102, q: 3 },
-  { v: 'a', x: -20, z: 132, q: 2 },
-  { v: 'a', x: -75, z: 142, q: 2 },
-  { v: 'b', x: -62, z: 152, q: 2 },
-  { v: 'b', x: 12, z: 108, q: 3 },
-  { v: 'c', x: -112, z: 66, q: 1 },
-  { v: 'c', x: 32, z: 84, q: 3 },
-  { v: 'd', x: -100, z: 98, q: 1 },
-  { v: 'd', x: -18, z: 78, q: 3 },
+// Lanes (centre-lines). Rows stand ROW_OFFSET from the lane centre (half lane + drain + half the 7 m house depth).
+const LANE_HALF = 2.0;
+const ROW_OFFSET = LANE_HALF + 1.4 + 3.5;
+const LANES = [
+  { name: 'E1', a: { x: -37, z: 76 }, b: { x: 36, z: 76 }, w: 4 },
+  { name: 'E2', a: { x: -6, z: 76 }, b: { x: -6, z: 130 }, w: 3.5 },
+  { name: 'W1', a: { x: -84, z: 21 }, b: { x: -84, z: 104 }, w: 4 },
+  { name: 'W2', a: { x: -84, z: 21 }, b: { x: -61, z: 21 }, w: 3.5 },
+  { name: 'S1', a: { x: -100, z: 140 }, b: { x: -38, z: 140 }, w: 4 },
 ];
+
+// quarter turns: 0 front +z, 1 front +x, 2 front -z, 3 front -x. area = which distance-culled region the row belongs to.
+const R = ROW_OFFSET;
+const PLACEMENTS = [
+  // east abadi, lane E1 (z=76): north side faces south, south side faces north
+  { v: 'a', x: -20, z: 76 - R, q: 0, area: 'E' }, { v: 'b', x: 0.5, z: 76 - R, q: 0, area: 'E' }, { v: 'c', x: 21, z: 76 - R, q: 0, area: 'E' },
+  { v: 'c', x: -17.75, z: 76 + R, q: 2, area: 'E' }, { v: 'a', x: 5.75, z: 76 + R, q: 2, area: 'E' }, { v: 'b', x: 26.5, z: 76 + R, q: 2, area: 'E' },
+  // lane E2 (x=-6, running south): west side faces east, east side faces west
+  { v: 'b', x: -6 - R, z: 98, q: 1, area: 'E' }, { v: 'a', x: -6 - R, z: 119, q: 1, area: 'E' },
+  { v: 'c', x: -6 + R, z: 98, q: 3, area: 'E' }, { v: 'b', x: -6 + R, z: 119, q: 3, area: 'E' },
+  // west abadi, lane W1 (x=-84): west side faces east, east side faces west
+  { v: 'a', x: -84 - R, z: 51, q: 1, area: 'W' }, { v: 'c', x: -84 - R, z: 72, q: 1, area: 'W' }, { v: 'b', x: -84 - R, z: 93, q: 1, area: 'W' },
+  { v: 'b', x: -84 + R, z: 51, q: 3, area: 'W' }, { v: 'a', x: -84 + R, z: 72, q: 3, area: 'W' }, { v: 'c', x: -84 + R, z: 93, q: 3, area: 'W' },
+  // south abadi, lane S1 (z=140)
+  { v: 'c', x: -90, z: 140 - R, q: 0, area: 'S' }, { v: 'a', x: -69.5, z: 140 - R, q: 0, area: 'S' }, { v: 'b', x: -49, z: 140 - R, q: 0, area: 'S' },
+  { v: 'b', x: -90, z: 140 + R, q: 2, area: 'S' }, { v: 'c', x: -69.5, z: 140 + R, q: 2, area: 'S' }, { v: 'a', x: -49, z: 140 + R, q: 2, area: 'S' },
+];
+const NEAR_DIST = 38; // rows nearer than this draw the detailed Blender model, farther the low-poly proxy
+const FAR_DIST = 170; // beyond this (fog) rows aren't drawn at all
 
 function worldBox(p, b) {
   const th = (p.q * Math.PI) / 2;
@@ -54,12 +61,35 @@ export function buildBackgroundHouses(scene, kit) {
   const group = new THREE.Group();
   group.name = 'background_houses';
 
-  // Hidden collision/validator backing: one plaster box per footprint box.
+  // Hidden collision/validator backing: one plaster box per house footprint box.
   const old = new THREE.Group();
   old.name = 'bg_houses_old';
   old.visible = false;
+  // One hollow shell of 4 thin wall slabs per ROW (not a solid box per house): the world validator samples every plaster surface, and
+  // 88 solid per-house boxes doubled its sample count until the headless page ran out of memory. The shell still blocks exactly the
+  // row's footprint (colliders are AABBs of the slabs; the interior is unreachable).
+  const SLAB = 0.3;
   PLACEMENTS.forEach((p) => {
-    for (const b of VARIANTS[p.v].boxes) {
+    const bs = ROWS[p.v].boxes;
+    const fx0 = Math.min(...bs.map((b) => b.x0)), fx1 = Math.max(...bs.map((b) => b.x1));
+    const fz0 = Math.min(...bs.map((b) => b.z0)), fz1 = Math.max(...bs.map((b) => b.z1));
+    const h = Math.min(...bs.map((b) => b.h));
+    const slabs = [
+      { x0: fx0, x1: fx1, z0: fz1 - SLAB, z1: fz1, h }, { x0: fx0, x1: fx1, z0: fz0, z1: fz0 + SLAB, h },
+      { x0: fx0, x1: fx0 + SLAB, z0: fz0 + SLAB, z1: fz1 - SLAB, h }, { x0: fx1 - SLAB, x1: fx1, z0: fz0 + SLAB, z1: fz1 - SLAB, h },
+    ];
+    // Cut each slab into <=4 m pieces: the validator's surface sampler is quadratic in a triangle's longest horizontal edge, so
+    // one 20 m slab alone cost ~40k sample points (6M in total crashed the headless page); 4 m pieces cost ~2k each.
+    const pieces = [];
+    for (const b of slabs) {
+      const alongX = b.x1 - b.x0 >= b.z1 - b.z0;
+      const len = alongX ? b.x1 - b.x0 : b.z1 - b.z0;
+      const n = Math.max(1, Math.ceil(len / 4));
+      for (let i = 0; i < n; i++) {
+        pieces.push(alongX ? { ...b, x0: b.x0 + (len * i) / n, x1: b.x0 + (len * (i + 1)) / n } : { ...b, z0: b.z0 + (len * i) / n, z1: b.z0 + (len * (i + 1)) / n });
+      }
+    }
+    for (const b of pieces) {
       const w = worldBox(p, b);
       const mesh = texturedWallBox(w.maxX - w.minX, w.h, w.maxZ - w.minZ, 'plaster', { tint: PALETTE.cream, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: p.x * 3.1 + p.z * 1.7 });
       mesh.position.set((w.minX + w.maxX) / 2, w.h / 2, (w.minZ + w.maxZ) / 2);
@@ -69,41 +99,83 @@ export function buildBackgroundHouses(scene, kit) {
   mergeGroupByMaterial(old);
   group.add(old);
 
-  // The visible houses: one InstancedMesh per mesh of each variant's glb, per map region (so frustum culling can drop
-  // a whole far region instead of every instance always being drawn).
+  // Dirt lanes between the rows (same 'lane' strip material as the hero lanes -> merges into its draw call).
+  const lanes = new THREE.Group();
+  lanes.name = 'abadi_lanes';
+  LANES.forEach((l, i) => {
+    const m = buildStripSegment(new THREE.Vector3(l.a.x, 0, l.a.z), new THREE.Vector3(l.b.x, 0, l.b.z), l.w, { seed: 40 + i, tint: 0xb9a37c });
+    lanes.add(m);
+  });
+  group.add(lanes);
+
+  // The visible rows, with distance LOD (the whole abadi would be ~250k triangles at full detail; 400k is the ceiling for the
+  // entire view): every row model has a detailed glb (NEAR rows) and a ~400-triangle flat-colour proxy (FAR rows). One
+  // InstancedMesh per mesh of each (variant, lod); each refresh re-sorts the placements by distance to the player, rewrites the
+  // instance matrices/colours of the near and far sets and sets `count` (rows beyond FAR_DIST aren't drawn at all).
   const loader = getGLTFLoader();
-  const region = (p) => `${p.x < -70 ? 'W' : 'E'}${p.z < 100 ? 'N' : 'S'}`;
-  for (const [key, def] of Object.entries(VARIANTS)) {
+  const sets = []; // { list: [placement], isNear, meshes: [{ inst, base }] }
+  const tmp = new THREE.Matrix4();
+  const col = new THREE.Color();
+  PLACEMENTS.forEach((p, i) => {
+    p.M = new THREE.Matrix4().makeRotationY((p.q * Math.PI) / 2).setPosition(p.x, 0, p.z);
+    const v = 0.94 + 0.08 * (((i * 7919 + p.v.charCodeAt(0) * 31) % 100) / 100);
+    p.tint = new THREE.Color(v, v * (0.97 + 0.03 * ((i * 13) % 3)), v * (0.96 + 0.04 * ((i * 7) % 3)));
+  });
+  let lastX = null, lastZ = null, refreshedX = 1e9, refreshedZ = 1e9;
+  function refresh() {
+    if (lastX === null) return;
+    for (const set of sets) {
+      const list = set.variantPlacements.filter((p) => {
+        const d = Math.hypot(p.x - lastX, p.z - lastZ);
+        return set.isNear ? d < NEAR_DIST : d >= NEAR_DIST && d < FAR_DIST;
+      });
+      for (const { inst, base } of set.meshes) {
+        list.forEach((p, i) => {
+          inst.setMatrixAt(i, tmp.multiplyMatrices(p.M, base));
+          inst.setColorAt(i, col.copy(p.tint));
+        });
+        inst.count = list.length;
+        inst.visible = list.length > 0;
+        inst.instanceMatrix.needsUpdate = true;
+        if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
+        if (list.length) inst.computeBoundingSphere();
+      }
+    }
+    refreshedX = lastX;
+    refreshedZ = lastZ;
+  }
+  for (const [key, def] of Object.entries(ROWS)) {
     const mine = PLACEMENTS.filter((p) => p.v === key);
     if (!mine.length) continue;
-    loader.load(`assets/models/${def.file}`, (gltf) => {
-      gltf.scene.updateMatrixWorld(true);
-      const regions = [...new Set(mine.map(region))];
-      for (const reg of regions) {
-        const list = mine.filter((p) => region(p) === reg);
+    for (const [file, isNear] of [[def.file, true], [def.file.replace('.glb', '_lod.glb'), false]]) {
+      loader.load(`assets/models/${file}`, (gltf) => {
+        gltf.scene.updateMatrixWorld(true);
+        const set = { variantPlacements: mine, isNear, meshes: [] };
         gltf.scene.traverse((m) => {
           if (!m.isMesh) return;
-          const inst = new THREE.InstancedMesh(m.geometry, m.material, list.length);
-          const tmp = new THREE.Matrix4();
-          const col = new THREE.Color();
-          list.forEach((p, i) => {
-            tmp.makeRotationY((p.q * Math.PI) / 2).setPosition(p.x, 0, p.z);
-            inst.setMatrixAt(i, tmp.multiply(m.matrixWorld.clone()));
-            const v = 0.95 + 0.05 * (((i * 7919 + key.charCodeAt(0) + reg.charCodeAt(0)) % 100) / 100);
-            inst.setColorAt(i, col.setRGB(v, v * (0.97 + 0.03 * ((i * 13) % 3)), v * 0.97));
-          });
-          inst.instanceMatrix.needsUpdate = true;
-          if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
-          inst.computeBoundingSphere();
+          const inst = new THREE.InstancedMesh(m.geometry, m.material, mine.length);
+          inst.count = 0;
+          inst.visible = false;
+          inst.setColorAt(0, col.setRGB(1, 1, 1)); // allocate instanceColor at full capacity
           inst.castShadow = false; // distant scenery, beyond the useful shadow range
-          inst.receiveShadow = true;
+          inst.receiveShadow = isNear;
           inst.userData.mergedStatic = true; // whole-object grounding check: roofs of these are elevated by design
-          inst.name = `bg_house_${key}_${reg}_${m.name || 'mesh'}`;
+          inst.name = `abadi_row_${key}_${isNear ? 'near' : 'far'}_${m.name || 'mesh'}`;
           group.add(inst);
+          set.meshes.push({ inst, base: m.matrixWorld.clone() });
         });
-      }
-    });
+        sets.push(set);
+        refresh();
+      });
+    }
   }
+
+  // Called every frame from main.js with the player/vehicle position; the re-sort only runs after the player moved 4 m.
+  group.userData.updateVisibility = (px, pz) => {
+    lastX = px;
+    lastZ = pz;
+    if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();
+  };
 
   scene.add(group);
   return group;

@@ -324,6 +324,18 @@ def build_yard():
         mx, mz = rx + R * math.cos((a0 + a1) / 2), rz + R * math.sin((a0 + a1) / 2)
         kit.add('brick', limb('ring_seg', (rx + R * math.cos(a0), rz + R * math.sin(a0), 0.14), (rx + R * math.cos(a1), rz + R * math.sin(a1), 0.14), 0.34, 0.28, 0.01))
     kit.add('paint', cyl('ring_soil', rx, rz, 0.0, 0.26, R - 0.15, R - 0.15, 22), SOIL)
+    # tyre swing + a stuck kite in the big shade tree (src/main.js plants a big neem at (6.2, -1.0) in this frame; reference: tree with a
+    # hanging tyre and kites). Branch height ~3.4; rope hangs from it, tyre ring at the bottom.
+    tx, tz = 7.5, -1.0
+    kit.add('paint', limb('swing_branch', (6.2, -1.0, 3.1), (tx + 0.3, tz, 3.45), 0.14, 0.1, 0.01), 0x4A3A2E)
+    for dz in (-0.12, 0.12):
+        kit.add('paint', limb('swing_rope', (tx, tz + dz, 3.4), (tx, tz + dz * 1.6, 0.85), 0.025, 0.025), 0xB89A64)
+    kit.add('paint', ring('swing_tyre', tx, tz, 0.62, 0.34, 0.1, axis='z'), 0x1B1B1D)
+    kx, kz, kh = 5.2, -2.1, 4.1
+    kit.add('paint', quad('kite_a', [(kx, kz, kh + 0.5), (kx + 0.36, kz, kh), (kx, kz, kh - 0.5), (kx - 0.36, kz, kh)]), 0xE0392B)
+    kit.add('paint', quad('kite_b', [(kx, kz + 0.003, kh + 0.5), (kx, kz + 0.003, kh), (kx - 0.36, kz + 0.003, kh)]), 0xF2B01E)
+    for k in range(4):
+        kit.add('paint', quad('kite_tail', [(kx - 0.04, kz, kh - 0.55 - k * 0.2), (kx + 0.04, kz, kh - 0.6 - k * 0.2), (kx, kz, kh - 0.75 - k * 0.2)]), (0xE0392B, 0x2E86C1)[k % 2])
     # fenced vegetable plot with a wooden fence
     gx0, gx1, gz0, gz1 = 3.0, 6.0, -8.4, -4.4
     for z in (gz0, gz1):

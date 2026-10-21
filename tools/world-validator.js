@@ -291,7 +291,14 @@ async function main() {
         const p0 = new d.Vector3();
         const p1 = new d.Vector3();
         const p2 = new d.Vector3();
+        // Dedupe on a 0.1 m grid (perf only: check 4 uses 0.3 m cells, check 5 a 0.25 m margin, so nearer-than-0.1 m duplicates
+        // — a box's top and bottom faces project onto the same footprint — add nothing; without this the dense abadi rows pushed
+        // the page past 6M points and crashed the headless browser).
+        const seen = new Set();
         function push(v) {
+          const k = (Math.round(v.x * 10) + 100000) * 400000 + (Math.round(v.z * 10) + 100000);
+          if (seen.has(k)) return;
+          seen.add(k);
           points.push(v.x, v.z);
         }
         d.scene.traverse((o) => {

@@ -228,6 +228,31 @@ export function buildMangoTree(seed = 3) {
   return group;
 }
 
+/** Eucalyptus — the tall, slim, pale-barked row behind the school (Places V1 school reference). A straight light trunk and a narrow,
+ * drooping blue-green crown made of stacked elongated clumps. */
+const LEAF_EUCALYPTUS = new THREE.Color(0x5f8f5a);
+export function buildEucalyptusTree(seed = 4) {
+  const group = new THREE.Group();
+  group.name = 'tree_eucalyptus';
+  const rand = mulberry32(seed);
+  const height = 8.2 + rand() * 1.6;
+  const lean = (rand() - 0.5) * 0.06;
+  const trunkGeo = buildTrunk(height * 0.8, 0.14, 0.07, 0xb9b3a2, lean);
+  const parts = [];
+  for (let i = 0; i < 5; i++) {
+    const t = i / 4;
+    const y = height * (0.42 + 0.5 * t);
+    const r = 0.95 - 0.45 * t + rand() * 0.15;
+    parts.push(buildCanopyBlob((rand() - 0.5) * 0.3, y, (rand() - 0.5) * 0.3, r, 1.55, LEAF_EUCALYPTUS));
+  }
+  const mesh = new THREE.Mesh(mergeAndColor([trunkGeo, ...parts]), null);
+  mesh.name = 'tree_eucalyptus_mesh';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+  return group;
+}
+
 // Deterministic tiny PRNG (not Math.random()) so repeated builds (e.g. a future
 // hot-reload) produce the same tree shape at the same seed — same technique
 // src/field.js's crop placement already uses for reproducible scatter.
@@ -242,7 +267,7 @@ function mulberry32(seed) {
   };
 }
 
-const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBaboolTree, mango: buildMangoTree };
+const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBaboolTree, mango: buildMangoTree, eucalyptus: buildEucalyptusTree };
 
 /** Places a handful of real-location trees — `placements`:
  * [{ kind: 'neem'|'peepal'|'babool'|'mango', x, z, rotationY, seed }]. One shared
