@@ -148,6 +148,17 @@ def house(kit, rnd, x0, w, floors, wall, plinth, roof='flat', jh=True):
     kit.add('plaster', wb('blk', x0, x0 + w, -ZF, ZF, 0, H, 0.01), wall)
     kit.add('plinth', wb('plinth', x0 - 0.01, x0 + w + 0.01, ZF - 0.02, ZF + 0.06, 0, 0.65, 0.008), plinth)
     kit.add('trim', wb('plinth_cap', x0 - 0.02, x0 + w + 0.02, ZF - 0.03, ZF + 0.08, 0.65, 0.7, 0.006), 0xD8D2C2)
+    # back wall (seen from the field side): ochre plinth, small barred windows, a vent — no longer a blank slab
+    kit.add('plinth', wb('plinth_b', x0 - 0.01, x0 + w + 0.01, -ZF - 0.06, -ZF + 0.02, 0, 0.65, 0.008), plinth)
+    bx = x0 + w * (0.35 if rnd.random() < 0.5 else 0.65)
+    for hb0, hb1 in ((1.3, 2.1),) + (((4.0, 4.9),) if floors == 2 else ()):
+        kit.add('paint', wb('bwin', bx - 0.4, bx + 0.4, -ZF - 0.05, -ZF + 0.02, hb0, hb1, 0), GLASS)
+        kit.add('wood', wb('bwin_f', bx - 0.46, bx + 0.46, -ZF - 0.09, -ZF - 0.03, hb1, hb1 + 0.06, 0.004), WOODL)
+        kit.add('wood', wb('bwin_s', bx - 0.5, bx + 0.5, -ZF - 0.12, -ZF - 0.03, hb0 - 0.07, hb0, 0.004), 0xD8D2C2)
+        for j in range(1, 5):
+            xx = bx - 0.4 + j * 0.16
+            kit.add('paint', wb('bwin_bar', xx - 0.012, xx + 0.012, -ZF - 0.08, -ZF - 0.05, hb0, hb1, 0), 0x2A2A2C)
+    kit.add('paint', wb('bvent', x0 + w * 0.5 - 0.08, x0 + w * 0.5 + 0.08, -ZF - 0.04, -ZF + 0.01, H - 0.5, H - 0.34, 0), GLASS)
     # door and window on opposite thirds so neighbours differ
     left = rnd.random() < 0.5
     dcx = x0 + w * (0.3 if left else 0.7)

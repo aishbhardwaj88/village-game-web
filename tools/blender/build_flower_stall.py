@@ -65,12 +65,19 @@ def table_and_flowers():
     for k in range(3):
         kit.add('paint', cyl('loose', 0.75 + k * 0.12, 0.65, 0.0, 0.2, 0.0, 0.0, 6) if False else sphere('loose', 0.75 + k * 0.12, 0.65, 0.08, 0.08, 0.08, 0.06, 1), (0xE8751A, 0xF2C21E, 0xC0392B)[k])
     # garlands hung from the front bamboo rod: strings of marigold blooms + a longer rose one
-    for k, x in enumerate((-0.9, -0.55, -0.2, 0.15, 0.5, 0.85)):
-        col = (0xE8751A, 0xF2C21E, 0xE8751A, 0xF2C21E, 0xC0392B, 0xE8751A)[k]
+    for k, x in enumerate([-1.0 + 0.17 * i for i in range(12)]):  # art review 2: more garland colour (12 strands, was 6)
+        col = (0xE8751A, 0xF2C21E, 0xE8751A, 0xF2C21E, 0xC0392B, 0xE8751A, 0xF2C21E, 0xE04A7A)[k % 8]
         ln = 0.9 + 0.12 * (k % 3)
         kit.add('paint', limb('garland_string', (x, -D / 2 + 0.08, H - 0.12), (x, -D / 2 + 0.08, H - 0.12 - ln), 0.012, 0.012), 0xCDBA8A)
         for j in range(int(ln / 0.07)):
             kit.add('paint', sphere('g_bloom', x + rnd.uniform(-0.015, 0.015), -D / 2 + 0.08, H - 0.16 - j * 0.07, 0.05, 0.05, 0.04, 1), col if j % 5 else 0x3F7A34)
+
+    # a thick marigold swag across the whole front rod, sagging in the middle, + a rose/marigold fringe along the table front
+    for j in range(41):
+        t = j / 40
+        x = -1.1 + 2.2 * t
+        sag = 0.22 * (1 - (2 * t - 1) ** 2)
+        kit.add('paint', sphere('swag', x, -D / 2 + 0.1, H - 0.08 - sag, 0.07, 0.07, 0.06, 1), (0xE8751A, 0xF2C21E, 0xE8751A, 0xC0392B)[j % 4] if j % 7 else 0x3F7A34)
 
 
 structure()
