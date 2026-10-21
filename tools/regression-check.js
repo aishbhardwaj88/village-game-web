@@ -693,8 +693,12 @@ async function main() {
         d.mount(v);
       }, tractorPos);
       await page.keyboard.press('KeyF');
-      await page.waitForTimeout(300);
-      const afterAttached = await page.evaluate(() => !!window.__dopahar.currentTrolley()?.attached);
+      // Poll for the state change instead of a fixed 300 ms sleep (frame rate dependent, see docs/parked.md).
+      let afterAttached = true;
+      for (let i = 0; i < 40 && afterAttached; i++) {
+        await page.waitForTimeout(150);
+        afterAttached = await page.evaluate(() => !!window.__dopahar.currentTrolley()?.attached);
+      }
       await page.evaluate(() => window.__dopahar.dismount()).catch(() => {});
       record('trolley detaches with a real F-press', beforeAttached && !afterAttached, `attached before=${beforeAttached}, after=${afterAttached}`);
     }
