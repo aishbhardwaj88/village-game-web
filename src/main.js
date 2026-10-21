@@ -777,7 +777,7 @@ async function main() {
     // authored in world offsets from HOUSE_CENTER and placed EXACTLY (no fit-scaling).
     // src/village.js keeps the old walls/roof/floor/yard solids as invisible, locally-merged
     // 'house_shell_old' / 'house_yard_old' groups so collision + the world validator stay exact.
-    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const hideOld = ['house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('house_compound', {
       exact: true,
       maskMaterials: ['hb_rangoli'],
@@ -789,7 +789,7 @@ async function main() {
   {
     // Blender bazaar row (2026-10-21, docs/bazaar-row-checklist.md): exact slot at the row centre (-82, 15);
     // the code row/shopfronts/interiors are the hidden collision backing.
-    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza'].map((n) => scene.getObjectByName(n)).filter(Boolean);
+    const bazaarOld = ['bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'].map((n) => scene.getObjectByName(n)).filter(Boolean);
     assetSlots.register('bazaar_row', {
       exact: true,
       hide: bazaarOld,
@@ -810,6 +810,21 @@ async function main() {
       exact: true,
       hide: chowkPlazaOld ? [chowkPlazaOld] : [],
       placements: [{ container: scene, position: new THREE.Vector3(CHOWK_CENTER.x, 0, CHOWK_CENTER.z), rotationY: 0 }],
+    });
+  }
+  {
+    // Blender temple + flower stall (2026-10-21, docs/temple-checklist.md): exact slots at TEMPLE_POS / FLOWER_STALL_POS.
+    const templeOld = scene.getObjectByName('temple_old');
+    const flowerOld = scene.getObjectByName('flower_stall');
+    assetSlots.register('temple', {
+      exact: true,
+      hide: templeOld ? [templeOld] : [],
+      placements: [{ container: scene, position: new THREE.Vector3(TEMPLE_POS.x, 0, TEMPLE_POS.z), rotationY: 0 }],
+    });
+    assetSlots.register('flower_stall', {
+      exact: true,
+      hide: flowerOld ? [flowerOld] : [],
+      placements: [{ container: scene, position: new THREE.Vector3(FLOWER_STALL_POS.x, 0, FLOWER_STALL_POS.z), rotationY: 0 }],
     });
   }
   {
@@ -1227,7 +1242,7 @@ async function main() {
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza'],
+      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall'],
     });
     cameraObstacles.push(villageStaticGroup);
 

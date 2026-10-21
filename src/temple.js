@@ -60,6 +60,11 @@ function pushBox(geos, w, h, d, x, y, z, tint) {
 export function buildTemple(kit) {
   const group = new THREE.Group();
   group.name = 'temple';
+  // Blender temple (2026-10-21, docs/temple-checklist.md): everything built here is the INVISIBLE collision/validator
+  // backing ('temple_old'); tools/blender/build_temple.py's temple.glb draws it. `group` stays the root the flower
+  // stall and lane attach to.
+  const old = new THREE.Group();
+  old.name = 'temple_old';
 
   // --- Boundary wall: low, with a gap on the west (entrance) side. ---
   const bx0 = TEMPLE_POS.x - PLOT.w / 2;
@@ -115,19 +120,11 @@ export function buildTemple(kit) {
   // Note the real gap at the west (entrance) face — two separate segments flanking
   // GATE_W, not one hand-typed notched box (playtest structural fix).
   boundaryMesh.userData.colliderBoxes = boundarySegments.map((s) => colliderBoxFromTransform(s.w, s.d, s.matrix));
-  group.add(boundaryMesh);
+  old.add(boundaryMesh);
 
   // --- Raised plinth (kit.addPlinthSegment as one solid slab, not a ring — this is
   // a platform to stand ON, not a building's foundation skirt) + 3 steps on the west
   // (entrance) side. ---
-  kit.addPlinthSegment({ x: TEMPLE_POS.x, y: PLINTH.h / 2, z: TEMPLE_POS.z }, { x: PLINTH.w, y: PLINTH.h, z: PLINTH.d });
-  const stepCount = 3;
-  const stepD = 0.35;
-  const stepH = PLINTH.h / stepCount;
-  for (let i = 0; i < stepCount; i++) {
-    const stepX = TEMPLE_POS.x - PLINTH.w / 2 - stepD * (stepCount - i - 0.5);
-    kit.addStep({ x: stepX, y: (stepH * (i + 1)) / 2, z: TEMPLE_POS.z }, { x: stepD, y: stepH * (i + 1), z: 2.4 });
-  }
 
   // --- Shrine block (garbhagriha) — plain walls, one west-facing opening (no door
   // leaf: left open, deliberately no interior detail/idol per this item's "no
@@ -145,16 +142,7 @@ export function buildTemple(kit) {
   shrineMesh.castShadow = true;
   shrineMesh.receiveShadow = true;
   shrineMesh.userData.colliderBoxes = [colliderBoxFromTransform(SHRINE.w, SHRINE.d, shrineMatrix)];
-  group.add(shrineMesh);
-  kit.addOpening({
-    center: { x: SHRINE.cx - SHRINE.w / 2, y: PLINTH.h, z: TEMPLE_POS.z },
-    width: 1.1,
-    height: 2.0,
-    wallThickness: WALL_THICKNESS,
-    widthAxis: 'z',
-    isDoor: false,
-  });
-  kit.addCornerPilasters(SHRINE.cx, TEMPLE_POS.z, SHRINE.w, SHRINE.d, SHRINE.h, WALL_THICKNESS);
+  old.add(shrineMesh);
 
   // --- Porch — 4 plain square pillars, open on 3 sides, same roof as the shrine. ---
   const pillarSize = 0.25;
@@ -170,7 +158,7 @@ export function buildTemple(kit) {
   pillarMesh.name = 'temple_porch_pillars';
   pillarMesh.castShadow = true;
   pillarMesh.receiveShadow = true;
-  group.add(pillarMesh);
+  old.add(pillarMesh);
 
   // --- One flat roof slab over the whole plinth footprint (shrine + porch), plus a
   // plain stepped shikhar rising above the shrine's own half only. ---
@@ -192,7 +180,7 @@ export function buildTemple(kit) {
   roofMesh.name = 'temple_roof_shikhar';
   roofMesh.castShadow = true;
   roofMesh.receiveShadow = true;
-  group.add(roofMesh);
+  old.add(roofMesh);
 
   // --- A small bell hung from the porch's own lintel, at the entrance. Same
   // construction as the bazaar interior's bangle rings (torus + a short chain) —
@@ -217,7 +205,7 @@ export function buildTemple(kit) {
   const bellMesh = new THREE.Mesh(mergeGeometries(bellGeos), bellMaterial);
   bellMesh.name = 'temple_bell';
   bellMesh.castShadow = true;
-  group.add(bellMesh);
+  old.add(bellMesh);
 
   // --- Peepal platform beside the temple — same round brick-kerb chabutra as the
   // chowk's (src/bazaar.js buildChowkPlaza), left EMPTY (no tree — see docs/parked.md
@@ -237,7 +225,7 @@ export function buildTemple(kit) {
   kerbMesh.name = 'temple_peepal_kerb';
   kerbMesh.castShadow = true;
   kerbMesh.receiveShadow = true;
-  group.add(kerbMesh);
+  old.add(kerbMesh);
 
   const deckGeos = [];
   pushBox(deckGeos, 2.4, 0.06, 2.4, chabX, 0.53, chabZ, ROOF_TINT);
@@ -245,9 +233,10 @@ export function buildTemple(kit) {
   const deckMesh = new THREE.Mesh(deckGeos[0], deckMaterial);
   deckMesh.name = 'temple_peepal_deck';
   deckMesh.receiveShadow = true;
-  group.add(deckMesh);
+  old.add(deckMesh);
 
-  mergeGroupByMaterial(group);
+  mergeGroupByMaterial(old);
+  group.add(old);
   return group;
 }
 

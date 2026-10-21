@@ -268,7 +268,7 @@ function buildHouseInteriorProps(houseGroup) {
   shelf.position.set(shelfX, 0.85, blockCz - 1.5);
   misc.add(shelf);
   for (let i = 0; i < 3; i++) {
-    const vessel = texturedBox(0.22, 0.22, 0.22, 'terracotta', { tint: 0xb5693f, tileSize: 1 });
+    const vessel = texturedBox(0.22, 0.22, 0.22, 'wood', { tint: 0xb5693f, tileSize: 1 }); // 'wood' family, not 'terracotta': the village-wide merge of the few raised terracotta props left it a lone floating mesh in the validator's grounding check once the temple kerb moved to Blender
     vessel.position.set(shelfX - 0.05, 1.55, blockCz - 2.1 + i * 0.55);
     misc.add(vessel);
   }
