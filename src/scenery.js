@@ -47,6 +47,16 @@ const PLACEMENTS = [
   { v: 'c', x: -90, z: 140 - R, q: 0, area: 'S' }, { v: 'a', x: -69.5, z: 140 - R, q: 0, area: 'S' }, { v: 'b', x: -49, z: 140 - R, q: 0, area: 'S' },
   { v: 'b', x: -90, z: 140 + R, q: 2, area: 'S' }, { v: 'c', x: -69.5, z: 140 + R, q: 2, area: 'S' }, { v: 'a', x: -49, z: 140 + R, q: 2, area: 'S' },
 ];
+// Kachcha homestead (tools/blender/build_kachcha.py): mud-plaster walls + thatch, west of the field. Anchor = model origin.
+const KACHCHA = { x: -62, z: -26 };
+const KACHCHA_BOXES = [ // local footprints (x0,x1,z0,z1,h) — must match the Blender script
+  [-6.06, 0.06, -5.56, -1.44, 2.45], // house (solid)
+  [2.5, 6.9, -5.5, -5.2, 2.2], [6.6, 6.9, -5.5, -2.0, 2.2], [2.5, 2.8, -5.5, -3.2, 2.2], // cattle shed walls
+  [-7.5, -3.5, -6.8, -6.5, 1.2], [-3.5, 0.5, -6.8, -6.5, 1.2], [0.5, 4.0, -6.8, -6.5, 1.2], [4.0, 7.5, -6.8, -6.5, 1.2], // north wall
+  [-7.5, -7.2, -6.5, -3.25, 1.2], [-7.5, -7.2, -3.25, 0.0, 1.2], [-7.5, -7.2, 0.0, 3.25, 1.2], [-7.5, -7.2, 3.25, 6.5, 1.2], // west wall
+  [7.2, 7.5, -6.5, -3.25, 1.2], [7.2, 7.5, -3.25, 0.0, 1.2], [7.2, 7.5, 0.0, 3.25, 1.2], [7.2, 7.5, 3.25, 6.5, 1.2], // east wall
+  [-7.5, -4.4, 6.2, 6.5, 1.2], [-4.4, -1.3, 6.2, 6.5, 1.2], [1.3, 4.4, 6.2, 6.5, 1.2], [4.4, 7.5, 6.2, 6.5, 1.2], // south wall, gate gap between
+];
 const NEAR_DIST = 38; // rows nearer than this draw the detailed Blender model, farther the low-poly proxy
 const FAR_DIST = 170; // beyond this (fog) rows aren't drawn at all
 
@@ -96,6 +106,11 @@ export function buildBackgroundHouses(scene, kit) {
       old.add(mesh);
     }
   });
+  for (const [x0, x1, z0, z1, h] of KACHCHA_BOXES) {
+    const mesh = texturedWallBox(x1 - x0, h, z1 - z0, 'plaster', { tint: 0xb09572, tileSize: 2, tintStrength: WALL_TINT_STRENGTH, seed: 5.5 });
+    mesh.position.set(KACHCHA.x + (x0 + x1) / 2, h / 2, KACHCHA.z + (z0 + z1) / 2);
+    old.add(mesh);
+  }
   mergeGroupByMaterial(old);
   group.add(old);
 
@@ -170,10 +185,21 @@ export function buildBackgroundHouses(scene, kit) {
     }
   }
 
+  // The kachcha homestead model (single placed copy; hidden beyond FAR_DIST).
+  let kachcha = null;
+  getGLTFLoader().load('assets/models/kachcha_homestead.glb', (gltf) => {
+    kachcha = gltf.scene;
+    kachcha.name = 'kachcha_homestead';
+    kachcha.position.set(KACHCHA.x, 0, KACHCHA.z);
+    kachcha.traverse((m) => { if (m.isMesh) { m.userData.mergedStatic = true; m.receiveShadow = true; m.castShadow = m.material?.name !== 'hb_props'; } });
+    group.add(kachcha);
+  });
+
   // Called every frame from main.js with the player/vehicle position; the re-sort only runs after the player moved 4 m.
   group.userData.updateVisibility = (px, pz) => {
     lastX = px;
     lastZ = pz;
+    if (kachcha) kachcha.visible = Math.hypot(px - KACHCHA.x, pz - KACHCHA.z) < FAR_DIST;
     if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();
   };
 

@@ -1,3 +1,8 @@
+**2026-10-21 (cycle 5):** New kachcha mud homestead (thatched house with veranda, cattle shed + manger, courtyard wall/gate, charpai, chulha, tulsi, haystack, dung cakes) west of the field at (-62,-26): `tools/blender/build_kachcha.py`, `src/scenery.js`, public/assets/models/kachcha_homestead.glb. Validator 15/15, regression 22/22. Inbox empty.
+Next: cattle models/animals in the shed, 2-3 more kachcha variants near fields, Blender tree rebuild, PBR on lanes/canal.
+
+---
+
 **2026-10-21 (cycle 3):** Tree canopies and ground grass shifted from lime to dusty olive/deep neem green with per-leaf-clump variation (src/trees.js, grassTint in src/main.js). Validator + regression 22/22 pass. Inbox was empty.
 Next: kachcha mud houses with thatch, real PBR textures on remaining surfaces, Blender tree rebuild, lane life.
 
