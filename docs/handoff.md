@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 11):** Tried a cyclist riding the lane (ambient sprite); it pushed the hero zone to 151 draw calls, so reverted. No live-game change. Push still fails (no git login, 19 commits waiting).
+Next: free draw calls in the hero zone (distance-hide Blender buildings), then real cattle models, tree rebuild.
+
+---
+
 **2026-10-22 (cycle 10):** Three villagers strolling the school end of the lane (src/ambient.js, one Points draw call, shown only within 25 m). Build/validator pass. Inbox empty. Push still fails (no git login).
 Next: real cattle models, Blender tree rebuild, PBR on lanes/canal.
 
