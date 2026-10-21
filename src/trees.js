@@ -36,9 +36,9 @@ const BARK_COLOR_LIGHT = 0x4a3a2e;
 // codebase's own established "deeper shade of the same hue, never a
 // different colour" rule) reads as foliage instead of wall.
 // Art review 2 (2026-10-21): canopies were grey-beige. Real foliage greens now (sRGB hex).
-const LEAF_NEEM = new THREE.Color(0x4b6b2e);
+const LEAF_NEEM = new THREE.Color(0x3f5a2f);
 const LEAF_PEEPAL = new THREE.Color(0x3a5f32);
-const LEAF_BABOOL = new THREE.Color(0x7a8442); // lighter olive acacia, still clearly green
+const LEAF_BABOOL = new THREE.Color(0x6b7340); // lighter olive acacia, still clearly green
 const LEAF_MANGO = new THREE.Color(0x294d27);
 
 function paintFlat(geometry, color) {

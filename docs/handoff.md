@@ -1,3 +1,8 @@
+**2026-10-22 (cycle 12):** Neem and babool canopies shifted to deeper, dustier olive greens (src/trees.js). Build/validator and regression 22/22 pass. Inbox empty.
+Next: free hero-zone draw calls, real cattle models, Blender tree rebuild, PBR on lanes/canal.
+
+---
+
 **2026-10-22 (cycle 11):** Tried a cyclist riding the lane (ambient sprite); it pushed the hero zone to 151 draw calls, so reverted. No live-game change. Push still fails (no git login, 19 commits waiting).
 Next: free draw calls in the hero zone (distance-hide Blender buildings), then real cattle models, tree rebuild.
 
