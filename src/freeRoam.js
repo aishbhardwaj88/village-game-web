@@ -22,6 +22,8 @@ export const PLACES = [
   { id: 'baagh', en: 'Mango baagh', hi: 'आम का बाग', x: -15, z: 10, kind: 'tree', radius: 22 },
   { id: 'canal', en: 'Nahar and bridge', hi: 'नहर और पुल', x: -15, z: 33, kind: 'bridge', radius: 16 },
   { id: 'field', en: 'Our khet', hi: 'हमारा खेत', x: 20, z: -20, kind: 'field', radius: 30 },
+  { id: 'banta', en: 'Banta shop', hi: 'बंटा की दुकान', x: -63, z: 22.5, kind: 'shop', radius: 12 },
+  { id: 'chaat', en: 'Chaat thela', hi: 'चाट का ठेला', x: -63, z: 50.5, kind: 'shop', radius: 12 },
   { id: 'eastgali', en: 'East gali', hi: 'पूरब की गली', x: -5, z: 90, kind: 'lane', radius: 26 },
   { id: 'westgali', en: 'West gali', hi: 'पश्चिम की गली', x: -84, z: 72, kind: 'lane', radius: 26 },
 ];

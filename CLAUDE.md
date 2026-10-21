@@ -219,8 +219,8 @@ it afterward.
 
 ## 12. Git
 
-Commit on `main` with clear messages. **Never push** — the user pushes manually via
-GitHub Desktop. Never touch `../Village nostalgia` or the reference folders (§2).
+Commit on `main` with clear messages and `git push origin main` after every visible improvement (at least hourly), then check the
+GitHub Actions run goes green (ship mode, 2026-10-21). Never touch `../Village nostalgia` or the reference folders (§2).
 
 ## 13. Report format — end every reply with this exact line
 

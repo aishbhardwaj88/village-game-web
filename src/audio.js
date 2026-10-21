@@ -331,6 +331,72 @@ export class AudioEngine {
     splash.stop(t + 0.8);
   }
 
+  // --- Side-job sound helpers (docs/MISSIONS_PLAN.md). `vol` 0-1 scales a sound for the sound-radar fade with distance. ---
+  /** A short pitched blip: a tone with a fast attack/exponential decay. */
+  playBlip(freq = 660, duration = 0.14, vol = 1, type = 'sine') {
+    if (!this.started || vol <= 0.01) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.value = freq;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.16 * vol, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    osc.connect(gain).connect(this.master);
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  }
+
+  /** The kulfiwala's handbell: two quick bright dings. */
+  playCartBell(vol = 1) {
+    if (!this.started) return;
+    this.playBlip(2300, 0.35, vol, 'triangle');
+    setTimeout(() => this.playBlip(3100, 0.4, vol, 'triangle'), 140);
+  }
+
+  /** A soft dull thump (the chakki's motor, a thrown gilli landing). */
+  playThump(vol = 1, freq = 70) {
+    if (!this.started || vol <= 0.01) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq * 1.6, t);
+    osc.frequency.exponentialRampToValueAtTime(freq, t + 0.1);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.28 * vol, t + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    osc.connect(gain).connect(this.master);
+    osc.start(t);
+    osc.stop(t + 0.3);
+  }
+
+  /** A bright glassy click (marbles knocking). */
+  playClack(vol = 1) {
+    this.playBlip(1800 + Math.random() * 500, 0.06, vol * 0.8, 'square');
+  }
+
+  /** Kids cheering / shouting in the distance: a band-passed noise swell. */
+  playCheer(vol = 1, duration = 0.9) {
+    if (!this.started || vol <= 0.01) return;
+    const t = this.ctx.currentTime;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(this.ctx, duration);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1100, t);
+    filter.frequency.linearRampToValueAtTime(1700, t + duration * 0.5);
+    filter.Q.value = 1.4;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.1 * vol, t + duration * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    noise.connect(filter).connect(gain).connect(this.master);
+    noise.start(t);
+    noise.stop(t + duration + 0.05);
+  }
+
   /** Sabzi shop's pan-balance weighing (shop interactions task) — a short metallic
    * creak as the beam tips, then a soft settling thud. Same filtered-noise-burst
    * technique as playPump above. */

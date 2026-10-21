@@ -14,7 +14,8 @@
       "NotebookEdit",
       "TodoWrite",
       "Bash(rm *)",
-      "Bash(rm -f *)"
+      "Bash(rm -f *)",
+      "Bash(git push*)"
     ],
     "deny": [
       "Bash(sudo *)",
@@ -25,7 +26,6 @@
       "Bash(git clean *)",
       "Bash(git checkout -- *)",
       "Bash(git restore *)",
-      "Bash(git push*)",
       "Bash(git branch -D *)",
       "Bash(git remote add *)",
       "Bash(git remote set-url *)",

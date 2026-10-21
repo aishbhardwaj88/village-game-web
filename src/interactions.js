@@ -39,9 +39,10 @@ export function findNearestInteraction(pos, ctx) {
     if (point.available && !point.available(ctx)) continue;
     _diff.set(point.position.x - pos.x, 0, point.position.z - pos.z);
     const d = _diff.length();
-    if (d < point.radius && d < nearestDist) {
+    const score = d - (point.priority || 0); // a point with `priority` wins over a generic one at about the same spot (side-job counters vs the shared Buy)
+    if (d < point.radius && score < nearestDist) {
       nearest = point;
-      nearestDist = d;
+      nearestDist = score;
     }
   }
   return nearest;
@@ -109,6 +110,8 @@ registerInteraction({
       );
     } else if (quest.step === QUEST_STEPS.GOING_TO_DARZI || quest.step === QUEST_STEPS.HAVE_KURTA) {
       dialogue.say([{ hi: 'दर्जी से कुर्ता ले आना मत भूलना।', en: "Don't forget to collect the kurta from the darzi." }]);
+    } else if (quest.step === QUEST_STEPS.FREE_ROAM && ctx.hooks?.maaFreeRoam) {
+      ctx.hooks.maaFreeRoam(); // free-roam side jobs (src/jobs/ration.js)
     } else {
       dialogue.say([{ hi: 'आज का सारा काम हो गया, बहुत शुक्रिया बेटा।', en: "All of today's work is done, thank you so much." }]);
     }
@@ -375,6 +378,8 @@ registerInteraction({
           ctx.onObjectiveChange?.();
         }
       );
+    } else if (quest.step === QUEST_STEPS.FREE_ROAM && ctx.hooks?.pitajiFreeRoam) {
+      ctx.hooks.pitajiFreeRoam(); // free-roam side jobs (src/jobs/gate.js)
     } else {
       dialogue.say([{ hi: 'आज का काम हो गया, बहुत शुक्रिया।', en: "Today's work is done, thank you." }]);
     }

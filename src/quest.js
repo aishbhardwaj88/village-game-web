@@ -110,6 +110,7 @@ export function createQuestState() {
     marbles: 0, // kanche pouch
     kites: 0, // collected kites
     mangoVarieties: [], // ids of mango varieties tasted
+    records: {}, // best scores (gilli-danda distance, trolley-gate time)
   };
 }
 

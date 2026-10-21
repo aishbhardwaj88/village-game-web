@@ -121,6 +121,7 @@ import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam } from './freeRoam.js';
+import { createSideJobs } from './sideJobs.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const MOVE_SPEED = 4.2; // m/s, walking pace
@@ -573,6 +574,9 @@ async function main() {
   const sisterNpc = createNPC(0xc98ea0, SISTER_SCHOOL_POSITION, 0, 'npc_sister');
   scene.add(sisterNpc);
   let sisterFollowing = false;
+  // Side job 9 (ration run): Maa walks with the player instead of her usual loop while this flag is set (src/jobs/ration.js).
+  let maaFollowing = false;
+  const maaFollow = createFollowRoutine(maaNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2.4, speed: 2.2, getExtraBoxes: () => otherVehicleBoxes(null) });
   const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2, getExtraBoxes: () => otherVehicleBoxes(null) });
 
   // M4 (docs/STORY.md) — the postman, cycling the same proven-clear hero-zone lane
@@ -1431,7 +1435,7 @@ async function main() {
   // The errand (item 3) — one small in-memory state object, no save system.
   const quest = createQuestState();
   // Free roam (docs/MISSIONS_PLAN.md): the part of the quest state that survives the story and is saved with it.
-  const roamSnapshot = () => ({ storyDone: quest.storyDone, pocket: quest.pocket, discovered: quest.discovered, jobsDone: quest.jobsDone, marbles: quest.marbles, kites: quest.kites, mangoVarieties: quest.mangoVarieties });
+  const roamSnapshot = () => ({ storyDone: quest.storyDone, pocket: quest.pocket, discovered: quest.discovered, jobsDone: quest.jobsDone, marbles: quest.marbles, kites: quest.kites, mangoVarieties: quest.mangoVarieties, records: quest.records });
   const freeRoam = createFreeRoam({
     quest,
     getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
@@ -1496,6 +1500,7 @@ async function main() {
     quest.marbles = roam.marbles || 0;
     quest.kites = roam.kites || 0;
     quest.mangoVarieties = Array.isArray(roam.mangoVarieties) ? roam.mangoVarieties : [];
+    quest.records = roam.records || {};
     if (quest.storyDone) {
       startFreeRoam(); // "Continue roaming" — the village is open, no main objective
       return;
@@ -1545,6 +1550,54 @@ async function main() {
     [QUEST_STEPS.ERRAND7_COMPLETE]: { en: 'The trolley is full of mangoes.', hi: 'ट्रॉली आमों से भर गई।' },
   };
 
+  // Side jobs (docs/MISSIONS_PLAN.md section 3) — built lazily, once, when free roam first starts.
+  let sideJobs = null;
+  let modalFrozen = false;
+  function setFrozen(frozen) {
+    modalFrozen = frozen;
+    paused = frozen || pauseMenu.isOpen();
+    if (frozen) {
+      if (!touch) document.exitPointerLock?.();
+    } else if (!paused && !touch && started) {
+      input.requestPointerLock();
+    }
+  }
+  function ensureSideJobs() {
+    if (sideJobs) return;
+    sideJobs = createSideJobs({
+      scene,
+      quest,
+      dialogue,
+      audio,
+      freeRoam,
+      getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
+      playerGroup: player,
+      buildNpc: (role, pos, rot, name) => buildCharacterNpc(role, pos, rot, name),
+      setFrozen,
+      refreshHud: updateObjective,
+      save: () => saveGame({ questStep: quest.step, quality: currentQuality, roam: roamSnapshot() }),
+      vehicles,
+      sackCarrier,
+      hooks: interactionCtx.hooks,
+      setMaaFollowing: (on) => {
+        maaFollowing = on;
+      },
+      npcs: { maa: maaNpc, dadi: dadiNpc, postman: postmanNpc, halwai: halwaiNpc, pitaji: pitajiNpc, teacher: teacherNpc, child: childNpc, sister: sisterNpc },
+      getMounted: () => mountedVehicle,
+      otherVehicleBoxes,
+      waypointLoop: createWaypointLoop,
+      setJobWaypoint: (v) => {
+        jobWaypoint = v;
+      },
+      followRoutine: createFollowRoutine,
+      rebuildColliders: () => initStaticColliders(scene),
+      getTrolley: () => {
+        const owner = vehicles.find((v) => v.trolley);
+        return (owner && owner.trolley) || looseTrolley || null;
+      },
+    });
+  }
+
   // After the credits (docs/MISSIONS_PLAN.md section 2): the player wakes back in the village, no main objective, side jobs open.
   function startFreeRoam() {
     quest.step = QUEST_STEPS.FREE_ROAM;
@@ -1557,6 +1610,7 @@ async function main() {
     sisterFollowing = false;
     sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
     player.position.set(HOUSE_CENTER.x + 1.5, 0, HOUSE_CENTER.z + 4.5);
+    ensureSideJobs(); // the ten side jobs, built the first time free roam starts (zero cost during the story)
     updateObjective();
     freeRoam.toast('The afternoon is yours. Look around the village.', 'दोपहर तुम्हारी है। गाँव में घूमो।', 5200);
   }
@@ -1582,7 +1636,10 @@ async function main() {
     objectivePanel.classList.remove('visible');
   }
 
+  // Free-roam side jobs can point the waypoint arrow at their current stop (src/jobs/milk.js etc.); null = none.
+  let jobWaypoint = null;
   function currentWaypointTarget() {
+    if (jobWaypoint && quest.step === QUEST_STEPS.FREE_ROAM) return jobWaypoint;
     if (quest.step === QUEST_STEPS.NOT_STARTED) return MAA_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_MONEY) return HALWAI_NPC_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_JALEBI) return MAA_POSITION;
@@ -1660,6 +1717,7 @@ async function main() {
     audio,
     dialogue,
     quest,
+    hooks: {}, // free-roam side jobs plug in here (src/sideJobs.js)
     onObjectiveChange: updateObjective,
     onErrandComplete: showEndCard,
     onSisterCollected: () => {
@@ -1966,7 +2024,8 @@ async function main() {
       // moved these NPCs onto the roof; their normal loops would otherwise walk them
       // straight back to their usual ground-level spots on the very next frame).
       if (!endingSceneActive) {
-        maaWalk(dt);
+        if (maaFollowing) maaFollow(dt);
+        else maaWalk(dt);
         halwaiStir(dt); // halwai's own idle animation (src/main.js) — not animate(), see buildCharacterNpc's doc comment
         childWalk(dt);
         postmanWalk(dt);
@@ -2209,6 +2268,7 @@ async function main() {
       zoneManager.update(listenerPos.x, listenerPos.z, dt);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
       freeRoam.update(dt);
+      if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
       if (teaSteam.points.visible) teaSteam.update(dt);
