@@ -24,6 +24,24 @@ function rutDepth(u) {
 }
 
 /**
+ * Cross-section of a lane edge: the strip rolls down into the surrounding ground,
+ * with a shallow damp drain channel just inside the edge and a dusty berm beside it.
+ * `au` is |u| (0 centre .. 0.5 edge); returns a height offset, a brightness multiplier
+ * and a 0-1 blend toward grass colour. Distances are in metres from the lane edge.
+ */
+function edgeProfile(au, width) {
+  const e = (0.5 - au) * width;
+  const edgeFade = Math.max(0, 1 - e / 0.35);
+  const drain = Math.exp(-(((e - 0.6) / 0.3) ** 2));
+  const berm = Math.exp(-(((e - 1.0) / 0.3) ** 2));
+  return {
+    dz: -0.012 * edgeFade - 0.016 * drain + 0.012 * berm,
+    shade: 1 - 0.35 * drain + 0.06 * berm,
+    grass: 0.55 * edgeFade * edgeFade,
+  };
+}
+
+/**
  * A straight dirt strip (lane or track segment) between two points, with gentle baked
  * height bumps. Reused by src/village.js (the lane) and src/field.js (the field
  * track loop) so both use the same construction and the same ground texture set at a
@@ -34,7 +52,7 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
   const dz = end.z - start.z;
   const length = Math.hypot(dx, dz);
   const segsAlong = Math.max(4, Math.round(length / 3));
-  const segsAcross = 6;
+  const segsAcross = Math.min(24, Math.max(12, Math.round(width * 3.5)));
 
   const geometry = new THREE.PlaneGeometry(width, length, segsAcross, segsAlong);
   const pos = geometry.attributes.position;
@@ -43,6 +61,7 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
     const v = pos.getY(i) / length;
     let z = bumpHeight(u, v, seed);
     if (ruts) z += rutDepth(u);
+    z += edgeProfile(Math.abs(u), width).dz;
     pos.setZ(i, z);
   }
   geometry.computeVertexNormals();
@@ -71,10 +90,19 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
 
   const colors = new Float32Array(pos.count * 3);
   const tintColor = new THREE.Color(tint);
+  const grassColor = new THREE.Color(0x6f7a46);
+  const c = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
-    colors[i * 3] = tintColor.r;
-    colors[i * 3 + 1] = tintColor.g;
-    colors[i * 3 + 2] = tintColor.b;
+    const u = pos.getX(i) / width;
+    const v = pos.getY(i) / length;
+    const { shade, grass } = edgeProfile(Math.abs(u), width);
+    // slow patchy brightness along the lane + darker, polished wheel tracks
+    let k = shade * (0.94 + 0.08 * Math.sin(v * 9.0 + seed * 2.3) + 0.04 * Math.sin(u * 13.0 + v * 4.0 + seed));
+    if (ruts) k *= 1 - 0.14 * (Math.exp(-(((u - RUT_OFFSET) / 0.08) ** 2)) + Math.exp(-(((u + RUT_OFFSET) / 0.08) ** 2)));
+    c.copy(tintColor).multiplyScalar(k).lerp(grassColor, grass);
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
   }
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
