@@ -52,7 +52,10 @@ function buildFieldGround() {
     tint: FIELD_GOLD,
     roughness: 1,
   });
-  applyGroundNoiseDetail(material, { patchContrast: getActiveAtmosphere().groundContrastMultiplier }); // Fix 4/4 (playtest pass) — see materials.js
+  applyGroundNoiseDetail(material, {
+    patchContrast: getActiveAtmosphere().groundContrastMultiplier,
+    furrows: { spacing: 1.5, originZ: FIELD_CENTER.z - FIELD_SIZE.z / 2 + 2, depth: 0.32 },
+  }); // Fix 4/4 (playtest pass) — see materials.js
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(FIELD_CENTER.x, 0.02, FIELD_CENTER.z);

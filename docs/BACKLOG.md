@@ -34,7 +34,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [x] Wall surfaces: lime-washed plaster in blue-grey, cream, pink, mint, with per-wall colour variation - proof docs/shots/bazaar-walls-2026-10-23/bazaar_back.png (bazaar row only: cream, pink, mint, blue-grey units; other buildings still cream/mustard/terracotta/teal)
 - [x] Roofs: terracotta tiles and corrugated tin - proof docs/shots/compare/new-shops-roofs/high.png (corrugated tin on ration shop + atta chakki; bazaar awning and bg houses already tin/terracotta; hero zone stays 150/150)
 - [ ] Painted wood: doors, shutters, frames (shared trim sheet)
-- [ ] Field and farm surfaces: wheat stubble, sabzi beds, soil
+- [ ] Field and farm surfaces: wheat stubble, sabzi beds, soil - IN PROGRESS: soil now has plough furrows between crop rows (docs/shots/compare/field-furrows/low.png); stubble and distinct sabzi beds still to do
 - [ ] Canal bank, bridge and boundary walls
 - [ ] Soft dirt at wall bases, sun-faded paint, subtle stains near doors and drains
 - [ ] Props and street furniture: lamps, charpai, handpump, chabutra

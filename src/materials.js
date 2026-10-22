@@ -120,6 +120,9 @@ export function applyGroundNoiseDetail(
     // groundContrastMultiplier) without changing the noise pattern or adding any
     // new texture/geometry. 1 = the original (unmultiplied) contrast.
     patchContrast = 1,
+    // Tilled-field furrows: {spacing, originZ, depth} — darker troughs between crop rows (rows run along X, one
+    // every `spacing` m from `originZ`), soil clods breaking up the ridge. Same shader pass, no texture, no draw call.
+    furrows = null,
   } = {}
 ) {
   const grass = grassTint ? new THREE.Color(grassTint) : null;
@@ -141,6 +144,7 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
     shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
     shader.uniforms.uPatchContrast = { value: patchContrast };
+    shader.uniforms.uFurrow = { value: new THREE.Vector3(furrows ? furrows.spacing : 0, furrows ? furrows.originZ : 0, furrows ? furrows.depth : 0) };
 
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_g;')
@@ -165,6 +169,7 @@ export function applyGroundNoiseDetail(
         uniform float uDampRadius1;
         uniform vec3 uDampTint1;
         uniform float uPatchContrast;
+        uniform vec3 uFurrow;
 
         float groundHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
         float groundValueNoise(vec2 p) {
@@ -217,6 +222,14 @@ export function applyGroundNoiseDetail(
             diffuseColor.rgb = mix(diffuseColor.rgb, grassCol, grassMask * 0.88);
           }
 
+          if (uFurrow.x > 0.0) {
+            float fr = fract((vWorldPos_g.z - uFurrow.y) / uFurrow.x + 0.5); // 0.5 = on a crop row
+            float trough = 1.0 - abs(fr - 0.5) * 2.0; // 1 at the row ridge, 0 mid-trough
+            float clod = groundValueNoise(vWorldPos_g.xz * vec2(1.6, 4.0));
+            float furrowShade = mix(1.0 - uFurrow.z, 1.0 + uFurrow.z * 0.35, smoothstep(0.1, 0.9, trough));
+            diffuseColor.rgb *= furrowShade * (0.9 + 0.2 * clod);
+          }
+
           float damp0 = 1.0 - smoothstep(0.0, max(uDampRadius0, 0.001), distance(vWorldPos_g.xz, uDampPos0));
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint0, damp0);
           float damp1 = 1.0 - smoothstep(0.0, max(uDampRadius1, 0.001), distance(vWorldPos_g.xz, uDampPos1));
@@ -228,7 +241,7 @@ export function applyGroundNoiseDetail(
   // reuse a compiled program from a material that didn't request the noise/detail
   // pass (or vice versa).
   material.customProgramCacheKey = () =>
-    `ground-noise-detail-v4-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}`;
+    `ground-noise-detail-v4-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}-${furrows ? 'f' + furrows.spacing : 'nf'}`;
   return material;
 }
 
