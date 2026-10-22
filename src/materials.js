@@ -536,3 +536,39 @@ export function texturedWallBox(width, height, depth, materialName, opts = {}) {
   mesh.userData.collider = opts.collider !== false;
   return mesh;
 }
+
+/**
+ * Soft dirt at wall bases for imported Blender buildings: darkens and warms the
+ * albedo within ~0.3-0.6m of the ground with a noisy, uneven upper edge (rain splash
+ * and dust), as a shader hook on the existing material (no texture, no draw call).
+ * Skips metal and glass so tin roofs and windows stay clean.
+ */
+export function applyWallBaseGrime(material) {
+  if (!material || material.isShaderMaterial || material.userData.baseGrime) return;
+  if ((material.metalness || 0) > 0.5 || material.transparent) return;
+  material.userData.baseGrime = true;
+  const prev = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    if (prev) prev(shader, renderer);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_wg;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWorldPos_wg = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec3 vWorldPos_wg;
+        float wgHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+        float wgNoise(vec2 p) {
+          vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(wgHash(i), wgHash(i + vec2(1, 0)), f.x), mix(wgHash(i + vec2(0, 1)), wgHash(i + vec2(1, 1)), f.x), f.y);
+        }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        {
+          float wgN = wgNoise(vec2(vWorldPos_wg.x + vWorldPos_wg.z, vWorldPos_wg.x - vWorldPos_wg.z) * 2.3) * 0.6 + wgNoise(vWorldPos_wg.xz * 9.0 + vWorldPos_wg.y * 4.0) * 0.4;
+          float wgEdge = 0.22 + 0.4 * wgN;
+          float wgDirt = 1.0 - smoothstep(0.0, wgEdge, vWorldPos_wg.y);
+          float wgLum = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(wgLum) * vec3(0.78, 0.70, 0.60), wgDirt * wgDirt * 0.65);
+        }`);
+  };
+  material.needsUpdate = true;
+}

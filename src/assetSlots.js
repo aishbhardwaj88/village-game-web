@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
+import { applyWallBaseGrime } from './materials.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -170,6 +171,10 @@ export function createAssetSlotRegistry() {
         }
         if (Array.isArray(o.material)) o.material.forEach(enforceMatteMaterial);
         else enforceMatteMaterial(o.material);
+        if (slot.exact) {
+          if (Array.isArray(o.material)) o.material.forEach(applyWallBaseGrime);
+          else applyWallBaseGrime(o.material);
+        }
       }
     });
 
