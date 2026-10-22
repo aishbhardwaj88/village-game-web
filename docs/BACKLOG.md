@@ -53,6 +53,14 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A4. Unbuilt MAP.md locations
 - [ ] Compare the built world against `reference-from-unity/MAP.md` and list every missing location in this file before building
+  - LIST 2026-10-23 (cycle 38e, from MAP.md vs a name-grep of src/, so verify before building; MAP.md gives no coordinates for most of these, pick open ground and say so, do not invent silently). MISSING, not found in src/:
+    - Water: pond (west of abadi, lotus, buffalo wallow), johad (SE lip), tubewell + kothri (north fields), tank/transformer landmark pair (paani ki tanki only appears as a roof prop in scenery.js, no tall landmark)
+    - Fields: sugarcane (ganna) belt south, neighbour's 2-tree orchard, bhoosa stacks, khalihan, mela + wedding ground (SW)
+    - Abadi places: anganwadi, health sub-centre, TV house, dudh dairy, chemist, manihari, sabzi rehris, jalebi + samosa stall, chaupal platform (peepal crossroads)
+    - Edges: highway (east), petrol pump, bus adda, mandi area (grain merchant, vegetable yard, big weighbridge, dhaba, trucks), gurukul inter college, khel maidan (only as side-job props), old haveli and gaushala (V2)
+    - Religious: masjid, gurudwara, Jain mandir (mandir exists); peripheral scenery only, no tasks
+    - Canal: kachcha bank roads and the narrow patli pulia (patli appears in canal.js, confirm it is walkable)
+    - PRESENT: school, bazaar (kirana, halwai, darzi, nai, cyber, mechanic/puncture), post office, ration shop, atta chakki, panchayat, flagpole + donation board, abadi rows, canal + pukka bridge, mango baagh, wheat/sabzi field, kachcha homestead
 - [ ] Post office
 - [ ] Ration shop
 - [ ] Atta chakki
