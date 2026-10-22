@@ -398,3 +398,90 @@ export function createGurudwara(position) {
   geos.push(bake(new THREE.BoxGeometry(0.05, 1.3, 0.9), at(6.5, 8.2, 4.95), 0xe0861f));
   return finishSite('gurudwara', geos, position);
 }
+
+/** TV house: the one house with a television. Pale-green plaster, flat roof, and a rooftop antenna mast. No brand marks. */
+export function createTvHouse(position) {
+  const geos = smallBuilding({ w: 8, d: 6, h: 3.3, wall: 0xc9d8c0, band: 0xb8574a, door: 0x2f4f6b });
+  geos.push(bake(new THREE.CylinderGeometry(0.04, 0.05, 3.2, 6), at(2.4, 5.7, -1.2), 0x6d6d6d));
+  for (let i = 0; i < 4; i++) geos.push(bake(new THREE.BoxGeometry(0.04, 0.04, 1.3 - i * 0.2), at(2.4, 4.6 + i * 0.5, -1.2), 0x7a7a7a));
+  geos.push(bake(new THREE.BoxGeometry(2.4, 0.5, 1.4), at(-1.8, 4.1, 0), 0x3a5a7a)); // water tank on roof
+  geos.push(bake(new THREE.BoxGeometry(2.8, 0.1, 1.8), at(0, 3.0, 3.9), 0xb9b4a6)); // porch slab
+  geos.push(bake(new THREE.BoxGeometry(2.0, 0.05, 0.9), at(0, 0.55, 4.4), 0xb34a3a)); // charpai-style cot cover
+  return finishSite('tv_house', geos, position);
+}
+
+/** Manihari: bangle-seller's small stall, a wooden counter with a striped awning and rods of coloured bangles. */
+export function createManihari(position) {
+  const geos = [];
+  geos.push(bake(new THREE.BoxGeometry(3.2, 0.9, 1.2), at(0, 0.45, 0), 0x8a6a45));
+  geos.push(bake(new THREE.BoxGeometry(3.4, 0.08, 1.4), at(0, 0.94, 0), 0x6f5233));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.5, 6), at(sx * 1.6, 1.25, -0.5), 0x6f5233));
+  for (let i = 0; i < 6; i++) geos.push(bake(new THREE.BoxGeometry(0.55, 0.06, 1.7), new THREE.Matrix4().makeRotationX(-0.18).setPosition(-1.4 + i * 0.56, 2.55, 0.1), i % 2 ? 0xc4372f : 0xe8d9b0));
+  const cols = [0xc4372f, 0x2f7d5b, 0xd8a22a, 0x3a5aa6, 0x8a3a8a];
+  for (let i = 0; i < 10; i++) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 0.22, 10), at(-1.35 + i * 0.3, 1.1, 0.1), cols[i % cols.length]));
+  geos.push(bake(new THREE.BoxGeometry(1.0, 0.06, 0.5), at(-3, 0.35, 0.8), 0x7a5a3a)); // stool
+  return finishSite('manihari', geos, position);
+}
+
+/** Sabzi rehris: three wooden handcarts piled with vegetables, parked in a row under a tarpaulin shade. */
+export function createSabziRehris(position) {
+  const geos = [];
+  const piles = [[0xb2342b, 0xd8872a], [0x4f8f3a, 0x8aad3a], [0xd8c8a0, 0x7a3a8a]]; // tomato/carrot, gourd/chilli, onion/brinjal
+  piles.forEach((pc, i) => {
+    const x = (i - 1) * 3.2;
+    geos.push(bake(new THREE.BoxGeometry(2.2, 0.12, 1.2), at(x, 0.85, 0), 0x8a6a45));
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.BoxGeometry(0.08, 0.8, 0.08), at(x + sx * 0.95, 0.4, sz * 0.5), 0x6f5233));
+    for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(2.2, 0.25, 0.06), at(x, 1.0, sz * 0.58), 0x7a5a3a));
+    geos.push(bake(new THREE.CylinderGeometry(0.4, 0.5, 0.4, 8), at(x - 0.5, 1.2, 0), pc[0]));
+    geos.push(bake(new THREE.CylinderGeometry(0.4, 0.5, 0.4, 8), at(x + 0.5, 1.2, 0), pc[1]));
+    for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.42, 0.42, 0.07, 14), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x + sx * 0.8, 0.42, 0.7), 0x3a3a3a));
+    geos.push(bake(new THREE.BoxGeometry(0.1, 0.1, 1.6), at(x, 0.8, 1.7), 0x6f5233));
+  });
+  geos.push(bake(new THREE.BoxGeometry(10.2, 0.05, 3.6), new THREE.Matrix4().makeRotationX(0.1).setPosition(0, 2.9, 0.3), 0x9a5f3c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.9, 6), at(sx * 4.9, 1.45, -1.3), 0x5a5a5a));
+  return finishSite('sabzi_rehris', geos, position);
+}
+
+/** Jain mandir: small white shikhara temple on a plinth with a pillared porch. Scenery only, no tasks. */
+export function createJainMandir(position) {
+  const geos = smallBuilding({ w: 6, d: 6, h: 3.2, wall: 0xf3efe4, band: 0xc9a24a, door: 0x6a4a2a, roof: 0xe2dccb });
+  geos.push(bake(new THREE.BoxGeometry(7.4, 0.3, 7.4), at(0, 0.15, 0), 0xcfc8b6));
+  geos.push(bake(new THREE.ConeGeometry(2.0, 3.6, 4), at(0, 5.45, 0, Math.PI / 4), 0xf3efe4));
+  geos.push(bake(new THREE.ConeGeometry(0.7, 1.4, 4), at(0, 8.0, 0, Math.PI / 4), 0xe9e2cf));
+  geos.push(bake(new THREE.SphereGeometry(0.2, 8, 6), at(0, 8.8, 0), 0xd9a63a));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.22, 0.26, 2.6, 8), at(sx * 1.6, 1.6, 3.9), 0xe9e2cf));
+  geos.push(bake(new THREE.BoxGeometry(4.4, 0.25, 1.8), at(0, 3.0, 3.9), 0xd8d2c0));
+  return finishSite('jain_mandir', geos, position);
+}
+
+/** Highway cluster (east edge): paved two-lane road strip, petrol pump with canopy, bus adda shelter and a dharam kanta weighbridge. Unbranded. */
+export function createHighwayCluster(position) {
+  const geos = [];
+  geos.push(bake(new THREE.BoxGeometry(14, 0.1, 150), at(0, 0.05, 0), 0x3d3d40));
+  for (let z = -70; z <= 70; z += 8) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 3.5), at(0, 0.11, z), 0xe8e2c8));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 150), at(sx * 6.4, 0.11, 0), 0xe8e2c8));
+  // Petrol pump: forecourt slab, canopy on four posts, two pumps, small office.
+  geos.push(bake(new THREE.BoxGeometry(22, 0.12, 16), at(-19, 0.06, -35), 0x9a9890));
+  geos.push(bake(new THREE.BoxGeometry(14, 0.5, 9), at(-19, 5.0, -35), 0xd8d2c2));
+  geos.push(bake(new THREE.BoxGeometry(14.04, 0.2, 9.04), at(-19, 4.65, -35), 0xc4372f));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.2, 0.2, 4.8, 8), at(-19 + sx * 5.5, 2.4, -35 + sz * 3.2), 0xd8d2c2));
+  for (const sx of [-1, 1]) {
+    geos.push(bake(new THREE.BoxGeometry(0.9, 1.7, 0.6), at(-19 + sx * 2.5, 0.97, -35), 0xc4372f));
+    geos.push(bake(new THREE.BoxGeometry(0.7, 0.4, 0.62), at(-19 + sx * 2.5, 1.5, -35), 0x2a2a2a));
+  }
+  geos.push(bake(new THREE.BoxGeometry(4, 3, 3.5), at(-27, 1.6, -41), 0xe4dcc6));
+  geos.push(bake(new THREE.BoxGeometry(4.4, 0.2, 3.9), at(-27, 3.2, -41), 0x8d8a82));
+  // Bus adda: tin-roof shelter, bench, kerb-side concrete pad.
+  geos.push(bake(new THREE.BoxGeometry(8, 0.15, 3.5), at(-10, 0.08, 20), 0xa8a59c));
+  geos.push(bake(new THREE.BoxGeometry(8.4, 0.08, 3.8), new THREE.Matrix4().makeRotationX(0.06).setPosition(-10, 3.0, 20), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 3, 6), at(-10 + sx * 3.8, 1.5, 19), 0x5a5a5a));
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(-10, 0.6, 21.5), 0xc9b79a));
+  geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.5), at(-10, 0.5, 20.8), 0x7a5a3a));
+  // Dharam kanta: weighbridge platform flush with the road verge, small cabin with weighing display post.
+  geos.push(bake(new THREE.BoxGeometry(4, 0.2, 14), at(-11, 0.1, 55), 0x6d6d70));
+  geos.push(bake(new THREE.BoxGeometry(3.4, 0.05, 13.4), at(-11, 0.22, 55), 0x8a8a8c));
+  geos.push(bake(new THREE.BoxGeometry(3, 2.8, 3), at(-16, 1.4, 50), 0xdcd2b8));
+  geos.push(bake(new THREE.BoxGeometry(3.4, 0.18, 3.4), at(-16, 2.9, 50), 0x8d8a82));
+  geos.push(bake(new THREE.BoxGeometry(1.2, 0.6, 0.15), at(-13.5, 2.4, 50), 0x2a2a2a));
+  return finishSite('highway_cluster', geos, position, { roughness: 0.92 });
+}

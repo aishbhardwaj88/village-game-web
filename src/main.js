@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1355,6 +1355,12 @@ async function main() {
     zoneManager.register('chemist', { x: 96, z: 60, buildRadius: 40, teardownRadius: 52, build: () => createChemist({ x: 96, z: 60 }) });
     zoneManager.register('masjid', { x: 100, z: 135, buildRadius: 45, teardownRadius: 58, build: () => createMasjid({ x: 100, z: 135 }) });
     zoneManager.register('gurudwara', { x: -60, z: 175, buildRadius: 45, teardownRadius: 58, build: () => createGurudwara({ x: -60, z: 175 }) });
+    // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
+    zoneManager.register('tv_house', { x: 70, z: 12, buildRadius: 40, teardownRadius: 52, build: () => createTvHouse({ x: 70, z: 12 }) });
+    zoneManager.register('manihari', { x: 90, z: 78, buildRadius: 35, teardownRadius: 48, build: () => createManihari({ x: 90, z: 78 }) });
+    zoneManager.register('sabzi_rehris', { x: 88, z: 92, buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris({ x: 88, z: 92 }) });
+    zoneManager.register('jain_mandir', { x: 130, z: 160, buildRadius: 45, teardownRadius: 58, build: () => createJainMandir({ x: 130, z: 160 }) });
+    zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => buildTrees([
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },

@@ -26,3 +26,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Trees: I rebuilt neem, peepal, mango, babool and eucalyptus with real branching trunks and leaf-sprig foliage, but generated in code rather than Blender - please say whether that is acceptable for the 'Blender rebuild' item (nothing blocks on this). - status: open
 - Pond, tubewell and sugarcane belt are in the game; MAP.md gave no positions so I picked open ground - tell me if you want any moved. - status: open
 - Johad (SE) and khalihan with straw stacks (west) are in the game; MAP.md gave no positions so I picked open ground - tell me if you want either moved. - status: open
+- Highway cluster, TV house, manihari, sabzi rehris and Jain mandir are in the game; MAP.md gave no positions so I picked open ground - tell me if you want any moved. - status: open
