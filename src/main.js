@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1348,6 +1348,13 @@ async function main() {
     zoneManager.register('tubewell', { x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
     zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
     zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 38, teardownRadius: 50, build: () => createKhalihan({ x: -78, z: -5 }) });
+    zoneManager.register('anganwadi', { x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
+    zoneManager.register('dudh_dairy', { x: -112, z: 18, buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy({ x: -112, z: 18 }) });
+    // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
+    zoneManager.register('neighbour_orchard', { x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => buildTrees([
+      { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
+      { kind: 'mango', x: 27, z: 129, seed: 12, scale: 0.8, rotationY: 1.2 },
+    ]) });
     zoneManager.register('sugarcane_belt', { x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
       x: FIELD_CENTER.x,

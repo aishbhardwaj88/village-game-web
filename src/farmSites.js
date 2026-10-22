@@ -279,3 +279,62 @@ export function createKhalihan(position) {
   group.position.set(position.x, 0, position.z);
   return group;
 }
+
+/** Small vertex-coloured plastered building: plinth, walls, flat roof with parapet, door, window, painted band. */
+function smallBuilding({ w, d, h, wall, band, door, roof = 0x8d8a82 }) {
+  const geos = [];
+  geos.push(bake(new THREE.BoxGeometry(w + 0.2, 0.35, d + 0.2), at(0, 0.175, 0), 0x8f8878));
+  geos.push(bake(new THREE.BoxGeometry(w, h, d), at(0, 0.35 + h / 2, 0), wall));
+  geos.push(bake(new THREE.BoxGeometry(w + 0.04, 0.35, d + 0.04), at(0, 0.35 + h * 0.62, 0), band));
+  geos.push(bake(new THREE.BoxGeometry(w + 0.4, 0.18, d + 0.4), at(0, 0.35 + h + 0.09, 0), roof));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.16, 0.5, d + 0.4), at(sx * (w / 2 + 0.12), 0.35 + h + 0.43, 0), roof));
+  for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(w + 0.4, 0.5, 0.16), at(0, 0.35 + h + 0.43, sz * (d / 2 + 0.12)), roof));
+  // Door and two windows on the +z face.
+  geos.push(bake(new THREE.BoxGeometry(1.1, 2.1, 0.1), at(0, 0.35 + 1.05, d / 2 + 0.03), door));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.9, 0.9, 0.1), at(sx * w * 0.3, 0.35 + 1.6, d / 2 + 0.03), 0x3f3a33));
+  return geos;
+}
+
+/** Anganwadi: pink limewashed one-room childcare centre with a painted yard wall and a small slide. */
+export function createAnganwadi(position) {
+  const geos = smallBuilding({ w: 7, d: 5, h: 3.1, wall: 0xe0b6b0, band: 0xc9877f, door: 0x2f6b5d });
+  // Low yard wall with gap in front of the door, and a kid-sized slide + seesaw.
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(3.6, 0.9, 0.2), at(sx * 3.5, 0.45, 6.5), 0xd9c9a8));
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(-5.2, 0.45, 3.0), 0xd9c9a8));
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(5.2, 0.45, 3.0), 0xd9c9a8));
+  geos.push(bake(new THREE.BoxGeometry(0.9, 0.08, 2.2), new THREE.Matrix4().makeRotationX(0.55).setPosition(3.6, 0.8, 4.6), 0xd8a22a));
+  geos.push(bake(new THREE.BoxGeometry(0.9, 0.08, 0.7), at(3.6, 1.45, 3.6), 0xd8a22a));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.06, 1.5, 0.06), at(3.6 + sx * 0.4, 0.75, 3.6), 0x6d6d6d));
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.3, 2.4), at(-3.4, 0.2, 4.2), 0x7a5a3a));
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-3.4, 0.5, 4.2, 0.1), 0x2f6b5d));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = 'anganwadi';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
+/** Dudh dairy: cream-walled collection room with a steel can stack, a milk-can rack and a tin awning. */
+export function createDudhDairy(position) {
+  const geos = smallBuilding({ w: 5, d: 4, h: 3.0, wall: 0xe7dcc0, band: 0x4a78a6, door: 0x7a4a2a });
+  geos.push(bake(new THREE.BoxGeometry(5.6, 0.07, 1.8), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 2.75, 3.0), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.6, 1.2, 3.7), 0x5a5a5a));
+  // Milk cans (tall steel cylinders with lids) in two rows beside the door.
+  for (let i = 0; i < 6; i++) {
+    const x = -2.2 + (i % 3) * 0.55, z = 2.9 + Math.floor(i / 3) * 0.55;
+    geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 0.8, 10), at(x, 0.4, z), 0xb9bdc0));
+    geos.push(bake(new THREE.CylinderGeometry(0.14, 0.2, 0.12, 10), at(x, 0.86, z), 0x9fa4a8));
+  }
+  geos.push(bake(new THREE.BoxGeometry(1.4, 0.5, 0.9), at(2.0, 0.25, 3.1), 0x7a5a3a));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat({ roughness: 0.8 }));
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = 'dudh_dairy';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
