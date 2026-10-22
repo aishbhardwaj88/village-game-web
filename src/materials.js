@@ -568,6 +568,11 @@ export function applyWallBaseGrime(material) {
           float wgDirt = 1.0 - smoothstep(0.0, wgEdge, vWorldPos_wg.y);
           float wgLum = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(wgLum) * vec3(0.78, 0.70, 0.60), wgDirt * wgDirt * 0.65);
+          // Sun-faded paint high up, and faint vertical damp streaks (runoff from sills, drains, eaves)
+          float wgFade = smoothstep(2.0, 5.0, vWorldPos_wg.y) * (0.5 + 0.5 * wgNoise(vWorldPos_wg.xz * 0.7));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(wgLum) * 1.06 + 0.02, wgFade * 0.22);
+          float wgStreak = smoothstep(0.62, 0.95, wgNoise(vec2((vWorldPos_wg.x + vWorldPos_wg.z) * 4.0, vWorldPos_wg.y * 0.35)));
+          diffuseColor.rgb *= 1.0 - wgStreak * 0.10 * smoothstep(0.2, 1.5, vWorldPos_wg.y);
         }`);
   };
   material.needsUpdate = true;
