@@ -337,34 +337,38 @@ export function buildBazaarCountersAndShutters() {
 // Item 2a (draw-call budget) — 5x2 grid: 8 bazaar-unit cells + 1 for the chowk tea
 // stall's own sign (cell index 8), one shared atlas/mesh/draw-call instead of two
 // separate ones. Cell 9 is unused (drawn as plain background, never mapped to).
-const SIGN_ATLAS_COLS = 5;
-const SIGN_ATLAS_ROWS = 2;
-const SIGN_CELL = 512;
-const SIGN_ATLAS_W = SIGN_CELL * SIGN_ATLAS_COLS;
-const SIGN_ATLAS_H = SIGN_CELL * SIGN_ATLAS_ROWS;
+const SIGN_ATLAS_COLS = 2;
+const SIGN_ATLAS_ROWS = 5;
+// Wide 4:1 cells matching the real boards (a square cell on an 8:1 board squashed the text flat).
+const SIGN_CELL_W = 1024;
+const SIGN_CELL_H = 256;
+const SIGN_ATLAS_W = SIGN_CELL_W * SIGN_ATLAS_COLS;
+const SIGN_ATLAS_H = SIGN_CELL_H * SIGN_ATLAS_ROWS;
 const CHOWK_SIGN_CELL_INDEX = 8;
 
 function drawBazaarSign(ctx, col, row, hi, en) {
-  const x = col * SIGN_CELL;
-  const y = row * SIGN_CELL;
-  ctx.fillStyle = '#e8dcc4';
-  ctx.fillRect(x + 4, y + 4, SIGN_CELL - 8, SIGN_CELL - 8);
-  ctx.strokeStyle = '#8a6a4a';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(x + 4, y + 4, SIGN_CELL - 8, SIGN_CELL - 8);
-  const cx = x + SIGN_CELL / 2;
-  ctx.fillStyle = '#2a2018';
+  const x = col * SIGN_CELL_W;
+  const y = row * SIGN_CELL_H;
+  ctx.fillStyle = '#f1e4c4';
+  ctx.fillRect(x + 4, y + 4, SIGN_CELL_W - 8, SIGN_CELL_H - 8);
+  ctx.strokeStyle = '#7a2a1a';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(x + 10, y + 10, SIGN_CELL_W - 20, SIGN_CELL_H - 20);
+  const cx = x + SIGN_CELL_W / 2;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // Devanagari larger, on top; English smaller, beneath (law — see CLAUDE.md/
-  // README's signboard rule). Font size backs off a little for the longer names
-  // ("मोबाइल और साइबर", "Mobile and Cyber") so they stay inside the board.
-  const hiSize = hi.length > 10 ? 52 : 60;
-  const enSize = en.length > 16 ? 26 : 30;
-  ctx.font = `700 ${hiSize}px "Noto Sans Devanagari", sans-serif`;
-  ctx.fillText(hi, cx, y + SIGN_CELL * 0.42);
-  ctx.font = `600 ${enSize}px -apple-system, "Segoe UI", sans-serif`;
-  ctx.fillText(en, cx, y + SIGN_CELL * 0.7);
+  // Devanagari larger, on top; English smaller, beneath. Each line auto-fits the board width.
+  const fit = (text, font, maxPx, startPx) => {
+    let px = startPx;
+    ctx.font = font(px);
+    while (ctx.measureText(text).width > maxPx && px > 20) { px -= 4; ctx.font = font(px); }
+  };
+  fit(hi, (px) => `800 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 100, 124);
+  ctx.fillStyle = '#a81e16';
+  ctx.fillText(hi, cx, y + SIGN_CELL_H * 0.38);
+  fit(en, (px) => `800 ${px}px -apple-system, "Segoe UI", sans-serif`, SIGN_CELL_W - 100, 64);
+  ctx.fillStyle = '#1e1410';
+  ctx.fillText(en, cx, y + SIGN_CELL_H * 0.78);
 }
 
 async function buildBazaarSignAtlas() {
@@ -439,18 +443,18 @@ export async function buildBazaarSignboards() {
   const geos = [];
   BAZAAR_UNITS.forEach((unit, idx) => {
     const cx = bazaarUnitCx(idx);
-    const boardY = unit.wallHeight + 0.12 + 0.28 + 0.37; // clear of this unit's own roof slab + parapet lip
-    const geo = new THREE.BoxGeometry(BAZAAR_UNIT_W - 0.5, 0.5, 0.04);
+    const boardY = unit.wallHeight + 0.12 + 0.28 + 0.12 + (BAZAAR_UNIT_W - 0.5) / 8; // clear of this unit's own roof slab + parapet lip
+    const geo = new THREE.BoxGeometry(BAZAAR_UNIT_W - 0.5, (BAZAAR_UNIT_W - 0.5) / 4, 0.04);
     const col = idx % SIGN_ATLAS_COLS;
     const row = Math.floor(idx / SIGN_ATLAS_COLS);
     mapFrontFaceToAtlasCell(geo, col, row);
-    const local = new THREE.Matrix4().makeTranslation(cx, boardY, BAZAAR_FRONT_Z - 0.05);
+    const local = new THREE.Matrix4().makeTranslation(cx, boardY, BAZAAR_FRONT_Z - (idx === 4 ? 0.22 : 0.05)); // unit 5: stand proud of the Blender pediment_a (FRONT-0.15) that hid the Barber board
     geos.push(geo.applyMatrix4(local));
   });
   // Item 2a — the chowk tea stall's board, sharing this same atlas/mesh (was its
   // own separate buildTeaStallChowkSign() mesh/draw call).
   {
-    const chowkGeo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, 0.6, 0.04);
+    const chowkGeo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, (CHOWK_TEA.w - 1.2) / 4, 0.04);
     mapFrontFaceToAtlasCell(chowkGeo, CHOWK_SIGN_CELL_INDEX % SIGN_ATLAS_COLS, Math.floor(CHOWK_SIGN_CELL_INDEX / SIGN_ATLAS_COLS));
     const chowkWorld = chowkWorldMatrix();
     // Bugfix (docs/FINISH_LINE.md Step B, real-camera check —
@@ -461,7 +465,7 @@ export async function buildBazaarSignboards() {
     // primary (larger, per CLAUDE.md's language-order law) line shouldn't be
     // the one left tight to an edge. +0.8 gives it the same real clearance
     // margin the tea stall's own fix uses.
-    const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.8, -CHOWK_TEA.d / 2 - 0.05);
+    const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.5 + (CHOWK_TEA.w - 1.2) / 8, -CHOWK_TEA.d / 2 - 0.05);
     geos.push(chowkGeo.applyMatrix4(chowkLocal).applyMatrix4(chowkWorld));
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);

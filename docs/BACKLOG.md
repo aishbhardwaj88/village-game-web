@@ -40,8 +40,8 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [x] Props and street furniture: lamps, charpai, handpump, chabutra - proof docs/shots/lamps-2026-10-23/temple_a.png and bazaar.png (new street lamps on the temple lane and bazaar lane, streamed per lane segment so hero zone stays 150/150; charpai, hand pump and chabutra already existed; hero-zone lanes have no lamps yet)
 
 ### A2. Legibility
-- [ ] Every signboard readable at normal playing distance, not a smear
-- [ ] Shop boards: Devanagari larger, English beneath
+- [x] Every signboard readable at normal playing distance, not a smear - proof docs/shots/normal-mode-signboard-8m-2026-10-22T21-23-28-656Z/bazaar_unit5_Barber_Shop.png and chowk_tea_stall_Yadav_Chai_Nashta.png (bazaar/chowk boards were drawn from square cells on 8:1 boards so text was squashed flat; now 4:1 cells + 4:1 boards, bold red/dark text; Barber board was hidden behind a Blender pediment, moved forward)
+- [x] Shop boards: Devanagari larger, English beneath - proof docs/shots/normal-mode-signboard-8m-2026-10-22T21-23-28-656Z/bazaar_unit4_Tailor_Shop.png and hero_general_store_Gupta_General_Store.png
 
 ### A3. Trees and plants
 - [ ] Blender rebuild of peepal, neem, babool, mango to replace code shapes
