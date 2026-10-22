@@ -97,6 +97,17 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
  * texture: it's per-pixel (no mip/tiling artefacts of its own) and needs zero extra
  * network fetches.
  */
+let grassCoverTex = null;
+function getGrassCoverTexture() {
+  if (!grassCoverTex) {
+    grassCoverTex = textureLoader.load('assets/textures/grass/grass_color.webp');
+    grassCoverTex.colorSpace = THREE.SRGBColorSpace;
+    grassCoverTex.wrapS = grassCoverTex.wrapT = THREE.RepeatWrapping;
+    grassCoverTex.anisotropy = 4;
+  }
+  return grassCoverTex;
+}
+
 export function applyGroundNoiseDetail(
   material,
   {
@@ -126,6 +137,7 @@ export function applyGroundNoiseDetail(
   } = {}
 ) {
   const grass = grassTint ? new THREE.Color(grassTint) : null;
+  const grassMap = grass ? getGrassCoverTexture() : null;
   const spot0 = dampSpots[0] || null;
   const spot1 = dampSpots[1] || null;
 
@@ -136,6 +148,7 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uGrassEnabled = { value: grass ? 1 : 0 };
     shader.uniforms.uGrassScale = { value: 1 / grassCellMetres };
     shader.uniforms.uGrassCoverage = { value: grassCoverage };
+    shader.uniforms.uGrassMap = { value: grassMap };
     shader.uniforms.uGrassTint = { value: grass ? new THREE.Vector3(grass.r, grass.g, grass.b) : new THREE.Vector3(0, 0, 0) };
     shader.uniforms.uDampPos0 = { value: new THREE.Vector2(spot0 ? spot0.x : 0, spot0 ? spot0.z : 0) };
     shader.uniforms.uDampRadius0 = { value: spot0 ? spot0.radius : 0 };
@@ -162,6 +175,7 @@ export function applyGroundNoiseDetail(
         uniform float uGrassScale;
         uniform float uGrassCoverage;
         uniform vec3 uGrassTint;
+        uniform sampler2D uGrassMap;
         uniform vec2 uDampPos0;
         uniform float uDampRadius0;
         uniform vec3 uDampTint0;
@@ -219,6 +233,10 @@ export function applyGroundNoiseDetail(
             // green (tint scaled by the ground's own luminance to keep texture grain), not a 55% multiply.
             float gLum = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
             vec3 grassCol = uGrassTint * (0.55 + gLum * 1.5);
+            // Real photoscanned grass (Poly Haven aerial_grass_rock, CC0): two tilings so repeats do not read,
+            // normalised around its mean so the patch keeps the palette's tint but gains real blade-level variation.
+            vec3 gScan = texture2D(uGrassMap, vWorldPos_g.xz * 0.37).rgb * 0.6 + texture2D(uGrassMap, vWorldPos_g.xz * 0.113 + 0.5).rgb * 0.4;
+            grassCol *= clamp(gScan / vec3(0.40, 0.34, 0.14) * vec3(1.0, 1.0, 1.0), 0.45, 1.7) * 0.5 + 0.5;
             diffuseColor.rgb = mix(diffuseColor.rgb, grassCol, grassMask * 0.88);
           }
 
@@ -241,7 +259,7 @@ export function applyGroundNoiseDetail(
   // reuse a compiled program from a material that didn't request the noise/detail
   // pass (or vice versa).
   material.customProgramCacheKey = () =>
-    `ground-noise-detail-v4-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}-${furrows ? 'f' + furrows.spacing : 'nf'}`;
+    `ground-noise-detail-v5-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}-${furrows ? 'f' + furrows.spacing : 'nf'}`;
   return material;
 }
 
