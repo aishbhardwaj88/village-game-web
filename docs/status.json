@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T15:30:00.000Z",
+  "timestamp": "2026-10-23T12:00:00.000Z",
   "drawCallsByZone": {
     "hero zone (house/school/halwai/tea-stall, general store ...)": 150,
     "bazaar row + chowk": 117,
@@ -9,7 +9,7 @@
   "drawCallAim": 120,
   "triangles": 147291,
   "triangleLimit": 400000,
-  "assetsMB": 6.36,
+  "assetsMB": 18.45,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
   "lastValidator": "pass (15/15)",

@@ -26,6 +26,8 @@ HEIGHTS = [3.9, 4.15, 3.95, 4.2, 4.0, 3.85, 4.1, 3.95]
 PARTY_H = max(HEIGHTS) + 0.05
 SHUTTER = [0x3D7D82, 0x3F6B45, 0x7A2F35, 0xC9A227, 0x9FC0D4, 0x6B6F3A, 0x8A8A86, 0x5A5A52]
 TRADES = ['kirana', 'sabzi', 'medical', 'tailor', 'barber', 'mobile', 'bangle', 'puncture']
+# A1 wall variation (2026-10-23): limewash pink / mint units between the cream and the one soft-blue unit.
+WALL_COLOR = {1: 0xF2D4CC, 3: 0xD2E6D8, 6: 0xD2E6D8, 7: 0xF2D4CC}
 BLUE_UNITS = (4,)                   # unit 5 (barber) is soft blue in the reference; the rest cream
 OPEN_H = 2.35                       # shutter opening height
 COUNTER_Z0, COUNTER_Z1 = -2.15, -1.65
@@ -47,11 +49,11 @@ def shell():
         h = HEIGHTS[i]
         c = cx(i)
         wall_kind = 'trim' if i in BLUE_UNITS else 'plaster'
-        kit.add(wall_kind, wb('back', c - UW / 2, c + UW / 2, BACK - WT, BACK, 0, h, 0.01))
+        kit.add(wall_kind, wb('back', c - UW / 2, c + UW / 2, BACK - WT, BACK, 0, h, 0.01), WALL_COLOR.get(i))
         band_h = 0.5 + (i % 3) * 0.08
         kit.add('plinth', wb('back_band', c - UW / 2, c + UW / 2, BACK, BACK + 0.025, 0, band_h, 0.005))
         # front header wall above the shutter opening + a flat lintel stripe
-        kit.add(wall_kind, wb('header', c - UW / 2 + WT / 2, c + UW / 2 - WT / 2, FRONT, FRONT + WT, OPEN_H, h, 0.01))
+        kit.add(wall_kind, wb('header', c - UW / 2 + WT / 2, c + UW / 2 - WT / 2, FRONT, FRONT + WT, OPEN_H, h, 0.01), WALL_COLOR.get(i))
         kit.add('trim', wb('lintel', c - UW / 2 + WT / 2, c + UW / 2 - WT / 2, FRONT - 0.04, FRONT + WT + 0.02, OPEN_H - 0.12, OPEN_H + 0.02, 0.008))
         # roof slab for this unit (stepped skyline) + parapet lip
         kit.add('trim', wb('roof', c - UW / 2 - 0.1, c + UW / 2 + 0.1, FRONT - 0.3, BACK + 0.3, h, h + 0.14, 0.012))
