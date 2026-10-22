@@ -1347,7 +1347,7 @@ async function main() {
     zoneManager.register('pond', { x: -132, z: 70, buildRadius: 55, teardownRadius: 70, build: () => createPond({ x: -132, z: 70 }) });
     zoneManager.register('tubewell', { x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
     zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
-    zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 38, teardownRadius: 50, build: () => createKhalihan({ x: -78, z: -5 }) });
+    zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
     zoneManager.register('anganwadi', { x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
     zoneManager.register('dudh_dairy', { x: -112, z: 18, buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy({ x: -112, z: 18 }) });
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
