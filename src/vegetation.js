@@ -83,19 +83,53 @@ function paintClusterColors(geometry, parts, colors) {
   geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
 }
 
-function buildTuftGeometry() {
-  const parts = buildBladeClusterGeometry({ bladeCount: 5, height: 0.32, width: 0.03, spread: 0.08, leanMax: 0.35, includeTwigs: false });
-  const geo = mergeGeometries(parts);
-  paintClusterColors(geo, parts, [GRASS_GREEN, GRASS_GREEN, GRASS_GREEN_DARK, GRASS_GREEN_DRY]);
-  return geo;
+/** Alpha-cut grass/scrub card texture: curved tapering blades, dark base to sunlit tip, a few
+ * straw-dry ones. `kind` 'tuft' = fine green grass, 'scrub' = coarser, drier, woodier. */
+function makeGrassTexture(kind) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  let a = kind === 'tuft' ? 4242 : 9191;
+  const r = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; };
+  const blades = kind === 'tuft' ? 22 : 15;
+  for (let i = 0; i < blades; i++) {
+    const bx = 128 + (r() - 0.5) * (kind === 'tuft' ? 150 : 110);
+    const h = (kind === 'tuft' ? 110 : 150) + r() * (kind === 'tuft' ? 120 : 90);
+    const w = (kind === 'tuft' ? 5 : 8) + r() * 3;
+    const bend = (r() - 0.5) * (kind === 'tuft' ? 90 : 60);
+    const dry = r() < (kind === 'tuft' ? 0.06 : 0.3);
+    const grad = g.createLinearGradient(0, 252, 0, 252 - h);
+    if (dry) { grad.addColorStop(0, '#5e5a30'); grad.addColorStop(1, '#a89a5a'); }
+    else if (kind === 'tuft') { grad.addColorStop(0, '#223a1a'); grad.addColorStop(1, '#5f8a3a'); }
+    else { grad.addColorStop(0, '#2c3e1e'); grad.addColorStop(1, '#6a8038'); }
+    g.fillStyle = grad;
+    g.beginPath();
+    g.moveTo(bx - w, 254);
+    g.quadraticCurveTo(bx - w * 0.6 + bend * 0.3, 254 - h * 0.55, bx + bend, 254 - h);
+    g.quadraticCurveTo(bx + w * 0.6 + bend * 0.3, 254 - h * 0.55, bx + w, 254);
+    g.closePath();
+    g.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
 }
 
-function buildScrubGeometry() {
-  const parts = buildBladeClusterGeometry({ bladeCount: 6, height: 0.55, width: 0.045, spread: 0.16, leanMax: 0.5, includeTwigs: true });
-  const geo = mergeGeometries(parts);
-  paintClusterColors(geo, parts, [GRASS_GREEN_DARK, GRASS_GREEN_DRY, GRASS_GREEN_DRY]);
-  return geo;
+/** Three crossed vertical cards, bottom edge on the ground. */
+function buildCardGeometry(width, height) {
+  const parts = [];
+  for (let i = 0; i < 3; i++) {
+    const geo = new THREE.PlaneGeometry(width, height);
+    geo.translate(0, height / 2, 0);
+    geo.rotateY((i * Math.PI) / 3 + 0.3);
+    parts.push(geo);
+  }
+  return mergeGeometries(parts);
 }
+
+function buildTuftGeometry() { return buildCardGeometry(0.55, 0.48); }
+function buildScrubGeometry() { return buildCardGeometry(0.95, 0.8); }
 
 /** Jittered points inside clusters around each anchor — "cluster them, never
  * scatter evenly" (item 3b's own rule). `anchors`: [{x,z,count,radius}]. */
@@ -119,8 +153,10 @@ function buildClusterPositions(anchors, perInstanceJitter) {
   return positions;
 }
 
-function buildInstancedKind(geometry, positions, { scaleMin, scaleMax }) {
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
+function buildInstancedKind(geometry, positions, { scaleMin, scaleMax, map = null }) {
+  const material = map
+    ? new THREE.MeshStandardMaterial({ map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.95 })
+    : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
   const mesh = new THREE.InstancedMesh(geometry, material, positions.length);
   mesh.castShadow = false; // thin blades casting a 2048 shadow map's worth of shadow acne isn't worth the cost for a placeholder
   mesh.receiveShadow = true;
@@ -246,12 +282,12 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
   group.name = 'vegetation';
 
   const tuftPositions = buildClusterPositions(tuftAnchors, 0.35);
-  const tuftMesh = buildInstancedKind(buildTuftGeometry(), tuftPositions, { scaleMin: 0.8, scaleMax: 1.3 });
+  const tuftMesh = buildInstancedKind(buildTuftGeometry(), tuftPositions, { scaleMin: 0.8, scaleMax: 1.3, map: makeGrassTexture('tuft') });
   tuftMesh.name = 'grass_tufts';
   group.add(tuftMesh);
 
   const scrubPositions = buildClusterPositions(scrubAnchors, 0.5);
-  const scrubMesh = buildInstancedKind(buildScrubGeometry(), scrubPositions, { scaleMin: 0.85, scaleMax: 1.25 });
+  const scrubMesh = buildInstancedKind(buildScrubGeometry(), scrubPositions, { scaleMin: 0.85, scaleMax: 1.25, map: makeGrassTexture('scrub') });
   scrubMesh.name = 'scrub_bushes';
   group.add(scrubMesh);
 

@@ -47,6 +47,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Blender rebuild of peepal, neem, babool, mango to replace code shapes
   - PROGRESS 2026-10-23 (not ticked: built in code, not Blender - awaiting art director's call): smooth blob canopies replaced by real branching trunks + alpha-cut species leaf-sprig cards (src/trees.js), proof docs/shots/trees-2026-10-22T21-34-16-180Z/mango_baagh.png, neem_chowk.png and docs/shots/trees-2026-10-22T21-35-27-570Z/peepal_temple.png, euc_back.png. Still to do: LODs, distance billboard, wind sway.
 - [ ] Low vegetation and ground cover with real textures
+  - PROGRESS 2026-10-23 (not ticked): grass tufts and scrub were box blades, now instanced crossed alpha-cut cards with painted blade textures (src/vegetation.js, same draw calls), proof docs/shots/trees-2026-10-22T21-42-52-648Z/neem_close.png. Still to do: tulsi, marigold beds, creepers, banana clumps, real CC0 ground-cover texture.
 
 ### A4. Unbuilt MAP.md locations
 - [ ] Compare the built world against `reference-from-unity/MAP.md` and list every missing location in this file before building
