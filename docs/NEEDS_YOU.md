@@ -28,3 +28,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Johad (SE) and khalihan with straw stacks (west) are in the game; MAP.md gave no positions so I picked open ground - tell me if you want either moved. - status: open
 - Highway cluster, TV house, manihari, sabzi rehris and Jain mandir are in the game; MAP.md gave no positions so I picked open ground - tell me if you want any moved. - status: open
 - New places in the game: jalebi stall, mela ground, gurukul and khel maidan. MAP.md gave no positions so I picked open ground - tell me if you want any moved. - status: open
+- Mandi (town market past the highway) is in the game; MAP.md gave no position so I picked open ground east of the highway at x 226 - tell me if you want it moved. - status: open

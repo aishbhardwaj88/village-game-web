@@ -591,7 +591,7 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 74), at(-12.1, 0.1, 0), 0xb4b0a4));
   // Grain wholesale godown: long warehouse, tin roof, big sliding doors, sacks stacked outside.
   geos.push(bake(new THREE.BoxGeometry(10, 5, 18), at(5, 2.6, -22), 0xe0d2b0));
-  geos.push(bake(new THREE.BoxGeometry(10, 1.1, 18.04), at(5, 0.7, -22), 0xb8574a));
+  geos.push(bake(new THREE.BoxGeometry(10.06, 1.1, 18.06), at(5, 0.7, -22), 0xb8574a));
   geos.push(bake(new THREE.BoxGeometry(10.8, 0.12, 19), new THREE.Matrix4().makeRotationZ(0.1).setPosition(5, 5.6, -22), 0x8e969c));
   for (const lz of [-27, -17]) geos.push(bake(new THREE.BoxGeometry(0.2, 3.4, 4), at(-0.05, 1.9, lz), 0x4f6b7a));
   for (let i = 0; i < 12; i++) geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(-2.6 + (i % 4) * 0.95 * 0.0, 0.3 + Math.floor(i / 4) * 0.36, -22 + (i % 4) * 1.0 - 1.5), 0xd9c9a2));
@@ -614,7 +614,7 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.1, 0.1), at(-8.5, 1.1, 12.5), 0xc4372f));
   // Dhaba: low truck-stop eatery with a tin verandah, charpais and a tandoor chimney.
   geos.push(bake(new THREE.BoxGeometry(9, 3.2, 6), at(5, 1.75, 32), 0xe4cfa0));
-  geos.push(bake(new THREE.BoxGeometry(9.04, 0.4, 6.04), at(5, 0.9, 32), 0xb8574a));
+  geos.push(bake(new THREE.BoxGeometry(9.06, 0.4, 6.06), at(5, 0.9, 32), 0xb8574a));
   geos.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
