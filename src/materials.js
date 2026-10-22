@@ -439,6 +439,13 @@ function bakeWallShadeColors(geometry, height, seed = 0, tint = null, tintStreng
   // (house mustard vs school yellow vs halwai terracotta) can still share one cached
   // Material and merge into a single draw call — see bakeFlatTintColors above.
   const tintColor = tint ? new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength) : new THREE.Color(1, 1, 1);
+  // Per-wall variation: each wall gets its own brightness and a faint warm/cool lean
+  // (sun-faded limewash vs. damp), derived from the stable seed.
+  const wallBright = 0.94 + pseudoRandom01(seed + 31) * 0.12;
+  const lean = (pseudoRandom01(seed + 47) - 0.5) * 0.07;
+  const wallR = wallBright * (1 + lean);
+  const wallG = wallBright;
+  const wallB = wallBright * (1 - lean);
   for (let i = 0; i < pos.count; i++) {
     const worldY = pos.getY(i) + height / 2; // BoxGeometry is centred — 0 at the base
     const x = pos.getX(i);
@@ -460,11 +467,15 @@ function bakeWallShadeColors(geometry, height, seed = 0, tint = null, tintStreng
       Math.sin((x + seed * 3.1) * 0.55) * Math.cos((z * 0.85 - seed * 1.7)) * 0.05 +
       Math.sin((x * 0.21 - z * 0.33 + seed * 2.3)) * 0.03;
     shade += blotch;
+    // Soft vertical rain streaks fading down from the top, so a wall reads weathered
+    // by monsoon runoff rather than uniformly painted.
+    const streak = Math.max(0, Math.sin((x + z) * 3.7 + seed * 5.1) * Math.sin((x - z) * 1.3 + seed)) * Math.pow(THREE.MathUtils.clamp(worldY / height, 0, 1), 0.7);
+    shade -= streak * 0.06;
     shade = THREE.MathUtils.clamp(shade, 0.7, 1.12);
 
-    colors[i * 3] = shade * tintColor.r;
-    colors[i * 3 + 1] = shade * tintColor.g;
-    colors[i * 3 + 2] = shade * tintColor.b;
+    colors[i * 3] = shade * tintColor.r * wallR;
+    colors[i * 3 + 1] = shade * tintColor.g * wallG;
+    colors[i * 3 + 2] = shade * tintColor.b * wallB;
   }
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 }

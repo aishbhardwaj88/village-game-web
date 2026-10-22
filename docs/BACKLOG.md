@@ -30,7 +30,7 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A1. Textures on every surface (top priority)
-- [ ] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP)
+- [x] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP) - proof docs/shots/kerbs-2026-10-23/kerb_b2.png (kerbs on the halwai-school lane only; other lanes still none)
 - [ ] Wall surfaces: lime-washed plaster in blue-grey, cream, pink, mint, with per-wall colour variation
 - [ ] Roofs: terracotta tiles and corrugated tin
 - [ ] Painted wood: doors, shutters, frames (shared trim sheet)

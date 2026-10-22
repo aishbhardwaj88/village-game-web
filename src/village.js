@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
-import { buildStripSegment } from './paths.js';
+import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
@@ -670,7 +670,7 @@ function buildLane() {
   // buildStripSegment now bakes its own repeat/tint into the geometry (see
   // paths.js), so they merge into a single mesh instead of a 2-mesh group.
   const mesh = mergeMeshList(
-    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true })],
+    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true }), ...buildKerbSegments(HALWAI_CENTER, SCHOOL_CENTER, 6, 0.12, 0.88, { seed: 2.0 })],
     'lane'
   );
   return mesh;

@@ -121,3 +121,54 @@ export function buildStripSegment(start, end, width, { seed = 0, tint = 0xb7a179
   mesh.castShadow = false;
   return mesh;
 }
+
+/**
+ * A raised cement kerb along both edges of a lane stretch (t0..t1 as fractions of the
+ * segment), made of short slabs with slight height/length jitter so it reads laid by
+ * hand, not extruded. Uses the shared 'lane' material with a pale-cement vertex colour,
+ * so it merges into the lane's one draw call (see src/village.js buildLane).
+ */
+export function buildKerbSegments(start, end, width, t0, t1, { seed = 0 } = {}) {
+  const dx = end.x - start.x;
+  const dz = end.z - start.z;
+  const length = Math.hypot(dx, dz);
+  const yaw = Math.atan2(-dx, -dz);
+  const ux = dx / length;
+  const uz = dz / length;
+  const nx = -uz;
+  const nz = ux;
+  const slab = 1.2;
+  const count = Math.max(1, Math.floor(((t1 - t0) * length) / slab));
+  const meshes = [];
+  const color = new THREE.Color();
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < count; i++) {
+      const r = Math.sin((i + 1) * 12.9898 + side * 78.233 + seed * 3.7) * 0.5 + 0.5;
+      const h = 0.14 + r * 0.03;
+      const geometry = new THREE.BoxGeometry(0.16, h, slab - 0.02);
+      const pos = geometry.attributes.position;
+      const colors = new Float32Array(pos.count * 3);
+      // pale cement, dustier toward the base, slight per-slab brightness
+      // channels above 1 cancel the lane texture's brown so the slab reads grey cement
+      color.setRGB(1.6, 1.95, 2.6).multiplyScalar(0.9 + r * 0.14);
+      for (let v = 0; v < pos.count; v++) {
+        const dust = pos.getY(v) < 0 ? 0.78 : 1;
+        colors[v * 3] = color.r * dust;
+        colors[v * 3 + 1] = color.g * dust;
+        colors[v * 3 + 2] = color.b * dust;
+      }
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      ensureUv2(geometry);
+      const material = getTiledMaterial('lane', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+      const mesh = new THREE.Mesh(geometry, material);
+      const along = (t0 * length) + (i + 0.5) * slab;
+      const off = side * (width / 2 + 0.02);
+      mesh.position.set(start.x + ux * along + nx * off, 0.03 + h / 2 - 0.02, start.z + uz * along + nz * off);
+      mesh.rotation.y = yaw;
+      mesh.receiveShadow = true;
+      mesh.castShadow = false;
+      meshes.push(mesh);
+    }
+  }
+  return meshes;
+}
