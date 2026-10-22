@@ -1,9 +1,19 @@
-# Backlog - ordered task list to GAME_COMPLETE.md
+# Backlog - the story board
 
-One task per checkbox, in priority order. Take the top unticked item. The dashboard
-(`tools/dashboard/`) counts ticked vs total here and shows the first unticked item as
-"current task" - keep the `- [ ]` / `- [x]` syntax exact, one item per line. Append new
-tasks discovered mid-work to the end of the relevant section, don't renumber.
+One task per checkbox, in priority order. `docs/FINISH_LINE.md` defines done; this file
+is the order of work. Keep the `- [ ]` / `- [x]` syntax exact, one item per line, so the
+dashboard can parse it. Append new tasks to the end of their section, never renumber.
+
+## Never idle: how to handle a blocked item
+
+- If the top unticked item cannot be finished, mark it `- [!]` and append
+  `BLOCKED: <one plain sentence>` on the same line.
+- Write the same sentence into `docs/NEEDS_YOU.md` ending `- status: open`.
+- Then **immediately take the next unticked item and keep working.** Never wait, never
+  stop a run, never write a cycle with no game change.
+- A `- [!]` item is skipped on every later run until the matching `docs/NEEDS_YOU.md`
+  line reads `- status: done`. Then change it back to `- [ ]` and pick it up again.
+- Three items blocked in a row does not mean stop. Keep going down the list.
 
 ## 0. Setup (do once)
 
@@ -14,6 +24,40 @@ tasks discovered mid-work to the end of the relevant section, don't renumber.
 - [x] Create `inbox/` + README, gitignored except README
 - [x] Build local monitoring dashboard (`tools/dashboard/`) - ad-hoc request, done
       ahead of queue order per direct instruction
+
+## A. Three-week push (Oct 23 - Nov 13) - work this section first
+
+Characters are parked until 26 Oct. Build everything that is not a character.
+
+### A1. Textures on every surface (top priority)
+- [ ] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP)
+- [ ] Wall surfaces: lime-washed plaster in blue-grey, cream, pink, mint, with per-wall colour variation
+- [ ] Roofs: terracotta tiles and corrugated tin
+- [ ] Painted wood: doors, shutters, frames (shared trim sheet)
+- [ ] Field and farm surfaces: wheat stubble, sabzi beds, soil
+- [ ] Canal bank, bridge and boundary walls
+- [ ] Soft dirt at wall bases, sun-faded paint, subtle stains near doors and drains
+- [ ] Props and street furniture: lamps, charpai, handpump, chabutra
+
+### A2. Legibility
+- [ ] Every signboard readable at normal playing distance, not a smear
+- [ ] Shop boards: Devanagari larger, English beneath
+
+### A3. Trees and plants
+- [ ] Blender rebuild of peepal, neem, babool, mango to replace code shapes
+- [ ] Low vegetation and ground cover with real textures
+
+### A4. Unbuilt MAP.md locations
+- [ ] Compare the built world against `reference-from-unity/MAP.md` and list every missing location in this file before building
+- [ ] Post office
+- [ ] Ration shop
+- [ ] Atta chakki
+- [ ] Background houses and boundary walls
+- [ ] Lanes, kerbs and drains across the full map
+- [ ] Canal and bridge
+
+### A5. Side jobs and free roam
+- [ ] The checklist at the bottom of `docs/MISSIONS_PLAN.md`, verbatim
 
 ## 1. Headroom and hygiene (must happen before adding more static content)
 

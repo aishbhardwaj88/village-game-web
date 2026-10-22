@@ -18,3 +18,6 @@ reference-from-unity/
 # Dropbox for Gemini images / Tripo models — keep the README, ignore everything else
 inbox/*
 !inbox/README.md
+tripo_inputs/
+
+.claude/worktrees/
