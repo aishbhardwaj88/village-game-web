@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1368,6 +1368,8 @@ async function main() {
     zoneManager.register('khel_maidan', { x: 165, z: 135, buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan({ x: 165, z: 135 }) });
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { x: 226, z: 60, buildRadius: 70, teardownRadius: 85, build: () => createMandi({ x: 226, z: 60 }) });
+    // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
+    zoneManager.register('canal_bank_road', { x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => buildTrees([
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },

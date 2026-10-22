@@ -629,3 +629,27 @@ export function createMandi(position) {
   truck(geos, -4, 40, 0xd9a43a, 0.12);
   return finishSite('mandi', geos, position, { roughness: 0.92 });
 }
+
+/** Kachcha canal-bank road (MAP.md: "kachcha bank roads on both sides"): packed-earth track on the field side of the nahar with twin tyre ruts, a grassy verge, cart-wheel dung patches and marker pegs. Visual only, no colliders. */
+export function createCanalBankRoad(position) {
+  const geos = [];
+  const L = 84; // x -42..42 around the position
+  const strip = (w, y, x0, x1, z, color) => geos.push(bake(new THREE.BoxGeometry(x1 - x0, 0.02, w), at((x0 + x1) / 2, y, z), color));
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // Track bed in a few slightly different earth tones so it never reads as one flat ribbon.
+  for (let i = 0; i < 12; i++) {
+    const x0 = -L / 2 + (i * L) / 12, x1 = x0 + L / 12 + 0.2;
+    strip(3.2 + rnd() * 0.5, 0.035, x0, x1, rnd() * 0.3 - 0.15, [0x9a8560, 0x8f7a56, 0xa38e68][i % 3]);
+  }
+  // Twin worn ruts; the verge is left to the ground's own grass so no hard-edged green rectangles show.
+  for (const rz of [-0.85, 0.85]) strip(0.35, 0.05, -L / 2, L / 2, rz, 0x6f5d3f);
+  // Faint dust-pale patches between the ruts, broken up so the bed has no repeating stripe.
+  for (let i = 0; i < 14; i++) { const x0 = -L / 2 + rnd() * (L - 6); strip(0.5 + rnd() * 0.5, 0.045, x0, x0 + 2 + rnd() * 4, (rnd() - 0.5) * 0.8, 0xb09d76); }
+  // Dung-cake patches and small stones: lived-in, not dirty.
+  for (let i = 0; i < 9; i++) geos.push(bake(new THREE.CylinderGeometry(0.28, 0.3, 0.05, 8), at(-L / 2 + rnd() * L, 0.06, rnd() * 3 - 1.5), 0x6a5a3a));
+  for (let i = 0; i < 14; i++) geos.push(bake(new THREE.DodecahedronGeometry(0.1 + rnd() * 0.08, 0), at(-L / 2 + rnd() * L, 0.08, (rnd() - 0.5) * 3.6), 0x9b9588));
+  // Whitewashed marker pegs every 20 m, as on irrigation channels.
+  for (let i = 0; i < 5; i++) geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 0.18), at(-L / 2 + 6 + i * 18, 0.35, 2.1), 0xe6e0cf));
+  return finishSite('canal_bank_road', geos, position);
+}
