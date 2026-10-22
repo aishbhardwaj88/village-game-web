@@ -45,6 +45,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A3. Trees and plants
 - [ ] Blender rebuild of peepal, neem, babool, mango to replace code shapes
+  - PROGRESS 2026-10-23 (not ticked: built in code, not Blender - awaiting art director's call): smooth blob canopies replaced by real branching trunks + alpha-cut species leaf-sprig cards (src/trees.js), proof docs/shots/trees-2026-10-22T21-34-16-180Z/mango_baagh.png, neem_chowk.png and docs/shots/trees-2026-10-22T21-35-27-570Z/peepal_temple.png, euc_back.png. Still to do: LODs, distance billboard, wind sway.
 - [ ] Low vegetation and ground cover with real textures
 
 ### A4. Unbuilt MAP.md locations
