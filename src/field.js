@@ -44,23 +44,29 @@ function buildTrack() {
   return mergeMeshList(segments, 'field_track');
 }
 
-function buildFieldGround() {
-  const geometry = ensureUv2(new THREE.PlaneGeometry(FIELD_SIZE.x, FIELD_SIZE.z));
+// West third (stubble) gets a paler straw-coloured ground; the rest keeps the golden soil.
+const STUBBLE_FRAC = 0.33;
+const STRAW_GROUND = 0xe3cf94;
+
+function buildFieldGround(x0, x1, tint, name) {
+  const width = FIELD_SIZE.x * (x1 - x0);
+  const geometry = ensureUv2(new THREE.PlaneGeometry(width, FIELD_SIZE.z));
   const material = getTiledMaterial('ground', {
-    repeatX: FIELD_SIZE.x / 5,
+    repeatX: width / 5,
     repeatY: FIELD_SIZE.z / 5,
-    tint: FIELD_GOLD,
+    tint,
     roughness: 1,
   });
   applyGroundNoiseDetail(material, {
     patchContrast: getActiveAtmosphere().groundContrastMultiplier,
     furrows: { spacing: 1.5, originZ: FIELD_CENTER.z - FIELD_SIZE.z / 2 + 2, depth: 0.32 },
   }); // Fix 4/4 (playtest pass) — see materials.js
+  if (tint === STRAW_GROUND) material.color.multiplyScalar(1.9); // dark scanned soil needs overdriving to read as dry straw
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(FIELD_CENTER.x, 0.02, FIELD_CENTER.z);
+  mesh.position.set(FIELD_CENTER.x - FIELD_SIZE.x / 2 + FIELD_SIZE.x * (x0 + x1) / 2, 0.02, FIELD_CENTER.z);
   mesh.receiveShadow = true;
-  mesh.name = 'field_ground';
+  mesh.name = name;
   return mesh;
 }
 
@@ -126,7 +132,7 @@ function buildCropRows() {
       dummy.scale.set(sc, sc * (stubble ? 0.22 : sabzi ? 0.7 : 1), sc);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
-      if (stubble) c.setRGB(1.25, 1.1, 0.7);
+      if (stubble) c.setRGB(1.2, 1.05, 0.62);
       else if (sabzi) c.setRGB(0.5 + 0.15 * (r % 4), 1.25, 0.55);
       else c.setRGB(0.92 + 0.1 * j, 0.95 + 0.08 * j, 0.85);
       mesh.setColorAt(index, c);
@@ -142,7 +148,8 @@ function buildCropRows() {
 export function buildField(scene) {
   const group = new THREE.Group();
   group.name = 'field';
-  group.add(buildFieldGround());
+  group.add(buildFieldGround(0, STUBBLE_FRAC, STRAW_GROUND, 'field_ground_stubble'));
+  group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground'));
   group.add(buildCropRows());
   group.add(buildTrack());
   scene.add(group);
