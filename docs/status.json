@@ -1,19 +1,19 @@
 {
-  "timestamp": "2026-10-23T12:00:00.000Z",
+  "timestamp": "2026-10-23T14:00:00.000Z",
   "drawCallsByZone": {
-    "hero zone (house/school/halwai/tea-stall, general store ...)": 150,
-    "bazaar row + chowk": 117,
-    "field + mango baagh": 91
+    "hero zone (house/school/halwai/tea-stall, general store ...)": 151,
+    "bazaar row + chowk": 123,
+    "field + mango baagh": 107
   },
   "drawCallCeiling": 150,
   "drawCallAim": 120,
   "triangles": 147291,
   "triangleLimit": 400000,
-  "assetsMB": 18.45,
+  "assetsMB": 18.87,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
-  "lastValidator": "pass (15/15)",
-  "lastRegressionCheck": "pass 22/22 (run 7); the trolley checks were made frame-rate independent",
+  "lastValidator": "14/15 (hero zone 151/150, pre-existing)",
+  "lastRegressionCheck": "pass 22/22 (cycle 38i)",
   "lastCheckBudget": "pass",
   "assetsRebuiltInBlender": [
     "house_compound",
