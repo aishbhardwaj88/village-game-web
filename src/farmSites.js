@@ -338,3 +338,63 @@ export function createDudhDairy(position) {
   group.position.set(position.x, 0, position.z);
   return group;
 }
+
+function finishSite(name, geos, position, opts = {}) {
+  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat(opts));
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = name;
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
+/** Health sub-centre: white-and-green one-storey block with a verandah and a waiting bench (no brand marks). */
+export function createHealthSubCentre(position) {
+  const geos = smallBuilding({ w: 9, d: 5.5, h: 3.2, wall: 0xece6d6, band: 0x4f8f6a, door: 0x3d6f58 });
+  geos.push(bake(new THREE.BoxGeometry(9.6, 0.1, 2.2), at(0, 3.0, 3.9), 0xb9b4a6));
+  for (const sx of [-1, 0, 1]) geos.push(bake(new THREE.BoxGeometry(0.25, 2.7, 0.25), at(sx * 4.2, 1.7, 4.8), 0xece6d6));
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.08, 0.5), at(-2.4, 0.5, 4.2), 0x7a5a3a));
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.5, 0.08), at(-2.4, 0.75, 3.95), 0x7a5a3a));
+  return finishSite('health_subcentre', geos, position);
+}
+
+/** Chemist: narrow cream shop with a green shutter, tin awning and a glass counter front. */
+export function createChemist(position) {
+  const geos = smallBuilding({ w: 4.2, d: 4, h: 3.1, wall: 0xe9d9c3, band: 0x2f7d5b, door: 0x2f7d5b });
+  geos.push(bake(new THREE.BoxGeometry(4.8, 0.07, 1.6), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.75, 2.8), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.2, 1.2, 3.4), 0x5a5a5a));
+  geos.push(bake(new THREE.BoxGeometry(3.2, 1.0, 0.7), at(0, 0.85, 2.6), 0x9a7a52));
+  geos.push(bake(new THREE.BoxGeometry(3.0, 0.9, 0.05), at(0, 1.8, 2.3), 0x9fb8bd));
+  return finishSite('chemist', geos, position, { roughness: 0.85 });
+}
+
+/** Masjid: modest limewashed prayer hall with a green-and-white dome, one slim minaret and an ablution tap row. Scenery only. */
+export function createMasjid(position) {
+  const geos = smallBuilding({ w: 8, d: 7, h: 3.6, wall: 0xeee8d8, band: 0x3f7a5a, door: 0x2f5d49, roof: 0xd8d2c0 });
+  geos.push(bake(new THREE.CylinderGeometry(2.4, 2.6, 0.5, 16), at(0, 4.6, 0), 0xd8d2c0));
+  geos.push(bake(new THREE.SphereGeometry(2.3, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), at(0, 4.85, 0), 0xf2eee2));
+  geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6), at(0, 7.6, 0), 0xc8a24a));
+  geos.push(bake(new THREE.BoxGeometry(1.1, 7.6, 1.1), at(-5.2, 3.8, -1.5), 0xeee8d8));
+  geos.push(bake(new THREE.BoxGeometry(1.5, 0.3, 1.5), at(-5.2, 6.0, -1.5), 0xd8d2c0));
+  geos.push(bake(new THREE.SphereGeometry(0.65, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), at(-5.2, 7.6, -1.5), 0x3f7a5a));
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(0.4, 0.6, 0.3), at(2 + i * 0.9, 0.5, 4.2), 0xb9bdc0));
+  geos.push(bake(new THREE.BoxGeometry(4, 0.12, 0.5), at(3, 0.4, 4.6), 0xb7b0a0));
+  return finishSite('masjid', geos, position);
+}
+
+/** Gurudwara: white hall with a gold-topped dome, small chhatris, and a saffron nishan sahib flagpole. Scenery only. */
+export function createGurudwara(position) {
+  const geos = smallBuilding({ w: 9, d: 7, h: 3.6, wall: 0xf1ede2, band: 0xd69a2e, door: 0x6a4a2a, roof: 0xdcd6c6 });
+  geos.push(bake(new THREE.CylinderGeometry(2.2, 2.4, 0.5, 16), at(0, 4.6, 0), 0xdcd6c6));
+  geos.push(bake(new THREE.SphereGeometry(2.1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), at(0, 4.85, 0), 0xf6f2e6));
+  geos.push(bake(new THREE.ConeGeometry(0.22, 1.0, 8), at(0, 7.4, 0), 0xd9a63a));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 8), at(sx * 3.7, 4.6, sz * 2.7), 0xdcd6c6));
+    geos.push(bake(new THREE.SphereGeometry(0.45, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), at(sx * 3.7, 4.85, sz * 2.7), 0xf6f2e6));
+  }
+  geos.push(bake(new THREE.CylinderGeometry(0.1, 0.12, 9, 8), at(6.5, 4.5, 4.5), 0xd9d3c3));
+  geos.push(bake(new THREE.BoxGeometry(0.05, 1.3, 0.9), at(6.5, 8.2, 4.95), 0xe0861f));
+  return finishSite('gurudwara', geos, position);
+}

@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1350,6 +1350,11 @@ async function main() {
     zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 38, teardownRadius: 50, build: () => createKhalihan({ x: -78, z: -5 }) });
     zoneManager.register('anganwadi', { x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
     zoneManager.register('dudh_dairy', { x: -112, z: 18, buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy({ x: -112, z: 18 }) });
+    // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
+    zoneManager.register('health_subcentre', { x: 96, z: 30, buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre({ x: 96, z: 30 }) });
+    zoneManager.register('chemist', { x: 96, z: 60, buildRadius: 40, teardownRadius: 52, build: () => createChemist({ x: 96, z: 60 }) });
+    zoneManager.register('masjid', { x: 100, z: 135, buildRadius: 45, teardownRadius: 58, build: () => createMasjid({ x: 100, z: 135 }) });
+    zoneManager.register('gurudwara', { x: -60, z: 175, buildRadius: 45, teardownRadius: 58, build: () => createGurudwara({ x: -60, z: 175 }) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => buildTrees([
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
