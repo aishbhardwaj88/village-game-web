@@ -199,3 +199,83 @@ export function createSugarcaneBelt({ x0, z0, width, depth }) {
   group.add(mesh);
   return group;
 }
+
+/** Johad: small rain-fed village pond, a brown-green dip with a trampled rim and a few reeds. */
+export function createJohad(position) {
+  const group = new THREE.Group();
+  group.name = 'johad';
+  const rim = new THREE.Mesh(mergeGeometries([
+    flatBlob(7.8, 4.1, 0.025, 0x75623f),
+    flatBlob(6.3, 4.1, 0.03, 0x54492f),
+  ]), vcMat({ roughness: 1 }));
+  rim.receiveShadow = true;
+  group.add(rim);
+  const water = new THREE.Mesh(flatBlob(5.4, 4.1, 0.06, 0x5a5b3c), vcMat({ roughness: 0.1, metalness: 0.3 }));
+  water.material.polygonOffset = true;
+  water.material.polygonOffsetFactor = -1;
+  water.receiveShadow = true;
+  group.add(water);
+  const geos = [];
+  let s = 23;
+  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  // Reed clumps along the shore, and a flat stone where kids stand to throw pitthu.
+  for (let i = 0; i < 14; i++) {
+    const a = rnd() * Math.PI * 2, r = 5.8 + rnd() * 1.2;
+    for (let k = 0; k < 4; k++) {
+      const h = 0.9 + rnd() * 0.7;
+      const g = new THREE.CylinderGeometry(0.012, 0.03, h, 4, 1, true);
+      g.translate(0, h / 2, 0);
+      geos.push(bake(g, new THREE.Matrix4().makeRotationZ((rnd() - 0.5) * 0.35).setPosition(Math.cos(a) * r + (rnd() - 0.5) * 0.4, 0, Math.sin(a) * r + (rnd() - 0.5) * 0.4), k % 2 ? 0x6f7d3a : 0x58662f));
+    }
+  }
+  geos.push(bake(new THREE.BoxGeometry(1.0, 0.22, 0.7), at(-7.0, 0.11, 1.5, 0.5), 0x948c7a));
+  const props = new THREE.Mesh(mergeGeometries(geos), vcMat({ side: THREE.DoubleSide }));
+  props.receiveShadow = true;
+  group.add(props);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
+/**
+ * Khalihan (threshing floor) with bhoosa stacks: a packed-earth circle with a central post
+ * and a few straw heaps and a round stack at the edge for jumping into (MAP.md west zone).
+ */
+export function createKhalihan(position) {
+  const geos = [];
+  const EARTH = 0x9c845a, STRAW = 0xa8905a, STRAW_DARK = 0x9a8450, POST = 0x5a4228, ROPE = 0x8a7a50;
+  geos.push(flatBlob(8.5, 2.2, 0.03, 0x8c7650));
+  geos.push(flatBlob(7.2, 2.2, 0.04, EARTH));
+  // Threshing post and a bullock-turned beam lying on the floor.
+  geos.push(bake(new THREE.CylinderGeometry(0.09, 0.11, 1.2, 8), at(0, 0.6, 0), POST));
+  geos.push(bake(new THREE.BoxGeometry(2.2, 0.1, 0.12), at(1.1, 0.07, 0.4, 0.5), POST));
+  // Loose straw drifts on the floor.
+  for (const [x, z, r] of [[-2.5, 1.5, 1.4], [2.4, -2.2, 1.2], [-1.2, -3.0, 1.0]]) {
+    const g = new THREE.SphereGeometry(r, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+    geos.push(bake(g, new THREE.Matrix4().makeScale(1, 0.25, 1).setPosition(x, 0.05, z), STRAW_DARK));
+  }
+  // Bhoosa stacks: tall domed haystacks with a wound rope band, around the floor's rim.
+  const stacks = [[-9.5, -3, 0.75, 0], [-10.5, 4.5, 0.9, 1], [9.8, 5.5, 0.65, 2], [11, -2.5, 0.85, 3]];
+  const tones = [0x9a8350, 0x8c7848, 0xa28c58, 0x836f42];
+  for (const [x, z, k, n] of stacks) {
+    // One lathe profile: bulging flank, tapering to a rounded crown; vertices jittered so it reads as piled straw.
+    const prof = [[1.9, 0], [2.0, 0.5], [1.95, 1.3], [1.7, 2.1], [1.2, 2.8], [0.55, 3.2], [0, 3.35]].map(([r, y]) => new THREE.Vector2(r * k, y * k));
+    const g = new THREE.LatheGeometry(prof, 24);
+    const p = g.attributes.position;
+    for (let v = 0; v < p.count; v++) {
+      const h = Math.sin(p.getX(v) * 3.1 + p.getY(v) * 2.3 + n) * Math.cos(p.getZ(v) * 2.7 + p.getY(v) * 1.9);
+      p.setXYZ(v, p.getX(v) * (1 + 0.06 * h), p.getY(v), p.getZ(v) * (1 + 0.06 * h));
+    }
+    g.computeVertexNormals();
+    geos.push(bake(g, at(x, 0, z, n), tones[n]));
+    geos.push(bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), ROPE));
+  }
+  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat({ roughness: 1 }));
+  mesh.name = 'khalihan';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = 'khalihan_prop';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}

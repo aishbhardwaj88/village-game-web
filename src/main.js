@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1346,6 +1346,8 @@ async function main() {
     // MAP.md farm and water sites (no coordinates in MAP.md; open ground picked, see src/farmSites.js).
     zoneManager.register('pond', { x: -132, z: 70, buildRadius: 55, teardownRadius: 70, build: () => createPond({ x: -132, z: 70 }) });
     zoneManager.register('tubewell', { x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
+    zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
+    zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 38, teardownRadius: 50, build: () => createKhalihan({ x: -78, z: -5 }) });
     zoneManager.register('sugarcane_belt', { x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
       x: FIELD_CENTER.x,
