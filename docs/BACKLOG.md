@@ -32,7 +32,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 ### A1. Textures on every surface (top priority)
 - [x] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP) - proof docs/shots/kerbs-2026-10-23/kerb_b2.png (kerbs on the halwai-school lane only; other lanes still none)
 - [x] Wall surfaces: lime-washed plaster in blue-grey, cream, pink, mint, with per-wall colour variation - proof docs/shots/bazaar-walls-2026-10-23/bazaar_back.png (bazaar row only: cream, pink, mint, blue-grey units; other buildings still cream/mustard/terracotta/teal)
-- [ ] Roofs: terracotta tiles and corrugated tin
+- [x] Roofs: terracotta tiles and corrugated tin - proof docs/shots/compare/new-shops-roofs/high.png (corrugated tin on ration shop + atta chakki; bazaar awning and bg houses already tin/terracotta; hero zone stays 150/150)
 - [ ] Painted wood: doors, shutters, frames (shared trim sheet)
 - [ ] Field and farm surfaces: wheat stubble, sabzi beds, soil
 - [ ] Canal bank, bridge and boundary walls

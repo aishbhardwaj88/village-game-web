@@ -15,11 +15,17 @@ from common import wb, limb, cyl, sphere, prism_x, boolean_cut, ROOT
 from arch import Kit, ring, dabba, sack, clay_pot, STEEL, BRASS, MARI
 
 OUT = os.path.join(ROOT, 'tmp', 'new_shops_raw.glb')
-kit = Kit()
+kit = Kit(split_props=False)
 rnd = random.Random(44)
 
 
-def block(cx, w, d, h, kind, win_w, win_h0=0.9, win_h1=2.2, depth=0.75):
+def tin_roof(cx, w, d, h):
+    # single-pitch corrugated tin sheet over the flat slab, high at the back, falling to the front lip
+    kit.add('tin', prism_x('tin_roof', cx - w / 2 - 0.3, cx + w / 2 + 0.3, [(-d / 2 - 0.3, h + 0.85), (d / 2 + 0.45, h + 0.3), (d / 2 + 0.45, h + 0.37), (-d / 2 - 0.3, h + 0.92)]))
+    kit.add('wall_rs', wb('back_raise', cx - w / 2, cx + w / 2, -d / 2 + 0.02, -d / 2 + 0.2, h + 0.22, h + 0.88, 0.006))
+
+
+def block(cx, w, d, h, kind, win_w, win_h0=0.9, win_h1=2.2, depth=0.75, tin=False):
     wall = wb('block', cx - w / 2, cx + w / 2, -d / 2, d / 2, 0, h, 0.012)
     boolean_cut(wall, wb('cut', cx - win_w / 2, cx + win_w / 2, d / 2 - depth, d / 2 + 0.1, win_h0, win_h1, 0), apply_mod=True)
     kit.add(kind, wall)
@@ -30,10 +36,13 @@ def block(cx, w, d, h, kind, win_w, win_h0=0.9, win_h1=2.2, depth=0.75):
     kit.add('trim', wb('lintel', cx - win_w / 2 - 0.1, cx + win_w / 2 + 0.1, d / 2 - 0.02, d / 2 + 0.12, win_h1, win_h1 + 0.16, 0.008))
     kit.add('apron', wb('step', cx - win_w / 2 - 0.1, cx + win_w / 2 + 0.1, d / 2 + 0.35, d / 2 + 0.75, 0, 0.14, 0.01))
     kit.add('trim', wb('roof', cx - w / 2 - 0.3, cx + w / 2 + 0.3, -d / 2 - 0.3, d / 2 + 0.3, h, h + 0.22, 0.015))
-    kit.add(kind, wb('parapet', cx - w / 2 - 0.1, cx + w / 2 + 0.1, -d / 2 - 0.1, -d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
-    kit.add(kind, wb('parapet', cx - w / 2 - 0.1, cx - w / 2 + 0.1, -d / 2 - 0.1, d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
-    kit.add(kind, wb('parapet', cx + w / 2 - 0.1, cx + w / 2 + 0.1, -d / 2 - 0.1, d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
-    kit.add('trim', wb('parapet_cap', cx - w / 2 - 0.14, cx + w / 2 + 0.14, -d / 2 - 0.14, -d / 2 + 0.14, h + 0.6, h + 0.66, 0.008))
+    if tin:
+        tin_roof(cx, w, d, h)
+    else:
+        kit.add(kind, wb('parapet', cx - w / 2 - 0.1, cx + w / 2 + 0.1, -d / 2 - 0.1, -d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
+        kit.add(kind, wb('parapet', cx - w / 2 - 0.1, cx - w / 2 + 0.1, -d / 2 - 0.1, d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
+        kit.add(kind, wb('parapet', cx + w / 2 - 0.1, cx + w / 2 + 0.1, -d / 2 - 0.1, d / 2 + 0.1, h + 0.22, h + 0.6, 0.01))
+        kit.add('trim', wb('parapet_cap', cx - w / 2 - 0.14, cx + w / 2 + 0.14, -d / 2 - 0.14, -d / 2 + 0.14, h + 0.6, h + 0.66, 0.008))
     # window frame
     for x in (cx - win_w / 2 - 0.06, cx + win_w / 2):
         kit.add('paint', wb('jamb', x, x + 0.06, d / 2 - 0.05, d / 2 + 0.06, win_h0, win_h1, 0.004), 0x4A4640)
@@ -70,7 +79,7 @@ def d_back(d):
 
 def ration_shop():
     cx = 0.0
-    block(cx, 3.6, 3.0, 3.0, 'wall_rs', 2.6)
+    block(cx, 3.6, 3.0, 3.0, 'wall_rs', 2.6, tin=True)
     # sacks of grain stacked in the window, a brass beam scale, a painted rate board, a platform scale in front, queue rail
     for i, col in enumerate((0xC9B27A, 0xB89A62, 0xD8C690, 0xB89A62)):
         sack(kit, cx - 0.9 + i * 0.6, -0.5, 0.0, 0.0, col, 0.55, 0.4, 0.6)
@@ -104,8 +113,8 @@ def atta_chakki():
         kit.add('wood', limb('post', (x, d / 2 - 0.1, 0.0), (x, d / 2 - 0.1, h), 0.13, 0.13, 0.006))
         kit.add('wood', limb('post_b', (x, -d / 2 + 0.3, 0.0), (x, -d / 2 + 0.3, h), 0.12, 0.12))
     kit.add('wood', wb('beam_f', cx - w / 2, cx + w / 2, d / 2 - 0.18, d / 2 - 0.02, h - 0.2, h, 0.008))
-    kit.add('trim', wb('roof', cx - w / 2 - 0.3, cx + w / 2 + 0.3, -d / 2 - 0.3, d / 2 + 0.3, h, h + 0.2, 0.015))
-    kit.add('wall_ac', wb('par_b', cx - w / 2 - 0.1, cx + w / 2 + 0.1, -d / 2 - 0.1, -d / 2 + 0.1, h + 0.2, h + 0.5, 0.01))
+    kit.add('tin', prism_x('tin_roof', cx - w / 2 - 0.3, cx + w / 2 + 0.3, [(-d / 2 - 0.3, h + 0.8), (d / 2 + 0.4, h + 0.2), (d / 2 + 0.4, h + 0.27), (-d / 2 - 0.3, h + 0.87)]))
+    kit.add('wall_ac', wb('back_raise', cx - w / 2, cx + w / 2, -d / 2, -d / 2 + 0.22, h, h + 0.82, 0.01))
     kit.add('floor', wb('floor', cx - w / 2, cx + w / 2, -d / 2 + 0.22, d / 2, 0, 0.05, 0))
     kit.add('apron', wb('step', cx - w / 2, cx + w / 2, d / 2 - 0.05, d / 2 + 0.45, 0, 0.12, 0.01))
     # the mill: stone housing with a hopper above it, a green-grey motor with a flywheel + belt, an iron chimney pipe on the roof
