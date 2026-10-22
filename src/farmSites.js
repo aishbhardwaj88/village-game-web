@@ -572,3 +572,60 @@ export function createGurukul(position) {
   geos.push(bake(new THREE.CylinderGeometry(0.06, 0.08, 8, 6), at(6, 4, 4), 0x9a9a9a));
   return finishSite('gurukul', geos, position);
 }
+
+/** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
+function truck(geos, x, z, body, ry = 0) {
+  const m = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return at(x + v.x, v.y, z + v.z, ry); };
+  geos.push(bake(new THREE.BoxGeometry(2.5, 0.35, 8), m(0, 0.9, -0.5), 0x2f2f33));
+  geos.push(bake(new THREE.BoxGeometry(2.5, 2.4, 5.6), m(0, 2.3, -1.7), body));
+  geos.push(bake(new THREE.BoxGeometry(2.5, 1.9, 2.0), m(0, 1.95, 2.6), 0x3b6ea0));
+  geos.push(bake(new THREE.BoxGeometry(2.3, 0.7, 0.1), m(0, 2.4, 3.62), 0x2a2f33));
+  for (const sx of [-1, 1]) for (const lz of [2.4, -2.2, -3.6]) geos.push(bake(new THREE.CylinderGeometry(0.55, 0.55, 0.35, 12), (() => { const mm = m(sx * 1.25, 0.55, lz); return mm.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)); })(), 0x1d1d1f));
+}
+
+export function createMandi(position) {
+  const geos = [];
+  // Paved yard slab with a kerb line, wide connecting road back to the highway.
+  geos.push(bake(new THREE.BoxGeometry(24, 0.12, 74), at(0, 0.06, 0), 0x8f8e88));
+  geos.push(bake(new THREE.BoxGeometry(14, 0.1, 10), at(-18, 0.05, 0), 0x3d3d40));
+  geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 74), at(-12.1, 0.1, 0), 0xb4b0a4));
+  // Grain wholesale godown: long warehouse, tin roof, big sliding doors, sacks stacked outside.
+  geos.push(bake(new THREE.BoxGeometry(10, 5, 18), at(5, 2.6, -22), 0xe0d2b0));
+  geos.push(bake(new THREE.BoxGeometry(10, 1.1, 18.04), at(5, 0.7, -22), 0xb8574a));
+  geos.push(bake(new THREE.BoxGeometry(10.8, 0.12, 19), new THREE.Matrix4().makeRotationZ(0.1).setPosition(5, 5.6, -22), 0x8e969c));
+  for (const lz of [-27, -17]) geos.push(bake(new THREE.BoxGeometry(0.2, 3.4, 4), at(-0.05, 1.9, lz), 0x4f6b7a));
+  for (let i = 0; i < 12; i++) geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(-2.6 + (i % 4) * 0.95 * 0.0, 0.3 + Math.floor(i / 4) * 0.36, -22 + (i % 4) * 1.0 - 1.5), 0xd9c9a2));
+  // Vegetable wholesale yard: open pillared tin shed, crates and gunny heaps.
+  geos.push(bake(new THREE.BoxGeometry(12, 0.1, 14), new THREE.Matrix4().makeRotationX(0.05).setPosition(4, 3.4, 4), 0x8e969c));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 3.4, 6), at(4 + sx * 5.5, 1.7, 4 + sz * 6.5), 0x6f5233));
+  const veg = [0xb5472f, 0x5f8a3a, 0xd9a43a, 0x7b4a8a, 0xc9c27a];
+  for (let i = 0; i < 14; i++) {
+    const cx = 0 + (i % 5) * 2.0, cz = 0 + Math.floor(i / 5) * 3.2;
+    geos.push(bake(new THREE.BoxGeometry(1.1, 0.4, 0.8), at(cx, 0.32, cz), 0x9a7a4a));
+    geos.push(bake(new THREE.BoxGeometry(0.95, 0.22, 0.65), at(cx, 0.6, cz), veg[i % veg.length]));
+  }
+  // Bigger weighing station: long platform, cabin with display board, boom barrier.
+  geos.push(bake(new THREE.BoxGeometry(4.5, 0.25, 20), at(-6, 0.13, 22), 0x6d6d70));
+  geos.push(bake(new THREE.BoxGeometry(3.9, 0.05, 19.4), at(-6, 0.28, 22), 0x8a8a8c));
+  geos.push(bake(new THREE.BoxGeometry(3.4, 3, 3.4), at(-11, 1.5, 22), 0xdcd2b8));
+  geos.push(bake(new THREE.BoxGeometry(3.8, 0.2, 3.8), at(-11, 3.1, 22), 0x8d8a82));
+  geos.push(bake(new THREE.BoxGeometry(1.6, 0.8, 0.15), at(-11, 3.8, 20.2), 0x2a2a2a));
+  geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.1), at(-6, 1.1, 12.5), 0xd8d2c2));
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.1, 0.1), at(-8.5, 1.1, 12.5), 0xc4372f));
+  // Dhaba: low truck-stop eatery with a tin verandah, charpais and a tandoor chimney.
+  geos.push(bake(new THREE.BoxGeometry(9, 3.2, 6), at(5, 1.75, 32), 0xe4cfa0));
+  geos.push(bake(new THREE.BoxGeometry(9.04, 0.4, 6.04), at(5, 0.9, 32), 0xb8574a));
+  geos.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
+  geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
+  for (let i = 0; i < 4; i++) {
+    geos.push(bake(new THREE.BoxGeometry(1.0, 0.08, 2.0), at(1.5 + i * 2.1, 0.5, 25), 0x8a6a42));
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 5), at(1.5 + i * 2.1 + sx * 0.45, 0.25, 25 + sz * 0.9), 0x6f5233));
+  }
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(3.3, 2.55, 29.01), 0x2f5f4a));
+  // Parked trucks in plain colours (no marks).
+  truck(geos, 3, -2, 0xc4372f, 0.0);
+  truck(geos, 9, 48, 0x3f7a5a, Math.PI);
+  truck(geos, -4, 40, 0xd9a43a, 0.12);
+  return finishSite('mandi', geos, position, { roughness: 0.92 });
+}
