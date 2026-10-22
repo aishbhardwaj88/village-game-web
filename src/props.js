@@ -201,3 +201,61 @@ export async function createDonationBoard(position, rotationY = 0) {
   group.rotation.y = rotationY;
   return group;
 }
+
+/**
+ * Street lamps (A1 props): grey concrete/iron poles with a short bracket arm and a
+ * dull sodium-style lamp head, one merged vertex-coloured mesh (one draw call) for
+ * every lamp. Placed on alternating sides along real lane segments, set just
+ * outside the lane edge. Scenery only; lamps are unlit by design (daytime game).
+ * `segments`: [{ from:{x,z}, to:{x,z}, width }].
+ */
+export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
+  // One merged mesh per segment (one draw call each, but frustum culling can drop
+  // a far lane's lamps instead of one map-wide bounding sphere always passing).
+  const group = new THREE.Group();
+  group.name = 'street_lamps';
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0.15 });
+  let geos = [];
+  const POLE = 0x7d7a72;
+  const HEAD = 0xb9b4a4;
+  const GLASS = 0xe9dca6;
+  let n = 0;
+  for (const { from, to, width } of segments) {
+    geos = [];
+    const dx = to.x - from.x;
+    const dz = to.z - from.z;
+    const len = Math.hypot(dx, dz);
+    if (len < 1) continue;
+    const ux = dx / len;
+    const uz = dz / len;
+    const nx = -uz; // lane normal
+    const nz = ux;
+    const count = Math.max(1, Math.floor(len / everyMetres));
+    for (let i = 0; i < count; i++) {
+      const t = ((i + 0.5) / count) * len;
+      const side = n++ % 2 === 0 ? 1 : -1;
+      const off = width / 2 + 0.7;
+      const x = from.x + ux * t + nx * off * side;
+      const z = from.z + uz * t + nz * off * side;
+      const rotY = Math.atan2(-nx * side, -nz * side); // arm reaches back over the lane
+      const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(x, 0, z);
+      const add = (g, local, color) => {
+        g.applyMatrix4(new THREE.Matrix4().setPosition(local[0], local[1], local[2]));
+        g.applyMatrix4(m);
+        geos.push(bakeColor(g, color));
+      };
+      const h = 5.2;
+      add(new THREE.CylinderGeometry(0.07, 0.11, h, 8), [0, h / 2, 0], POLE);
+      add(new THREE.CylinderGeometry(0.16, 0.16, 0.25, 8), [0, 0.12, 0], POLE);
+      add(new THREE.BoxGeometry(0.07, 0.07, 1.1), [0, h - 0.1, 0.5], POLE);
+      add(new THREE.CylinderGeometry(0.1, 0.26, 0.22, 8), [0, h - 0.1, 1.0], HEAD);
+      add(new THREE.SphereGeometry(0.13, 8, 6), [0, h - 0.26, 1.0], GLASS);
+    }
+    if (!geos.length) continue;
+    const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  return group;
+}

@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createBellProp, createFlagpoleProp, createDonationBoard } from './props.js';
+import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -1305,6 +1305,22 @@ async function main() {
     // vehicle-blocking collision) — a real moving herd is a bigger feature than
     // this pass's "recognisable, present in the world" bar.
     zoneManager = createZoneManager(scene);
+    // A1 props: street lamps along the bazaar and temple lanes, streamed per lane
+    // segment (the hero zone sits at the 150 draw-call ceiling, so lamps only
+    // exist once the player is within ~8 m of that stretch of lane).
+    for (const [name, from, to, width] of [
+      ['lamps_bazaar_b', BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH],
+      ['lamps_temple_a', TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH],
+      ['lamps_temple_b', TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH],
+    ]) {
+      zoneManager.register(name, {
+        x: (from.x + to.x) / 2,
+        z: (from.z + to.z) / 2,
+        buildRadius: 8 + Math.hypot(to.x - from.x, to.z - from.z) / 2,
+        teardownRadius: 9 + Math.hypot(to.x - from.x, to.z - from.z) / 2,
+        build: () => createStreetLamps([{ from, to, width }]),
+      });
+    }
     zoneManager.register('field_animals', {
       x: FIELD_CENTER.x,
       z: 21,
