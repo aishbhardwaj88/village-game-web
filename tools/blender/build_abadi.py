@@ -28,6 +28,15 @@ PLINTH = [0xD9A33E, 0x6A7F94, 0xB5693F, 0xC99A4A]
 WOODD = 0x4A3426
 WOODL = 0x6B4E34
 GLASS = 0x1E1A18
+# Painted-wood palette (doors, shutters): deep bottle green, teal, oxblood, indigo, ochre, sun-faded turquoise.
+# Picked per house from its x position (no rnd draw, so layouts stay identical).
+PAINTS = [(0x2F5D46, 0x234736), (0x2E6F72, 0x22555A), (0x7A2E2A, 0x5E2220), (0x2F4A7A, 0x233860), (0xB8862F, 0x946A22), (0x5FA39B, 0x468279)]
+_paint = PAINTS[0]
+
+
+def set_paint(x0, w):
+    global _paint
+    _paint = PAINTS[int(abs(x0) * 7 + w * 3) % len(PAINTS)]
 CLOTH = [0xC0392B, 0x2E8B57, 0x3B5BA5, 0xE0B53A, 0xEEE6D2]
 
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#E6E0D0', 'hb_apron': '#A59A88', 'hb_wood': '#FFFFFF',
@@ -39,10 +48,10 @@ def door(kit, cx, w=1.0, h=2.1):
     kit.add('wood', wb('dj', cx - w / 2 - ft, cx - w / 2, ZF - 0.02, ZF + 0.09, 0, h + 0.1, 0.004), WOODL)
     kit.add('wood', wb('dj', cx + w / 2, cx + w / 2 + ft, ZF - 0.02, ZF + 0.09, 0, h + 0.1, 0.004), WOODL)
     kit.add('wood', wb('dl', cx - w / 2 - ft, cx + w / 2 + ft, ZF - 0.02, ZF + 0.09, h, h + 0.12, 0.004), WOODL)
-    kit.add('wood', wb('leaf', cx - w / 2, cx + w / 2, ZF - 0.01, ZF + 0.05, 0, h, 0.004), WOODD)
+    kit.add('wood', wb('leaf', cx - w / 2, cx + w / 2, ZF - 0.01, ZF + 0.05, 0, h, 0.004), _paint[0])
     for (p0, p1) in ((0.15, 0.95), (1.08, h - 0.15)):
         for a, b in ((cx - w / 2 + 0.07, cx - 0.03), (cx + 0.03, cx + w / 2 - 0.07)):
-            kit.add('wood', wb('panel', a, b, ZF + 0.04, ZF + 0.075, p0, p1, 0.004), 0x5A3F2C)
+            kit.add('wood', wb('panel', a, b, ZF + 0.04, ZF + 0.075, p0, p1, 0.004), _paint[1])
     # wooden chajja on two brackets (house_1: slatted slab over the door)
     kit.add('wood', wb('chajja', cx - 0.8, cx + 0.8, ZF + 0.0, ZF + 0.8, h + 0.3, h + 0.37, 0.008), WOODL)
     for sgn in (-1, 1):
@@ -50,7 +59,8 @@ def door(kit, cx, w=1.0, h=2.1):
     kit.add('apron', wb('door_step', cx - 0.7, cx + 0.7, ZF + 0.0, ZF + 0.55, 0, 0.12, 0.008))
 
 
-def window(kit, cx, w, h0, h1, shutter_col=WOODL):
+def window(kit, cx, w, h0, h1, shutter_col=None):
+    shutter_col = _paint[0] if shutter_col is None else shutter_col
     ft = 0.06
     u0, u1 = cx - w / 2, cx + w / 2
     kit.add('paint', wb('glass', u0, u1, ZF - 0.01, ZF + 0.03, h0, h1, 0), GLASS)
@@ -64,7 +74,7 @@ def window(kit, cx, w, h0, h1, shutter_col=WOODL):
     n = int((h1 - h0 - 0.2) / 0.1)
     for k in range(n):
         hk = h0 + 0.12 + k * 0.1
-        kit.add('wood', wb('slat', u0 + 0.05, um - 0.04, ZF + 0.07, ZF + 0.1, hk, hk + 0.05, 0), 0x3B2A1E)
+        kit.add('wood', wb('slat', u0 + 0.05, um - 0.04, ZF + 0.07, ZF + 0.1, hk, hk + 0.05, 0), _paint[1])
     for a in (um + 0.01,):
         for j in range(1, 5):
             x = a + j * (u1 - a) / 5
@@ -161,6 +171,7 @@ def house(kit, rnd, x0, w, floors, wall, plinth, roof='flat', jh=True):
     kit.add('paint', wb('bvent', x0 + w * 0.5 - 0.08, x0 + w * 0.5 + 0.08, -ZF - 0.04, -ZF + 0.01, H - 0.5, H - 0.34, 0), GLASS)
     # door and window on opposite thirds so neighbours differ
     left = rnd.random() < 0.5
+    set_paint(x0, w)
     dcx = x0 + w * (0.3 if left else 0.7)
     wcx = x0 + w * (0.72 if left else 0.28)
     door(kit, dcx)
@@ -305,9 +316,10 @@ def house_lod(kit, rnd, x0, w, floors, wall, plinth, roof):
     kit.add('plaster', wb('blk', x0, x0 + w, -ZF, ZF, 0, H, B), wall)
     kit.add('plinth', wb('plinth', x0, x0 + w, ZF, ZF + 0.05, 0, 0.65, B), plinth)
     left = rnd.random() < 0.5
+    set_paint(x0, w)
     dcx = x0 + w * (0.3 if left else 0.7)
     wcx = x0 + w * (0.72 if left else 0.28)
-    kit.add('wood', wb('door', dcx - 0.5, dcx + 0.5, ZF, ZF + 0.06, 0, 2.1, B), WOODD)
+    kit.add('wood', wb('door', dcx - 0.5, dcx + 0.5, ZF, ZF + 0.06, 0, 2.1, B), _paint[0])
     kit.add('wood', wb('chajja', dcx - 0.8, dcx + 0.8, ZF, ZF + 0.8, 2.4, 2.47, B), WOODL)
     kit.add('paint', wb('win', wcx - 0.5, wcx + 0.5, ZF, ZF + 0.05, 1.1, 2.2, B), 0x4A3426)
     if floors == 2:
