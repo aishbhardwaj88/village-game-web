@@ -146,6 +146,38 @@ export function buildCanal() {
     rail.name = 'canal_bridge_rail';
     rail.castShadow = false;
     group.add(rail);
+    // Whitewashed-cement coping on top of each parapet, and a squat post at each end
+    const coping = texturedThickBox(0.3, 0.1, deckSpanZ + 0.1, 'concrete', { tint: 0xcfc8b6, tileSize: 1 });
+    coping.position.set(BRIDGE_X + side * (BRIDGE_HALF_WIDTH - 0.08), 0.72, CANAL_Z);
+    coping.name = 'canal_bridge_coping';
+    coping.castShadow = false;
+    group.add(coping);
+    for (const end of [-1, 1]) {
+      const post = texturedThickBox(0.4, 0.9, 0.4, 'concrete', { tint: 0xbdb6a4, tileSize: 1 });
+      post.position.set(BRIDGE_X + side * (BRIDGE_HALF_WIDTH - 0.08), 0.45, CANAL_Z + end * (deckSpanZ / 2 - 0.2));
+      post.name = 'canal_bridge_post';
+      post.castShadow = false;
+      group.add(post);
+    }
+  }
+
+  // Cement lining: a pukka lip along both water edges (the nahar is a maintained
+  // irrigation channel), plus a greener grassy strip on each bank's outer edge.
+  // Same two materials as the bank/deck, so no extra draw calls.
+  for (const edge of [-1, 1]) {
+    const lipZ = CANAL_Z + edge * (CANAL_HALF_WIDTH + 0.12);
+    for (const [a, b] of [[CANAL_MIN_X, bridgeMinX], [bridgeMaxX, CANAL_MAX_X]]) {
+      const lip = texturedThickBox(b - a, 0.42, 0.24, 'concrete', { tint: 0xa9a392, tileSize: 1.5 });
+      lip.position.set((a + b) / 2, 0.21, lipZ);
+      lip.name = 'canal_lining';
+      lip.castShadow = false;
+      group.add(lip);
+      const grass = texturedThickBox(b - a, 0.06, 0.5, 'ground', { tint: 0x6f7a3c, tileSize: 2, tintStrength: 0.7 });
+      grass.position.set((a + b) / 2, 0.37, CANAL_Z + edge * (CANAL_HALF_WIDTH + BANK_WIDTH - 0.25));
+      grass.name = 'canal_bank_grass';
+      grass.castShadow = false;
+      group.add(grass);
+    }
   }
 
   // Draw-call budget — banks (4 segments) + rails (2) fold into one 'ground'-ish

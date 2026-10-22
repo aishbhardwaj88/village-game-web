@@ -35,7 +35,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [x] Roofs: terracotta tiles and corrugated tin - proof docs/shots/compare/new-shops-roofs/high.png (corrugated tin on ration shop + atta chakki; bazaar awning and bg houses already tin/terracotta; hero zone stays 150/150)
 - [x] Painted wood: doors, shutters, frames (shared trim sheet) - proof docs/shots/compare/painted-wood/south_row.png (abadi houses only: bottle green, teal, oxblood, indigo, ochre, turquoise painted doors and shutters in the one shared material, zero extra draw calls; hero house, school and bazaar doors still natural dark wood)
 - [x] Field and farm surfaces: wheat stubble, sabzi beds, soil - proof docs/shots/compare/field-zones-2/west_stubble.png (pale straw ground under west stubble, sabzi beds east docs/shots/compare/field-zones/east_sabzi.png, plough furrows docs/shots/compare/field-furrows/low.png)
-- [ ] Canal bank, bridge and boundary walls
+- [x] Canal bank, bridge and boundary walls - proof docs/shots/canal-2026-10-22T20-49-15-988Z/canal_bridge.png (cement lining along both water edges, grassy bank strips, bridge parapets with coping and end posts, zero extra draw calls; village boundary walls NOT touched this pass)
 - [ ] Soft dirt at wall bases, sun-faded paint, subtle stains near doors and drains
 - [ ] Props and street furniture: lamps, charpai, handpump, chabutra
 
