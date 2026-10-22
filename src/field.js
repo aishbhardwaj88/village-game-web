@@ -109,19 +109,25 @@ function buildCropRows() {
   let index = 0;
   for (let r = 0; r < rows; r++) {
     const rz = FIELD_CENTER.z - halfZ + r * between;
-    const sabzi = r % 3 === 2;
     for (let k = 0; k < cols; k++) {
       const rx = FIELD_CENTER.x - halfX + k * along + (r % 2) * 0.35;
+      // West third: harvested wheat stubble (MAP.md). East third: sabzi beds in bands of rows with a bare path between.
+      const fx = (rx - (FIELD_CENTER.x - halfX)) / (halfX * 2);
+      const stubble = fx < 0.33;
+      const sabziZone = fx > 0.67;
+      if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
+      const sabzi = sabziZone || (!stubble && r % 3 === 2);
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
       const j = Math.sin(rx * 12.9 + rz * 7.1);
       dummy.position.set(rx + j * 0.12, 0, rz + Math.cos(rx * 5.3 + rz * 3.7) * 0.1);
       dummy.rotation.y = j * 3;
       const sc = 0.85 + 0.35 * (0.5 + 0.5 * Math.sin(rx * 3.1 - rz * 2.3));
-      dummy.scale.set(sc, sc * (sabzi ? 0.7 : 1), sc);
+      dummy.scale.set(sc, sc * (stubble ? 0.22 : sabzi ? 0.7 : 1), sc);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
-      if (sabzi) c.setRGB(0.5, 1.25, 0.55);
+      if (stubble) c.setRGB(1.25, 1.1, 0.7);
+      else if (sabzi) c.setRGB(0.5 + 0.15 * (r % 4), 1.25, 0.55);
       else c.setRGB(0.92 + 0.1 * j, 0.95 + 0.08 * j, 0.85);
       mesh.setColorAt(index, c);
       index++;
