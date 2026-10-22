@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps } from './props.js';
+import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -564,6 +564,7 @@ async function main() {
   // the bell at SCHOOL_CENTER.x-5,110 — src/village.js's school_compound yard
   // spans x:[-65,-35] z:[94,118]).
   scene.add(createFlagpoleProp({ x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 8 }));
+
 
   // Second errand (task 4) — the teacher (a fixed interaction point, like maaNpc/
   // halwaiNpc above) and the sister (starts stationary at the school; once collected
@@ -1331,6 +1332,16 @@ async function main() {
         build: () => createStreetLamps([{ from, to, width }]),
       });
     }
+    // MAP.md landmarks: paani ki tanki + bijli transformer (tallest structure; radius capped at 90 m because the hero zone sits at exactly 150 draw calls and the
+    // validator camera camera at (-48,30) is 96 m away; widen once hero-zone calls drop). MAP.md gives no coordinate: open ground just north-east of the school yard. Streamed
+    // because the hero zone sits at the draw-call ceiling.
+    zoneManager.register('water_tank', {
+      x: -22,
+      z: 122,
+      buildRadius: 90,
+      teardownRadius: 110,
+      build: () => createWaterTankProp({ x: -22, z: 122 }),
+    });
     zoneManager.register('field_animals', {
       x: FIELD_CENTER.x,
       z: 21,

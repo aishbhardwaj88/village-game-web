@@ -54,7 +54,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 ### A4. Unbuilt MAP.md locations
 - [ ] Compare the built world against `reference-from-unity/MAP.md` and list every missing location in this file before building
   - LIST 2026-10-23 (cycle 38e, from MAP.md vs a name-grep of src/, so verify before building; MAP.md gives no coordinates for most of these, pick open ground and say so, do not invent silently). MISSING, not found in src/:
-    - Water: pond (west of abadi, lotus, buffalo wallow), johad (SE lip), tubewell + kothri (north fields), tank/transformer landmark pair (paani ki tanki only appears as a roof prop in scenery.js, no tall landmark)
+    - Water: pond (west of abadi, lotus, buffalo wallow), johad (SE lip), tubewell + kothri (north fields), ~~tank/transformer landmark pair~~ BUILT cycle 38e (createWaterTankProp, src/props.js; streamed, proof docs/shots/water-tank-2026-10-23/tank_far.png; stream radius only 90 m because the hero zone sits at exactly 150 draw calls, widen when calls drop; placed at (-22,122), MAP.md gives no coordinate)
     - Fields: sugarcane (ganna) belt south, neighbour's 2-tree orchard, bhoosa stacks, khalihan, mela + wedding ground (SW)
     - Abadi places: anganwadi, health sub-centre, TV house, dudh dairy, chemist, manihari, sabzi rehris, jalebi + samosa stall, chaupal platform (peepal crossroads)
     - Edges: highway (east), petrol pump, bus adda, mandi area (grain merchant, vegetable yard, big weighbridge, dhaba, trucks), gurukul inter college, khel maidan (only as side-job props), old haveli and gaushala (V2)

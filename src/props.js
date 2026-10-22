@@ -259,3 +259,60 @@ export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
   }
   return group;
 }
+
+/**
+ * reference-from-unity/MAP.md: "Paani ki tanki (water tank) - the tallest structure, visible from most of the map.
+ * Bijli transformer beside it." MAP.md gives no coordinate, so main.js places it on open ground (see TANK_POSITION).
+ * Four tapering concrete legs with cross-braces, a limewashed cylindrical tank with a rim and shallow dome, a
+ * ladder, plus a pole-mounted transformer on two poles. One merged vertex-coloured mesh, one draw call.
+ */
+export function createWaterTankProp(position) {
+  const geos = [];
+  const CONCRETE = 0xb9b4a6;
+  const TANK = 0xc9d3d6; // faded blue-grey limewash
+  const TANK_BAND = 0x8fa3ab;
+  const IRON = 0x4d4a46;
+  const POLE = 0x6a5a48;
+  const legH = 9;
+  const half = 1.7;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    geos.push(part(new THREE.BoxGeometry(0.4, legH, 0.4), new THREE.Matrix4().setPosition(sx * half, legH / 2, sz * half), CONCRETE));
+  }
+  // Cross-braces at two heights, all four faces.
+  for (const y of [3, 6]) {
+    for (const s of [-1, 1]) {
+      geos.push(part(new THREE.BoxGeometry(half * 2, 0.22, 0.22), new THREE.Matrix4().setPosition(0, y, s * half), CONCRETE));
+      geos.push(part(new THREE.BoxGeometry(0.22, 0.22, half * 2), new THREE.Matrix4().setPosition(s * half, y, 0), CONCRETE));
+    }
+  }
+  // Slab under the tank, tank body, band, rim, dome.
+  geos.push(part(new THREE.BoxGeometry(half * 2 + 0.9, 0.3, half * 2 + 0.9), new THREE.Matrix4().setPosition(0, legH + 0.15, 0), CONCRETE));
+  geos.push(part(new THREE.CylinderGeometry(2.6, 2.6, 3.4, 20), new THREE.Matrix4().setPosition(0, legH + 0.3 + 1.7, 0), TANK));
+  geos.push(part(new THREE.CylinderGeometry(2.64, 2.64, 0.35, 20), new THREE.Matrix4().setPosition(0, legH + 1.2, 0), TANK_BAND));
+  geos.push(part(new THREE.CylinderGeometry(2.64, 2.64, 0.3, 20), new THREE.Matrix4().setPosition(0, legH + 3.55, 0), TANK_BAND));
+  geos.push(part(new THREE.SphereGeometry(2.6, 20, 6, 0, Math.PI * 2, 0, Math.PI / 5), new THREE.Matrix4().setPosition(0, legH + 3.7, 0), CONCRETE));
+  // Ladder up the +Z face: two rails and rungs.
+  const ladderZ = half + 0.35;
+  for (const x of [-0.25, 0.25]) geos.push(part(new THREE.BoxGeometry(0.05, legH + 2.4, 0.05), new THREE.Matrix4().setPosition(x, (legH + 2.4) / 2, ladderZ), IRON));
+  for (let y = 0.5; y < legH + 2.2; y += 0.45) geos.push(part(new THREE.BoxGeometry(0.5, 0.04, 0.04), new THREE.Matrix4().setPosition(0, y, ladderZ), IRON));
+  // Transformer on two poles beside the tank.
+  const tx = 6;
+  for (const dz of [-0.6, 0.6]) geos.push(part(new THREE.CylinderGeometry(0.1, 0.13, 8, 8), new THREE.Matrix4().setPosition(tx, 4, dz), POLE));
+  geos.push(part(new THREE.BoxGeometry(0.2, 0.15, 1.6), new THREE.Matrix4().setPosition(tx, 6.9, 0), POLE));
+  geos.push(part(new THREE.CylinderGeometry(0.45, 0.45, 1.0, 12), new THREE.Matrix4().setPosition(tx, 5.6, 0), 0x6b7378));
+  geos.push(part(new THREE.CylinderGeometry(0.5, 0.5, 0.08, 12), new THREE.Matrix4().setPosition(tx, 6.15, 0), IRON));
+  for (const dz of [-0.35, 0, 0.35]) geos.push(part(new THREE.CylinderGeometry(0.06, 0.06, 0.3, 6), new THREE.Matrix4().setPosition(tx, 6.35, dz), 0xd9d2c0));
+  // Earthing / meter box near the foot.
+  geos.push(part(new THREE.BoxGeometry(0.5, 0.7, 0.3), new THREE.Matrix4().setPosition(tx + 0.4, 1.4, 0), IRON));
+
+  const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }));
+  mesh.name = 'water_tank';
+  mesh.castShadow = false; // far landmark: a shadow pass would cost a second draw call at the hero-zone ceiling
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = 'water_tank_prop';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  // No colliders: streamed by zoneManager (src/main.js), which does not register colliders; legs are thin scenery.
+  return group;
+}
