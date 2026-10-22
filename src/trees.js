@@ -195,6 +195,20 @@ function leafMaterial() {
   if (!LEAF_MATERIAL) {
     LEAF_MATERIAL = new THREE.MeshStandardMaterial({ map: makeLeafAtlas(), vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 });
     LEAF_MATERIAL.name = 'tree_leaf_cards';
+    // Gentle wind sway: crown moves more with height and a per-position phase, so
+    // neighbouring trees do not move in lockstep. Vertex-only, no extra draw calls.
+    const uTime = { value: 0 };
+    LEAF_MATERIAL.onBeforeRender = () => { uTime.value = performance.now() / 1000; };
+    LEAF_MATERIAL.onBeforeCompile = (shader) => {
+      shader.uniforms.uWindTime = uTime;
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nuniform float uWindTime;')
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+        float windPhase = position.x * 0.35 + position.z * 0.27;
+        float windAmt = clamp(position.y * 0.012, 0.0, 0.12);
+        transformed.x += sin(uWindTime * 1.3 + windPhase) * windAmt;
+        transformed.z += sin(uWindTime * 1.0 + windPhase * 1.7 + 1.3) * windAmt * 0.7;`);
+    };
   }
   return LEAF_MATERIAL;
 }
