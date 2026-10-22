@@ -14,7 +14,7 @@ import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal } from './canal.js';
-import { buildVegetation, lanesideClusters, buildFlowerPatches } from './vegetation.js';
+import { buildVegetation, lanesideClusters, buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
@@ -1190,14 +1190,24 @@ async function main() {
     // not up, and this is a genuinely new InstancedMesh (one more draw call
     // wherever it's in view) rather than folding into an existing bucket.
     scene.add(
-      buildFlowerPatches([
-        { x: FLOWER_STALL_POS.x - 1, z: FLOWER_STALL_POS.z + 1.5, color: PALETTE.marigold },
-        { x: FLOWER_STALL_POS.x + 1, z: FLOWER_STALL_POS.z + 1.5, color: PALETTE.marigold },
-        { x: TEMPLE_POS.x + 2, z: TEMPLE_POS.z - 6, color: PALETTE.marigold },
-        { x: TEMPLE_POS.x - 2, z: TEMPLE_POS.z - 6, color: PALETTE.marigold },
-        { x: CHOWK_CENTER.x + 3, z: CHOWK_CENTER.z - 4, color: PALETTE.bougainvillea },
-        { x: CHOWK_CENTER.x - 3, z: CHOWK_CENTER.z - 4, color: PALETTE.bougainvillea },
-        { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, color: PALETTE.bougainvillea },
+      buildGardenPlants([
+        // Marigold beds at the flower stall and temple front.
+        ...[-1.6, -0.5, 0.6, 1.7].map((dx) => ({ x: FLOWER_STALL_POS.x + dx, z: FLOWER_STALL_POS.z + 1.8, kind: GARDEN_KIND.MARIGOLD })),
+        ...[-3, -1.5, 1.5, 3].map((dx) => ({ x: TEMPLE_POS.x + dx, z: TEMPLE_POS.z - 6, kind: GARDEN_KIND.MARIGOLD })),
+        // Tulsi near the temple steps and the house courtyard corner.
+        { x: TEMPLE_POS.x + 4.5, z: TEMPLE_POS.z - 5.5, kind: GARDEN_KIND.TULSI },
+        { x: TEMPLE_POS.x - 4.5, z: TEMPLE_POS.z - 5.5, kind: GARDEN_KIND.TULSI },
+        { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 6.5, kind: GARDEN_KIND.TULSI },
+        // Banana clumps: behind the house, by the temple and at the chowk.
+        { x: HOUSE_CENTER.x - 11, z: HOUSE_CENTER.z + 8, kind: GARDEN_KIND.BANANA },
+        { x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z + 6, kind: GARDEN_KIND.BANANA, scale: 0.85 },
+        { x: TEMPLE_POS.x - 10, z: TEMPLE_POS.z - 4, kind: GARDEN_KIND.BANANA },
+        { x: CHOWK_CENTER.x + 9, z: CHOWK_CENTER.z - 6, kind: GARDEN_KIND.BANANA, scale: 0.9 },
+        // Bougainvillea along the chowk seating wall and tea stall.
+        { x: CHOWK_CENTER.x + 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
+        { x: CHOWK_CENTER.x - 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
+        { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
+        { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, kind: GARDEN_KIND.BOUGAINVILLEA },
       ])
     );
 

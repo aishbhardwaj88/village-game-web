@@ -293,3 +293,122 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
 
   return group;
 }
+
+// ---------------------------------------------------------------------------
+// Garden plants (A3 low vegetation): marigold beds, banana clumps, tulsi and
+// bougainvillea as alpha-cut crossed cards from ONE 4-cell atlas, so every
+// kind shares a single material and a single draw call (cell chosen per
+// instance through an instanced attribute, no extra meshes).
+// ---------------------------------------------------------------------------
+export const GARDEN_KIND = { MARIGOLD: 0, BANANA: 1, TULSI: 2, BOUGAINVILLEA: 3 };
+const GARDEN_SIZE = [
+  [1.1, 0.55], // marigold bed: wide, low
+  [2.6, 3.0], // banana clump: tall arching leaves
+  [0.6, 0.7], // tulsi bush
+  [1.5, 1.3], // bougainvillea mass
+];
+
+function makeGardenAtlas() {
+  const S = 256;
+  const c = document.createElement('canvas');
+  c.width = S * 4;
+  c.height = S;
+  const g = c.getContext('2d');
+  let a = 7311;
+  const r = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; };
+  const leaf = (x, y, len, wid, ang, c0, c1) => {
+    g.save();
+    g.translate(x, y);
+    g.rotate(ang);
+    const grad = g.createLinearGradient(0, 0, 0, -len);
+    grad.addColorStop(0, c0);
+    grad.addColorStop(1, c1);
+    g.fillStyle = grad;
+    g.beginPath();
+    g.moveTo(0, 0);
+    g.quadraticCurveTo(wid, -len * 0.5, 0, -len);
+    g.quadraticCurveTo(-wid, -len * 0.5, 0, 0);
+    g.fill();
+    g.restore();
+  };
+  const blob = (x, y, rad, col) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, rad, 0, 7); g.fill(); };
+
+  // 0: marigold bed - dusty green serrated foliage, orange and yellow pompoms
+  g.save(); g.translate(0, 0);
+  for (let i = 0; i < 26; i++) leaf(128 + (r() - 0.5) * 190, 250, 70 + r() * 70, 9 + r() * 6, (r() - 0.5) * 1.3, '#26391a', '#506a2c');
+  for (let i = 0; i < 34; i++) {
+    const x = 128 + (r() - 0.5) * 200, y = 250 - 50 - r() * 110;
+    const col = r() < 0.6 ? '#d9791a' : '#e8b422';
+    blob(x, y, 11 + r() * 5, col);
+    blob(x - 2, y - 2, 6, r() < 0.5 ? '#f0a030' : '#f2cc44');
+  }
+  g.restore();
+
+  // 1: banana clump - big arching leaves, pale midrib, a hanging dark pseudo-stem
+  g.save(); g.translate(S, 0);
+  g.fillStyle = '#4a5a2a'; g.fillRect(118, 150, 20, 106);
+  for (let i = 0; i < 9; i++) {
+    const ang = -1.25 + (i / 8) * 2.5 + (r() - 0.5) * 0.2;
+    leaf(128, 160, 150 + r() * 70, 26 + r() * 10, ang, '#2b4a1c', i % 3 === 0 ? '#7f9a3e' : '#5d8230');
+  }
+  g.strokeStyle = '#a9b86a'; g.lineWidth = 2;
+  for (let i = 0; i < 5; i++) { const ang = -1 + i * 0.5; g.beginPath(); g.moveTo(128, 160); g.lineTo(128 + Math.sin(ang) * 120, 160 - Math.cos(ang) * 120); g.stroke(); }
+  g.restore();
+
+  // 2: tulsi - dense small bush, darker green, pale purple flower spikes
+  g.save(); g.translate(S * 2, 0);
+  for (let i = 0; i < 40; i++) blob(128 + (r() - 0.5) * 150, 215 - r() * 120, 12 + r() * 8, r() < 0.5 ? '#2d4a22' : '#436a2e');
+  for (let i = 0; i < 14; i++) { const x = 128 + (r() - 0.5) * 130, y = 100 - r() * 30 + 40; g.fillStyle = '#9a86b8'; g.fillRect(x, y - 24, 4, 24); }
+  g.restore();
+
+  // 3: bougainvillea - tangled green with magenta paper bracts
+  g.save(); g.translate(S * 3, 0);
+  for (let i = 0; i < 30; i++) blob(128 + (r() - 0.5) * 220, 240 - r() * 200, 12 + r() * 9, '#2e4a24');
+  for (let i = 0; i < 70; i++) { const x = 128 + (r() - 0.5) * 230, y = 240 - r() * 210; blob(x, y, 5 + r() * 4, r() < 0.7 ? '#b6286a' : '#d4488a'); }
+  g.restore();
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+/** `plants`: [{x, z, y?, kind: GARDEN_KIND.*, scale?}]. One InstancedMesh, one draw call. */
+export function buildGardenPlants(plants) {
+  if (!plants.length) return null;
+  const parts = [];
+  for (let i = 0; i < 3; i++) {
+    const geo = new THREE.PlaneGeometry(1, 1);
+    geo.translate(0, 0.5, 0);
+    geo.rotateY((i * Math.PI) / 3 + 0.3);
+    parts.push(geo);
+  }
+  const geometry = mergeGeometries(parts);
+  const cell = new Float32Array(plants.length);
+  const material = new THREE.MeshStandardMaterial({ map: makeGardenAtlas(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 });
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float aCell;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + aCell) * 0.25, vMapUv.y);\n#endif');
+  };
+  const mesh = new THREE.InstancedMesh(geometry, material, plants.length);
+  mesh.name = 'flowering_plants';
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  const m = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const s = new THREE.Vector3();
+  const up = new THREE.Vector3(0, 1, 0);
+  plants.forEach((p, i) => {
+    const [w, h] = GARDEN_SIZE[p.kind];
+    const k = (p.scale ?? 1) * (0.85 + Math.random() * 0.3);
+    q.setFromAxisAngle(up, Math.random() * Math.PI * 2);
+    s.set(w * k, h * k, w * k);
+    m.compose(new THREE.Vector3(p.x, p.y ?? 0, p.z), q, s);
+    mesh.setMatrixAt(i, m);
+    cell[i] = p.kind;
+  });
+  geometry.setAttribute('aCell', new THREE.InstancedBufferAttribute(cell, 1));
+  mesh.instanceMatrix.needsUpdate = true;
+  return mesh;
+}
