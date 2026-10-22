@@ -1,0 +1,201 @@
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+/**
+ * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
+ *   - pond just outside the west boundary (bathing, buffaloes, lotus)
+ *   - tubewell + kothri (shade hut) in the family's north fields
+ *   - ganna (sugarcane) belt, ten feet tall, planted in walls
+ * MAP.md gives no coordinates for any of them; main.js picks open ground.
+ * Vertex-coloured merged meshes, a handful of draw calls per zone.
+ */
+
+function bake(geometry, matrix, color) {
+  const g = geometry.index ? geometry.toNonIndexed() : geometry;
+  g.applyMatrix4(matrix);
+  const c = new THREE.Color(color);
+  const n = g.attributes.position.count;
+  const arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { arr[i * 3] = c.r; arr[i * 3 + 1] = c.g; arr[i * 3 + 2] = c.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  g.deleteAttribute('uv');
+  if (!g.attributes.normal) g.computeVertexNormals();
+  return g;
+}
+const at = (x, y, z, ry = 0) => new THREE.Matrix4().makeRotationY(ry).setPosition(x, y, z);
+
+/** Irregular blob outline (never a perfect circle: MAP.md wants organic edges). */
+function blobShape(radius, seed) {
+  const shape = new THREE.Shape();
+  const N = 28;
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    const r = radius * (1 + 0.16 * Math.sin(a * 2 + seed) + 0.09 * Math.sin(a * 3 + seed * 2.3) + 0.05 * Math.sin(a * 5 + seed * 0.7));
+    const x = Math.cos(a) * r, y = Math.sin(a) * r;
+    if (i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
+  }
+  shape.closePath();
+  return shape;
+}
+function flatBlob(radius, seed, y, color) {
+  const g = new THREE.ShapeGeometry(blobShape(radius, seed));
+  g.rotateX(-Math.PI / 2);
+  return bake(g, at(0, y, 0), color);
+}
+
+const vcMat = (opts = {}) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, ...opts });
+
+/** Village pond: muddy bank ring, murky green water, lotus pads and a few pink lotus. */
+export function createPond(position) {
+  const group = new THREE.Group();
+  group.name = 'pond';
+  // Bank: wide trampled-mud ring under the water, so the edge reads as wet earth, not a sticker.
+  const bank = new THREE.Mesh(mergeGeometries([
+    flatBlob(12.5, 1.3, 0.025, 0x6e5a3c),
+    flatBlob(10.8, 1.3, 0.03, 0x4f4430),
+  ]), vcMat({ roughness: 1 }));
+  bank.receiveShadow = true;
+  group.add(bank);
+  const water = new THREE.Mesh(
+    flatBlob(9.6, 1.3, 0.06, 0x4f5238),
+    vcMat({ roughness: 0.08, metalness: 0.35 })
+  );
+  water.name = 'pond_water';
+  water.material.polygonOffset = true;
+  water.material.polygonOffsetFactor = -1;
+  water.receiveShadow = true;
+  group.add(water);
+
+  // Lotus pads (flat discs) and flowers (small pink cones) scattered on the water.
+  const geos = [];
+  let s = 7;
+  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  for (let i = 0; i < 70; i++) {
+    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 7.2;
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
+    const size = 0.5 + rnd() * 0.45;
+    geos.push(bake(new THREE.CircleGeometry(size, 9), new THREE.Matrix4().makeRotationX(-Math.PI / 2).setPosition(x, 0.085, z), i % 3 ? 0x4f7233 : 0x62843c));
+    if (i % 5 === 0) {
+      geos.push(bake(new THREE.ConeGeometry(0.28, 0.4, 7), at(x, 0.28, z), 0xd9709a));
+      geos.push(bake(new THREE.ConeGeometry(0.18, 0.3, 6), at(x + 0.2, 0.24, z + 0.08), 0xefb0c8));
+    }
+  }
+  // Bathing ghat: two stepped cement slabs and a washing stone on the east bank.
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(2.6 - i * 0.3, 0.16, 0.7), at(10.4 - i * 0.7, 0.08 + i * 0.15, 0.0, Math.PI / 2), 0xb4ac98));
+  geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(11.9, 0.18, 2.0, 0.4), 0x8d8676));
+  const props = new THREE.Mesh(mergeGeometries(geos), vcMat());
+  props.castShadow = false;
+  props.receiveShadow = true;
+  group.add(props);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
+/** Tubewell kothri (brick shade hut), motor pump, pipe and cistern with an outlet channel. */
+export function createTubewell(position) {
+  const geos = [];
+  const BRICK = 0xb88b6a, LIME = 0xd9d0b8, SLAB = 0x9a968c, DOOR = 0x2f6b5a, IRON = 0x4d4a46, WATER = 0x5d6b3f;
+  // Kothri 2.8 x 2.4, walls 2.3 high, flat slab roof with lip, plinth band.
+  geos.push(bake(new THREE.BoxGeometry(2.8, 2.3, 2.4), at(0, 1.15, 0), LIME));
+  geos.push(bake(new THREE.BoxGeometry(2.9, 0.45, 2.5), at(0, 0.22, 0), BRICK));
+  geos.push(bake(new THREE.BoxGeometry(3.2, 0.16, 2.8), at(0, 2.38, 0), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(3.2, 0.1, 0.1), at(0, 2.5, 1.4), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(0.9, 1.7, 0.08), at(0.2, 0.95, 1.22), DOOR));
+  geos.push(bake(new THREE.BoxGeometry(0.5, 0.5, 0.08), at(-0.9, 1.5, 1.22), IRON));
+  // Motor + starter box outside, pipe rising then bending to the cistern.
+  geos.push(bake(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 12), at(-2.1, 0.35, 0.4), 0x2f5c7a));
+  geos.push(bake(new THREE.BoxGeometry(0.35, 0.5, 0.2), at(-1.55, 1.4, 1.25), 0x6b7378));
+  geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 1.1, 8), at(-2.1, 1.25, 0.4), IRON));
+  geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(-0.7, 1.8, 0.4), IRON));
+  // Cistern (hauz): low cement tank with rim, water inside, outlet channel into the field.
+  const cx = 3.9, cz = 0.4;
+  geos.push(bake(new THREE.BoxGeometry(3.4, 0.7, 0.18), at(cx, 0.35, cz - 1.6), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(3.4, 0.7, 0.18), at(cx, 0.35, cz + 1.6), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 3.2), at(cx - 1.6, 0.35, cz), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 3.2), at(cx + 1.6, 0.35, cz), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(3.0, 0.04, 3.0), at(cx, 0.5, cz), WATER));
+  geos.push(bake(new THREE.BoxGeometry(0.4, 0.12, 4.5), at(cx + 1.9, 0.05, cz + 3.8), SLAB));
+  geos.push(bake(new THREE.BoxGeometry(0.22, 0.03, 4.3), at(cx + 1.9, 0.12, cz + 3.8), WATER));
+  // Charpai in the kothri's shade and a steel water pot.
+  geos.push(bake(new THREE.BoxGeometry(1.8, 0.08, 0.95), at(-0.5, 0.5, 2.7, 0.15), 0x7a5a38));
+  for (const [dx, dz] of [[-0.8, -0.4], [0.8, -0.4], [-0.8, 0.4], [0.8, 0.4]]) geos.push(bake(new THREE.BoxGeometry(0.07, 0.5, 0.07), at(-0.5 + dx, 0.25, 2.7 + dz, 0.15), 0x5a4228));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
+  mesh.name = 'tubewell';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.name = 'tubewell_prop';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
+/**
+ * Sugarcane belt: rows of 3 m clumps, 4 stalks + arching leaf blades each, one InstancedMesh.
+ * Rows run along x with a one-clump-wide gap every few rows so the belt can be crossed (a rough maze).
+ */
+export function createSugarcaneBelt({ x0, z0, width, depth }) {
+  const geos = [];
+  const STALK = 0x7a8a3c, STALK_DARK = 0x5f6e2c, LEAF = 0x5c7a2e, LEAF_DARK = 0x46612a;
+  let s = 11;
+  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  const stalks = 6;
+  for (let i = 0; i < stalks; i++) {
+    const a = (i / stalks) * Math.PI * 2 + rnd(), r = 0.1 + rnd() * 0.18;
+    const h = 2.8 + rnd() * 0.5;
+    const g = new THREE.CylinderGeometry(0.016, 0.026, h, 4, 1, true);
+    g.translate(0, h / 2, 0);
+    geos.push(bake(g, at(Math.cos(a) * r, 0, Math.sin(a) * r), i % 2 ? STALK : STALK_DARK));
+  }
+  // Leaf blades: tapering, bending two-segment strips from the stalk tops, outward and drooping.
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 + rnd() * 0.4;
+    const baseY = 0.7 + rnd() * 2.4, len = 0.9 + rnd() * 0.6;
+    const w = 0.055;
+    const pos = [], idx = [];
+    const pts = [[0, 0], [len * 0.5, 0.25 * len], [len, -0.05 * len]];
+    pts.forEach(([out, up], k) => {
+      const t = k / 2, ww = w * (1 - 0.85 * t * t);
+      pos.push(-ww, up, out, ww, up, out);
+    });
+    for (let k = 0; k < 2; k++) { const b = k * 2; idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    geos.push(bake(g, at(0, baseY, 0, a), i % 2 ? LEAF : LEAF_DARK));
+  }
+  const geometry = mergeGeometries(geos);
+  const material = vcMat({ side: THREE.DoubleSide, roughness: 0.8 });
+  const placements = [];
+  const SPACING_X = 1.7, SPACING_Z = 1.7;
+  const rows = Math.floor(depth / SPACING_Z);
+  const cols = Math.floor(width / SPACING_X);
+  for (let r = 0; r < rows; r++) {
+    if (r % 7 === 3) continue; // lane through the belt
+    for (let c = 0; c < cols; c++) {
+      if (c % 11 === 5 && r % 2) continue; // cross-gaps so it is a maze, not a hedge
+      placements.push([x0 + c * SPACING_X + (rnd() - 0.5) * 0.4, z0 + r * SPACING_Z + (rnd() - 0.5) * 0.4]);
+    }
+  }
+  const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
+  mesh.name = 'sugarcane_belt';
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
+  placements.forEach(([x, z], i) => {
+    const k = 0.85 + rnd() * 0.35;
+    q.setFromAxisAngle(up, rnd() * Math.PI * 2);
+    m.compose(p.set(x, 0, z), q, sc.set(k, 0.9 + rnd() * 0.3, k));
+    mesh.setMatrixAt(i, m);
+    const v = 0.85 + rnd() * 0.3;
+    mesh.setColorAt(i, col.setRGB(v, v, v));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  mesh.castShadow = false; // belt is large: skip the second shadow pass draw
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = false; // instance bounds are not computed per-instance
+  const group = new THREE.Group();
+  group.name = 'sugarcane_belt_zone';
+  group.add(mesh);
+  return group;
+}
