@@ -1386,6 +1386,20 @@ async function main() {
     for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneGames({ x, z }, id, ry) });
     }
+    // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
+    for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7]]) {
+      zoneManager.register(id, {
+        x, z, buildRadius: 32, teardownRadius: 44,
+        build: () => {
+          const group = new THREE.Group();
+          group.name = 'zone_' + id;
+          const cattle = createCattleHerd([{ x, z, rotationY: ry }, { x: x + 3.2, z: z + 1.4, rotationY: ry + 0.5, buffalo: true }]);
+          const dogs = createDogPack([{ x: x - 2.5, z: z - 1.2, rotationY: ry + 2.2 }]);
+          group.add(cattle.mesh, dogs.mesh);
+          return { group, onFrame: (dt) => { cattle.update(dt); dogs.update(dt); } };
+        },
+      });
+    }
     zoneManager.register('jalebi_stall', { x: -104, z: 4, buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall({ x: -104, z: 4 }) });
     zoneManager.register('mela_ground', { x: -135, z: 150, buildRadius: 65, teardownRadius: 80, build: () => createMelaGround({ x: -135, z: 150 }) });
     zoneManager.register('gurukul', { x: 160, z: 85, buildRadius: 55, teardownRadius: 70, build: () => createGurukul({ x: 160, z: 85 }) });
