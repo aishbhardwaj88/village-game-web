@@ -355,3 +355,110 @@ export function buildTempleLane() {
   ];
   return mergeMeshList(segments, 'temple_lane');
 }
+
+/** Visible daily-use props on the porch and plinth (5b rule 3): brass lamp stand with
+ * diyas, a donation box, a water kalash, a woven mat, a heap of marigold offerings
+ * and two hanging garlands. No idol, no imagery, no tasks. Plain wood/metal/jute/
+ * terracotta geometry on the village's shared vertex-coloured materials, so the
+ * across-group merge folds it into existing draw calls (no new ones). */
+export function buildTempleProps() {
+  const group = new THREE.Group();
+  group.name = 'temple_props';
+  const lists = { wood: [], metal: [], jute: [], terracotta: [] };
+  const colliders = [];
+  let seed = 31;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const jit = (a) => (rnd() - 0.5) * 2 * a;
+  const put = (list, geo, x, y, z, tint, ry = 0) => {
+    geo.applyMatrix4(new THREE.Matrix4().makeRotationY(ry).setPosition(x, y, z));
+    ensureUv2(geo);
+    bakeFlatTintColors(geo, tint, 1);
+    lists[list].push(geo);
+  };
+  const FLOOR = PLINTH.h;
+  const zc = TEMPLE_POS.z;
+  const mix = (a, b, t) => new THREE.Color(a).lerp(new THREE.Color(b), t).getHex();
+
+  // Woven mat on the porch floor, slightly skewed, with a darker border strip.
+  put('jute', new THREE.BoxGeometry(1.7, 0.025, 1.05), PORCH.cx + 0.1, FLOOR + 0.0125, zc + 0.15, 0x9a6a48, 0.12);
+  put('jute', new THREE.BoxGeometry(1.7, 0.03, 0.08), PORCH.cx + 0.1, FLOOR + 0.0135, zc + 0.15 + 0.5, 0x5e3a2a, 0.12);
+
+  // Brass lamp stand (deepstambh): base, stem, wide tray and five diyas.
+  const lx = PORCH.cx + 0.4, lz = zc + PORCH.d / 2 + 0.85;
+  const brass = 0xb08d3c;
+  put('metal', new THREE.CylinderGeometry(0.2, 0.24, 0.06, 12), lx, FLOOR + 0.03, lz, mix(brass, 0x2a2a2a, 0.25));
+  put('metal', new THREE.CylinderGeometry(0.04, 0.06, 0.8, 8), lx, FLOOR + 0.46, lz, brass);
+  put('metal', new THREE.CylinderGeometry(0.26, 0.2, 0.06, 14), lx, FLOOR + 0.88, lz, mix(brass, 0xd4b45a, 0.4));
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    const d = new THREE.SphereGeometry(0.055, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+    d.scale(1, 0.55, 1);
+    put('terracotta', d, lx + Math.cos(a) * 0.15, FLOOR + 0.91, lz + Math.sin(a) * 0.15, mix(0x9a4a28, 0x6e3418, rnd()));
+    put('metal', new THREE.SphereGeometry(0.014, 5, 4), lx + Math.cos(a) * 0.15, FLOOR + 0.935, lz + Math.sin(a) * 0.15, 0xffd27a);
+  }
+  colliders.push(colliderBoxFromTransform(0.5, 0.5, new THREE.Matrix4().setPosition(lx, 0, lz)));
+
+  // Donation box (hundi): painted tin box on a short wooden stand, slot on top.
+  const hx = PORCH.cx + 1.2, hz = zc - PORCH.d / 2 - 0.55;
+  put('wood', new THREE.BoxGeometry(0.42, 0.55, 0.42), hx, FLOOR + 0.275, hz, 0x6a4a30);
+  put('metal', new THREE.BoxGeometry(0.4, 0.34, 0.4), hx, FLOOR + 0.72, hz, 0x7a2a22);
+  put('metal', new THREE.BoxGeometry(0.16, 0.02, 0.025), hx, FLOOR + 0.895, hz, 0x1a1a1a);
+  put('metal', new THREE.BoxGeometry(0.08, 0.06, 0.03), hx, FLOOR + 0.62, hz - 0.205, 0x2a2a2a); // padlock
+  colliders.push(colliderBoxFromTransform(0.5, 0.5, new THREE.Matrix4().setPosition(hx, 0, hz)));
+
+  // Water kalash (brass pot) with a mouth rim, and a loose lota beside it.
+  const kx = PORCH.cx - 1.1, kz = zc + PORCH.d / 2 + 0.7;
+  const pot = new THREE.SphereGeometry(0.17, 12, 9);
+  pot.scale(1, 0.9, 1);
+  put('metal', pot, kx, FLOOR + 0.17, kz, mix(brass, 0xc9a24a, 0.5));
+  put('metal', new THREE.CylinderGeometry(0.09, 0.07, 0.1, 10), kx, FLOOR + 0.35, kz, brass);
+  put('metal', new THREE.TorusGeometry(0.095, 0.014, 5, 12).rotateX(Math.PI / 2), kx, FLOOR + 0.4, kz, mix(brass, 0x2a2a2a, 0.2));
+  const lota = new THREE.SphereGeometry(0.09, 10, 8);
+  lota.scale(1, 0.8, 1);
+  put('metal', lota, kx + 0.4, FLOOR + 0.07, kz - 0.08, 0xa6a39a);
+
+  // Marigold and rose offerings heaped on a leaf plate beside the shrine step.
+  const ox = SHRINE.cx - SHRINE.w / 2 - 0.35, oz = zc - 0.35;
+  put('jute', new THREE.CylinderGeometry(0.28, 0.26, 0.015, 10), ox, FLOOR + 0.0075, oz, 0x3d5a2a);
+  for (let i = 0; i < 34; i++) {
+    const r = Math.sqrt(rnd()) * 0.22, a = rnd() * 6.283;
+    const petal = new THREE.SphereGeometry(0.04 + rnd() * 0.02, 6, 4);
+    petal.scale(1, 0.6, 1);
+    const tint = rnd() < 0.8 ? mix(0xe8820e, 0xf5b81c, rnd()) : mix(0xb02a46, 0xd8607a, rnd());
+    put('jute', petal, ox + Math.cos(a) * r, FLOOR + 0.04 + (0.22 - r) * 0.25 + rnd() * 0.02, oz + Math.sin(a) * r, tint);
+  }
+  // A few diyas set along the foot of the shrine wall.
+  for (let i = 0; i < 4; i++) {
+    const d = new THREE.SphereGeometry(0.05, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+    d.scale(1, 0.55, 1);
+    put('terracotta', d, ox + 0.1 + jit(0.04), FLOOR + 0.002, zc + 0.35 + i * 0.22 + jit(0.03), mix(0x9a4a28, 0x6e3418, rnd()));
+  }
+
+  // Two marigold garlands sagging between the entrance pillars (west face).
+  const px = PORCH.cx - PORCH.w / 2 + 0.2 - 0.17;
+  for (const [z0, z1, topY, c0, c1] of [[zc - PORCH.d / 2 + 0.2, zc, 2.75, 0xe8820e, 0xf5b81c], [zc, zc + PORCH.d / 2 - 0.2, 2.7, 0xf5b81c, 0xd9561a]]) {
+    const n = 14;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n, sag = Math.sin(t * Math.PI) * 0.32;
+      const bead = new THREE.SphereGeometry(0.055 + jit(0.008), 6, 5);
+      bead.scale(1, 1.2, 1);
+      put('jute', bead, px + jit(0.01), FLOOR + topY - sag, z0 + (z1 - z0) * t, mix(c0, c1, rnd()));
+    }
+  }
+
+  const mats = {
+    wood: getTiledMaterial('wood', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }),
+    metal: getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }),
+    jute: getTiledMaterial('jute', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }),
+    terracotta: getTiledMaterial('terracotta', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }),
+  };
+  for (const key of Object.keys(lists)) {
+    const mesh = new THREE.Mesh(mergeGeometries(lists[key]), mats[key]);
+    mesh.name = `temple_props_${key}`;
+    mesh.castShadow = key !== 'jute';
+    mesh.receiveShadow = true;
+    if (key === 'metal') mesh.userData.colliderBoxes = colliders;
+    group.add(mesh);
+  }
+  return group;
+}

@@ -27,6 +27,7 @@ import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites } from './scenery.js';
 import {
   buildTemple,
+  buildTempleProps,
   buildFlowerStall,
   buildTempleLane,
   TEMPLE_POS,
@@ -430,6 +431,7 @@ async function main() {
   const templeGroup = new THREE.Group();
   templeGroup.name = 'temple_area';
   templeGroup.add(buildTemple(buildingKit));
+  templeGroup.add(buildTempleProps());
   templeGroup.add(buildFlowerStall());
   templeGroup.add(buildTempleLane());
   scene.add(templeGroup);

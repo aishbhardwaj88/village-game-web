@@ -16,12 +16,14 @@ try {
     const d = window.__dopahar; d.teleportPlayer(x, z); d.camRig.yaw = yaw; d.camRig.pitch = -0.15; d.camRig.distance = 5; d.camRig.update(10);
     return new Promise((res) => { let n = 0; const f = () => { if (++n < 6) requestAnimationFrame(f); else {
       const cam = d.camera; cam.updateMatrixWorld(); const M = new d.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
-      const frustum = { planes: [] };
+      const e = M.elements, planes = [];
+      for (const [a, sg] of [[0, 1], [0, -1], [1, 1], [1, -1], [2, 1], [2, -1]]) planes.push([0, 1, 2, 3].map((k) => e[k * 4 + 3] + sg * e[k * 4 + a]));
+      const inFrustum = (o) => { if (o.isInstancedMesh && !o.boundingSphere) o.computeBoundingSphere(); if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const bs = o.isInstancedMesh ? o.boundingSphere : o.geometry.boundingSphere; if (!bs) return true; const c = bs.center.clone().applyMatrix4(o.matrixWorld); const sc = o.matrixWorld.getMaxScaleOnAxis() * bs.radius; return planes.every((p) => p[0] * c.x + p[1] * c.y + p[2] * c.z + p[3] >= -sc * 1.0); };
       const rows = [];
       d.scene.traverse((o) => {
         if (!(o.isMesh || o.isPoints || o.isLine)) return;
         let vis = true; for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; }
-        if (!vis) return;
+        if (!vis) return; if (!o.frustumCulled === false && o.isMesh && !inFrustum(o)) return;
         rows.push([o.name || o.type, Array.isArray(o.material) ? o.material.map(m=>m.name).join('+') : (o.material && o.material.name) || '', o.castShadow ? 'S' : '-', o.isInstancedMesh ? 'I' : '', o.parent && o.parent.name]);
       });
       res({ calls: d.renderer.info.render.calls, rows });
