@@ -59,7 +59,7 @@ const VILLAGER_LOOPS = [
 const SPEED = 1.1;
 const PAUSE_SECONDS = 2.5;
 
-export function createBazaarLife() {
+export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   const geometry = new THREE.CapsuleGeometry(NPC_RADIUS, NPC_HEIGHT - NPC_RADIUS * 2, 4, 8);
   const material = new THREE.MeshStandardMaterial({ roughness: 0.85 });
   const shopkeeperCount = BAZAAR_UNITS.length;
@@ -142,7 +142,7 @@ export function createBazaarLife() {
         // moving body in this game goes through now (see CLAUDE.md); the
         // hand-picked waypoints already route clear of counters/kerbs, this is
         // the same safety net src/npcRoutines.js's own routines rely on.
-        resolveMove(v.pos, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, []);
+        resolveMove(v.pos, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
         const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
         let diff = targetYaw - v.rotY;
         diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;

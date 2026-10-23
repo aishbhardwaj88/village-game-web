@@ -422,7 +422,7 @@ async function main() {
 
   // NPC life in the bazaar (this task's item 2) — one shared InstancedMesh, see
   // src/bazaarLife.js.
-  const bazaarLife = createBazaarLife();
+  const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
   scene.add(bazaarLife.mesh);
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
