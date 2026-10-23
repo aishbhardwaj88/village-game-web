@@ -119,6 +119,7 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 - [ ] Post office (dak ghar): counter grille, letter racks, postbags, rubber stamps and ink pad, scales, red post box outside, notice board, old wooden furniture
 - [ ] Atta chakki: the grinding machine with belt drive and motor, flour dust haze and settled dust on every surface, sacks, scoops, scales, hanging bulb
 - [ ] School: desks, benches, blackboard with real chalk writing, charts and posters, water pot with mug, bell, cupboard, scattered slates and bags
+  - PROGRESS 2026-10-23 (cycle 38bt, not ticked): classroom now has painted blackboard with chalk lesson in a frame with ledge/duster, teacher table + register + chair, 10 desk-benches with per-piece wood tint, books, slates, school bags, 3 wall charts (Hindi alphabet, English alphabet, hygiene poster), water matka on stand with mug, cupboard with registers, brass bell, wall clock, hanging bulb, ceiling fan, broom, door mat (src/village.js furnishClassroom). Proof docs/shots/classroom-2026-10-23/board.png, charts.png. Not done: other school blocks have no interiors, no CC0 desk models, matka/bell are boxes.
 - [ ] Temple complex: lamps, bells, flower offerings, mats, donation box, steps worn with use
 - [ ] Every remaining shop, house and farm structure: trade-specific tools, stock, seating, lighting, wiring, signage, clutter, signs of use
 - [ ] All of it CC0-sourced first, textured, instanced, zone-streamed, inside the budget; report the number if any place cannot fit

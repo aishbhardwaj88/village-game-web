@@ -518,23 +518,201 @@ function buildSchoolClassroom(group, schoolOld, kit) {
 
   // Furniture: blackboard + teacher's table/chair at the north end (the "front" of
   // the room), benches in rows facing them, a wall chart on the west wall.
-  const blackboard = texturedBox(2.4, 1.1, 0.06, 'wood', { tint: 0x1c2a22, tileSize: 1 });
-  blackboard.position.set(SCHOOL_BLACKBOARD_POSITION.x, SCHOOL_BLACKBOARD_POSITION.y, SCHOOL_BLACKBOARD_POSITION.z);
-  group.add(blackboard);
-  const teacherTable = texturedBox(1.1, 0.75, 0.5, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
-  teacherTable.position.set(rx, 0.375, rz - d / 2 + 1.6);
-  group.add(teacherTable);
-  const teacherChair = texturedBox(0.4, 0.75, 0.4, 'wood', { tint: 0x4a3a28, tileSize: 1 });
-  teacherChair.position.set(rx, 0.375, rz - d / 2 + 2.4);
-  group.add(teacherChair);
-  const chart = texturedBox(1.2, 0.9, 0.04, 'wood', { tint: 0xdcd0a8, tileSize: 1 });
-  chart.position.set(rx - w / 2 + 0.1, 1.6, rz + 2);
-  group.add(chart);
-  for (let row = 0; row < 5; row++) {
-    const bench = texturedBox(3.4, 0.42, 0.35, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
-    bench.position.set(SCHOOL_BENCH_POSITION.x, 0.21, SCHOOL_BENCH_POSITION.z + row * 2.3);
-    group.add(bench);
+  furnishClassroom(group);
+}
+
+/** One canvas atlas for every paper/slate surface in the classroom (blackboard + 3 wall charts):
+ * one material named 'signboard' (wall-mounted, elevated by design: world-validator check 2 exempts
+ * that name), one draw call. Cells: board 1024x470 on top row, three 341x256 charts below. */
+const CLASSROOM_ATLAS = { W: 1024, H: 750, board: { y: 0, h: 470 }, chartW: 341, chartY: 470, chartH: 256 };
+function buildClassroomAtlas() {
+  const { W, H, board, chartW, chartY, chartH } = CLASSROOM_ATLAS;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.save(); g.beginPath(); g.rect(0, board.y, W, board.h); g.clip(); g.translate(0, board.y); chalkBoardPaint(g, W, board.h); g.restore();
+  for (let k = 0; k < 3; k++) {
+    g.save(); g.beginPath(); g.rect(k * chartW, chartY, chartW, chartH); g.clip(); g.translate(k * chartW, chartY); chartPaint(k)(g, chartW, chartH); g.restore();
   }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const material = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92, metalness: 0 });
+  material.name = 'signboard';
+  return material;
+}
+/** A plane (w x h) showing atlas rect (u0,v0,u1,v1 in canvas px), placed and yawed. */
+function atlasPlane(material, w, h, rect, x, y, z, ry, rz = 0) {
+  const { W, H } = CLASSROOM_ATLAS;
+  const geo = new THREE.PlaneGeometry(w, h);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, (rect[0] + uv.getX(i) * (rect[2] - rect[0])) / W, 1 - (rect[3] - uv.getY(i) * (rect[3] - rect[1])) / H);
+  }
+  const m = new THREE.Mesh(geo, material);
+  m.position.set(x, y, z); m.rotation.set(0, ry, rz, 'YXZ');
+  return m;
+}
+
+function chalkBoardPaint(g, W, H) {
+  g.fillStyle = '#26332c'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 90; i++) { // faint wiped-chalk smears
+    g.fillStyle = `rgba(210,215,205,${0.01 + Math.random() * 0.025})`;
+    g.fillRect(Math.random() * W, Math.random() * H, 60 + Math.random() * 220, 10 + Math.random() * 26);
+  }
+  g.fillStyle = 'rgba(238,238,228,0.88)';
+  g.textBaseline = 'alphabetic';
+  g.font = `${H * 0.17}px "Segoe Print","Bradley Hand","Noto Sans Devanagari",cursive`;
+  g.fillText('Class 5  -  Tuesday', W * 0.05, H * 0.2);
+  g.font = `${H * 0.15}px "Noto Sans Devanagari","Kohinoor Devanagari",sans-serif`;
+  g.fillText('\u0917\u0923\u093f\u0924 : \u0906\u0920 \u0915\u093e \u092a\u0939\u093e\u0921\u093c\u093e', W * 0.05, H * 0.42);
+  g.font = `${H * 0.15}px "Segoe Print","Bradley Hand",cursive`;
+  for (let i = 1; i <= 5; i++) g.fillText(`8 x ${i} = ${8 * i}`, W * 0.06, H * (0.42 + i * 0.105));
+  g.font = `${H * 0.13}px "Segoe Print","Bradley Hand",cursive`;
+  g.fillText('Spelling: mango  canal', W * 0.52, H * 0.62);
+  g.fillText('Homework: page 14', W * 0.52, H * 0.82);
+  g.strokeStyle = 'rgba(238,238,228,0.7)'; g.lineWidth = 3; // underline, as a teacher would
+  g.beginPath(); g.moveTo(W * 0.05, H * 0.235); g.lineTo(W * 0.5, H * 0.24); g.stroke();
+}
+
+function chartPaint(kind) {
+  return (g, W, H) => {
+    g.fillStyle = kind === 0 ? '#e9d9a6' : kind === 1 ? '#cfe0d0' : '#e8c7b8';
+    g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(90,60,40,0.55)'; g.lineWidth = 6; g.strokeRect(10, 10, W - 20, H - 20);
+    g.fillStyle = '#5a2a1e'; g.textAlign = 'center';
+    if (kind === 0) {
+      g.font = `${H * 0.13}px "Noto Sans Devanagari",sans-serif`;
+      g.fillText('\u0905  \u0906  \u0907  \u0908  \u0909  \u090a', W / 2, H * 0.3);
+      g.fillText('\u0915  \u0916  \u0917  \u0918  \u0919', W / 2, H * 0.55);
+      g.fillText('\u091a  \u091b  \u091c  \u091d', W / 2, H * 0.8);
+    } else if (kind === 1) {
+      g.font = `bold ${H * 0.13}px sans-serif`;
+      g.fillText('A  B  C  D  E', W / 2, H * 0.3);
+      g.fillText('F  G  H  I  J', W / 2, H * 0.55);
+      g.fillText('K  L  M  N  O', W / 2, H * 0.8);
+    } else {
+      g.font = `bold ${H * 0.11}px sans-serif`;
+      g.fillText('Wash your hands', W / 2, H * 0.3);
+      g.fillStyle = '#244a6a'; g.fillRect(W * 0.2, H * 0.42, W * 0.6, H * 0.45);
+      g.fillStyle = '#e8e2d0'; g.font = `${H * 0.09}px sans-serif`;
+      g.fillText('Clean school', W / 2, H * 0.62);
+      g.fillText('Healthy village', W / 2, H * 0.78);
+    }
+    for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(120,90,60,${Math.random() * 0.08})`; g.fillRect(Math.random() * W, Math.random() * H, 30, 30); }
+  };
+}
+
+/** The classroom's contents (CLAUDE.md 5b rule 3): painted blackboard with chalk lesson, frame and
+ * ledge, teacher's table with register, desk-benches in rows with per-piece wear, wall charts,
+ * water pot with mug, cupboard, school bell, hanging bulb, scattered slates and bags. Walls/ceiling
+ * x range is rx +/- 3, z range rz +/- 9; the door is on the east face at z = rz. */
+function furnishClassroom(group) {
+  const { w, h, d, cx: rx, cz: rz } = SCHOOL_ROOM;
+  let seed = 41;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const jit = (a) => (rnd() - 0.5) * 2 * a;
+  const WOODS = [0xd8aa74, 0xc29666, 0xe6bd88, 0xb48a5c, 0xd4a878]; // lighter: the tint multiplies a dark wood map
+  const put = (m, x, y, z, ry = 0) => { m.position.set(x, y, z); m.rotation.y = ry; group.add(m); return m; };
+  const wood = (bw, bh, bd, x, y, z, ry, tint) => put(texturedBox(bw, bh, bd, 'wood', { tint, tileSize: 0.8 }), x, y, z, ry);
+  const metal = (bw, bh, bd, x, y, z, ry, tint) => put(texturedBox(bw, bh, bd, 'metal', { tint, tileSize: 0.8 }), x, y, z, ry);
+  const front = rz - d / 2 + 0.15; // north wall inner face (blackboard wall)
+
+  // Blackboard: painted board in a wooden frame with a chalk ledge, duster and chalk.
+  const bb = SCHOOL_BLACKBOARD_POSITION;
+  const atlasMat = buildClassroomAtlas();
+  group.add(atlasPlane(atlasMat, 2.4, 1.1, [0, 0, 1024, 470], bb.x, bb.y, front + 0.075, 0));
+  for (const [fw, fh, fx, fy] of [[2.56, 0.08, 0, 0.59], [2.56, 0.08, 0, -0.59], [0.08, 1.26, -1.24, 0], [0.08, 1.26, 1.24, 0]]) wood(fw, fh, 0.07, bb.x + fx, bb.y + fy, front + 0.055, 0, 0x5a3e28);
+  wood(2.4, 0.04, 0.1, bb.x, bb.y - 0.64, front + 0.1, 0, 0x6a4a30);
+  wood(0.12, 0.05, 0.06, bb.x - 0.7, bb.y - 0.6, front + 0.1, 0.2, 0xc9c1a6); // duster
+  wood(0.05, 0.015, 0.015, bb.x + 0.2, bb.y - 0.61, front + 0.11, 0.5, 0xeeeeee); // chalk
+
+  // Teacher: table with drawer front, register + pen pot, cane-seat chair.
+  const tz = rz - d / 2 + 1.7;
+  wood(1.2, 0.05, 0.6, rx, 0.76, tz, 0, WOODS[2]);
+  for (const [lx, lz] of [[-0.55, -0.25], [0.55, -0.25], [-0.55, 0.25], [0.55, 0.25]]) wood(0.06, 0.74, 0.06, rx + lx, 0.37, tz + lz, 0, WOODS[1]);
+  wood(1.0, 0.16, 0.02, rx, 0.65, tz + 0.29, 0, WOODS[3]);
+  wood(0.3, 0.025, 0.4, rx - 0.3, 0.80, tz, 0.15, 0x7a2a22); // register
+  metal(0.06, 0.09, 0.06, rx + 0.35, 0.84, tz - 0.1, 0, 0x3a4a5a); // pen pot
+  const cz2 = tz + 0.95;
+  wood(0.42, 0.04, 0.42, rx + 0.05, 0.45, cz2, 0.12, WOODS[0]);
+  wood(0.42, 0.45, 0.04, rx + 0.05, 0.7, cz2 + 0.2, 0.12, WOODS[0]);
+  for (const [lx, lz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) wood(0.04, 0.44, 0.04, rx + 0.05 + lx, 0.22, cz2 + lz, 0.12, WOODS[1]);
+
+  // Student desk-benches: low desk plank + seat plank on shared legs, 2 per row facing the board,
+  // each with its own tint, small yaw error and a book/slate on top.
+  const rowsZ = []; for (let i = 0; i < 5; i++) rowsZ.push(rz - d / 2 + 4 + i * 2.5);
+  for (const [r, zz] of rowsZ.entries()) {
+    for (const side of [-1, 1]) {
+      const bx = rx + side * 1.15 + jit(0.06);
+      const yaw = jit(0.035);
+      const t = WOODS[Math.floor(rnd() * WOODS.length)];
+      wood(1.5, 0.045, 0.38, bx, 0.62, zz, yaw, t); // desk top
+      wood(1.5, 0.04, 0.28, bx, 0.34, zz + 0.62, yaw, t); // seat
+      for (const lx of [-0.68, 0.68]) {
+        wood(0.05, 0.62, 0.34, bx + lx, 0.31, zz, yaw, WOODS[1]);
+        wood(0.05, 0.34, 0.26, bx + lx, 0.17, zz + 0.62, yaw, WOODS[1]);
+      }
+      wood(1.5, 0.03, 0.04, bx, 0.6, zz + 0.18, yaw, 0x6a4a30); // pencil groove lip
+      // On the desk: an exercise book or a slate, never identical.
+      if (rnd() < 0.8) wood(0.22 + jit(0.03), 0.015, 0.3, bx + jit(0.45), 0.655, zz, jit(0.5), [0x2a4f7a, 0x7a2a22, 0xcfc6a6, 0x2f5a3a][Math.floor(rnd() * 4)]);
+      if (rnd() < 0.4) wood(0.2, 0.012, 0.15, bx + jit(0.5), 0.67, zz + 0.05, jit(0.4), 0x2a2e2a); // slate
+      // School bag leaning/slumped beside some benches.
+      if (rnd() < 0.5) {
+        const bag = wood(0.3, 0.38, 0.14, bx + side * 0.95, 0.19, zz + 0.45, jit(0.6), [0x2a4a6a, 0x8a3a2a, 0x3a5a3a, 0x6a5a2a][Math.floor(rnd() * 4)]);
+        bag.rotation.z = jit(0.12);
+      }
+    }
+  }
+
+  // West wall: charts (each different), a framed notice, a calendar-sized board.
+  const west = rx - w / 2 + 0.13;
+  [[0, rz - 3.5], [1, rz + 0.3], [2, rz + 3.6]].forEach(([k, zz], i) => {
+    const cw = CLASSROOM_ATLAS.chartW;
+    group.add(atlasPlane(atlasMat, 1.2, 0.9, [k * cw, 470, (k + 1) * cw, 726], west, 1.65 + jit(0.06), zz, Math.PI / 2, jit(0.03)));
+  });
+  // North wall beside the board: a framed picture and a hanging clock-ish disc.
+  metal(0.36, 0.36, 0.04, rx + 2.0, 2.45, front + 0.05, 0, 0xe8e2d0); // wall clock
+
+  // East wall (door side): water pot on an iron stand with mug, cupboard, bell.
+  const east = rx + w / 2 - 0.35;
+  for (let i = 0; i < 3; i++) { // iron tripod stand
+    const a = i * 2.094;
+    metal(0.025, 0.55, 0.025, east + Math.cos(a) * 0.2, 0.275, rz + 3.2 + Math.sin(a) * 0.2, 0, 0x2a2a2a);
+  }
+  wood(0.5, 0.42, 0.5, east, 0.8, rz + 3.2, 0.4, 0x8a4a30); // matka body
+  wood(0.36, 0.2, 0.36, east, 1.05, rz + 3.2, 0.9, 0x7a4028); // matka shoulder
+  metal(0.2, 0.03, 0.2, east, 1.1, rz + 3.2, 0, 0x7a3a22); // lid
+  metal(0.08, 0.1, 0.08, east + 0.2, 0.62, rz + 3.5, 0, 0x8a8f94); // steel mug
+  // Cupboard (almirah): doors, handles, shelf top with a stack of registers.
+  const cup = { x: rx + w / 2 - 0.45, z: rz - 6.5 };
+  wood(0.5, 1.8, 1.0, cup.x, 0.9, cup.z, 0, 0x3a5a52);
+  wood(0.02, 1.6, 0.46, cup.x - 0.26, 0.9, cup.z - 0.24, 0, 0x2f4a43);
+  wood(0.02, 1.6, 0.46, cup.x - 0.26, 0.9, cup.z + 0.24, 0, 0x2f4a43);
+  metal(0.03, 0.12, 0.02, cup.x - 0.28, 0.95, cup.z - 0.03, 0, 0x9a9a8a);
+  metal(0.03, 0.12, 0.02, cup.x - 0.28, 0.95, cup.z + 0.03, 0, 0x9a9a8a);
+  for (let i = 0; i < 4; i++) wood(0.3 + jit(0.04), 0.04, 0.4, cup.x + jit(0.03), 1.84 + i * 0.045, cup.z + jit(0.1), jit(0.15), [0x7a2a22, 0x2a4f7a, 0xcfc6a6, 0x3a5a3a][i]);
+  // School bell: brass bell on a bracket by the door, with a short rope.
+  const bellZ = rz - 0.9;
+  metal(0.05, 0.05, 0.3, east + 0.2, 2.35, bellZ, 0, 0x3a2a1c);
+  metal(0.22, 0.2, 0.22, east + 0.2, 2.2, bellZ - 0.1, 0.4, 0xb88a3a); // brass bell
+  metal(0.12, 0.08, 0.12, east + 0.2, 2.32, bellZ - 0.1, 0.4, 0xa07a30);
+  metal(0.012, 0.5, 0.012, east + 0.2, 1.9, bellZ - 0.1, 0, 0x8a7a5a);
+
+  // Ceiling: a single hanging bulb on a flex, a fan with three blades.
+  const ceilY = 2.85;
+  metal(0.012, 0.35, 0.012, rx - 0.3, ceilY - 0.17, rz + 1, 0, 0x1a1a1a);
+  metal(0.1, 0.12, 0.1, rx - 0.3, ceilY - 0.4, rz + 1, 0, 0xfff1c8); // bulb
+  const fanX = rx, fanZ = rz - 3;
+  metal(0.02, 0.3, 0.02, fanX, ceilY - 0.15, fanZ, 0, 0x2a2a2a);
+  metal(0.14, 0.08, 0.14, fanX, ceilY - 0.33, fanZ, 0, 0xcfc6a6);
+  for (let i = 0; i < 3; i++) {
+    const a = i * 2.094 + 0.3;
+    metal(0.55, 0.012, 0.11, fanX + Math.cos(a) * 0.32, ceilY - 0.36, fanZ + Math.sin(a) * 0.32, -a, 0xcfc6a6);
+  }
+  // Floor clutter near the door: a broom of thin sticks, two scattered chalk-slates, a jute mat.
+  metal(0.03, 1.1, 0.03, east - 0.1, 0.55, rz + 1.3, 0, 0x6a5a30).rotation.z = 0.12;
+  wood(0.55, 0.012, 0.35, rx + w / 2 - 1.1, 0.03, rz + 0.4, 0.2, 0x9a8458); // door mat
 }
 
 function buildSchool(kit) {

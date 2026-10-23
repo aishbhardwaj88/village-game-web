@@ -138,6 +138,7 @@ export const VEG_KEEP_OUT = [
   { x: -132, z: 70, r: 11 }, // pond
   { x: 78, z: 105, r: 8 }, // johad
   { zMin: 29.5, zMax: 36.5, xMin: -28, xMax: 0 }, // canal water + banks
+  { zMin: 96.5, zMax: 115.5, xMin: -65.5, xMax: -58.5 }, // school classroom (SCHOOL_ROOM in village.js): grass was sprouting through its floor
 ];
 /** Every lane stretch passed to lanesideClusters: its kerb + open drain band (half width + 0.8 m) is also a keep-out, so no tuft grows in a nali or on a kerb. */
 const LANE_BANDS = [];
