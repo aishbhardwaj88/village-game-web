@@ -44,6 +44,13 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Give hand-built Indian retail items (masala packets, biscuit packets, bangle cards, soap, sweets) printed-label textures with invented bilingual brand names; vary labels across a shelf; no solid-colour fills
 - [ ] Instance repeated props and merge per-shop static contents; keep hero view under the draw-call ceiling
 
+### A1d. Code-primitive structures and openings (art director FAIL 2026-10-23)
+- [ ] BUG FIRST: fill the tubewell hauz with water, not grass; then audit the whole greenery scatter for plants placed in drains, canal, pond, johad, troughs, tanks and rooftops, and report every bad placement
+- [ ] Audit and LIST every structure still built from code primitives (farmSites.js, scenery.js and similar); then convert each to Blender at build_house.py standard
+- [ ] Rebuild the tubewell properly: pump room with real door/window/roof overhang/meter box, bore pipe, outlet pipe, hauz with water and waterline stain, kachcha naali channels into the field, signs of use
+- [ ] Rebuild every charpai as a wooden frame with crisscrossed jute/niwar webbing, sagging slightly; never a plank on legs
+- [ ] STANDING RULE: every door gets a frame, panels, handle, hinges, threshold and wall recess; every window gets a frame, iron grille, shutters or curtain, sill and recess. Apply to every building including ones already ticked
+
 ### A2. Legibility
 - [ ] REWORK (art director FIX 2026-10-23): flip signboard hierarchy; Hindi top but smaller/lighter, English second line larger/bolder, both in the same dark paint colour, applied to every board in the village
 - [x] Every signboard readable at normal playing distance, not a smear - proof docs/shots/normal-mode-signboard-8m-2026-10-22T21-23-28-656Z/bazaar_unit5_Barber_Shop.png and chowk_tea_stall_Yadav_Chai_Nashta.png (bazaar/chowk boards were drawn from square cells on 8:1 boards so text was squashed flat; now 4:1 cells + 4:1 boards, bold red/dark text; Barber board was hidden behind a Blender pediment, moved forward)

@@ -77,8 +77,16 @@ Full spec: `reference-from-unity/docs/art-direction.md`. Read before any visual 
 - Era: nothing that would only exist after ~2015.
 - Zero tasks at any of the four faith buildings. No stealing. Nothing dangerous.
 - **Language order, do not reverse.** English primary and larger, Hindi beneath and
-  smaller, everywhere in the UI. Painted signboards in the world are the one
-  exception: Devanagari first and larger, English beneath (`src/signboards.js`).
+  smaller, everywhere in the UI.
+- **Signboards (art director's call, 2026-10-23, supersedes the old rule).** Hindi
+  stays on the TOP line for authenticity, but English is the DOMINANT line:
+  - Hindi: top line, smaller, lighter weight, reads as painted texture.
+  - English: second line, clearly larger and bolder than the Hindi, the line a
+    player actually reads.
+  - Both lines in the same dark paint colour (maroon, near-black, deep blue). Never
+    grey or white English on a pale board; low contrast is why it was unreadable.
+  - Test: at normal walking distance the English must be readable in a screenshot.
+    If only the Hindi reads, the board has failed.
 
 ## 8. Renderer and colour - law, see `docs/look-standard.md` for exact values
 
