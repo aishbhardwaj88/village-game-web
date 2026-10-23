@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bp):** Game change: the far-east/farm site props (pond, tubewell, kothri, johad, sabzi carts, jalebi stall, gaushala, highway, bus adda; src/farmSites.js) no longer flat vertex-colour: box-projected UVs + shared plaster PBR set (normal+roughness) for props, ground set for banks/mud, tinted by the baked colours; water stays glossy. No new files, budget 24.0 MB, build 16/16. Proof docs/shots/farm-textured-2026-10-23/ (pond, sabzi, gaushala, jalebi; jalebi shot is camera-inside-wall close-up of the texture). Gaps: one plaster set for wood/metal/cloth parts alike (no per-material sets yet); lotus/flower geometry still flat; mandi not checked. FINISH_LINE untouched.
+Next: per-material sets (wood/tin) on these props; mandi colliders; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bo2):** Game change: solid colliders on more props: sabzi rehris carts + poles, jalebi stall, gaushala trough/tub/hay, highway petrol pumps/office/canopy posts, kanta cabin, bus adda posts (src/farmSites.js). Build 16/16, budget 24.0 MB, regression 22/22. Also a 5 min NPC soak (tmp/npc-soak.mjs): 0 guard warnings, 0 errors. Proof docs/shots/prop-solids-2026-10-23/. Note: the sabzi walk slid through the 0.9 m gap between two carts (legit). Finding: highway/sabzi/jalebi/gaushala/mandi still use flat vertex-colour geometry (CLAUDE.md 5b fail), not touched.
 Next: mandi colliders; flat-colour far-east structures to textured materials; props for shops; far-east road decision.
 

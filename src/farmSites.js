@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
+import { getTiledMaterial } from './materials.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -19,8 +20,18 @@ function bake(geometry, matrix, color) {
   const arr = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) { arr[i * 3] = c.r; arr[i * 3 + 1] = c.g; arr[i * 3 + 2] = c.b; }
   g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-  g.deleteAttribute('uv');
   if (!g.attributes.normal) g.computeVertexNormals();
+  // Box-projected UVs (world scale, ~1.4 m per tile) so the shared PBR maps tile on every face.
+  const pos = g.attributes.position, nor = g.attributes.normal;
+  const uv = new Float32Array(n * 2);
+  for (let i = 0; i < n; i++) {
+    const ax = Math.abs(nor.getX(i)), ay = Math.abs(nor.getY(i)), az = Math.abs(nor.getZ(i));
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    let u, v;
+    if (ay >= ax && ay >= az) { u = x; v = z; } else if (ax >= az) { u = z; v = y; } else { u = x; v = y; }
+    uv[i * 2] = u / 1.4; uv[i * 2 + 1] = v / 1.4;
+  }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   return g;
 }
 const at = (x, y, z, ry = 0) => new THREE.Matrix4().makeRotationY(ry).setPosition(x, y, z);
@@ -44,7 +55,20 @@ function flatBlob(radius, seed, y, color) {
   return bake(g, at(0, y, 0), color);
 }
 
-const vcMat = (opts = {}) => new THREE.MeshStandardMaterial({ name: 'site_props', vertexColors: true, roughness: 0.9, ...opts });
+/** Textured (plaster PBR set, or ground for earth) tinted by baked vertex colours; water passes metalness/low roughness and keeps no maps. */
+const vcMat = (opts = {}) => {
+  const { roughness = 0.9, metalness, earth, ...rest } = opts;
+  const water = roughness < 0.3;
+  if (water) return new THREE.MeshStandardMaterial({ name: 'site_water', vertexColors: true, roughness, metalness, ...rest });
+  const base = getTiledMaterial(earth || roughness >= 1 ? 'ground' : 'plaster', { repeatX: 1, repeatY: 1, vertexColors: true });
+  const m = base.clone();
+  m.name = 'site_props';
+  m.aoMap = null;
+  m.roughness = roughness;
+  m.color.setScalar(1.7); // the scans are mid-grey; lift so the baked colours keep their value
+  Object.assign(m, rest);
+  return m;
+};
 
 /** Village pond: muddy bank ring, murky green water, lotus pads and a few pink lotus. */
 export function createPond(position) {
