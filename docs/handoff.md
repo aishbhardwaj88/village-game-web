@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bl):** Game change: two bazaar-lane villagers no longer walk into walls (their loops clipped colliders by 0.07 m and 0.32 m; shortened). Monkey chase and all 11 bazaarLife villager loops now register with validator check 9 (15 routes, 30 legs, all clear). Build 16/16; no movement code touched.
+Next: register animal + follow routines; extend devCheckPenetration to NPCs/animals; far-east road decision (art director); trees/plants CC0 models.
+
+---
+
 **2026-10-23 (cycle 38bk):** Game change: none visible; new tools/findability-audit.mjs (static, heuristic: distance to the map's pencil LANES, signpost/milestone coverage, walk time at 4 m/s x1.25). A-2c audit item NOT ticked: it is a static estimate, not an on-foot walk.
 FINDABILITY LIST (40 places checked, house excluded; 11 not findable without the map = no signpost AND over 30 m from any drawn lane): maidan, jain mandir, masjid, our khet, TV house, chemist, manihari, sabzi rehris, johad, mango baagh, sugarcane. Also over 30 m from a lane but at least signposted: mandi, highway, haveli, gurukul, health centre, gaushala, pond, mela, gurudwara. Walks: nearest village-core places 6-20 s; far east cluster 60-130 s with no road (milestones only stand on open ground). Lanes stop short of everything east of x=36 and south of z=140.
 Caveat: LANES in src/freeRoam.js are the map outline, not every real track (field tracks and the canal bridge approach are not in it), so khet/baagh/canal may be better connected on the ground than listed.

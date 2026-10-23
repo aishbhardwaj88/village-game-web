@@ -625,6 +625,20 @@ async function main() {
   linkMonkeyPosition(monkeyNpc.position);
   let monkeyChaseUpdate = null;
 
+  // The chase route as data so the build-time path check (validator check 9) sees it
+  // too: registered once at setup with a placeholder start, created for real on the snatch.
+  function monkeyChaseWaypoints(startX, startZ) {
+    const roofY = BAZAAR_UNITS[3].wallHeight + 0.12;
+    return [
+      { x: startX, z: startZ, y: 0 },
+      { x: bazaarUnitCx(3), z: BAZAAR_ROW_CZ, y: roofY }, // up onto the darzi's own roof
+      { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY }, // across the rooftops, east
+      { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 1.5, y: 0 }, // back down to the lane
+      { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
+    ];
+  }
+  NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarUnitCx(3), BAZAAR_FRONT_Z - 1.5), radius: 0.3 });
+
   function startMonkeyChase() {
     monkeyNpc.position.set(player.position.x, 0, player.position.z);
     monkeyNpc.visible = true;
@@ -634,17 +648,9 @@ async function main() {
     // the snatch: up onto that unit's own real roof slab (src/bazaar.js's
     // wallHeight + the 0.12m slab thickness), east along the roofline, back down to
     // the front lane, then on to the existing chowk recovery point.
-    const darziUnit = BAZAAR_UNITS[3];
-    const roofY = darziUnit.wallHeight + 0.12;
     monkeyChaseUpdate = createWaypointRun(
       monkeyNpc,
-      [
-        { x: player.position.x, z: player.position.z, y: 0 },
-        { x: bazaarUnitCx(3), z: BAZAAR_ROW_CZ, y: roofY }, // up onto the darzi's own roof
-        { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY }, // across the rooftops, east
-        { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 1.5, y: 0 }, // back down to the lane
-        { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
-      ],
+      monkeyChaseWaypoints(player.position.x, player.position.z),
       { speed: 2.4, pauseSeconds: 0.4, getExtraBoxes: () => otherVehicleBoxes(null) }
     );
     quest.step = QUEST_STEPS.KURTA_STOLEN;

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
 import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS } from './bazaar.js';
 
@@ -43,10 +44,10 @@ const VILLAGER_LOOPS = [
   [{ x: BAZAAR_WEST_X + 4, z: 9 }, { x: BAZAAR_WEST_X + 16, z: 9 }],
   [{ x: BAZAAR_WEST_X + 20, z: 9 }, { x: BAZAAR_WEST_X + 32, z: 9 }],
   [{ x: BAZAAR_EAST_X - 4, z: 9 }, { x: BAZAAR_EAST_X - 16, z: 9 }],
-  [{ x: CHOWK_TEA_POS.x + 4, z: 7.5 }, { x: CHOWK_TEA_POS.x + 2, z: 18 }],
+  [{ x: CHOWK_TEA_POS.x + 4, z: 7.5 }, { x: CHOWK_TEA_POS.x + 2, z: 16 }],
   // village lane between the house and the school: neighbours out on errands
   [{ x: -45.5, z: 71 }, { x: -45.5, z: 81 }],
-  [{ x: -46.5, z: 86 }, { x: -48, z: 97 }],
+  [{ x: -46.5, z: 86 }, { x: -46.5, z: 91 }],
   [{ x: -47, z: 51 }, { x: -45, z: 57 }],
   // a few more walkers so the bazaar frontage and lane are not empty
   [{ x: BAZAAR_WEST_X + 10, z: 11 }, { x: BAZAAR_WEST_X + 26, z: 11 }],
@@ -97,6 +98,7 @@ export function createBazaarLife() {
     setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI); // facing south, toward the lane
   });
 
+  VILLAGER_LOOPS.forEach((waypoints, i) => ROUTES.push({ kind: 'loop', name: `bazaar_villager_${i}`, waypoints, radius: NPC_RADIUS }));
   const villagers = VILLAGER_LOOPS.map((waypoints, i) => {
     const index = shopkeeperCount + i;
     mesh.setColorAt(index, _color.setHex(VILLAGER_TINTS[i % VILLAGER_TINTS.length]));
