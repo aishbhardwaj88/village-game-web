@@ -1374,6 +1374,8 @@ async function main() {
     zoneManager.register('mandi', { x: 226, z: 60, buildRadius: 70, teardownRadius: 85, build: () => createMandi({ x: 226, z: 60 }) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
     zoneManager.register('canal_bank_road', { x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
+    // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
+    zoneManager.register('canal_bank_road_n', { x: -8, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 38.8 }, 'canal_bank_road_n') });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
     zoneManager.register('old_haveli', { x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
     zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });

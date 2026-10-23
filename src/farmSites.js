@@ -701,11 +701,11 @@ export function createMandi(position) {
 }
 
 /** Kachcha canal-bank road (MAP.md: "kachcha bank roads on both sides"): packed-earth track on the field side of the nahar with twin tyre ruts, a grassy verge, cart-wheel dung patches and marker pegs. Visual only, no colliders. */
-export function createCanalBankRoad(position) {
+export function createCanalBankRoad(position, name = 'canal_bank_road') {
   const geos = [];
   const L = 84; // x -42..42 around the position
   const strip = (w, y, x0, x1, z, color) => geos.push(bake(new THREE.BoxGeometry(x1 - x0, 0.02, w), at((x0 + x1) / 2, y, z), color));
-  let seed = 7;
+  let seed = name === 'canal_bank_road' ? 7 : 19;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   // Track bed in a few slightly different earth tones so it never reads as one flat ribbon.
   for (let i = 0; i < 12; i++) {
@@ -721,5 +721,5 @@ export function createCanalBankRoad(position) {
   for (let i = 0; i < 14; i++) geos.push(bake(new THREE.DodecahedronGeometry(0.1 + rnd() * 0.08, 0), at(-L / 2 + rnd() * L, 0.08, (rnd() - 0.5) * 3.6), 0x9b9588));
   // Whitewashed marker pegs every 20 m, as on irrigation channels.
   for (let i = 0; i < 5; i++) geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 0.18), at(-L / 2 + 6 + i * 18, 0.35, 2.1), 0xe6e0cf));
-  return finishSite('canal_bank_road', geos, position);
+  return finishSite(name, geos, position);
 }
