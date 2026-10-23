@@ -48,6 +48,7 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
     for (const child of obj.children) walk(child);
     if (obj === group) return;
     if (!obj.isMesh || obj.isInstancedMesh) return;
+    if (obj.userData.lodExtra) { toRemove.push(obj); return; } // lower LOD levels mean nothing once merged
     let bucket = buckets.get(obj.material);
     if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
     bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
@@ -101,7 +102,8 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     root.updateWorldMatrix(true, true);
     (function walk(obj) {
       if (obj !== root && skipNames.includes(obj.name)) return;
-      if (obj.isMesh && !obj.isInstancedMesh) {
+      if (obj.isMesh && obj.userData.lodExtra) toRemove.push(obj);
+      else if (obj.isMesh && !obj.isInstancedMesh) {
         let bucket = buckets.get(obj.material);
         if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
         bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));

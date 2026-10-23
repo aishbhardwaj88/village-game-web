@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
  * Village trees (neem, peepal, babool, mango, eucalyptus) - procedural, no model download.
@@ -300,12 +301,44 @@ function buildSpeciesTree(spec, seed, name) {
   midTrunk.name = `${name}_mesh`;
   const mid = new THREE.Group();
   mid.add(midTrunk, midLeaves);
+  // Beyond 220 m the whole tree is two crossed baked-render quads (one draw call, 4 triangles).
+  const imp = impostorMesh(spec.species, group);
+  // Extra LOD levels are flagged so the static merges (src/mergeUtils.js) drop them: a merged
+  // tree has no distance switching, and folding every level in drew each tree three times.
+  for (const m of [midTrunk, midLeaves, farLeaves, imp]) m.userData.lodExtra = true;
   const lod = new THREE.LOD();
   lod.name = name;
   lod.addLevel(group, 0);
   lod.addLevel(mid, 55);
   lod.addLevel(farLeaves, 120);
+  lod.addLevel(imp, 220);
   return lod;
+}
+
+// Baked-from-render impostor sprites (public/assets/trees, 256 px, one per species). The
+// opaque part fills about 75% x 65% of the image, so the quad is the crown's bounding box
+// scaled up by that margin. Two crossed quads read from any angle with no per-frame work.
+const IMPOSTOR_MATERIALS = {};
+function impostorMaterial(species) {
+  if (!IMPOSTOR_MATERIALS[species]) {
+    const tex = new THREE.TextureLoader().load(`assets/trees/impostor_${species}.webp`);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const m = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 });
+    m.name = `tree_impostor_${species}`;
+    IMPOSTOR_MATERIALS[species] = m;
+  }
+  return IMPOSTOR_MATERIALS[species];
+}
+function impostorMesh(species, nearGroup) {
+  const box = new THREE.Box3().setFromObject(nearGroup);
+  const size = box.getSize(new THREE.Vector3());
+  const c = box.getCenter(new THREE.Vector3());
+  const w = Math.max(size.x, size.z) * 1.33, h = size.y * 1.5;
+  const one = (rot) => new THREE.PlaneGeometry(w, h).rotateY(rot).translate(c.x, c.y, c.z);
+  const geo = mergeGeometries([one(0), one(Math.PI / 2)]);
+  const mesh = new THREE.Mesh(geo, impostorMaterial(species));
+  mesh.name = 'tree_impostor';
+  return mesh;
 }
 
 const D = Math.PI / 180;
