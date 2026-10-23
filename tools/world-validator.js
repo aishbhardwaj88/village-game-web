@@ -891,7 +891,7 @@ async function main() {
           d.camRig.distance = 5;
           d.camRig.update(10);
         }, zc);
-        for (let i = 0; i < 5; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+        for (let i = 0; i < 20; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
         const info = await page.evaluate(() => {
           const d = window.__dopahar;
           return { calls: d.renderer.info.render.calls, triangles: d.renderer.info.render.triangles };

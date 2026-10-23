@@ -1122,19 +1122,15 @@ async function main() {
         { kind: 'neem', x: CHOWK_CENTER.x + 7, z: CHOWK_CENTER.z + 4, rotationY: 2.1, seed: 17 },
       ])
     );
-    fieldGroup.add(
-      buildTrees([
+    // Track-corner babools stay in the merged field group (streaming them pushed the hero zone view over 150 calls).
+    fieldGroup.add(buildTrees([
         { kind: 'babool', x: TRACK_CORNERS[3].x - 4, z: TRACK_CORNERS[3].z - 4, rotationY: 0.7, seed: 21 }, // SW corner
         { kind: 'babool', x: TRACK_CORNERS[3].x - 7, z: TRACK_CORNERS[3].z - 2, rotationY: 1.3, seed: 24 },
         { kind: 'babool', x: TRACK_CORNERS[1].x + 4, z: TRACK_CORNERS[1].z + 4, rotationY: 2.9, seed: 22 }, // NE corner
         { kind: 'babool', x: TRACK_CORNERS[2].x + 4, z: TRACK_CORNERS[2].z - 4, rotationY: 1.6, seed: 23 }, // SE corner — NOT the NW corner (TRACK_CORNERS[0], {-40,25}), which sits only ~5m from the relocated tractor spawn (-45,26, item 1) and put a tree awkwardly right behind the parked tractor
         { kind: 'babool', x: TRACK_CORNERS[2].x + 6, z: TRACK_CORNERS[2].z - 1, rotationY: 0.2, seed: 25 },
-      ])
-    );
-
-    // M7 — the mango baagh (src/baagh.js, docs/STORY.md), open ground east of the
-    // track loop. Folds into the same shared tree draw call as every species above.
-    fieldGroup.add(buildTrees(MANGO_TREE_PLACEMENTS));
+      ]));
+    // The mango baagh is zone-streamed (trees_baagh, below) so its tree LODs are not folded away by the static merge.
     MANGO_KNOCK_POSITIONS.forEach((pos, i) => registerMangoKnock(String(i), pos));
 
     // Item 3b — low vegetation (grass tufts + scrub bushes), instanced (one
@@ -1418,6 +1414,7 @@ async function main() {
     ]) });
     // Outskirts shade trees (A3 "reads green"): small streamed clusters by the village-edge sites.
     // Unmerged, so the per-tree distance LOD works. No coordinates in MAP.md; open ground picked.
+    zoneManager.register('trees_baagh', { x: BAAGH_POSITION.x, z: BAAGH_POSITION.z, buildRadius: 26, teardownRadius: 36, build: () => buildTrees(MANGO_TREE_PLACEMENTS) });
     const outskirtTrees = (name, x, z, trees) => zoneManager.register(name, { x, z, buildRadius: 70, teardownRadius: 85, build: () => buildTrees(trees) });
     outskirtTrees('trees_pond', -132, 70, [
       { kind: 'neem', x: -150, z: 60, seed: 21 }, { kind: 'peepal', x: -112, z: 82, seed: 22, rotationY: 0.8 }, { kind: 'babool', x: -148, z: 84, seed: 23 },
