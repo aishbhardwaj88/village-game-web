@@ -1226,6 +1226,14 @@ async function main() {
         ...[-0.5, 0.5].map((dz) => ({ x: ATTA_CHAKKI_POS.x + 2.4, z: ATTA_CHAKKI_POS.z + 2.4 + dz, kind: GARDEN_KIND.MARIGOLD })),
         { x: POST_OFFICE_POS.x - 4.2, z: POST_OFFICE_POS.z - 1, kind: GARDEN_KIND.BANANA },
         { x: ATTA_CHAKKI_POS.x - 4.4, z: ATTA_CHAKKI_POS.z + 1, kind: GARDEN_KIND.BANANA, scale: 0.9 },
+        // School compound (south wall at z-12 from centre, 4.8 m gate gap): creepers on the wall's
+        // street side, marigold + tulsi flanking the gate, banana at the corners.
+        ...[-13, -9.5, -6, 6, 9.5, 13].map((dx, i) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 12.3, kind: GARDEN_KIND.CREEPER, scale: 0.6 + (i % 3) * 0.08 })),
+        ...[-4.2, -3.6, 3.6, 4.2].map((dx) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 11.2, kind: GARDEN_KIND.MARIGOLD })),
+        { x: SCHOOL_CENTER.x - 3.4, z: SCHOOL_CENTER.z - 13.2, kind: GARDEN_KIND.TULSI, scale: 0.9 },
+        { x: SCHOOL_CENTER.x + 3.4, z: SCHOOL_CENTER.z - 13.2, kind: GARDEN_KIND.TULSI, scale: 0.9 },
+        { x: SCHOOL_CENTER.x - 16.5, z: SCHOOL_CENTER.z - 12.8, kind: GARDEN_KIND.BANANA },
+        { x: SCHOOL_CENTER.x + 16.5, z: SCHOOL_CENTER.z - 12.8, kind: GARDEN_KIND.BANANA, scale: 0.9 },
       ])
     );
 
