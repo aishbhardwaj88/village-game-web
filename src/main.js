@@ -1424,11 +1424,12 @@ async function main() {
     for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1], ['lane_laundry_e2', -4.9, 104, Math.PI / 2 + 0.15], ['lane_laundry_w2', -72, 22.6, 0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1], ['lane_water_e2', -4.9, 122, Math.PI / 2 + 0.15], ['lane_water_w2', -65.5, 22.6, 0.1]]) {
+    // Water corners stand at the lane edge on the side away from the open drain (kerb + 0.6 m), spout facing the lane.
+    for (const [id, x, z, ry] of [['lane_water_e1', 16, 78.6, Math.PI + 0.05], ['lane_water_w1', -86.6, 90, Math.PI / 2 + 0.08], ['lane_water_s1', -44, 142.6, Math.PI - 0.06], ['lane_water_e2', -3.6, 122, -Math.PI / 2 + 0.07], ['lane_water_w2', -65.5, 18.6, 0.05]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
-    const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 75.7], [-82.8, 74], [-58, 141.2], [-4.9, 104], [-72, 22.6], [16, 75.7], [-82.8, 90], [-44, 141.2], [-4.9, 122], [-65.5, 22.6]];
+    const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 75.7], [-82.8, 74], [-58, 141.2], [-4.9, 104], [-72, 22.6], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
     for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3], ['lane_cattle_w2', -58, 24, 0.2]]) {
       zoneManager.register(id, {
         x, z, buildRadius: 32, teardownRadius: 44,

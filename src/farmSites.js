@@ -667,7 +667,13 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   const geos = [];
   const R = (x, y, z, r = 0) => at(x, y, z, r);
   geos.push(bake(new THREE.BoxGeometry(1.7, 0.18, 1.7), R(0, 0.09, 0), 0xb4aea0)); // cement platform
-  geos.push(bake(new THREE.BoxGeometry(1.9, 0.02, 0.9), R(0, 0.19, 1.25), 0x6d7a78)); // damp apron
+  geos.push(bake(new THREE.BoxGeometry(1.9, 0.02, 0.9), R(0, 0.03, 1.3), 0x6d7a78)); // damp apron, flat on the ground past the platform edge
+  // soak-away: a dark wet patch in the earth where the apron drains, ringed with pebbles
+  geos.push(bake(new THREE.CylinderGeometry(0.62, 0.7, 0.012, 14), R(0.1, 0.012, 2.05), 0x3f4543));
+  for (let i = 0; i < 9; i++) {
+    const a = i * 0.7 + 0.3;
+    geos.push(bake(new THREE.SphereGeometry(0.06 + (i % 3) * 0.015, 5, 4), R(0.1 + Math.cos(a) * 0.72, 0.03, 2.05 + Math.sin(a) * 0.62), i % 2 ? 0x8a867c : 0x6f6b62));
+  }
   // pump: base, body, spout, handle with grip
   geos.push(bake(new THREE.CylinderGeometry(0.17, 0.2, 0.3, 10), R(0, 0.33, 0), 0x2f3a3d));
   geos.push(bake(new THREE.CylinderGeometry(0.07, 0.09, 0.8, 8), R(0, 0.85, 0), 0x2f3a3d));

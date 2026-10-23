@@ -147,7 +147,7 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 - [ ] Per-instance lean, rotation and wear variation; posters/stickers/painted numbers on some poles; instanced
 
 ### A1f. Layout fixes (art director 2026-10-23)
-- [ ] FIX: move every hand pump and water corner from the lane middle to the lane edge or a corner, with soak-away and wet patch
+- [x] FIX: move every hand pump and water corner from the lane middle to the lane edge or a corner, with soak-away and wet patch - proof docs/shots/lanewater-edge-2026-10-23/e1.png (also s1.png, e2.png, w1b_chk.png, w2b_chk.png: all 5 lane water corners now at the kerb on the side away from the open drain, spout facing the lane, flat damp apron plus pebble-ringed soak-away; the lane hero-house courtyard pump is not a lane pump and was untouched)
 - [ ] Audit every prop sitting in a navigable lane or vehicle route (matkas, charpais, carrom mats, stools, benches, crates, animals, laundry lines); clear the path and drive the full vehicle route to confirm
 - [ ] BUILD: new row of houses facing the temple and farmland, with proper fronts (doors, grilled windows, verandahs, chabutras, pots, charpais); existing lane becomes the back street; shift existing rows to make room
 - [ ] Give the new street the same treatment: kerbs, drain, street life, lamps, greenery
