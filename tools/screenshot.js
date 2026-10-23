@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hideForCapture, restoreAfterCapture, measureFps } from './shotlib.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DEV_PORT = 5183;
@@ -87,6 +88,12 @@ async function main() {
     console.log(`Captured tutorial_line -> ${resolve(shotsDir, 'tutorial_line.png')}`);
     await page.evaluate(() => window.__dopahar?.dialogue._advanceFromInput());
     await page.waitForTimeout(150);
+
+    // FEEDBACK 24 Oct item 0a: from here on every shot has no fps counter, HUD,
+    // tutorial, player capsule or capsule people (tools/shotlib.mjs). The Maa
+    // interaction shots below restore people, since their subject IS a person.
+    await hideForCapture(page, { people: false });
+    console.log(`NOTE: headless SwiftShader software GL, ${await measureFps(page)} fps - look/layout evidence only, not a performance measure.`);
 
     for (const preset of CAMERA_PRESETS) {
       await page.evaluate((p) => {
@@ -176,6 +183,7 @@ async function main() {
     // otherwise catch (the player has to actually be standing at a specific spot for
     // these UI elements to be visible at all).
     console.log('\n--- feature shots ---');
+    await restoreAfterCapture(page); // UI/interaction feature shots: HUD, prompts and people are the subject
     await page.evaluate(() => {
       const d = window.__dopahar;
       if (!d) return;

@@ -2634,6 +2634,7 @@ async function main() {
       isPaused: () => paused,
       pauseMenu,
       Box3: THREE.Box3,
+      Raycaster: THREE.Raycaster,
       Matrix4: THREE.Matrix4,
       Vector3: THREE.Vector3,
       // For scripted feature screenshots (tools/screenshot.js) — teleport near an

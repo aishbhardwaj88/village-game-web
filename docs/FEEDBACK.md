@@ -41,7 +41,7 @@ FINISH_LINE.md until every item is ticked.
 ### 0. FIRST: the screenshot tool, then the two engine bugs
 These three block everything else. Do them in this order.
 
-**0a. tools/screenshot.js** - hide the fps counter and dev overlays, dismiss the
+**0a. [DONE 24 Oct 2026: tools/shotlib.mjs + tools/screenshot.js; proof docs/shots/2026-10-23T23-24-35-701Z/spawn_behind.png and docs/shots/shotlib-test-2026-10-24/halwai.png; subject check throws on occluded/off-frame, verified] tools/screenshot.js** - hide the fps counter and dev overlays, dismiss the
 tutorial and dialogue panel, hide capsule placeholder people and the player capsule,
 print the real fps, label headless shots as headless, and fail loudly if the named
 subject is not in frame.
