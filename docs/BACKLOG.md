@@ -58,6 +58,7 @@ in them. Do not limit a fix to the place that was screenshotted.
   - PROGRESS 2026-10-23 (cycle 38bj2, not ticked): 4 painted milestone stones (Highway / Mandi distances, Hindi above English) on the east approach from the east gali to the highway, src/milestones.js, streamed per stone, labels from PLACES. Proof docs/shots/milestones-2026-10-23/ms_i.png. Still missing: markers on the highway itself, and there is no actual road along this line (stones stand on open ground past the gali mouth).
 - [ ] Make routes legible: lanes must continue with kerbs, drains, lamps and street life all the way to where they lead, not stop after a few metres
 - [ ] AUDIT: walk on foot from the house to all 42 places using only what a player can see; for each report whether a visible path leads to it, whether it is visible from any lane, and the walk time; LIST every place not findable without the map
+  - PROGRESS 2026-10-23 (cycle 38bk, not ticked): static audit tools/findability-audit.mjs; 11 of 40 places not findable without the map, list in docs/handoff.md top entry. Still missing: a real on-foot walk with screenshots.
 - [ ] Far eastern cluster (health centre, chemist, manihari, sabzi, johad, masjid, Jain mandir, haveli, gurukul, maidan, highway, mandi): either connect with a real road carrying traffic, trees and roadside detail, or report that distances should be reduced. Do not move anything; layout is the art director's call
 
 ### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
