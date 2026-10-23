@@ -548,7 +548,7 @@ async function main() {
         // (blocked or arrived), up to ~20 s.
         let stable = 0;
         let prev = Infinity;
-        for (let i = 0; i < 130 && stable < 8; i++) {
+        for (let i = 0; i < 130 && stable < 20; i++) { // 20 x 150ms: at ~3 fps a streaming hitch can freeze the clearance for >1.2 s while the player is still walking
           await page.waitForTimeout(150);
           const clearance = await page.evaluate(() => window.__dopahar.playerDistanceToTrolley());
           if (clearance < worstClearance) worstClearance = clearance;

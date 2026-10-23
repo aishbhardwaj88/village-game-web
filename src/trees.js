@@ -409,7 +409,7 @@ function buildSpeciesTree(spec, seed, name) {
   trunk.receiveShadow = true;
   const leaves = new THREE.Mesh(leafGeo, leafMaterial());
   leaves.name = 'tree_leaf_cards';
-  leaves.castShadow = true;
+  leaves.castShadow = false; // canopy cards are ~half the shadow-pass triangles; trunks still cast
   leaves.receiveShadow = true;
   group.add(trunk, leaves);
 
