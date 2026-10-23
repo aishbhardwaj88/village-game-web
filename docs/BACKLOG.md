@@ -80,6 +80,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 - [ ] NPCs entering a building must route to the door and pass through the opening, never a wall; re-path any routine that cannot
 - [ ] Vehicles collide with buildings, walls, trees and each other
 - [ ] Extend devCheckPenetration() to cover NPCs and animals, not just vehicles; log any penetration as a failure
+  - PROGRESS 2026-10-23 (cycle 38bm, not ticked): guard now checks named NPCs, bazaar villagers and all live animal herds/dogs; whole-map sweep found and fixed 3 buffalo inside lane walls. Animals are stationary (no routines).
 - [ ] Verify across a multi-minute continuous run with NPCs completing full routes, not one screenshot
 
 Characters are parked until 26 Oct. Build everything that is not a character.

@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bm):** Game change: dev collision guard now covers animals (herds, dogs; ANIMAL_MESHES in src/animals.js). Sweeping the whole map with it found 3 lane buffalo standing inside walls; lane cattle/dogs now pick the first offset that clears the real colliders and the other lane sites (src/main.js), re-sweep clean. Build 16/16, regression 22/22. Animals are stationary, so no routes to register; follow routine already runs through resolveMove. Sweep script tmp/animal-guard.mjs (88 points). Box not ticked (multi-minute NPC route run still open).
+Next: trees/plants CC0 models (A1a2/A3); far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bl):** Game change: two bazaar-lane villagers no longer walk into walls (their loops clipped colliders by 0.07 m and 0.32 m; shortened). Monkey chase and all 11 bazaarLife villager loops now register with validator check 9 (15 routes, 30 legs, all clear). Build 16/16; no movement code touched.
 Next: register animal + follow routines; extend devCheckPenetration to NPCs/animals; far-east road decision (art director); trees/plants CC0 models.
 

@@ -234,6 +234,13 @@ const _herdQuat = new THREE.Quaternion();
 const _herdScale = new THREE.Vector3();
 const _herdEuler = new THREE.Euler();
 
+/** Every herd/pack mesh created, with its footprint radius, so the dev-mode penetration guard
+ * (devCheckPenetration in src/main.js) can test animals against the real colliders. Streamed zones
+ * detach their meshes, so the guard only checks meshes still in the scene (mesh.parent). */
+export const ANIMAL_MESHES = [];
+const COW_FOOTPRINT_RADIUS = 0.9;
+const DOG_FOOTPRINT_RADIUS = 0.4;
+
 /** A stationary herd — real geometry, one InstancedMesh, real world positions (not
  * decorative-only placeholders), covering both cows and buffalo via per-instance
  * tint (see the module doc comment above). `placements` is a flat [{x,z,rotationY,
@@ -249,6 +256,7 @@ export function createCattleHerd(placements) {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'cattle_herd';
+  ANIMAL_MESHES.push({ mesh, placements, radius: COW_FOOTPRINT_RADIUS });
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const color = new THREE.Color();
@@ -287,6 +295,7 @@ export function createDogPack(placements) {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'dog_pack';
+  ANIMAL_MESHES.push({ mesh, placements, radius: DOG_FOOTPRINT_RADIUS });
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const color = new THREE.Color();
