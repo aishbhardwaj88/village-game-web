@@ -49,6 +49,16 @@ function buildTrackVerge() {
       plants.push({ x, z, y: 0, kind, scale: 0.9 + rnd() * 0.3 });
     }
   }
+  // Banana clumps and bougainvillea at the loop's corners, where field bunds meet: the farm edge
+  // reads as tended, not bare. Same garden-plant call, nothing added to the draw count.
+  for (const c of corners.slice(0, 4)) {
+    const sx = Math.sign(c.x - FIELD_CENTER.x), sz = Math.sign(c.z - FIELD_CENTER.z);
+    for (let k = 0; k < 3; k++) {
+      const x = c.x + sx * (TRACK_WIDTH / 2 + 2.5 + rnd() * 2.5), z = c.z + sz * (TRACK_WIDTH / 2 + 1.5 + rnd() * 3);
+      if (Math.hypot(x - BAAGH_CENTER.x, z - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS + 3) continue;
+      plants.push({ x, z, y: 0, kind: k === 2 ? GARDEN_KIND.BOUGAINVILLEA : GARDEN_KIND.BANANA, scale: 1 + rnd() * 0.3 });
+    }
+  }
   const greens = buildGardenPlants(plants);
   if (greens) greens.name = 'field_track_verge';
   return greens;

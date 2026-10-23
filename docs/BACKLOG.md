@@ -39,11 +39,18 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [x] Soft dirt at wall bases, sun-faded paint, subtle stains near doors and drains - proof docs/shots/grime-2026-10-23/bazaar_back_streaks_fade.png (shader hook on every Blender building material: dusty base dirt, sun-fade above 2m, faint damp streaks; stains are global noise, not placed per door/drain; zero extra draw calls)
 - [x] Props and street furniture: lamps, charpai, handpump, chabutra - proof docs/shots/lamps-2026-10-23/temple_a.png and bazaar.png (new street lamps on the temple lane and bazaar lane, streamed per lane segment so hero zone stays 150/150; charpai, hand pump and chabutra already existed; hero-zone lanes have no lamps yet)
 
+### A1b. Shop contents and props (art director FAIL 2026-10-23)
+- [ ] Download CC0 3D models for generic props (TV, radio, fan, scale, stove, kadhai, jars, bottles, buckets, vessels, crates, sacks, baskets, stools, benches) from Poly Haven / Poly Pizza / ambientCG; shrink and slot into every shop
+- [ ] Give hand-built Indian retail items (masala packets, biscuit packets, bangle cards, soap, sweets) printed-label textures with invented bilingual brand names; vary labels across a shelf; no solid-colour fills
+- [ ] Instance repeated props and merge per-shop static contents; keep hero view under the draw-call ceiling
+
 ### A2. Legibility
+- [ ] REWORK (art director FIX 2026-10-23): flip signboard hierarchy; Hindi top but smaller/lighter, English second line larger/bolder, both in the same dark paint colour, applied to every board in the village
 - [x] Every signboard readable at normal playing distance, not a smear - proof docs/shots/normal-mode-signboard-8m-2026-10-22T21-23-28-656Z/bazaar_unit5_Barber_Shop.png and chowk_tea_stall_Yadav_Chai_Nashta.png (bazaar/chowk boards were drawn from square cells on 8:1 boards so text was squashed flat; now 4:1 cells + 4:1 boards, bold red/dark text; Barber board was hidden behind a Blender pediment, moved forward)
 - [x] Shop boards: Devanagari larger, English beneath - proof docs/shots/normal-mode-signboard-8m-2026-10-22T21-23-28-656Z/bazaar_unit4_Tailor_Shop.png and hero_general_store_Gupta_General_Store.png
 
 ### A3. Trees and plants
+- [ ] REWORK (art director FAIL 2026-10-23, second verdict): rebuild ALL plants with CC0 alpha-cutout photo textures (ambientCG type=Atlas: Leaf Set / Flower Set / Foliage / Grass) on crossed quads. No solid-colour leaf geometry anywhere. 5 species minimum, each from its own texture. Per-instance tint variation. Instanced. See ART_REVIEW.md: the earlier 'use the neem technique' instruction is withdrawn
 - [ ] Blender rebuild of peepal, neem, babool, mango to replace code shapes
   - PROGRESS 2026-10-23 (not ticked: built in code, not Blender - awaiting art director's call): smooth blob canopies replaced by real branching trunks + alpha-cut species leaf-sprig cards (src/trees.js), proof docs/shots/trees-2026-10-22T21-34-16-180Z/mango_baagh.png, neem_chowk.png and docs/shots/trees-2026-10-22T21-35-27-570Z/peepal_temple.png, euc_back.png. Still to do: LODs, distance billboard.
   - ATTEMPT 2026-10-23 (cycle 38ac, reverted): crossed-quad canopy impostor as 3rd LOD level read as flat solid green blobs at mid range and filled the whole high_overview shot green (docs/shots/2026-10-23T02-37-36-790Z/); needs a baked-from-render impostor texture and a distance well past the zone stream radius, not a canvas blob.
@@ -61,6 +68,14 @@ Characters are parked until 26 Oct. Build everything that is not a character.
   - PROGRESS 2026-10-23 (cycle 38af2, not ticked): creepers, tulsi, marigolds and banana clumps added around the post office, ration shop and atta chakki (same single garden-plant draw call), proof docs/shots/newshops-green-2026-10-23/front_b.png and back.png. Still to do: abadi houses and school have none.
   - PROGRESS 2026-10-23 (cycle 38d): marigold beds, banana clumps, tulsi and bougainvillea are now alpha-cut cards from one atlas (buildGardenPlants, src/vegetation.js), replacing the flat-colour blade flowers, same single draw call, proof docs/shots/garden-plants-2026-10-23/temple_marigold.png, chowk.png, house_banana.png. Still to do: wall creepers, real CC0 ground-cover texture.
   - PROGRESS 2026-10-23 (not ticked): grass tufts and scrub were box blades, now instanced crossed alpha-cut cards with painted blade textures (src/vegetation.js, same draw calls), proof docs/shots/trees-2026-10-22T21-42-52-648Z/neem_close.png. Still to do: tulsi, marigold beds, creepers, banana clumps, real CC0 ground-cover texture.
+
+### A1c. Farmland variety and density (art director FAIL 2026-10-23)
+- [ ] Rebuild crops with alpha-cutout CC0 textures and per-instance jitter in position, rotation, scale and tint; kill the mechanical grid
+- [ ] Raise density so a mature plot's soil is mostly hidden by crop
+- [ ] Build distinct plots: sarson (mustard, yellow bloom), genda (marigold), ganna (sugarcane, above player height), gehun (wheat), dhaan (flooded paddy with standing water), sabzi beds with bamboo stakes, plus the existing mango baagh
+- [ ] Mix growth stages across plots: ploughed bare, sapling, half-grown, mature, harvested stubble with straw stacks
+- [ ] Pick one season (late winter suggested) and record it in docs/WORLD.md so later work does not drift
+- [ ] Instance per crop per plot, add distance LOD, zone-stream plots; report the number if density cannot fit the draw-call ceiling
 
 ### A4. Unbuilt MAP.md locations
 - [ ] Compare the built world against `reference-from-unity/MAP.md` and list every missing location in this file before building
@@ -90,6 +105,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
   - PROGRESS 2026-10-23 (cycle 38aw, not ticked): laundry corners (charpai with quilt and drying red chillies, steel tub, clothesline of saris and dupattas) in three abadi lanes (createLaneLaundry, src/farmSites.js; zones lane_laundry_e1/w1/s1), proof docs/shots/laundry-2026-10-23/e1_a.png (w1/s1 placed, not cleanly framed)
   - PROGRESS 2026-10-23 (cycle 38ax, not ticked): two buffalo on the pond's muddy bank (zone pond_buffalo, src/main.js, reuses createCattleHerd, 1 draw call, streamed, visual only), proof docs/shots/pondbuffalo-2026-10-23/pond_a.png, pond_c.png
   - PROGRESS 2026-10-23 (cycle 38ay, not ticked): water corners (hand pump, matkas, ghadas, washing stone) in three abadi lanes (createLaneWaterCorner, zones lane_water_e1/w1/s1), proof docs/shots/lanewater-2026-10-23c/w1_d.png
+  - PROGRESS 2026-10-23 (cycle 38bc, not ticked): banana clumps and bougainvillea at the four field-track corners (buildTrackVerge, src/field.js, same garden-plant draw call), proof docs/shots/fieldcorner-2026-10-23/sw.png
 - [ ] Canal and bridge
   - PROGRESS 2026-10-23 (cycle 38aj, not ticked): bank-side greenery along both canal banks (bougainvillea, tulsi, banana; one garden-plant draw call, src/canal.js), proof docs/shots/canalgreen-2026-10-23/canal_a.png, canal_b.png
 
