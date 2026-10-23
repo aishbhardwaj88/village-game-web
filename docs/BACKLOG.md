@@ -115,6 +115,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 ### A1b1. Every remaining interior and place (art director 2026-10-23)
 Apply CLAUDE.md section 5b to all of these without waiting for a per-place review note:
 - [ ] Ration shop: sacks of grain and sugar, weighing scale, ledger register, measuring cans, stacked crates, ration card board, queue rail
+  - PROGRESS 2026-10-23 (cycle 38bs, not ticked): jute sacks, crates, beam scale and ledger now on/around the ration shop; post office has pillar box, post bags, scale, ink pad and stamp; chakki has hopper, sacks, scale, flour dust. Proof docs/shots/shop-interiors-2026-10-23/. Still missing: shelves/cans, ration card board, queue rail, letter racks, counter grille, interior depth (shells are solid boxes).
 - [ ] Post office (dak ghar): counter grille, letter racks, postbags, rubber stamps and ink pad, scales, red post box outside, notice board, old wooden furniture
 - [ ] Atta chakki: the grinding machine with belt drive and motor, flour dust haze and settled dust on every surface, sacks, scoops, scales, hanging bulb
 - [ ] School: desks, benches, blackboard with real chalk writing, charts and posters, water pot with mug, bell, cupboard, scattered slates and bags

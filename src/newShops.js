@@ -182,6 +182,89 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     metalGeos.push(beltGeo);
   }
 
+  // --- Furnishing (CLAUDE.md 5b rule 3): each trade's own stock and tools, hand-scattered with per-item
+  // rotation, scale and tint, folded into the same wood/metal merges (+ one jute merge for sacks). ---
+  const jute = [];
+  const colliders = [];
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const jit = (a) => (rnd() - 0.5) * 2 * a;
+  const put = (list, geo, world, x, y, z, ry, tint) => {
+    geo.applyMatrix4(new THREE.Matrix4().makeRotationY(ry).setPosition(x, y, z)).applyMatrix4(world);
+    ensureUv2(geo);
+    bakeFlatTintColors(geo, tint, 1);
+    list.push(geo);
+  };
+  const box = (list, world, w, h, d, x, y, z, ry, tint) => put(list, new THREE.BoxGeometry(w, h, d), world, x, y + h / 2, z, ry, tint);
+  const cyl = (list, world, r, h, x, y, z, tint, seg = 10) => put(list, new THREE.CylinderGeometry(r, r * 1.05, h, seg), world, x, y + h / 2, z, rnd() * 6.28, tint);
+  const sack = (world, x, y, z, ry, tint) => {
+    const g = new THREE.CylinderGeometry(0.2, 0.25, 0.8, 9);
+    g.rotateZ(Math.PI / 2); // lying sack
+    g.scale(1, 0.55 + jit(0.06), 1.0);
+    put(jute, g, world, x, y + 0.2, z, ry, tint);
+  };
+  const JUTE = [0xb59468, 0xa88a5e, 0xc2a478, 0x9c8156];
+
+  // Ration shop: shelf of tins and measuring cans, sacks of grain and sugar stacked low on the right, crates,
+  // and a beam scale + register ledger on the counter.
+  {
+    const world = wallWorldMatrix(rationShopPos, rationShopRot);
+    const d = RATION_SHOP.d;
+    // Stock stands outside on the flanks (the shell is a solid box with a shallow counter recess): grain and sugar sacks on the right, crates on the left.
+    const fx = RATION_SHOP.w / 2 + 0.45;
+    for (let i = 0; i < 6; i++) sack(world, fx + (i % 2) * 0.05 + jit(0.04), Math.floor(i / 3) * 0.34, d / 2 - 0.9 + (i % 3) * 0.5, jit(0.15) + Math.PI / 2, JUTE[i % 4]);
+    colliders.push(colliderBoxFromTransform(0.7, 1.7, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(fx, 0.35, d / 2 - 0.4))));
+    for (let i = 0; i < 3; i++) box(woodGeos, world, 0.5, 0.3, 0.4, -fx + jit(0.05), i === 2 ? 0.6 : 0, d / 2 - 0.5 + (i === 1 ? 0.5 : 0), jit(0.3), darken(PALETTE.woodTrim, 0.7 + i * 0.08));
+    colliders.push(colliderBoxFromTransform(0.7, 1.0, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(-fx, 0.3, d / 2 - 0.2))));
+    // beam scale on the counter: stand, beam, two pans
+    const cy = RATION_SHOP.counterTopY, cz = d / 2 + 0.15;
+    cyl(metalGeos, world, 0.03, 0.4, -0.7, cy, cz, 0x3a3d40, 8);
+    box(metalGeos, world, 0.6, 0.02, 0.02, -0.7, cy + 0.4, cz, 0, 0x4a4d50);
+    for (const sx of [-0.28, 0.28]) cyl(metalGeos, world, 0.11, 0.015, -0.7 + sx, cy + 0.24, cz, 0x9a9484, 12);
+    box(woodGeos, world, 0.32, 0.05, 0.22, 0.45, cy, cz - 0.05, 0.2, 0x5a2a22); // ledger register
+    box(woodGeos, world, 0.3, 0.03, 0.2, 0.46, cy + 0.05, cz - 0.05, 0.25, 0x8a7a58);
+  }
+
+  // Post office: pigeonhole letter rack, post bags, a small scale on the counter, rubber stamp + ink pad,
+  // and the red pillar post box outside the door (solid).
+  {
+    const world = wallWorldMatrix(postOfficePos, postOfficeRot);
+    const d = POST_OFFICE.d;
+    const fx = POST_OFFICE.w / 2 + 0.4;
+    for (let i = 0; i < 3; i++) sack(world, fx + jit(0.04), i === 2 ? 0.34 : 0, d / 2 - 0.7 + (i % 2) * 0.5, jit(0.4) + Math.PI / 2, JUTE[i % 4]); // post bags
+    colliders.push(colliderBoxFromTransform(0.7, 1.2, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(fx, 0.3, d / 2 - 0.3))));
+    const cy = POST_OFFICE.counterTopY, cz = d / 2 + 0.15;
+    box(metalGeos, world, 0.3, 0.06, 0.22, 0.5, cy, cz - 0.05, 0.15, 0x6d7075); // letter scale
+    cyl(metalGeos, world, 0.09, 0.012, 0.5, cy + 0.06, cz - 0.05, 0xb9b6aa, 12);
+    box(woodGeos, world, 0.14, 0.02, 0.09, -0.4, cy, cz, 0.4, 0x2c2a4a); // ink pad
+    cyl(woodGeos, world, 0.025, 0.07, -0.4, cy + 0.02, cz, 0x6a3a22, 8); // stamp
+    // pillar box outside, left of the window
+    const bx = -POST_OFFICE.w / 2 - 0.35, bz = d / 2 + 0.55;
+    cyl(metalGeos, world, 0.19, 1.0, bx, 0, bz, 0xa8281f, 14);
+    put(metalGeos, new THREE.SphereGeometry(0.2, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), world, bx, 1.0, bz, 0, 0x8f2019);
+    box(metalGeos, world, 0.2, 0.025, 0.02, bx, 0.82, bz + 0.19, 0, 0x1a1a1a); // slot
+    colliders.push(colliderBoxFromTransform(0.4, 0.4, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(bx, 0.5, bz))));
+  }
+
+  // Atta chakki: hopper over the stone, flour spout and collecting tray, sacks of grain and flour, scoops,
+  // a platform scale; flour dust is a pale tint on the floor and sacks.
+  {
+    const world = wallWorldMatrix(attaChakkiPos, attaChakkiRot);
+    const d = ATTA_CHAKKI.d;
+    put(metalGeos, new THREE.CylinderGeometry(0.4, 0.1, 0.5, 4, 1, true), world, -0.5, 1.0, -0.2, Math.PI / 4, 0x7e8288); // hopper
+    box(metalGeos, world, 0.06, 0.55, 0.06, -0.5, 0.35, -0.2, 0, 0x55595d); // feed pipe
+    box(woodGeos, world, 0.7, 0.05, 0.5, -0.5, 0.02, 0.25, 0, darken(PALETTE.woodTrim, 0.8)); // tray
+    box(metalGeos, world, 0.5, 0.5, 0.04, 0.0, 0.0, -d / 2 + 0.3, 0, 0x4a4d50); // belt guard
+    box(woodGeos, world, 0.9, 0.7, 0.05, 0.9, 0.8, -d / 2 + 0.2, 0, darken(PALETTE.woodTrim, 0.7)); // sack shelf
+    for (let i = 0; i < 4; i++) sack(world, 1.0 + (i % 2) * 0.5 + jit(0.04), Math.floor(i / 2) * 0.34, 0.1 + jit(0.1), jit(0.35), [0xd9d2bd, 0xcdc4a8, JUTE[0], 0xe2dccb][i]);
+    for (let i = 0; i < 3; i++) sack(world, -1.1 + jit(0.05), i * 0.34, 0.3 + jit(0.08), Math.PI / 2 + jit(0.2), [JUTE[1], 0xd6cfb8, JUTE[2]][i]);
+    box(metalGeos, world, 0.5, 0.06, 0.4, 0.3, 0, 0.8, 0.2, 0x5b5f63); // platform scale
+    cyl(metalGeos, world, 0.03, 0.9, 0.3, 0.06, 0.62, 0x4a4d50, 8);
+    cyl(metalGeos, world, 0.09, 0.07, -0.1, 0, 0.7, 0x9fa3a8, 10); // steel scoop bowl
+    box(woodGeos, world, 0.9, 0.012, 0.8, -0.35, 0, 0.0, 0.2, 0xe4dfd0); // flour dust on the floor
+    colliders.push(colliderBoxFromTransform(1.2, 1.0, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(-0.5, 0.5, -0.2))));
+  }
+
   const group = new THREE.Group();
   group.name = 'new_shop_props';
 
@@ -198,6 +281,13 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
   metalMesh.castShadow = true;
   metalMesh.receiveShadow = true;
   group.add(metalMesh);
+
+  const juteMesh = new THREE.Mesh(mergeGeometries(jute), getTiledMaterial('jute', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
+  juteMesh.name = 'new_shop_jute_props';
+  juteMesh.castShadow = true;
+  juteMesh.receiveShadow = true;
+  group.add(juteMesh);
+  metalMesh.userData.colliderBoxes = colliders;
 
   return group;
 }
