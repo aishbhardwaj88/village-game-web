@@ -723,3 +723,36 @@ export function createCanalBankRoad(position, name = 'canal_bank_road') {
   for (let i = 0; i < 5; i++) geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 0.18), at(-L / 2 + 6 + i * 18, 0.35, 2.1), 0xe6e0cf));
   return finishSite(name, geos, position);
 }
+
+/**
+ * Village boundary wall (MAP.md organic edge): a low, cared-for compound wall of lime-washed plaster on a
+ * brick-red plinth with cement coping, pilasters every 4 m and a gap for each lane that leaves the abadi.
+ * `runs` are world-space {a:{x,z}, b:{x,z}} segments; `gaps` are world-space {x,z,w} openings. Visual only, no colliders.
+ */
+export function createBoundaryWall(position, name, runs, gaps = []) {
+  const geos = [];
+  const H = 1.15, T = 0.24;
+  const tones = [0xe4dcc6, 0xdcd2b8, 0xe9d9bf, 0xd8d4c4];
+  let seed = 31;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const inGap = (x, z) => gaps.some((g) => Math.hypot(x - g.x, z - g.z) < g.w / 2 + 0.2);
+  for (const { a, b } of runs) {
+    const len = Math.hypot(b.x - a.x, b.z - a.z);
+    const ang = Math.atan2(-(b.z - a.z), b.x - a.x); // makeRotationY(ang) maps +x onto the run direction
+    const dx = (b.x - a.x) / len, dz = (b.z - a.z) / len;
+    const SEG = 4;
+    const n = Math.ceil(len / SEG);
+    for (let i = 0; i < n; i++) {
+      const s0 = i * SEG, s1 = Math.min(len, s0 + SEG), sl = s1 - s0;
+      const mx = a.x + dx * (s0 + s1) / 2 - position.x, mz = a.z + dz * (s0 + s1) / 2 - position.z;
+      if (inGap(mx + position.x, mz + position.z)) continue;
+      const hh = H * (0.94 + rnd() * 0.12);
+      geos.push(bake(new THREE.BoxGeometry(sl, 0.4, T + 0.04), at(mx, 0.2, mz, ang), 0x9a5a3e)); // brick-red plinth
+      geos.push(bake(new THREE.BoxGeometry(sl, hh - 0.4, T), at(mx, 0.4 + (hh - 0.4) / 2, mz, ang), tones[Math.floor(rnd() * tones.length)]));
+      geos.push(bake(new THREE.BoxGeometry(sl + 0.04, 0.07, T + 0.1), at(mx, hh + 0.035, mz, ang), 0xb8b3a6)); // coping
+      const px = a.x + dx * s0 - position.x, pz = a.z + dz * s0 - position.z;
+      if (!inGap(px + position.x, pz + position.z)) geos.push(bake(new THREE.BoxGeometry(0.34, hh + 0.28, 0.34), at(px, (hh + 0.28) / 2, pz, ang), 0xd6cfba)); // pilaster
+    }
+  }
+  return finishSite(name, geos, position);
+}

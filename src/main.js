@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createOldHaveli, createGaushala } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1376,6 +1376,10 @@ async function main() {
     zoneManager.register('canal_bank_road', { x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
     zoneManager.register('canal_bank_road_n', { x: -8, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 38.8 }, 'canal_bank_road_n') });
+    // MAP.md organic village edge: low compound walls closing the abadi's west, south and east sides, gaps where lanes leave.
+    zoneManager.register('edge_wall_w', { x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
+    zoneManager.register('edge_wall_s', { x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
+    zoneManager.register('edge_wall_e', { x: 46, z: 78, buildRadius: 50, teardownRadius: 62, build: () => createBoundaryWall({ x: 46, z: 78 }, 'edge_wall_e', [{ a: { x: 46, z: 58 }, b: { x: 46, z: 100 } }], [{ x: 46, z: 76, w: 4 }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
     zoneManager.register('old_haveli', { x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
     zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });

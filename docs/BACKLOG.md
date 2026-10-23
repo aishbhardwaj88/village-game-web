@@ -69,6 +69,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Ration shop
 - [ ] Atta chakki
 - [ ] Background houses and boundary walls
+  - PROGRESS 2026-10-23 (cycle 38x, not ticked): village boundary walls on the abadi's west, south and east edges (createBoundaryWall, src/farmSites.js), proof docs/shots/edgewall-2026-10-23b/west_wall.png and south_wall.png; visual only, no colliders; field-side walls and the north edge not done.
 - [ ] Lanes, kerbs and drains across the full map
 - [ ] Canal and bridge
 
