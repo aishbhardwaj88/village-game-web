@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38br):** Game change: colliders added to five far-east/farm sites that had none: gurukul (two blocks, verandah columns, yard wall, gate pillars, mast), khel maidan (pavilion poles + bench, net poles), mela ground (shamiana poles, stage, bench rows, swing legs, stalls), manihari counter + stool, khalihan (threshing post, 4 bhoosa stacks) in src/farmSites.js. Build all passed. Real W/S key walks stop at box + radius for stage, stack, bench, gurukul block (proof docs/shots/site-solids-2026-10-23/, script tmp/site-solid.mjs). Gaps: pond/johad edges and anganwadi props not audited; regression-check not run (no movement code touched); mandi/gurukul/maidan etc. still flat vertex-colour.
+Next: per-material textures on far-east props; solid audit list; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bq):** Game change: the mandi now has solid colliders: grain godown, dhaba hall, weighbridge cabin, 3 parked trucks (oriented to their heading), vegetable-shed poles and crate rows (src/farmSites.js createMandi). Real W/S key walks into the godown and dhaba stop at wall + radius (godown south 47.55 vs face 47.1; dhaba 95.55 vs face 95.1). Build passed (all checks). Proof docs/shots/mandi-solids-2026-10-23/mandi_godown.png. Gaps: tractor-yard props still no collider; mandi still flat vertex-colour (5b fail); regression-check not run (no movement code touched).
 Next: flat-colour far-east structures to textured materials; tractor-yard colliders; far-east road decision (art director).
 

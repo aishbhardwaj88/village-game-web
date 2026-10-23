@@ -345,6 +345,7 @@ export function createKhalihan(position) {
   mesh.receiveShadow = true;
   const group = new THREE.Group();
   group.name = 'khalihan_prop';
+  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 0.3, 0.3], ...stacks.map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k])]); // threshing post + bhoosa stacks
   group.add(mesh);
   group.position.set(position.x, 0, position.z);
   return group;
@@ -509,7 +510,7 @@ export function createManihari(position) {
   const cols = [0xc4372f, 0x2f7d5b, 0xd8a22a, 0x3a5aa6, 0x8a3a8a];
   for (let i = 0; i < 10; i++) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 0.22, 10), at(-1.35 + i * 0.3, 1.1, 0.1), cols[i % cols.length]));
   geos.push(bake(new THREE.BoxGeometry(1.0, 0.06, 0.5), at(-3, 0.35, 0.8), 0x7a5a3a)); // stool
-  return finishSite('manihari', geos, position);
+  return finishSite('manihari', geos, position, { solids: [[0, 0, 3.4, 1.4], [-3, 0.8, 1.0, 0.5]] }); // counter + stool
 }
 
 /** Sabzi rehris: three wooden handcarts piled with vegetables, parked in a row under a tarpaulin shade. */
@@ -724,7 +725,13 @@ export function createMelaGround(position) {
     geos.push(bake(new THREE.BoxGeometry(2.8, 0.05, 2.0), new THREE.Matrix4().makeRotationX(0.1).setPosition(18, 2.4, z), stripe[(i + 1) % 4]));
     for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 2.4, 6), at(18 + sx * 1.3, 1.2, z - 0.6), 0x5a5a5a));
   }
-  return finishSite('mela_ground', geos, position);
+  return finishSite('mela_ground', geos, position, { solids: [
+    [-9.7, -5.7, 0.25, 0.25], [9.7, -5.7, 0.25, 0.25], [-9.7, 5.7, 0.25, 0.25], [9.7, 5.7, 0.25, 0.25], // shamiana poles
+    [0, -4, 5, 3], // stage
+    ...[0, 1, 2, 3].map((i) => [0, -0.5 + i * 1.5, 5, 0.5]), // bench rows
+    [13.4, 12, 0.3, 0.3], [16.6, 12, 0.3, 0.3], // swing legs
+    ...[0, 1, 2].map((i) => [18, -12 + i * 6, 2.4, 1.2]), // stall counters
+  ] });
 }
 
 /** Khel maidan (SE edge): rolled cricket strip, stumps, boundary rope posts, a badminton net and a low pavilion shade. */
@@ -744,7 +751,11 @@ export function createKhelMaidan(position) {
   geos.push(bake(new THREE.BoxGeometry(6, 0.08, 2.8), new THREE.Matrix4().makeRotationX(-0.06).setPosition(-17, 2.7, 0), 0x8e969c));
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 2.7, 6), at(-17 + sx * 2.8, 1.35, sz * 1.2), 0x6f5233));
   geos.push(bake(new THREE.BoxGeometry(5, 0.08, 0.5), at(-17, 0.5, 1.0), 0x7a5a3a));
-  return finishSite('khel_maidan', geos, position);
+  return finishSite('khel_maidan', geos, position, { solids: [
+    [7.9, 8, 0.2, 0.2], [14.1, 8, 0.2, 0.2], // badminton net poles
+    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-17 + sx * 2.8, sz * 1.2, 0.25, 0.25]), // pavilion poles
+    [-17, 1.0, 5, 0.5], // pavilion bench
+  ] });
 }
 
 /** Gurukul inter college (SE, outside the abadi): two-storey classroom block around a yard with a gate and a flagless mast. */
@@ -766,7 +777,12 @@ export function createGurukul(position) {
   geos.push(bake(new THREE.BoxGeometry(14, 1.6, 0.3), at(9, 0.8, 12), 0xe0d2b0));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.9, 2.8, 0.9), at(2 + sx * 2.2, 1.4, 12), 0xcdbf9a));
   geos.push(bake(new THREE.CylinderGeometry(0.06, 0.08, 8, 6), at(6, 4, 4), 0x9a9a9a));
-  return finishSite('gurukul', geos, position);
+  return finishSite('gurukul', geos, position, { solids: [
+    [0, -9, 22.3, 7.3], [-7.5, 1, 7.3, 18.3], // classroom blocks
+    ...[0, 1, 2, 3, 4, 5].map((i) => [-9 + i * 3.6, -4.9, 0.5, 0.5]), // verandah columns
+    [9, 12, 14, 0.4], [-0.2, 12, 1.0, 1.0], [4.2, 12, 1.0, 1.0], // yard wall + gate pillars
+    [6, 4, 0.2, 0.2], // flag mast
+  ] });
 }
 
 /** Old haveli (MAP.md, east, quiet): two-storey courtyard mansion, faded ochre plaster, arched-front jharokhas, closed carved gate, quiet and cared-for. */
