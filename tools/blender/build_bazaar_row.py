@@ -82,18 +82,48 @@ def shell():
     kit.add('apron', wb('step', -18.3, 18.3, FRONT - 0.6, FRONT, 0, 0.2, 0.012))
     for i in range(8):
         kit.add('apron', wb('unit_step', cx(i) - 0.9, cx(i) + 0.9, FRONT - 0.95, FRONT - 0.6, 0, 0.12, 0.01))
-    # four small barred windows high on the back wall (back view of the reference)
+    # four barred windows high on the back wall: recess, painted frame, iron bars + rail, projecting sill
     for k in (0, 2, 4, 6):
-        wx = cx(k) + 1.1 + (0.0 if k < 4 else 0.0)
-        kit.add('paint', wb('bwin_frame', wx - 0.4, wx + 0.4, BACK, BACK + 0.07, 2.4, 2.95, 0.01), 0x4A4640)
-        kit.add('paint', wb('bwin_glass', wx - 0.34, wx + 0.34, BACK + 0.06, BACK + 0.075, 2.46, 2.89, 0), 0x1B1B1D)
-        for j in range(1, 7):
-            kit.add('paint', wb('bwin_bar', wx - 0.34 + j * 0.097 - 0.012, wx - 0.34 + j * 0.097 + 0.012, BACK + 0.07, BACK + 0.1, 2.46, 2.89, 0), 0x6A6862)
+        back_window_z(cx(k) + 1.1, BACK, 0.8, 2.4, 2.95)
+    # a panelled staff door in every unit's back wall (hinges, brass handle, recess, step)
+    for i in range(8):
+        back_door_z(cx(i) - 0.9, BACK, 0.9, 2.0, [0x3F5B6A, 0x5A3A24, 0x2F5A3C, 0x6A2E2A][i % 4])
     # drainpipes + switchboards here and there on the back wall
     for k in (2, 6):
         kit.add('paint', limb('drain', (bx(k), BACK + 0.08, 0.15), (bx(k), BACK + 0.08, HEIGHTS[k] if k < 8 else 4), 0.09, 0.09), 0x9A9EA3)
     for i in (3, 6):
         kit.add('paint', wb('switchboard', cx(i) + 1.5 - 0.15, cx(i) + 1.5 + 0.15, BACK + 0.025, BACK + 0.08, 1.15, 1.45, 0.004), 0xE9E7DD)
+
+
+def back_window_z(xc, zface, w, y0, y1):
+    """Barred window on the back wall (face at constant z, facing +z)."""
+    x0, x1 = xc - w / 2, xc + w / 2
+    kit.add('paint', wb('recess', x0, x1, zface, zface + 0.02, y0, y1, 0), 0x1D1A17)
+    for xx0, xx1, h0, h1 in ((x0 - 0.07, x1 + 0.07, y1, y1 + 0.07), (x0 - 0.07, x1 + 0.07, y0 - 0.07, y0), (x0 - 0.07, x0, y0 - 0.07, y1 + 0.07), (x1, x1 + 0.07, y0 - 0.07, y1 + 0.07)):
+        kit.add('paint', wb('wframe', xx0, xx1, zface, zface + 0.07, h0, h1, 0.004), 0x4A4640)
+    n = max(3, int(w / 0.14))
+    for j in range(n):
+        xx = x0 + (j + 0.5) * w / n
+        kit.add('paint', wb('bar', xx - 0.012, xx + 0.012, zface + 0.03, zface + 0.05, y0, y1, 0), 0x26262A)
+    kit.add('paint', wb('rail', x0, x1, zface + 0.03, zface + 0.05, (y0 + y1) / 2 - 0.012, (y0 + y1) / 2 + 0.012, 0), 0x26262A)
+    kit.add('trim', wb('sill', x0 - 0.08, x1 + 0.08, zface, zface + 0.16, y0 - 0.1, y0 - 0.03, 0.005))
+
+
+def back_door_z(xc, zface, w, h, leaf):
+    """Staff door in the back wall facing +z: recess, frame, leaf with raised panels and a rail, hinges, brass handle, step."""
+    x0, x1 = xc - w / 2, xc + w / 2
+    kit.add('paint', wb('drecess', x0 - 0.08, x1 + 0.08, zface, zface + 0.03, 0.0, h, 0), 0x14110E)
+    kit.add('paint', wb('dframe', x0 - 0.09, x1 + 0.09, zface, zface + 0.09, h, h + 0.09, 0.004), 0x2F2016)
+    for xx0, xx1 in ((x0 - 0.09, x0), (x1, x1 + 0.09)):
+        kit.add('paint', wb('dframe', xx0, xx1, zface, zface + 0.09, 0.0, h + 0.09, 0.004), 0x2F2016)
+    kit.add('paint', wb('leaf', x0, x1, zface + 0.02, zface + 0.07, 0.02, h, 0.004), leaf)
+    for h0, h1 in ((0.2, h * 0.45), (h * 0.55, h - 0.2)):
+        kit.add('paint', wb('dpanel', x0 + 0.1, x1 - 0.1, zface + 0.07, zface + 0.1, h0, h1, 0.004), 0x3D2818)
+    kit.add('paint', wb('drail', x0, x1, zface + 0.07, zface + 0.1, h * 0.47, h * 0.53, 0.004), 0x2F2016)
+    for hy in (0.3, h - 0.3):
+        kit.add('paint', wb('hinge', x0, x0 + 0.16, zface + 0.07, zface + 0.1, hy, hy + 0.05, 0), 0x26262A)
+    kit.add('paint', cyl('handle', x1 - 0.12, zface + 0.12, h * 0.5 - 0.02, h * 0.5 + 0.02, 0.025, 0.025, 8), BRASS)
+    kit.add('apron', wb('dstep', x0 - 0.25, x1 + 0.25, zface, zface + 0.4, 0.0, 0.12, 0.01))
 
 
 def h_roof(k):

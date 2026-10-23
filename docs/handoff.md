@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38cc):** Game change: bazaar row (Blender, build_bazaar_row.py -> bazaar_row.glb) now has a panelled back door (recess, frame, hinges, brass handle, step) on all 8 units and fully framed barred back windows with sills. Build ALL PASSED, budget 25.00 MB, no new draw calls (same mesh). Proof docs/shots/openings4-2026-10-23/. Gaps: back doors are visual only (wall is solid); no regression run (no movement code touched).
+Next: lane prop audit (A1f); hero-zone draw-call headroom; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38cb):** Game change: post office, ration shop and atta chakki (Blender, tools/blender/build_new_shops.py -> public/assets/models/new_shops.glb) now have real openings: grilled side windows with sills, panelled staff door with hinges, handle and step at the back, grilled vent window on the chakki back wall. Build ALL PASSED, budget 24.91 MB. Proof docs/shots/openings3-2026-10-23/. Lesson: src/newShops.js geometry is invisible collision backing; edit the Blender script. Gaps: bazaar units still slab openings; gaushala/mela are open structures.
 Next: bazaar row openings (tools/blender/build_bazaar_row.py); far-east road decision (art director).
 
