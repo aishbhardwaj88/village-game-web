@@ -139,8 +139,19 @@ export const VEG_KEEP_OUT = [
   { x: 78, z: 105, r: 8 }, // johad
   { zMin: 29.5, zMax: 36.5, xMin: -28, xMax: 0 }, // canal water + banks
 ];
+/** Every lane stretch passed to lanesideClusters: its kerb + open drain band (half width + 0.8 m) is also a keep-out, so no tuft grows in a nali or on a kerb. */
+const LANE_BANDS = [];
+const DRAIN_CLEARANCE = 0.8;
+function inLaneBand(x, z) {
+  for (const l of LANE_BANDS) {
+    const t = ((x - l.ax) * l.ux + (z - l.az) * l.uz);
+    if (t < 0 || t > l.len) continue;
+    if (Math.abs((x - l.ax) * -l.uz + (z - l.az) * l.ux) < l.half + DRAIN_CLEARANCE) return true;
+  }
+  return false;
+}
 export function inKeepOut(x, z) {
-  return VEG_KEEP_OUT.some((k) => (k.r !== undefined ? Math.hypot(x - k.x, z - k.z) < k.r : x > k.xMin && x < k.xMax && z > k.zMin && z < k.zMax));
+  return inLaneBand(x, z) || VEG_KEEP_OUT.some((k) => (k.r !== undefined ? Math.hypot(x - k.x, z - k.z) < k.r : x > k.xMin && x < k.xMax && z > k.zMin && z < k.zMax));
 }
 
 /** Jittered points inside clusters around each anchor — "cluster them, never
@@ -259,6 +270,7 @@ export function lanesideClusters(start, end, laneWidth, { everyMetres = 7, margi
   const perpX = -dirZ;
   const perpZ = dirX;
   const sideOffset = laneWidth / 2 + margin;
+  LANE_BANDS.push({ ax: start.x, az: start.z, ux: dirX, uz: dirZ, len: length, half: laneWidth / 2 });
 
   const anchors = [];
   const steps = Math.max(1, Math.round(length / everyMetres));

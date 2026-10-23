@@ -4,7 +4,7 @@ import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { mergeMeshList } from './mergeUtils.js';
-import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
+import { buildGardenPlants, GARDEN_KIND, inKeepOut } from './vegetation.js';
 import { BAAGH_CENTER, BAAGH_CLEARING_RADIUS } from './baagh.js';
 
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
@@ -164,6 +164,7 @@ function buildCropRows() {
       const sabzi = sabziZone || (!stubble && r % 3 === 2);
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
+      if (inKeepOut(rx, rz)) continue; // no crop standing in the tubewell naali / any water footprint
       const j = Math.sin(rx * 12.9 + rz * 7.1);
       dummy.position.set(rx + j * 0.12, 0, rz + Math.cos(rx * 5.3 + rz * 3.7) * 0.1);
       dummy.rotation.y = j * 3;
