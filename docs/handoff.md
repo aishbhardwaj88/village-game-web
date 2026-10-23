@@ -1,5 +1,5 @@
-**2026-10-23 (cycle 38am):** No game-code change this cycle. Took framed screenshots at the side-job spots (docs/shots/jobs-2026-10-23/) as partial A5 proof; weak (kanche camera inside foliage, NPCs capsules). Found a budget breach: view at (-46,14.6) yaw 3.14 = 177 draw calls / 427k tris from undistanced vehicle meshes (details in BACKLOG A5). Not fixed.
-Next: vehicle distance-cull at that spot (run regression-check), kanche camera-in-foliage.
+**2026-10-23 (cycle 38am):** No game-code change this cycle. Took framed screenshots at the side-job spots (docs/shots/jobs-2026-10-23/) as partial A5 proof; weak (kanche camera inside foliage, NPCs capsules). Suspected budget breach at (-46,14.6) checked: 177 calls includes shadow pass, validator metric is 122, so no breach.
+Next: kanche camera-in-foliage, in-job screenshots, real game change from A3/A4.
 
 ---
 

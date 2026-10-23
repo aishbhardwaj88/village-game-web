@@ -31,4 +31,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Mandi (town market past the highway) is in the game; MAP.md gave no position so I picked open ground east of the highway at x 226 - tell me if you want it moved. - status: open
 - Old haveli (east, (150,-30)) and gaushala (village edge, (-125,-35)) are in the game; MAP.md gave no positions so I picked open ground - tell me if you want either moved. - status: open
 - The automatic safety check now reports two failures that were already there before today's work (over 400k triangles in one view, and the trolley not blocking the player); fixed 2026-10-23 (tree canopy cards no longer cast shadows, 391k now; trolley test no longer gives up early at low frame rate), regression check is 22/22. - status: done
-- Draw calls: one view near the kanche spot (-46,14.6) measures 177 calls / 427k triangles, over the 150 / 400k limits; next cycle I will cull the parked vehicles there. Nothing for you to do. - status: open
+- Draw calls: a view near the kanche spot first read 177 calls, but that counted the shadow pass; the real count is 122, under the limit. Nothing for you to do. - status: done
