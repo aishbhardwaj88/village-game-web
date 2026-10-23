@@ -142,9 +142,11 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 
 ### A1e. Street lamps (art director FAIL 2026-10-23)
 - [ ] Research real UP village street light references first, then rebuild: concrete/RCC tapered poles on abadi lanes, panchayat solar LED lights at chowk and newer areas, at least two distinct types
-- [ ] Add the down-cable on each pole, a junction/switch box, and sagging overhead wire runs between poles (this matters more than the lamp head)
+  - PROGRESS 2026-10-23 (not ticked): two types built (RCC tapered pole + tube light on temple lanes, solar LED on bazaar lane; src/props.js createStreetLamps). Web reference research NOT done, so box stays open.
+- [x] Add the down-cable on each pole, a junction/switch box, and sagging overhead wire runs between poles (this matters more than the lamp head) - proof docs/shots/lamps-2026-10-23/t2.png (also t4.png, b2.png)
 - [ ] Real concrete and rusted-steel textures with stains and wear; no flat grey fill
 - [ ] Per-instance lean, rotation and wear variation; posters/stickers/painted numbers on some poles; instanced
+  - PROGRESS 2026-10-23 (not ticked): lean, height, tint, base grime and painted bands done; no posters/stickers; merged per lane segment, not GPU-instanced. Concrete/tin PBR textures used, no stains beyond base grime.
 
 ### A1f. Layout fixes (art director 2026-10-23)
 - [x] FIX: move every hand pump and water corner from the lane middle to the lane edge or a corner, with soak-away and wet patch - proof docs/shots/lanewater-edge-2026-10-23/e1.png (also s1.png, e2.png, w1b_chk.png, w2b_chk.png: all 5 lane water corners now at the kerb on the side away from the open drain, spout facing the lane, flat damp apron plus pebble-ringed soak-away; the lane hero-house courtyard pump is not a lane pump and was untouched)

@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38by):** Game change: street lamps rebuilt (src/props.js createStreetLamps, type 'rcc' | 'solar'). Temple lanes: tapered RCC poles (CC0 concrete PBR) with tube-light on bracket arm, down-cable, switch box, painted whitewash/black bands, base grime, sagging two-core overhead wire between poles (poles every 14 m). Bazaar lane: panchayat solar LED (steel pole on concrete footing, tilted panel, LED head, battery box). Per-lamp lean/height/tint. Two merged meshes per lane (concrete solid with colliders; tin overhead parts and wires, kept out of the solid-material families), no shadow casting to hold hero zone at 150/150 (was 151 with shadows on). Build 16/16, budget fine. Proof docs/shots/lamps-2026-10-23/ (t2.png, t4.png, b2.png; t1, b1 are poor angles). Gaps: no reference research, no stickers/posters, wires do not cross between lane segments, lamps only on 3 lane segments (abadi lanes and chowk have none), hero zone has zero headroom.
+Next: lamps on the other lanes once headroom exists; lane prop audit; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bx2):** Game change (small): bazaar villagers (src/bazaarLife.js) now collide with parked and driving vehicles (getExtraBoxes -> otherVehicleBoxes, wired in src/main.js); before, they passed [] and a vehicle could drive through them. Audit: every NPC routine (npcRoutines.js, bazaarLife.js) moves only through resolveMove; animals are stationary. Build 15/15, regression 22/22. No screenshot taken (no visual change), so no A0 box ticked.
 Next: hero-zone draw-call headroom; lane prop audit; far-east road decision (art director).
 

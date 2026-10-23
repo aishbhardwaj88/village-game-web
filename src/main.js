@@ -1357,17 +1357,17 @@ async function main() {
     // A1 props: street lamps along the bazaar and temple lanes, streamed per lane
     // segment (the hero zone sits at the 150 draw-call ceiling, so lamps only
     // exist once the player is within ~8 m of that stretch of lane).
-    for (const [name, from, to, width] of [
-      ['lamps_bazaar_b', BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH],
-      ['lamps_temple_a', TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH],
-      ['lamps_temple_b', TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH],
+    for (const [name, from, to, width, lampType] of [
+      ['lamps_bazaar_b', BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 'solar'], // newer panchayat solar LEDs
+      ['lamps_temple_a', TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, 'rcc'],
+      ['lamps_temple_b', TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, 'rcc'],
     ]) {
       zoneManager.register(name, {
         x: (from.x + to.x) / 2,
         z: (from.z + to.z) / 2,
         buildRadius: 8 + Math.hypot(to.x - from.x, to.z - from.z) / 2,
         teardownRadius: 9 + Math.hypot(to.x - from.x, to.z - from.z) / 2,
-        build: () => createStreetLamps([{ from, to, width }]),
+        build: () => createStreetLamps([{ from, to, width }], { type: lampType, everyMetres: lampType === 'rcc' ? 14 : 22 }),
       });
     }
     // MAP.md landmarks: paani ki tanki + bijli transformer (tallest structure; radius capped at 90 m because the hero zone sits at exactly 150 draw calls and the

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { getTiledMaterial } from './materials.js';
 
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
@@ -203,62 +204,139 @@ export async function createDonationBoard(position, rotationY = 0) {
 }
 
 /**
- * Street lamps (A1 props): grey concrete/iron poles with a short bracket arm and a
- * dull sodium-style lamp head, one merged vertex-coloured mesh (one draw call) for
- * every lamp. Placed on alternating sides along real lane segments, set just
- * outside the lane edge. Scenery only; lamps are unlit by design (daytime game).
- * `segments`: [{ from:{x,z}, to:{x,z}, width }].
+ * Street lamps (A1e). Two real UP-village types, both textured (CC0 concrete / tin
+ * PBR sets, vertex-tinted per instance), never flat fills:
+ *  - 'rcc'   : tapered RCC concrete pole, tube-light on a bracket arm, a down-cable
+ *              clipped to the pole, a grey switch box, a whitewash/black painted band,
+ *              and a sagging overhead wire run to the next pole (abadi lanes).
+ *  - 'solar' : panchayat solar LED light - slim steel pole on a concrete footing, tilted
+ *              panel on top, LED head on a short arm, battery box on the pole.
+ * Per lamp: lean, height, tint, grime at the base. Each segment is two merged meshes
+ * (concrete = solid pole bodies with colliders; tin = arms, heads, panels, wires, kept
+ * out of the 'solid' material families because they overhang the lane).
+ * `segments`: [{ from, to, width }]. Placed alternately either side, just off the lane.
  */
-export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
-  // One merged mesh per segment (one draw call each, but frustum culling can drop
-  // a far lane's lamps instead of one map-wide bounding sphere always passing).
+export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } = {}) {
   const group = new THREE.Group();
   group.name = 'street_lamps';
-  const mat = new THREE.MeshStandardMaterial({ name: 'street_lamp', vertexColors: true, roughness: 0.8, metalness: 0.15 });
-  let geos = [];
-  const POLE = 0x7d7a72;
-  const HEAD = 0xb9b4a4;
-  const GLASS = 0xe9dca6;
+  const concreteMat = getTiledMaterial('concrete', { vertexColors: true });
+  const tinMat = getTiledMaterial('tin', { vertexColors: true });
+  const hash = (k) => { const s = Math.sin(k * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const TILE = 1.2;
+  // Box-projected world-scale UVs so any primitive carries the texture at real size.
+  const tex = (g, color) => {
+    g.computeVertexNormals();
+    const p = g.attributes.position;
+    const nrm = g.attributes.normal;
+    const uv = new Float32Array(p.count * 2);
+    for (let i = 0; i < p.count; i++) {
+      const ax = Math.abs(nrm.getX(i)), ay = Math.abs(nrm.getY(i)), az = Math.abs(nrm.getZ(i));
+      let u; let v;
+      if (ay >= ax && ay >= az) { u = p.getX(i); v = p.getZ(i); }
+      else if (ax >= az) { u = p.getZ(i); v = p.getY(i); }
+      else { u = p.getX(i); v = p.getY(i); }
+      uv[i * 2] = u / TILE; uv[i * 2 + 1] = v / TILE;
+    }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setAttribute('uv2', new THREE.BufferAttribute(uv.slice(), 2));
+    return bakeColor(g, color);
+  };
+  const tint = (hex, k) => new THREE.Color(hex).multiplyScalar(k);
+  const wireBetween = (a, b, w, color, out) => {
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    const len = a.distanceTo(b);
+    const g = new THREE.BoxGeometry(w, w, len);
+    const m = new THREE.Matrix4().lookAt(b, a, new THREE.Vector3(0, 1, 0));
+    m.setPosition(mid);
+    g.applyMatrix4(m);
+    out.push(tex(g, color));
+  };
   let n = 0;
+  let prevTop = null; // previous pole's wire anchor (same segment)
   for (const { from, to, width } of segments) {
-    geos = [];
+    const solid = []; // concrete mesh
+    const over = []; // tin mesh
     const lampBoxes = [];
+    prevTop = null;
     const dx = to.x - from.x;
     const dz = to.z - from.z;
     const len = Math.hypot(dx, dz);
     if (len < 1) continue;
     const ux = dx / len;
     const uz = dz / len;
-    const nx = -uz; // lane normal
+    const nx = -uz;
     const nz = ux;
     const count = Math.max(1, Math.floor(len / everyMetres));
     for (let i = 0; i < count; i++) {
       const t = ((i + 0.5) / count) * len;
-      const side = n++ % 2 === 0 ? 1 : -1;
-      const off = width / 2 + 0.7;
+      const side = n % 2 === 0 ? 1 : -1;
+      const r = (k) => hash(n * 7.31 + k);
+      n++;
+      const off = width / 2 + 0.7 + r(1) * 0.2;
       const x = from.x + ux * t + nx * off * side;
       const z = from.z + uz * t + nz * off * side;
-      const rotY = Math.atan2(-nx * side, -nz * side); // arm reaches back over the lane
-      const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(x, 0, z);
-      lampBoxes.push({ minX: x - 0.16, maxX: x + 0.16, minZ: z - 0.16, maxZ: z + 0.16 });
-      const add = (g, local, color) => {
+      const rotY = Math.atan2(-nx * side, -nz * side);
+      const lean = new THREE.Euler((r(2) - 0.5) * 0.05, rotY, (r(3) - 0.5) * 0.05, 'YXZ');
+      const m = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(lean), new THREE.Vector3(1, 1, 1));
+      const wear = 0.78 + r(4) * 0.22;
+      const addTo = (list, g, local, color) => {
         g.applyMatrix4(new THREE.Matrix4().setPosition(local[0], local[1], local[2]));
         g.applyMatrix4(m);
-        geos.push(bakeColor(g, color));
+        list.push(tex(g, color));
       };
-      const h = 5.2;
-      add(new THREE.CylinderGeometry(0.07, 0.11, h, 8), [0, h / 2, 0], POLE);
-      add(new THREE.CylinderGeometry(0.16, 0.16, 0.25, 8), [0, 0.12, 0], POLE);
-      add(new THREE.BoxGeometry(0.07, 0.07, 1.1), [0, h - 0.1, 0.5], POLE);
-      add(new THREE.CylinderGeometry(0.1, 0.26, 0.22, 8), [0, h - 0.1, 1.0], HEAD);
-      add(new THREE.SphereGeometry(0.13, 8, 6), [0, h - 0.26, 1.0], GLASS);
+      const top = new THREE.Vector3();
+      if (type === 'solar') {
+        const h = 4.6 + r(5) * 0.5;
+        lampBoxes.push({ minX: x - 0.2, maxX: x + 0.2, minZ: z - 0.2, maxZ: z + 0.2 });
+        addTo(solid, new THREE.BoxGeometry(0.4, 0.3, 0.4), [0, 0.15, 0], tint(0xb4b1a8, wear));
+        addTo(solid, new THREE.BoxGeometry(0.32, 0.4, 0.2), [0, 2.9, 0.14], tint(0x6f7a72, wear)); // battery box
+        addTo(over, new THREE.CylinderGeometry(0.045, 0.06, h, 8), [0, h / 2 + 0.2, 0], tint(r(6) > 0.5 ? 0x4f6a5a : 0x59606c, wear));
+        addTo(over, new THREE.BoxGeometry(0.06, 0.06, 0.9), [0, h - 0.15, 0.4], tint(0x59606c, wear));
+        addTo(over, new THREE.BoxGeometry(0.22, 0.06, 0.55), [0, h - 0.22, 0.8], tint(0xe6e2d2, 0.9)); // LED head
+        const panel = new THREE.BoxGeometry(1.0, 0.04, 0.62);
+        panel.applyMatrix4(new THREE.Matrix4().makeRotationX(-0.38));
+        addTo(over, panel, [0, h + 0.3, -0.05], tint(0x2a3a5c, 0.7 + r(7) * 0.4));
+        addTo(over, new THREE.BoxGeometry(0.06, 0.3, 0.06), [0, h + 0.1, -0.05], tint(0x59606c, wear));
+      } else {
+        const h = 6.2 + r(5) * 0.6;
+        lampBoxes.push({ minX: x - 0.17, maxX: x + 0.17, minZ: z - 0.17, maxZ: z + 0.17 });
+        const body = tint(0xa4a8a9, wear);
+        addTo(solid, new THREE.CylinderGeometry(0.075, 0.15, h, 8), [0, h / 2, 0], body);
+        addTo(solid, new THREE.CylinderGeometry(0.17, 0.17, 0.5, 8), [0, 0.25, 0], tint(0x5f625f, wear)); // damp/grime at base
+        const band = r(8);
+        if (band > 0.35) addTo(solid, new THREE.CylinderGeometry(0.121, 0.127, 0.22, 8), [0, 1.15, 0], band > 0.7 ? tint(0xe8e2d0, 1) : tint(0x1c1c1a, 1)); // painted band / number
+        addTo(solid, new THREE.BoxGeometry(0.3, 0.36, 0.14), [0, 1.7, 0.16], tint(0x6a7468, wear)); // switch box
+        addTo(over, new THREE.BoxGeometry(0.06, 0.06, 1.3), [0, h - 0.15, 0.6], tint(0x4a463e, wear)); // bracket arm
+        addTo(over, new THREE.BoxGeometry(0.1, 0.09, 1.2), [0, h - 0.24, 0.85], tint(0xe0ddd0, 0.85)); // tube-light fixture
+        const cable = new THREE.CylinderGeometry(0.014, 0.014, h - 1.9, 5);
+        addTo(over, cable, [0, 1.9 + (h - 1.9) / 2, 0.095], tint(0x151515, 1)); // down-cable
+        top.set(0, h + 0.02, 0).applyMatrix4(m);
+        // Sagging overhead wire to the previous pole in this run (two parallel cores).
+        if (prevTop) {
+          const span = prevTop.distanceTo(top);
+          const sag = Math.min(0.9, span * 0.045);
+          for (const dy of [0, -0.12]) {
+            let a = prevTop.clone(); a.y += dy;
+            for (let s = 1; s <= 8; s++) {
+              const u = s / 8;
+              const b = prevTop.clone().lerp(top, u);
+              b.y += dy - sag * 4 * u * (1 - u);
+              wireBetween(a, b, 0.02, 0x141414, over);
+              a = b;
+            }
+          }
+        }
+        prevTop = top.clone();
+      }
     }
-    if (!geos.length) continue;
-    const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
-    mesh.userData.colliderBoxes = lampBoxes; // pole bases are solid (A0)
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    group.add(mesh);
+    for (const [list, mat, boxes] of [[solid, concreteMat, lampBoxes], [over, tinMat, null]]) {
+      if (!list.length) continue;
+      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
+      if (boxes) mesh.userData.colliderBoxes = boxes; // pole bases are solid (A0)
+      mesh.castShadow = false; // thin poles: shadow pass would cost an extra call per mesh (hero zone sits at the 150 ceiling)
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    }
   }
   return group;
 }
