@@ -292,6 +292,15 @@ export function buildFlowerStall() {
   pushBox(furnitureGeos, 0.35, 0.15, 0.35, fx - 0.6, FLOWER_STALL.tableH + 0.075, fz + 0.3, PALETTE.mustard); // marigold basket
   pushBox(furnitureGeos, 0.35, 0.15, 0.35, fx + 0.3, FLOWER_STALL.tableH + 0.075, fz + 0.3, 0xb23a3a); // rose/hibiscus basket
   pushBox(furnitureGeos, 0.3, 0.35, 0.3, fx + 0.9, 0.175, fz + 0.6, PALETTE.mustard); // a stool-height stack of loose marigold
+  // Marigold garlands hanging from the front rod: dense strands of orange, deep
+  // saffron and yellow, with the odd pink rose strand. Same wood-family draw call.
+  const garlandColours = [0xe8731a, 0xf0a020, 0xe8731a, 0xf4c430, 0xd9531e, 0xf0a020, 0xc2457a, 0xe8731a, 0xf4c430, 0xd9531e];
+  const rodY = FLOWER_STALL.h - 0.5;
+  garlandColours.forEach((colour, i) => {
+    const gx = fx - FLOWER_STALL.w / 2 + 0.2 + i * ((FLOWER_STALL.w - 0.4) / (garlandColours.length - 1));
+    const len = 0.7 + ((i * 37) % 5) * 0.12;
+    pushBox(furnitureGeos, 0.1, len, 0.1, gx, rodY - len / 2, fz - FLOWER_STALL.d / 2 + 0.1, colour);
+  });
   const furnitureMaterial = getTiledMaterial('wood', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
   const furnitureMesh = new THREE.Mesh(mergeGeometries(furnitureGeos), furnitureMaterial);
   furnitureMesh.name = 'flower_stall_furniture';

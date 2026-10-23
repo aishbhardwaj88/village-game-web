@@ -57,7 +57,7 @@ Nothing from review 1 has been reworked yet. Review 1 items stay open and come F
 ### Chowk, temple, flower stall - FIX (decent)
 - Temple: good shape and scale. Tree beside it is grey faceted polygons: must be green, rounder canopy.
 - Flower stall: good. Add more marigold garland colour.
-Reworked 2026-10-21 (partial): the temple's neighbouring tree and every code tree are now green, rounder, with darker trunks (src/trees.js). Marigold garland colour on the flower stall: not yet.
+Reworked 2026-10-21 (partial): the temple's neighbouring tree and every code tree are now green, rounder, with darker trunks (src/trees.js). Marigold garland colour on the flower stall: DONE 2026-10-23 (cycle 38as): ten hanging orange/saffron/yellow garland strands with a pink rose one on the front rod, same draw call, proof docs/shots/garland-2026-10-23/stall2.png.
 
 ### Post office, ration shop, atta chakki - FIX
 - All three signboards are blurred and illegible: same signboard regression as review 1, fix in the shared signboard code path once for every Blender building.
