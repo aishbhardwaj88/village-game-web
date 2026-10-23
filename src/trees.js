@@ -503,6 +503,16 @@ export function buildTrees(placements) {
     tree.rotation.y = p.rotationY || 0;
     if (p.scale) tree.scale.setScalar(p.scale); // e.g. the small neem in the house courtyard's brick planter
     group.add(tree);
+    // Solid trunk (A0, art director 2026-10-23): world-space box on the near trunk mesh
+    // (userData.colliderBoxes survives merging, see src/mergeUtils.js), so people,
+    // animals and vehicles slide around it. No extra mesh, no extra draw call.
+    const r = (TRUNK_COLLIDER_R[p.kind] ?? 0.3) * (p.scale ?? 1);
+    let trunkMesh = null;
+    tree.traverse((o) => { if (!trunkMesh && o.isMesh && o.name.endsWith('_mesh')) trunkMesh = o; });
+    if (trunkMesh) trunkMesh.userData.colliderBoxes = [{ minX: p.x - r, maxX: p.x + r, minZ: p.z - r, maxZ: p.z + r }];
   }
   return group;
 }
+
+// Trunk radius at the base plus a little flare, per species (matches SPECS trunkR).
+const TRUNK_COLLIDER_R = { neem: 0.3, peepal: 0.4, babool: 0.25, mango: 0.38, eucalyptus: 0.25 };

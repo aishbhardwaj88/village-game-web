@@ -344,7 +344,8 @@ async function main() {
     console.log('Sampling real solid geometry for check 5 (every structural-material mesh)...');
     // 'brick' (docs/FINISH_LINE.md Step C, the chowk chabutra kerb) added
     // alongside the existing structural-material families.
-    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick'].includes(name);");
+    // 'tree_foliage' (trunks, src/trees.js) added: tree trunks now carry real colliders (A0).
+    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick','tree_foliage'].includes(name);");
     console.log(`${solidPoints.length / 2} real solid-surface sample points.`);
 
     // -------------------------------------------------------------------
