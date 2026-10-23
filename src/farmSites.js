@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
 import { buildClothesline } from './laundry.js';
+import { getGLTFLoader } from './loaders.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -636,6 +637,140 @@ export function createLaneGames(position, name = 'lane_games', ry = 0) {
   const g = finishSite(name, geos, position);
   g.rotation.y = ry;
   return g;
+}
+
+/** Printed carrom board face (ply with grain, baselines with end circles, corner arcs, centre rings, four pockets), drawn once and shared. */
+let CARROM_FACE = null;
+function carromFaceTexture() {
+  if (CARROM_FACE) return CARROM_FACE;
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  x.fillStyle = '#e1c68c'; x.fillRect(0, 0, N, N);
+  for (let i = 0; i < 260; i++) { x.fillStyle = `rgba(${150 + (i * 37) % 50},${105 + (i * 17) % 40},60,0.07)`; x.fillRect(0, (i * 53) % N, N, 1 + (i % 3)); }
+  x.strokeStyle = '#2b211a'; x.lineWidth = 2.5; x.fillStyle = '#2b211a';
+  x.strokeRect(34, 34, N - 68, N - 68);
+  const circle = (cx, cy, r, f) => { x.beginPath(); x.arc(cx, cy, r, 0, 7); f ? x.fill() : x.stroke(); };
+  for (const [px, py] of [[22, 22], [N - 22, 22], [22, N - 22], [N - 22, N - 22]]) { x.fillStyle = '#16110e'; circle(px, py, 20, true); }
+  x.fillStyle = '#9d3a2a';
+  for (const [a, b] of [[0, 1], [1, 0]]) for (const f of [0, 1]) { // baselines on all four sides with a red end disc each
+    const o = 100, w = N - 200, line = f ? N - 96 : 96;
+    x.lineWidth = 2; x.strokeStyle = '#2b211a';
+    x.strokeRect(a ? o : line - 6, a ? line - 6 : o, a ? w : 12, a ? 12 : w);
+    for (const e of [o, N - o]) { x.fillStyle = '#9d3a2a'; circle(a ? e : line, a ? line : e, 9, true); circle(a ? e : line, a ? line : e, 9, false); }
+  }
+  x.strokeStyle = '#2b211a'; x.lineWidth = 2;
+  circle(N / 2, N / 2, 76, false); circle(N / 2, N / 2, 54, false); x.fillStyle = '#9d3a2a'; circle(N / 2, N / 2, 20, true);
+  for (let k = 0; k < 8; k++) { x.save(); x.translate(N / 2, N / 2); x.rotate(k * Math.PI / 4); x.beginPath(); x.moveTo(54, 0); x.lineTo(76, 0); x.stroke(); x.restore(); }
+  for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { // corner arrows
+    x.beginPath(); x.moveTo(N / 2 + sx * 76 * 0.7, N / 2 + sy * 76 * 0.7); x.lineTo(N / 2 + sx * 190, N / 2 + sy * 190); x.stroke();
+    x.beginPath(); x.arc(N / 2 + sx * 205, N / 2 + sy * 205, 18, 0, 7); x.stroke();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  CARROM_FACE = t;
+  return t;
+}
+
+const CARROM_PROPS = [ // file, real-world height (m)
+  ['round_wooden_table_01', 0.72], ['wooden_stool_02', 0.46], ['painted_wooden_chair_01', 0.85],
+];
+
+/**
+ * The one carrom scene (MAP.md street life), at the chowk: a round wooden table with a printed carrom board mid-game, four older
+ * men (capsule placeholders until characters land) on two stools and two chairs, tea glasses, a folded gamcha, a tin of
+ * board powder, a katori of pocketed coins and slippers left beside the seats. Table, stool and chair are CC0 Poly Haven scans
+ * (public/assets/props) loaded after the zone builds, so the first frame never waits on them. `ry` turns the whole scene.
+ */
+export function createCarromScene(position, name = 'carrom_scene', ry = 0) {
+  const T = 0.72, geos = [];
+  const R = (x, y, z, r = 0) => at(x, y, z, r);
+  // board frame, rim and ply sit on the table top; the printed face is its own textured plane below
+  geos.push(bake(new THREE.BoxGeometry(0.78, 0.03, 0.78), R(0, T + 0.015, 0), 0x6b4326));
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshStandardMaterial({ map: carromFaceTexture(), roughness: 0.55 }));
+  face.rotation.x = -Math.PI / 2; face.position.set(0, T + 0.0315, 0); face.receiveShadow = true;
+  face.name = 'carrom_board_face';
+  // mid-game coins, queen and striker
+  const coinRng = rng01(name.length * 17 + 3);
+  for (let i = 0; i < 13; i++) {
+    const a = coinRng() * 6.28, d = coinRng() * 0.22;
+    const col = i === 0 ? 0xa23a2a : i % 2 ? 0xf0e6c6 : 0x241f1b;
+    geos.push(bake(new THREE.CylinderGeometry(0.0155, 0.0155, 0.009, 10), R(Math.cos(a) * d, T + 0.036, Math.sin(a) * d), col));
+  }
+  geos.push(bake(new THREE.CylinderGeometry(0.021, 0.021, 0.011, 12), R(0.12, T + 0.037, 0.29), 0xc4372f)); // striker at a baseline
+  // on the table beside the board: two tea glasses, a folded gamcha, a powder tin, a steel katori of pocketed coins
+  for (const [gx, gz] of [[0.44, 0.1], [-0.4, -0.3]]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.033, 0.028, 0.085, 10), R(gx, T + 0.045, gz), 0xd9b678));
+    geos.push(bake(new THREE.CylinderGeometry(0.036, 0.036, 0.012, 10), R(gx, T + 0.006, gz), 0xb8bcc0));
+  }
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.025, 0.12), R(0.1, T + 0.013, -0.46, 0.2), 0xe6dfc9));
+  geos.push(bake(new THREE.CylinderGeometry(0.032, 0.032, 0.05, 10), R(-0.42, T + 0.025, 0.3), 0xe9e4d6));
+  geos.push(bake(new THREE.CylinderGeometry(0.05, 0.035, 0.04, 12), R(0.38, T + 0.02, -0.34), 0xb8bcc0));
+  // four seated placeholders facing the table: kurta, head, cap or turban; seats at N/E/S/W
+  const SEATS = [[0, 0.98, 0, 0xe9e1cb, 0xf0f0e6], [1.05, 0, 1, 0xb8c4cf, 0xd8cfc0], [0, -0.98, 0, 0xcfb98f, 0xefe7d6], [-1.05, 0, 1, 0xe3d8bd, 0xc8a24a]];
+  const SEAT_Y = [0.46, 0.46, 0.46, 0.46];
+  SEATS.forEach(([sx, sz, isChair, kurta, cap], i) => {
+    const face2 = Math.atan2(-sx, -sz); // yaw so local +z points at the table
+    const f = (lx, ly, lz) => new THREE.Vector3(lx, ly, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), face2).add(new THREE.Vector3(sx, 0, sz));
+    const place = (geo, local, col, rotMat) => {
+      const m = new THREE.Matrix4().makeRotationY(face2);
+      if (rotMat) m.multiply(rotMat);
+      const p = f(local[0], local[1], local[2]); m.setPosition(p);
+      geos.push(bake(geo, m, col));
+    };
+    const sy = isChair ? 0.47 : SEAT_Y[i];
+    place(new THREE.CapsuleGeometry(0.17, 0.34, 4, 10), [0, sy + 0.34, -0.03], kurta);            // torso
+    place(new THREE.SphereGeometry(0.115, 10, 8), [0, sy + 0.78, 0.0], 0x8a5e44);                   // head
+    place(new THREE.SphereGeometry(0.12, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), [0, sy + 0.8, 0.0], cap); // cap / turban
+    place(new THREE.CapsuleGeometry(0.075, 0.28, 3, 8), [-0.1, sy + 0.1, 0.2], 0xe8e2d2, new THREE.Matrix4().makeRotationX(Math.PI / 2)); // thighs
+    place(new THREE.CapsuleGeometry(0.075, 0.28, 3, 8), [0.1, sy + 0.1, 0.2], 0xe8e2d2, new THREE.Matrix4().makeRotationX(Math.PI / 2));
+    place(new THREE.CapsuleGeometry(0.06, 0.28, 3, 8), [-0.1, sy - 0.16, 0.36], 0xe8e2d2);         // shins
+    place(new THREE.CapsuleGeometry(0.06, 0.28, 3, 8), [0.1, sy - 0.16, 0.36], 0xe8e2d2);
+    place(new THREE.CapsuleGeometry(0.05, 0.3, 3, 8), [-0.27, sy + 0.2, 0.12], kurta, new THREE.Matrix4().makeRotationX(-0.9)); // arms reaching in
+    place(new THREE.CapsuleGeometry(0.05, 0.3, 3, 8), [0.27, sy + 0.2, 0.12], kurta, new THREE.Matrix4().makeRotationX(-0.9));
+    // a pair of slippers left on the ground beside each seat
+    place(new THREE.BoxGeometry(0.1, 0.02, 0.26), [0.42, 0.012, 0.25], i % 2 ? 0x2f3d5c : 0x4a3426, new THREE.Matrix4().makeRotationY(0.3));
+    place(new THREE.BoxGeometry(0.1, 0.02, 0.26), [0.56, 0.012, 0.2], i % 2 ? 0x2f3d5c : 0x4a3426, new THREE.Matrix4().makeRotationY(-0.4));
+  });
+  const group = finishSite(name, geos, position, { roughness: 0.9 });
+  group.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 1.15, 1.15], [0, 0.98, 0.55, 0.55], [0, -0.98, 0.55, 0.55], [1.05, 0, 0.55, 0.55], [-1.05, 0, 0.55, 0.55]]);
+  group.children[0].castShadow = false; // placeholders + props cast no shadow: keeps the shadow pass cheap in the chowk view
+  group.add(face);
+  // CC0 scans: table in the centre, stools at N and S, chairs at E and W (facing the table)
+  Promise.all(CARROM_PROPS.map(([file, h]) => getGLTFLoader().loadAsync(`assets/props/${file}.glb`).then((gltf) => {
+    gltf.scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    return { scene: gltf.scene, box, k: h / Math.max(0.01, box.max.y - box.min.y) };
+  }))).then(([table, stool, chair]) => {
+    // stools and chairs are InstancedMesh (two copies, one draw each part) and cast no shadow: keeps the shadow pass and hero view cheap
+    const place = (src, spots, shadow) => {
+      const wrap = new THREE.Group();
+      const c = src.box.getCenter(new THREE.Vector3());
+      const fit = new THREE.Matrix4().makeScale(src.k, src.k, src.k).setPosition(-c.x * src.k, -src.box.min.y * src.k, -c.z * src.k);
+      // every part of these scans shares one material, so the parts merge into a single geometry: one draw per asset
+      const parts = [];
+      src.scene.traverse((m) => {
+        if (!m.isMesh) return;
+        const g = m.geometry.clone();
+        g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(fit, m.matrixWorld));
+        parts.push({ g, mat: m.material });
+      });
+      const merged = mergeGeometries(parts.map((p) => { const g = p.g.index ? p.g.toNonIndexed() : p.g; for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k); return g; }));
+      const im = new THREE.InstancedMesh(merged, parts[0].mat, spots.length);
+      spots.forEach(([x, z, yaw], i) => im.setMatrixAt(i, new THREE.Matrix4().makeRotationY(yaw).setPosition(x, 0, z)));
+      im.castShadow = shadow; im.receiveShadow = true; im.frustumCulled = false;
+      wrap.add(im);
+      group.add(wrap);
+    };
+    place(table, [[0, 0, 0.3]], false);
+    place(stool, [[0, 0.98, 0.5], [0, -0.98, 2.2]], false);
+    place(chair, [[1.05, 0, -Math.PI / 2], [-1.05, 0, Math.PI / 2]], false);
+  }).catch(() => {});
+  group.rotation.y = ry;
+  return group;
+}
+
+function rng01(seed) {
+  let s = (seed * 9301 + 49297) % 233280;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
 
 /** Lane laundry corner: a charpai with a folded quilt and drying red chillies, a steel tub, and a clothesline of saris and dupattas between two poles. Visual only. */

@@ -109,7 +109,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createLaneGames, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1417,10 +1417,8 @@ async function main() {
     for (const site of milestoneSites()) zoneManager.register(site.id, { x: site.x, z: site.z, buildRadius: 60, teardownRadius: 75, build: () => createMilestone(site) });
     zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
-    // Carrom + ludo on a jute mat in the lane outside the houses (MAP.md street life); one draw call each, streamed.
-    for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1], ['lane_games_e2', -4.9, 90, Math.PI / 2 + 0.15], ['lane_games_w2', -79, 22.6, 0.1]]) {
-      zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneGames({ x, z }, id, ry) });
-    }
+    // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.
+    zoneManager.register('carrom_scene', { x: -46, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46, z: 5.5 }, 'carrom_scene', 0.3) });
     // Laundry corners also stand at the lane edge, on the non-drain side, so the lane stays clear for carts and cattle.
     for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });

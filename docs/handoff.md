@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bx):** Game change: A1g carrom. All 5 lane carrom/ludo mats removed; one carrom scene at the chowk (-46, 5.5): CC0 round table, stools, chairs (public/assets/props, +0.9 MB, total 24.84 MB), printed carrom board texture, coins mid-game, 4 capsule placeholder men, tea glasses, gamcha, slippers, solid colliders. Instanced/merged, no shadows, builds within 22 m. Proof docs/shots/carrom-2026-10-23/. Build 15/15 (hero zone 150/150), budget pass.
+Next: hero-zone draw-call headroom (it sits at 150); lane prop audit (charpais, benches out of vehicle routes); far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bw):** Game change: lane laundry lines rebuilt (src/laundry.js, used by createLaneLaundry): 11 garment silhouettes (sari, dhoti, kurta, salwar, dupatta, shirt, trousers, frock, towel, bedsheet, gamcha) draped over a sagging rope with wrinkles, uneven hems, printed/bordered canvas-weave fabric with normal map, pegs, shader breeze (hem sways more, per-garment phase). +1 draw call per line, no shadows. Proof docs/shots/laundry-2026-10-23/. Build, budget (23.96 MB) pass.
 Wind consistency report (A1h last item): trees already sway (trees.js); NOT yet swaying: garden plants/creepers, grass tufts, signboard flags, marigold garlands, sugarcane, smoke, loose paper. Hero house clothesline (village.js) is still box cloth.
 Next: carrom scene to chowk (A1g); hero house clothesline once draw-call headroom exists; CC0 fabric photos if the art director wants them over canvas prints.

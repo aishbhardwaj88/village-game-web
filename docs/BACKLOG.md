@@ -156,6 +156,7 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 - [ ] Re-check collision, reachability, zone streaming and draw-call ceiling after the new row; report the number if the hero view cannot hold it
 
 ### A1g. Carrom scene (art director 2026-10-23)
+  - PROGRESS 2026-10-23 (cycle 38bx, not ticked as a whole): the five lane carrom+ludo mats are REMOVED from all lanes; ONE carrom scene (createCarromScene, src/farmSites.js) now stands at the chowk (-46, 5.5) in front of the bazaar, east of the tea stall: CC0 Poly Haven round table + 2 stools + 2 chairs, a textured printed carrom board (ring, baselines, arrows, pockets) with coins/queen/striker mid-game, 4 seated capsule-placeholder men, tea glasses, folded gamcha, powder tin, katori of pocketed coins, slippers. Proof docs/shots/carrom-2026-10-23/carrom_close.png, carrom_b.png, carrom_wide.png. Ludo removed (not rebuilt). Scene builds within 22 m only (hero-zone draw calls sit at 150/150).
 - [ ] Move carrom out of all lanes; place ONE carrom scene in the common area near the shops (chowk/bazaar frontage), not in a vehicle route
 - [ ] Build it as a table in the centre with the board on top, four older men seated around it on stools/chairs (placeholder people for now)
 - [ ] Board detail: wooden frame, printed circle and arrow lines, four pockets, coins and striker scattered mid-game; tea glasses, pocketed coins, cloth, slippers beside the stools
