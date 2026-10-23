@@ -8,6 +8,7 @@ import { powerMeter } from './minigames.js';
  * peepal poster or by hearing the kids shout (sound radar).
  */
 const MAIDAN = { x: 46, z: 104 };
+const KHEL_MAIDAN = { x: 165, z: 135 }; // createKhelMaidan in main.js
 const RIVALS = [
   { role: 'kid_a', name: 'Bittu', score: 22 },
   { role: 'kid_b', name: 'Guddu', score: 29 },
@@ -22,7 +23,16 @@ export function registerGilliJob(api, env) {
   api.npc('kid_d', { x: MAIDAN.x + 6, z: MAIDAN.z + 3 }, -Math.PI / 2, 'npc_gilli_ref');
 
   let shout = 3;
+  let farShout = 5;
   api.onUpdate((dt) => {
+    // the big khel maidan at the east edge (MAP.md) is lively too: fainter, longer-range cheers, no job there
+    const pf = env.getPlayerPos();
+    const df = Math.hypot(KHEL_MAIDAN.x - pf.x, KHEL_MAIDAN.z - pf.z);
+    farShout -= dt;
+    if (df < 70 && farShout <= 0) {
+      api.audio.playCheer(Math.max(0.1, 0.8 - df / 70), 0.7);
+      farShout = 6 + Math.random() * 4;
+    }
     const p = env.getPlayerPos();
     const d = Math.hypot(MAIDAN.x - p.x, MAIDAN.z - p.z);
     shout -= dt;

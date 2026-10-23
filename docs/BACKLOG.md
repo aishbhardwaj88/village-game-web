@@ -87,6 +87,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 ### A5. Side jobs and free roam
 - [ ] The checklist at the bottom of `docs/MISSIONS_PLAN.md`, verbatim
   - AUDIT 2026-10-23 (cycle 38ae, not ticked): all 10 side jobs re-run end to end with real interact()/dialogue/rhythm hooks (tmp/jobs-*.mjs, jobs-audit3.mjs, jobs-gate7.mjs): pump, ration, patang, chakki, gate (4.1 s, paid 50), gilli, kanche, kulfi (+banta spend), milk, mango (6/6) all complete with pocket money/records and zero console errors. Not covered: sound radar, notebook map, title 'Continue roaming', screenshot proof per job.
+  - PROGRESS 2026-10-23 (cycle 38al, not ticked): sound radar verified by audio spies, volume falls with distance and is silent out of range for chakki thump, kulfi bell and gilli maidan cheer; the khel maidan (165,135) now has its own cheer source (src/jobs/gilli.js). Proof docs/shots/radar-proof-2026-10-23/radar.txt. Still to do: screenshot proof per job.
 
 ## 1. Headroom and hygiene (must happen before adding more static content)
 
