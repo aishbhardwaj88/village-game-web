@@ -39,6 +39,8 @@ const CANAL_MAX_X = 0;
 
 export const BRIDGE_X = -15; // right at the baagh (src/baagh.js BAAGH_CENTER x=-15)
 const BRIDGE_HALF_WIDTH = 4;
+export const PULIA_X = -3; // narrow foot crossing (MAP.md patli pulia); a 1.6 m gap in the bank colliders, walkable but too narrow for any vehicle
+const PULIA_HALF_WIDTH = 0.8;
 
 // Art review 1 (canal): the water read as flat swimming-pool blue. Now a murky green-brown nahar with fine ripples (procedural normal map).
 const WATER_TINT = 0x6b7448;
@@ -124,9 +126,10 @@ export function buildCanal() {
   const bridgeMaxX = BRIDGE_X + BRIDGE_HALF_WIDTH;
   const northBankZ = CANAL_Z + CANAL_HALF_WIDTH + BANK_WIDTH / 2;
   const southBankZ = CANAL_Z - CANAL_HALF_WIDTH - BANK_WIDTH / 2;
+  const pMin = PULIA_X - PULIA_HALF_WIDTH, pMax = PULIA_X + PULIA_HALF_WIDTH;
+  const spans = [[CANAL_MIN_X, bridgeMinX], [bridgeMaxX, pMin], [pMax, CANAL_MAX_X]]; // bank runs between the two gaps
   for (const z of [northBankZ, southBankZ]) {
-    addBankSegment(group, CANAL_MIN_X, bridgeMinX, z, BANK_WIDTH / 2, true);
-    addBankSegment(group, bridgeMaxX, CANAL_MAX_X, z, BANK_WIDTH / 2, true);
+    for (const [a, b] of spans) addBankSegment(group, a, b, z, BANK_WIDTH / 2, true);
   }
 
   // The pukka bridge — a flat concrete deck flush with the surrounding ground
@@ -161,12 +164,34 @@ export function buildCanal() {
     }
   }
 
+  // Patli pulia: a plank-and-rail foot crossing, bank to bank. Same 'ground' material as the banks (no new draw call).
+  const pHalfSpan = CANAL_HALF_WIDTH + BANK_WIDTH + 0.4;
+  const planks = texturedThickBox(PULIA_HALF_WIDTH * 2 - 0.1, 0.1, pHalfSpan * 2, 'ground', { tint: 0x6b4f33, tileSize: 1, tintStrength: 0.9, collider: false });
+  planks.position.set(PULIA_X, 0.4, CANAL_Z);
+  planks.name = 'canal_pulia_planks';
+  planks.castShadow = false;
+  group.add(planks);
+  for (const side of [-1, 1]) {
+    const handrail = texturedThickBox(0.06, 0.06, pHalfSpan * 2, 'ground', { tint: 0x7a5a3a, tileSize: 1, tintStrength: 0.9, collider: false });
+    handrail.position.set(PULIA_X + side * (PULIA_HALF_WIDTH - 0.05), 1.0, CANAL_Z);
+    handrail.name = 'canal_pulia_rail';
+    handrail.castShadow = false;
+    group.add(handrail);
+    for (const k of [-1, -0.5, 0, 0.5, 1]) {
+      const post = texturedThickBox(0.08, 0.65, 0.08, 'ground', { tint: 0x5e4528, tileSize: 1, tintStrength: 0.9, collider: false });
+      post.position.set(PULIA_X + side * (PULIA_HALF_WIDTH - 0.05), 0.72, CANAL_Z + k * (pHalfSpan - 0.1));
+      post.name = 'canal_pulia_post';
+      post.castShadow = false;
+      group.add(post);
+    }
+  }
+
   // Cement lining: a pukka lip along both water edges (the nahar is a maintained
   // irrigation channel), plus a greener grassy strip on each bank's outer edge.
   // Same two materials as the bank/deck, so no extra draw calls.
   for (const edge of [-1, 1]) {
     const lipZ = CANAL_Z + edge * (CANAL_HALF_WIDTH + 0.12);
-    for (const [a, b] of [[CANAL_MIN_X, bridgeMinX], [bridgeMaxX, CANAL_MAX_X]]) {
+    for (const [a, b] of spans) {
       const lip = texturedThickBox(b - a, 0.42, 0.24, 'concrete', { tint: 0xa9a392, tileSize: 1.5 });
       lip.position.set((a + b) / 2, 0.21, lipZ);
       lip.name = 'canal_lining';
