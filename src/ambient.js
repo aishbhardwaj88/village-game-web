@@ -11,7 +11,7 @@ function spriteTexture(draw, size = 64) {
   return new THREE.CanvasTexture(c);
 }
 
-export function createAmbientLife() {
+export function createAmbientLife(extraSmoke = []) {
   // --- birds: dark "v" glyphs gliding in two loose circles, bobbing
   const birdTex = spriteTexture((ctx, s) => {
     ctx.strokeStyle = '#1b1b1f';
@@ -47,6 +47,7 @@ export function createAmbientLife() {
     { x: -51.2, y: 2.9, z: 78.2 }, // lane tea stall
     { x: -62 + 1.8, y: 0.8, z: -26 + 2.0 }, // kachcha homestead 1 chulha (local 1.8, 2.0)
     { x: -64 - 1.8, y: 0.8, z: -56 - 2.0 }, // kachcha homestead 2 chulha (turned 180 deg)
+    ...extraSmoke,
   ];
   const PER = 14;
   const smokePos = new Float32Array(sources.length * PER * 3);

@@ -84,6 +84,8 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Canal and bridge
   - PROGRESS 2026-10-23 (cycle 38aj, not ticked): bank-side greenery along both canal banks (bougainvillea, tulsi, banana; one garden-plant draw call, src/canal.js), proof docs/shots/canalgreen-2026-10-23/canal_a.png, canal_b.png
 
+  - PROGRESS 2026-10-23 (cycle 38an, not ticked): thin chulha smoke over 7 abadi rows (abadiSmokeSources in src/scenery.js feeding the existing ambient smoke Points, no new draw call), proof docs/shots/abadi-smoke-2026-10-23/e1.png, w1.png
+
 ### A5. Side jobs and free roam
 - [ ] The checklist at the bottom of `docs/MISSIONS_PLAN.md`, verbatim
   - AUDIT 2026-10-23 (cycle 38ae, not ticked): all 10 side jobs re-run end to end with real interact()/dialogue/rhythm hooks (tmp/jobs-*.mjs, jobs-audit3.mjs, jobs-gate7.mjs): pump, ration, patang, chakki, gate (4.1 s, paid 50), gilli, kanche, kulfi (+banta spend), milk, mango (6/6) all complete with pocket money/records and zero console errors. Not covered: sound radar, notebook map, title 'Continue roaming', screenshot proof per job.

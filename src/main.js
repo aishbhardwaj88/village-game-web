@@ -21,7 +21,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
 import { AudioEngine } from './audio.js';
-import { buildBackgroundHouses, abadiGardenPlants } from './scenery.js';
+import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources } from './scenery.js';
 import {
   buildTemple,
   buildFlowerStall,
@@ -1064,7 +1064,7 @@ async function main() {
   let deferredContentLoaded = false;
   let buildingFootprints = []; // tools/collider-audit.js / tools/trolley-drive-test.js — see loadDeferredContent()
   let preMergeColliderCount = 0; // item 1d — see loadDeferredContent()
-  const ambientLife = createAmbientLife();
+  const ambientLife = createAmbientLife(abadiSmokeSources());
   scene.add(ambientLife.group);
   let bgHousesGroup = null; // src/scenery.js — abadi rows, distance-culled per area each frame
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()

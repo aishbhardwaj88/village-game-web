@@ -79,6 +79,19 @@ export function abadiGardenPlants() {
   return out;
 }
 
+/** Thin chulha-smoke origins over a few abadi rows (behind the lane-side roof edge, on low 3.3 m roofs), for createAmbientLife. */
+export function abadiSmokeSources() {
+  const out = [];
+  PLACEMENTS.forEach((p, i) => {
+    if (i % 3 !== 1) return;
+    const L = ABADI_BOXES[p.v].L;
+    const c = Math.round(Math.cos((p.q * Math.PI) / 2)), sn = Math.round(Math.sin((p.q * Math.PI) / 2));
+    const lx = L / 4 - 0.5, lz = -2;
+    out.push({ x: p.x + lx * c + lz * sn, y: 3.4, z: p.z - lx * sn + lz * c });
+  });
+  return out;
+}
+
 const NEAR_DIST = 38; // rows nearer than this draw the detailed Blender model, farther the low-poly proxy
 const FAR_DIST = 170; // beyond this (fog) rows aren't drawn at all
 
