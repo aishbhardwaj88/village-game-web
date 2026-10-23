@@ -698,6 +698,8 @@ function buildBullock(offsetX, offsetZ) {
   // = 0.6), which is correct/expected (legs plug into the torso volume, not a precise
   // seam) rather than the old formula's arbitrary offset.
   const legGeo = new THREE.BoxGeometry(0.13, BULLOCK_LEG_LEN, 0.13);
+  // Legs are pose-only proxies here; buildCartGroup draws all 8 as ONE InstancedMesh (8 draw calls -> 1).
+  const legMesh = pmesh(legGeo, V.bullockHide, 0.9);
   const legs = [];
   for (const [lx, lz] of [
     [-0.18, BULLOCK_BODY_LEN / 2 - 0.15],
@@ -705,12 +707,11 @@ function buildBullock(offsetX, offsetZ) {
     [-0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
     [0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
   ]) {
-    const leg = pmesh(legGeo, V.bullockHide, 0.9);
-    leg.castShadow = false; // thin legs: their shadow is invisible next to the body's, and each leg is its own draw call twice over
+    const leg = new THREE.Object3D();
     leg.position.set(offsetX + lx, BULLOCK_LEG_LEN / 2, offsetZ + lz);
     legs.push(leg);
   }
-  return { staticGroup, legs };
+  return { staticGroup, legs, legGeometry: legMesh.geometry, legMaterial: legMesh.material };
 }
 
 function buildCartGroup() {
@@ -771,17 +772,32 @@ function buildCartGroup() {
   const bullocksStatic = new THREE.Group();
   group.add(bullocksStatic);
   const bullocks = [];
+  const allLegs = [];
+  let legGeometry, legMaterial;
   for (const side of [-1, 1]) {
     const offsetX = side * 0.42;
     const offsetZ = -C.platformLen / 2 - C.yokeForward + 0.5;
     const built = buildBullock(offsetX, offsetZ);
     bullocksStatic.add(built.staticGroup);
-    for (const leg of built.legs) group.add(leg);
+    allLegs.push(...built.legs);
+    legGeometry = built.legGeometry;
+    legMaterial = built.legMaterial;
     bullocks.push({ userData: { legs: built.legs } });
   }
   mergeGroupByMaterial(bullocksStatic);
+  // One draw call for every leg (thin, so no shadow); _updateBullockLegs rewrites the instance matrices.
+  const legMesh = new THREE.InstancedMesh(legGeometry, legMaterial, allLegs.length);
+  legMesh.frustumCulled = false;
+  legMesh.receiveShadow = true;
+  legMesh.name = 'bullock_legs';
+  group.add(legMesh);
+  const syncLegs = () => {
+    allLegs.forEach((leg, i) => { leg.updateMatrix(); legMesh.setMatrixAt(i, leg.matrix); });
+    legMesh.instanceMatrix.needsUpdate = true;
+  };
+  syncLegs();
 
-  return { group, bodyPivot, wheels, bullocks };
+  return { group, bodyPivot, wheels, bullocks, legMesh, syncLegs };
 }
 
 // ---------------------------------------------------------------------------
@@ -990,6 +1006,8 @@ export class Vehicle {
     } else if (p.kind === 'cart') {
       this.wheels = built.wheels;
       this.bullocks = built.bullocks;
+      this.syncLegs = built.syncLegs;
+      this.legMesh = built.legMesh;
     }
 
     this.speed = 0;
@@ -1130,6 +1148,7 @@ export class Vehicle {
         legs[l].rotation.x = Math.sin(this._time * strideSpeed + legPhase) * 0.4 * Math.min(1, Math.abs(this.speed) * 2 + 0.1);
       }
     }
+    this.syncLegs();
   }
 
   /** World-space hitch point (tractor only) — used by main.js to test attach range. */

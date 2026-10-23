@@ -773,7 +773,7 @@ async function main() {
       const bullockOffsets = [-0.42, 0.42]; // src/vehicles.js buildCartGroup's `side * 0.42`
       assetSlots.register('bullock', {
         dimensions: { w: 0.6, h: 1.6, d: 2.2 }, // body + head/neck + legs, src/vehicles.js BULLOCK_* consts
-        hide: [bullocksStaticGroup, ...cart.bullocks[0].userData.legs, ...cart.bullocks[1].userData.legs],
+        hide: [bullocksStaticGroup, cart.legMesh],
         placements: bullockOffsets.map((x) => ({ container: cart.group, position: new THREE.Vector3(x, 0, 0), rotationY: 0 })),
       });
     }
@@ -1397,17 +1397,17 @@ async function main() {
     zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // Carrom + ludo on a jute mat in the lane outside the houses (MAP.md street life); one draw call each, streamed.
-    for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1]]) {
+    for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1], ['lane_games_e2', -4.9, 90, Math.PI / 2 + 0.15]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneGames({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1]]) {
+    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1], ['lane_laundry_e2', -4.9, 104, Math.PI / 2 + 0.15]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1]]) {
+    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1], ['lane_water_e2', -4.9, 122, Math.PI / 2 + 0.15]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
-    for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7]]) {
+    for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3]]) {
       zoneManager.register(id, {
         x, z, buildRadius: 32, teardownRadius: 44,
         build: () => {
