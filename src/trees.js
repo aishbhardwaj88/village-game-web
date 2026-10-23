@@ -412,7 +412,32 @@ function buildSpeciesTree(spec, seed, name) {
   leaves.castShadow = true;
   leaves.receiveShadow = true;
   group.add(trunk, leaves);
-  return group;
+
+  // Distance LODs: mid keeps the trunk with every other leaf card (no shadow casting);
+  // far drops the trunk mesh and keeps a third of the cards, so a far tree costs one draw call.
+  const thin = (step) => {
+    const idx = [];
+    for (let c = 0; c * 6 < I.length; c += step) for (let k = 0; k < 6; k++) idx.push(I[c * 6 + k]);
+    const g = new THREE.BufferGeometry();
+    for (const a of ['position', 'uv', 'color', 'normal']) g.setAttribute(a, leafGeo.getAttribute(a));
+    g.setIndex(idx);
+    return g;
+  };
+  const midLeaves = new THREE.Mesh(thin(2), leaves.material);
+  midLeaves.name = 'tree_leaf_cards';
+  midLeaves.receiveShadow = true;
+  const farLeaves = new THREE.Mesh(thin(3), leaves.material);
+  farLeaves.name = 'tree_leaf_cards';
+  const midTrunk = new THREE.Mesh(trunkGeo, TREE_MATERIAL);
+  midTrunk.name = `${name}_mesh`;
+  const mid = new THREE.Group();
+  mid.add(midTrunk, midLeaves);
+  const lod = new THREE.LOD();
+  lod.name = name;
+  lod.addLevel(group, 0);
+  lod.addLevel(mid, 55);
+  lod.addLevel(farLeaves, 120);
+  return lod;
 }
 
 const D = Math.PI / 180;
