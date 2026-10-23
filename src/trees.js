@@ -208,6 +208,14 @@ function leafMaterial() {
         float windAmt = clamp(position.y * 0.012, 0.0, 0.12);
         transformed.x += sin(uWindTime * 1.3 + windPhase) * windAmt;
         transformed.z += sin(uWindTime * 1.0 + windPhase * 1.7 + 1.3) * windAmt * 0.7;`);
+      // Leaf cards right in front of the camera dissolve (dithered) instead of filling the screen.
+      shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', `#include <alphatest_fragment>
+        {
+          float camDist = length(vViewPosition);
+          float fade = smoothstep(0.8, 3.0, camDist);
+          float dither = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+          if (fade < dither) discard;
+        }`);
     };
   }
   return LEAF_MATERIAL;
