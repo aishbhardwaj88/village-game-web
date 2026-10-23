@@ -308,6 +308,7 @@ export function createAnganwadi(position) {
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.3, 2.4), at(-3.4, 0.2, 4.2), 0x7a5a3a));
   geos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-3.4, 0.5, 4.2, 0.1), 0x2f6b5d));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
+  mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 7.2, 5.2]]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -330,6 +331,7 @@ export function createDudhDairy(position) {
   }
   geos.push(bake(new THREE.BoxGeometry(1.4, 0.5, 0.9), at(2.0, 0.25, 3.1), 0x7a5a3a));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat({ roughness: 0.8 }));
+  mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 5.2, 4.2]]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -339,8 +341,14 @@ export function createDudhDairy(position) {
   return group;
 }
 
+/** Local [cx, cz, w, d] footprints -> world AABBs (sites are unrotated), so streamed buildings block the player (zoneManager rebuilds STATIC_COLLIDERS on every zone change). */
+function solidBoxes(position, solids) {
+  return solids.map(([cx, cz, w, d]) => ({ minX: position.x + cx - w / 2, maxX: position.x + cx + w / 2, minZ: position.z + cz - d / 2, maxZ: position.z + cz + d / 2 }));
+}
+
 function finishSite(name, geos, position, opts = {}) {
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat(opts));
+  if (opts.solids) mesh.userData.colliderBoxes = solidBoxes(position, opts.solids);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -357,7 +365,7 @@ export function createHealthSubCentre(position) {
   for (const sx of [-1, 0, 1]) geos.push(bake(new THREE.BoxGeometry(0.25, 2.7, 0.25), at(sx * 4.2, 1.7, 4.8), 0xece6d6));
   geos.push(bake(new THREE.BoxGeometry(2.6, 0.08, 0.5), at(-2.4, 0.5, 4.2), 0x7a5a3a));
   geos.push(bake(new THREE.BoxGeometry(2.6, 0.5, 0.08), at(-2.4, 0.75, 3.95), 0x7a5a3a));
-  return finishSite('health_subcentre', geos, position);
+  return finishSite('health_subcentre', geos, position, { solids: [[0, 0, 9.2, 5.7]] });
 }
 
 /** Chemist: narrow cream shop with a green shutter, tin awning and a glass counter front. */
@@ -367,7 +375,7 @@ export function createChemist(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.2, 1.2, 3.4), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(3.2, 1.0, 0.7), at(0, 0.85, 2.6), 0x9a7a52));
   geos.push(bake(new THREE.BoxGeometry(3.0, 0.9, 0.05), at(0, 1.8, 2.3), 0x9fb8bd));
-  return finishSite('chemist', geos, position, { roughness: 0.85 });
+  return finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]] });
 }
 
 /** Masjid: modest limewashed prayer hall with a green-and-white dome, one slim minaret and an ablution tap row. Scenery only. */
@@ -381,7 +389,7 @@ export function createMasjid(position) {
   geos.push(bake(new THREE.SphereGeometry(0.65, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), at(-5.2, 7.6, -1.5), 0x3f7a5a));
   for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(0.4, 0.6, 0.3), at(2 + i * 0.9, 0.5, 4.2), 0xb9bdc0));
   geos.push(bake(new THREE.BoxGeometry(4, 0.12, 0.5), at(3, 0.4, 4.6), 0xb7b0a0));
-  return finishSite('masjid', geos, position);
+  return finishSite('masjid', geos, position, { solids: [[0, 0, 8.2, 7.2], [-5.2, -1.5, 1.2, 1.2]] });
 }
 
 /** Gurudwara: white hall with a gold-topped dome, small chhatris, and a saffron nishan sahib flagpole. Scenery only. */
@@ -396,7 +404,7 @@ export function createGurudwara(position) {
   }
   geos.push(bake(new THREE.CylinderGeometry(0.1, 0.12, 9, 8), at(6.5, 4.5, 4.5), 0xd9d3c3));
   geos.push(bake(new THREE.BoxGeometry(0.05, 1.3, 0.9), at(6.5, 8.2, 4.95), 0xe0861f));
-  return finishSite('gurudwara', geos, position);
+  return finishSite('gurudwara', geos, position, { solids: [[0, 0, 9.2, 7.2]] });
 }
 
 /** TV house: the one house with a television. Pale-green plaster, flat roof, and a rooftop antenna mast. No brand marks. */
@@ -407,7 +415,7 @@ export function createTvHouse(position) {
   geos.push(bake(new THREE.BoxGeometry(2.4, 0.5, 1.4), at(-1.8, 4.1, 0), 0x3a5a7a)); // water tank on roof
   geos.push(bake(new THREE.BoxGeometry(2.8, 0.1, 1.8), at(0, 3.0, 3.9), 0xb9b4a6)); // porch slab
   geos.push(bake(new THREE.BoxGeometry(2.0, 0.05, 0.9), at(0, 0.55, 4.4), 0xb34a3a)); // charpai-style cot cover
-  return finishSite('tv_house', geos, position);
+  return finishSite('tv_house', geos, position, { solids: [[0, 0, 8.2, 6.2]] });
 }
 
 /** Manihari: bangle-seller's small stall, a wooden counter with a striped awning and rods of coloured bangles. */
@@ -451,7 +459,7 @@ export function createJainMandir(position) {
   geos.push(bake(new THREE.SphereGeometry(0.2, 8, 6), at(0, 8.8, 0), 0xd9a63a));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.22, 0.26, 2.6, 8), at(sx * 1.6, 1.6, 3.9), 0xe9e2cf));
   geos.push(bake(new THREE.BoxGeometry(4.4, 0.25, 1.8), at(0, 3.0, 3.9), 0xd8d2c0));
-  return finishSite('jain_mandir', geos, position);
+  return finishSite('jain_mandir', geos, position, { solids: [[0, 0, 7.4, 7.4]] });
 }
 
 /** Highway cluster (east edge): paved two-lane road strip, petrol pump with canopy, bus adda shelter and a dharam kanta weighbridge. Unbranded. */
@@ -612,7 +620,7 @@ export function createOldHaveli(position) {
   // Low boundary wall and gate approach.
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(10, 1.2, 0.3), at(sx * 11, 0.6, 14), 0xd8c9a4));
   geos.push(bake(new THREE.BoxGeometry(12, 0.06, 4), at(0, 0.03, 12), 0xb09a78));
-  return finishSite('old_haveli', geos, position);
+  return finishSite('old_haveli', geos, position, { solids: ranges.map(([w, d, x, z]) => [x, z, w, d]) });
 }
 
 /** Gaushala (MAP.md, village edge): long open-sided cattle shed on posts, tin roof, feed trough, bhoosa heap, a few resting cows. */
@@ -640,7 +648,7 @@ export function createGaushala(position) {
   // Swept yard with a water tub and a low wall to the road.
   geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
   geos.push(bake(new THREE.BoxGeometry(L + 2, 0.8, 0.25), at(0, 0.4, D / 2 + 5), 0xcfc2a2));
-  return finishSite('gaushala', geos, position);
+  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4]] });
 }
 
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
