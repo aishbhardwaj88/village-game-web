@@ -1380,6 +1380,10 @@ async function main() {
     zoneManager.register('edge_wall_w', { x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
     zoneManager.register('edge_wall_s', { x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
     zoneManager.register('edge_wall_e', { x: 46, z: 78, buildRadius: 50, teardownRadius: 62, build: () => createBoundaryWall({ x: 46, z: 78 }, 'edge_wall_e', [{ a: { x: 46, z: 58 }, b: { x: 46, z: 100 } }], [{ x: 46, z: 76, w: 4 }]) });
+    // Continuations of the edge wall: south-centre (stops at the sugarcane belt, x 0), west lower half (gap where lane S1 leaves), east lower half (stops at the cane belt, z 135).
+    zoneManager.register('edge_wall_s2', { x: -19, z: 157, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -19, z: 157 }, 'edge_wall_s2', [{ a: { x: -38, z: 157 }, b: { x: 0, z: 157 } }], [{ x: -6, z: 157, w: 4 }]) });
+    zoneManager.register('edge_wall_w2', { x: -101, z: 128, buildRadius: 45, teardownRadius: 58, build: () => createBoundaryWall({ x: -101, z: 128 }, 'edge_wall_w2', [{ a: { x: -101, z: 100 }, b: { x: -101, z: 157 } }], [{ x: -101, z: 140, w: 4.5 }]) });
+    zoneManager.register('edge_wall_e2', { x: 46, z: 118, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 118 }, 'edge_wall_e2', [{ a: { x: 46, z: 100 }, b: { x: 46, z: 135 } }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
     zoneManager.register('old_haveli', { x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
     zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });

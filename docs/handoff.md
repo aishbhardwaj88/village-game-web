@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38ad):** Game change: boundary walls extended along the abadi's south-centre, west lower half and east lower half (src/main.js zones edge_wall_s2/w2/e2, createBoundaryWall). Build 15/15, budget 19.4 MB, console clean. Proof docs/shots/edgewall2-2026-10-23/. No movement code touched, no colliders.
+Next: A5 side-job real-input audit (no side-job test exists in regression-check.js), field-side walls.
+
+---
+
 **2026-10-23 (cycle 38ac):** No game change kept. Tried a tree distance-billboard impostor (src/trees.js); screenshots showed flat green blobs and an all-green overview, so it was reverted (notes in BACKLOG A3). Build 15/15 and regression 22/22 were green on the attempt but visual fail.
 Next: A5 side-job checklist audit against docs/MISSIONS_PLAN.md, field-side boundary walls.
 
