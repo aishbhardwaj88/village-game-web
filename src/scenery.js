@@ -13,6 +13,8 @@ import { createCattleHerd } from './animals.js';
 // (zone-style distance culling, CLAUDE.md draw-call plan). Collision + the validator's real-geometry backing stay as a hidden,
 // locally-merged group of plain boxes ('bg_houses_old'), one per house footprint, taken from src/abadiBoxes.json.
 import ABADI_BOXES from './abadiBoxes.json';
+
+const ABADI_WASHES = [[1, 0.98, 0.95], [1, 0.9, 0.9], [0.9, 0.99, 0.93], [0.9, 0.95, 1], [1, 1, 1], [1, 0.95, 0.85]];
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 
 const ROWS = {
@@ -176,7 +178,9 @@ export function buildBackgroundHouses(scene, kit) {
   PLACEMENTS.forEach((p, i) => {
     p.M = new THREE.Matrix4().makeRotationY((p.q * Math.PI) / 2).setPosition(p.x, 0, p.z);
     const v = 0.94 + 0.08 * (((i * 7919 + p.v.charCodeAt(0) * 31) % 100) / 100);
-    p.tint = new THREE.Color(v, v * (0.97 + 0.03 * ((i * 13) % 3)), v * (0.96 + 0.04 * ((i * 7) % 3)));
+    // Limewash variety per row (cream / blush pink / mint / blue-grey), kept pale so roofs and doors stay natural.
+    const wash = ABADI_WASHES[(i * 5 + p.v.charCodeAt(0)) % ABADI_WASHES.length];
+    p.tint = new THREE.Color(v * wash[0], v * wash[1], v * wash[2]);
   });
   let lastX = null, lastZ = null, refreshedX = 1e9, refreshedZ = 1e9;
   function refresh() {
