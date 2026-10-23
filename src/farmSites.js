@@ -512,6 +512,45 @@ export function createJalebiStall(position) {
   return finishSite('jalebi_stall', geos, position);
 }
 
+/** Lane street life (MAP.md "carrom and ludo boards set up in the lane outside houses"): a jute mat, a carrom board, a ludo board,
+ *  four low wooden peedhas and a steel lota of water. Visual only; one mesh. `ry` turns it to sit along the lane. */
+export function createLaneGames(position, name = 'lane_games', ry = 0) {
+  const geos = [];
+  const R = (x, y, z, r = 0) => at(x, y, z, r);
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.025, 2.0), R(0, 0.013, 0), 0xb59a62)); // chatai (woven mat)
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.03, 0.06), R(0, 0.03, 1.0), 0x7a3b2a)); // red mat borders
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.03, 0.06), R(0, 0.03, -1.0), 0x7a3b2a));
+  // carrom board: dark frame, pale ply face, four corner pockets, centre ring, two coloured arrow lines
+  geos.push(bake(new THREE.BoxGeometry(0.78, 0.04, 0.78), R(-0.45, 0.05, 0.1, 0.2), 0x6b4326));
+  geos.push(bake(new THREE.BoxGeometry(0.66, 0.02, 0.66), R(-0.45, 0.075, 0.1, 0.2), 0xe6cf98));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const px = -0.45 + (sx * 0.3) * Math.cos(0.2) + (sz * 0.3) * Math.sin(0.2);
+    const pz = 0.1 - (sx * 0.3) * Math.sin(0.2) + (sz * 0.3) * Math.cos(0.2);
+    geos.push(bake(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 10), R(px, 0.088, pz), 0x1d1a17));
+  }
+  geos.push(bake(new THREE.CylinderGeometry(0.09, 0.09, 0.008, 16), R(-0.45, 0.088, 0.1), 0xa23a2a));
+  // scattered carrom men (cream / dark) and the striker
+  [[0.04, 0.0, 0xf2e8c8], [-0.04, 0.05, 0x25211d], [0.0, -0.06, 0xf2e8c8], [0.07, 0.07, 0x25211d], [-0.08, -0.03, 0xf2e8c8]].forEach(([dx, dz, c]) => {
+    geos.push(bake(new THREE.CylinderGeometry(0.018, 0.018, 0.012, 8), R(-0.45 + dx, 0.094, 0.1 + dz), c));
+  });
+  geos.push(bake(new THREE.CylinderGeometry(0.024, 0.024, 0.012, 10), R(-0.62, 0.094, 0.28), 0xc4372f));
+  // ludo board: folded cloth/cardboard square with four coloured home corners
+  geos.push(bake(new THREE.BoxGeometry(0.62, 0.012, 0.62), R(0.7, 0.032, -0.35, -0.25), 0xefe6cf));
+  [[-1, -1, 0xc4372f], [1, -1, 0x2f7d5b], [-1, 1, 0xd8a22a], [1, 1, 0x3a5aa6]].forEach(([sx, sz, c]) => {
+    const lx = sx * 0.2, lz = sz * 0.2;
+    geos.push(bake(new THREE.BoxGeometry(0.2, 0.012, 0.2), R(0.7 + lx * Math.cos(-0.25) + lz * Math.sin(-0.25), 0.04, -0.35 - lx * Math.sin(-0.25) + lz * Math.cos(-0.25), -0.25), c));
+  });
+  // four peedhas (low wooden stools) around the mat edges, one tipped slightly as if just left
+  [[-0.45, -1.15, 0], [-0.45, 1.3, 0.3], [-1.55, 0.1, 0.1], [0.7, 1.25, 0.5]].forEach(([x, z, r]) => {
+    geos.push(bake(new THREE.CylinderGeometry(0.19, 0.17, 0.06, 12), R(x, 0.27, z, r), 0x7a5a3a));
+    for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.025, 0.02, 0.24, 5), R(x + lx * 0.1, 0.12, z + lz * 0.1, r), 0x5a3f27));
+  });
+  geos.push(bake(new THREE.CylinderGeometry(0.06, 0.05, 0.14, 10), R(1.15, 0.09, 0.55), 0xb8bcc0)); // steel lota
+  const g = finishSite(name, geos, position);
+  g.rotation.y = ry;
+  return g;
+}
+
 /** Mela + wedding ground (SW outskirts): trampled open field, shamiana tent on poles, string-light mast, a ferris-wheel-free swing frame. */
 export function createMelaGround(position) {
   const geos = [];
