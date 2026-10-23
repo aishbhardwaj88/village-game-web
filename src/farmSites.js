@@ -499,7 +499,7 @@ export function createTvHouse(position) {
   geos.push(bake(new THREE.BoxGeometry(2.4, 0.5, 1.4), at(-1.8, 4.1, 0), 0x3a5a7a)); // water tank on roof
   geos.push(bake(new THREE.BoxGeometry(2.8, 0.1, 1.8), at(0, 3.0, 3.9), 0xb9b4a6)); // porch slab
   charpaiGeos(geos, 0, 4.4, 0.1, 0.1); // woven charpai on the porch slab
-  return finishSite('tv_house', geos, position, { solids: [[0, 0, 8.2, 6.2]] });
+  return finishSite('tv_house', geos, position, { solids: [[0, 0, 8.2, 6.2], [0, 4.4, 1.9, 1.0]] }); // house + porch charpai
 }
 
 /** Manihari: bangle-seller's small stall, a wooden counter with a striped awning and rods of coloured bangles. */

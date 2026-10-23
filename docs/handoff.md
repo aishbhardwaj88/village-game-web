@@ -1,3 +1,9 @@
+**2026-10-23 (cycle 38by2):** Game change (small): TV house porch charpai is now solid (src/farmSites.js createTvHouse; it sat outside the house box). Build passes (validator ALL PASSED). No screenshot (invisible change), no box ticked.
+COLLIDER AUDIT (A0, still no collider): hero-house indoor charpai (interactive, inside house shell), sabzi/jalebi cart legs (cart bodies are solid), wells and cattle troughs other than gaushala, pond/johad edges (walkable by design, not audited), laundry-line ropes (overhead).
+Next: hero-zone draw-call headroom; NPC door-routing for building entry (A0); far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38by):** Game change: street lamps rebuilt (src/props.js createStreetLamps, type 'rcc' | 'solar'). Temple lanes: tapered RCC poles (CC0 concrete PBR) with tube-light on bracket arm, down-cable, switch box, painted whitewash/black bands, base grime, sagging two-core overhead wire between poles (poles every 14 m). Bazaar lane: panchayat solar LED (steel pole on concrete footing, tilted panel, LED head, battery box). Per-lamp lean/height/tint. Two merged meshes per lane (concrete solid with colliders; tin overhead parts and wires, kept out of the solid-material families), no shadow casting to hold hero zone at 150/150 (was 151 with shadows on). Build 16/16, budget fine. Proof docs/shots/lamps-2026-10-23/ (t2.png, t4.png, b2.png; t1, b1 are poor angles). Gaps: no reference research, no stickers/posters, wires do not cross between lane segments, lamps only on 3 lane segments (abadi lanes and chowk have none), hero zone has zero headroom.
 Next: lamps on the other lanes once headroom exists; lane prop audit; far-east road decision (art director).
 
