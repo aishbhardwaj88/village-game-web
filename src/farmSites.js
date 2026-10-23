@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -739,6 +740,7 @@ export function createCanalBankRoad(position, name = 'canal_bank_road') {
  */
 export function createBoundaryWall(position, name, runs, gaps = []) {
   const geos = [];
+  const plants = [];
   const H = 1.15, T = 0.24;
   const tones = [0xe4dcc6, 0xdcd2b8, 0xe9d9bf, 0xd8d4c4];
   let seed = 31;
@@ -760,7 +762,20 @@ export function createBoundaryWall(position, name, runs, gaps = []) {
       geos.push(bake(new THREE.BoxGeometry(sl + 0.04, 0.07, T + 0.1), at(mx, hh + 0.035, mz, ang), 0xb8b3a6)); // coping
       const px = a.x + dx * s0 - position.x, pz = a.z + dz * s0 - position.z;
       if (!inGap(px + position.x, pz + position.z)) geos.push(bake(new THREE.BoxGeometry(0.34, hh + 0.28, 0.34), at(px, (hh + 0.28) / 2, pz, ang), 0xd6cfba)); // pilaster
+      // wall-base greenery, one side or the other, sparse so the wall still reads
+      if (!inGap(mx + position.x, mz + position.z) && rnd() < 0.55) {
+        const side = rnd() < 0.5 ? 1 : -1, off = side * (T / 2 + 0.55);
+        const r = rnd();
+        const kind = r < 0.3 ? GARDEN_KIND.BOUGAINVILLEA : r < 0.55 ? GARDEN_KIND.MARIGOLD : r < 0.85 ? GARDEN_KIND.CREEPER : GARDEN_KIND.BANANA;
+        const wx = mx + position.x, wz = mz + position.z;
+        plants.push(kind === GARDEN_KIND.CREEPER
+          ? { x: wx - dz * side * (T / 2 + 0.06), z: wz + dx * side * (T / 2 + 0.06), kind, scale: 0.4 }
+          : { x: wx - dz * off, z: wz + dx * off, kind, scale: kind === GARDEN_KIND.BANANA ? 0.8 : 1 });
+      }
     }
   }
-  return finishSite(name, geos, position);
+  const group = finishSite(name, geos, position);
+  const mesh = buildGardenPlants(plants);
+  if (mesh) { mesh.position.set(-position.x, 0, -position.z); group.add(mesh); }
+  return group;
 }
