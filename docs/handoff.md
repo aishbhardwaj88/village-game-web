@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38am):** No game-code change this cycle. Took framed screenshots at the side-job spots (docs/shots/jobs-2026-10-23/) as partial A5 proof; weak (kanche camera inside foliage, NPCs capsules). Found a budget breach: view at (-46,14.6) yaw 3.14 = 177 draw calls / 427k tris from undistanced vehicle meshes (details in BACKLOG A5). Not fixed.
+Next: vehicle distance-cull at that spot (run regression-check), kanche camera-in-foliage.
+
+---
+
 **2026-10-23 (cycle 38al):** Game change: the khel maidan at the east edge now has its own distant kids' cheer (fainter, 70 m range) in free roam, src/jobs/gilli.js. Sound radar for chakki, kulfi bell and gilli maidan verified with audio spies (volume fades, silent out of range), proof docs/shots/radar-proof-2026-10-23/radar.txt. No movement code touched. Note: headless render is ~1 fps at 1280x800 so game timers barely advance; use a tiny viewport for time-based tests.
 Next: side-job screenshot proof per job, field-side walls.
 
