@@ -1421,7 +1421,8 @@ async function main() {
     for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1], ['lane_games_e2', -4.9, 90, Math.PI / 2 + 0.15], ['lane_games_w2', -79, 22.6, 0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneGames({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1], ['lane_laundry_e2', -4.9, 104, Math.PI / 2 + 0.15], ['lane_laundry_w2', -72, 22.6, 0.1]]) {
+    // Laundry corners also stand at the lane edge, on the non-drain side, so the lane stays clear for carts and cattle.
+    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
     // Water corners stand at the lane edge on the side away from the open drain (kerb + 0.6 m), spout facing the lane.
@@ -1429,7 +1430,7 @@ async function main() {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
-    const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 75.7], [-82.8, 74], [-58, 141.2], [-4.9, 104], [-72, 22.6], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
+    const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 78.55], [-86.55, 74], [-58, 142.55], [-3.5, 104], [-72, 18.5], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
     for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3], ['lane_cattle_w2', -58, 24, 0.2]]) {
       zoneManager.register(id, {
         x, z, buildRadius: 32, teardownRadius: 44,
