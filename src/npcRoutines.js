@@ -11,12 +11,19 @@ import { NPC_RADIUS } from './npc.js';
 
 const _toTarget = new THREE.Vector3();
 
+/** Every waypoint route created, for the build-time path check (tools/world-validator.js
+ * check 9). `scripted` routes start at a runtime position (waypoint 0 is the player), so the
+ * first leg is skipped there. */
+export const ROUTES = [];
+
+
 /**
  * Walks `npcGroup` through `waypoints` in order, looping back to the start, pausing
  * `pauseSeconds` at each stop. Faces the direction of travel while moving. Returns an
  * update(dt) function — call once per frame.
  */
 export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeconds = 2.5, getExtraBoxes = () => [] } = {}) {
+  ROUTES.push({ kind: 'loop', name: npcGroup.name, waypoints, radius: NPC_RADIUS });
   let index = 0;
   let pauseTimer = pauseSeconds * 0.5; // start mid-pause so NPCs don't all move in lockstep from frame 1
 
@@ -76,6 +83,7 @@ export function createStirLoop(mesh, { rate = 1.6, amount = 0.14 } = {}) {
  * a short, scripted, comedic beat ("never a stat/damage system"), not a real climb.
  */
 export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSeconds = 0.6, onDone, getExtraBoxes = () => [] } = {}) {
+  ROUTES.push({ kind: 'run', name: npcGroup.name, waypoints, radius: NPC_RADIUS });
   let index = 0;
   let pauseTimer = 0;
   let done = false;

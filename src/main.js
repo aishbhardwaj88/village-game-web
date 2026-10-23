@@ -64,7 +64,7 @@ import {
 import { createNPC } from './npc.js';
 import { createMonkeyNPC, createCattleHerd, createDogPack } from './animals.js';
 import { createZoneManager } from './zoneManager.js';
-import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun } from './npcRoutines.js';
+import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun, ROUTES as NPC_ROUTES } from './npcRoutines.js';
 import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
 
 // Finish-line Step 2 — a code-built stylised character (src/characters.js) in
@@ -2693,6 +2693,7 @@ async function main() {
       },
       // Item 4 acceptance measurement — "report the minimum distance between
       // each collider pair; any negative value is a failure."
+      npcRoutes: NPC_ROUTES,
       minDistanceToColliders: (pos, radius) => minSignedDistanceToColliders(pos, radius, STATIC_COLLIDERS),
       staticColliderCount: () => STATIC_COLLIDERS.length,
       // tools/collider-audit.js — the raw box list, for auditing coverage against

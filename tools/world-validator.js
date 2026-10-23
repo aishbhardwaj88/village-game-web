@@ -918,6 +918,38 @@ async function main() {
       record('check 8b — assets <= 40MB', totalMB <= 40, `${totalMB.toFixed(2)}MB`);
     }
 
+    // CHECK 9 - every NPC waypoint leg is walkable: sweep each segment of every registered
+    // route (src/npcRoutines.js ROUTES) in 0.2 m steps against the real static colliders.
+    // Rooftop legs (y > 0, M6 monkey) and a run's first leg (starts at the live player) are skipped.
+    {
+      const out = await page.evaluate(() => {
+        const d = window.__dopahar;
+        const bad = [];
+        let legs = 0;
+        for (const r of d.npcRoutes) {
+          const w = r.waypoints;
+          const n = r.kind === 'loop' ? w.length : w.length - 1;
+          for (let i = 0; i < n; i++) {
+            const a = w[i], b = w[(i + 1) % w.length];
+            if (r.kind === 'run' && (i === 0 || (a.y || 0) > 0 || (b.y || 0) > 0)) continue;
+            legs++;
+            const len = Math.hypot(b.x - a.x, b.z - a.z);
+            const steps = Math.max(1, Math.ceil(len / 0.2));
+            let worst = Infinity, at = null;
+            for (let s = 0; s <= steps; s++) {
+              const t = s / steps;
+              const x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+              const c = d.minDistanceToColliders({ x, z }, r.radius);
+              if (c < worst) { worst = c; at = { x: +x.toFixed(1), z: +z.toFixed(1) }; }
+            }
+            if (worst < -0.02) bad.push({ route: r.name, leg: i, from: [a.x, a.z], to: [b.x, b.z], penetration: +(-worst).toFixed(2), at });
+          }
+        }
+        return { routes: d.npcRoutes.length, legs, bad };
+      });
+      record('check 9 - every NPC waypoint leg is clear of colliders', out.bad.length === 0, out.bad.length === 0 ? `${out.routes} routes, ${out.legs} legs, all clear` : JSON.stringify(out.bad));
+    }
+
     record('no console errors across the whole run', pageErrors.length === 0, pageErrors.length ? pageErrors.slice(0, 5).join(' | ') : '');
 
     await browser.close();
