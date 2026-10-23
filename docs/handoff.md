@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38ce):** Game change: halwai now has live smoke column, oil steam and flame flecks over both kadhais (src/halwaiFire.js, +1 draw call only within 30 m; close view 119-125 calls). Build ALL PASSED, budget 25.00 MB. Proof docs/shots/halwai-fire-2026-10-23/. Gaps: flame reads as sparks (bhatti has no fire mouth: edit build_halwai.py), no soot, no heat shimmer. Not ticked.
+Next: fire mouth + soot in Blender halwai; NPC door-routing (A0); far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38cd):** Game change (small, invisible): both kachcha homesteads now have solid yard props - charpai, chulha, tulsi chabutra, matka stand, manger, haystack (KACHCHA_YARD_SOLIDS + hidden collider mesh in src/scenery.js, follows both copies). Validator check 5 now also samples hb_plaster/hb_wood/hb_props so these colliders are proven backed by real geometry (extension, not a loosening). Build 16/16, regression 22/22. No screenshot (invisible), no box ticked.
 COLLIDER AUDIT remaining (A0): hero-house indoor charpai (interactive), sabzi/jalebi cart legs, laundry ropes (overhead), pond/johad edges (walkable by design). No standalone wells exist in the code.
 Next: NPC door-routing for building entry (A0); register animal/follow routines for check 9; far-east road decision (art director).

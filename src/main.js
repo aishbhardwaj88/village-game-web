@@ -118,6 +118,7 @@ import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoof
 import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
+import { createHalwaiFire } from './halwaiFire.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -260,6 +261,9 @@ async function main() {
   // steam over the tea stall's kettle + big pot (art review 1). Model-local (x, wz) -> world via the stall's yaw (PI/2: x' = wz, z' = -x).
   const teaSteam = createSteam([{ x: TEA_SHOP_POS.x + 0.7, y: 1.3, z: TEA_SHOP_POS.z + 0.3 }, { x: TEA_SHOP_POS.x + 0.76, y: 1.5, z: TEA_SHOP_POS.z + 0.97 }]);
   scene.add(teaSteam.points);
+  // live fire under the halwai's two kadhais (bhatti centres from tools/blender/build_halwai.py: x = centre - 2.25 + 0.495, z = +-1.15, rim y ~1.45)
+  const halwaiFire = createHalwaiFire([-1.15, 1.15].map((dz) => ({ x: HALWAI_CENTER.x - 1.755, y: 1.45, z: HALWAI_CENTER.z + dz })));
+  scene.add(halwaiFire.points);
   // Blender tea stall + general store (2026-10-21, docs/tea-stall-checklist.md / docs/general-store-checklist.md):
   // the code-built walls/roofs/counters/posts/goods are now the INVISIBLE collision backing in 'tea_old' + 'store_old'
   // ('tea_old' / 'store_old', kept un-merged by the village-wide merge, hidden by the slots below); tools/blender/build_tea_stall.py and
@@ -2544,6 +2548,8 @@ async function main() {
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
       if (teaSteam.points.visible) teaSteam.update(dt);
+      halwaiFire.points.visible = Math.abs(listenerPos.x - HALWAI_CENTER.x) < 30 && Math.abs(listenerPos.z - HALWAI_CENTER.z) < 30;
+      if (halwaiFire.points.visible) halwaiFire.update(dt);
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({
