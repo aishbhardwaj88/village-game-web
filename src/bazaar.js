@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
-import { buildStripSegment } from './paths.js';
+import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
 
 /**
@@ -863,6 +863,10 @@ export function buildBazaarLane() {
     buildStripSegment({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 44, ruts: true }),
     buildStripSegment(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { seed: 42, ruts: true }),
     buildStripSegment(BAZAAR_LANE_ARRIVE, rowFrontageStart, BAZAAR_LANE_ROW_WIDTH, { seed: 43, ruts: true }),
+    // Cement kerbs on the three approach legs only; the frontage leg stays open to the shop steps.
+    ...buildKerbSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 41 }),
+    ...buildKerbSegments({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 44 }),
+    ...buildKerbSegments(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 42 }),
   ];
   return mergeMeshList(segments, 'bazaar_lane');
 }

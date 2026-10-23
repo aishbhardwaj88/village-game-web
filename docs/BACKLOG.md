@@ -30,7 +30,7 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A1. Textures on every surface (top priority)
-- [x] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP) - proof docs/shots/kerbs-2026-10-23/kerb_b2.png (kerbs on the halwai-school lane only; other lanes still none)
+- [x] Ground, lanes and roads: packed-earth with tyre ruts, kerbs, drains (CC0 PBR, 1K WebP) - proof docs/shots/kerbs-2026-10-23/kerb_b2.png (kerbs on the halwai-school lane; cycle 38u added them to the temple lane and the bazaar approach legs, proof docs/shots/kerbs2-2026-10-23T00-53-05-942Z/temple_lane.png and docs/shots/kerbs2-2026-10-23T00-54-12-652Z/bazaar_lane.png; field tracks and abadi lanes still none)
 - [x] Wall surfaces: lime-washed plaster in blue-grey, cream, pink, mint, with per-wall colour variation - proof docs/shots/bazaar-walls-2026-10-23/bazaar_back.png (bazaar row only: cream, pink, mint, blue-grey units; other buildings still cream/mustard/terracotta/teal)
 - [x] Roofs: terracotta tiles and corrugated tin - proof docs/shots/compare/new-shops-roofs/high.png (corrugated tin on ration shop + atta chakki; bazaar awning and bg houses already tin/terracotta; hero zone stays 150/150)
 - [x] Painted wood: doors, shutters, frames (shared trim sheet) - proof docs/shots/compare/painted-wood/south_row.png (abadi houses only: bottle green, teal, oxblood, indigo, ochre, turquoise painted doors and shutters in the one shared material, zero extra draw calls; hero house, school and bazaar doors still natural dark wood)

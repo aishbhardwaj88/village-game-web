@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
-import { buildStripSegment } from './paths.js';
+import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
 
 /**
@@ -339,6 +339,8 @@ export function buildTempleLane() {
   const segments = [
     buildStripSegment(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, { seed: 71, ruts: true }),
     buildStripSegment(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, { seed: 72, ruts: true }),
+    ...buildKerbSegments(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, 0.1, 0.9, { seed: 71 }),
+    ...buildKerbSegments(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, 0.1, 0.85, { seed: 72 }),
   ];
   return mergeMeshList(segments, 'temple_lane');
 }
