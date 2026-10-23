@@ -300,18 +300,19 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
 // kind shares a single material and a single draw call (cell chosen per
 // instance through an instanced attribute, no extra meshes).
 // ---------------------------------------------------------------------------
-export const GARDEN_KIND = { MARIGOLD: 0, BANANA: 1, TULSI: 2, BOUGAINVILLEA: 3 };
+export const GARDEN_KIND = { MARIGOLD: 0, BANANA: 1, TULSI: 2, BOUGAINVILLEA: 3, CREEPER: 4 };
 const GARDEN_SIZE = [
   [1.1, 0.55], // marigold bed: wide, low
   [2.6, 3.0], // banana clump: tall arching leaves
   [0.6, 0.7], // tulsi bush
   [1.5, 1.3], // bougainvillea mass
+  [1.5, 3.0], // wall creeper: money-plant curtain climbing a wall
 ];
 
 function makeGardenAtlas() {
   const S = 256;
   const c = document.createElement('canvas');
-  c.width = S * 4;
+  c.width = S * 5;
   c.height = S;
   const g = c.getContext('2d');
   let a = 7311;
@@ -367,6 +368,21 @@ function makeGardenAtlas() {
   for (let i = 0; i < 70; i++) { const x = 128 + (r() - 0.5) * 230, y = 240 - r() * 210; blob(x, y, 5 + r() * 4, r() < 0.7 ? '#b6286a' : '#d4488a'); }
   g.restore();
 
+  // 4: wall creeper - money-plant strands with heart-shaped leaves, rooted at the base
+  g.save(); g.translate(S * 4, 0);
+  g.strokeStyle = '#3a4a22'; g.lineWidth = 3;
+  for (let i = 0; i < 11; i++) {
+    let x = 128 + (r() - 0.5) * 190;
+    g.beginPath(); g.moveTo(x, 256);
+    for (let y = 256; y > 20 + r() * 60; y -= 18) { x += (r() - 0.5) * 22; g.lineTo(x, y); }
+    g.stroke();
+  }
+  for (let i = 0; i < 190; i++) {
+    const y = 250 - Math.pow(r(), 1.4) * 225;
+    leaf(128 + (r() - 0.5) * 210 * (0.55 + (y / 256) * 0.45), y, 24 + r() * 14, 13 + r() * 6, (r() - 0.5) * 3, '#2a4620', r() < 0.3 ? '#8aa43e' : '#4f7a2e');
+  }
+  g.restore();
+
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
@@ -389,7 +405,7 @@ export function buildGardenPlants(plants) {
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nattribute float aCell;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + aCell) * 0.25, vMapUv.y);\n#endif');
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + aCell) * 0.2, vMapUv.y);\n#endif');
   };
   const mesh = new THREE.InstancedMesh(geometry, material, plants.length);
   mesh.name = 'flowering_plants';

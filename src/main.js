@@ -1210,6 +1210,10 @@ async function main() {
         { x: CHOWK_CENTER.x - 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
         { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
         { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, kind: GARDEN_KIND.BOUGAINVILLEA },
+        // Wall creepers (money plant) climbing the bazaar row's back wall and east end.
+        ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: -100 + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
+        { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ + 1, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
+        { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ - 1.2, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
       ])
     );
 
