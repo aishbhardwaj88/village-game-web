@@ -98,6 +98,30 @@ export function abadiPropSites() {
   return out;
 }
 
+/** Rooftop fitting sites (src/rooftops.js): one or two per house box, on the roof slab (y = box height), kept 0.9 m inside the box edges.
+ *  kind: tank / antenna / dish / solar / bricks, picked deterministically so the mix differs house to house. */
+export function abadiRoofSites() {
+  const out = [];
+  const kinds = ['antenna', 'tank', 'dish', 'solar', 'bricks', 'antenna', 'tank'];
+  PLACEMENTS.forEach((p, i) => {
+    const th = (p.q * Math.PI) / 2;
+    const c = Math.round(Math.cos(th)), sn = Math.round(Math.sin(th));
+    ABADI_BOXES[p.v].boxes.forEach((b, j) => {
+      const n = (i + j) % 3 === 0 ? 2 : 1;
+      for (let k = 0; k < n; k++) {
+        const h = (i * 31 + j * 17 + k * 7);
+        const kind = kinds[(i * 3 + j * 5 + k * 2) % kinds.length];
+        if (b.h < 4 && kind === 'tank' && (i + j) % 2) continue; // low roofs: fewer tanks
+        const w = b.x1 - b.x0, d = b.z1 - b.z0;
+        const lx = b.x0 + 0.9 + (((h * 37) % 100) / 100) * (w - 1.8);
+        const lz = b.z0 + 0.9 + (((h * 53 + 11) % 100) / 100) * (d - 1.8) * 0.8; // back side of the roof, away from the lane edge
+        out.push({ x: p.x + lx * c + lz * sn, z: p.z - lx * sn + lz * c, y: b.h, yaw: th, kind, pick: h + 1 });
+      }
+    });
+  });
+  return out;
+}
+
 /** Thin chulha-smoke origins over a few abadi rows (behind the lane-side roof edge, on low 3.3 m roofs), for createAmbientLife. */
 export function abadiSmokeSources() {
   const out = [];

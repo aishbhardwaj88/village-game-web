@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38cc2):** Game change: abadi rooftops now carry water tanks on plinths, TV antennas, dishes, solar panels and brick stacks (src/rooftops.js; sites abadiRoofSites in src/scenery.js; zone-streamed 30 m radius so hero zone stays 150/150). Build 16/16. Proof docs/shots/rooftops-2026-10-23/. Gaps: abadi only; may sit near Blender roof tanks; tanks read dark; no wall pipes/cables.
+Next: rooftop fittings on bazaar/haveli/school; halwai flame and steam; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38cc):** Game change: bazaar row (Blender, build_bazaar_row.py -> bazaar_row.glb) now has a panelled back door (recess, frame, hinges, brass handle, step) on all 8 units and fully framed barred back windows with sills. Build ALL PASSED, budget 25.00 MB, no new draw calls (same mesh). Proof docs/shots/openings4-2026-10-23/. Gaps: back doors are visual only (wall is solid); no regression run (no movement code touched).
 Next: lane prop audit (A1f); hero-zone draw-call headroom; far-east road decision (art director).
 

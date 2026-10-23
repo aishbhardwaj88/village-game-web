@@ -12,6 +12,7 @@ import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
 import { propCells, createPropCell } from './villageProps.js';
+import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
@@ -24,7 +25,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
-import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites } from './scenery.js';
+import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
 import {
   buildTemple,
   buildTempleProps,
@@ -1413,6 +1414,8 @@ async function main() {
     zoneManager.register('jain_mandir', { x: 130, z: 160, buildRadius: 45, teardownRadius: 58, build: () => createJainMandir({ x: 130, z: 160 }) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).
     for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
+    // Rooftop clutter (tanks, antennas, dishes, solar panels, brick stacks) on the abadi roofs, streamed per 36 m cell (src/rooftops.js).
+    for (const cell of roofCells(abadiRoofSites())) zoneManager.register(cell.id, { x: cell.x, z: cell.z, buildRadius: 30, teardownRadius: 40, build: () => createRoofCell(cell) });
     // A-2c milestone stones on the east approach (src/milestones.js; positions and distances derived from PLACES).
     for (const site of milestoneSites()) zoneManager.register(site.id, { x: site.x, z: site.z, buildRadius: 60, teardownRadius: 75, build: () => createMilestone(site) });
     zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });

@@ -109,6 +109,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 ### A1b0. Halwai and rooftop fittings (art director FAIL 2026-10-23)
 - [ ] Source CC0 models for the halwai: kadhai, gas burner/chulha, gas cylinder, plastic monobloc chairs, plastic stools, steel trays, glass display case, tongs, ladles, buckets, matkas, hanging scale, thali and katori
 - [ ] Source CC0 rooftop fittings and place across MANY buildings with varied colour/size/orientation, instanced: Sintex-style plastic water tank (tanki) on a platform, old aluminium TV antenna, dish antenna, solar panel, wall pipes, loose cable runs, brick stacks
+  - PROGRESS 2026-10-23 (cycle 38cc2, not ticked): hand-built (no CC0 model searched; Poly Haven has no tanki/antenna that I know of) tanks on plinths, TV antennas, dishes, solar panels and brick stacks on the abadi roofs (src/rooftops.js, sites from scenery.js abadiRoofSites), merged per 36 m streamed cell, textured metal/concrete/brick with baked tint. Proof docs/shots/rooftops-2026-10-23/r7.png, r9.png. Not done: other buildings (bazaar, haveli, school), wall pipes and cable runs, CC0 sourcing.
 - [ ] Hand-build sweets and snacks (samosa, jalebi, laddoo, barfi, gulab jamun) with real surface texture: fried golden-brown with darker edges, syrup sheen, sugar grain; vary size/rotation/shape across a tray; heap them, never a neat grid
 - [ ] Add visible flame and heat shimmer at the chulha, soot on the kadhai base and the wall behind, steam/smoke rising; the halwai currently looks switched off
 
