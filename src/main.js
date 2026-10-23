@@ -1365,6 +1365,20 @@ async function main() {
     });
     // MAP.md farm and water sites (no coordinates in MAP.md; open ground picked, see src/farmSites.js).
     zoneManager.register('pond', { x: -132, z: 70, buildRadius: 55, teardownRadius: 70, build: () => createPond({ x: -132, z: 70 }) });
+    // Two buffalo cooling off at the pond's muddy bank (one InstancedMesh, streamed with the pond).
+    zoneManager.register('pond_buffalo', {
+      x: -132, z: 70, buildRadius: 55, teardownRadius: 70,
+      build: () => {
+        const group = new THREE.Group();
+        group.name = 'zone_pond_buffalo';
+        const herd = createCattleHerd([
+          { x: -132 + 11.2, z: 70 + 2.5, rotationY: 1.2, buffalo: true },
+          { x: -132 + 9.6, z: 70 + 7.0, rotationY: 2.3, buffalo: true },
+        ]);
+        group.add(herd.mesh);
+        return { group, onFrame: (dt) => herd.update(dt) };
+      },
+    });
     zoneManager.register('tubewell', { x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
     zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
     zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
