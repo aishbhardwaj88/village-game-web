@@ -31,155 +31,15 @@ function mulberry32(seed) {
 }
 
 // ---------------------------------------------------------------------------------
-// Leaf-sprig atlas: 4 x 2 cells of 256 px, one cell per species, transparent background.
+// Leaf-sprig atlas: 3 x 2 cells of 341 px (real leaf photos), one cell per species, transparent background.
 // ---------------------------------------------------------------------------------
-const ATLAS_COLS = 4;
+const ATLAS_COLS = 3;
 const ATLAS_ROWS = 2;
-const CELL = 256;
 const SPECIES_CELL = { neem: 0, peepal: 1, mango: 2, babool: 3, eucalyptus: 4 };
 
-function leafShape(g, kind, len, wid, light, dark) {
-  const grad = g.createLinearGradient(0, -wid, 0, wid);
-  grad.addColorStop(0, light);
-  grad.addColorStop(1, dark);
-  g.fillStyle = grad;
-  g.beginPath();
-  if (kind === 'heart') {
-    // peepal: broad rounded base, long drip tip
-    g.moveTo(0, 0);
-    g.bezierCurveTo(-wid * 0.2, -wid * 1.15, len * 0.45, -wid * 1.2, len * 0.62, -wid * 0.45);
-    g.quadraticCurveTo(len * 0.85, -wid * 0.1, len, 0);
-    g.quadraticCurveTo(len * 0.85, wid * 0.1, len * 0.62, wid * 0.45);
-    g.bezierCurveTo(len * 0.45, wid * 1.2, -wid * 0.2, wid * 1.15, 0, 0);
-  } else if (kind === 'sickle') {
-    g.moveTo(0, 0);
-    g.quadraticCurveTo(len * 0.5, -wid * 1.3, len, wid * 0.8);
-    g.quadraticCurveTo(len * 0.5, wid * 0.5, 0, 0);
-  } else {
-    // lanceolate
-    g.moveTo(0, 0);
-    g.quadraticCurveTo(len * 0.42, -wid * 1.1, len, 0);
-    g.quadraticCurveTo(len * 0.42, wid * 1.1, 0, 0);
-  }
-  g.closePath();
-  g.fill();
-  g.strokeStyle = 'rgba(190,205,150,0.55)';
-  g.lineWidth = Math.max(1, wid * 0.14);
-  g.beginPath();
-  g.moveTo(0, 0);
-  g.lineTo(len * 0.92, 0);
-  g.stroke();
-}
-
-function drawLeaf(g, x, y, ang, kind, len, wid, light, dark) {
-  g.save();
-  g.translate(x, y);
-  g.rotate(ang);
-  leafShape(g, kind, len, wid, light, dark);
-  g.restore();
-}
-
-function drawStem(g, x0, y0, x1, y1, w, color) {
-  g.strokeStyle = color;
-  g.lineWidth = w;
-  g.lineCap = 'round';
-  g.beginPath();
-  g.moveTo(x0, y0);
-  g.quadraticCurveTo((x0 + x1) / 2 + 10, (y0 + y1) / 2, x1, y1);
-  g.stroke();
-}
-
-const SPRIGS = {
-  // neem: pinnate compound leaves, many small serrated leaflets, deep green
-  neem(g, r) {
-    for (let c = 0; c < 3; c++) {
-      const ang = -Math.PI / 2 + (c - 1) * 0.7;
-      const sx = 128, sy = 244;
-      const L = 150 + r() * 25;
-      const ex = sx + Math.cos(ang) * L, ey = sy + Math.sin(ang) * L;
-      drawStem(g, sx, sy, ex, ey, 3, '#4a5a2a');
-      for (let i = 1; i <= 7; i++) {
-        const t = i / 8;
-        const px = sx + (ex - sx) * t, py = sy + (ey - sy) * t;
-        for (const side of [-1, 1]) {
-          drawLeaf(g, px, py, ang + side * (1.0 - t * 0.3) + (r() - 0.5) * 0.2, 'lance', 36 - t * 10, 8.5 - t * 2, '#5f8038', '#2f4d22');
-        }
-      }
-      drawLeaf(g, ex, ey, ang, 'lance', 30, 7.5, '#5f8038', '#2f4d22');
-    }
-  },
-  // peepal: heart-shaped leaves with drip tips on slender petioles
-  peepal(g, r) {
-    drawStem(g, 128, 248, 128, 40, 3.5, '#5a4a30');
-    for (let i = 0; i < 9; i++) {
-      const t = 0.12 + i * 0.1;
-      const py = 248 - t * 208;
-      for (const side of [-1, 1]) {
-        if (i % 2 === (side > 0 ? 0 : 1) || i > 6) {
-          const a = side > 0 ? -0.35 + (r() - 0.5) * 0.3 : Math.PI + 0.35 + (r() - 0.5) * 0.3;
-          drawLeaf(g, 128, py, a - (side > 0 ? 0.25 : -0.25) - t * 0.2 * side, 'heart', 78 - t * 20, 30 - t * 6, '#79a04a', '#3e6a30');
-        }
-      }
-    }
-    drawLeaf(g, 128, 40, -Math.PI / 2, 'heart', 62, 26, '#79a04a', '#3e6a30');
-  },
-  // mango: long lanceolate, glossy dark, drooping in whorls
-  mango(g, r) {
-    drawStem(g, 128, 248, 132, 50, 4, '#4a3b25');
-    for (let i = 0; i < 5; i++) {
-      const py = 238 - i * 42;
-      const n = 2 + (i % 2);
-      for (let k = 0; k < n; k++) {
-        const a = -Math.PI / 2 + (k - (n - 1) / 2) * 1.15 + (r() - 0.5) * 0.3;
-        drawLeaf(g, 128 + (r() - 0.5) * 4, py, a + (a > -Math.PI / 2 ? 0.55 : -0.55) * 0.5 - Math.PI / 2 + Math.PI / 2, 'lance', 100 - i * 8, 21, '#4a7a38', '#243f22');
-      }
-    }
-    drawLeaf(g, 132, 50, -Math.PI / 2, 'lance', 70, 16, '#4a7a38', '#243f22');
-  },
-  // babool: feathery bipinnate, tiny leaflets, dusty olive
-  babool(g, r) {
-    for (let c = 0; c < 4; c++) {
-      const ang = -Math.PI / 2 + (c - 1.5) * 0.55;
-      const sx = 128, sy = 246;
-      const L = 150 + r() * 30;
-      const ex = sx + Math.cos(ang) * L, ey = sy + Math.sin(ang) * L;
-      drawStem(g, sx, sy, ex, ey, 2, '#6b6a3a');
-      for (let i = 1; i <= 14; i++) {
-        const t = i / 15;
-        const px = sx + (ex - sx) * t, py = sy + (ey - sy) * t;
-        for (const side of [-1, 1]) {
-          drawLeaf(g, px, py, ang + side * 1.25, 'lance', 22, 4.2, '#9aa456', '#5d6e32');
-        }
-      }
-    }
-  },
-  // eucalyptus: long narrow sickle leaves hanging from a twig (stem at the TOP of the cell)
-  eucalyptus(g, r) {
-    drawStem(g, 128, 14, 128, 120, 3, '#6f6a55');
-    for (let i = 0; i < 9; i++) {
-      const py = 20 + i * 12;
-      const side = i % 2 ? 1 : -1;
-      drawLeaf(g, 128, py, Math.PI / 2 + side * (0.35 + r() * 0.3), 'sickle', 130 - i * 6, 11, '#86a384', '#4c6a50');
-    }
-    drawLeaf(g, 128, 120, Math.PI / 2, 'sickle', 100, 9, '#86a384', '#4c6a50');
-  },
-};
-
 function makeLeafAtlas() {
-  const c = document.createElement('canvas');
-  c.width = CELL * ATLAS_COLS;
-  c.height = CELL * ATLAS_ROWS;
-  const g = c.getContext('2d');
-  for (const [name, idx] of Object.entries(SPECIES_CELL)) {
-    g.save();
-    g.translate((idx % ATLAS_COLS) * CELL, Math.floor(idx / ATLAS_COLS) * CELL);
-    g.beginPath();
-    g.rect(0, 0, CELL, CELL);
-    g.clip();
-    SPRIGS[name](g, mulberry32(77 + idx));
-    g.restore();
-  }
-  const tex = new THREE.CanvasTexture(c);
+  // Real ambientCG CC0 leaf photos cut out and arranged by tools/build-plant-atlas.mjs.
+  const tex = new THREE.TextureLoader().load('assets/plants/tree_atlas.webp');
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   return tex;

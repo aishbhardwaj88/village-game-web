@@ -27,3 +27,5 @@ queue item 6) — the `public/assets/textures/*/*.jpg` paths in the notes column
 | aerial_grass_rock (photoscanned grass, colour 4K downscaled to 1K WebP) | [Poly Haven](https://polyhaven.com/a/aerial_grass_rock) | CC0 | Poly Haven | Ground grass-patch albedo in `public/assets/textures/grass/` (src/materials.js applyGroundNoiseDetail). |
 
 | Doorstep props: wooden_bucket_01/02, wicker_basket_01/02, planter_pot_clay, brass_pot_01, jug_01, metal_jug, wooden_stool_01, painted_wooden_stool, wooden_crate_01/02, old_tyre, ceramic_vase_01, plastic_monobloc_chair_01, painted_wooden_bench | [Poly Haven](https://polyhaven.com/models) (by asset name) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com, shrunk with tools/shrink.js to `public/assets/props/`, instanced by src/villageProps.js. |
+
+- Plant/tree leaf atlases (public/assets/plants/*.webp): leaves cut from ambientCG CC0 sets LeafSet002, 003, 004, 022, 023, 024, 025 and Foliage008, arranged by tools/build-plant-atlas.mjs. Stems and the marigold/bougainvillea flower heads are drawn (no CC0 flower sheet exists on ambientCG).
