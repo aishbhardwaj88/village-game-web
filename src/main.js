@@ -1416,6 +1416,21 @@ async function main() {
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
       { kind: 'mango', x: 27, z: 129, seed: 12, scale: 0.8, rotationY: 1.2 },
     ]) });
+    // Outskirts shade trees (A3 "reads green"): small streamed clusters by the village-edge sites.
+    // Unmerged, so the per-tree distance LOD works. No coordinates in MAP.md; open ground picked.
+    const outskirtTrees = (name, x, z, trees) => zoneManager.register(name, { x, z, buildRadius: 70, teardownRadius: 85, build: () => buildTrees(trees) });
+    outskirtTrees('trees_pond', -132, 70, [
+      { kind: 'neem', x: -150, z: 60, seed: 21 }, { kind: 'peepal', x: -112, z: 82, seed: 22, rotationY: 0.8 }, { kind: 'babool', x: -148, z: 84, seed: 23 },
+    ]);
+    outskirtTrees('trees_johad', 78, 105, [
+      { kind: 'babool', x: 62, z: 96, seed: 24 }, { kind: 'neem', x: 96, z: 118, seed: 25, rotationY: 2.0 }, { kind: 'babool', x: 64, z: 120, seed: 26, rotationY: 1.0 },
+    ]);
+    outskirtTrees('trees_haveli', 150, -30, [
+      { kind: 'peepal', x: 132, z: -18, seed: 27 }, { kind: 'neem', x: 170, z: -46, seed: 28, rotationY: 0.5 },
+    ]);
+    outskirtTrees('trees_gaushala', -125, -35, [
+      { kind: 'neem', x: -106, z: -50, seed: 29 }, { kind: 'peepal', x: -146, z: -20, seed: 30, rotationY: 1.4 },
+    ]);
     zoneManager.register('sugarcane_belt', { x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
       x: FIELD_CENTER.x,
