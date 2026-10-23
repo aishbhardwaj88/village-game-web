@@ -719,3 +719,50 @@ toggle on touch devices.
 **Pass test:** a phone-width and a desktop screenshot, both showing a readable corner
 minimap with the player arrow and the active objective, and the Tasks list in the
 pause menu with mission states visible.
+
+---
+
+## 2026-10-23 (art director) - NAVIGATION: FAIL. The village is unnavigable.
+
+**Confirmed by audit: all 42 places in `src/freeRoam.js` are built.** The art
+director could only find 6 or 7 of them. This is a wayfinding failure, not a missing
+content failure. Treat it as high priority: content nobody can find has no value.
+
+### 1. Remove discovery gating from the notebook map
+The map currently reveals a place only after the player walks near it. **The boy has
+lived here his whole life, but the PLAYER has not.** Hiding places makes the map
+useless as a navigation tool, which is its entire purpose.
+- Show all 42 places on the notebook map from the start.
+- Keep a subtle "visited" mark if some sense of progress is wanted, but hide nothing.
+
+### 2. Diegetic wayfinding in the world
+A village has its own signage. Build it, rather than relying on UI alone:
+- Painted direction signs at lane junctions and the chowk, with an arrow and the
+  place name in both scripts (Devanagari larger on world signage, per the signboard
+  rule).
+- A painted village notice board at the chowk listing key places.
+- Milestone-style markers on the approach road and at the highway.
+- Make routes legible: the lane itself should lead somewhere, with kerbs, drains,
+  lamps and street life continuing along it, not stopping after a few metres.
+
+### 3. Audit whether places are actually reachable and findable
+Walk, on foot, from the house to every one of the 42 places using only what a player
+can see. For each, report:
+- Is there a visible path or lane leading to it, or is it stranded on open ground?
+- Is it visible from any lane, or hidden behind other buildings?
+- How long does the walk take?
+- **List every place that is not findable without the map.** That list is what gets
+  fixed next.
+
+### 4. The far eastern cluster
+Places sit from roughly x=-135 to x=226. The eastern group (health centre, chemist,
+manihari, sabzi rehris, johad, masjid, Jain mandir, haveli, gurukul, khel maidan,
+highway, mandi) is a long walk from the village core with little between.
+- Either connect it with a real road carrying traffic, trees and roadside detail so
+  the walk is worth taking, or report that the distances should be reduced and let
+  the art director decide during tomorrow's layout rework.
+- Do not silently move anything. Layout is the art director's call.
+
+**Pass test:** starting at the house with no map open, a player can reach the school,
+the bazaar, the temple, the post office and the chowk by following visible lanes and
+signage alone, and the notebook map shows all 42 places from the first load.

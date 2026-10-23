@@ -28,12 +28,13 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
 ### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
-- [ ] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there
-- [ ] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement
-- [ ] List every MAP.md place by plain bilingual name: school, house, halwai, tea stall, general store, bazaar row, chowk, temple, post office, ration shop, atta chakki, tubewell, canal/bridge, mango baagh, khet, pond, johad, haveli, gaushala, khel maidan, mela ground, highway cluster, mandi
-- [ ] Land the player at a sensible viewing spot facing the place, on the ground, outside walls, never inside geometry
+- [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
+- [x] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
+- [x] List every MAP.md place by plain bilingual name: school, house, halwai, tea stall, general store, bazaar row, chowk, temple, post office, ration shop, atta chakki, tubewell, canal/bridge, mango baagh, khet, pond, johad, haveli, gaushala, khel maidan, mela ground, highway cluster, mandi - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
+- [x] Land the player at a sensible viewing spot facing the place, on the ground, outside walls, never inside geometry - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [ ] Do not break an in-progress mission; pause quest state or warn before jumping
-- [ ] Available in the normal live build, not dev-only; a sensible home is under the existing Notebook map
+  - PROGRESS 2026-10-23 (not ticked): mid-mission a first tap shows a warning and needs a second tap; vehicle is dismounted first; quest state untouched. Warning path not yet screenshot-tested. List comes from PLACES in src/freeRoam.js (the notebook map's single source; positions there still duplicate the zone files).
+- [x] Available in the normal live build, not dev-only; a sensible home is under the existing Notebook map - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 
 ### A-2b. Task menu and corner minimap (art director 2026-10-23)
 - [ ] Pause menu "Tasks" list: all 8 story missions plus every side job, bilingual names, state shown (done / current / not started); selecting one makes it active and switches objective, waypoint and dialogue
@@ -43,6 +44,13 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 - [ ] Style it as a corner of the same hand-drawn notebook (paper, ink, hand lettering), not a generic GPS radar; if unreadable at small size, report and propose the alternative rather than shipping generic
 - [ ] Check at phone width with the on-screen joystick visible; must not crowd the screen or sit under the thumb
 - [ ] Let the player hide the minimap from the pause menu
+
+### A-2c. Navigation (art director FAIL 2026-10-23) - high priority
+- [ ] Remove discovery gating: show all 42 places on the notebook map from first load; keep an optional subtle "visited" mark, hide nothing
+- [ ] Build diegetic wayfinding: painted direction signs with arrows at lane junctions and the chowk, a village notice board listing key places, milestone markers on the approach road and highway
+- [ ] Make routes legible: lanes must continue with kerbs, drains, lamps and street life all the way to where they lead, not stop after a few metres
+- [ ] AUDIT: walk on foot from the house to all 42 places using only what a player can see; for each report whether a visible path leads to it, whether it is visible from any lane, and the walk time; LIST every place not findable without the map
+- [ ] Far eastern cluster (health centre, chemist, manihari, sabzi, johad, masjid, Jain mandir, haveli, gurukul, maidan, highway, mandi): either connect with a real road carrying traffic, trees and roadside detail, or report that distances should be reduced. Do not move anything; layout is the art director's call
 
 ### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
 - [ ] Every place (shop, house, landmark, farm plot) is one self-contained unit: geometry, props, colliders, interaction points, NPC anchors, signage and greenery belong to it

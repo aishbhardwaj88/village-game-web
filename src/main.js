@@ -19,7 +19,7 @@ import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
-import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
+import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources } from './scenery.js';
 import {
@@ -1607,6 +1607,11 @@ async function main() {
     onChange: () => {
       if (started) saveGame({ questStep: quest.step, quality: currentQuality, roam: roamSnapshot() });
     },
+    onVisit: (place) => {
+      const ok = visitPlace(place);
+      if (ok) pauseMenu.close();
+      return ok;
+    },
   });
   const objectivePanel = document.getElementById('objective-panel');
   const objectiveHiEl = document.getElementById('objective-hi');
@@ -2058,6 +2063,39 @@ async function main() {
   // reachable via mountedVehicle.trolley.
   let looseTrolley = null;
 
+  // "Visit place" (pause menu): stand the player on open ground a few metres from `place`, facing it. Candidate spots are
+  // tried on rings around the place, nearest and most-southern first (the camera's usual approach side); a spot is kept only
+  // if the body fits there and a straight line from it to the place's edge is free of walls.
+  function visitPlace(place) {
+    const clearLine = (ax, az, bx, bz) => {
+      const n = 12;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        if (positionBlocked({ x: ax + (bx - ax) * t, z: az + (bz - az) * t }, 0.35, [])) return false;
+      }
+      return true;
+    };
+    let best = null;
+    for (let r = Math.max(8, place.radius * 0.55); r <= place.radius * 1.6 && !best; r += 3) {
+      for (let k = 0; k < 24; k++) {
+        const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12); // start due south (+z), alternate sides
+        const x = place.x + Math.cos(a) * r, z = place.z + Math.sin(a) * r;
+        if (Math.abs(x) > GROUND_HALF_EXTENT || Math.abs(z) > GROUND_HALF_EXTENT) continue;
+        if (positionBlocked({ x, z }, PLAYER_COLLISION_RADIUS + 0.4, otherVehicleBoxes(null))) continue;
+        if (!clearLine(x, z, place.x + (x - place.x) * 0.25, place.z + (z - place.z) * 0.25)) continue;
+        best = { x, z };
+        break;
+      }
+    }
+    if (!best) return false;
+    if (mountedVehicle) dismount();
+    player.position.set(best.x, 0, best.z);
+    player.position.y = groundHeightAt(best.x, best.z, 0);
+    camRig.yaw = Math.atan2(best.x - place.x, best.z - place.z); // camera behind the player, looking at the place
+    if (camRig.update) camRig.update();
+    return true;
+  }
+
   function dismount() {
     const v = mountedVehicle;
     const besideOffset = new THREE.Vector3(v.preset.body.w / 2 + 1.3, 0, 0);
@@ -2145,6 +2183,7 @@ async function main() {
     },
     onResume: () => {
       paused = false;
+      freeRoam.closeVisit();
       if (!touch && started) input.requestPointerLock();
     },
     onRestart: restartErrand,
@@ -2153,6 +2192,7 @@ async function main() {
     onShowCredits: showCredits,
     onShowControls: showControlsHelp,
     onShowNotebook: () => freeRoam.openNotebook(),
+    onShowVisit: () => freeRoam.openVisit(),
   });
   window.addEventListener('keydown', (e) => {
     if (e.code !== 'KeyN' || !started || e.repeat) return;

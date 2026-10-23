@@ -68,7 +68,7 @@ export function registerJobMarker(marker) {
   extraMarkers.push(marker);
 }
 
-export function createFreeRoam({ quest, getPlayerPos, onChange }) {
+export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit }) {
   const overlay = document.getElementById('notebook-overlay');
   const canvas = document.getElementById('notebook-canvas');
   const closeBtn = document.getElementById('notebook-close-btn');
@@ -304,5 +304,47 @@ export function createFreeRoam({ quest, getPlayerPos, onChange }) {
   }
   closeBtn?.addEventListener('pointerdown', closeNotebook);
 
-  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook };
+  // ------------------------------------------------------------------ "Visit place" list (art director 2026-10-23)
+  // Built from PLACES + the side-job markers, so a new or moved place appears here with no edit to this list. Every place is
+  // listed (discovered or not) - it is a review/jump menu, not a map.
+  const visitOverlay = document.getElementById('visit-overlay');
+  const visitList = document.getElementById('visit-list');
+  const visitWarn = document.getElementById('visit-warn');
+  let visitOpen = false;
+  let armed = null; // place id the player has tapped once while a mission is in progress
+  function midMission() {
+    return !quest.storyDone && quest.step !== 'not_started';
+  }
+  function openVisit() {
+    armed = null;
+    visitWarn.textContent = '';
+    visitList.textContent = '';
+    for (const p of PLACES) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `<span class="v-en"></span><span class="v-hi"></span>`;
+      b.querySelector('.v-en').textContent = p.en;
+      b.querySelector('.v-hi').textContent = p.hi;
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (midMission() && armed !== p.id) {
+          armed = p.id;
+          visitWarn.textContent = `You are mid-errand. Tap ${p.en} again to go there anyway - your errand keeps its place. / फिर से टैप करें।`;
+          return;
+        }
+        if (onVisit?.(p)) closeVisit();
+        else visitWarn.textContent = 'Could not find a clear spot there.';
+      });
+      visitList.appendChild(b);
+    }
+    visitOpen = true;
+    visitOverlay.classList.add('visible');
+  }
+  function closeVisit() {
+    visitOpen = false;
+    visitOverlay.classList.remove('visible');
+  }
+  document.getElementById('visit-close-btn')?.addEventListener('pointerdown', closeVisit);
+
+  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook, openVisit, closeVisit, isVisitOpen: () => visitOpen };
 }
