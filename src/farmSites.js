@@ -38,6 +38,39 @@ function bake(geometry, matrix, color) {
 }
 const at = (x, y, z, ry = 0) => new THREE.Matrix4().makeRotationY(ry).setPosition(x, y, z);
 
+/** Face-local placement: a matrix at (x,y,z) turned ry, so openings can be built facing +z and put on any wall. */
+const faceBox = (geos, face, w, h, d, lx, ly, lz, color) =>
+  geos.push(bake(new THREE.BoxGeometry(w, h, d), new THREE.Matrix4().multiplyMatrices(face, new THREE.Matrix4().makeTranslation(lx, ly, lz)), color));
+const faceCyl = (geos, face, r, len, lx, ly, lz, color, alongZ = false) =>
+  geos.push(bake(new THREE.CylinderGeometry(r, r, len, 6), new THREE.Matrix4().multiplyMatrices(face, new THREE.Matrix4().makeTranslation(lx, ly, lz).multiply(new THREE.Matrix4().makeRotationX(alongZ ? Math.PI / 2 : 0))), color));
+
+/** Real window: dark recess, painted frame, iron grille bars (vertical + one rail), projecting sill. `face` sits on the wall surface looking out (+z local), y = window centre. */
+function windowOpening(geos, face, w = 1.1, h = 1.3, frame = 0x4a3524, trim = 0xe9e2cf) {
+  faceBox(geos, face, w, h, 0.08, 0, 0, 0.02, 0x1d1a17); // recess
+  const t = 0.07;
+  faceBox(geos, face, w + 2 * t, t, 0.14, 0, h / 2 + t / 2, 0.06, frame);
+  faceBox(geos, face, w + 2 * t, t, 0.14, 0, -h / 2 - t / 2, 0.06, frame);
+  for (const sx of [-1, 1]) faceBox(geos, face, t, h, 0.14, sx * (w / 2 + t / 2), 0, 0.06, frame);
+  const bars = Math.max(3, Math.round(w / 0.16));
+  for (let i = 0; i < bars; i++) faceCyl(geos, face, 0.014, h, -w / 2 + (i + 0.5) * (w / bars), 0, 0.1, 0x26262a);
+  faceBox(geos, face, w, 0.025, 0.03, 0, h * 0.12, 0.1, 0x26262a);
+  faceBox(geos, face, w + 0.3, 0.07, 0.26, 0, -h / 2 - t - 0.035, 0.1, trim); // sill
+}
+
+/** Real door: dark recess, frame, two raised panels with a middle rail, hinges, handle, threshold step. */
+function doorOpening(geos, face, w = 1.1, h = 2.1, leaf = 0x4f3523, frame = 0x2f2016, trim = 0xcfc7b0) {
+  faceBox(geos, face, w + 0.2, h, 0.06, 0, h / 2, 0.01, 0x14110e); // recess
+  const t = 0.09;
+  faceBox(geos, face, w + 2 * t, t, 0.16, 0, h + t / 2, 0.07, frame);
+  for (const sx of [-1, 1]) faceBox(geos, face, t, h + t, 0.16, sx * (w / 2 + t / 2), (h + t) / 2, 0.07, frame);
+  faceBox(geos, face, w, h, 0.07, 0, h / 2, 0.06, leaf);
+  for (const [cy, ch] of [[h * 0.27, h * 0.38], [h * 0.73, h * 0.38]]) faceBox(geos, face, w * 0.72, ch, 0.03, 0, cy, 0.1, 0x3d2818);
+  faceBox(geos, face, w, 0.08, 0.05, 0, h * 0.5, 0.1, frame);
+  for (const hy of [0.3, h - 0.3]) faceBox(geos, face, 0.16, 0.05, 0.03, -w / 2 + 0.08, hy, 0.1, 0x26262a);
+  faceCyl(geos, face, 0.025, 0.1, w / 2 - 0.12, h * 0.5, 0.12, 0xa8894a, true); // brass handle
+  faceBox(geos, face, w + 0.5, 0.12, 0.4, 0, 0.06, 0.2, trim); // threshold step
+}
+
 /** Irregular blob outline (never a perfect circle: MAP.md wants organic edges). */
 function blobShape(radius, seed) {
   const shape = new THREE.Shape();
@@ -915,8 +948,15 @@ export function createGurukul(position) {
     geos.push(bake(new THREE.BoxGeometry(w + 0.1, 0.5, d + 0.1), at(x, 3.9, z), band));
     geos.push(bake(new THREE.BoxGeometry(w + 0.5, 0.25, d + 0.5), at(x, 7.55, z), 0x8d8a82));
     const zf = z + d / 2 + 0.03;
-    if (w > d) for (let i = 0; i < 6; i++) for (const y of [2.2, 5.6]) geos.push(bake(new THREE.BoxGeometry(1.4, 1.3, 0.1), at(x - w / 2 + 2 + i * 3.6, y, zf), 0x3f3a33));
+    if (w > d) {
+      for (let i = 0; i < 6; i++) for (const y of [2.2, 5.6]) windowOpening(geos, at(x - w / 2 + 2 + i * 3.6, y, zf - 0.03), 1.3, 1.3);
+    } else {
+      // Side block: windows on its +x yard face and a door at the south end.
+      for (let i = 0; i < 4; i++) for (const y of [2.2, 5.6]) windowOpening(geos, at(x + w / 2 + 0.0, y, z - d / 2 + 3 + i * 4, Math.PI / 2), 1.3, 1.3);
+      doorOpening(geos, at(x + w / 2, 0.4, z + d / 2 - 2.2, Math.PI / 2), 1.3, 2.3);
+    }
   }
+  doorOpening(geos, at(0, 0.4, -5.47), 1.6, 2.5); // main entrance, long block
   // Verandah colonnade on the yard side of the long block.
   for (let i = 0; i < 6; i++) geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 3.2, 8), at(-9 + i * 3.6, 1.8, -4.9), 0xe9e2cf));
   geos.push(bake(new THREE.BoxGeometry(22, 0.25, 2), at(0, 3.5, -4.9), 0xd8d2c0));
@@ -954,12 +994,12 @@ export function createOldHaveli(position) {
   geos.push(bake(new THREE.BoxGeometry(3.4, 3.8, 0.3), at(0, 2.3, zf), wood));
   geos.push(bake(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 14, 1, false, Math.PI / 2, Math.PI), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 4.2, zf), wood));
   geos.push(bake(new THREE.BoxGeometry(4.4, 0.35, 0.5), at(0, 6.0, zf), trim));
+  doorOpening(geos, at(0, 0.4, zf + 0.12), 2.2, 3.2, 0x4a2f1c, 0x2a1c12, 0xb8ae98); // gate leaf, frame, hinges, handle
   for (const sx of [-1, 1]) {
     for (let i = 0; i < 2; i++) {
       const x = sx * (4.2 + i * 2.6);
-      geos.push(bake(new THREE.BoxGeometry(1.1, 1.8, 0.12), at(x, 2.2, zf), wood));
-      geos.push(bake(new THREE.BoxGeometry(1.1, 1.6, 0.12), at(x, 5.9, zf), 0x3d2f22));
-      geos.push(bake(new THREE.BoxGeometry(1.4, 0.18, 0.4), at(x, 6.85, zf), trim));
+      windowOpening(geos, at(x, 2.4, zf - 0.04), 0.95, 1.5, wood, trim);
+      windowOpening(geos, at(x, 5.9, zf - 0.04), 0.95, 1.4, wood, trim);
     }
     geos.push(bake(new THREE.BoxGeometry(2.4, 1.9, 0.9), at(sx * 7.6, 5.7, zf + 0.35), wood));
     geos.push(bake(new THREE.BoxGeometry(2.7, 0.2, 1.1), at(sx * 7.6, 6.75, zf + 0.35), trim));
@@ -1023,6 +1063,8 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(10.06, 1.1, 18.06), at(5, 0.7, -22), 0xb8574a));
   geos.push(bake(new THREE.BoxGeometry(10.8, 0.12, 19), new THREE.Matrix4().makeRotationZ(0.1).setPosition(5, 5.6, -22), 0x8e969c));
   for (const lz of [-27, -17]) geos.push(bake(new THREE.BoxGeometry(0.2, 3.4, 4), at(-0.05, 1.9, lz), 0x4f6b7a));
+  for (const lz of [-27, -17]) doorOpening(geos, at(-0.1, 0.12, lz, -Math.PI / 2), 3.4, 3.2, 0x3f5b6a, 0x2a2f33, 0xb4b0a4);
+  for (const lz of [-24.5, -19.5]) windowOpening(geos, at(-0.1, 4.0, lz, -Math.PI / 2), 0.9, 0.7);
   for (let i = 0; i < 12; i++) geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(-2.6 + (i % 4) * 0.95 * 0.0, 0.3 + Math.floor(i / 4) * 0.36, -22 + (i % 4) * 1.0 - 1.5), 0xd9c9a2));
   // Vegetable wholesale yard: open pillared tin shed, crates and gunny heaps.
   geos.push(bake(new THREE.BoxGeometry(12, 0.1, 14), new THREE.Matrix4().makeRotationX(0.05).setPosition(4, 3.4, 4), 0x8e969c));
@@ -1037,6 +1079,8 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(4.5, 0.25, 20), at(-6, 0.13, 22), 0x6d6d70));
   geos.push(bake(new THREE.BoxGeometry(3.9, 0.05, 19.4), at(-6, 0.28, 22), 0x8a8a8c));
   geos.push(bake(new THREE.BoxGeometry(3.4, 3, 3.4), at(-11, 1.5, 22), 0xdcd2b8));
+  windowOpening(geos, at(-9.3, 1.9, 22, Math.PI / 2), 1.2, 0.9); // cabin window onto the weighing platform
+  doorOpening(geos, at(-11, 0.12, 23.7), 0.9, 2.0);
   geos.push(bake(new THREE.BoxGeometry(3.8, 0.2, 3.8), at(-11, 3.1, 22), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(1.6, 0.8, 0.15), at(-11, 3.8, 20.2), 0x2a2a2a));
   geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.1), at(-6, 1.1, 12.5), 0xd8d2c2));
@@ -1044,6 +1088,8 @@ export function createMandi(position) {
   // Dhaba: low truck-stop eatery with a tin verandah, charpais and a tandoor chimney.
   geos.push(bake(new THREE.BoxGeometry(9, 3.2, 6), at(5, 1.75, 32), 0xe4cfa0));
   geos.push(bake(new THREE.BoxGeometry(9.06, 0.4, 6.06), at(5, 0.9, 32), 0xb8574a));
+  doorOpening(geos, at(2.6, 0.12, 29.0), 1.3, 2.2);
+  windowOpening(geos, at(7.4, 2.0, 29.0), 1.4, 1.1);
   geos.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));

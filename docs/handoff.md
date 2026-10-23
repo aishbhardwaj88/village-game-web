@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bz2):** Game change: real doors and windows on far-east sites. New helpers windowOpening/doorOpening in src/farmSites.js (recess, painted frame, iron grille bars + rail, projecting sill; door with raised panels, rail, hinges, brass handle, threshold step), merged into each site's existing mesh (no new draw calls). Applied to gurukul, old haveli, mandi godown/cabin/dhaba. Build all passed. Proof docs/shots/openings-2026-10-23/. Gaps: other sites listed in BACKLOG A1d standing-rule note still have slab openings; headless shots run ~3 fps.
+Next: apply the helpers to masjid, gurudwara, health centre, chemist, anganwadi, dairy, TV house, Jain mandir; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bz):** Game change (small): Visit-place mid-mission warning path tested with a real tap flow (quest at have_money: tap 1 warns, tap 2 jumps, step unchanged); the warning text was overlapping the first list row and was dark red on dark, now reserved space + light colour (index.html .visit-warn, also used by Tasks note). Box ticked in BACKLOG A-2. Proof docs/shots/visit-warn-2026-10-23/. Build not rerun (CSS only).
 Next: hero-zone draw-call headroom; minimap convention research; far-east road decision (art director).
 
