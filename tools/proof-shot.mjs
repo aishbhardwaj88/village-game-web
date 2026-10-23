@@ -43,7 +43,7 @@ try {
         d.camRig.yaw = yaw; d.camRig.pitch = pitch; d.camRig.distance = distance; d.camRig.update(10);
       }, s);
     }
-    if (s.eval) await page.evaluate(s.eval);
+    if (s.eval) { const r = await page.evaluate(s.eval); if (r !== undefined) console.log(s.name, 'eval:', JSON.stringify(r)); }
     for (let i = 0; i < 10; i++) await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
     await page.waitForTimeout(300);
     await page.screenshot({ path: `${outDir}/${s.name}.png` });

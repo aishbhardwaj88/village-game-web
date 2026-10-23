@@ -81,6 +81,23 @@ export function abadiGardenPlants() {
   return out;
 }
 
+/** Doorstep prop sites in front of every abadi row (stools, buckets, baskets, pots, crates, jugs), for src/villageProps.js.
+ *  World x/z + yaw + a deterministic pick; positions sit at the step line (local z 3.75, same as the tulsi/marigold pots). */
+export function abadiPropSites() {
+  const out = [];
+  PLACEMENTS.forEach((p, i) => {
+    const L = ABADI_BOXES[p.v].L;
+    const c = Math.round(Math.cos((p.q * Math.PI) / 2)), sn = Math.round(Math.sin((p.q * Math.PI) / 2));
+    const n = 2 + (i % 3);
+    for (let j = 0; j < n; j++) {
+      const lx = (((i * 37 + j * 53) % 100) / 100 - 0.5) * (L - 3);
+      const lz = 3.75 + ((i + j) % 3) * 0.08;
+      out.push({ x: p.x + lx * c + lz * sn, z: p.z - lx * sn + lz * c, yaw: ((i * 131 + j * 71) % 628) / 100, pick: i * 7 + j * 13 + j });
+    }
+  });
+  return out;
+}
+
 /** Thin chulha-smoke origins over a few abadi rows (behind the lane-side roof edge, on low 3.3 m roofs), for createAmbientLife. */
 export function abadiSmokeSources() {
   const out = [];

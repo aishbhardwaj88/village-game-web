@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bm2):** Game change: real CC0 doorstep props (15 Poly Haven models: stools, buckets, baskets, clay pots, jugs, crates, tyre, bench, chair) now stand at the abadi house steps, instanced and streamed per 36 m cell (src/villageProps.js, abadiPropSites in src/scenery.js); sites touching colliders are dropped. Build 16/16, regression 22/22, budget 23.6 MB. Proof docs/shots/village-props-2026-10-23/. Finding: Poly Haven has no Indian tree species (neem/mango/peepal/babool); no pump/charpai/handcart/sack either. Props are not solid (all under 0.5 m, except chair/bench).
+Next: tree alpha-cutout rework from ambientCG atlases; props for shops/school interiors; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bm):** Game change: dev collision guard now covers animals (herds, dogs; ANIMAL_MESHES in src/animals.js). Sweeping the whole map with it found 3 lane buffalo standing inside walls; lane cattle/dogs now pick the first offset that clears the real colliders and the other lane sites (src/main.js), re-sweep clean. Build 16/16, regression 22/22. Animals are stationary, so no routes to register; follow routine already runs through resolveMove. Sweep script tmp/animal-guard.mjs (88 points). Box not ticked (multi-minute NPC route run still open).
 Next: trees/plants CC0 models (A1a2/A3); far-east road decision (art director).
 
