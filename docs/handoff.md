@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bn2):** Game change: 11 unsigned places now have painted direction boards (src/wayfinding.js): temple fork gains Mango baagh + Our khet; two new far-east posts at (35,73.5) and (75,73.5) point to TV house, chemist, manihari, sabzi, johad, masjid, Jain mandir, khel maidan, highway. Still unsigned: maidan..sugarcane belt, mandi-side, johad has no lane. Build 16/16 passed. Proof docs/shots/signposts-far-2026-10-23/ (far_a, temple_fork). Gap: sugarcane belt not given a board (no PLACES id); posts stand on open ground (no road yet, art director's call). A-2c wayfinding box not ticked.
+Next: far-east road decision (art director); animal routes; props for shops.
+
+---
+
 **2026-10-23 (cycle 38bn):** Game change: all plants and trees now use real photo leaf cutouts (ambientCG CC0 leaf sets) instead of canvas-drawn leaves: garden plants + 5 tree species (tools/build-plant-atlas.mjs -> public/assets/plants/*.webp, 3x2 cells of 341 to stay under 1K). Build 16/16, budget 24.0 MB. Proof docs/shots/plant-atlas-2026-10-23/. Gaps: flower heads still drawn (no CC0 flower sheet), grass tufts/crop rows still old, close-up leaf shot not taken. Untracked public/assets/trees impostors left alone.
 Next: grass tufts + crops with Foliage atlases; props for shops; far-east road decision.
 

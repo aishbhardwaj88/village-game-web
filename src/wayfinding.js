@@ -15,8 +15,8 @@ import { PLACES } from './freeRoam.js';
 const CELL_W = 1024;
 const CELL_H = 256;
 const COLS = 2;
-const ROWS = 14; // rows 0-9: 20 direction-board cells; rows 10-13: notice board (col 0) and wood grain (col 1)
-const BOARD_ROWS = 10;
+const ROWS = 20; // rows 0-15: 32 direction-board cells; rows 16-19: notice board (col 0) and wood grain (col 1)
+const BOARD_ROWS = 16;
 const BOARD_W = 1.5;
 const BOARD_H = BOARD_W * (CELL_H / CELL_W);
 const INK = '#4a1c1c';
@@ -28,8 +28,10 @@ const PAPER = '#efe4c8';
  */
 const SIGNPOSTS = [
   { id: 'house_gate', x: -54.5, z: 49.5, ry: Math.PI, to: ['school', 'bazaar', 'temple', 'teastall'] },
-  { id: 'temple_fork', x: -12, z: 58.5, ry: -Math.PI / 2, to: ['temple', 'canal', 'house'] },
+  { id: 'temple_fork', x: -12, z: 58.5, ry: -Math.PI / 2, to: ['temple', 'canal', 'house', 'baagh', 'field'] },
   { id: 'east_gali', x: -2.6, z: 76.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
+  { id: 'east_far_a', x: 35, z: 73.5, ry: -Math.PI / 2, to: ['tvhouse', 'chemist', 'manihari', 'sabzi', 'johad'] },
+  { id: 'east_far_b', x: 75, z: 73.5, ry: -Math.PI / 2, to: ['masjid', 'jain', 'maidan', 'highway'] },
   { id: 'school_lane', x: -41.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela'] },
   { id: 'west_gali', x: -82.5, z: 41, ry: Math.PI, to: ['pond', 'dairy', 'jalebi', 'gaushala'] },
 ];
@@ -211,7 +213,7 @@ export async function createWayfinding() {
   for (const post of SIGNPOSTS) {
     const places = post.to.map(byId).filter(Boolean);
     if (!places.length) continue;
-    const postH = 2.7;
+    const postH = 3.1;
     const m = new THREE.Matrix4().makeRotationY(post.ry).setPosition(post.x, 0, post.z);
     const geos = [];
     const pole = new THREE.BoxGeometry(0.14, postH, 0.14);
