@@ -4,6 +4,7 @@ import { buildStripSegment } from './paths.js';
 import { HOUSE_CENTER } from './village.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { mergeMeshList } from './mergeUtils.js';
+import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { BAAGH_CENTER, BAAGH_CLEARING_RADIUS } from './baagh.js';
 
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
@@ -24,6 +25,34 @@ export const TRACK_CORNERS = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW];
 
 const TRACK_WIDTH = 5;
 const FIELD_GOLD = 0xc9a24f; // golden wheat/sabzi soil, distinct from the main dirt ground and lane
+
+// Sparse verge planting just outside the track loop (tulsi, marigold).
+// One garden-plant draw call; no colliders, kept off the NW spur and the baagh clearing.
+function buildTrackVerge() {
+  const plants = [];
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const corners = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW, TRACK_NW];
+  for (let i = 0; i < 4; i++) {
+    const a = corners[i], b = corners[i + 1];
+    const len = Math.hypot(b.x - a.x, b.z - a.z);
+    const dx = (b.x - a.x) / len, dz = (b.z - a.z) / len;
+    const nx = -dz, nz = dx; // outward side: away from the field centre
+    const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+    const out = Math.sign(nx * (mx - (TRACK_NW.x + TRACK_NE.x) / 2) + nz * (mz - (TRACK_NW.z + TRACK_SE.z) / 2)) || 1;
+    for (let t = 4; t < len - 4; t += 3 + rnd() * 4) {
+      const off = (TRACK_WIDTH / 2 + 1.6 + rnd() * 0.8) * out;
+      const x = a.x + dx * t + nx * off, z = a.z + dz * t + nz * off;
+      if (Math.hypot(x - BAAGH_CENTER.x, z - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS + 3) continue;
+      const r = rnd();
+      const kind = r < 0.5 ? GARDEN_KIND.TULSI : GARDEN_KIND.MARIGOLD;
+      plants.push({ x, z, y: 0, kind, scale: 0.9 + rnd() * 0.3 });
+    }
+  }
+  const greens = buildGardenPlants(plants);
+  if (greens) greens.name = 'field_track_verge';
+  return greens;
+}
 
 function buildTrack() {
   // Task 2 (draw-call budget) — all 5 segments share the same tint, and
@@ -152,6 +181,8 @@ export function buildField(scene) {
   group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground'));
   group.add(buildCropRows());
   group.add(buildTrack());
+  const verge = buildTrackVerge();
+  if (verge) group.add(verge);
   scene.add(group);
   return group;
 }
