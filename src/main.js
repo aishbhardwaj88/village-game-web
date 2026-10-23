@@ -1214,6 +1214,16 @@ async function main() {
         ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: -100 + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ + 1, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ - 1.2, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
+        // Post office / ration shop / atta chakki (face +x, 3 m deep): creepers on the side walls
+        // and back, tulsi + marigold in the gaps between the fronts, banana behind.
+        { x: POST_OFFICE_POS.x + 0.6, z: POST_OFFICE_POS.z - 1.7, kind: GARDEN_KIND.CREEPER, scale: 1.0 },
+        { x: RATION_SHOP_POS.x - 1.6, z: RATION_SHOP_POS.z + 1.9, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
+        { x: ATTA_CHAKKI_POS.x - 0.4, z: ATTA_CHAKKI_POS.z + 1.55, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
+        { x: POST_OFFICE_POS.x + 2.0, z: POST_OFFICE_POS.z + 2.6, kind: GARDEN_KIND.TULSI },
+        { x: RATION_SHOP_POS.x + 2.0, z: RATION_SHOP_POS.z + 2.7, kind: GARDEN_KIND.TULSI, scale: 0.9 },
+        ...[-0.5, 0.5].map((dz) => ({ x: ATTA_CHAKKI_POS.x + 2.4, z: ATTA_CHAKKI_POS.z + 2.4 + dz, kind: GARDEN_KIND.MARIGOLD })),
+        { x: POST_OFFICE_POS.x - 4.2, z: POST_OFFICE_POS.z - 1, kind: GARDEN_KIND.BANANA },
+        { x: ATTA_CHAKKI_POS.x - 4.4, z: ATTA_CHAKKI_POS.z + 1, kind: GARDEN_KIND.BANANA, scale: 0.9 },
       ])
     );
 
