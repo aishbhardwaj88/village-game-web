@@ -605,3 +605,73 @@ expensive to move when the layout changes.**
 
 **Priority is unchanged.** Collision first, water bug, then assets and textures.
 This note is about HOW to build, not what to build next.
+
+---
+
+## 2026-10-23 (art director) - LAUNDRY LINES: FAIL. Good idea, flat execution.
+
+Clothes drying on lines is the right instinct and should stay everywhere it is. The
+execution is flat coloured rectangles. Rebuild them as real hanging cloth.
+
+**Required:**
+1. **Real garments, not rectangles.** A village line carries recognisable shapes:
+   sari (long, hung folded over the line, the largest item), dhoti, kurta, salwar,
+   dupatta, shirt, trousers, child's clothes, towels, bedsheet, gamcha. Silhouette
+   is what makes it read, so the shapes must differ from each other.
+2. **Cloth texture, not solid colour.** Fabric weave, print patterns, a sari border,
+   check or stripe on a gamcha, faded sun-worn colour. Same no-flat-fill rule as
+   everything else today. Source CC0 fabric textures from ambientCG and Poly Haven.
+3. **Hang like cloth.** Draped over the line with a fold at the top, sagging under
+   its own weight, wrinkles and creases, uneven hems. Not a stiff flat plane.
+4. **Sway in the air, as the art director asked.** Gentle animated movement, the
+   bottom edge moving more than the top, each garment slightly out of phase so they
+   do not move in unison. Subtle, a light afternoon breeze, not flapping.
+5. **Cloth pins (clips) on the line** at the top of each garment, two or three per
+   item, visible as small objects clipping the cloth to the rope.
+6. **The line itself** should sag between its two supports under the weight, not be a
+   straight horizontal bar.
+
+**Also consistency:** if the laundry sways, the game should not have everything else
+perfectly still. Check whether other light things can carry the same breeze: tree
+foliage, flags, garlands, dupattas on people, smoke, loose paper. State in the report
+what moves and what does not, so the village reads as one consistent afternoon.
+
+**Budget note:** sway should be a vertex shader or a simple per-instance animation,
+not per-frame CPU work on many objects. Instance the garments, vary by texture,
+scale, rotation and phase offset.
+
+**Pass test:** a close screenshot of one line showing at least four differently
+shaped garments with fabric texture and visible pins, and a short recording where
+they sway out of phase with each other on a sagging line.
+
+---
+
+## 2026-10-23 (art director) - BUILD A "VISIT PLACE" REVIEW MENU. Do this first, it is small.
+
+**Problem:** the art director reviews the game daily and has to walk across the whole
+village to look at anything. There is currently no way to jump to a location without
+the browser console, which is not an acceptable workflow.
+
+**Build a simple place-jump menu. Treat this as a small, high-priority task: it costs
+under an hour and saves review time every single day for the rest of the project.**
+
+Requirements:
+1. **In the pause menu**, a "Visit place" list. No URL parameters, no console, no
+   typing. Open pause, pick a place, land there.
+2. Lists every significant location by its plain name, in both scripts as per the UI
+   language rule: school, house, halwai, tea stall, general store, bazaar row, chowk,
+   temple, post office, ration shop, atta chakki, tubewell, canal and bridge, mango
+   baagh, khet, pond, johad, haveli, gaushala, khel maidan, mela ground, highway
+   cluster, mandi, and every other MAP.md place.
+3. Generated FROM the placement data, not a hand-typed list, so a new place appears
+   automatically and nothing goes stale when the layout is rearranged tomorrow.
+4. Lands the player standing at a sensible viewing spot facing the place, on the
+   ground, outside walls, never inside geometry.
+5. Does not break an in-progress mission: either pause the quest state or warn
+   before jumping during a mission.
+6. Available in the normal build, not only dev mode. The art director plays the live
+   site, not a dev URL. Keep it unobtrusive so it does not intrude on a real player:
+   placing it under the existing Notebook map is a reasonable home for it.
+
+**Pass test:** from the live site, open pause, pick "School", and land standing in
+front of the school facing it.

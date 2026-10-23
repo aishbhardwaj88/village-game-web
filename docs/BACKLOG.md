@@ -27,6 +27,14 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
+### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
+- [ ] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there
+- [ ] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement
+- [ ] List every MAP.md place by plain bilingual name: school, house, halwai, tea stall, general store, bazaar row, chowk, temple, post office, ration shop, atta chakki, tubewell, canal/bridge, mango baagh, khet, pond, johad, haveli, gaushala, khel maidan, mela ground, highway cluster, mandi
+- [ ] Land the player at a sensible viewing spot facing the place, on the ground, outside walls, never inside geometry
+- [ ] Do not break an in-progress mission; pause quest state or warn before jumping
+- [ ] Available in the normal live build, not dev-only; a sensible home is under the existing Notebook map
+
 ### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
 - [ ] Every place (shop, house, landmark, farm plot) is one self-contained unit: geometry, props, colliders, interaction points, NPC anchors, signage and greenery belong to it
 - [ ] One anchor position+rotation per unit, read from a single placement source; never hardcoded in several files
@@ -69,6 +77,16 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Hand-build sweets and snacks (samosa, jalebi, laddoo, barfi, gulab jamun) with real surface texture: fried golden-brown with darker edges, syrup sheen, sugar grain; vary size/rotation/shape across a tray; heap them, never a neat grid
 - [ ] Add visible flame and heat shimmer at the chulha, soot on the kadhai base and the wall behind, steam/smoke rising; the halwai currently looks switched off
 
+### A1b1. Every remaining interior and place (art director 2026-10-23)
+Apply CLAUDE.md section 5b to all of these without waiting for a per-place review note:
+- [ ] Ration shop: sacks of grain and sugar, weighing scale, ledger register, measuring cans, stacked crates, ration card board, queue rail
+- [ ] Post office (dak ghar): counter grille, letter racks, postbags, rubber stamps and ink pad, scales, red post box outside, notice board, old wooden furniture
+- [ ] Atta chakki: the grinding machine with belt drive and motor, flour dust haze and settled dust on every surface, sacks, scoops, scales, hanging bulb
+- [ ] School: desks, benches, blackboard with real chalk writing, charts and posters, water pot with mug, bell, cupboard, scattered slates and bags
+- [ ] Temple complex: lamps, bells, flower offerings, mats, donation box, steps worn with use
+- [ ] Every remaining shop, house and farm structure: trade-specific tools, stock, seating, lighting, wiring, signage, clutter, signs of use
+- [ ] All of it CC0-sourced first, textured, instanced, zone-streamed, inside the budget; report the number if any place cannot fit
+
 ### A1b. Shop contents and props (art director FAIL 2026-10-23)
 - [ ] Download CC0 3D models for generic props (TV, radio, fan, scale, stove, kadhai, jars, bottles, buckets, vessels, crates, sacks, baskets, stools, benches) from Poly Haven / Poly Pizza / ambientCG; shrink and slot into every shop
 - [ ] Give hand-built Indian retail items (masala packets, biscuit packets, bangle cards, soap, sweets) printed-label textures with invented bilingual brand names; vary labels across a shelf; no solid-colour fills
@@ -81,7 +99,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Rebuild the tubewell properly: pump room with real door/window/roof overhang/meter box, bore pipe, outlet pipe, hauz with water and waterline stain, kachcha naali channels into the field, signs of use
   - PROGRESS 2026-10-23 (cycle 38bd, not ticked): water, waterline stain, damp patch, framed door with plank lines/hinges/handle/threshold, grilled window with shutter and sill, woven charpai. Proof docs/shots/hauz-2026-10-23/door.png. Still missing: meter box cable, bore pipe detail, kachcha naali into the field, scatter of use.
 - [ ] Rebuild every charpai as a wooden frame with crisscrossed jute/niwar webbing, sagging slightly; never a plank on legs
-  - PROGRESS 2026-10-23 (cycle 38bd, not ticked): shared woven charpai (frame, turned legs, sagging jute webbing, charpaiGeos in src/farmSites.js) on the tubewell and all lane laundry corners, proof docs/shots/hauz-2026-10-23/charpai.png. Still planks: dhaba, house, halwai charpais.
+  - PROGRESS 2026-10-23 (cycle 38bd, not ticked): shared woven charpai (frame, turned legs, sagging jute webbing, charpaiGeos in src/farmSites.js) on the tubewell and all lane laundry corners, proof docs/shots/hauz-2026-10-23/charpai.png. Also dhaba (4) and TV house porch, proof docs/shots/charpai2-2026-10-23/dhaba.png, tvhouse.png. Still planks: hero house and halwai charpais (hero zone at the draw-call ceiling, extra webbing mesh would add a call). Dhaba and TV house doors/windows still flat.
 - [ ] STANDING RULE: every door gets a frame, panels, handle, hinges, threshold and wall recess; every window gets a frame, iron grille, shutters or curtain, sill and recess. Apply to every building including ones already ticked
 
 ### A1e. Street lamps (art director FAIL 2026-10-23)
@@ -105,6 +123,14 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Board detail: wooden frame, printed circle and arrow lines, four pockets, coins and striker scattered mid-game; tea glasses, pocketed coins, cloth, slippers beside the stools
 - [ ] Source table, stools and chairs as CC0 models per the standing rule; textured wood, no flat fills
 - [ ] Ludo: build properly as a printed cloth board with real pieces in a different spot, or remove it
+
+### A1h. Laundry lines (art director FAIL 2026-10-23)
+- [ ] Rebuild drying clothes as real garments with distinct silhouettes: sari, dhoti, kurta, salwar, dupatta, shirt, trousers, child's clothes, towel, bedsheet, gamcha
+- [ ] CC0 fabric textures with weave, prints, sari borders, checks, sun-faded colour; no solid-colour fills
+- [ ] Drape like cloth: folded over the line, sagging under weight, wrinkles, uneven hems; the line itself sags between supports
+- [ ] Animate a gentle breeze sway, bottom edge moving more than top, each garment out of phase; vertex shader or per-instance animation, not CPU per-frame
+- [ ] Add visible cloth pins, two or three per garment, clipping cloth to the rope
+- [ ] Consistency check: report what else should carry the same breeze (foliage, flags, garlands, smoke, loose paper) so the village reads as one afternoon
 
 ### A2. Legibility
 - [ ] REWORK (art director FIX 2026-10-23): flip signboard hierarchy; Hindi top but smaller/lighter, English second line larger/bolder, both in the same dark paint colour, applied to every board in the village

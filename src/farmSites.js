@@ -458,7 +458,7 @@ export function createTvHouse(position) {
   for (let i = 0; i < 4; i++) geos.push(bake(new THREE.BoxGeometry(0.04, 0.04, 1.3 - i * 0.2), at(2.4, 4.6 + i * 0.5, -1.2), 0x7a7a7a));
   geos.push(bake(new THREE.BoxGeometry(2.4, 0.5, 1.4), at(-1.8, 4.1, 0), 0x3a5a7a)); // water tank on roof
   geos.push(bake(new THREE.BoxGeometry(2.8, 0.1, 1.8), at(0, 3.0, 3.9), 0xb9b4a6)); // porch slab
-  geos.push(bake(new THREE.BoxGeometry(2.0, 0.05, 0.9), at(0, 0.55, 4.4), 0xb34a3a)); // charpai-style cot cover
+  charpaiGeos(geos, 0, 4.4, 0.1, 0.1); // woven charpai on the porch slab
   return finishSite('tv_house', geos, position, { solids: [[0, 0, 8.2, 6.2]] });
 }
 
@@ -840,10 +840,7 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
-  for (let i = 0; i < 4; i++) {
-    geos.push(bake(new THREE.BoxGeometry(1.0, 0.08, 2.0), at(1.5 + i * 2.1, 0.5, 25), 0x8a6a42));
-    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 5), at(1.5 + i * 2.1 + sx * 0.45, 0.25, 25 + sz * 0.9), 0x6f5233));
-  }
+  for (let i = 0; i < 4; i++) charpaiGeos(geos, 1.5 + i * 2.1, 25, Math.PI / 2 + (i % 2 ? 0.05 : -0.04));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(3.3, 2.55, 29.01), 0x2f5f4a));
   // Parked trucks in plain colours (no marks).
   truck(geos, 3, -2, 0xc4372f, 0.0);
