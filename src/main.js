@@ -1397,13 +1397,13 @@ async function main() {
     zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // Carrom + ludo on a jute mat in the lane outside the houses (MAP.md street life); one draw call each, streamed.
-    for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1], ['lane_games_e2', -4.9, 90, Math.PI / 2 + 0.15]]) {
+    for (const [id, x, z, ry] of [['lane_games_e1', -12, 75.7, 0.1], ['lane_games_w1', -82.8, 58, Math.PI / 2 + 0.15], ['lane_games_s1', -74, 141.2, -0.1], ['lane_games_e2', -4.9, 90, Math.PI / 2 + 0.15], ['lane_games_w2', -79, 22.6, 0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneGames({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1], ['lane_laundry_e2', -4.9, 104, Math.PI / 2 + 0.15]]) {
+    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1], ['lane_laundry_e2', -4.9, 104, Math.PI / 2 + 0.15], ['lane_laundry_w2', -72, 22.6, 0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
-    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1], ['lane_water_e2', -4.9, 122, Math.PI / 2 + 0.15]]) {
+    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1], ['lane_water_e2', -4.9, 122, Math.PI / 2 + 0.15], ['lane_water_w2', -65.5, 22.6, 0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
