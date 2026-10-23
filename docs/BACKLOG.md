@@ -87,6 +87,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
   - PROGRESS 2026-10-23 (cycle 38ak, not ticked): kachcha field track loop gets a sparse verge of tulsi and marigold just outside its edge (buildTrackVerge, src/field.js; one garden-plant draw call, no kerbs or drains, tracks stay kachcha), proof docs/shots/trackverge-2026-10-23/walk_d.png and walk_e.png
   - PROGRESS 2026-10-23 (cycle 38at, not ticked): carrom + ludo mats with peedhas in three abadi lanes (E1, W1, S1; createLaneGames, src/farmSites.js, streamed, one draw call each, MAP.md "street life"), proof docs/shots/lanegames-2026-10-23/e1_a.png (W1/S1 placed but only partly framed)
   - PROGRESS 2026-10-23 (cycle 38au, not ticked): cattle + dog resting in three abadi lanes (lane_cattle_e1/w1/s1, src/main.js), proof docs/shots/lanecattle-2026-10-23/s1_d.png, w1_d.png
+  - PROGRESS 2026-10-23 (cycle 38aw, not ticked): laundry corners (charpai with quilt and drying red chillies, steel tub, clothesline of saris and dupattas) in three abadi lanes (createLaneLaundry, src/farmSites.js; zones lane_laundry_e1/w1/s1), proof docs/shots/laundry-2026-10-23/e1_a.png (w1/s1 placed, not cleanly framed)
 - [ ] Canal and bridge
   - PROGRESS 2026-10-23 (cycle 38aj, not ticked): bank-side greenery along both canal banks (bougainvillea, tulsi, banana; one garden-plant draw call, src/canal.js), proof docs/shots/canalgreen-2026-10-23/canal_a.png, canal_b.png
 

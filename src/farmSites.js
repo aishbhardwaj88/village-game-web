@@ -551,6 +551,33 @@ export function createLaneGames(position, name = 'lane_games', ry = 0) {
   return g;
 }
 
+/** Lane laundry corner: a charpai with a folded quilt and drying red chillies, a steel tub, and a clothesline of saris and dupattas between two poles. Visual only. */
+export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
+  const geos = [];
+  const R = (x, y, z, r = 0) => at(x, y, z, r);
+  // charpai: four turned legs, wooden frame, woven rope top
+  geos.push(bake(new THREE.BoxGeometry(1.9, 0.05, 1.0), R(0, 0.4, 0), 0x6b4a2c));
+  geos.push(bake(new THREE.BoxGeometry(1.76, 0.02, 0.86), R(0, 0.43, 0), 0xb9a77a));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.035, 0.03, 0.4, 6), R(sx * 0.88, 0.2, sz * 0.45), 0x5a3f27));
+  // folded quilt and a bolster at one end, a tray of red chillies drying at the other
+  geos.push(bake(new THREE.BoxGeometry(0.7, 0.1, 0.8), R(-0.5, 0.5, 0, 0.05), 0x3a5aa6));
+  geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 0.5, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(-0.05, 0.52, 0), 0xd8a22a));
+  geos.push(bake(new THREE.BoxGeometry(0.5, 0.025, 0.6), R(0.5, 0.455, 0), 0xe6d9b0));
+  for (const [dx, dz] of [[-0.12, -0.15], [0.08, -0.05], [-0.05, 0.12], [0.14, 0.15], [0.0, 0.0], [-0.16, 0.04]]) geos.push(bake(new THREE.SphereGeometry(0.07, 6, 4), R(0.5 + dx, 0.485, dz), 0xb8261c));
+  // steel washing tub and a bar of soap
+  geos.push(bake(new THREE.CylinderGeometry(0.34, 0.27, 0.2, 14), R(1.9, 0.1, 0.6), 0xb8bcc0));
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.5, 0.02, 0.9), 0x7a9a3a));
+  // clothesline: two poles, a taut cord, hanging cloth
+  const h = 2.1, span = 4.4, z0 = -1.4;
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.05, h, 6), R(sx * span / 2, h / 2, z0), 0x5a3f27));
+  geos.push(bake(new THREE.BoxGeometry(span, 0.012, 0.012), R(0, h - 0.1, z0), 0x4a4036));
+  const cloth = [[-1.7, 0xc4372f, 0.35, 1.3], [-1.05, 0xf0e6cf, 0.3, 0.9], [-0.45, 0x2f7d5b, 0.4, 1.2], [0.2, 0xd8a22a, 0.3, 1.0], [0.8, 0x3a5aa6, 0.4, 1.3], [1.45, 0xe08aa0, 0.3, 0.8]];
+  cloth.forEach(([x, c, w, len], i) => geos.push(bake(new THREE.BoxGeometry(w, len, 0.015), R(x, h - 0.12 - len / 2, z0, (i % 2 ? 0.08 : -0.06)), c)));
+  const g = finishSite(name, geos, position);
+  g.rotation.y = ry;
+  return g;
+}
+
 /** Mela + wedding ground (SW outskirts): trampled open field, shamiana tent on poles, string-light mast, a ferris-wheel-free swing frame. */
 export function createMelaGround(position) {
   const geos = [];
