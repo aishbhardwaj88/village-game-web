@@ -65,7 +65,7 @@ export class BuildingKit {
     const boardMat = new THREE.MeshStandardMaterial({ color: 0x8a8a86, roughness: 0.6 });
     this.switchboard = new THREE.InstancedMesh(UNIT_BOX, boardMat, capacity);
     this.switchboard.name = 'switchboard';
-    this.switchboard.castShadow = true;
+    this.switchboard.castShadow = false; // 0.3 x 0.4 m wall box: its shadow is invisible, but costs a shadow-pass draw call
     this._switchboardCount = 0;
 
     const stepMat = getTiledMaterial('concrete', { repeatX: 1, repeatY: 1, tint: 0xd7d2c4, roughness: 1 });

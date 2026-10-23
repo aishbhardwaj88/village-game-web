@@ -12,6 +12,11 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * merged mesh has no way to move its parts independently afterwards.
  */
 
+/** Wall-mounted flat boards cast no useful shadow, and every caster costs a second
+ * draw call in the shadow pass — headroom for the hero-zone ceiling. */
+const NO_SHADOW_MATERIALS = new Set(['signboard']);
+const mayCast = (material, castShadow) => castShadow && !NO_SHADOW_MATERIALS.has(material.name);
+
 /** Reads whatever collider information a source object (about to be merged away)
  * carries — either `userData.collider === true` on a real, never-yet-merged leaf
  * mesh (its own live world-space box is computed here, from the same
@@ -65,7 +70,7 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
     const geometry = bucket.geometries.length > 1 ? mergeGeometries(bucket.geometries) : bucket.geometries[0];
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = `${material.name || 'merged'}_${i++}`;
-    mesh.castShadow = bucket.castShadow;
+    mesh.castShadow = mayCast(material, bucket.castShadow);
     mesh.receiveShadow = bucket.receiveShadow;
     // A merged mesh folds together sub-components of one or more buildings (e.g.
     // just the roofs, elevated by design) — never a single "placed object" of its
@@ -123,7 +128,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     const geometry = bucket.geometries.length > 1 ? mergeGeometries(bucket.geometries) : bucket.geometries[0];
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = `${material.name || 'merged'}_${i++}`;
-    mesh.castShadow = bucket.castShadow;
+    mesh.castShadow = mayCast(material, bucket.castShadow);
     mesh.receiveShadow = bucket.receiveShadow;
     mesh.userData.mergedStatic = true; // see mergeGroupByMaterial's own comment on this flag
     if (bucket.colliderBoxes.length) mesh.userData.colliderBoxes = bucket.colliderBoxes;
