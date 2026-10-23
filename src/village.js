@@ -239,6 +239,7 @@ function buildHouseInteriorProps(houseGroup) {
   const pumpZ = HOUSE_HAND_PUMP_POSITION.z;
   const pumpBase = texturedBox(0.4, 0.15, 0.4, 'metal', { tint: 0x3a3a3a, tileSize: 1 });
   pumpBase.position.set(pumpX, 0.075, pumpZ);
+  pumpBase.userData.collider = true; // solid post (A0); mergeGroupByMaterial carries the box
   handPumpGroup.add(pumpBase);
   const pumpPipe = texturedBox(0.09, 1.1, 0.09, 'metal', { tint: 0x2a2a2a, tileSize: 1 });
   pumpPipe.position.set(pumpX, 0.15 + 0.55, pumpZ);
