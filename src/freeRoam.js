@@ -56,7 +56,7 @@ export const PLACES = [
 ];
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
-const LANES = [
+export const LANES = [
   [[-48, 46], [-45, 46], [-45, 107]], // hero lane south from the house
   [[-48, 46], [-58, 47], [-58, 8]], // bazaar lane
   [[-44, 50.5], [-12, 55], [2, 51]], // temple lane

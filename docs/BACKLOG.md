@@ -45,10 +45,11 @@ in them. Do not limit a fix to the place that was screenshotted.
   - PROGRESS 2026-10-23 (not ticked): pause menu now has Tasks (src/freeRoam.js openTasks): 8 missions + 10 side jobs, bilingual, state done/current/locked, proof docs/shots/tasks-2026-10-23/tasks_locked_tap.png. Picking is guarded: only the current mission is selectable, later ones say which to finish first, side jobs locked until free roam then walk-there. Free out-of-order switching of story missions NOT built (needs per-mission state setup); active-task waypoint switching not built.
 - [ ] Guard task switching: set up required state, or mark a task unavailable with a one-line reason; never leave the game in a broken state. Keep "Continue roaming" as its own entry
 - [ ] Research shipped open-world minimap conventions FIRST, then build a corner minimap: player arrow with facing, landmark icons, active objective marked, short zoom showing surroundings
-- [ ] Minimap opens the existing full Notebook map on click/tap; one system, two scales
-- [ ] Style it as a corner of the same hand-drawn notebook (paper, ink, hand lettering), not a generic GPS radar; if unreadable at small size, report and propose the alternative rather than shipping generic
-- [ ] Check at phone width with the on-screen joystick visible; must not crowd the screen or sit under the thumb
-- [ ] Let the player hide the minimap from the pause menu
+  - PROGRESS 2026-10-23 (not ticked): minimap built (src/minimap.js): north-up 110 m window, player arrow = camera facing, landmark glyphs from PLACES, lanes, canal, ringed star on current objective (clamped to edge). Web research of shipped conventions NOT done this run, so box stays open.
+- [x] Minimap opens the existing full Notebook map on click/tap; one system, two scales - proof docs/shots/minimap-2026-10-23/phone_tap_opens_map.png (note: on desktop the cursor is pointer-locked in play, so the click path is via touch; N key already opens the map)
+- [x] Style it as a corner of the same hand-drawn notebook (paper, ink, hand lettering), not a generic GPS radar; if unreadable at small size, report and propose the alternative rather than shipping generic - proof docs/shots/minimap-2026-10-23/desktop_play.png (ruled paper, torn corner, ink glyphs; glyphs are small at 148 px but readable)
+- [x] Check at phone width with the on-screen joystick visible; must not crowd the screen or sit under the thumb - proof docs/shots/minimap-2026-10-23/phone_play.png (96 px top-right, below pause button, clear of joystick and dialogue)
+- [x] Let the player hide the minimap from the pause menu - proof docs/shots/minimap-2026-10-23/pause_toggle_off.png (persisted in localStorage)
 
 ### A-2c. Navigation (art director FAIL 2026-10-23) - high priority
 - [x] Remove discovery gating: show all 42 places on the notebook map from first load; keep an optional subtle "visited" mark, hide nothing - proof docs/shots/tasks-2026-10-23/map_all_places.png (all places inked on a fresh game, green tick on visited; some labels skipped where they would overprint, icon only)

@@ -122,7 +122,8 @@ import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
-import { createFreeRoam } from './freeRoam.js';
+import { createFreeRoam, LANES as MAP_LANES } from './freeRoam.js';
+import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
 import { createAmbientLife } from './ambient.js';
 
@@ -1513,6 +1514,7 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
+      minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
       loadDeferredContent();
@@ -2180,7 +2182,21 @@ async function main() {
   // still, behind the panel. Releases pointer lock while open (so the panel is
   // clickable) and re-requests it on resume, desktop only.
   let paused = false;
+  const _mmDir = new THREE.Vector3();
+  const minimap = createMinimap({
+    getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
+    getCameraDir: () => camera.getWorldDirection(_mmDir),
+    getObjective: () => currentWaypointTarget() || null,
+    lanes: MAP_LANES,
+    onOpen: () => freeRoam.openNotebook(),
+  });
+  const syncMinimapBtn = () => {
+    const b = document.getElementById('pause-minimap-btn');
+    if (b) b.innerHTML = minimap.isHidden() ? '<span class="btn-en">Minimap: off</span><span class="btn-hi">छोटा नक्शा: बंद</span>' : '<span class="btn-en">Minimap: on</span><span class="btn-hi">छोटा नक्शा: चालू</span>';
+  };
+  syncMinimapBtn();
   const pauseMenu = setupPauseMenu({
+    onToggleMinimap: () => { minimap.setHidden(!minimap.isHidden()); syncMinimapBtn(); },
     isTouch: touch,
     initialQuality: currentQuality,
     onOpen: () => {
@@ -2481,6 +2497,7 @@ async function main() {
       zoneManager.update(listenerPos.x, listenerPos.z, dt);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
       freeRoam.update(dt);
+      minimap.update(dt);
       ambientLife.update(dt, listenerPos.x, listenerPos.z);
       if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)

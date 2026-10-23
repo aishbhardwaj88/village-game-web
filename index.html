@@ -562,6 +562,26 @@
         pointer-events: none;
       }
 
+      /* --- Corner minimap (A-2b): a torn corner of the notebook page --- */
+      #minimap-wrap {
+        display: none;
+        position: relative;
+        width: 148px;
+        height: 148px;
+        border-radius: 6px 6px 18px 6px;
+        border: 3px solid #f7f0dc;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(60, 40, 20, 0.35);
+        overflow: hidden;
+        cursor: pointer;
+        pointer-events: auto;
+        transform: rotate(1.2deg);
+      }
+      #minimap-canvas { width: 100%; height: 100%; display: block; }
+      @media (max-width: 600px) {
+        #minimap-wrap { width: 96px; height: 96px; }
+        body.touch-device #objective-panel { max-width: calc(100vw - 150px); }
+      }
+
       /* --- Pause button (touch only) --- */
       #pause-btn-touch {
         width: 44px;
@@ -1065,6 +1085,7 @@
       </div>
       <div id="top-right-stack">
         <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
+        <div id="minimap-wrap" role="button" aria-label="Open map"><canvas id="minimap-canvas"></canvas></div>
         <div id="attach-hint">
           <div id="attach-key-badge">F</div>
           <div>
@@ -1116,6 +1137,9 @@
           </button>
           <button id="pause-tasks-btn" class="panel-btn secondary" type="button">
             <span class="btn-en">Tasks</span><span class="btn-hi">काम</span>
+          </button>
+          <button id="pause-minimap-btn" class="panel-btn secondary" type="button">
+            <span class="btn-en">Minimap: on</span><span class="btn-hi">छोटा नक्शा: चालू</span>
           </button>
           <button id="pause-controls-btn" class="panel-btn secondary" type="button">
             <span class="btn-en">Controls</span><span class="btn-hi">नियंत्रण</span>

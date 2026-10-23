@@ -6,7 +6,7 @@ import { QUALITY_LEVELS } from './quality.js';
  * restarting the errand, showing credits) are callbacks supplied by main.js, which
  * owns that state.
  */
-export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits, onShowControls, onShowNotebook, onShowVisit, onShowTasks }) {
+export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onOpen, onResume, onRestart, onQualityChange, onVolumeChange, onShowCredits, onShowControls, onShowNotebook, onShowVisit, onShowTasks, onToggleMinimap }) {
   const overlay = document.getElementById('pause-overlay');
   const touchBtn = document.getElementById('pause-btn-touch');
   const resumeBtn = document.getElementById('resume-btn');
@@ -23,7 +23,11 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
   let open = false;
 
   function setQualityButtonsUI(level) {
-    for (const btn of qualityBtns) {
+    document.getElementById('pause-minimap-btn')?.addEventListener('pointerdown', () => {
+    onToggleMinimap?.();
+  });
+
+  for (const btn of qualityBtns) {
       btn.classList.toggle('active', btn.dataset.quality === level);
     }
   }
