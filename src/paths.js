@@ -172,3 +172,49 @@ export function buildKerbSegments(start, end, width, t0, t1, { seed = 0 } = {}) 
   }
   return meshes;
 }
+
+/**
+ * An open village nali (drain) running just outside one kerb of a lane stretch: a dark damp channel with a few
+ * pale cement cover slabs where people cross. Same shared 'lane' vertex-colour material as the kerbs, so it merges
+ * into the lane's one draw call. `side` is -1 or 1.
+ */
+export function buildDrainSegments(start, end, width, t0, t1, { seed = 0, side = -1 } = {}) {
+  const dx = end.x - start.x;
+  const dz = end.z - start.z;
+  const length = Math.hypot(dx, dz);
+  const yaw = Math.atan2(-dx, -dz);
+  const ux = dx / length;
+  const uz = dz / length;
+  const nx = -uz;
+  const nz = ux;
+  const span = (t1 - t0) * length;
+  const piece = 2.4;
+  const count = Math.max(1, Math.floor(span / piece));
+  const meshes = [];
+  const off = side * (width / 2 + 0.34);
+  const material = getTiledMaterial('lane', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
+  for (let i = 0; i < count; i++) {
+    const r = Math.sin((i + 1) * 9.31 + seed * 5.1) * 0.5 + 0.5;
+    const covered = r > 0.72;
+    const geometry = new THREE.BoxGeometry(covered ? 0.42 : 0.26, covered ? 0.05 : 0.012, piece - 0.02);
+    const pos = geometry.attributes.position;
+    const colors = new Float32Array(pos.count * 3);
+    const c = covered ? [1.5, 1.8, 2.4] : [0.34, 0.36, 0.33];
+    const k = 0.9 + r * 0.12;
+    for (let v = 0; v < pos.count; v++) {
+      colors[v * 3] = c[0] * k;
+      colors[v * 3 + 1] = c[1] * k;
+      colors[v * 3 + 2] = c[2] * k;
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    ensureUv2(geometry);
+    const mesh = new THREE.Mesh(geometry, material);
+    const along = t0 * length + (i + 0.5) * piece;
+    mesh.position.set(start.x + ux * along + nx * off, covered ? 0.045 : 0.026, start.z + uz * along + nz * off);
+    mesh.rotation.y = yaw;
+    mesh.receiveShadow = true;
+    mesh.castShadow = false;
+    meshes.push(mesh);
+  }
+  return meshes;
+}

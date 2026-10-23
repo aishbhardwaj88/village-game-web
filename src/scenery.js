@@ -13,7 +13,7 @@ import { createCattleHerd } from './animals.js';
 // (zone-style distance culling, CLAUDE.md draw-call plan). Collision + the validator's real-geometry backing stay as a hidden,
 // locally-merged group of plain boxes ('bg_houses_old'), one per house footprint, taken from src/abadiBoxes.json.
 import ABADI_BOXES from './abadiBoxes.json';
-import { buildStripSegment, buildKerbSegments } from './paths.js';
+import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 
 const ROWS = {
   a: { file: 'abadi_row_a.glb', ...ABADI_BOXES.a },
@@ -127,6 +127,8 @@ export function buildBackgroundHouses(scene, kit) {
     lanes.add(m);
     // cement kerbs along the middle of each lane, clear of the junction ends
     for (const k of buildKerbSegments(l.a, l.b, l.w, 0.12, 0.88, { seed: 50 + i })) lanes.add(k);
+    // open nali just outside one kerb (side alternates by lane)
+    for (const k of buildDrainSegments(l.a, l.b, l.w, 0.12, 0.88, { seed: 60 + i, side: i % 2 ? 1 : -1 })) lanes.add(k);
   });
   group.add(lanes);
 
