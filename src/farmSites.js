@@ -92,17 +92,56 @@ export function createPond(position) {
   return group;
 }
 
+/** Proper charpai: wooden frame on four turned legs with crisscrossed jute/niwar webbing that sags slightly in the middle. Pushes geometry for a bed centred at (x, z), frame top at y0+0.4. */
+function charpaiGeos(geos, x, z, rot = 0, y0 = 0) {
+  const L = 1.9, W = 1.0, TOP = y0 + 0.4;
+  const place = (lx, ly, lz) => { const c = Math.cos(rot), sn = Math.sin(rot); return at(x + lx * c + lz * sn, ly, z - lx * sn + lz * c, rot); };
+  const WOOD = 0x6b4a2c, LEG = 0x5a3f27, JUTE = 0xb9a77a, JUTE2 = 0xa38f62;
+  geos.push(bake(new THREE.BoxGeometry(L, 0.06, 0.07), place(0, TOP, -W / 2 + 0.035), WOOD));
+  geos.push(bake(new THREE.BoxGeometry(L, 0.06, 0.07), place(0, TOP, W / 2 - 0.035), WOOD));
+  geos.push(bake(new THREE.BoxGeometry(0.07, 0.06, W), place(-L / 2 + 0.035, TOP, 0), WOOD));
+  geos.push(bake(new THREE.BoxGeometry(0.07, 0.06, W), place(L / 2 - 0.035, TOP, 0), WOOD));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.035, 0.028, TOP - y0, 6), place(sx * (L / 2 - 0.05), y0 + (TOP - y0) / 2, sz * (W / 2 - 0.05)), LEG));
+    geos.push(bake(new THREE.SphereGeometry(0.045, 6, 4), place(sx * (L / 2 - 0.05), y0 + 0.25, sz * (W / 2 - 0.05)), LEG)); // turned bulge
+  }
+  // Webbing: strips along the length (warp) and across (weft), each dropped by a parabola so the middle sags ~4 cm.
+  const sag = (u) => -0.045 * (1 - u * u);
+  const nWarp = 9, nWeft = 17;
+  for (let i = 0; i < nWarp; i++) {
+    const lz = -W / 2 + 0.08 + (i / (nWarp - 1)) * (W - 0.16);
+    geos.push(bake(new THREE.BoxGeometry(L - 0.14, 0.012, 0.045), place(0, TOP - 0.01 + sag(lz / (W / 2)), lz), i % 2 ? JUTE : JUTE2));
+  }
+  for (let i = 0; i < nWeft; i++) {
+    const lx = -L / 2 + 0.1 + (i / (nWeft - 1)) * (L - 0.2);
+    geos.push(bake(new THREE.BoxGeometry(0.045, 0.012, W - 0.14), place(lx, TOP + 0.004 + sag(lx / (L / 2)) * 0.9, 0), i % 2 ? JUTE2 : JUTE));
+  }
+}
+
 /** Tubewell kothri (brick shade hut), motor pump, pipe and cistern with an outlet channel. */
 export function createTubewell(position) {
   const geos = [];
-  const BRICK = 0xb88b6a, LIME = 0xd9d0b8, SLAB = 0x9a968c, DOOR = 0x2f6b5a, IRON = 0x4d4a46, WATER = 0x5d6b3f;
+  const BRICK = 0xb88b6a, LIME = 0xd9d0b8, SLAB = 0x9a968c, DOOR = 0x2f6b5a, IRON = 0x4d4a46, WATER = 0x3f5560, STAIN = 0x8c8a7e, WET = 0x6b5f4a;
   // Kothri 2.8 x 2.4, walls 2.3 high, flat slab roof with lip, plinth band.
   geos.push(bake(new THREE.BoxGeometry(2.8, 2.3, 2.4), at(0, 1.15, 0), LIME));
   geos.push(bake(new THREE.BoxGeometry(2.9, 0.45, 2.5), at(0, 0.22, 0), BRICK));
   geos.push(bake(new THREE.BoxGeometry(3.2, 0.16, 2.8), at(0, 2.38, 0), SLAB));
   geos.push(bake(new THREE.BoxGeometry(3.2, 0.1, 0.1), at(0, 2.5, 1.4), SLAB));
-  geos.push(bake(new THREE.BoxGeometry(0.9, 1.7, 0.08), at(0.2, 0.95, 1.22), DOOR));
-  geos.push(bake(new THREE.BoxGeometry(0.5, 0.5, 0.08), at(-0.9, 1.5, 1.22), IRON));
+  // Door: dark wooden frame, planked leaf with vertical plank lines, hinges, handle, concrete threshold.
+  const FRAME = 0x3a2a1c, PLANK = 0x1f4a3c;
+  geos.push(bake(new THREE.BoxGeometry(1.1, 1.85, 0.06), at(0.2, 0.98, 1.2), FRAME));
+  geos.push(bake(new THREE.BoxGeometry(0.9, 1.7, 0.08), at(0.2, 0.95, 1.23), DOOR));
+  for (const px of [-0.15, 0.0, 0.15, 0.3]) geos.push(bake(new THREE.BoxGeometry(0.018, 1.6, 0.02), at(0.2 + px, 0.95, 1.28), PLANK));
+  for (const hy of [0.3, 1.6]) geos.push(bake(new THREE.BoxGeometry(0.1, 0.06, 0.03), at(-0.2, hy, 1.28), IRON));
+  geos.push(bake(new THREE.BoxGeometry(0.04, 0.16, 0.05), at(0.55, 0.95, 1.29), IRON));
+  geos.push(bake(new THREE.BoxGeometry(1.3, 0.08, 0.35), at(0.2, 0.04, 1.4), SLAB));
+  // Window: wooden frame, recessed dark opening, iron grille bars, shutter leaf, projecting sill.
+  geos.push(bake(new THREE.BoxGeometry(0.62, 0.62, 0.05), at(-0.9, 1.5, 1.2), FRAME));
+  geos.push(bake(new THREE.BoxGeometry(0.48, 0.48, 0.03), at(-0.9, 1.5, 1.23), 0x1c1a18));
+  for (const gx of [-0.15, -0.05, 0.05, 0.15]) geos.push(bake(new THREE.BoxGeometry(0.014, 0.5, 0.014), at(-0.9 + gx, 1.5, 1.26), IRON));
+  for (const gy of [-0.12, 0.12]) geos.push(bake(new THREE.BoxGeometry(0.5, 0.014, 0.014), at(-0.9, 1.5 + gy, 1.26), IRON));
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.5, 0.025), at(-1.31, 1.5, 1.27, -0.9), DOOR));
+  geos.push(bake(new THREE.BoxGeometry(0.76, 0.06, 0.16), at(-0.9, 1.17, 1.28), SLAB));
   // Motor + starter box outside, pipe rising then bending to the cistern.
   geos.push(bake(new THREE.CylinderGeometry(0.28, 0.28, 0.7, 12), at(-2.1, 0.35, 0.4), 0x2f5c7a));
   geos.push(bake(new THREE.BoxGeometry(0.35, 0.5, 0.2), at(-1.55, 1.4, 1.25), 0x6b7378));
@@ -114,19 +153,23 @@ export function createTubewell(position) {
   geos.push(bake(new THREE.BoxGeometry(3.4, 0.7, 0.18), at(cx, 0.35, cz + 1.6), SLAB));
   geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 3.2), at(cx - 1.6, 0.35, cz), SLAB));
   geos.push(bake(new THREE.BoxGeometry(0.18, 0.7, 3.2), at(cx + 1.6, 0.35, cz), SLAB));
-  geos.push(bake(new THREE.BoxGeometry(3.0, 0.04, 3.0), at(cx, 0.5, cz), WATER));
+  // Waterline stain band on the inner walls (just above the water), damp patch at the outlet.
+  for (const [w, d, ox, oz] of [[3.0, 0.02, 0, -1.5], [3.0, 0.02, 0, 1.5], [0.02, 3.0, -1.5, 0], [0.02, 3.0, 1.5, 0]]) geos.push(bake(new THREE.BoxGeometry(w, 0.1, d), at(cx + ox, 0.5, cz + oz), STAIN));
+  geos.push(bake(new THREE.BoxGeometry(2.0, 0.015, 1.4), at(cx + 1.9, 0.02, cz + 2.0), WET));
   geos.push(bake(new THREE.BoxGeometry(0.4, 0.12, 4.5), at(cx + 1.9, 0.05, cz + 3.8), SLAB));
-  geos.push(bake(new THREE.BoxGeometry(0.22, 0.03, 4.3), at(cx + 1.9, 0.12, cz + 3.8), WATER));
-  // Charpai in the kothri's shade and a steel water pot.
-  geos.push(bake(new THREE.BoxGeometry(1.8, 0.08, 0.95), at(-0.5, 0.5, 2.7, 0.15), 0x7a5a38));
-  for (const [dx, dz] of [[-0.8, -0.4], [0.8, -0.4], [-0.8, 0.4], [0.8, 0.4]]) geos.push(bake(new THREE.BoxGeometry(0.07, 0.5, 0.07), at(-0.5 + dx, 0.25, 2.7 + dz, 0.15), 0x5a4228));
+  const water = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.04, 3.0), new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.06, metalness: 0.25, envMapIntensity: 1.4 }));
+  water.position.set(cx, 0.5, cz);
+  const naali = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.03, 4.3), water.material);
+  naali.position.set(cx + 1.9, 0.12, cz + 3.8);
+  // Woven charpai in the kothri's shade.
+  charpaiGeos(geos, -0.5, 2.7, 0.15);
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.name = 'tubewell';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
   group.name = 'tubewell_prop';
-  group.add(mesh);
+  group.add(mesh, water, naali);
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -555,10 +598,7 @@ export function createLaneGames(position, name = 'lane_games', ry = 0) {
 export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   const geos = [];
   const R = (x, y, z, r = 0) => at(x, y, z, r);
-  // charpai: four turned legs, wooden frame, woven rope top
-  geos.push(bake(new THREE.BoxGeometry(1.9, 0.05, 1.0), R(0, 0.4, 0), 0x6b4a2c));
-  geos.push(bake(new THREE.BoxGeometry(1.76, 0.02, 0.86), R(0, 0.43, 0), 0xb9a77a));
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.035, 0.03, 0.4, 6), R(sx * 0.88, 0.2, sz * 0.45), 0x5a3f27));
+  charpaiGeos(geos, 0, 0);
   // folded quilt and a bolster at one end, a tray of red chillies drying at the other
   geos.push(bake(new THREE.BoxGeometry(0.7, 0.1, 0.8), R(-0.5, 0.5, 0, 0.05), 0x3a5aa6));
   geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 0.5, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(-0.05, 0.52, 0), 0xd8a22a));

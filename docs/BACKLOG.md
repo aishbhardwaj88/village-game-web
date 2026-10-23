@@ -27,6 +27,23 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
+### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
+- [ ] Every place (shop, house, landmark, farm plot) is one self-contained unit: geometry, props, colliders, interaction points, NPC anchors, signage and greenery belong to it
+- [ ] One anchor position+rotation per unit, read from a single placement source; never hardcoded in several files
+- [ ] Moving a place must be a one-number change that carries its props, colliders, interaction points and NPC routes with it
+- [ ] Build in local coordinates and place by transform; merge per unit, never across units into one world mesh
+- [ ] Waypoints and NPC routes reference units rather than raw world coordinates where possible
+- [ ] AUDIT before tomorrow: write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
+
+### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
+- [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check
+- [ ] Give colliders to trees, poles, lamp posts, hand pumps, charpais, carts and every solid prop; audit and LIST any solid object with no collider
+- [ ] Validate every waypoint path as walkable at build time; a path clipping a building is a build failure
+- [ ] NPCs entering a building must route to the door and pass through the opening, never a wall; re-path any routine that cannot
+- [ ] Vehicles collide with buildings, walls, trees and each other
+- [ ] Extend devCheckPenetration() to cover NPCs and animals, not just vehicles; log any penetration as a failure
+- [ ] Verify across a multi-minute continuous run with NPCs completing full routes, not one screenshot
+
 Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A1. Textures on every surface (top priority)
@@ -39,6 +56,19 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [x] Soft dirt at wall bases, sun-faded paint, subtle stains near doors and drains - proof docs/shots/grime-2026-10-23/bazaar_back_streaks_fade.png (shader hook on every Blender building material: dusty base dirt, sun-fade above 2m, faint damp streaks; stains are global noise, not placed per door/drain; zero extra draw calls)
 - [x] Props and street furniture: lamps, charpai, handpump, chabutra - proof docs/shots/lamps-2026-10-23/temple_a.png and bazaar.png (new street lamps on the temple lane and bazaar lane, streamed per lane segment so hero zone stays 150/150; charpai, hand pump and chabutra already existed; hero-zone lanes have no lamps yet)
 
+### A1a2. Source assets instead of hand-building (art director 2026-10-23)
+- [ ] STANDING RULE: search Poly Haven / ambientCG / Poly Pizza for every object BEFORE building it; hand-build only what has no free asset, and say so in the report
+- [ ] Replace hand-built generic props with downloaded CC0 models: hand pump, matkas, mud and flower pots, stools, chairs, benches, charpai frames, handcarts, bicycles, buckets, vessels, crates, sacks, baskets, jars, bottles, tins, tools, tyres, ladders, water tanks, lamp poles
+- [ ] TOP PRIORITY after the water bug: replace all trees and plants with real CC0 tree/plant MODELS where they exist; alpha-cutout photo textures only where no model exists
+- [ ] Species variety, visually distinct: neem, peepal, banyan, mango, babool, eucalyptus, banana, bamboo, bougainvillea, tulsi, marigold, creeper, sugarcane, palm; per-instance scale/rotation/tint/age variation
+- [ ] Record every downloaded asset's source and licence in docs/CREDITS.md before use
+
+### A1b0. Halwai and rooftop fittings (art director FAIL 2026-10-23)
+- [ ] Source CC0 models for the halwai: kadhai, gas burner/chulha, gas cylinder, plastic monobloc chairs, plastic stools, steel trays, glass display case, tongs, ladles, buckets, matkas, hanging scale, thali and katori
+- [ ] Source CC0 rooftop fittings and place across MANY buildings with varied colour/size/orientation, instanced: Sintex-style plastic water tank (tanki) on a platform, old aluminium TV antenna, dish antenna, solar panel, wall pipes, loose cable runs, brick stacks
+- [ ] Hand-build sweets and snacks (samosa, jalebi, laddoo, barfi, gulab jamun) with real surface texture: fried golden-brown with darker edges, syrup sheen, sugar grain; vary size/rotation/shape across a tray; heap them, never a neat grid
+- [ ] Add visible flame and heat shimmer at the chulha, soot on the kadhai base and the wall behind, steam/smoke rising; the halwai currently looks switched off
+
 ### A1b. Shop contents and props (art director FAIL 2026-10-23)
 - [ ] Download CC0 3D models for generic props (TV, radio, fan, scale, stove, kadhai, jars, bottles, buckets, vessels, crates, sacks, baskets, stools, benches) from Poly Haven / Poly Pizza / ambientCG; shrink and slot into every shop
 - [ ] Give hand-built Indian retail items (masala packets, biscuit packets, bangle cards, soap, sweets) printed-label textures with invented bilingual brand names; vary labels across a shelf; no solid-colour fills
@@ -46,10 +76,35 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A1d. Code-primitive structures and openings (art director FAIL 2026-10-23)
 - [ ] BUG FIRST: fill the tubewell hauz with water, not grass; then audit the whole greenery scatter for plants placed in drains, canal, pond, johad, troughs, tanks and rooftops, and report every bad placement
+  - PROGRESS 2026-10-23 (cycle 38bd, not ticked): hauz now holds blue-grey glossy water with waterline stain, grass no longer stands in it; plant scatter has a keep-out list (VEG_KEEP_OUT, src/vegetation.js) for hauz, outlet naali, pond, johad and canal channel. Proof docs/shots/hauz-2026-10-23/after.png. Full audit of other scatter (trees, field crops, abadi plants) not done.
 - [ ] Audit and LIST every structure still built from code primitives (farmSites.js, scenery.js and similar); then convert each to Blender at build_house.py standard
 - [ ] Rebuild the tubewell properly: pump room with real door/window/roof overhang/meter box, bore pipe, outlet pipe, hauz with water and waterline stain, kachcha naali channels into the field, signs of use
+  - PROGRESS 2026-10-23 (cycle 38bd, not ticked): water, waterline stain, damp patch, framed door with plank lines/hinges/handle/threshold, grilled window with shutter and sill, woven charpai. Proof docs/shots/hauz-2026-10-23/door.png. Still missing: meter box cable, bore pipe detail, kachcha naali into the field, scatter of use.
 - [ ] Rebuild every charpai as a wooden frame with crisscrossed jute/niwar webbing, sagging slightly; never a plank on legs
+  - PROGRESS 2026-10-23 (cycle 38bd, not ticked): shared woven charpai (frame, turned legs, sagging jute webbing, charpaiGeos in src/farmSites.js) on the tubewell and all lane laundry corners, proof docs/shots/hauz-2026-10-23/charpai.png. Still planks: dhaba, house, halwai charpais.
 - [ ] STANDING RULE: every door gets a frame, panels, handle, hinges, threshold and wall recess; every window gets a frame, iron grille, shutters or curtain, sill and recess. Apply to every building including ones already ticked
+
+### A1e. Street lamps (art director FAIL 2026-10-23)
+- [ ] Research real UP village street light references first, then rebuild: concrete/RCC tapered poles on abadi lanes, panchayat solar LED lights at chowk and newer areas, at least two distinct types
+- [ ] Add the down-cable on each pole, a junction/switch box, and sagging overhead wire runs between poles (this matters more than the lamp head)
+- [ ] Real concrete and rusted-steel textures with stains and wear; no flat grey fill
+- [ ] Per-instance lean, rotation and wear variation; posters/stickers/painted numbers on some poles; instanced
+
+### A1f. Layout fixes (art director 2026-10-23)
+- [ ] FIX: move every hand pump and water corner from the lane middle to the lane edge or a corner, with soak-away and wet patch
+- [ ] Audit every prop sitting in a navigable lane or vehicle route (matkas, charpais, carrom mats, stools, benches, crates, animals, laundry lines); clear the path and drive the full vehicle route to confirm
+- [ ] BUILD: new row of houses facing the temple and farmland, with proper fronts (doors, grilled windows, verandahs, chabutras, pots, charpais); existing lane becomes the back street; shift existing rows to make room
+- [ ] Give the new street the same treatment: kerbs, drain, street life, lamps, greenery
+- [ ] Check the village from temple, fields, canal and approach road; report any elevation still presenting blank rear walls
+- [ ] Update reference-from-unity/MAP.md with the new row and street in the same commit (art director's instruction supersedes the old abadi layout)
+- [ ] Re-check collision, reachability, zone streaming and draw-call ceiling after the new row; report the number if the hero view cannot hold it
+
+### A1g. Carrom scene (art director 2026-10-23)
+- [ ] Move carrom out of all lanes; place ONE carrom scene in the common area near the shops (chowk/bazaar frontage), not in a vehicle route
+- [ ] Build it as a table in the centre with the board on top, four older men seated around it on stools/chairs (placeholder people for now)
+- [ ] Board detail: wooden frame, printed circle and arrow lines, four pockets, coins and striker scattered mid-game; tea glasses, pocketed coins, cloth, slippers beside the stools
+- [ ] Source table, stools and chairs as CC0 models per the standing rule; textured wood, no flat fills
+- [ ] Ludo: build properly as a printed cloth board with real pieces in a different spot, or remove it
 
 ### A2. Legibility
 - [ ] REWORK (art director FIX 2026-10-23): flip signboard hierarchy; Hindi top but smaller/lighter, English second line larger/bolder, both in the same dark paint colour, applied to every board in the village

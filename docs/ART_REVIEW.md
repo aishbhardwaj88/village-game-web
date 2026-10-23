@@ -327,3 +327,281 @@ Apply this to every building in the game, including ones already marked done.
 
 **Pass test:** a screenshot at the tubewell showing water in the hauz, a woven
 charpai, a door with a frame and panels, and a window with a grille.
+
+---
+
+## 2026-10-23 (art director) - STREET LAMPS: FAIL.
+
+Current lamp is a plain grey cylinder with a smooth dome shade. It reads as a generic
+western street light, not a UP village one. Replace every instance in the village.
+
+**What a UP village street light actually is.** Research real references before
+building; do not guess from this list alone. The common types:
+- **Concrete/RCC pole** (most common on village lanes): square or octagonal tapered
+  concrete post, visibly cast, often with hairline cracks, rust streaks and faded
+  painted banding near the base. Not a smooth grey tube.
+- **Galvanised steel tube pole**: thinner, with a swan-neck bend at the top, often
+  slightly leaning, weathered and rust-spotted at joints and base.
+- **Fitting:** a flat rectangular or shallow-curved tube-light / LED street light
+  housing, or an older cone shade with a visible bulb. Not a smooth rounded dome.
+- **Wiring is the key detail and is currently missing entirely:** a cable running down
+  the outside of the pole, often loosely clipped or taped, sagging overhead wires
+  between poles, and a small junction or switch box partway up.
+- **Lived-in detail:** a tilted pole, a poster or sticker pasted at eye height, a
+  faded painted number, a bird sitting on the arm, cable ties, a nest.
+- **Panchayat solar street lights** are now very common in UP villages: a short steel
+  pole with a small tilted solar panel, a battery box, and an LED head. Including a
+  few of these alongside the older poles is accurate and adds variety.
+
+**Requirements:**
+1. At least two distinct lamp types in the village, not one repeated model. Concrete
+   poles on the abadi lanes, solar lights at the chowk and newer areas is a sensible
+   split.
+2. Real textures: concrete with stains and wear, steel with rust at the joints. No
+   flat grey fill. Same alpha-cutout/texture discipline as the rest of today's notes.
+3. The down-cable and overhead wire runs between poles must be present. They do more
+   for believability than the lamp head itself.
+4. Per-instance variation: slight lean, slight rotation, differing wear.
+5. Model in Blender, per CLAUDE.md, or source a CC0 model and retexture. Instance it.
+
+**Pass test:** a screenshot of a lane showing two different lamp types, visible
+down-cables and sagging wires between poles, and no two poles identical.
+
+---
+
+## 2026-10-23 (art director) - HAND PUMP PLACEMENT + NEW HOUSE ROW.
+
+### 1. Hand pump is in the middle of the lane: FIX
+No hand pump sits in the middle of a road. They are at the EDGE, against a wall or at
+a corner, where people queue without blocking traffic. The current one also sits
+directly in the vehicle path and will obstruct the tractor, trolley, cart and cycle.
+- Move every hand pump and water corner to the lane edge, against a wall or at a
+  junction corner, with its drain soak-away and wet patch beside it.
+- **Then audit every prop placed in a navigable lane or vehicle route.** Anything a
+  vehicle must pass through is a bug, not decoration: matkas, charpais, carrom mats,
+  stools, benches, crates, animals, laundry lines.
+- Drive the full vehicle route after the fix and confirm nothing blocks it. The
+  world validator's reachability checks must still pass.
+
+### 2. New house row facing the temple and farmland: BUILD
+The village currently presents **blank rear walls** to anyone approaching from the
+temple or the fields. That is the first view a player gets of the village and it
+looks unfinished.
+
+Required:
+- Add **one more row of houses facing the temple and farmland**, with proper fronts:
+  doors, windows with grilles, verandahs, chabutras, plant pots, charpais outside.
+- The existing lane becomes the **back street** behind it.
+- Shift the existing rows as needed to make room for the new street between them.
+- The new street gets the same treatment as the current one: kerbs, drain, street
+  life, lamps, greenery.
+- No elevation of the village should present only blank backs. Check the view from
+  the temple, the fields, the canal and the approach road, and report any remaining
+  blank-rear elevation.
+
+**This instruction updates the map.** The art director is the author of MAP.md, so
+this supersedes the existing abadi layout there. Update
+`reference-from-unity/MAP.md` with the new row and the new street in the same commit,
+so the map stays the single source of truth and later work does not revert it.
+
+Watch: collision, the reachability checks, zone streaming boundaries and the
+draw-call ceiling all change with a new row. If the hero view cannot hold the new row
+inside budget, report the number rather than thinning the detail.
+
+**Pass test:** a screenshot taken from the temple looking at the village showing a row
+of house FRONTS, and a screenshot of the full vehicle route completing with nothing
+blocking the lane.
+
+---
+
+## 2026-10-23 (art director) - STOP HAND-BUILDING GENERIC OBJECTS.
+
+**Standing instruction, applies to all remaining work.** Before building ANY object
+from code or Blender, first search the CC0 asset sources for it. Hand-build only what
+genuinely does not exist as a free asset. Too much time has gone into modelling
+objects that are freely available at far higher quality.
+
+**Search these first, every time:**
+- Poly Haven (models + textures, CC0)
+- ambientCG (textures, atlases, some models, CC0)
+- Poly Pizza (large prop library, CC0 and CC BY, credit in docs/CREDITS.md)
+- Kenney, Quaternius (CC0) as a fallback only if the style matches
+
+**Objects that definitely exist as free assets and must NOT be hand-built:**
+hand pump, mud pots and matkas, terracotta flower pots, planters, wooden stools,
+plastic stools, chairs, benches, charpai frames, handcarts and thelas, bicycles,
+buckets, metal vessels, brass pots, crates, sacks, baskets, barrels, jars, bottles,
+tins, TV, radio, fan, weighing scale, stove, gas cylinder, kadhai, utensils, tools,
+rope, tyres, ladders, water tanks, street lamp poles.
+
+**Trees and plants: still failing, and the most visible problem in the game.**
+The lane trees in the current build remain low quality. Plants and trees are the
+single biggest realism lever in an outdoor village game, so treat them as the top
+priority after the water bug.
+- Take complete CC0 tree and plant MODELS where they exist, rather than generating
+  foliage in code. Poly Haven's model library and Poly Pizza are the first places to
+  look.
+- Where a model is not available, use the alpha-cutout photo-texture technique from
+  today's earlier plant verdict. Never solid-colour leaf geometry.
+- Species needed, visually distinct from each other: neem, peepal, banyan, mango,
+  babool, eucalyptus, banana, bamboo clump, bougainvillea, tulsi, marigold,
+  trailing creeper, sugarcane, ornamental palm.
+- Vary scale, rotation, tint and age per instance. No two adjacent plants identical.
+
+**Process requirement:** before each batch of object work, write the candidate assets
+and their licences into docs/CREDITS.md, then build. If a needed object genuinely has
+no free asset, say so in the report and only then hand-build it.
+
+**Pass test:** a lane screenshot where the trees, pots, stools and hand pump all read
+as real objects with surface detail, and the report names the source and licence of
+each downloaded asset.
+
+---
+
+## 2026-10-23 (art director) - CARROM SCENE: good idea, wrong place and wrong build.
+
+**Keep the idea, move it and build it properly.**
+
+### Placement
+- Move the carrom out of the lane entirely. It belongs in the **common area near the
+  shops** (chowk or the bazaar frontage), where people actually gather.
+- One carrom scene in the village, as a landmark, not the same mat repeated in
+  several lanes. Repetition kills it.
+- Nothing in a vehicle route. Same rule as the hand pump.
+
+### Build
+- **A table in the centre** with the carrom board on it, not a mat on bare ground.
+- **Four older men seated around it**, one per side, on stools or chairs. Use the
+  placeholder people for now, replaced when the real characters arrive.
+- Carrom board: wooden frame, playing surface with the printed circle and arrow
+  lines, four corner pockets, coins and a striker scattered mid-game, not neatly set.
+- Signs of a real game in progress: a few coins pocketed and sitting beside the
+  board, a tea glass or two, a cloth, a bowl of boric powder, slippers off beside
+  the stools.
+- Source the table, stools and chairs as CC0 models per today's standing rule. Do not
+  hand-build them.
+- Textures on everything: wood grain on the board and table, worn paint. No flat fills.
+
+### Loose scatter currently nearby
+The coloured rectangles beside the mat (presumably the ludo board) read as flat
+coloured paper. Either build ludo properly as a cloth board with printed texture and
+real pieces, in a different location, or remove it.
+
+**Pass test:** a screenshot at the shops showing four seated figures around a table
+with a textured carrom board mid-game, and no carrom anywhere in a lane or vehicle
+route.
+
+---
+
+## 2026-10-23 (art director) - COLLISION: FAIL. Highest priority after the water bug.
+
+**People, animals and vehicles walk through walls, buildings and trees.** This breaks
+the illusion harder than any art fault. Nothing else in the queue matters if a
+villager strolls through a house.
+
+**The rule, absolute:**
+- No person, animal or vehicle may pass through a wall, building, tree, pole, parked
+  vehicle or any other solid object, ever.
+- A building is entered **only through its door**, by walking to the doorway and
+  through the opening. Never through a wall.
+- This applies to every moving thing: the player, every NPC routine, every animal,
+  every vehicle, the monkey, the postman, the bazaar crowd.
+
+**Likely cause, check it rather than assuming:** the world validator's checks run on
+STATIC placement at build time. NPC waypoint routines appear to move without
+consulting the collision resolver at runtime, and trees may have no colliders at all.
+
+**Required:**
+1. Every NPC and animal moves through the same collision resolver the player uses.
+   No routine sets a position directly without a collision check.
+2. Give trees, poles, lamp posts, hand pumps, charpais, carts and every other solid
+   prop a collider. Audit for solid objects with no collider and list them.
+3. Waypoint paths must be validated as walkable at build time. A path that clips a
+   building is a build failure, not a visual glitch.
+4. NPCs that enter buildings route to the door first, then through the opening.
+   If a routine cannot reach its destination without passing through geometry, that
+   routine is wrong and must be re-pathed.
+5. Vehicles collide with buildings, walls, trees and each other.
+
+**Verification, and this is the part that failed before:** a single screenshot proves
+nothing here. Run a real continuous play span, several minutes, watching the NPC
+routines complete their full loops, and confirm no overlap at any point. The existing
+per-frame `devCheckPenetration()` should be extended to cover NPCs and animals, not
+just vehicles, and any penetration logged as a failure.
+
+**Pass test:** a multi-minute recorded run where every NPC completes its full route
+with zero wall, building or tree penetration, and every building entry happens through
+a doorway.
+
+---
+
+## 2026-10-23 (art director) - HALWAI SHOP + ROOFTOP FITTINGS: FAIL.
+
+Same root fault as every other prop note today: hand-built untextured primitives.
+The halwai reads as a toy kitchen. Apply the standing sourcing rule.
+
+### Source these as CC0 models, do not hand-build
+- **Halwai:** kadhai (large iron wok), gas burner / chulha, gas cylinder, plastic
+  chairs (the ubiquitous moulded monobloc chair), plastic stools, steel trays,
+  glass display case, steel tongs and ladles, steel buckets, earthen matkas,
+  wooden counter, hanging weighing scale, steel thali and katori.
+- **Rooftop fittings, named by the art director as commonly available:**
+  **Sintex-style plastic water tank (tanki)** on a raised platform, **TV antenna**
+  (the old aluminium yagi type), dish antenna, solar panel, water pipes running down
+  the wall, loose cable runs, a brick stack, a parapet.
+- Rooftop fittings go on MANY buildings, not one. Vary tank colour (black, blue,
+  white), tank size, antenna type and orientation. Instance them.
+
+### Food items, which have no good free assets
+Samosas, jalebi, laddoo, barfi, gulab jamun and similar will not exist as CC0 models.
+Build these by hand, but:
+- Real surface texture with colour variation: fried golden-brown with darker edges,
+  syrup sheen on jalebi, sugar grain on barfi. Never a flat beige blob.
+- Vary size, rotation and shape slightly across a tray. A tray of identical clones
+  is as wrong as a flat one.
+- Pile them realistically: heaped in a tray, stacked in a pyramid, not floating in
+  a neat grid.
+
+### Fire and heat
+- The chulha or burner needs a visible flame and a heat shimmer, plus soot on the
+  kadhai base and the wall behind it.
+- Steam or smoke rising from the kadhai. The halwai is the most alive spot in a
+  village bazaar and currently looks switched off.
+
+**Pass test:** a screenshot at the halwai counter showing a real kadhai with flame
+and soot, plastic chairs, a glass display case, and sweets with surface variation,
+plus a rooftop screenshot showing water tanks and antennas across several buildings.
+
+---
+
+## 2026-10-23 (art director) - BUILD EVERYTHING AS MOVABLE UNITS.
+
+**Context:** the art director will rearrange the whole village layout tomorrow
+(shop and landmark placement is currently scattered and needs rethinking). Asset
+quality work continues today and tonight. **That work must not be lost or made
+expensive to move when the layout changes.**
+
+**Architectural requirement, applies to all remaining work:**
+
+1. **Every place is a self-contained unit.** A shop, house, landmark or farm plot is
+   one addressable thing: its geometry, props, colliders, interaction points, NPC
+   spawn and waypoint anchors, signage and greenery all belong to that unit.
+2. **One anchor position per unit, read from one source.** Position and rotation come
+   from a single coordinate table (`reference-from-unity/MAP.md` / `WorldData/*.json`
+   or a dedicated placement data file), never hardcoded in several places.
+3. **Moving a place must be a one-number change.** Change the anchor, and the
+   building, its props, its colliders, its interaction points and its NPC routes all
+   move with it. If moving a shop today requires editing geometry in multiple files,
+   that is the bug to fix before building more.
+4. **Build everything in local coordinates, place by transform.** Do not bake world
+   positions into geometry or into merged meshes in a way that cannot be re-placed.
+   Merging per-unit is fine; merging across units into one world mesh is not.
+5. **Waypoints and NPC routes reference units, not raw world coordinates** wherever
+   possible, so a route survives its destination being moved.
+6. **Report the current state honestly.** Before tomorrow, audit how placement works
+   today and write a short note in `docs/handoff.md`: which places are already
+   movable by one value, and which have coordinates baked in. That list is what the
+   art director needs in order to plan the rearrangement.
+
+**Priority is unchanged.** Collision first, water bug, then assets and textures.
+This note is about HOW to build, not what to build next.

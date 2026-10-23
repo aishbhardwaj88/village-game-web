@@ -131,6 +131,18 @@ function buildCardGeometry(width, height) {
 function buildTuftGeometry() { return buildCardGeometry(0.55, 0.48); }
 function buildScrubGeometry() { return buildCardGeometry(0.95, 0.8); }
 
+/** Water and tank footprints no plant may stand in (hauz, pond, johad, canal channel). Circles {x,z,r} or canal-style z-bands {zMin,zMax,xMin,xMax}. */
+export const VEG_KEEP_OUT = [
+  { x: -36.1, z: -7.6, r: 3.0 }, // tubewell hauz + its outlet naali start
+  { x: -34.2, z: -3.8, r: 2.6 }, // tubewell outlet channel
+  { x: -132, z: 70, r: 11 }, // pond
+  { x: 78, z: 105, r: 8 }, // johad
+  { zMin: 29.5, zMax: 36.5, xMin: -28, xMax: 0 }, // canal water + banks
+];
+export function inKeepOut(x, z) {
+  return VEG_KEEP_OUT.some((k) => (k.r !== undefined ? Math.hypot(x - k.x, z - k.z) < k.r : x > k.xMin && x < k.xMax && z > k.zMin && z < k.zMax));
+}
+
 /** Jittered points inside clusters around each anchor — "cluster them, never
  * scatter evenly" (item 3b's own rule). `anchors`: [{x,z,count,radius}]. */
 function buildClusterPositions(anchors, perInstanceJitter) {
@@ -144,10 +156,10 @@ function buildClusterPositions(anchors, perInstanceJitter) {
       // the edge, not a uniform-density disc of grass).
       const r = Math.random() * a.radius;
       const ang = Math.random() * Math.PI * 2;
-      positions.push({
-        x: a.x + Math.cos(ang) * r + (Math.random() - 0.5) * perInstanceJitter,
-        z: a.z + Math.sin(ang) * r + (Math.random() - 0.5) * perInstanceJitter,
-      });
+      const x = a.x + Math.cos(ang) * r + (Math.random() - 0.5) * perInstanceJitter;
+      const z = a.z + Math.sin(ang) * r + (Math.random() - 0.5) * perInstanceJitter;
+      if (inKeepOut(x, z)) continue;
+      positions.push({ x, z });
     }
   }
   return positions;
@@ -391,6 +403,7 @@ function makeGardenAtlas() {
 
 /** `plants`: [{x, z, y?, kind: GARDEN_KIND.*, scale?}]. One InstancedMesh, one draw call. */
 export function buildGardenPlants(plants) {
+  plants = plants.filter((p) => !inKeepOut(p.x, p.z));
   if (!plants.length) return null;
   const parts = [];
   for (let i = 0; i < 3; i++) {
