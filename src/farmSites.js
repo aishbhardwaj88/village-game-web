@@ -573,6 +573,76 @@ export function createGurukul(position) {
   return finishSite('gurukul', geos, position);
 }
 
+/** Old haveli (MAP.md, east, quiet): two-storey courtyard mansion, faded ochre plaster, arched-front jharokhas, closed carved gate, quiet and cared-for. */
+export function createOldHaveli(position) {
+  const geos = [];
+  const wall = 0xd9b98a, trim = 0xf0e6cf, wood = 0x5a3a24;
+  // Four ranges around a 10 x 10 m courtyard (open to the sky), 20 x 20 m outer footprint.
+  const ranges = [[20, 5, 0, -7.5], [20, 5, 0, 7.5], [5, 10, -7.5, 0], [5, 10, 7.5, 0]];
+  geos.push(bake(new THREE.BoxGeometry(21, 0.4, 21), at(0, 0.2, 0), 0x9a9486));
+  for (const [w, d, x, z] of ranges) {
+    geos.push(bake(new THREE.BoxGeometry(w, 7.6, d), at(x, 4.2, z), wall));
+    geos.push(bake(new THREE.BoxGeometry(w + 0.3, 0.4, d + 0.3), at(x, 8.2, z), trim));
+    geos.push(bake(new THREE.BoxGeometry(w + 0.1, 0.5, d + 0.1), at(x, 4.4, z), trim));
+  }
+  // Parapet with small corner chhatris on the roof.
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    for (const [dx, dz] of [[-0.8, -0.8], [0.8, -0.8], [-0.8, 0.8], [0.8, 0.8]]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 2.2, 6), at(sx * 8.5 + dx, 9.5, sz * 8.5 + dz), trim));
+    geos.push(bake(new THREE.CylinderGeometry(0.1, 1.5, 0.9, 10), at(sx * 8.5, 10.9, sz * 8.5), 0xc8a66f));
+  }
+  // Front (+z) face: big arched gate, pairs of shuttered windows, two projecting wooden jharokhas upstairs.
+  const zf = 10.04;
+  geos.push(bake(new THREE.BoxGeometry(3.4, 3.8, 0.3), at(0, 2.3, zf), wood));
+  geos.push(bake(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 14, 1, false, Math.PI / 2, Math.PI), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 4.2, zf), wood));
+  geos.push(bake(new THREE.BoxGeometry(4.4, 0.35, 0.5), at(0, 6.0, zf), trim));
+  for (const sx of [-1, 1]) {
+    for (let i = 0; i < 2; i++) {
+      const x = sx * (4.2 + i * 2.6);
+      geos.push(bake(new THREE.BoxGeometry(1.1, 1.8, 0.12), at(x, 2.2, zf), wood));
+      geos.push(bake(new THREE.BoxGeometry(1.1, 1.6, 0.12), at(x, 5.9, zf), 0x3d2f22));
+      geos.push(bake(new THREE.BoxGeometry(1.4, 0.18, 0.4), at(x, 6.85, zf), trim));
+    }
+    geos.push(bake(new THREE.BoxGeometry(2.4, 1.9, 0.9), at(sx * 7.6, 5.7, zf + 0.35), wood));
+    geos.push(bake(new THREE.BoxGeometry(2.7, 0.2, 1.1), at(sx * 7.6, 6.75, zf + 0.35), trim));
+  }
+  // Courtyard: tulsi chabutra and a swept stone floor.
+  geos.push(bake(new THREE.BoxGeometry(9.4, 0.12, 9.4), at(0, 0.46, 0), 0xb8ae98));
+  geos.push(bake(new THREE.BoxGeometry(1, 0.9, 1), at(0, 0.85, 0), 0xe6dcc4));
+  geos.push(bake(new THREE.SphereGeometry(0.35, 8, 6), at(0, 1.5, 0), 0x4e6b3a));
+  // Low boundary wall and gate approach.
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(10, 1.2, 0.3), at(sx * 11, 0.6, 14), 0xd8c9a4));
+  geos.push(bake(new THREE.BoxGeometry(12, 0.06, 4), at(0, 0.03, 12), 0xb09a78));
+  return finishSite('old_haveli', geos, position);
+}
+
+/** Gaushala (MAP.md, village edge): long open-sided cattle shed on posts, tin roof, feed trough, bhoosa heap, a few resting cows. */
+export function createGaushala(position) {
+  const geos = [];
+  const L = 24, D = 8;
+  geos.push(bake(new THREE.BoxGeometry(L + 2, 0.12, D + 2), at(0, 0.06, 0), 0x8a7458));
+  for (let i = 0; i <= 6; i++) for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 3.4, 8), at(-L / 2 + i * (L / 6), 1.7, sz * D / 2), 0x6f5233));
+  // Back wall (mud-plaster) and a sloped tin roof.
+  geos.push(bake(new THREE.BoxGeometry(L, 2.6, 0.3), at(0, 1.3, -D / 2), 0xb89a74));
+  geos.push(bake(new THREE.BoxGeometry(L + 1.2, 0.1, D + 1.6), new THREE.Matrix4().makeRotationX(0.1).setPosition(0, 3.6, 0), 0x8e969c));
+  // Feed trough (cement) along the front and a hay heap at one end.
+  geos.push(bake(new THREE.BoxGeometry(L - 4, 0.5, 0.7), at(0, 0.3, D / 2 - 1.2), 0xa8a39a));
+  geos.push(bake(new THREE.BoxGeometry(L - 4.4, 0.08, 0.5), at(0, 0.58, D / 2 - 1.2), 0xc7a85a));
+  geos.push(bake(new THREE.SphereGeometry(2.2, 10, 8), at(L / 2 - 2.5, 0.6, -D / 2 + 1.8), 0xa88f52));
+  // Cows resting on the swept floor: barrel body, head, legs folded; per-cow hide colour.
+  const hides = [0xe8e0d0, 0x8a6a4a, 0xd9cdb8, 0x5a4636, 0xb59a7c];
+  for (let i = 0; i < 5; i++) {
+    const x = -L / 2 + 3.2 + i * 4.3, z = -0.6 + (i % 2) * 0.8, ry = (i % 2 ? 0.15 : -0.1);
+    geos.push(bake(new THREE.BoxGeometry(1.7, 0.75, 0.8), at(x, 0.55, z, ry), hides[i]));
+    geos.push(bake(new THREE.BoxGeometry(0.5, 0.45, 0.45), at(x + 1.0, 0.8, z, ry), hides[i]));
+    geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 0.2), at(x + 1.3, 0.7, z, ry), 0x5a4a40));
+    geos.push(bake(new THREE.BoxGeometry(0.3, 0.3, 0.25), at(x + 0.5, 0.95, z + 0.1, ry), hides[i]));
+  }
+  // Swept yard with a water tub and a low wall to the road.
+  geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
+  geos.push(bake(new THREE.BoxGeometry(L + 2, 0.8, 0.25), at(0, 0.4, D / 2 + 5), 0xcfc2a2));
+  return finishSite('gaushala', geos, position);
+}
+
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
 function truck(geos, x, z, body, ry = 0) {
   const m = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return at(x + v.x, v.y, z + v.z, ry); };
