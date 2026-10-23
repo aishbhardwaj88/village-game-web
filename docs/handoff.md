@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38ca):** Game change: real doors and windows on 8 more sites. smallBuilding() (src/farmSites.js) now builds recessed framed door (panels, hinges, brass handle, step) and two iron-grilled windows with sills via the shared helpers: anganwadi, dairy, health centre, chemist, masjid, gurudwara, TV house, Jain mandir. Merged into existing meshes (no new draw calls). Build ALL PASSED. Proof docs/shots/openings2-2026-10-23/ (8 shots, script tmp/openings2-shot.mjs). Gaps: gaushala, mela, post office/ration/chakki, bazaar units still slab openings; chemist counter sits in front of its door; sites still vertex-colour flat.
+Next: openings on remaining buildings; per-material textures on far-east sites; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38bz2):** Game change: real doors and windows on far-east sites. New helpers windowOpening/doorOpening in src/farmSites.js (recess, painted frame, iron grille bars + rail, projecting sill; door with raised panels, rail, hinges, brass handle, threshold step), merged into each site's existing mesh (no new draw calls). Applied to gurukul, old haveli, mandi godown/cabin/dhaba. Build all passed. Proof docs/shots/openings-2026-10-23/. Gaps: other sites listed in BACKLOG A1d standing-rule note still have slab openings; headless shots run ~3 fps.
 Next: apply the helpers to masjid, gurudwara, health centre, chemist, anganwadi, dairy, TV house, Jain mandir; far-east road decision (art director).
 

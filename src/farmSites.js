@@ -395,9 +395,11 @@ function smallBuilding({ w, d, h, wall, band, door, roof = 0x8d8a82 }) {
   geos.push(bake(new THREE.BoxGeometry(w + 0.4, 0.18, d + 0.4), at(0, 0.35 + h + 0.09, 0), roof));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.16, 0.5, d + 0.4), at(sx * (w / 2 + 0.12), 0.35 + h + 0.43, 0), roof));
   for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(w + 0.4, 0.5, 0.16), at(0, 0.35 + h + 0.43, sz * (d / 2 + 0.12)), roof));
-  // Door and two windows on the +z face.
-  geos.push(bake(new THREE.BoxGeometry(1.1, 2.1, 0.1), at(0, 0.35 + 1.05, d / 2 + 0.03), door));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.9, 0.9, 0.1), at(sx * w * 0.3, 0.35 + 1.6, d / 2 + 0.03), 0x3f3a33));
+  // Real door and two grilled windows on the +z face (shared openings: recess, frame, panels, hinges, handle, sill).
+  const face = at(0, 0.35, d / 2);
+  doorOpening(geos, face, 1.1, 2.1, door, 0x2f2016, band);
+  const wx = Math.max(w * 0.3, 1.5);
+  for (const sx of [-1, 1]) windowOpening(geos, at(sx * wx, 0.35 + 1.7, d / 2), 0.9, 1.0, 0x4a3524, 0xe9e2cf);
   return geos;
 }
 
