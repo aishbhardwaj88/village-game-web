@@ -63,8 +63,39 @@ Anything else only when the current task needs it.
 
 In this order, unless `docs/FEEDBACK.md` says otherwise:
 
-Work `docs/BACKLOG.md` section A top to bottom: textures, then legibility, then trees,
-then unbuilt MAP.md locations, then side jobs. Do not reorder it yourself.
+### The 20-hour plan (art director, 2026-10-23 night). Work in THIS order.
+
+**Rule above all others: the art director's feedback generalises.** She reviewed about
+7 of the 42 places. Every verdict in `docs/ART_REVIEW.md` applies to ALL 42 places and
+every object in them, without waiting for a per-place review. Do not ask, do not
+narrow the scope to the place that was screenshotted.
+
+1. **A0 collision.** People, animals and vehicles must stop passing through walls,
+   buildings and trees; buildings entered only through doors. Verify across a
+   multi-minute continuous run, not one screenshot.
+2. **The water bug**, then the greenery-scatter audit (plants in drains, canal, pond,
+   johad, troughs, tanks, rooftops). Report every bad placement found.
+3. **A-2 "Visit place" menu**, then **A-2b Tasks list and corner minimap**. These
+   unblock the art director's daily review, so they pay for themselves immediately.
+4. **A-2c navigation**: ungate the notebook map to all 42 places, build the diegetic
+   signage, make the lanes lead somewhere, and deliver the findability audit list.
+5. **A-1 movable units** audit and the handoff note. The art director rearranges the
+   layout tomorrow and needs to know which places have coordinates baked in. This
+   must be written before she starts.
+6. **A1a2 asset sourcing, trees and plants first.** This is the biggest visual lever
+   in the game. Real CC0 tree and plant models where they exist; alpha-cutout photo
+   textures where they do not; never solid-colour leaf geometry. Then the generic
+   props: hand pump, pots, stools, chairs, carts, vessels, crates, baskets.
+7. **A1b/A1b0/A1b1 interiors and props across ALL 42 places**, per CLAUDE.md section
+   5b. Shops, houses, ration shop, dak ghar, atta chakki, school, temple, everything.
+8. **A1c farmland** variety and density; **A1d** code-primitive structures converted
+   to Blender, doors and windows everywhere; **A1e** street lamps; **A1f** layout
+   fixes and the new house row; **A1g** carrom; **A1h** laundry.
+9. Then the rest of section A as listed.
+
+Finish an item properly before starting the next. A half-done item helps nobody.
+If an item blocks, mark it `- [!]`, write the plain-language line in
+`docs/NEEDS_YOU.md`, and move to the next. Never idle.
 
 ## Never
 

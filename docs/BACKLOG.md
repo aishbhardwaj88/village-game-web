@@ -27,6 +27,10 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
+**THE FEEDBACK GENERALISES.** The art director reviewed about 7 of the 42 places on
+23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
+in them. Do not limit a fix to the place that was screenshotted.
+
 ### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
 - [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [x] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
