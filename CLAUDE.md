@@ -57,6 +57,38 @@ archived - **never touch it.**
 **Never delete, move, or rename them.** Read freely; extract individual licensed assets
 when a task calls for it.
 
+## 5b. THE STANDING GOAL (art director, 2026-10-23) - applies to every place, always
+
+**Maximum realism, without hurting load time or framerate.** Both halves are the
+goal; neither excuses the other.
+
+This applies to EVERY location in the village without needing a separate review note:
+ration shop, post office (dak ghar), atta chakki, school, temple, tubewell, every
+shop, every house, every farm, every prop. Do not wait to be told place by place.
+
+**The realism rules, in order:**
+1. **Search CC0 sources before building anything.** Poly Haven, ambientCG, Poly Pizza.
+   Hand-build only what genuinely has no free asset, and say so in the report.
+2. **No solid-colour geometry anywhere.** Every surface carries a real texture with
+   normal and roughness maps. A flat-coloured object is an automatic fail, whatever
+   it is: a leaf, a packet, a door, a pole, a cloth, a sweet.
+3. **Every interior is furnished like a working place**, not an empty box with a
+   counter: the specific tools of that trade, stock, seating, lighting, wiring,
+   signage, clutter and signs of daily use.
+4. **Variation everywhere.** Per-instance scale, rotation, tint and wear. Two
+   identical adjacent objects is a fail.
+5. **Openings are real.** Every door gets a frame, panels, handle, hinges and a
+   recess; every window a frame, iron grille, sill and recess.
+
+**The performance rules, which are not optional:**
+- `public/assets/` stays under 40 MB; textures 1K, 512 for props; WebP.
+- Instance every repeated object. Merge static geometry per unit.
+- Zone-stream interiors and distant content; distance LOD on vegetation and crowds.
+- The title screen must appear before assets finish loading.
+- **If realism cannot fit the budget, report the number. Never silently thin the
+  detail, and never silently blow the budget.** That trade-off is the art director's
+  call, not yours.
+
 ## 6. Look - target is realism
 
 Full spec: `reference-from-unity/docs/art-direction.md`. Read before any visual work.

@@ -35,6 +35,15 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 - [ ] Do not break an in-progress mission; pause quest state or warn before jumping
 - [ ] Available in the normal live build, not dev-only; a sensible home is under the existing Notebook map
 
+### A-2b. Task menu and corner minimap (art director 2026-10-23)
+- [ ] Pause menu "Tasks" list: all 8 story missions plus every side job, bilingual names, state shown (done / current / not started); selecting one makes it active and switches objective, waypoint and dialogue
+- [ ] Guard task switching: set up required state, or mark a task unavailable with a one-line reason; never leave the game in a broken state. Keep "Continue roaming" as its own entry
+- [ ] Research shipped open-world minimap conventions FIRST, then build a corner minimap: player arrow with facing, landmark icons, active objective marked, short zoom showing surroundings
+- [ ] Minimap opens the existing full Notebook map on click/tap; one system, two scales
+- [ ] Style it as a corner of the same hand-drawn notebook (paper, ink, hand lettering), not a generic GPS radar; if unreadable at small size, report and propose the alternative rather than shipping generic
+- [ ] Check at phone width with the on-screen joystick visible; must not crowd the screen or sit under the thumb
+- [ ] Let the player hide the minimap from the pause menu
+
 ### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
 - [ ] Every place (shop, house, landmark, farm plot) is one self-contained unit: geometry, props, colliders, interaction points, NPC anchors, signage and greenery belong to it
 - [ ] One anchor position+rotation per unit, read from a single placement source; never hardcoded in several files

@@ -675,3 +675,47 @@ Requirements:
 
 **Pass test:** from the live site, open pause, pick "School", and land standing in
 front of the school facing it.
+
+---
+
+## 2026-10-23 (art director) - TASK MENU + CORNER MINIMAP. Build both.
+
+### 1. Task menu
+Players need to choose what they are doing, not only follow one fixed sequence.
+- In the pause menu: a **Tasks** list showing all eight story missions and every side
+  job, each with its name in both scripts and its state (done, current, not started).
+- Selecting one makes it the active task: objective text, waypoint and dialogue all
+  switch to it.
+- Do not let a player skip into a mission whose setup has not happened in a way that
+  breaks state. Either set up the required state when switching, or mark that task
+  unavailable with a one-line reason. Never leave the game in a broken state.
+- Keep "Continue roaming" as its own entry: free roam is a valid chosen task.
+
+### 2. Corner minimap
+**Research how shipped open-world games do this before building. Match the
+convention, do not invent one.** The established pattern:
+- A small map in one screen corner, bottom-left or bottom-right, kept clear of other UI.
+- The player shown as an arrow or cone indicating facing direction.
+- The map rotates with the player (standard for navigation) with the player arrow
+  fixed at centre; or north-up if that reads better here. Pick one, state the reason.
+- Landmark icons for shops and key places, the active objective marked distinctly.
+- A short scale/zoom that shows the immediate surroundings, not the whole village.
+- Clicking or tapping it opens the **existing full Notebook map**. The minimap is the
+  always-on glance; the notebook is the full view. One system, two scales.
+
+**Design call worth making deliberately:** the Notebook map is a diegetic, hand-drawn
+idea and it suits this game. The minimap should look like a corner of that same
+notebook (paper, ink lines, hand-lettered labels), not a generic GPS radar. That
+keeps the game's visual identity intact and is a stronger portfolio piece than a
+stock minimap. If a hand-drawn minimap proves unreadable at small size, say so and
+propose the alternative rather than silently shipping a generic one.
+
+**Mobile:** the minimap must not crowd a phone screen or sit under the thumb. Check
+it at phone width with the on-screen joystick visible. Consider a smaller size or a
+toggle on touch devices.
+
+**Accessibility:** let the player hide the minimap from the pause menu.
+
+**Pass test:** a phone-width and a desktop screenshot, both showing a readable corner
+minimap with the player arrow and the active objective, and the Tasks list in the
+pause menu with mission states visible.
