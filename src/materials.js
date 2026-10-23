@@ -98,6 +98,18 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
  * network fetches.
  */
 let grassCoverTex = null;
+let grassNormalTex = null;
+let grassRoughTex = null;
+function getGrassDetailTexture(kind) {
+  const isNormal = kind === 'normal';
+  if (isNormal ? !grassNormalTex : !grassRoughTex) {
+    const t = textureLoader.load(`assets/textures/grass/grass_${kind}.webp`); // linear data, not sRGB
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.anisotropy = 4;
+    if (isNormal) grassNormalTex = t; else grassRoughTex = t;
+  }
+  return isNormal ? grassNormalTex : grassRoughTex;
+}
 function getGrassCoverTexture() {
   if (!grassCoverTex) {
     grassCoverTex = textureLoader.load('assets/textures/grass/grass_color.webp');
@@ -149,6 +161,8 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uGrassScale = { value: 1 / grassCellMetres };
     shader.uniforms.uGrassCoverage = { value: grassCoverage };
     shader.uniforms.uGrassMap = { value: grassMap };
+    shader.uniforms.uGrassNormal = { value: grass ? getGrassDetailTexture('normal') : null };
+    shader.uniforms.uGrassRough = { value: grass ? getGrassDetailTexture('roughness') : null };
     shader.uniforms.uGrassTint = { value: grass ? new THREE.Vector3(grass.r, grass.g, grass.b) : new THREE.Vector3(0, 0, 0) };
     shader.uniforms.uDampPos0 = { value: new THREE.Vector2(spot0 ? spot0.x : 0, spot0 ? spot0.z : 0) };
     shader.uniforms.uDampRadius0 = { value: spot0 ? spot0.radius : 0 };
@@ -176,6 +190,9 @@ export function applyGroundNoiseDetail(
         uniform float uGrassCoverage;
         uniform vec3 uGrassTint;
         uniform sampler2D uGrassMap;
+        uniform sampler2D uGrassNormal;
+        uniform sampler2D uGrassRough;
+        float gGrassMask_g = 0.0;
         uniform vec2 uDampPos0;
         uniform float uDampRadius0;
         uniform vec3 uDampTint0;
@@ -238,6 +255,7 @@ export function applyGroundNoiseDetail(
             vec3 gScan = texture2D(uGrassMap, vWorldPos_g.xz * 0.37).rgb * 0.6 + texture2D(uGrassMap, vWorldPos_g.xz * 0.113 + 0.5).rgb * 0.4;
             grassCol *= clamp(gScan / vec3(0.40, 0.34, 0.14) * vec3(1.0, 1.0, 1.0), 0.45, 1.7) * 0.5 + 0.5;
             diffuseColor.rgb = mix(diffuseColor.rgb, grassCol, grassMask * 0.88);
+            gGrassMask_g = grassMask;
           }
 
           if (uFurrow.x > 0.0) {
@@ -252,6 +270,26 @@ export function applyGroundNoiseDetail(
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint0, damp0);
           float damp1 = 1.0 - smoothstep(0.0, max(uDampRadius1, 0.001), distance(vWorldPos_g.xz, uDampPos1));
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint1, damp1);
+        }`
+      )
+      .replace(
+        '#include <roughnessmap_fragment>',
+        `#include <roughnessmap_fragment>
+        if (gGrassMask_g > 0.001) {
+          // Real photoscan roughness (aerial_grass_rock): grass patches are rougher and less uniform than packed earth.
+          float gr = texture2D(uGrassRough, vWorldPos_g.xz * 0.37).g * 0.6 + texture2D(uGrassRough, vWorldPos_g.xz * 0.113 + 0.5).g * 0.4;
+          roughnessFactor = mix(roughnessFactor, clamp(gr * 1.05, 0.55, 1.0), gGrassMask_g);
+        }`
+      )
+      .replace(
+        '#include <normal_fragment_maps>',
+        `#include <normal_fragment_maps>
+        if (gGrassMask_g > 0.001) {
+          // Flat ground, so the scan's tangent-space normal tilts the world-up normal directly (GL convention).
+          vec3 gn = texture2D(uGrassNormal, vWorldPos_g.xz * 0.37).xyz * 2.0 - 1.0;
+          vec3 gn2 = texture2D(uGrassNormal, vWorldPos_g.xz * 0.113 + 0.5).xyz * 2.0 - 1.0;
+          vec3 gw = vec3(gn.x + gn2.x * 0.6, 0.0, -(gn.y + gn2.y * 0.6));
+          normal = normalize(normal + mat3(viewMatrix) * gw * 0.7 * gGrassMask_g);
         }`
       );
   };
