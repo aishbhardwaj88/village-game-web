@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
-import { buildStripSegment, buildKerbSegments } from './paths.js';
+import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
 
 /**
@@ -867,6 +867,9 @@ export function buildBazaarLane() {
     ...buildKerbSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 41 }),
     ...buildKerbSegments({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 44 }),
     ...buildKerbSegments(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 42 }),
+    ...buildDrainSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 45, side: -1 }),
+    ...buildDrainSegments({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 46, side: 1 }),
+    ...buildDrainSegments(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 47, side: -1 }),
   ];
   return mergeMeshList(segments, 'bazaar_lane');
 }
