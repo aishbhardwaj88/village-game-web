@@ -9,6 +9,7 @@ import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
+import { createWayfinding } from './wayfinding.js';
 import { mergeAcrossGroups } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
@@ -233,6 +234,11 @@ async function main() {
   createDonationBoard({ x: SCHOOL_ROOM.cx - SCHOOL_ROOM.w / 2 - 0.18, y: 2.2, z: SCHOOL_ROOM.cz }, -Math.PI / 2)
     .then((board) => heroZoneGroup.add(board))
     .catch((err) => console.error('Failed to build the donation board', err));
+
+  // A-2c diegetic wayfinding: direction signposts at lane junctions + the chowk notice board (src/wayfinding.js; labels come from PLACES).
+  createWayfinding()
+    .then((wf) => { scene.add(wf); initStaticColliders(scene); })
+    .catch((err) => console.error('Failed to build the wayfinding signs', err));
 
   // Places V1 locations (item 9) on the lanes near the hero zone — neither has a
   // LAYOUT.md, dimensions/names read off the reference orthographic images instead

@@ -346,7 +346,7 @@ async function main() {
     // alongside the existing structural-material families.
     // 'tree_foliage' (trunks, src/trees.js) added: tree trunks now carry real colliders (A0).
     // 'site_props' (farmSites.js pumps, charpais, poles, tubewell) and 'street_lamp' (src/props.js) added: they now carry real colliders (A0).
-    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick','tree_foliage','site_props','street_lamp'].includes(name);");
+    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick','tree_foliage','site_props','street_lamp','wayfinding'].includes(name);");
     console.log(`${solidPoints.length / 2} real solid-surface sample points.`);
 
     // -------------------------------------------------------------------
