@@ -891,7 +891,17 @@ export function createMandi(position) {
   truck(geos, 9, 48, 0x3f7a5a, Math.PI);
   truck(geos, -4, 40, 0xd9a43a, 0.12);
   const mandi = finishSite('mandi', geos, position, { roughness: 0.92 });
-  mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, [0, 1, 2, 3].map((i) => [1.5 + i * 2.1, 25, 1.9, 1.0, Math.PI / 2 + (i % 2 ? 0.05 : -0.04)])); // dhaba charpais
+  const truckSolid = (x, z, ry) => [x - Math.sin(ry) * 0.5, z - Math.cos(ry) * 0.5, 2.7, 8.6, ry]; // body centre sits 0.5 m behind the origin along the truck's own axis
+  const rects = [
+    [5, -22, 10.2, 18.2], // grain godown
+    [5, 32, 9.2, 6.2], // dhaba hall
+    [-11, 22, 3.6, 3.6], // weighbridge cabin
+    ...[-1, 1, 0].flatMap((sx) => [-1, 1].map((sz) => [4 + sx * 5.5, 4 + sz * 6.5, 0.35, 0.35])), // vegetable shed poles
+    ...[0, 1, 2].map((r) => [4, r * 3.2, 9.4, 0.9]), // crate rows
+    truckSolid(3, -2, 0), truckSolid(9, 48, Math.PI), truckSolid(-4, 40, 0.12),
+    ...[0, 1, 2, 3].map((i) => [1.5 + i * 2.1, 25, 1.9, 1.0, Math.PI / 2 + (i % 2 ? 0.05 : -0.04)]), // dhaba charpais
+  ];
+  mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, rects);
   return mandi;
 }
 
