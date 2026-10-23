@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38ce2):** Game change (small): Maa and the sister now follow the player through doors (house front/back room, school classroom) instead of jamming on the wall; kachcha cattle nudged off the new manger colliders. src/doorRouting.js, createFollowRoutine `buildings` option. Real run in tmp/door-follow.mjs. No screenshot (movement), no box ticked.
+Gaps: no prop-avoiding pathfinding; other buildings are not walkable. Next: register animal/follow routines for check 9; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38ce):** Game change: halwai now has live smoke column, oil steam and flame flecks over both kadhais (src/halwaiFire.js, +1 draw call only within 30 m; close view 119-125 calls). Build ALL PASSED, budget 25.00 MB. Proof docs/shots/halwai-fire-2026-10-23/. Gaps: flame reads as sparks (bhatti has no fire mouth: edit build_halwai.py), no soot, no heat shimmer. Not ticked.
 Next: fire mouth + soot in Blender halwai; NPC door-routing (A0); far-east road decision (art director).
 

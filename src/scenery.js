@@ -309,14 +309,14 @@ export function buildBackgroundHouses(scene, kit) {
 
   // Cattle resting in the homestead's shed (open side faces +z, manger along the back wall).
   const shedHerd = createCattleHerd([
-    { x: KACHCHA.x + 3.9, z: KACHCHA.z - 3.7, rotationY: Math.PI },
-    { x: KACHCHA.x + 5.6, z: KACHCHA.z - 3.6, rotationY: Math.PI * 0.93, buffalo: true },
+    { x: KACHCHA.x + 3.9, z: KACHCHA.z - 3.45, rotationY: Math.PI },
+    { x: KACHCHA.x + 5.6, z: KACHCHA.z - 3.35, rotationY: Math.PI * 0.93, buffalo: true },
   ]);
   shedHerd.mesh.name = 'kachcha_cattle';
   group.add(shedHerd.mesh);
   const shedHerd2 = createCattleHerd([
-    { x: KACHCHA2.x - 3.9, z: KACHCHA2.z + 3.7, rotationY: 0 },
-    { x: KACHCHA2.x - 5.6, z: KACHCHA2.z + 3.6, rotationY: Math.PI * -0.07, buffalo: true },
+    { x: KACHCHA2.x - 3.9, z: KACHCHA2.z + 3.45, rotationY: 0 },
+    { x: KACHCHA2.x - 5.6, z: KACHCHA2.z + 3.35, rotationY: Math.PI * -0.07, buffalo: true },
   ]);
   shedHerd2.mesh.name = 'kachcha_cattle_2';
   group.add(shedHerd2.mesh);

@@ -68,6 +68,7 @@ import {
 import { createNPC } from './npc.js';
 import { createMonkeyNPC, createCattleHerd, createDogPack, ANIMAL_MESHES } from './animals.js';
 import { createZoneManager } from './zoneManager.js';
+import { BUILDING_ROUTES } from './doorRouting.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun, ROUTES as NPC_ROUTES } from './npcRoutines.js';
 import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
 
@@ -595,8 +596,8 @@ async function main() {
   let sisterFollowing = false;
   // Side job 9 (ration run): Maa walks with the player instead of her usual loop while this flag is set (src/jobs/ration.js).
   let maaFollowing = false;
-  const maaFollow = createFollowRoutine(maaNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2.4, speed: 2.2, getExtraBoxes: () => otherVehicleBoxes(null) });
-  const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2, getExtraBoxes: () => otherVehicleBoxes(null) });
+  const maaFollow = createFollowRoutine(maaNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2.4, speed: 2.2, getExtraBoxes: () => otherVehicleBoxes(null), buildings: BUILDING_ROUTES });
+  const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2, getExtraBoxes: () => otherVehicleBoxes(null), buildings: BUILDING_ROUTES });
 
   // M4 (docs/STORY.md) — the postman, cycling the same proven-clear hero-zone lane
   // corridor the child already walks (HOUSE_CENTER's courtyard out to the point just
@@ -2612,6 +2613,7 @@ async function main() {
       sackCarrier,
       interactionCtx,
       isSisterFollowing: () => sisterFollowing,
+      setSisterFollowing: (on) => { sisterFollowing = on; },
       dialogue,
       quest,
       QUEST_STEPS,

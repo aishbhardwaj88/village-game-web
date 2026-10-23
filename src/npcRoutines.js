@@ -129,15 +129,40 @@ const _toFollowTarget = new THREE.Vector3();
  * player/vehicles are (src/collision.js `resolveCollisions` — the actual "does not
  * pass through walls" behaviour; there's no separate avoidance system to write).
  */
-export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance = 2, speed = 1.8, getExtraBoxes = () => [] } = {}) {
+export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance = 2, speed = 1.8, getExtraBoxes = () => [], buildings = [] } = {}) {
+  // Door routing: when the follower and the target are in different rooms of a building
+  // (src/doorRouting.js), walk the chain of door points first instead of pushing at the wall.
+  let queue = [];
+  let queueKey = '';
+  const doorLegs = (target) => {
+    for (const b of buildings) {
+      const from = b.zoneOf(npcGroup.position.x, npcGroup.position.z);
+      const to = b.zoneOf(target.x, target.z);
+      if (from === to) continue;
+      const key = `${b.name}:${from}>${to}`;
+      if (key !== queueKey) {
+        queueKey = key;
+        queue = [];
+        if (to > from) for (let i = from; i < to; i++) queue.push(b.links[i][0], b.links[i][1]);
+        else for (let i = from - 1; i >= to; i--) queue.push(b.links[i][1], b.links[i][0]);
+      }
+      return;
+    }
+    queueKey = '';
+    queue = [];
+  };
   return function update(dt) {
     const target = getTargetPosition();
-    _toFollowTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
+    doorLegs(target);
+    while (queue.length && Math.hypot(queue[0].x - npcGroup.position.x, queue[0].z - npcGroup.position.z) < 0.45) queue.shift();
+    const goal = queue.length ? queue[0] : target;
+    const stop = queue.length ? 0 : stopDistance;
+    _toFollowTarget.set(goal.x - npcGroup.position.x, 0, goal.z - npcGroup.position.z);
     const dist = _toFollowTarget.length();
 
-    if (dist > stopDistance) {
+    if (dist > stop) {
       _toFollowTarget.multiplyScalar(1 / dist);
-      const step = Math.min(speed * dt, dist - stopDistance);
+      const step = Math.min(speed * dt, dist - stop);
       resolveMove(npcGroup.position, _toFollowTarget.x * step, _toFollowTarget.z * step, NPC_RADIUS, getExtraBoxes());
       const targetYaw = Math.atan2(_toFollowTarget.x, _toFollowTarget.z);
       let diff = targetYaw - npcGroup.rotation.y;
