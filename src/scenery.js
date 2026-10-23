@@ -59,6 +59,26 @@ const KACHCHA_BOXES = [ // local footprints (x0,x1,z0,z1,h) — must match the B
   [7.2, 7.5, -6.5, -3.25, 1.2], [7.2, 7.5, -3.25, 0.0, 1.2], [7.2, 7.5, 0.0, 3.25, 1.2], [7.2, 7.5, 3.25, 6.5, 1.2], // east wall
   [-7.5, -4.4, 6.2, 6.5, 1.2], [-4.4, -1.3, 6.2, 6.5, 1.2], [1.3, 4.4, 6.2, 6.5, 1.2], [4.4, 7.5, 6.2, 6.5, 1.2], // south wall, gate gap between
 ];
+
+/** Garden plants along the abadi house fronts (creepers on the walls, tulsi + marigold by the steps, banana at row ends),
+ *  for buildGardenPlants in vegetation.js. Positions are deterministic from PLACEMENTS. kinds: 0 marigold 1 banana 2 tulsi 4 creeper. */
+export function abadiGardenPlants() {
+  const out = [];
+  PLACEMENTS.forEach((p, i) => {
+    const L = ABADI_BOXES[p.v].L;
+    const c = Math.round(Math.cos((p.q * Math.PI) / 2)), sn = Math.round(Math.sin((p.q * Math.PI) / 2));
+    // local (x along the row, z toward the lane) -> world, same convention as worldBox
+    const put = (lx, lz, kind, scale = 1) => out.push({ x: p.x + lx * c + lz * sn, z: p.z - lx * sn + lz * c, kind, scale });
+    const plan = [[-L / 2 + 1.2, 4, 1.15], [-L / 4 + 0.6, i % 2 ? 2 : 0, 1], [L / 12, 4, 1.0], [L / 4 + 0.9, i % 2 ? 0 : 2, 1], [L / 2 - 1.5, 4, 1.2]];
+    plan.forEach(([along, kind, scale], j) => {
+      const lx = along + ((i * 7 + j * 3) % 5) * 0.12;
+      put(lx, kind === 4 ? 3.45 : 3.8, kind, scale); // creepers hug the wall, pots sit by the step
+    });
+    if (i % 2 === 0) put(L / 2 + 1.6, 2.2, 1, 0.9); // banana clump just beyond the row end
+  });
+  return out;
+}
+
 const NEAR_DIST = 38; // rows nearer than this draw the detailed Blender model, farther the low-poly proxy
 const FAR_DIST = 170; // beyond this (fog) rows aren't drawn at all
 

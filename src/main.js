@@ -21,7 +21,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove } from './movement.js';
 import { AudioEngine } from './audio.js';
-import { buildBackgroundHouses } from './scenery.js';
+import { buildBackgroundHouses, abadiGardenPlants } from './scenery.js';
 import {
   buildTemple,
   buildFlowerStall,
@@ -1183,6 +1183,8 @@ async function main() {
       { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z + 8, radius: 1.5, count: 4 },
     ];
     scene.add(buildVegetation(vegAnchors, scrubAnchors));
+    // Abadi house fronts: creepers, tulsi, marigold, banana (own mesh, only drawn when the abadi is in view).
+    scene.add(buildGardenPlants(abadiGardenPlants()));
 
     // Step E — "a few flowering plants (marigold, bougainvillea on walls)".
     // Marigold at the temple and its own flower stall (the single most obvious
