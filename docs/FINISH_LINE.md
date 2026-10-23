@@ -27,8 +27,8 @@
 - [ ] Zero console errors in a full playthrough; world validator and regression check pass
 ## Side jobs and free roam
 - [ ] Main story beats from docs/MISSIONS_PLAN.md section 1 (school-out, dharam kanta, narrow gate, bell flag-down, mango catch, rooftop neighbours) all present and playable with real input
-- [ ] After credits, free roam unlocks; title screen offers "Continue roaming"
-- [ ] Notebook map in the pause menu shows discovered places and side jobs
+- [x] After credits, free roam unlocks; title screen offers "Continue roaming" — docs/shots/roam-proof-2026-10-23/title_continue_roaming.png (real save with storyDone, page reloaded, button reads Continue roaming / घूमते रहो)
+- [x] Notebook map in the pause menu shows discovered places and side jobs — docs/shots/roam-proof-2026-10-23/notebook_map.png (places inked by really walking to them, gilli-danda side-job star, you-are-here cross; map now covers the whole village incl. highway/mandi)
 - [ ] All 10 side jobs in docs/MISSIONS_PLAN.md section 3 playable start to end with real input, each with its own NPC, dialogue and reward
 - [ ] Side jobs are discovered diegetically (postcards, peepal posters, sound), never shown as a quest list
 - [ ] Pocket money earned from side jobs can be spent at the banta shop, kulfiwala and chaat thela

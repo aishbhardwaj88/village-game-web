@@ -26,6 +26,30 @@ export const PLACES = [
   { id: 'chaat', en: 'Chaat thela', hi: 'चाट का ठेला', x: -63, z: 50.5, kind: 'shop', radius: 12 },
   { id: 'eastgali', en: 'East gali', hi: 'पूरब की गली', x: -5, z: 90, kind: 'lane', radius: 26 },
   { id: 'westgali', en: 'West gali', hi: 'पश्चिम की गली', x: -84, z: 72, kind: 'lane', radius: 26 },
+  // Streamed MAP.md sites (positions from src/farmSites.js / src/main.js); they ink in when the player walks near.
+  { id: 'jalebi', en: 'Jalebi stall', hi: 'जलेबी', x: -104, z: 4, kind: 'shop', radius: 12 },
+  { id: 'dairy', en: 'Dudh dairy', hi: 'दूध डेयरी', x: -112, z: 18, kind: 'shop', radius: 14 },
+  { id: 'khalihan', en: 'Khalihan', hi: 'खलिहान', x: -78, z: -5, kind: 'field', radius: 18 },
+  { id: 'tubewell', en: 'Tubewell', hi: 'ट्यूबवेल', x: -40, z: -8, kind: 'bridge', radius: 14 },
+  { id: 'gaushala', en: 'Gaushala', hi: 'गौशाला', x: -125, z: -35, kind: 'house', radius: 20 },
+  { id: 'pond', en: 'Pond', hi: 'तालाब', x: -132, z: 70, kind: 'water', radius: 20 },
+  { id: 'anganwadi', en: 'Anganwadi', hi: 'आँगनवाड़ी', x: -104, z: 106, kind: 'school', radius: 16 },
+  { id: 'mela', en: 'Mela ground', hi: 'मेला मैदान', x: -135, z: 150, kind: 'field', radius: 26 },
+  { id: 'gurudwara', en: 'Gurudwara', hi: 'गुरुद्वारा', x: -60, z: 175, kind: 'temple', radius: 18 },
+  { id: 'cane', en: 'Sugarcane', hi: 'गन्ना', x: 20, z: 150, kind: 'field', radius: 28 },
+  { id: 'tvhouse', en: 'TV house', hi: 'टीवी वाला घर', x: 70, z: 12, kind: 'house', radius: 14 },
+  { id: 'health', en: 'Health centre', hi: 'स्वास्थ्य केंद्र', x: 96, z: 30, kind: 'house', radius: 16 },
+  { id: 'chemist', en: 'Chemist', hi: 'दवाई की दुकान', x: 96, z: 60, kind: 'shop', radius: 12 },
+  { id: 'manihari', en: 'Manihari', hi: 'मनिहारी', x: 90, z: 78, kind: 'shop', radius: 10 },
+  { id: 'sabzi', en: 'Sabzi rehris', hi: 'सब्ज़ी के ठेले', x: 88, z: 92, kind: 'shop', radius: 12 },
+  { id: 'johad', en: 'Johad', hi: 'जोहड़', x: 78, z: 105, kind: 'water', radius: 20 },
+  { id: 'masjid', en: 'Masjid', hi: 'मस्जिद', x: 100, z: 135, kind: 'temple', radius: 18 },
+  { id: 'jain', en: 'Jain mandir', hi: 'जैन मंदिर', x: 130, z: 160, kind: 'temple', radius: 18 },
+  { id: 'haveli', en: 'Old haveli', hi: 'पुरानी हवेली', x: 150, z: -30, kind: 'house', radius: 24 },
+  { id: 'gurukul', en: 'Gurukul college', hi: 'गुरुकुल कॉलेज', x: 160, z: 85, kind: 'school', radius: 24 },
+  { id: 'maidan', en: 'Khel maidan', hi: 'खेल मैदान', x: 165, z: 135, kind: 'field', radius: 26 },
+  { id: 'highway', en: 'Highway and bus adda', hi: 'हाईवे और बस अड्डा', x: 205, z: 40, kind: 'bazaar', radius: 30 },
+  { id: 'mandi', en: 'Mandi', hi: 'मंडी', x: 226, z: 60, kind: 'bazaar', radius: 26 },
 ];
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
@@ -37,7 +61,7 @@ const LANES = [
   [[-84, 21], [-84, 104]], [[-84, 21], [-61, 21]], // west gali
   [[-100, 140], [-38, 140]], // south gali
 ];
-const BOUNDS = { x0: -125, x1: 62, z0: -45, z1: 175 };
+const BOUNDS = { x0: -145, x1: 245, z0: -55, z1: 190 };
 
 const extraMarkers = []; // side jobs register their map star here: { id, en, hi, x, z }
 export function registerJobMarker(marker) {
@@ -93,12 +117,12 @@ export function createFreeRoam({ quest, getPlayerPos, onChange }) {
   }
 
   // ------------------------------------------------------------------ the notebook page
-  const W = 600, H = 700;
+  const W = 960, H = 640;
   canvas.width = W;
   canvas.height = H;
   const PAD = 46;
   const sx = (x) => PAD + ((x - BOUNDS.x0) / (BOUNDS.x1 - BOUNDS.x0)) * (W - PAD * 2);
-  const sy = (z) => 118 + ((z - BOUNDS.z0) / (BOUNDS.z1 - BOUNDS.z0)) * (H - 118 - 70);
+  const sy = (z) => 100 + ((z - BOUNDS.z0) / (BOUNDS.z1 - BOUNDS.z0)) * (H - 100 - 56);
 
   function pencil(ctx, pts, colour, width) {
     ctx.strokeStyle = colour;
@@ -153,6 +177,10 @@ export function createFreeRoam({ quest, getPlayerPos, onChange }) {
       case 'field':
         for (let i = -2; i <= 2; i++) pencil(ctx, [[x - 18, y + i * 5], [x + 18, y + i * 5 - 2]], '#b58a2c', 2);
         break;
+      case 'water':
+        pencil(ctx, [[x - 14, y - 3], [x - 7, y - 6], [x, y - 3], [x + 7, y - 6], [x + 14, y - 3]], '#2d7f8d', 2);
+        pencil(ctx, [[x - 14, y + 4], [x - 7, y + 1], [x, y + 4], [x + 7, y + 1], [x + 14, y + 4]], '#2d7f8d', 2);
+        break;
       case 'lane':
         pencil(ctx, [[x - 12, y + 6], [x - 3, y - 2], [x + 4, y + 2], [x + 12, y - 6]], '#8a6a4a', 2);
         break;
@@ -178,10 +206,10 @@ export function createFreeRoam({ quest, getPlayerPos, onChange }) {
   function label(ctx, en, hi, x, y) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#1d2a55';
-    ctx.font = '600 15px "Segoe Print","Bradley Hand","Comic Sans MS","Noto Sans",cursive,sans-serif';
+    ctx.font = `600 15px "Segoe Print","Bradley Hand","Comic Sans MS","Noto Sans",cursive,sans-serif`;
     ctx.fillText(en, x, y);
     ctx.fillStyle = '#4a5a8a';
-    ctx.font = '600 11px "Noto Sans Devanagari",sans-serif';
+    ctx.font = `600 11px "Noto Sans Devanagari",sans-serif`;
     ctx.fillText(hi, x, y + 13);
   }
 
@@ -215,13 +243,19 @@ export function createFreeRoam({ quest, getPlayerPos, onChange }) {
     for (const lane of LANES) pencil(ctx, lane.map(([x, z]) => [sx(x), sy(z)]), 'rgba(110,90,70,0.32)', 5);
     // the canal, drawn as a wavy blue line in the north
     const wave = [];
-    for (let x = -28; x <= 0; x += 2) wave.push([sx(x), sy(33) + Math.sin(x * 0.9) * 1.5]);
+    for (let x = -50; x <= 34; x += 2) wave.push([sx(x), sy(33) + Math.sin(x * 0.9) * 1.5]);
     pencil(ctx, wave, 'rgba(45,127,141,0.8)', 3);
     // discovered places
+    const labelled = []; // label anchors already inked; a label that would overprint one of them is skipped (icon only)
+    const clear = (x, y) => labelled.every(([lx, ly]) => Math.abs(lx - x) > 96 || Math.abs(ly - y) > 40);
     for (const p of PLACES) {
       if (!isDiscovered(p.id)) continue;
-      icon(ctx, p.kind, sx(p.x), sy(p.z));
-      label(ctx, p.en, p.hi, sx(p.x), sy(p.z) + 26);
+      const x = sx(p.x), y = sy(p.z);
+      icon(ctx, p.kind, x, y);
+      if (clear(x, y)) {
+        label(ctx, p.en, p.hi, x, y + 26);
+        labelled.push([x, y]);
+      }
     }
     // side-job stars
     for (const m of extraMarkers) {
