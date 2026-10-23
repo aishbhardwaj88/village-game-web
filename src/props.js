@@ -214,7 +214,7 @@ export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
   // a far lane's lamps instead of one map-wide bounding sphere always passing).
   const group = new THREE.Group();
   group.name = 'street_lamps';
-  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0.15 });
+  const mat = new THREE.MeshStandardMaterial({ name: 'street_lamp', vertexColors: true, roughness: 0.8, metalness: 0.15 });
   let geos = [];
   const POLE = 0x7d7a72;
   const HEAD = 0xb9b4a4;
@@ -222,6 +222,7 @@ export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
   let n = 0;
   for (const { from, to, width } of segments) {
     geos = [];
+    const lampBoxes = [];
     const dx = to.x - from.x;
     const dz = to.z - from.z;
     const len = Math.hypot(dx, dz);
@@ -239,6 +240,7 @@ export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
       const z = from.z + uz * t + nz * off * side;
       const rotY = Math.atan2(-nx * side, -nz * side); // arm reaches back over the lane
       const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(x, 0, z);
+      lampBoxes.push({ minX: x - 0.16, maxX: x + 0.16, minZ: z - 0.16, maxZ: z + 0.16 });
       const add = (g, local, color) => {
         g.applyMatrix4(new THREE.Matrix4().setPosition(local[0], local[1], local[2]));
         g.applyMatrix4(m);
@@ -253,6 +255,7 @@ export function createStreetLamps(segments, { everyMetres = 22 } = {}) {
     }
     if (!geos.length) continue;
     const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
+    mesh.userData.colliderBoxes = lampBoxes; // pole bases are solid (A0)
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     group.add(mesh);

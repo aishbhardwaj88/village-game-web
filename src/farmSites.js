@@ -44,7 +44,7 @@ function flatBlob(radius, seed, y, color) {
   return bake(g, at(0, y, 0), color);
 }
 
-const vcMat = (opts = {}) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, ...opts });
+const vcMat = (opts = {}) => new THREE.MeshStandardMaterial({ name: 'site_props', vertexColors: true, roughness: 0.9, ...opts });
 
 /** Village pond: muddy bank ring, murky green water, lotus pads and a few pink lotus. */
 export function createPond(position) {
@@ -165,6 +165,8 @@ export function createTubewell(position) {
   charpaiGeos(geos, -0.5, 2.7, 0.15);
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.name = 'tubewell';
+  // Kothri, hauz, motor and the charpai in its shade are solid (A0).
+  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 2.9, 2.5], [3.9, 0.4, 3.5, 3.5], [-2.1, 0.4, 0.6, 0.6], [-0.5, 2.7, 1.9, 1.0, 0.15]]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -388,6 +390,17 @@ export function createDudhDairy(position) {
 /** Local [cx, cz, w, d] footprints -> world AABBs (sites are unrotated), so streamed buildings block the player (zoneManager rebuilds STATIC_COLLIDERS on every zone change). */
 function solidBoxes(position, solids) {
   return solids.map(([cx, cz, w, d]) => ({ minX: position.x + cx - w / 2, maxX: position.x + cx + w / 2, minZ: position.z + cz - d / 2, maxZ: position.z + cz + d / 2 }));
+}
+
+/** World AABBs for local oriented rectangles [cx, cz, w, d, rot] inside a site group rotated by ry about its position (A0: charpais, pumps, poles block movement). */
+function orientedSolids(position, ry, rects) {
+  const cg = Math.cos(ry), sg = Math.sin(ry);
+  return rects.map(([cx, cz, w, d, rot = 0]) => {
+    const wx = position.x + cx * cg + cz * sg, wz = position.z - cx * sg + cz * cg;
+    const a = Math.abs(Math.cos(rot + ry)), b = Math.abs(Math.sin(rot + ry));
+    const hx = (a * w + b * d) / 2, hz = (b * w + a * d) / 2;
+    return { minX: wx - hx, maxX: wx + hx, minZ: wz - hz, maxZ: wz + hz };
+  });
 }
 
 function finishSite(name, geos, position, opts = {}) {
@@ -614,6 +627,7 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   const cloth = [[-1.7, 0xc4372f, 0.35, 1.3], [-1.05, 0xf0e6cf, 0.3, 0.9], [-0.45, 0x2f7d5b, 0.4, 1.2], [0.2, 0xd8a22a, 0.3, 1.0], [0.8, 0x3a5aa6, 0.4, 1.3], [1.45, 0xe08aa0, 0.3, 0.8]];
   cloth.forEach(([x, c, w, len], i) => geos.push(bake(new THREE.BoxGeometry(w, len, 0.015), R(x, h - 0.12 - len / 2, z0, (i % 2 ? 0.08 : -0.06)), c)));
   const g = finishSite(name, geos, position);
+  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 1.9, 1.0], [-2.2, -1.4, 0.15, 0.15], [2.2, -1.4, 0.15, 0.15]]); // charpai + the two clothesline poles
   g.rotation.y = ry;
   return g;
 }
@@ -651,6 +665,7 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   geos.push(bake(new THREE.BoxGeometry(0.8, 0.12, 0.5), R(1.5, 0.06, -0.5, 0.2), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.55, 0.14, -0.5, 0.2), 0xd8c25a));
   const g = finishSite(name, geos, position);
+  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 0.5, 0.5], [-1.5, -0.2, 0.9, 0.45]]); // pump post + matka stand
   g.rotation.y = ry;
   return g;
 }
@@ -846,7 +861,9 @@ export function createMandi(position) {
   truck(geos, 3, -2, 0xc4372f, 0.0);
   truck(geos, 9, 48, 0x3f7a5a, Math.PI);
   truck(geos, -4, 40, 0xd9a43a, 0.12);
-  return finishSite('mandi', geos, position, { roughness: 0.92 });
+  const mandi = finishSite('mandi', geos, position, { roughness: 0.92 });
+  mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, [0, 1, 2, 3].map((i) => [1.5 + i * 2.1, 25, 1.9, 1.0, Math.PI / 2 + (i % 2 ? 0.05 : -0.04)])); // dhaba charpais
+  return mandi;
 }
 
 /** Kachcha canal-bank road (MAP.md: "kachcha bank roads on both sides"): packed-earth track on the field side of the nahar with twin tyre ruts, a grassy verge, cart-wheel dung patches and marker pegs. Visual only, no colliders. */
