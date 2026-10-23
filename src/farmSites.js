@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
+import { buildClothesline } from './laundry.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -653,10 +654,15 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   // clothesline: two poles, a taut cord, hanging cloth
   const h = 2.1, span = 4.4, z0 = -1.4;
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.05, h, 6), R(sx * span / 2, h / 2, z0), 0x5a3f27));
-  geos.push(bake(new THREE.BoxGeometry(span, 0.012, 0.012), R(0, h - 0.1, z0), 0x4a4036));
-  const cloth = [[-1.7, 0xc4372f, 0.35, 1.3], [-1.05, 0xf0e6cf, 0.3, 0.9], [-0.45, 0x2f7d5b, 0.4, 1.2], [0.2, 0xd8a22a, 0.3, 1.0], [0.8, 0x3a5aa6, 0.4, 1.3], [1.45, 0xe08aa0, 0.3, 0.8]];
-  cloth.forEach(([x, c, w, len], i) => geos.push(bake(new THREE.BoxGeometry(w, len, 0.015), R(x, h - 0.12 - len / 2, z0, (i % 2 ? 0.08 : -0.06)), c)));
+  // sagging rope in short segments, real garments over it (src/laundry.js), pegs on the cloth
+  const line = buildClothesline({ span, ropeY: h - 0.1, z0, seed: 1 + Math.abs(Math.round(position.x * 3 + position.z * 7)) % 997 });
+  for (const s of line.rope) {
+    const len = Math.hypot(s.x1 - s.x0, s.y1 - s.y0);
+    geos.push(bake(new THREE.CylinderGeometry(0.007, 0.007, len, 4), new THREE.Matrix4().makeRotationZ(Math.atan2(s.y1 - s.y0, s.x1 - s.x0) - Math.PI / 2).setPosition((s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2, z0), 0x4a4036));
+  }
+  for (const pg of line.pegs) geos.push(bake(new THREE.BoxGeometry(0.028, 0.085, 0.03), new THREE.Matrix4().makeRotationZ(pg.r).setPosition(pg.x, pg.y, pg.z), pg.c));
   const g = finishSite(name, geos, position);
+  g.add(line.cloth);
   g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 1.9, 1.0], [-2.2, -1.4, 0.15, 0.15], [2.2, -1.4, 0.15, 0.15]]); // charpai + the two clothesline poles
   g.rotation.y = ry;
   return g;

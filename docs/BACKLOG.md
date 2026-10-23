@@ -163,6 +163,7 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 - [ ] Ludo: build properly as a printed cloth board with real pieces in a different spot, or remove it
 
 ### A1h. Laundry lines (art director FAIL 2026-10-23)
+  - PROGRESS 2026-10-23 (cycle 38bw, not ticked): all 5 lane laundry lines now carry real garments (src/laundry.js): sari, dhoti, kurta, salwar, dupatta, shirt, trousers, child's frock, towel, bedsheet, gamcha; folded over a sagging rope with a shorter back layer, wrinkles, uneven hems, hem borders, checks/stripes/floral/block prints, 2-3 pegs each; breeze sway in the vertex shader (hem moves more, each garment out of phase, gusts), one extra draw call per line, no shadow cast. Proof docs/shots/laundry-2026-10-23/s1_a.png, w1_a.png, e1_back.png; sway proof sway_t0.png vs sway_t1.png. Fabric is canvas-generated (weave normal map), NOT CC0 photo textures; hero-zone house clothesline (src/village.js) still old boxes (zone at 146/150 draw calls). Breeze consistency report not written.
 - [ ] Rebuild drying clothes as real garments with distinct silhouettes: sari, dhoti, kurta, salwar, dupatta, shirt, trousers, child's clothes, towel, bedsheet, gamcha
 - [ ] CC0 fabric textures with weave, prints, sari borders, checks, sun-faded colour; no solid-colour fills
 - [ ] Drape like cloth: folded over the line, sagging under weight, wrinkles, uneven hems; the line itself sags between supports
