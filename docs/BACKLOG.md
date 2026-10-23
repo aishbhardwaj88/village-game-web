@@ -89,6 +89,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
   - PROGRESS 2026-10-23 (cycle 38au, not ticked): cattle + dog resting in three abadi lanes (lane_cattle_e1/w1/s1, src/main.js), proof docs/shots/lanecattle-2026-10-23/s1_d.png, w1_d.png
   - PROGRESS 2026-10-23 (cycle 38aw, not ticked): laundry corners (charpai with quilt and drying red chillies, steel tub, clothesline of saris and dupattas) in three abadi lanes (createLaneLaundry, src/farmSites.js; zones lane_laundry_e1/w1/s1), proof docs/shots/laundry-2026-10-23/e1_a.png (w1/s1 placed, not cleanly framed)
   - PROGRESS 2026-10-23 (cycle 38ax, not ticked): two buffalo on the pond's muddy bank (zone pond_buffalo, src/main.js, reuses createCattleHerd, 1 draw call, streamed, visual only), proof docs/shots/pondbuffalo-2026-10-23/pond_a.png, pond_c.png
+  - PROGRESS 2026-10-23 (cycle 38ay, not ticked): water corners (hand pump, matkas, ghadas, washing stone) in three abadi lanes (createLaneWaterCorner, zones lane_water_e1/w1/s1), proof docs/shots/lanewater-2026-10-23c/w1_d.png
 - [ ] Canal and bridge
   - PROGRESS 2026-10-23 (cycle 38aj, not ticked): bank-side greenery along both canal banks (bougainvillea, tulsi, banana; one garden-plant draw call, src/canal.js), proof docs/shots/canalgreen-2026-10-23/canal_a.png, canal_b.png
 

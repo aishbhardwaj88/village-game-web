@@ -578,6 +578,43 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   return g;
 }
 
+/** Lane water corner: a cast-iron hand pump on a cement platform with a drain apron, a stack of brass-and-clay matkas, two steel ghadas, a bucket and a washing slab. Visual only. */
+export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
+  const geos = [];
+  const R = (x, y, z, r = 0) => at(x, y, z, r);
+  geos.push(bake(new THREE.BoxGeometry(1.7, 0.18, 1.7), R(0, 0.09, 0), 0xb4aea0)); // cement platform
+  geos.push(bake(new THREE.BoxGeometry(1.9, 0.02, 0.9), R(0, 0.19, 1.25), 0x6d7a78)); // damp apron
+  // pump: base, body, spout, handle with grip
+  geos.push(bake(new THREE.CylinderGeometry(0.17, 0.2, 0.3, 10), R(0, 0.33, 0), 0x2f3a3d));
+  geos.push(bake(new THREE.CylinderGeometry(0.07, 0.09, 0.8, 8), R(0, 0.85, 0), 0x2f3a3d));
+  geos.push(bake(new THREE.CylinderGeometry(0.16, 0.16, 0.2, 10), R(0, 1.3, 0), 0x2f3a3d));
+  geos.push(bake(new THREE.BoxGeometry(0.06, 0.06, 0.4), R(0, 0.95, 0.28), 0x2f3a3d));
+  geos.push(bake(new THREE.BoxGeometry(0.05, 0.05, 1.0), new THREE.Matrix4().makeRotationX(0.5).setPosition(0, 1.5, -0.3), 0x2f3a3d));
+  geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 6), new THREE.Matrix4().makeRotationX(0.5).setPosition(0, 1.4, -0.7), 0x7a2a22));
+  // steel bucket under the spout, with a little water in it
+  geos.push(bake(new THREE.CylinderGeometry(0.2, 0.15, 0.3, 14), R(0, 0.34, 0.58), 0xb8bcc0));
+  geos.push(bake(new THREE.CylinderGeometry(0.18, 0.18, 0.01, 14), R(0, 0.47, 0.58), 0x6f8f98));
+  // matkas: clay pots, two stacked on a wooden stand, one beside, plus two steel ghadas
+  geos.push(bake(new THREE.BoxGeometry(0.9, 0.05, 0.45), R(-1.5, 0.3, -0.2), 0x6b4a2c));
+  for (const lx of [-0.3, 0.3]) geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 5), R(-1.5 + lx, 0.15, -0.2), 0x5a3f27));
+  for (const [x, z] of [[-1.75, -0.2], [-1.3, -0.2]]) {
+    geos.push(bake(new THREE.SphereGeometry(0.22, 12, 8), R(x, 0.56, z), 0xa8552f));
+    geos.push(bake(new THREE.CylinderGeometry(0.1, 0.14, 0.1, 10), R(x, 0.79, z), 0xa8552f));
+  }
+  geos.push(bake(new THREE.SphereGeometry(0.2, 12, 8), R(-1.0, 0.2, 0.7), 0x9b4a28));
+  geos.push(bake(new THREE.CylinderGeometry(0.09, 0.13, 0.1, 10), R(-1.0, 0.4, 0.7), 0x9b4a28));
+  for (const [x, z] of [[1.25, 0.4], [1.6, 0.9]]) {
+    geos.push(bake(new THREE.SphereGeometry(0.21, 12, 8), R(x, 0.21, z), 0xb8bcc0));
+    geos.push(bake(new THREE.CylinderGeometry(0.1, 0.14, 0.12, 10), R(x, 0.43, z), 0xb8bcc0));
+  }
+  // flat washing stone with a bar of soap
+  geos.push(bake(new THREE.BoxGeometry(0.8, 0.12, 0.5), R(1.5, 0.06, -0.5, 0.2), 0x8d8a82));
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.55, 0.14, -0.5, 0.2), 0xd8c25a));
+  const g = finishSite(name, geos, position);
+  g.rotation.y = ry;
+  return g;
+}
+
 /** Mela + wedding ground (SW outskirts): trampled open field, shamiana tent on poles, string-light mast, a ferris-wheel-free swing frame. */
 export function createMelaGround(position) {
   const geos = [];

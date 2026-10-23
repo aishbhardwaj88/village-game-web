@@ -105,7 +105,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createLaneGames, createLaneLaundry } from './farmSites.js';
+import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createLaneGames, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1402,6 +1402,9 @@ async function main() {
     }
     for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 75.7, 0.1], ['lane_laundry_w1', -82.8, 74, Math.PI / 2 + 0.15], ['lane_laundry_s1', -58, 141.2, -0.1]]) {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
+    }
+    for (const [id, x, z, ry] of [['lane_water_e1', 16, 75.7, 0.1], ['lane_water_w1', -82.8, 90, Math.PI / 2 + 0.15], ['lane_water_s1', -44, 141.2, -0.1]]) {
+      zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
     for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7]]) {
