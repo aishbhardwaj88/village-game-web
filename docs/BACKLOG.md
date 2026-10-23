@@ -81,6 +81,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
   - PROGRESS 2026-10-23 (cycle 38y, not ticked): open nali drains with pale cover slabs beside one kerb of each of the 5 abadi lanes (buildDrainSegments, src/paths.js, merged into the lane draw call), proof docs/shots/drains-2026-10-23T01-22-11-711Z/abadi_e1.png and abadi_w1.png. Temple/bazaar lanes and field tracks (kachcha, no kerbs) still to do.
   - PROGRESS 2026-10-23 (cycle 38z, not ticked): nali drains with cover slabs now also on the temple lane and the three bazaar approach legs (same merged lane draw call), proof docs/shots/drains2-2026-10-23T01-26-41-845Z/temple_lane.png (bazaar legs built but not framed in that shot). Field tracks stay kachcha, no drains.
 - [ ] Canal and bridge
+  - PROGRESS 2026-10-23 (cycle 38aj, not ticked): bank-side greenery along both canal banks (bougainvillea, tulsi, banana; one garden-plant draw call, src/canal.js), proof docs/shots/canalgreen-2026-10-23/canal_a.png, canal_b.png
 
 ### A5. Side jobs and free roam
 - [ ] The checklist at the bottom of `docs/MISSIONS_PLAN.md`, verbatim

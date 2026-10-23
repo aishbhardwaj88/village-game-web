@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { texturedBox, texturedThickBox } from './materials.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 
 /**
  * The nahar (canal) — reference-from-unity/MAP.md: "Runs east-west across the
@@ -210,5 +211,21 @@ export function buildCanal() {
   // material (water's own MeshStandardMaterial, concrete's own tiled set) so this
   // whole feature costs 3 draw calls total, not 7+.
   mergeGroupByMaterial(group);
+
+  // Bank-side greenery just outside each grassy strip: sparse bougainvillea, tulsi and
+  // banana clumps, kept clear of the bridge deck and the pulia. One draw call.
+  const plants = [];
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (const edge of [-1, 1]) {
+    for (let x = CANAL_MIN_X + 1.5; x < CANAL_MAX_X - 1; x += 2.2 + rnd() * 2.4) {
+      if (Math.abs(x - BRIDGE_X) < BRIDGE_HALF_WIDTH + 1.2 || Math.abs(x - PULIA_X) < PULIA_HALF_WIDTH + 1.2) continue;
+      const r = rnd();
+      const kind = r < 0.4 ? GARDEN_KIND.TULSI : r < 0.75 ? GARDEN_KIND.BOUGAINVILLEA : GARDEN_KIND.BANANA;
+      plants.push({ x, z: CANAL_Z + edge * (CANAL_HALF_WIDTH + BANK_WIDTH + 0.5 + rnd() * 0.6), y: 0.35, kind, scale: kind === GARDEN_KIND.BANANA ? 0.8 : 0.9 + rnd() * 0.3 });
+    }
+  }
+  const greens = buildGardenPlants(plants);
+  if (greens) { greens.name = 'canal_bank_plants'; group.add(greens); }
   return group;
 }
