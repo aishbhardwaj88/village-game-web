@@ -64,6 +64,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 - [ ] Build in local coordinates and place by transform; merge per unit, never across units into one world mesh
 - [ ] Waypoints and NPC routes reference units rather than raw world coordinates where possible
 - [ ] AUDIT before tomorrow: write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
+  - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
 ### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
 - [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check
