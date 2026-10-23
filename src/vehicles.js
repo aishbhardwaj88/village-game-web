@@ -127,14 +127,17 @@ function createRoadWheel({ radius, width, ribbed = false }) {
   const roll = new THREE.Group();
   orient.add(roll);
 
+  // Tyre + rim are ONE geometry with baked vertex colours on the shared matte paint material
+  // (2 draw calls per wheel -> 1; the rim loses its metallic sheen, invisible at play distance).
   const tireSegments = ribbed ? 14 : 18;
-  const tire = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, tireSegments), mat(V.tire, 0.95));
+  const tireGeo = new THREE.CylinderGeometry(radius, radius, width, tireSegments);
+  bakeColor(tireGeo, V.tire);
+  const rimRadius = radius * (ribbed ? 0.55 : 0.4);
+  const rimGeo = new THREE.CylinderGeometry(rimRadius, rimRadius, width * 1.02, 10);
+  bakeColor(rimGeo, V.rim);
+  const tire = new THREE.Mesh(mergeGeometries([tireGeo, rimGeo]), paint(0.9, 0));
   tire.castShadow = true;
   roll.add(tire);
-
-  const rimRadius = radius * (ribbed ? 0.55 : 0.4);
-  const rim = new THREE.Mesh(new THREE.CylinderGeometry(rimRadius, rimRadius, width * 1.02, 10), mat(V.rim, 0.5, 0.6));
-  roll.add(rim);
 
   steer.userData.roll = roll;
   return steer;
