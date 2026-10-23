@@ -1,3 +1,9 @@
+**2026-10-23 (cycle 38cd):** Game change (small, invisible): both kachcha homesteads now have solid yard props - charpai, chulha, tulsi chabutra, matka stand, manger, haystack (KACHCHA_YARD_SOLIDS + hidden collider mesh in src/scenery.js, follows both copies). Validator check 5 now also samples hb_plaster/hb_wood/hb_props so these colliders are proven backed by real geometry (extension, not a loosening). Build 16/16, regression 22/22. No screenshot (invisible), no box ticked.
+COLLIDER AUDIT remaining (A0): hero-house indoor charpai (interactive), sabzi/jalebi cart legs, laundry ropes (overhead), pond/johad edges (walkable by design). No standalone wells exist in the code.
+Next: NPC door-routing for building entry (A0); register animal/follow routines for check 9; far-east road decision (art director).
+
+---
+
 **2026-10-23 (cycle 38cc2):** Game change: abadi rooftops now carry water tanks on plinths, TV antennas, dishes, solar panels and brick stacks (src/rooftops.js; sites abadiRoofSites in src/scenery.js; zone-streamed 30 m radius so hero zone stays 150/150). Build 16/16. Proof docs/shots/rooftops-2026-10-23/. Gaps: abadi only; may sit near Blender roof tanks; tanks read dark; no wall pipes/cables.
 Next: rooftop fittings on bazaar/haveli/school; halwai flame and steam; far-east road decision (art director).
 

@@ -62,6 +62,15 @@ const KACHCHA_BOXES = [ // local footprints (x0,x1,z0,z1,h) — must match the B
   [-7.5, -4.4, 6.2, 6.5, 1.2], [-4.4, -1.3, 6.2, 6.5, 1.2], [1.3, 4.4, 6.2, 6.5, 1.2], [4.4, 7.5, 6.2, 6.5, 1.2], // south wall, gate gap between
 ];
 
+const KACHCHA_YARD_SOLIDS = [ // local footprints (x0,x1,z0,z1) of yard props, from tools/blender/build_kachcha.py yard_props()
+  [-4.2, -2.2, 2.6, 3.8], // charpai
+  [1.38, 2.22, 1.65, 2.35], // chulha
+  [3.8, 4.8, -0.5, 0.5], // tulsi chabutra
+  [-6.95, -6.0, 1.0, 3.4], // matka stand
+  [3.0, 6.2, -5.1, -4.45], // manger
+  [3.9, 6.5, 1.9, 4.5], // haystack (r 1.35 about 5.2, 3.2)
+];
+
 /** Garden plants along the abadi house fronts (creepers on the walls, tulsi + marigold by the steps, banana at row ends),
  *  for buildGardenPlants in vegetation.js. Positions are deterministic from PLACEMENTS. kinds: 0 marigold 1 banana 2 tulsi 4 creeper. */
 export function abadiGardenPlants() {
@@ -194,6 +203,16 @@ export function buildBackgroundHouses(scene, kit) {
   }
   mergeGroupByMaterial(old);
   group.add(old);
+  // Yard props of the Blender homestead (charpai, chulha, tulsi chabutra, matka stand, manger, haystack) are solid (A0).
+  const yardBoxes = [];
+  for (const K of [{ ...KACHCHA, q: 0 }, KACHCHA2]) {
+    for (const [x0, x1, z0, z1] of KACHCHA_YARD_SOLIDS) { const w = worldBox(K, { x0, x1, z0, z1, h: 1 }); yardBoxes.push({ minX: w.minX, maxX: w.maxX, minZ: w.minZ, maxZ: w.maxZ }); }
+  }
+  const yardSolids = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+  yardSolids.name = 'kachcha_yard_solids';
+  yardSolids.visible = false;
+  yardSolids.userData.colliderBoxes = yardBoxes;
+  group.add(yardSolids);
 
   // Dirt lanes between the rows (same 'lane' strip material as the hero lanes -> merges into its draw call).
   const lanes = new THREE.Group();
