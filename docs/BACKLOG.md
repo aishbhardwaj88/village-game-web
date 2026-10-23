@@ -72,6 +72,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Background houses and boundary walls
   - PROGRESS 2026-10-23 (cycle 38x, not ticked): village boundary walls on the abadi's west, south and east edges (createBoundaryWall, src/farmSites.js), proof docs/shots/edgewall-2026-10-23b/west_wall.png and south_wall.png; visual only, no colliders; field-side walls and the north edge not done.
   - PROGRESS 2026-10-23 (cycle 38ad, not ticked): edge walls extended: south-centre x -38..0 (z 157), west lower half z 100..157 (gap at lane S1), east lower half z 100..135, all zone-streamed, proof docs/shots/edgewall2-2026-10-23/south_mid.png, west_low.png (east_low.png not inspected). Visual only; field-side and north edge not done.
+  - PROGRESS 2026-10-23 (cycle 38ae, not ticked): walls added on the east upper (z 21..58), east far-south (z 135..157) and west far-north (z 21..34) edges, zone-streamed, proof docs/shots/edgewall3-2026-10-23/edge_wall_e0.png, edge_wall_e3.png, edge_wall_w0.png. Visual only. South x 0..46 left open on purpose (sugarcane belt runs past z 157); north edge faces the canal.
 - [ ] Lanes, kerbs and drains across the full map
   - PROGRESS 2026-10-23 (cycle 38y, not ticked): open nali drains with pale cover slabs beside one kerb of each of the 5 abadi lanes (buildDrainSegments, src/paths.js, merged into the lane draw call), proof docs/shots/drains-2026-10-23T01-22-11-711Z/abadi_e1.png and abadi_w1.png. Temple/bazaar lanes and field tracks (kachcha, no kerbs) still to do.
   - PROGRESS 2026-10-23 (cycle 38z, not ticked): nali drains with cover slabs now also on the temple lane and the three bazaar approach legs (same merged lane draw call), proof docs/shots/drains2-2026-10-23T01-26-41-845Z/temple_lane.png (bazaar legs built but not framed in that shot). Field tracks stay kachcha, no drains.
@@ -79,6 +80,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 
 ### A5. Side jobs and free roam
 - [ ] The checklist at the bottom of `docs/MISSIONS_PLAN.md`, verbatim
+  - AUDIT 2026-10-23 (cycle 38ae, not ticked): all 10 side jobs re-run end to end with real interact()/dialogue/rhythm hooks (tmp/jobs-*.mjs, jobs-audit3.mjs, jobs-gate7.mjs): pump, ration, patang, chakki, gate (4.1 s, paid 50), gilli, kanche, kulfi (+banta spend), milk, mango (6/6) all complete with pocket money/records and zero console errors. Not covered: sound radar, notebook map, title 'Continue roaming', screenshot proof per job.
 
 ## 1. Headroom and hygiene (must happen before adding more static content)
 

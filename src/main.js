@@ -1384,6 +1384,9 @@ async function main() {
     zoneManager.register('edge_wall_s2', { x: -19, z: 157, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -19, z: 157 }, 'edge_wall_s2', [{ a: { x: -38, z: 157 }, b: { x: 0, z: 157 } }], [{ x: -6, z: 157, w: 4 }]) });
     zoneManager.register('edge_wall_w2', { x: -101, z: 128, buildRadius: 45, teardownRadius: 58, build: () => createBoundaryWall({ x: -101, z: 128 }, 'edge_wall_w2', [{ a: { x: -101, z: 100 }, b: { x: -101, z: 157 } }], [{ x: -101, z: 140, w: 4.5 }]) });
     zoneManager.register('edge_wall_e2', { x: 46, z: 118, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 118 }, 'edge_wall_e2', [{ a: { x: 46, z: 100 }, b: { x: 46, z: 135 } }]) });
+    zoneManager.register('edge_wall_e0', { x: 46, z: 40, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 40 }, 'edge_wall_e0', [{ a: { x: 46, z: 21 }, b: { x: 46, z: 58 } }]) });
+    zoneManager.register('edge_wall_e3', { x: 46, z: 146, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: 46, z: 146 }, 'edge_wall_e3', [{ a: { x: 46, z: 135 }, b: { x: 46, z: 157 } }]) });
+    zoneManager.register('edge_wall_w0', { x: -101, z: 27, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: -101, z: 27 }, 'edge_wall_w0', [{ a: { x: -101, z: 21 }, b: { x: -101, z: 34 } }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
     zoneManager.register('old_haveli', { x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
     zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });
