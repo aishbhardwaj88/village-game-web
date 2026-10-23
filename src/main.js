@@ -1407,7 +1407,7 @@ async function main() {
       zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
-    for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3]]) {
+    for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3], ['lane_cattle_w2', -58, 24, 0.2]]) {
       zoneManager.register(id, {
         x, z, buildRadius: 32, teardownRadius: 44,
         build: () => {
