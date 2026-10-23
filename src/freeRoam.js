@@ -6,6 +6,9 @@
  * player has found it through a postcard, a poster or a sound.
  */
 
+import { QUEST_STEPS as S, OBJECTIVE_TEXT } from './quest.js';
+import { JOBS } from './jobs/data.js';
+
 // World positions (1 unit = 1 m; +x east, +z south, so north is up on the map). Same numbers as the places' own source files.
 export const PLACES = [
   { id: 'house', en: 'Our house', hi: 'हमारा घर', x: -48, z: 39, kind: 'house', radius: 22 },
@@ -249,9 +252,10 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit }) {
     const labelled = []; // label anchors already inked; a label that would overprint one of them is skipped (icon only)
     const clear = (x, y) => labelled.every(([lx, ly]) => Math.abs(lx - x) > 96 || Math.abs(ly - y) > 40);
     for (const p of PLACES) {
-      if (!isDiscovered(p.id)) continue;
+      // Nothing is hidden (art director 2026-10-23): every place is on the page from the first load; a small tick marks visited ones.
       const x = sx(p.x), y = sy(p.z);
       icon(ctx, p.kind, x, y);
+      if (isDiscovered(p.id)) pencil(ctx, [[x + 12, y - 12], [x + 15, y - 8], [x + 21, y - 17]], '#2f7a34', 2.5);
       if (clear(x, y)) {
         label(ctx, p.en, p.hi, x, y + 26);
         labelled.push([x, y]);
@@ -346,5 +350,73 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit }) {
   }
   document.getElementById('visit-close-btn')?.addEventListener('pointerdown', closeVisit);
 
-  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook, openVisit, closeVisit, isVisitOpen: () => visitOpen };
+  // ------------------------------------------------------------------ "Tasks" list (art director 2026-10-23)
+  // Story missions in order with their state, then the 10 side jobs. Switching is guarded: a mission can only be picked while it
+  // is the current one (its objective and waypoint are already live); later ones say what to finish first, earlier ones say done.
+  // Side jobs only exist in free roam (docs/MISSIONS_PLAN.md), so before that they are listed as locked; in free roam picking one
+  // walks the player to the job's place.
+  const MISSIONS = [
+    { en: 'Jalebi for Maa', hi: 'माँ के लिए जलेबी', steps: [S.NOT_STARTED, S.HAVE_MONEY, S.HAVE_JALEBI, S.COMPLETE] },
+    { en: 'Tiffin to school, bring sister home', hi: 'स्कूल में टिफिन, बहन को घर लाओ', steps: [S.HAVE_TIFFIN, S.HAVE_SISTER, S.ERRAND2_COMPLETE] },
+    { en: 'Wheat sacks to the kirana', hi: 'गेहूं की बोरियाँ किराना पर', steps: [S.LOADING_WHEAT, S.WHEAT_DELIVERED, S.BOUGHT_GOODS, S.ERRAND3_COMPLETE] },
+    { en: "Find the postman, Bua's letter", hi: 'डाकिया और बुआ की चिट्ठी', steps: [S.FINDING_POSTMAN, S.HAVE_LETTER, S.ERRAND4_COMPLETE] },
+    { en: "Dada's kurta from the darzi", hi: 'दादा का कुर्ता दर्जी से', steps: [S.GOING_TO_DARZI, S.HAVE_KURTA] },
+    { en: 'The monkey and the kurta', hi: 'बंदर और कुर्ता', steps: [S.KURTA_STOLEN, S.KURTA_RECOVERED, S.ERRAND6_COMPLETE] },
+    { en: 'Mango baagh run', hi: 'आम के बाग की सैर', steps: [S.GOING_TO_BAAGH, S.KNOCKING_MANGOES, S.MANGOES_LOADED, S.ERRAND7_COMPLETE] },
+    { en: 'Sunset on the roof', hi: 'छत पर सूर्यास्त', steps: [S.GOING_TO_ROOF, S.ALL_COMPLETE] },
+  ];
+  function missionIndex() {
+    if (quest.storyDone || quest.step === S.FREE_ROAM) return MISSIONS.length;
+    return MISSIONS.findIndex((m) => m.steps.includes(quest.step));
+  }
+  const tasksOverlay = document.getElementById('tasks-overlay');
+  const tasksList = document.getElementById('tasks-list');
+  const tasksNote = document.getElementById('tasks-note');
+  let tasksOpen = false;
+  function taskRow(en, hi, state, sub, onTap) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `t-${state}`;
+    b.innerHTML = '<span class="v-en"></span><span class="v-hi"></span><span class="t-state"></span>';
+    b.querySelector('.v-en').textContent = en;
+    b.querySelector('.v-hi').textContent = hi;
+    b.querySelector('.t-state').textContent = sub;
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      onTap();
+    });
+    tasksList.appendChild(b);
+  }
+  function openTasks() {
+    tasksNote.textContent = '';
+    tasksList.textContent = '';
+    const cur = missionIndex();
+    MISSIONS.forEach((m, i) => {
+      if (i < cur) taskRow(`${i + 1}. ${m.en}`, m.hi, 'done', 'Done / पूरा', () => (tasksNote.textContent = 'Already done. / पहले ही पूरा हो चुका।'));
+      else if (i === cur) {
+        const o = OBJECTIVE_TEXT[quest.step];
+        const obj = typeof o === 'function' ? o(quest) : o;
+        taskRow(`${i + 1}. ${m.en}`, m.hi, 'current', `Now: ${obj.en}`, () => closeTasks());
+      } else taskRow(`${i + 1}. ${m.en}`, m.hi, 'locked', `Locked - finish mission ${cur + 1} first`, () => (tasksNote.textContent = `Finish "${MISSIONS[cur]?.en}" first. / पहले पिछला काम पूरा करो।`));
+    });
+    const roam = quest.storyDone || quest.step === S.FREE_ROAM;
+    for (const [id, j] of Object.entries(JOBS).sort((a, b) => a[1].n - b[1].n)) {
+      const n = quest.jobsDone?.[id] || 0;
+      if (!roam) taskRow(j.en, j.hi, 'locked', 'Side job - opens after the story', () => (tasksNote.textContent = 'Side jobs open once the story is finished. / कहानी के बाद खुलेंगे।'));
+      else
+        taskRow(j.en, j.hi, n ? 'done' : 'current', n ? `Done x${n} - tap to go there` : 'Tap to walk there', () => {
+          if (onVisit?.({ id: `job_${id}`, en: j.en, hi: j.hi, x: j.x, z: j.z })) closeTasks();
+          else tasksNote.textContent = 'Could not find a clear spot there.';
+        });
+    }
+    tasksOpen = true;
+    tasksOverlay.classList.add('visible');
+  }
+  function closeTasks() {
+    tasksOpen = false;
+    tasksOverlay.classList.remove('visible');
+  }
+  document.getElementById('tasks-close-btn')?.addEventListener('pointerdown', closeTasks);
+
+  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook, openVisit, closeVisit, isVisitOpen: () => visitOpen, openTasks, closeTasks, isTasksOpen: () => tasksOpen };
 }

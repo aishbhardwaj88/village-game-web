@@ -652,6 +652,17 @@
       #visit-list button .v-hi { display: block; font-size: 12px; color: #4a5a8a; }
       .visit-warn { min-height: 1.2em; margin: 6px 0 0; color: #a0301c; font-size: 13px; text-align: center; }
       @media (max-width: 480px) { #visit-list { grid-template-columns: 1fr; } }
+      #tasks-overlay { position: fixed; inset: 0; z-index: 96; background: rgba(10, 8, 6, 0.72); display: none; align-items: center; justify-content: center; }
+      #tasks-overlay.visible { display: flex; }
+      #tasks-panel { max-height: 88vh; display: flex; flex-direction: column; width: min(92vw, 520px); }
+      #tasks-list { overflow-y: auto; display: grid; gap: 6px; margin-top: 8px; }
+      #tasks-list button { text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(60, 40, 20, 0.35); background: rgba(247, 240, 220, 0.9); color: #1d2a55; cursor: pointer; }
+      #tasks-list button .v-en { display: block; font-size: 15px; font-weight: 700; }
+      #tasks-list button .v-hi { display: block; font-size: 12px; color: #4a5a8a; }
+      #tasks-list button .t-state { display: block; font-size: 12px; margin-top: 2px; color: #6b5a3a; }
+      #tasks-list button.t-done { opacity: 0.7; }
+      #tasks-list button.t-current { border-color: #2f7a34; border-width: 2px; }
+      #tasks-list button.t-locked { opacity: 0.55; }
       #toast {
         position: fixed;
         left: 50%;
@@ -1103,6 +1114,9 @@
           <button id="pause-visit-btn" class="panel-btn secondary" type="button">
             <span class="btn-en">Visit place</span><span class="btn-hi">जगह देखें</span>
           </button>
+          <button id="pause-tasks-btn" class="panel-btn secondary" type="button">
+            <span class="btn-en">Tasks</span><span class="btn-hi">काम</span>
+          </button>
           <button id="pause-controls-btn" class="panel-btn secondary" type="button">
             <span class="btn-en">Controls</span><span class="btn-hi">नियंत्रण</span>
           </button>
@@ -1122,6 +1136,17 @@
           <p id="visit-warn" class="visit-warn"></p>
           <div id="visit-list"></div>
           <button id="visit-close-btn" class="panel-btn" type="button" style="margin-top: 12px">
+            <span class="btn-en">Close</span><span class="btn-hi">बंद करें</span>
+          </button>
+        </div>
+      </div>
+      <div id="tasks-overlay">
+        <div id="tasks-panel" class="panel-card">
+          <p class="panel-title-en">Tasks</p>
+          <p class="panel-title-hi">काम</p>
+          <p id="tasks-note" class="visit-warn"></p>
+          <div id="tasks-list"></div>
+          <button id="tasks-close-btn" class="panel-btn" type="button" style="margin-top: 12px">
             <span class="btn-en">Close</span><span class="btn-hi">बंद करें</span>
           </button>
         </div>

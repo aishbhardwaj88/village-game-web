@@ -2184,6 +2184,7 @@ async function main() {
     onResume: () => {
       paused = false;
       freeRoam.closeVisit();
+      freeRoam.closeTasks();
       if (!touch && started) input.requestPointerLock();
     },
     onRestart: restartErrand,
@@ -2193,6 +2194,7 @@ async function main() {
     onShowControls: showControlsHelp,
     onShowNotebook: () => freeRoam.openNotebook(),
     onShowVisit: () => freeRoam.openVisit(),
+    onShowTasks: () => freeRoam.openTasks(),
   });
   window.addEventListener('keydown', (e) => {
     if (e.code !== 'KeyN' || !started || e.repeat) return;

@@ -42,6 +42,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 
 ### A-2b. Task menu and corner minimap (art director 2026-10-23)
 - [ ] Pause menu "Tasks" list: all 8 story missions plus every side job, bilingual names, state shown (done / current / not started); selecting one makes it active and switches objective, waypoint and dialogue
+  - PROGRESS 2026-10-23 (not ticked): pause menu now has Tasks (src/freeRoam.js openTasks): 8 missions + 10 side jobs, bilingual, state done/current/locked, proof docs/shots/tasks-2026-10-23/tasks_locked_tap.png. Picking is guarded: only the current mission is selectable, later ones say which to finish first, side jobs locked until free roam then walk-there. Free out-of-order switching of story missions NOT built (needs per-mission state setup); active-task waypoint switching not built.
 - [ ] Guard task switching: set up required state, or mark a task unavailable with a one-line reason; never leave the game in a broken state. Keep "Continue roaming" as its own entry
 - [ ] Research shipped open-world minimap conventions FIRST, then build a corner minimap: player arrow with facing, landmark icons, active objective marked, short zoom showing surroundings
 - [ ] Minimap opens the existing full Notebook map on click/tap; one system, two scales
@@ -50,7 +51,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 - [ ] Let the player hide the minimap from the pause menu
 
 ### A-2c. Navigation (art director FAIL 2026-10-23) - high priority
-- [ ] Remove discovery gating: show all 42 places on the notebook map from first load; keep an optional subtle "visited" mark, hide nothing
+- [x] Remove discovery gating: show all 42 places on the notebook map from first load; keep an optional subtle "visited" mark, hide nothing - proof docs/shots/tasks-2026-10-23/map_all_places.png (all places inked on a fresh game, green tick on visited; some labels skipped where they would overprint, icon only)
 - [ ] Build diegetic wayfinding: painted direction signs with arrows at lane junctions and the chowk, a village notice board listing key places, milestone markers on the approach road and highway
 - [ ] Make routes legible: lanes must continue with kerbs, drains, lamps and street life all the way to where they lead, not stop after a few metres
 - [ ] AUDIT: walk on foot from the house to all 42 places using only what a player can see; for each report whether a visible path leads to it, whether it is visible from any lane, and the walk time; LIST every place not findable without the map
