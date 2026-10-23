@@ -50,9 +50,71 @@ def block(cx, w, d, h, kind, win_w, win_h0=0.9, win_h1=2.2, depth=0.75, tin=Fals
     kit.add('wood', wb('flap', cx - win_w / 2 - 0.04, cx + win_w / 2 + 0.04, d / 2 + 0.02, d / 2 + 0.12, win_h1 - 0.5, win_h1 - 0.04, 0.008))
 
 
+def grille_window(face, side, zc, y0, y1, w, d_out=0.0):
+    """Real window on a wall face: dark recess, painted frame, iron bars, projecting sill. face = wall x (side +/-1 = outward) for side walls."""
+    z0, z1 = zc - w / 2, zc + w / 2
+    a, b = (face, face + side * 0.02) if side > 0 else (face - 0.02, face)
+    kit.add('paint', wb('recess', a, b, z0, z1, y0, y1, 0), 0x1D1A17)
+    fa, fb = (face, face + side * 0.07) if side > 0 else (face - 0.07, face)
+    for zz0, zz1, h0, h1 in ((z0 - 0.07, z1 + 0.07, y1, y1 + 0.07), (z0 - 0.07, z1 + 0.07, y0 - 0.07, y0), (z0 - 0.07, z0, y0 - 0.07, y1 + 0.07), (z1, z1 + 0.07, y0 - 0.07, y1 + 0.07)):
+        kit.add('paint', wb('wframe', fa, fb, zz0, zz1, h0, h1, 0.004), 0x4A3524)
+    n = max(3, int(w / 0.14))
+    ba, bb = (face + side * 0.03, face + side * 0.05) if side > 0 else (face - 0.05, face - 0.03)
+    for i in range(n):
+        zz = z0 + (i + 0.5) * w / n
+        kit.add('paint', wb('bar', ba, bb, zz - 0.012, zz + 0.012, y0, y1, 0), 0x26262A)
+    kit.add('paint', wb('rail', ba, bb, z0, z1, (y0 + y1) / 2 - 0.012, (y0 + y1) / 2 + 0.012, 0), 0x26262A)
+    sa, sb = (face, face + side * 0.16) if side > 0 else (face - 0.16, face)
+    kit.add('trim', wb('sill', sa, sb, z0 - 0.08, z1 + 0.08, y0 - 0.1, y0 - 0.03, 0.005))
+
+
+def back_window(cx_w, zface, w, y0, y1, out=-1):
+    """Same, on a wall whose face is a constant z (out = -1: facing -z)."""
+    x0, x1 = cx_w - w / 2, cx_w + w / 2
+    a, b = (zface - 0.02, zface) if out < 0 else (zface, zface + 0.02)
+    kit.add('paint', wb('recess', x0, x1, a, b, y0, y1, 0), 0x1D1A17)
+    fa, fb = (zface - 0.07, zface) if out < 0 else (zface, zface + 0.07)
+    for xx0, xx1, h0, h1 in ((x0 - 0.07, x1 + 0.07, y1, y1 + 0.07), (x0 - 0.07, x1 + 0.07, y0 - 0.07, y0), (x0 - 0.07, x0, y0 - 0.07, y1 + 0.07), (x1, x1 + 0.07, y0 - 0.07, y1 + 0.07)):
+        kit.add('paint', wb('wframe', xx0, xx1, fa, fb, h0, h1, 0.004), 0x4A3524)
+    n = max(3, int(w / 0.14))
+    ba, bb = (zface - 0.05, zface - 0.03) if out < 0 else (zface + 0.03, zface + 0.05)
+    for i in range(n):
+        xx = x0 + (i + 0.5) * w / n
+        kit.add('paint', wb('bar', xx - 0.012, xx + 0.012, ba, bb, y0, y1, 0), 0x26262A)
+    kit.add('paint', wb('rail', x0, x1, ba, bb, (y0 + y1) / 2 - 0.012, (y0 + y1) / 2 + 0.012, 0), 0x26262A)
+    sa, sb = (zface - 0.16, zface) if out < 0 else (zface, zface + 0.16)
+    kit.add('trim', wb('sill', x0 - 0.08, x1 + 0.08, sa, sb, y0 - 0.1, y0 - 0.03, 0.005))
+
+
+def back_door(cx_d, zface, w, h, leaf):
+    """Staff door in a back wall facing -z: recess, frame, leaf with two raised panels and a rail, hinges, brass handle, step."""
+    x0, x1 = cx_d - w / 2, cx_d + w / 2
+    kit.add('paint', wb('drecess', x0 - 0.08, x1 + 0.08, zface - 0.03, zface, 0.0, h, 0), 0x14110E)
+    kit.add('paint', wb('dframe', x0 - 0.09, x1 + 0.09, zface - 0.09, zface, h, h + 0.09, 0.004), 0x2F2016)
+    for xx0, xx1 in ((x0 - 0.09, x0), (x1, x1 + 0.09)):
+        kit.add('paint', wb('dframe', xx0, xx1, zface - 0.09, zface, 0.0, h + 0.09, 0.004), 0x2F2016)
+    kit.add('paint', wb('leaf', x0, x1, zface - 0.07, zface - 0.02, 0.02, h, 0.004), leaf)
+    for h0, h1 in ((0.2, h * 0.45), (h * 0.55, h - 0.2)):
+        kit.add('paint', wb('dpanel', x0 + 0.1, x1 - 0.1, zface - 0.1, zface - 0.07, h0, h1, 0.004), 0x3D2818)
+    kit.add('paint', wb('drail', x0, x1, zface - 0.1, zface - 0.07, h * 0.47 , h * 0.53, 0.004), 0x2F2016)
+    for hy in (0.3, h - 0.3):
+        kit.add('paint', wb('hinge', x0, x0 + 0.16, zface - 0.1, zface - 0.07, hy, hy + 0.05, 0), 0x26262A)
+    kit.add('paint', cyl('handle', x1 - 0.12, zface - 0.12, h * 0.5 - 0.02, h * 0.5 + 0.02, 0.025, 0.025, 8), BRASS)
+    kit.add('apron', wb('dstep', x0 - 0.25, x1 + 0.25, zface - 0.4, zface, 0.0, 0.12, 0.01))
+
+
+def openings(cx, w, d, leaf):
+    """Grilled side windows and a staff door at the back (shop shells are solid boxes; these are real framed openings)."""
+    for side in (1, -1):
+        grille_window(cx + side * w / 2, side, -0.2, 1.5, 2.3, 0.8)
+    back_door(cx + 0.5, -d / 2, 0.9, 2.0, leaf)
+    back_window(cx - 0.8, -d / 2, 0.6, 1.5, 2.2)
+
+
 def post_office():
     cx = 5.0
     block(cx, 3.2, 3.0, 3.0, 'wall_po', 2.2)
+    openings(cx, 3.2, 3.0, 0x3F5B6A)
     # interior seen through the window: pigeonhole rack of letters, a scale, a rubber-stamp pad, a stool
     kit.add('wood', wb('rack', cx - 1.0, cx + 1.0, d_back(3.0) + 0.0, d_back(3.0) + 0.3, 1.3, 2.1, 0.006))
     for r in range(4):
@@ -80,6 +142,7 @@ def d_back(d):
 def ration_shop():
     cx = 0.0
     block(cx, 3.6, 3.0, 3.0, 'wall_rs', 2.6, tin=True)
+    openings(cx, 3.6, 3.0, 0x5A3A24)
     # sacks of grain stacked in the window, a brass beam scale, a painted rate board, a platform scale in front, queue rail
     for i, col in enumerate((0xC9B27A, 0xB89A62, 0xD8C690, 0xB89A62)):
         sack(kit, cx - 0.9 + i * 0.6, -0.5, 0.0, 0.0, col, 0.55, 0.4, 0.6)
@@ -117,6 +180,7 @@ def atta_chakki():
     kit.add('wall_ac', wb('back_raise', cx - w / 2, cx + w / 2, -d / 2, -d / 2 + 0.22, h, h + 0.82, 0.01))
     kit.add('floor', wb('floor', cx - w / 2, cx + w / 2, -d / 2 + 0.22, d / 2, 0, 0.05, 0))
     kit.add('apron', wb('step', cx - w / 2, cx + w / 2, d / 2 - 0.05, d / 2 + 0.45, 0, 0.12, 0.01))
+    back_window(cx + 0.6, -d / 2, 0.7, 1.5, 2.2)  # grilled vent window on the back wall
     # the mill: stone housing with a hopper above it, a green-grey motor with a flywheel + belt, an iron chimney pipe on the roof
     sx, sz = cx - 0.5, -0.2
     kit.add('paint', cyl('stone', sx, sz, 0.0, 0.5, 0.62, 0.62, 18), 0x8A8A86)
