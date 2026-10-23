@@ -4,7 +4,7 @@ Builder rules: read this file at the start of EVERY cycle. Any item marked FAIL 
 
 General rules from review 1:
 - Compare shots must use the SAME camera angle as the reference image (iso 3/4 from above for cutaways, straight front for elevation sheets). Different angles hide problems.
-- Every building signboard must be visible and legible in its compare shot, Devanagari larger on top, English beneath, as in the reference. Signboards are missing or illegible on the new Blender models (tea stall, general store, bazaar row): a regression, fix everywhere.
+- Every building signboard must be visible and legible in its compare shot, English bold, larger and on top; Hindi beneath in a lighter weight (art director, 24 Oct - supersedes the old Devanagari-first rule). Signboards are missing or illegible on the new Blender models (tea stall, general store, bazaar row): a regression, fix everywhere.
 - Colour: match reference wall colours and the two-tone plinth bands (mustard/ochre lower band is on most references). Walls read flat grey in game; add the colour, soft AO and gentle variation.
 - Speed: about 10 minutes per building is too fast. Spend the time to match the reference.
 
@@ -738,8 +738,8 @@ useless as a navigation tool, which is its entire purpose.
 ### 2. Diegetic wayfinding in the world
 A village has its own signage. Build it, rather than relying on UI alone:
 - Painted direction signs at lane junctions and the chowk, with an arrow and the
-  place name in both scripts (Devanagari larger on world signage, per the signboard
-  rule).
+  place name in both scripts (English bold and larger, Hindi beneath lighter -
+  art director 24 Oct).
 - A painted village notice board at the chowk listing key places.
 - Milestone-style markers on the approach road and at the highway.
 - Make routes legible: the lane itself should lead somewhere, with kerbs, drains,
@@ -766,3 +766,77 @@ highway, mandi) is a long walk from the village core with little between.
 **Pass test:** starting at the house with no map open, a player can reach the school,
 the bazaar, the temple, the post office and the chowk by following visible lanes and
 signage alone, and the notebook map shows all 42 places from the first load.
+
+---
+
+## 2026-10-24 — Review of the 23 Oct overnight shots (Claude chat, art director to confirm)
+
+Shots reviewed: `docs/shots/halwai-fire-2026-10-23/wide.png`, `close.png`,
+`docs/shots/rooftops-2026-10-23/r1.png`, `r5.png`.
+These are the four newest proof shots in the repo. Aishwarya has not confirmed these
+verdicts yet; treat them as the working verdict until she overrules them.
+
+### VERDICT: halwai-fire wide.png — FIX
+- The stall itself is the best work in the set: shelves, jars, kadhais, brick chulha
+  bases, matkas and the roof water tank all read as real objects.
+- **No signboard on the halwai stall.** The standing signboard rule applies to every
+  shop. This is the same regression already logged on the Blender models.
+- The "live smoke, oil steam and flame flecks" read as small white specks floating in
+  front of the lens, not as smoke. At this distance they look like dirt on the camera.
+- Background buildings on the right are flat untextured colour blocks with no
+  openings. The far LOD is too crude to appear in a hero shot.
+- Grass is a flat green carpet with sparse tuft cards. The dirt apron is fine.
+- The round bush on the right is a green blob, a code shape, not a plant.
+- **Two capsule people are in frame** on the right. Capsule placeholders must be kept
+  out of proof shots, framed out or hidden.
+
+### VERDICT: halwai-fire close.png — FIX
+- Best surface work so far: kadhai metal, brick, shelf jars, counter wood.
+- Smoke and steam are large soft white blobs in front of the camera. They read as lens
+  bokeh, not as steam over oil. Flame flecks are flat yellow dots and do not read as
+  fire. Rework both; reference a real halwai kadhai: thin rising wisps, not spheres.
+- **The halwai is a bald capsule head** behind the counter, in frame.
+- Walls are flat grey plaster with none of the grime pass visible.
+- A grey panel with black rectangles hangs at the right edge. Unclear what it is;
+  it reads as a placeholder or an error. Identify or remove it.
+
+### VERDICT: rooftops r1.png — FAIL
+- **Debug text "1 fps" is burnt into the frame, top left.**
+- **The tutorial overlay ("Move with WASD...") covers the bottom third.**
+- **A capsule person stands dead centre and dominates the shot.**
+- The camera is jammed against a wall. This is filed as a rooftops proof shot and
+  **no rooftop is visible.** It does not prove the item it is attached to.
+- Walls are flat untextured ochre and brown at this distance, no plaster relief.
+- The creeper is a bright lime-green cutout card with a glowing yellow-green edge.
+  It reads as a code shape, not a plant, and the colour is outside the palette.
+- The antenna is a grey cross of sticks.
+- 1 fps means this came from a headless run, so it is not evidence of how the game
+  looks or runs in play.
+
+### VERDICT: rooftops r5.png — FAIL
+- **Debug text "3 fps", top left.** **Tutorial overlay across the bottom.**
+- **A giant capsule torso fills the bottom centre of the frame.**
+- The house row behind it is genuinely good: per-row limewash variation, green
+  shuttered doors, planters, kerb, creepers. That part passes.
+- Ground is a flat brown mud plane with no detail.
+- Again filed as a rooftops shot with no rooftop in frame.
+
+### STANDING RULES that come out of this review
+1. **A proof shot must show the thing it claims to prove.** If the item is rooftops,
+   a rooftop is in frame. A shot that does not show its subject does not tick a box.
+2. **No debug text in a proof shot.** No fps counter, no dev overlay, no console text.
+3. **No tutorial or dialogue overlay in a proof shot.** Dismiss it before capturing.
+4. **No capsule placeholder people in frame.** Frame them out or hide them for the
+   capture. Capsules in a proof shot make the shot unreviewable.
+5. **Headless shots at 1 to 3 fps are not proof of look or performance.** Say the fps
+   in the report when a shot is headless.
+6. **Every shop gets a signboard.** Re-audit all 42 places for missing signboards.
+7. Before ticking any box, open the shot and ask: would the art director accept this
+   as evidence? If not, retake it before ticking.
+
+### Priority order for the rework
+1. Fix the screenshot tool so rules 2, 3 and 4 are automatic, not remembered.
+2. Re-take proof shots for every box ticked on 23 Oct that has a bad shot.
+3. Halwai smoke, steam and flame rework.
+4. Signboard audit across all 42 places.
+5. Far-LOD background buildings: they are flat blocks in hero shots.

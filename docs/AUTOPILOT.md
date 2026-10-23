@@ -7,6 +7,10 @@ push if you can, then stop cleanly. The next run starts fresh.
 
 **A cycle that produces no change to the game is a failure.**
 
+**While the top block of `docs/FEEDBACK.md` has unticked items, the loop does not
+stop and does not start anything else.** Her playtest list is the only job. Do not
+pick a BACKLOG item, do not add a new place or feature, until that block is clear.
+
 - Never stop because `git push` fails. Commit locally, write one line in
   `docs/NEEDS_YOU.md`, keep building.
 - Never stop because you are waiting on Aishwarya. Mark the item `- [!]` with a
@@ -28,10 +32,10 @@ push if you can, then stop cleanly. The next run starts fresh.
 
 Anything else only when the current task needs it.
 
-## Characters are parked until 26 Oct 2026
+## Characters and Tripo are parked until 29 Oct 2026 (extended 24 Oct)
 
 - Capsule placeholders stay. **Do not generate any Tripo model. Do not spend credits.
-  Do not ask about characters.**
+  Do not ask about characters. Do not ask about the Tripo API key or top-up.**
 - `inbox/` will be empty. That is expected. Do not treat it as a blocker.
 - Build everything that is not a character.
 
