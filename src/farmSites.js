@@ -504,7 +504,7 @@ export function createSabziRehris(position) {
   });
   geos.push(bake(new THREE.BoxGeometry(10.2, 0.05, 3.6), new THREE.Matrix4().makeRotationX(0.1).setPosition(0, 2.9, 0.3), 0x9a5f3c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.9, 6), at(sx * 4.9, 1.45, -1.3), 0x5a5a5a));
-  return finishSite('sabzi_rehris', geos, position);
+  return finishSite('sabzi_rehris', geos, position, { solids: [[-3.2, 0.2, 2.3, 1.3], [0, 0.2, 2.3, 1.3], [3.2, 0.2, 2.3, 1.3], [-4.9, -1.3, 0.12, 0.12], [4.9, -1.3, 0.12, 0.12]] }); // three carts + tarp poles
 }
 
 /** Jain mandir: small white shikhara temple on a plinth with a pillared porch. Scenery only, no tasks. */
@@ -548,7 +548,12 @@ export function createHighwayCluster(position) {
   geos.push(bake(new THREE.BoxGeometry(3, 2.8, 3), at(-16, 1.4, 50), 0xdcd2b8));
   geos.push(bake(new THREE.BoxGeometry(3.4, 0.18, 3.4), at(-16, 2.9, 50), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(1.2, 0.6, 0.15), at(-13.5, 2.4, 50), 0x2a2a2a));
-  return finishSite('highway_cluster', geos, position, { roughness: 0.92 });
+  return finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
+    [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 1.2, 0.2], // petrol office, dharam kanta cabin, display post
+    [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
+    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
+    [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
+  ] });
 }
 
 /** Jalebi + samosa stall: handcart with a wide black kadhai on a brazier, glass case of samosas and a striped tarp. Unbranded. */
@@ -565,7 +570,7 @@ export function createJalebiStall(position) {
   geos.push(bake(new THREE.BoxGeometry(3.6, 0.05, 2.6), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 2.7, 0.1), 0xb85a3a));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 2.7, 6), at(sx * 1.7, 1.35, -1.0), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(0.6, 0.35, 0.6), at(2.1, 0.18, 0.2), 0x7a5a3a)); // stool
-  return finishSite('jalebi_stall', geos, position);
+  return finishSite('jalebi_stall', geos, position, { solids: [[0, 0, 3.0, 1.4], [2.1, 0.2, 0.6, 0.6], [-1.7, -1.0, 0.1, 0.1], [1.7, -1.0, 0.1, 0.1]] }); // cart, stool, tarp poles
 }
 
 /** Lane street life (MAP.md "carrom and ludo boards set up in the lane outside houses"): a jute mat, a carrom board, a ludo board,
@@ -807,7 +812,7 @@ export function createGaushala(position) {
   // Swept yard with a water tub and a low wall to the road.
   geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
   geos.push(bake(new THREE.BoxGeometry(L + 2, 0.8, 0.25), at(0, 0.4, D / 2 + 5), 0xcfc2a2));
-  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4]] });
+  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4], [0, D / 2 - 1.2, L - 4, 0.7], [-L / 2 - 2, D / 2 + 2, 1.6, 1.6], [L / 2 - 2.5, -D / 2 + 1.8, 3.6, 3.6]] }); // + feed trough, water tub, hay heap
 }
 
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */

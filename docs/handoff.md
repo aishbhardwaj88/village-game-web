@@ -1,3 +1,8 @@
+**2026-10-23 (cycle 38bo2):** Game change: solid colliders on more props: sabzi rehris carts + poles, jalebi stall, gaushala trough/tub/hay, highway petrol pumps/office/canopy posts, kanta cabin, bus adda posts (src/farmSites.js). Build 16/16, budget 24.0 MB, regression 22/22. Also a 5 min NPC soak (tmp/npc-soak.mjs): 0 guard warnings, 0 errors. Proof docs/shots/prop-solids-2026-10-23/. Note: the sabzi walk slid through the 0.9 m gap between two carts (legit). Finding: highway/sabzi/jalebi/gaushala/mandi still use flat vertex-colour geometry (CLAUDE.md 5b fail), not touched.
+Next: mandi colliders; flat-colour far-east structures to textured materials; props for shops; far-east road decision.
+
+---
+
 **2026-10-23 (cycle 38bo):** Game change: trees gain a 4th LOD level past 220 m: two crossed quads from the baked per-species impostor sprites (public/assets/trees, 42 KB, src/trees.js). Also fixed a real waste: static merges folded every LOD level of every tree in (each merged tree drew 3 times); extra levels are now dropped on merge (userData.lodExtra, src/mergeUtils.js). Hero-view triangles 391k -> 267k, draw calls 115. Build passed, budget 24.0 MB. Proof docs/shots/tree-impostor-2026-10-23/far_gaushala.png (tree silhouettes beyond the gaushala; black sky there is the free photo camera's far clip, not the game). Merged trees (hero/temple/field groups) still have no distance LOD.
 Next: grass tufts + crops with Foliage atlases; props for shops; far-east road decision.
 

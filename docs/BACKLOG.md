@@ -73,6 +73,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 ### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
 - [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check
 - [ ] Give colliders to trees, poles, lamp posts, hand pumps, charpais, carts and every solid prop; audit and LIST any solid object with no collider
+  - PROGRESS 2026-10-23 (cycle 38bo2, not ticked): sabzi rehris carts and tarp poles, jalebi stall cart/stool/poles, gaushala feed trough/water tub/hay heap, highway petrol pumps/office/canopy posts, dharam kanta cabin and bus adda posts now solid; real W/S key walk into jalebi cart and gaushala trough stops at wall+radius, proof docs/shots/prop-solids-2026-10-23/. Regression 22/22. Still no collider: mandi trucks/stalls, tractor-yard props.
   - PROGRESS 2026-10-23 (cycle 38be2, not ticked): all trees (every species, every zone, via buildTrees in src/trees.js) now carry a trunk-sized collider that survives merging; validator check 5 extended to count tree trunks as real geometry. Build 15/15, regression 22/22. Cycle 38bf2: lamp posts, lane hand pumps + matka stand, lane charpais, laundry poles, tubewell kothri/hauz/motor/charpai, dhaba charpais now have colliders (validator check 5 samples 'site_props' and 'street_lamp' materials too; build 15/15, regression 22/22). Courtyard hand pump now solid too. Still no collider: carts' legs, wells/troughs, other charpais (hero house, TV house porch is inside building box); audit list not yet written.
 - [ ] Validate every waypoint path as walkable at build time; a path clipping a building is a build failure
   - PROGRESS 2026-10-23 (cycle 38bi, not ticked): validator check 9 sweeps every registered waypoint leg (src/npcRoutines.js ROUTES) against the real colliders; 3 routes / 7 legs clear. Not covered: the M6 monkey route (created lazily at runtime), bazaarLife / animal / follow routines, which do not register routes yet.
@@ -82,6 +83,7 @@ in them. Do not limit a fix to the place that was screenshotted.
 - [ ] Extend devCheckPenetration() to cover NPCs and animals, not just vehicles; log any penetration as a failure
   - PROGRESS 2026-10-23 (cycle 38bm, not ticked): guard now checks named NPCs, bazaar villagers and all live animal herds/dogs; whole-map sweep found and fixed 3 buffalo inside lane walls. Animals are stationary (no routines).
 - [ ] Verify across a multi-minute continuous run with NPCs completing full routes, not one screenshot
+  - PROGRESS 2026-10-23 (cycle 38bo2, not ticked): 5-minute real-time soak (tmp/npc-soak.mjs, ?dev=1, player teleported round the house/abadi): 0 collision-guard warnings, 0 console errors, Maa/child/postman walked their loops (60/137/109 m). Not ticked: headless runs at ~9 fps so sim time is under 5 min, and the other NPCs are stationary.
 
 Characters are parked until 26 Oct. Build everything that is not a character.
 
