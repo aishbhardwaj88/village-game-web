@@ -416,16 +416,39 @@ def dabba(kit, x, z, h, r=0.12, tall=0.28, colour=STEEL):
 
 
 def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55, kind='paint'):
-    """A flour/grain sack: a stuffed rounded-box bag with a gathered, cord-tied mouth and a slightly slumped top."""
+    """A flour/grain sack: one elliptical lathed bag - flat base, full belly, pinched neck tied with cord, flared mouth - with per-sack lean and bulge."""
+    import bmesh
+    from common import new_bmesh_obj
+    rnd = random.Random(int(abs(x * 91 + z * 57 + h * 31) * 100))
     bw, bd = w * 0.5, d * 0.5
-    bevel = min(bd * 0.6, 0.09)
-    body = wb('sack', x - bw, x + bw, z - bd, z + bd, h, h + hh * 0.82, bevel, 3)
+    ca, sa = math.cos(ang), math.sin(ang)
+    lean = rnd.uniform(-0.04, 0.04) * hh
+    bulge = rnd.uniform(0.94, 1.06)
+    prof = [(0.0, 0.0), (0.82, 0.0), (0.97, 0.05), (1.0 * bulge, 0.3), (0.92 * bulge, 0.6), (0.7, 0.78), (0.3, 0.86), (0.2, 0.9),
+            (0.3, 0.93), (0.42, 1.0), (0.36, 1.03), (0.0, 1.0)]
+    seg = 16
+    bm = bmesh.new()
+    rings = []
+    for k, (r, f) in enumerate(prof):
+        hy = h + f * hh
+        shift = lean * f
+        rings.append([])
+        for i in range(seg):
+            t = i / seg * math.tau
+            wob = 1.0 + 0.05 * math.sin(t * 3 + k) * (0.4 if f > 0.8 else 1.0)  # soft fabric folds
+            lx, lz = r * bw * math.cos(t) * wob + shift, r * bd * math.sin(t) * wob
+            rings[-1].append(bm.verts.new((x + lx * ca - lz * sa, -(z + lx * sa + lz * ca), hy)))
+    for k in range(len(rings) - 1):
+        for i in range(seg):
+            j = (i + 1) % seg
+            bm.faces.new((rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]))
+    bm.faces.new(list(reversed(rings[0])))
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    body = new_bmesh_obj('sack', bm)
     for poly in body.data.polygons:
         poly.use_smooth = True
     kit.add(kind, body, colour)
-    # cord tying the neck, then the gathered mouth above it
-    kit.add('paint', wb('sack_cord', x - bw * 0.52, x + bw * 0.52, z - bd * 0.52, z + bd * 0.52, h + hh * 0.8, h + hh * 0.86, 0.01, 2), 0x6A5238)
-    mouth = wb('sack_mouth', x - bw * 0.5, x + bw * 0.5, z - bd * 0.5, z + bd * 0.5, h + hh * 0.84, h + hh * 1.0, 0.04, 3)
-    for poly in mouth.data.polygons:
-        poly.use_smooth = True
-    kit.add(kind, mouth, colour)
+    # cord ring tying the neck
+    cr = bw * 0.2 * 1.18
+    kit.add('paint', lathe('sack_cord', x + lean * 0.88 * ca, z + lean * 0.88 * sa, [(cr, h + hh * 0.875), (cr, h + hh * 0.905)], seg=10), 0x6A5238)

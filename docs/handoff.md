@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z63, playtest block items 4/5, sacks):** Game change: the shared Blender `sack` helper (tools/blender/arch.py) is now one elliptical lathed bag (flat base, full belly, pinched neck with a cord ring, flared mouth, per-sack lean/bulge/fabric folds), was a bevelled box with pot-like ears; used by the chakki, kirana/bazaar row, halwai, post office, ration shop and dharam kanta. Rebuilt bazaar_row, halwai_compound, new_shops, dharam_kanta glbs; same draw calls. Proof docs/shots/sack-2026-10-24/{front,close}.png (headless; no subject check, capsule hidden, so not tickable). Gaps: chakki front wall still flat terracotta (no flour dust), belt/guard thin sticks.
+NEXT: chakki flour-dust wall + belt, cricket/badminton re-shot.
+
+---
+
 **2026-10-24 (cycle 39z62, playtest block item 5, atta chakki check):** No game change (survey only). Re-shot the chakki from inside: the Blender mill (tools/blender/build_new_shops.py atta_chakki) already reads as a flour mill: blue hopper over a green drum housing, blue motor with pulley and belt, scale pan, flour tray, wheat/flour sacks, bulb on a flex (docs/shots/chakki-2026-10-24/{mill_a,mill_b}.png, headless, capsule miller in frame so not tickable). Seen, not fixed: the miller capsule (expected placeholder) blocks the front view; the jute sacks (`sack` helper) are lumpy with pot-like ears and a flat tint; the belt/guard are thin sticks; the front wall is flat terracotta with no flour-dust texture. Item 5 chakki line left unticked.
 NEXT: sack helper reshape (shared by all shops), cricket/badminton re-shot.
 
