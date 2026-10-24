@@ -5,6 +5,7 @@ import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
 import { buildClothesline } from './laundry.js';
 import { getGLTFLoader } from './loaders.js';
+import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -106,48 +107,116 @@ const vcMat = (opts = {}) => {
   return m;
 };
 
-/** Village pond: muddy bank ring, murky green water, lotus pads and a few pink lotus. */
+/** Real lotus: a notched, slightly cupped pad with radial veins, and a flower of two rings of tapered petals (white at the base, pink at the tips) around a yellow seed head. */
+function lotusPadGeo(x, z, r, rot, tone) {
+  const SEG = 14, pos = [], col = [], idx = [];
+  const c0 = new THREE.Color(tone), vein = c0.clone().multiplyScalar(0.7), rim = c0.clone().lerp(new THREE.Color(0x8aa04e), 0.35);
+  pos.push(0, 0.02, 0); col.push(vein.r, vein.g, vein.b);
+  for (const [f, y, c] of [[0.5, 0.0, c0], [1.0, 0.035, rim]]) {
+    for (let i = 0; i < SEG; i++) {
+      const a = (i / SEG) * Math.PI * 2;
+      const notch = Math.abs(((a + Math.PI * 2) % (Math.PI * 2)) - 0.4) < 0.17 && f > 0.9 ? 0.0 : 1;
+      pos.push(Math.cos(a) * r * f * notch, y, Math.sin(a) * r * f * notch);
+      const cc = i % 2 ? c : c.clone().multiplyScalar(0.84);
+      col.push(cc.r, cc.g, cc.b);
+    }
+  }
+  for (let i = 0; i < SEG; i++) { const j = (i + 1) % SEG; idx.push(0, 1 + j, 1 + i); }
+  for (let i = 0; i < SEG; i++) { const j = (i + 1) % SEG; idx.push(1 + i, 1 + j, 1 + SEG + i, 1 + j, 1 + SEG + j, 1 + SEG + i); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  g.rotateY(rot);
+  g.translate(x, 0.075, z);
+  return bakeUv(g);
+}
+function lotusFlowerGeos(x, z, s, rot) {
+  const geos = [];
+  const petal = (len, wid, tilt, ang, y0, tip, base) => {
+    const g = new THREE.BufferGeometry();
+    const pos = [0, 0, 0, -wid / 2, len * 0.35, wid * 0.15, wid / 2, len * 0.35, wid * 0.15, 0, len, len * 0.28 * Math.sin(tilt) + 0.02];
+    const c0 = new THREE.Color(base), c1 = new THREE.Color(tip);
+    const col = [c0.r, c0.g, c0.b, (c0.r + c1.r) / 2, (c0.g + c1.g) / 2, (c0.b + c1.b) / 2, (c0.r + c1.r) / 2, (c0.g + c1.g) / 2, (c0.b + c1.b) / 2, c1.r, c1.g, c1.b];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex([0, 2, 1, 1, 2, 3, 0, 1, 2, 1, 3, 2]); // double-sided via both windings
+    g.computeVertexNormals();
+    // lay the petal up-and-out: rotate about X by tilt (from vertical), then spin by ang, then place
+    g.rotateX(-(Math.PI / 2 - tilt));
+    g.rotateY(ang);
+    g.translate(0, y0, 0);
+    return g;
+  };
+  for (let i = 0; i < 8; i++) geos.push(petal(0.32, 0.16, 1.15, (i / 8) * Math.PI * 2 + rot, 0.0, 0xe98fb0, 0xf6e6e6));       // outer ring, open
+  for (let i = 0; i < 6; i++) geos.push(petal(0.27, 0.14, 0.7, (i / 6) * Math.PI * 2 + rot + 0.4, 0.015, 0xf0a7c1, 0xf8eded));    // inner ring, upright
+  geos.push(new THREE.CylinderGeometry(0.05, 0.035, 0.05, 8).translate(0, 0.09, 0));                                               // seed head
+  geos[geos.length - 1] = bake(geos[geos.length - 1], new THREE.Matrix4(), 0xd9b73a);
+  for (let k = 0; k < geos.length - 1; k++) geos[k].computeVertexNormals();
+  return geos.map((g, i) => {
+    if (i < geos.length - 1) { g.deleteAttribute('uv'); }
+    const m = new THREE.Matrix4().makeScale(s, s, s).setPosition(x, 0.09, z);
+    g.applyMatrix4(m);
+    return i < geos.length - 1 ? bakeUv(g) : g;
+  });
+}
+/** Box-projected UVs for a geometry that already has colours (bake() does this for plain geometry; petals carry their own colours). */
+function bakeUv(g) {
+  const n = g.attributes.position.count, pos = g.attributes.position, uv = new Float32Array(n * 2);
+  for (let i = 0; i < n; i++) { uv[i * 2] = pos.getX(i) / 1.4; uv[i * 2 + 1] = pos.getZ(i) / 1.4; }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  if (!g.attributes.normal) g.computeVertexNormals();
+  return g;
+}
+
+/** Wet-earth shoreline ring: pale dried-crack mud outside, dark glistening wet mud inside, with footprints-sized pebbles. Earth set at low roughness so the wet band catches light. */
+function shoreGeos(radius, seed, rnd) {
+  const geos = [];
+  geos.push(flatBlob(radius * 1.32, seed, 0.02, 0x8a7656));   // dry cracked outer mud
+  geos.push(flatBlob(radius * 1.18, seed, 0.024, 0x6b5a40));  // damp mud
+  geos.push(flatBlob(radius * 1.06, seed, 0.028, 0x3f3426));  // wet dark mud at the waterline
+  for (let i = 0; i < 26; i++) {
+    const a = rnd() * Math.PI * 2, r = radius * (1.05 + rnd() * 0.2), k = 0.04 + rnd() * 0.08;
+    geos.push(bake(new THREE.SphereGeometry(k, 6, 4), new THREE.Matrix4().makeScale(1, 0.55, 1).setPosition(Math.cos(a) * r, 0.04, Math.sin(a) * r), 0x8d8676));
+  }
+  return geos;
+}
+
+/** Village pond: wet-mud shoreline, depth-tinted rippling water with a soft edge, real lotus pads and flowers, a bathing ghat. */
 export function createPond(position) {
   const group = new THREE.Group();
   group.name = 'pond';
-  // Bank: wide trampled-mud ring under the water, so the edge reads as wet earth, not a sticker.
-  const bank = new THREE.Mesh(mergeGeometries([
-    flatBlob(12.5, 1.3, 0.025, 0x6e5a3c),
-    flatBlob(10.8, 1.3, 0.03, 0x4f4430),
-  ]), vcMat({ roughness: 1 }));
+  let s = 7;
+  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  // Bathing ghat: two stepped cement slabs and a washing stone on the east bank (merged into the shore mesh: one draw call).
+  const shore = shoreGeos(9.6, 1.3, rnd);
+  for (let i = 0; i < 3; i++) shore.push(bake(new THREE.BoxGeometry(2.6 - i * 0.3, 0.16, 0.7), at(10.4 - i * 0.7, 0.08 + i * 0.15, 0.0, Math.PI / 2), 0xb4ac98));
+  shore.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(11.9, 0.18, 2.0, 0.4), 0x8d8676));
+  const bank = new THREE.Mesh(mergeGeometries(shore), vcMat({ roughness: 1 }));
   bank.receiveShadow = true;
   group.add(bank);
-  const water = new THREE.Mesh(
-    flatBlob(9.6, 1.3, 0.06, 0x4f5238),
-    vcMat({ roughness: 0.08, metalness: 0.35 })
-  );
+  const water = new THREE.Mesh(blobWaterGeometry(9.6, 1.3, 0.06), createWaterMaterial({ shallow: 0x80784a, deep: 0x34402c, scale: 1.1 }));
   water.name = 'pond_water';
-  water.material.polygonOffset = true;
-  water.material.polygonOffsetFactor = -1;
   water.receiveShadow = true;
   group.add(water);
 
-  // Lotus pads (flat discs) and flowers (small pink cones) scattered on the water.
+  // Lotus: pads (notched, veined, cupped) and flowers (two petal rings + seed head), clustered not uniform.
   const geos = [];
-  let s = 7;
-  const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
-  for (let i = 0; i < 70; i++) {
-    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 7.2;
-    const x = Math.cos(a) * r, z = Math.sin(a) * r;
-    const size = 0.5 + rnd() * 0.45;
-    geos.push(bake(new THREE.CircleGeometry(size, 9), new THREE.Matrix4().makeRotationX(-Math.PI / 2).setPosition(x, 0.085, z), i % 3 ? 0x4f7233 : 0x62843c));
-    if (i % 5 === 0) {
-      geos.push(bake(new THREE.ConeGeometry(0.28, 0.4, 7), at(x, 0.28, z), 0xd9709a));
-      geos.push(bake(new THREE.ConeGeometry(0.18, 0.3, 6), at(x + 0.2, 0.24, z + 0.08), 0xefb0c8));
+  for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
+    const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
+    for (let i = 0; i < 14; i++) {
+      const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.38 + rnd() * 0.42;
+      geos.push(lotusPadGeo(x, z, size, rnd() * 6.28, i % 3 ? 0x4a6e30 : 0x5d8238));
+      if (i % 5 === 0) geos.push(...lotusFlowerGeos(x + 0.35, z + 0.2, 0.9 + rnd() * 0.5, rnd() * 6.28));
     }
   }
-  // Bathing ghat: two stepped cement slabs and a washing stone on the east bank.
-  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(2.6 - i * 0.3, 0.16, 0.7), at(10.4 - i * 0.7, 0.08 + i * 0.15, 0.0, Math.PI / 2), 0xb4ac98));
-  geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(11.9, 0.18, 2.0, 0.4), 0x8d8676));
-  const props = new THREE.Mesh(mergeGeometries(geos), vcMat());
-  props.castShadow = false;
-  props.receiveShadow = true;
-  group.add(props);
+  const lotus = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), vcMat({ roughness: 0.8 }));
+  lotus.material.side = THREE.DoubleSide;
+  lotus.castShadow = false;
+  lotus.receiveShadow = true;
+  group.add(lotus);
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -217,21 +286,30 @@ export function createTubewell(position) {
   for (const [w, d, ox, oz] of [[3.0, 0.02, 0, -1.5], [3.0, 0.02, 0, 1.5], [0.02, 3.0, -1.5, 0], [0.02, 3.0, 1.5, 0]]) geos.push(bake(new THREE.BoxGeometry(w, 0.1, d), at(cx + ox, 0.5, cz + oz), STAIN));
   geos.push(bake(new THREE.BoxGeometry(2.0, 0.015, 1.4), at(cx + 1.9, 0.02, cz + 2.0), WET));
   geos.push(bake(new THREE.BoxGeometry(0.4, 0.12, 4.5), at(cx + 1.9, 0.05, cz + 3.8), SLAB));
-  const water = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.04, 3.0), new THREE.MeshStandardMaterial({ color: WATER, roughness: 0.06, metalness: 0.25, envMapIntensity: 1.4 }));
-  water.position.set(cx, 0.5, cz);
-  const naali = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.03, 4.3), water.material);
-  naali.position.set(cx + 1.9, 0.12, cz + 3.8);
+  const water = new THREE.Mesh(mergeGeometries([
+    new THREE.BoxGeometry(3.0, 0.04, 3.0).translate(cx, 0.5, cz),
+    new THREE.BoxGeometry(0.22, 0.03, 4.3).translate(cx + 1.9, 0.12, cz + 3.8),
+  ]), createWaterMaterial({ shallow: 0x6f7550, deep: 0x4a5636, depth: 0.55, scale: 2.2, opacity: 0.96 }));
+  water.name = 'tubewell_water';
   // Woven charpai in the kothri's shade.
   charpaiGeos(geos, -0.5, 2.7, 0.15);
+  // Two bhoosa haystacks behind the kothri (fodder kept next to the pump), a smaller one leaning beside them.
+  const hay = [[-7.5, -5.5, 0.62, 1, 0xb4a276], [-9.8, -2.6, 0.5, 2, 0xc0ad80], [-5.2, -7.6, 0.38, 0, 0xa59468]];
+  const hayGeos = [];
+  for (const [x, z, k, n, tone] of hay) hayGeos.push(...haystackGeos(x, z, k, n, tone));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.name = 'tubewell';
   // Kothri, hauz, motor and the charpai in its shade are solid (A0).
-  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 2.9, 2.5], [3.9, 0.4, 3.5, 3.5], [-2.1, 0.4, 0.6, 0.6], [-0.5, 2.7, 1.9, 1.0, 0.15]]);
+  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 2.9, 2.5], [3.9, 0.4, 3.5, 3.5], [-2.1, 0.4, 0.6, 0.6], [-0.5, 2.7, 1.9, 1.0, 0.15], ...[[-7.5, -5.5, 0.62], [-9.8, -2.6, 0.5], [-5.2, -7.6, 0.38]].map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k])]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
   group.name = 'tubewell_prop';
-  group.add(mesh, water, naali);
+  const hayMesh = new THREE.Mesh(mergeGeometries(hayGeos), strawMaterial());
+  hayMesh.name = 'tubewell_haystacks';
+  hayMesh.castShadow = true;
+  hayMesh.receiveShadow = true;
+  group.add(mesh, water, hayMesh);
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -310,15 +388,13 @@ export function createSugarcaneBelt({ x0, z0, width, depth }) {
 export function createJohad(position) {
   const group = new THREE.Group();
   group.name = 'johad';
-  const rim = new THREE.Mesh(mergeGeometries([
-    flatBlob(7.8, 4.1, 0.025, 0x75623f),
-    flatBlob(6.3, 4.1, 0.03, 0x54492f),
-  ]), vcMat({ roughness: 1 }));
+  let sr = 5;
+  const rr = () => { sr = (sr * 16807) % 2147483647; return sr / 2147483647; };
+  const rim = new THREE.Mesh(mergeGeometries(shoreGeos(5.4, 4.1, rr)), vcMat({ roughness: 1 }));
   rim.receiveShadow = true;
   group.add(rim);
-  const water = new THREE.Mesh(flatBlob(5.4, 4.1, 0.06, 0x5a5b3c), vcMat({ roughness: 0.1, metalness: 0.3 }));
-  water.material.polygonOffset = true;
-  water.material.polygonOffsetFactor = -1;
+  const water = new THREE.Mesh(blobWaterGeometry(5.4, 4.1, 0.06, 6, 28), createWaterMaterial({ shallow: 0x77704a, deep: 0x3a4630, scale: 1.4 }));
+  water.name = 'johad_water';
   water.receiveShadow = true;
   group.add(water);
   const geos = [];
@@ -342,6 +418,41 @@ export function createJohad(position) {
   return group;
 }
 
+let STRAW_MAT = null;
+/** Straw (bhoosa) material: canvas-drawn strand texture (fine vertical straw streaks, dark gaps, bright flecks) used as colour + bump, rough, shared by every haystack. */
+function strawMaterial() {
+  if (STRAW_MAT) return STRAW_MAT;
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N;
+  const x = c.getContext('2d');
+  x.fillStyle = '#b8a26a'; x.fillRect(0, 0, N, N);
+  let sd = 7; const r = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 1400; i++) {
+    const px = r() * N, len = 20 + r() * 90, py = r() * N, g = 110 + r() * 110;
+    x.strokeStyle = `rgba(${g + 30},${g},${g * 0.55},${0.25 + r() * 0.5})`; x.lineWidth = 0.6 + r() * 1.4;
+    x.beginPath(); x.moveTo(px, py); x.lineTo(px + (r() - 0.5) * 6, py + len); x.stroke();
+  }
+  for (let i = 0; i < 350; i++) { x.fillStyle = `rgba(60,45,20,${0.2 + r() * 0.3})`; x.fillRect(r() * N, r() * N, 1, 6 + r() * 20); }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const bump = new THREE.CanvasTexture(c); bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
+  STRAW_MAT = new THREE.MeshStandardMaterial({ name: 'straw', map: tex, bumpMap: bump, bumpScale: 2.2, vertexColors: true, roughness: 1, metalness: 0 });
+  STRAW_MAT.color.setScalar(0.85);
+  return STRAW_MAT;
+}
+
+/** One bhoosa (straw) haystack: lathe profile with a bulging flank tapering to a rounded crown, jittered so it reads as piled straw, wound with a rope band. */
+function haystackGeos(x, z, k, n, tone) {
+  const prof = [[1.9, 0], [2.0, 0.5], [1.95, 1.3], [1.7, 2.1], [1.2, 2.8], [0.55, 3.2], [0, 3.35]].map(([r, y]) => new THREE.Vector2(r * k, y * k));
+  const g = new THREE.LatheGeometry(prof, 24);
+  const p = g.attributes.position;
+  for (let v = 0; v < p.count; v++) {
+    const h = Math.sin(p.getX(v) * 3.1 + p.getY(v) * 2.3 + n) * Math.cos(p.getZ(v) * 2.7 + p.getY(v) * 1.9);
+    p.setXYZ(v, p.getX(v) * (1 + 0.06 * h), p.getY(v), p.getZ(v) * (1 + 0.06 * h));
+  }
+  g.computeVertexNormals();
+  return [bake(g, at(x, 0, z, n), tone), bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), 0x8a7a50)];
+}
+
 /**
  * Khalihan (threshing floor) with bhoosa stacks: a packed-earth circle with a central post
  * and a few straw heaps and a round stack at the edge for jumping into (MAP.md west zone).
@@ -361,21 +472,9 @@ export function createKhalihan(position) {
   }
   // Bhoosa stacks: tall domed haystacks with a wound rope band, around the floor's rim.
   const stacks = [[-9.5, -3, 0.75, 0], [-10.5, 4.5, 0.9, 1], [9.8, 5.5, 0.65, 2], [11, -2.5, 0.85, 3]];
-  const tones = [0x9a8350, 0x8c7848, 0xa28c58, 0x836f42];
-  for (const [x, z, k, n] of stacks) {
-    // One lathe profile: bulging flank, tapering to a rounded crown; vertices jittered so it reads as piled straw.
-    const prof = [[1.9, 0], [2.0, 0.5], [1.95, 1.3], [1.7, 2.1], [1.2, 2.8], [0.55, 3.2], [0, 3.35]].map(([r, y]) => new THREE.Vector2(r * k, y * k));
-    const g = new THREE.LatheGeometry(prof, 24);
-    const p = g.attributes.position;
-    for (let v = 0; v < p.count; v++) {
-      const h = Math.sin(p.getX(v) * 3.1 + p.getY(v) * 2.3 + n) * Math.cos(p.getZ(v) * 2.7 + p.getY(v) * 1.9);
-      p.setXYZ(v, p.getX(v) * (1 + 0.06 * h), p.getY(v), p.getZ(v) * (1 + 0.06 * h));
-    }
-    g.computeVertexNormals();
-    geos.push(bake(g, at(x, 0, z, n), tones[n]));
-    geos.push(bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), ROPE));
-  }
-  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat({ roughness: 1 }));
+  const tones = [0xb8a678, 0xa99868, 0xc0ad80, 0xa08f62];
+  for (const [x, z, k, n] of stacks) geos.push(...haystackGeos(x, z, k, n, tones[n]));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), strawMaterial()); // threshing floor + stacks share the straw material: one draw call
   mesh.name = 'khalihan';
   mesh.castShadow = true;
   mesh.receiveShadow = true;

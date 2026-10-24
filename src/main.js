@@ -123,6 +123,7 @@ import { generalStoreGoods } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
+import { updateWater } from './water.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
@@ -2587,6 +2588,7 @@ async function main() {
       if (teaSteam.points.visible) teaSteam.update(dt);
       halwaiFire.points.visible = Math.abs(listenerPos.x - HALWAI_CENTER.x) < 30 && Math.abs(listenerPos.z - HALWAI_CENTER.z) < 30;
       if (halwaiFire.points.visible) halwaiFire.update(dt);
+      updateWater(performance.now() / 1000);
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({

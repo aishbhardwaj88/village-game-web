@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createWaterMaterial, channelWaterGeometry } from './water.js';
 import { texturedBox, texturedThickBox } from './materials.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
@@ -108,11 +109,7 @@ export function buildCanal() {
   // real still water does read with a soft sheen — not run through
   // assetSlots.js's enforceMatteMaterial clamp, which only applies to imported
   // Tripo/Blender models, not hand-authored code materials.
-  const waterGeo = new THREE.PlaneGeometry(CANAL_MAX_X - CANAL_MIN_X, CANAL_HALF_WIDTH * 2);
-  const waterMat = new THREE.MeshStandardMaterial({ color: WATER_TINT, roughness: 0.38, metalness: 0.0, normalMap: makeRippleNormalMap(), normalScale: new THREE.Vector2(0.55, 0.55) });
-  waterMat.normalMap.repeat.set(24, 2);
-  const water = new THREE.Mesh(waterGeo, waterMat);
-  water.rotation.x = -Math.PI / 2;
+  const water = new THREE.Mesh(channelWaterGeometry(CANAL_MAX_X - CANAL_MIN_X, CANAL_HALF_WIDTH * 2, 0, 8), createWaterMaterial({ shallow: 0x7a7a4c, deep: 0x44502f, scale: 0.9, opacity: 0.95 }));
   water.position.set((CANAL_MIN_X + CANAL_MAX_X) / 2, 0.05, CANAL_Z); // just above the ground plane so it actually renders, between the 0.35m-high banks
   water.name = 'canal_water';
   water.receiveShadow = true;

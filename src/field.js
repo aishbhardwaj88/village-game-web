@@ -89,12 +89,30 @@ const STRAW_GROUND = 0xe3cf94;
 
 function buildFieldGround(x0, x1, tint, name) {
   const width = FIELD_SIZE.x * (x1 - x0);
-  const geometry = ensureUv2(new THREE.PlaneGeometry(width, FIELD_SIZE.z));
+  const segX = Math.max(1, Math.round(width / 2.2)), segZ = Math.round(FIELD_SIZE.z / 2.2);
+  const geometry = ensureUv2(new THREE.PlaneGeometry(width, FIELD_SIZE.z, segX, segZ));
+  // Per-vertex canopy tint: the ground under each plot carries the crop colour (flowering mustard yellow, green wheat...) so the field reads as a
+  // continuous crop carpet from a distance. Values above 1 are intentional (the dark scanned soil needs overdriving). No extra draw call.
+  const gp = geometry.attributes.position, cArr = new Float32Array(gp.count * 3);
+  const cx0 = FIELD_CENTER.x - FIELD_SIZE.x / 2 + FIELD_SIZE.x * (x0 + x1) / 2;
+  for (let i = 0; i < gp.count; i++) {
+    const wx = cx0 + gp.getX(i), wz = FIELD_CENTER.z - gp.getY(i);
+    const fx = (wx - (FIELD_CENTER.x - FIELD_SIZE.x / 2)) / FIELD_SIZE.x;
+    let t = [1, 1, 1];
+    if (fx >= STUBBLE_FRAC && fx <= 0.67) {
+      const k = plotKind(wx, wz);
+      t = k === 'sarson' ? [1.8, 2.95, 0.2] : k === 'wheat_young' ? [0.6, 1.9, 0.5] : k === 'wheat_gold' ? [1.4, 1.75, 0.7] : k === 'ploughed' ? [0.8, 0.62, 0.5] : [0.8, 1.3, 0.6];
+    } else if (fx > 0.67) t = [0.85, 1.35, 0.6];
+    const n = 0.9 + 0.2 * (0.5 + 0.5 * Math.sin(wx * 0.9 + wz * 1.3) * Math.cos(wz * 0.7 - wx * 0.5));
+    cArr[i * 3] = t[0] * n; cArr[i * 3 + 1] = t[1] * n; cArr[i * 3 + 2] = t[2] * n;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(cArr, 3));
   const material = getTiledMaterial('ground', {
     repeatX: width / 5,
     repeatY: FIELD_SIZE.z / 5,
     tint,
     roughness: 1,
+    vertexColors: true,
   });
   applyGroundNoiseDetail(material, {
     patchContrast: getActiveAtmosphere().groundContrastMultiplier,
@@ -109,12 +127,21 @@ function buildFieldGround(x0, x1, tint, name) {
   return mesh;
 }
 
+/** Patchwork of plots in the middle third (real khets are never one crop): sarson in yellow flower, young green wheat, ripe golden wheat, bare
+ * ploughed earth and a small vegetable patch. Deterministic per ~22 x 20 m plot, with the plot edge wobbled so borders are not ruler-straight. */
+const PLOT_KINDS = ['sarson', 'wheat_young', 'wheat_gold', 'sarson', 'ploughed', 'wheat_young', 'sarson', 'wheat_gold', 'veg', 'sarson', 'wheat_gold', 'wheat_young'];
+function plotKind(rx, rz) {
+  const wob = Math.sin(rz * 0.21) * 2.2 + Math.sin(rx * 0.17) * 1.6;
+  const ix = Math.floor((rx + wob + 40) / 22), iz = Math.floor((rz + wob * 0.6 + 70) / 20);
+  return PLOT_KINDS[(((ix * 5 + iz * 7) % PLOT_KINDS.length) + PLOT_KINDS.length) % PLOT_KINDS.length];
+}
+
 /** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
  * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
  * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
  * triangles each, no shadow casting. */
 function buildCropRows() {
-  const along = 1.0;
+  const along = 1.15;
   const between = 1.5;
   const halfX = FIELD_SIZE.x / 2 - 2;
   const halfZ = FIELD_SIZE.z / 2 - 2;
@@ -136,6 +163,16 @@ function buildCropRows() {
     const bx = ca * r0, bz = sa * r0;
     pos.push(bx - px, 0, bz - pz, bx + px, 0, bz + pz, bx + ca * lean, h, bz + sa * lean);
     col.push(base.r, base.g, base.b, base.r, base.g, base.b, tipWheat.r, tipWheat.g, tipWheat.b);
+  }
+  // Four flower / ear spikes per tuft, standing at the top (one triangle each). Cream-gold by default; the per-instance colour turns them
+  // saturated mustard yellow (sarson in flower), pale gold (ripe wheat ears) or leaf green (young wheat, sabzi tops).
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + 0.9;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const cx = ca * 0.07, cz = sa * 0.07, h0 = 0.62 + 0.08 * (i % 2);
+    const px = -sa * 0.05, pz = ca * 0.05;
+    pos.push(cx - px, h0, cz - pz, cx + px, h0, cz + pz, cx + ca * 0.02, h0 + 0.17, cz + sa * 0.02);
+    for (let k = 0; k < 3; k++) col.push(0.95, 0.8, 0.28);
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -161,7 +198,9 @@ function buildCropRows() {
       const stubble = fx < 0.33;
       const sabziZone = fx > 0.67;
       if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
-      const sabzi = sabziZone || (!stubble && r % 3 === 2);
+      const kind = stubble || sabziZone ? null : plotKind(rx, rz);
+      if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
+      const sabzi = sabziZone || kind === 'veg';
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
       if (inKeepOut(rx, rz)) continue; // no crop standing in the tubewell naali / any water footprint
@@ -169,12 +208,15 @@ function buildCropRows() {
       dummy.position.set(rx + j * 0.12, 0, rz + Math.cos(rx * 5.3 + rz * 3.7) * 0.1);
       dummy.rotation.y = j * 3;
       const sc = 0.85 + 0.35 * (0.5 + 0.5 * Math.sin(rx * 3.1 - rz * 2.3));
-      dummy.scale.set(sc, sc * (stubble ? 0.22 : sabzi ? 0.7 : 1), sc);
+      const lush = kind === 'sarson' ? 1.25 : 1;
+      dummy.scale.set(sc * lush, sc * (stubble ? 0.22 : sabzi ? 0.7 : kind === 'wheat_young' ? 0.55 : kind === 'sarson' ? 1.15 : 1), sc * lush);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
       if (stubble) c.setRGB(1.2, 1.05, 0.62);
       else if (sabzi) c.setRGB(0.5 + 0.15 * (r % 4), 1.25, 0.55);
-      else c.setRGB(0.92 + 0.1 * j, 0.95 + 0.08 * j, 0.85);
+      else if (kind === 'sarson') c.setRGB(1.1 + 0.08 * j, 1.05 + 0.06 * j, 0.35);          // flowering mustard: saturated yellow tops
+      else if (kind === 'wheat_young') c.setRGB(0.55 + 0.08 * j, 1.12, 0.55);               // green knee-high wheat
+      else c.setRGB(1.0 + 0.1 * j, 0.9 + 0.08 * j, 0.78);                                    // ripe wheat, pale gold ears
       mesh.setColorAt(index, c);
       index++;
     }
