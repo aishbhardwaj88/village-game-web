@@ -86,6 +86,7 @@ read Hindi.
 - **The plant next to the elders playing carrom looks like a poorly cut 2D image.**
   Remove it and put a good quality plant there.
 - **Flower pots: not improved.** Replace with real free pot models.
+- [DONE 24 Oct 2026: milk cans now lathed steel cans with shoulder, neck, lid and bands at the dairy (src/farmSites.js, already) and the kachcha homestead (build_kachcha.py, was a plain cylinder); proof docs/shots/milkcan-2026-10-24/before.png (dairy) and homestead_after.png (headless, camera shots, no subject check)]
 - **Clay pots: she asked for realistic clay pots and did not get them.** The six white
   cylindrical objects outside one house (she could not tell what they were) are part
   of this: make them clearly readable as what they are, or remove them.

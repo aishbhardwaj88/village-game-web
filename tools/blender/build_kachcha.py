@@ -153,7 +153,10 @@ def yard_props():
     for (x, z, s) in ((-6.7, 1.5, 1.0), (-6.4, 2.2, 0.9), (-6.7, 2.9, 1.0)):
         clay_pot(kit, x, z, s)
     kit.add('wood', wb('matka_stand', -6.95, -6.0, 1.0, 3.4, 0.0, 0.06, 0.01))
-    kit.add('paint', cyl('milkcan', 3.2, -1.8, 0.0, 0.5, 0.15, 0.15, 12), 0xB9BDC2)
+    for cx, cz in ((3.2, -1.8), (3.55, -1.65)):
+        kit.add('paint', lathe('milkcan', cx, cz, [(0.0, 0.0), (0.14, 0.0), (0.16, 0.03), (0.15, 0.06), (0.15, 0.38), (0.14, 0.43), (0.1, 0.47), (0.085, 0.5), (0.085, 0.53), (0.1, 0.54), (0.07, 0.58), (0.0, 0.6)], seg=16), 0xB9BDC2)
+        kit.add('paint', cyl('milkcan_band', cx, cz, 0.08, 0.1, 0.158, 0.158, 16), 0x9A9FA4)
+        kit.add('paint', cyl('milkcan_band', cx, cz, 0.35, 0.37, 0.158, 0.158, 16), 0x9A9FA4)
     # haystack (golden cone, bound) beside the shed
     hx, hz = 5.2, 3.2
     kit.add('thatch', lathe('stack', hx, hz, [(0.0, 0.0), (1.25, 0.0), (1.42, 0.5), (1.38, 1.2), (1.12, 1.9), (0.7, 2.4), (0.28, 2.75), (0.0, 2.9)], seg=20), 0xF2E8C8)

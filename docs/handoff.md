@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z23, playtest block item 2, milk cans):** Game change: the homestead's lone plain-cylinder milk can (tools/blender/build_kachcha.py) is now two lathed steel cans with shoulder, neck, lid and rolled bands, kachcha_homestead.glb rebuilt; the Dudh dairy cans were already proper dairy cans. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/milkcan-2026-10-24/{before,homestead_after}.png (headless, no subject check, so only noted on item 2, not ticked as whole). Still flat-tint: barber/puncture props. Cattle in homestead shed are peg-legged blocks (animal models).
+NEXT: flat-tint barber/puncture props, Banta/Chaat real textures, water texture (item 7).
+
+---
+
 **2026-10-24 (cycle 39z22, playtest block items 4-6 proof pass):** Game change: the tailor's dress form (the unidentified yellow oval, tools/blender/build_bazaar_row.py) is now maroon cloth with wider shoulders, reads clearly as a tailor's dummy beside the sewing machine; bazaar_row.glb rebuilt, no new draw calls. Build ALL PASSED, budget 29.40 MB. Proof docs/shots/dressform-2026-10-24/tailor_maroon.png (headless, subject check passed). Also: proof shots taken and FEEDBACK ticked for rooftop water tanks (docs/shots/tanks-2026-10-24/near1.png, near2.png), petrol pump and dharam kanta (existing shots re-judged); matkas checked smooth (docs/shots/matka-2026-10-24/d.png). tools/shotlib.mjs now hides the dev-only tripo_*_placeholder boxes (coloured cuboids visible in dev shots only, not in the live build). Seen, not fixed: cattle at the halwai are peg-legged blocks (animal models).
 NEXT: flat-tint barber/puncture props, outfield pitch edges, Banta/Chaat real textures, milk cans.
 
