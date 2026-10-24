@@ -359,29 +359,65 @@ def build_yard():
     flower_bed(kit, 1.0, 8.6, 1.4, 2.6, rnd=rnd, soil=0x4E7F34)
     for x in (-7.5, -2.5, 3.0, 7.5):
         pot(kit, x, 3.0, 0.0, 0.18, 0.24, flower=MARI)
-    # chalk hopscotch + pitch markings on the yard dirt (one decal atlas)
+    # chalk games on the yard dirt (one decal atlas, 1024x512): hopscotch with numbered boxes (left quarter, 1 m x 2 m),
+    # a marble ring with a pit (second quarter, 2 m x 2 m, top half) and the cricket pitch (right half)
+    SEG = {1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg'}
+    def seven_seg(uu, vv, cx, cy, n, w=0.24, h=0.12, t=0.04):
+        x, y = (uu - cx) / w + 0.5, (vv - cy) / h + 0.5   # 0..1 inside the digit box
+        if not (0 <= x <= 1 and 0 <= y <= 1):
+            return False
+        tx, ty = t / w, t / (h * 2.0)
+        bars = {'a': (0, 1 - ty, 1, 1), 'g': (0, 0.5 - ty / 2, 1, 0.5 + ty / 2), 'd': (0, 0, 1, ty),
+                'f': (0, 0.5, tx, 1), 'b': (1 - tx, 0.5, 1, 1), 'e': (0, 0, tx, 0.5), 'c': (1 - tx, 0, 1, 0.5)}
+        return any(bars[k][0] <= x <= bars[k][2] and bars[k][1] <= y <= bars[k][3] for k in SEG[n])
+    def worn(u, v, a):
+        k = math.sin(u * 931.7 + v * 417.3) * 43758.5453
+        return a * (0.55 + 0.45 * (k - math.floor(k)))
+    HOP = [(0.25, 0.0, 0.75, 0.2, 1, None), (0.25, 0.2, 0.75, 0.4, 2, None), (0.0, 0.4, 0.5, 0.6, 3, None), (0.5, 0.4, 1.0, 0.6, 4, None),
+           (0.25, 0.6, 0.75, 0.8, 5, None), (0.0, 0.8, 0.5, 1.0, 6, None), (0.5, 0.8, 1.0, 1.0, 7, None)]
     def paint_atlas(u, v):
-        # left 45%: hopscotch grid (white lines); right 55%: cricket pitch (pale strip + creases)
-        if u < 0.45:
-            uu, vv = u / 0.45, v
-            cells = [(0.25, 0.0, 0.75, 0.2), (0.25, 0.2, 0.75, 0.4), (0.0, 0.4, 0.5, 0.6), (0.5, 0.4, 1.0, 0.6), (0.25, 0.6, 0.75, 0.8), (0.0, 0.8, 0.5, 1.0), (0.5, 0.8, 1.0, 1.0)]
-            for (a, b, c, d) in cells:
-                edge = min(abs(uu - a), abs(uu - c), abs(vv - b), abs(vv - d))
+        if u < 0.25:
+            uu, vv = u / 0.25, v
+            for (a, b, c, d, n, _) in HOP:
+                edge = min(abs(uu - a), abs(uu - c), abs(vv - b) * 2.0, abs(vv - d) * 2.0)
                 inside = a - 0.03 <= uu <= c + 0.03 and b - 0.015 <= vv <= d + 0.015
-                if inside and edge < 0.025:
-                    return (0.9, 0.9, 0.86, 0.95)
+                if inside and edge < 0.04:
+                    return (0.92, 0.91, 0.86, worn(u, v, 0.95))
+                if a < uu < c and b < vv < d and seven_seg(uu, vv, (a + c) / 2, (b + d) / 2, n):
+                    return (0.92, 0.91, 0.86, worn(u, v, 0.9))
             return None
-        uu, vv = (u - 0.45) / 0.55, v
+        if u < 0.5:
+            if v > 0.5:
+                return None
+            uu, vv = (u - 0.25) / 0.25 - 0.5, v / 0.5 - 0.5
+            r = math.hypot(uu, vv)
+            if abs(r - 0.42) < 0.014:
+                return (0.92, 0.91, 0.86, worn(u, v, 0.95))
+            if r < 0.035:
+                return (0.12, 0.09, 0.07, 0.9)   # the pit
+            for i, (mx, my, col) in enumerate(((0.12, 0.05, (0.75, 0.2, 0.15)), (-0.1, 0.14, (0.15, 0.4, 0.7)), (0.05, -0.17, (0.9, 0.7, 0.15)), (-0.18, -0.05, (0.2, 0.55, 0.3)), (0.2, -0.1, (0.7, 0.7, 0.75)))):
+                if math.hypot(uu - mx, vv - my) < 0.022:
+                    return (col[0], col[1], col[2], 1.0)   # glass marbles
+            return None
+        uu, vv = (u - 0.5) / 0.5, v
         if 0.12 < vv < 0.88 and 0.0 < uu < 1.0:
             base = (0.62, 0.5, 0.36, 0.45)
             if abs(vv - 0.2) < 0.012 or abs(vv - 0.8) < 0.012 or abs(vv - 0.14) < 0.01 or abs(vv - 0.86) < 0.01:
                 return (0.92, 0.9, 0.84, 0.9)
             return base
         return None
-    dmat = decal_material('hb_decal', (768, 512), paint_atlas)
-    kit.extra.append(decal_quad('hopscotch_a', -7.0, -5.8, -9.0, -5.8, 0.025, (0.0, 0.0, 0.45, 1.0), dmat))
-    kit.extra.append(decal_quad('hopscotch_b', 7.5, 8.7, -3.0, 0.2, 0.025, (0.0, 0.0, 0.45, 1.0), dmat))
-    kit.extra.append(decal_quad('pitch', -2.5, 3.5, -4.2, -1.0, 0.026, (0.45, 0.0, 1.0, 1.0), dmat))
+    dmat = decal_material('hb_decal', (1024, 512), paint_atlas)
+    kit.extra.append(decal_quad('hopscotch_a', -6.6, -5.6, -4.0, -2.0, 0.025, (0.0, 0.0, 0.25, 1.0), dmat))
+    kit.extra.append(decal_quad('hopscotch_b', 6.0, 7.0, -12.6, -10.6, 0.025, (0.0, 0.0, 0.25, 1.0), dmat))
+    kit.extra.append(decal_quad('marbles_a', -5.2, -3.2, -1.0, 1.0, 0.025, (0.25, 0.0, 0.5, 0.5), dmat))
+    kit.extra.append(decal_quad('pitch', -2.5, 3.5, -4.2, -1.0, 0.026, (0.5, 0.0, 1.0, 1.0), dmat))
+    # see-saw (wooden plank on a steel pivot), south yard east of the gate path
+    sx, sz = 4.6, -11.4
+    kit.add('paint', wb('seesaw_base', sx - 0.12, sx + 0.12, sz - 0.3, sz + 0.3, 0.0, 0.1, 0.01), 0x2B2B2D)
+    kit.add('paint', wb('seesaw_post', sx - 0.07, sx + 0.07, sz - 0.07, sz + 0.07, 0.1, 0.45, 0.01), 0x2B2B2D)
+    kit.add('wood', limb('seesaw_plank', (sx, sz - 1.3, 0.28), (sx, sz + 1.3, 0.62), 0.22, 0.22, 0.02))
+    for e, (zz, zh) in enumerate(((sz - 1.2, 0.3), (sz + 1.2, 0.6))):
+        kit.add('paint', limb('seesaw_handle', (sx - 0.1, zz - 0.2 + e * 0.4, zh + 0.1), (sx + 0.1, zz - 0.2 + e * 0.4, zh + 0.1), 0.03, 0.03), 0x2B2B2D)
     # flagpole base (the pole itself is code: src/props.js) — a stepped concrete plinth at (0,-8)
     for i, w in enumerate((0.9, 0.62, 0.36)):
         kit.add('trim', wb('flag_step', -w, w, -8 - w, -8 + w, i * 0.14, (i + 1) * 0.14, 0.01))

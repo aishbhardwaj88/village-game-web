@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39t, playtest block item 5, school games):** Game change: school yard now has numbered chalk hopscotch (2), a marble ring with pit and glass marbles, and a wooden see-saw (tools/blender/build_school.py, school_compound.glb rebuilt, atlas 1024x512, same single decal draw call). Earlier hopscotch decals sat under the verandah (x<-6.9) and were unseen; moved into the open yard. The flagpole already existed and reads well (docs/shots/school-2026-10-24/flag.png): her note was likely about visibility from the gate. Build ALL PASSED, budget 28.51 MB. Proof docs/shots/school-2026-10-24/{flag,hopscotch,marbles,seesaw}.png (headless, ~2-3 fps).
+Gaps: see-saw has no collider; marigold flower beds use faceted icosphere blooms (visible in marbles.png, fails realism rule); yellow swing still unidentified; petrol pump, atta chakki, godown, cricket field, badminton court, water tanks, other shops' goods still open.
+NEXT: flower_bed blooms (faceted icospheres) across all models; petrol pump; atta chakki.
+
+---
+
 **2026-10-24 (cycle 39s, playtest block item 3, halwai bhatti):** Game change: each halwai bhatti now has a fire mouth on the customer-facing face (sooty arch, black recess, glowing ember bed, half-burnt log) and the kadhai is rounder (sphere subdiv 3, no longer faceted). tools/blender/build_halwai.py, halwai_compound.glb rebuilt (+~500 tris). Proof docs/shots/halwai-fire-2026-10-24/mouth.png (headless). Build ALL PASSED, budget passed.
 Gaps: embers are a plain colour (no emissive slot in the kit), no soot on the wall behind, no heat shimmer; other shops' goods, Banta shop, Chaat thela still open.
 NEXT: other shops' goods (medical, mobile, bangle); findability walk; lanes.

@@ -136,7 +136,7 @@ flowers - and it is still not there.
 - **Cricket field**: the ground texture is bad and does not read as mud. Replace it.
 - **The court beside it**: if it is a badminton court, draw the court lines and use a
   proper net. Free assets exist.
-- **School**: no India flag pole and no games. Add the flag pole with a flag, and
+- [PARTLY DONE 24 Oct 2026: flagpole with flag was already built and reads clearly, proof docs/shots/school-2026-10-24/flag.png; games added: numbered chalk hopscotch x2, marble ring with pit and glass marbles, see-saw, proof docs/shots/school-2026-10-24/{hopscotch,marbles,seesaw}.png (headless); tyre swing + cricket pitch already there; reference 2D images not re-checked] **School**: no India flag pole and no games. Add the flag pole with a flag, and
   playground games. She has shared 2D reference images of the school that were not
   followed - find them in the repo references and follow them.
 - **The yellow swing** is not good or realistic. Rebuild or replace it.
