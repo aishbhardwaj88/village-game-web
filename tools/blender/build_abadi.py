@@ -322,14 +322,44 @@ def house_lod(kit, rnd, x0, w, floors, wall, plinth, roof):
     kit.add('wood', wb('door', dcx - 0.5, dcx + 0.5, ZF, ZF + 0.06, 0, 2.1, B), _paint[0])
     kit.add('wood', wb('chajja', dcx - 0.8, dcx + 0.8, ZF, ZF + 0.8, 2.4, 2.47, B), WOODL)
     kit.add('paint', wb('win', wcx - 0.5, wcx + 0.5, ZF, ZF + 0.05, 1.1, 2.2, B), 0x4A3426)
+    # far-LOD openings read as real ones at distance: pale surround + sill, iron grille bars, door frame, cornice, damp band
+    def opening(tag, cx, z0, z1, hw, zb, zt, grille):
+        kit.add('trim', wb(tag + '_sl', cx - hw - 0.12, cx - hw, z0, z1 + 0.03, zb - 0.1, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_sr', cx + hw, cx + hw + 0.12, z0, z1 + 0.03, zb - 0.1, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_lt', cx - hw - 0.12, cx + hw + 0.12, z0, z1 + 0.03, zt, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_sill', cx - hw - 0.2, cx + hw + 0.2, z0, z1 + 0.14, zb - 0.16, zb - 0.04, B), 0xD0C8B6)
+        if grille:
+            for k in range(3):
+                gx = cx - hw + (k + 1) * (2 * hw) / 4
+                kit.add('paint', wb(tag + f'_g{k}', gx - 0.02, gx + 0.02, z1, z1 + 0.09, zb, zt, B), 0x1C1C1F)
+    opening('w1', wcx, ZF, ZF + 0.05, 0.5, 1.1, 2.2, True)
+    kit.add('trim', wb('dframe_l', dcx - 0.62, dcx - 0.5, ZF, ZF + 0.08, 0, 2.2, B), 0xE6E0D0)
+    kit.add('trim', wb('dframe_r', dcx + 0.5, dcx + 0.62, ZF, ZF + 0.08, 0, 2.2, B), 0xE6E0D0)
+    kit.add('trim', wb('dframe_t', dcx - 0.62, dcx + 0.62, ZF, ZF + 0.08, 2.1, 2.22, B), 0xE6E0D0)
+    kit.add('trim', wb('step', dcx - 0.7, dcx + 0.7, ZF, ZF + 0.35, 0, 0.12, B), 0xB8B0A0)
+    kit.add('plinth', wb('damp', x0, x0 + w, ZF, ZF + 0.03, 0.65, 1.0, B), 0x9C9484)
     if floors == 2:
         kit.add('paint', wb('win2', wcx - 0.5, wcx + 0.5, ZF, ZF + 0.05, 3.9, 5.1, B), 0x4A3426)
+        opening('w2', wcx, ZF, ZF + 0.05, 0.5, 3.9, 5.1, True)
+        kit.add('trim', wb('band', x0, x0 + w, ZF, ZF + 0.1, 3.2, 3.38, B), 0xE6E0D0)
         kit.add('wood', wb('jbay', dcx - 1.0, dcx + 1.0, ZF, ZF + 0.85, 3.2, 5.3, B), WOODD)
     # rear and flank openings (seen from rooftops and the fields): one dark window per floor on the back, a small high vent
     bx = x0 + w * (0.62 if left else 0.38)
     kit.add('paint', wb('bwin', bx - 0.45, bx + 0.45, -ZF - 0.05, -ZF, 1.2, 2.2, B), 0x4A3426)
     if floors == 2:
         kit.add('paint', wb('bwin2', bx - 0.45, bx + 0.45, -ZF - 0.05, -ZF, 4.0, 5.1, B), 0x4A3426)
+    # pale surround, sill and grille on the rear openings too (the back of a north-side row is what the hero zone sees)
+    for tag, zb, zt in ([('b1', 1.2, 2.2)] + ([('b2', 4.0, 5.1)] if floors == 2 else [])):
+        hw = 0.45
+        kit.add('trim', wb(tag + '_sl', bx - hw - 0.12, bx - hw, -ZF - 0.08, -ZF, zb - 0.1, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_sr', bx + hw, bx + hw + 0.12, -ZF - 0.08, -ZF, zb - 0.1, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_lt', bx - hw - 0.12, bx + hw + 0.12, -ZF - 0.08, -ZF, zt, zt + 0.12, B), 0xE6E0D0)
+        kit.add('trim', wb(tag + '_sill', bx - hw - 0.2, bx + hw + 0.2, -ZF - 0.16, -ZF, zb - 0.16, zb - 0.04, B), 0xD0C8B6)
+        for k in range(3):
+            gx = bx - hw + (k + 1) * (2 * hw) / 4
+            kit.add('paint', wb(tag + f'_g{k}', gx - 0.02, gx + 0.02, -ZF - 0.1, -ZF - 0.04, zb, zt, B), 0x1C1C1F)
+    if floors == 2:
+        kit.add('trim', wb('rband', x0, x0 + w, -ZF - 0.1, -ZF, 3.2, 3.38, B), 0xE6E0D0)
     if roof == 'flat':
         kit.add('trim', wb('roof', x0 - 0.1, x0 + w + 0.1, -ZF - 0.15, ZF + 0.2, H, H + 0.15, B), 0xD8D2C2)
         kit.add('plaster', wb('par_f', x0, x0 + w, ZF, ZF + 0.2, H + 0.15, H + 0.9, B), wall)

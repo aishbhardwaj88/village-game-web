@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z18, queue item 5, far-LOD abadi openings):** Game change: the far-LOD abadi row proxies (tools/blender/build_abadi.py house_lod, make_abadi.sh) now have pale window/door surrounds and sills, three-bar iron grilles, door frame and step, a damp band above the plinth and a floor band on two-storey houses, front and rear. Near models untouched, still 1 material and ~1-1.4k triangles per proxy. Build ALL PASSED (hero 148, bazaar 150), budget 29.40 MB. Proof docs/shots/farlod-2026-10-24/east_far_after.png vs east_far.png (headless, no subject check, so NOT ticked). Still flat colour (no plaster texture) on the far proxy.
+NEXT: flat-tint barber/puncture props, outfield grass checker, Banta shop / Chaat thela unbuilt.
+
+---
+
 **2026-10-24 (cycle 39z17, playtest block item 7, pond mud edge):** Game change: the pond (and johad rim) shoreline mud no longer ends in a crisp rim; src/farmSites.js softShoulder() adds five vertex-colour bands outside the dry-mud ring that grade from mud to the grass tone (same blob outline, merged into the existing shore mesh, no new draw call). Build ALL PASSED, budget 29.33 MB. Proof docs/shots/pond-soft-2026-10-24/pond.png (headless, no subject check, so item 7 NOT ticked). Also found: the interior-goods gaps listed in 39z7-39z11 for medical, tailor and mobile are already filled (buildBazaarKiranaGoods carries them); remaining flat-tint props are the barber chair, puncture-shop props, sewing machine and kirana floor sacks. Buffaloes at the pond read as peg-legged blocks (animal models), not touched.
 NEXT: flat-tint barber/puncture props, outfield grass checker, pitch patch edges, Banta shop / Chaat thela unbuilt.
 
