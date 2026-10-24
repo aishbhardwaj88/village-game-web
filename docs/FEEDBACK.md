@@ -110,8 +110,8 @@ flowers - and it is still not there.
 
 ### 4. THE MARKET AND THE SHOPS
 - **Every shop in the market is half closed. Open them all.** Shutters up, interiors
-  visible, goods on display.
-- **Gupta General Store is the worst offender.** She asked for realistic items and
+  visible, goods on display. [PARTLY DONE 24 Oct: bazaar row shutters fully rolled up (build_bazaar_row.py rebuilt); not yet re-shot; interiors' own box goods still to replace]
+- [DONE 24 Oct for Gupta General Store: real-shaped printed chips/namkeen/biscuit/soap/tea packs, toffee jars, sachet strips, soda bottles - src/shopGoods.js, proof docs/shots/shops-2026-10-24/store_front.png + store_close.png; wrapper art is generic (no brands) drawn in code, no free un-branded packet photos exist. Other shops' goods still boxes] **Gupta General Store is the worst offender.** She asked for realistic items and
   got coloured cuboids. Put real Indian village shop goods in it: chips packets,
   biscuit packets, sweets, soap, toffee jars, sachet strips, cold drink bottles.
   Find free 3D models; if none, put real photo textures on correctly shaped

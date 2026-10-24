@@ -152,14 +152,8 @@ def shutters_and_counters():
         # bold trade-coloured shutter box across the full opening (reference: a coloured header band above each shutter)
         kit.add('paint', wb('shutter_box', c - ow / 2 - 0.05, c + ow / 2 + 0.05, FRONT - 0.2, FRONT + 0.2, OPEN_H - 0.5, OPEN_H - 0.02, 0.012), col)
         kit.add('paint', limb('coil', (c - ow / 2, FRONT - 0.02, OPEN_H - 0.2), (c + ow / 2, FRONT - 0.02, OPEN_H - 0.2), 0.3, 0.3, 0.02), col)
-        # the shutter curtain pulled down about half-way (so the trade colour reads from the lane, as in the reference)
-        # while the counter and the shop behind stay visible underneath
-        kit.add('paint', wb('curtain', c - ow / 2 + 0.03, c + ow / 2 - 0.03, FRONT - 0.03, FRONT + 0.03, 1.02, OPEN_H - 0.36, 0.004), col)
-        n_slat = int((OPEN_H - 0.36 - 1.02) / 0.09)
-        for k in range(1, n_slat):
-            kit.add('paint', wb('slat', c - ow / 2 + 0.03, c + ow / 2 - 0.03, FRONT - 0.045, FRONT - 0.03, 1.02 + k * 0.09, 1.02 + k * 0.09 + 0.018, 0), (col >> 1) & 0x7F7F7F)
-        kit.add('paint', wb('curtain_bar', c - ow / 2 + 0.03, c + ow / 2 - 0.03, FRONT - 0.06, FRONT + 0.04, 0.96, 1.04, 0.006), 0x3A3733)
-        kit.add('paint', wb('curtain_lock', c - 0.08, c + 0.08, FRONT - 0.08, FRONT - 0.05, 0.98, 1.02, 0), 0xB0B4B8)
+        # 24 Oct 2026 (art director: "every shop in the market is half closed, open them all"): shutters are fully rolled up into the
+        # coloured box above the opening; no curtain hangs in the doorway, the counter and the shop behind are fully visible.
         for sgn in (-1, 1):
             kit.add('paint', wb('rail', c + sgn * (ow / 2) - 0.03, c + sgn * (ow / 2) + 0.03, FRONT - 0.04, FRONT + 0.12, 0.06, OPEN_H - 0.38, 0.004), 0x3A3733)
         # counter (0.9 high, 0.5 deep, 3.8 wide): planked front painted in the trade colour, wooden top

@@ -54,13 +54,7 @@ def interior():
     # inside the recess (back at z=0.65): shelves of packets and jars, a hanging scale, a bulb
     for hh in (1.2, 1.55, 1.9):
         kit.add('wood', wb('shelf', -1.2, 1.2, 0.65, 1.0, hh, hh + 0.03, 0.004))
-    for hh in (1.2, 1.55, 1.9):
-        for i in range(10):
-            x = -1.1 + i * 0.24
-            kit.add('paint', wb('packet', x - 0.08, x + 0.08, 0.7, 0.76, hh + 0.03, hh + 0.03 + 0.2 + 0.05 * (i % 3), 0.004), rnd.choice(PACKETS))
-    for i in range(3):
-        kit.add('paint', cyl('jar', -0.85 + i * 0.28, 1.2, 0.96, 1.2, 0.09, 0.09, 12), (0xE6C27A, 0xD9A45A, 0xE8D8B0)[i])
-        kit.add('paint', cyl('jar_lid', -0.85 + i * 0.28, 1.2, 1.2, 1.24, 0.095, 0.095, 12), 0xC0392B)
+    # (24 Oct 2026: the box packets and jars that stood here are replaced by real-shaped, printed goods built in code, src/shopGoods.js)
     for i in range(3):
         kit.add('paint', wb('bread', 0.5 + i * 0.2, 0.66 + i * 0.2, 1.1, 1.26, 0.96, 1.03, 0.01), 0xC98A4A)
     kit.add('paint', cyl('scale_base', 0.0, 1.18, 0.96, 1.0, 0.12, 0.12, 12), 0x30343A)
@@ -77,18 +71,13 @@ def hanging_packets():
         for col in range(2):
             x = side * (1.45 + col * 0.18)
             kit.add('paint', limb('string', (x, 1.54, 2.2), (x, 1.54, 0.6), 0.008, 0.008), 0x333333)
-            for k in range(9):
-                h = 2.1 - k * 0.17
-                kit.add('paint', wb('packet', x - 0.07, x + 0.07, 1.53, 1.58, h - 0.15, h, 0.004), PACKETS[(k + col * 3 + (side > 0) * 2) % len(PACKETS)])
+            # packets hang from the string: printed packs built in code (src/shopGoods.js)
 
 
 def outside():
     # red crate of green bottles (no labels) at the left, steel bucket of marigolds at the right
     kit.add('paint', wb('crate', -1.65, -1.05, 1.75, 2.05, 0, 0.3, 0.01), 0xC0392B)
-    for i in range(4):
-        for j in range(2):
-            kit.add('paint', cyl('bottle', -1.5 + i * 0.13, 1.85 + j * 0.15, 0.3, 0.62, 0.04, 0.04, 8), 0x3E8E54)
-            kit.add('paint', cyl('bottle_neck', -1.5 + i * 0.13, 1.85 + j * 0.15, 0.55, 0.68, 0.02, 0.02, 8), 0x3E8E54)
+    # soda bottles in the crate: real-shaped bottles with printed labels in code (src/shopGoods.js)
     kit.add('paint', cyl('bucket', 1.55, 1.9, 0.0, 0.34, 0.2, 0.17, 14), STEEL)
     for i in range(7):
         a = i * 0.9

@@ -219,7 +219,9 @@ async function main() {
         // roof-like fixture (one background house's roof, the bazaar's own
         // corrugated-tin awning), correctly elevated above the ground by
         // design, same reasoning as 'signboard' above.
-        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards'];
+        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards', 'shop_goods'];
+        // shop_goods (src/shopGoods.js): packets, jars and bottles standing on shelves and counters 0.3-2.2 m up, and strings of packs hanging in
+        // the window: elevated by design, same reasoning as 'signboard'. Each item's own base is a flat footprint on a real shelf.
         // tree_leaf_cards: alpha-cut canopy foliage, airborne by nature; its trunks (tree_foliage bucket) are checked and grounded.
         const mergedGroup = findByName(scene, 'village_static_merged');
         if (mergedGroup) {
@@ -460,7 +462,7 @@ async function main() {
     // before the static merge) rather than re-typing coordinates here.
     const buildingTargets = await page.evaluate(() => {
       const d = window.__dopahar;
-      const EXCLUDE = new Set(['lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'halwai_board', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'temple_props', 'trees', 'vegetation']);
+      const EXCLUDE = new Set(['lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'general_store_stock', 'shop_signboards', 'halwai_board', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'temple_props', 'trees', 'vegetation']);
       return d
         .getBuildingFootprints()
         .filter((f) => !EXCLUDE.has(f.name) && f.root !== 'background_houses')
@@ -809,7 +811,7 @@ async function main() {
     {
       const out = await page.evaluate(() => {
         const d = window.__dopahar;
-        const EXCLUDE = new Set(['new_shops_old', 'lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'shop_signboards', 'halwai_board', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'temple_props', 'trees', 'vegetation', 'shop_walls', 'new_shop_walls', 'new_shop_roofs']);
+        const EXCLUDE = new Set(['new_shops_old', 'lane', 'bazaar_lane', 'temple_lane', 'wheat_sack_pile', 'general_store_goods', 'general_store_stock', 'shop_signboards', 'halwai_board', 'bazaar_signboards', 'chowk_tea_sign', 'shop_roofs', 'shop_counters_and_posts', 'new_shop_signboards', 'new_shop_props', 'temple_props', 'trees', 'vegetation', 'shop_walls', 'new_shop_walls', 'new_shop_roofs']);
         const footprints = d.getBuildingFootprints().filter((f) => !EXCLUDE.has(f.name));
         // Real dimensions, src/shops.js / src/newShops.js (not invented).
         const REAL_DIMS = { tea_stall: { w: 4, d: 2.5 }, general_store: { w: 3.5, d: 3 }, post_office: { w: 3.2, d: 3 }, ration_shop: { w: 3.6, d: 3 }, atta_chakki: { w: 3, d: 2.8 } };
