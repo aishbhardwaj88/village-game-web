@@ -15,6 +15,7 @@ const NAVY = '#14306e';
 const GREEN = '#173f20';
 const INK = '#1b1612';
 export const PLACE_BOARDS = [
+  { id: 'school', hi: 'प्राथमिक पाठशाला', en: 'Primary School', fg: NAVY },
   { id: 'halwai', hi: 'हलवाई', en: 'Halwai - Sweets', fg: MAROON },
   { id: 'jalebi', hi: 'जलेबी और समोसा', en: 'Jalebi & Samosa', fg: MAROON },
   { id: 'dairy', hi: 'दूध डेयरी', en: 'Dudh Dairy', fg: NAVY },

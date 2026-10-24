@@ -67,7 +67,7 @@ Her words: the capsule is still crossing animals, buildings and trees.
 - DONE-WHEN: a real walk, with keys, straight at a tree, a wall, a cow and a building
   stops the player every time. Proof shot of each.
 
-### 1. [PARTLY DONE 24 Oct 2026: code now renders English bold/dominant, Hindi small/light on every board (signboards.js, bazaar.js, newShops.js); 20 new boards incl. the halwai; audit list in handoff.md; proof docs/shots/signage-2026-10-24/. Open: school front board, Banta shop and Chaat thela are not built] SIGNAGE - the rule is in CLAUDE.md but the CODE still does the opposite
+### 1. [PARTLY DONE 24 Oct 2026: code now renders English bold/dominant, Hindi small/light on every board (signboards.js, bazaar.js, newShops.js); 20 new boards incl. the halwai; audit list in handoff.md; proof docs/shots/signage-2026-10-24/. School gate board done 24 Oct (docs/shots/signage-2026-10-24/school_gate.png). Open: Banta shop and Chaat thela are not built] SIGNAGE - the rule is in CLAUDE.md but the CODE still does the opposite
 Her words: English in bold, Hindi not bold. Most of her users read English; only some
 read Hindi.
 - CLAUDE.md lines 111-121 already say English primary, larger and bolder. **The code

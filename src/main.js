@@ -400,8 +400,11 @@ async function main() {
 
   // Halwai fascia board (FEEDBACK 24 Oct item 1: the stall had none). Bilingual, English dominant, on the front fascia.
   {
-    const halwaiBoard = placeBoardsMesh([{ id: 'halwai', x: 0, y: 3.55, z: 3.1, w: 3.6 }], 'halwai_board');
-    halwaiBoard.position.set(HALWAI_CENTER.x, 0, HALWAI_CENTER.z);
+    // The school gate board shares this mesh (same atlas/material): one draw call for both, the hero view is at the 150 ceiling.
+    const halwaiBoard = placeBoardsMesh([
+      { id: 'halwai', x: HALWAI_CENTER.x, y: 3.55, z: HALWAI_CENTER.z + 3.1, w: 3.6 },
+      { id: 'school', x: SCHOOL_CENTER.x, y: 3.05, z: SCHOOL_CENTER.z - 12, ry: Math.PI, w: 4.2 }, // over the school's south gate, faces the lane
+    ], 'halwai_board');
     shopsGroup.add(halwaiBoard);
   }
 
