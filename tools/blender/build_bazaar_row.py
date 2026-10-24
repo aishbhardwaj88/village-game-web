@@ -16,7 +16,7 @@ from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, boolean_cut, R
 from arch import bicycle, Kit, ring, pot, plastic_chair, dabba, sack, clay_pot, STEEL, BRASS, LEAF, MARI, TERRA, SOIL
 
 OUT = os.path.join(ROOT, 'tmp', 'bazaar_row_raw.glb')
-kit = Kit()
+kit = Kit(tex_override={'props': ('metal', 1.0)})  # painted props (tyres, pump, spanners, chairs, bottles) ride the real metal PBR set in their own slot: no extra draw call
 rnd = random.Random(8)
 
 UW, UD = 4.5, 5.0

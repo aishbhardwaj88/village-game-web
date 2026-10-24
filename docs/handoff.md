@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z27, playtest block item 4/2, bazaar painted props):** Game change: the bazaar row's painted props (tyres, pump, spanners, bicycle, barber chair, bottles, plastic chairs; ~100 objects in tools/blender/build_bazaar_row.py) were plaster-textured; they now carry the real metal PBR set via Kit(tex_override={'props': ('metal', 1.0)}), same slot so no new draw call (materials still 3). bazaar_row.glb rebuilt. Build ALL PASSED, budget 29.44 MB. Proof docs/shots/bazaarprops-2026-10-24/{puncture,barber}.png (+_hi) are headless and the counter/awning hides the props from player height, so judged only roughly; nothing ticked. Honest gap: plastic chairs and bottles now read as painted metal, not plastic; wood in the bazaar is still plaster-tan.
+NEXT: wood in bazaar row (own PBR set, needs a draw-call saving first), other shops' interior goods, animal models.
+
+---
+
 **2026-10-24 (cycle 39z26, playtest block item 7, road ends):** Game change: the mandi yard and highway run-outs (src/farmSites.js fadeStrip) are now one continuous tapering flat strip with wobbled edges and fading wheel ruts, replacing the stepped hard-edged rectangle slabs that still read as an abrupt end; same meshes, no new draw call. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/roadend-2026-10-24/{mandi_end_n,mandi_end_n_after,mandi_end_s_after}.png (headless camera shots, no subject check, so item 7 NOT ticked). Gaps: strip colour ramp to earth barely shows under the concrete PBR texture, so the end is organic but still grey; highway end not re-shot (hw_end_after.png framed empty grass).
 NEXT: pond shoreline mud, flat-tint barber/puncture props, Banta/Chaat real textures.
 
