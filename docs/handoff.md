@@ -1,5 +1,6 @@
 **2026-10-24 (cycle 39z8, playtest block item 6, cottage wood):** Game change: kachcha homestead (tools/blender/build_kachcha.py, Kit own=('wood',)) now carries the real wood PBR set on posts, beams, gate, charpai, stand (they had silently fallen into the plaster material = flat tan), veranda lean-to switched paint -> thatch set. Cost: +1 draw call per copy; second copy cull 80 -> 60 m (src/scenery.js) to hold bazaar view at 149. Build 16/16, budget 28.64 MB. Proof docs/shots/cottage-2026-10-24/after_porch.png (headless, no subject check, so item not ticked). Gaps: abadi/house_compound wood not audited for the same fall-through (Kit without own=('wood',) puts every 'wood' kind in plaster); audit list in 39z7 still open.
-NEXT: check other build_*.py for kit.add('wood') without own=('wood',); replace flat-tint interior props (tailor machine, barber chair, monitor, puncture tub); sugarcane blocks.
+AUDIT: 11 builders add 'wood' with no own=('wood',) (abadi 36 parts, school 23, bazaar_row 17, bg_houses 14, tea_stall 9, chowk_tea 5, dharam_kanta 4, petrol_pump 3, general_store 2, temple 2, flower_stall 1) so all of it renders as flat plaster tan; fixing costs +1 call per building and the bazaar/hero views sit at 148-149 of 150, so needs the art director's call or draw-call savings first.
+NEXT: draw-call savings, then own=('wood',) on abadi/school/bazaar; replace flat-tint interior props (tailor machine, barber chair, monitor, puncture tub); sugarcane blocks.
 
 ---
 
