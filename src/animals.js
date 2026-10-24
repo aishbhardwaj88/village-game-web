@@ -160,45 +160,89 @@ export function buildBovineGeometry() {
   const geos = [];
   const legLen = 0.82;
   const torsoRadius = 0.3;
-  const torsoHalfLen = 0.55; // cylindrical half-length; full capsule nose-tail-base span ~1.7m
-  const torsoY = legLen + torsoRadius; // ~1.12 -> top of torso/hump reads at ~1.4m, a real desi cow's shoulder height
+  const torsoHalfLen = 0.55;
+  const torsoY = legLen + torsoRadius;
+  const sc = (g, sx, sy, sz, x, y, z, color) => part(g, new THREE.Matrix4().makeScale(sx, sy, sz).setPosition(x, y, z), color);
 
-  // Torso — one smooth horizontal capsule instead of a flat box.
-  geos.push(part(new THREE.CapsuleGeometry(torsoRadius, torsoHalfLen * 2, 4, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, torsoY, 0), HIDE_NEUTRAL));
+  // Barrel: one long ribcage/flank ellipsoid, a slightly higher rump, and the zebu shoulder hump.
+  geos.push(sc(new THREE.SphereGeometry(0.34, 16, 12), 0.95, 0.97, 2.1, 0, torsoY, 0.05, HIDE_NEUTRAL));
+  geos.push(sc(new THREE.SphereGeometry(0.3, 12, 10), 0.92, 0.95, 1.1, 0, torsoY + 0.04, -0.4, HIDE_NEUTRAL));
+  geos.push(sc(new THREE.SphereGeometry(0.2, 10, 8), 0.7, 0.85, 1.2, 0, torsoY + 0.27, 0.4, HIDE_NEUTRAL));
+  geos.push(sc(new THREE.SphereGeometry(0.12, 8, 6), 0.6, 1.0, 1.9, 0, torsoY - 0.2, 0.62, HIDE_NEUTRAL)); // dewlap
+  geos.push(sc(new THREE.SphereGeometry(0.1, 8, 6), 1, 0.9, 1.1, 0, torsoY - 0.3, -0.42, 0xc9a595)); // udder
 
-  // Shoulder hump — a flattened sphere bump where the neck joins.
-  geos.push(part(new THREE.SphereGeometry(0.17, 8, 6), new THREE.Matrix4().makeScale(1, 0.7, 1).setPosition(0, torsoY + 0.15, torsoHalfLen - 0.08), HIDE_NEUTRAL));
-
-  // Neck + head — smooth capsule angled up and forward, a round head instead of a box.
-  const neckBase = P(0, torsoY + 0.02, torsoHalfLen + torsoRadius - 0.08);
-  const neckTop = P(0, torsoY + 0.3, torsoHalfLen + torsoRadius + 0.28);
-  geos.push(capsuleBetween(neckBase, neckTop, 0.17, HIDE_NEUTRAL));
-  const headY = torsoY + 0.36;
-  const headZ = torsoHalfLen + torsoRadius + 0.54;
-  geos.push(part(new THREE.SphereGeometry(0.16, 8, 6), new THREE.Matrix4().makeScale(0.85, 0.85, 1.1).setPosition(0, headY, headZ), HIDE_NEUTRAL));
-  geos.push(part(new THREE.BoxGeometry(0.15, 0.1, 0.1), new THREE.Matrix4().setPosition(0, headY - 0.05, headZ + 0.16), HORN_DARK)); // muzzle, dark
-
+  // Neck (stout, tapering to the head) and a long wedge-shaped face.
+  const neckBase = P(0, torsoY + 0.05, torsoHalfLen + torsoRadius - 0.35);
+  const neckTop = P(0, torsoY + 0.25, torsoHalfLen + torsoRadius + 0.3);
+  geos.push(capsuleBetween(neckBase, neckTop, 0.19, HIDE_NEUTRAL, 4, 12));
+  const headY = torsoY + 0.24;
+  const headZ = torsoHalfLen + torsoRadius + 0.5;
+  geos.push(sc(new THREE.SphereGeometry(0.14, 12, 10), 0.85, 1.0, 1.45, 0, headY, headZ, HIDE_NEUTRAL));
+  geos.push(sc(new THREE.SphereGeometry(0.09, 8, 6), 1, 0.8, 1.0, 0, headY - 0.07, headZ + 0.2, HORN_DARK)); // muzzle
   for (const side of [-1, 1]) {
-    const m = new THREE.Matrix4().makeRotationZ(side * 0.55).setPosition(side * 0.12, headY + 0.13, headZ - 0.08);
-    geos.push(part(new THREE.ConeGeometry(0.03, 0.22, 6), m, HORN_DARK));
-    geos.push(part(new THREE.SphereGeometry(0.075, 6, 5), new THREE.Matrix4().makeScale(1, 1, 0.4).setPosition(side * 0.18, headY + 0.02, headZ - 0.08), HIDE_NEUTRAL)); // ear
+    geos.push(part(new THREE.ConeGeometry(0.03, 0.2, 6), new THREE.Matrix4().makeRotationZ(side * -0.6).setPosition(side * 0.14, headY + 0.14, headZ - 0.12), 0xd8d0bb));
+    geos.push(sc(new THREE.SphereGeometry(0.08, 8, 6), 1.1, 0.3, 0.7, side * 0.17, headY + 0.03, headZ - 0.12, HIDE_NEUTRAL)); // ear
+    geos.push(sc(new THREE.SphereGeometry(0.016, 6, 5), 1, 1, 1, side * 0.1, headY + 0.04, headZ + 0.05, 0x1a1410));
   }
 
-  // Legs — round tapered capsules, front/back pairs under the torso's own ends.
-  const legRadius = 0.09;
-  for (const [lx, lz] of [
-    [-0.18, torsoHalfLen - 0.14],
-    [0.18, torsoHalfLen - 0.14],
-    [-0.18, -torsoHalfLen + 0.14],
-    [0.18, -torsoHalfLen + 0.14],
-  ]) {
-    geos.push(capsuleBetween(P(lx, legLen + 0.1, lz), P(lx, 0.02, lz), legRadius, HIDE_NEUTRAL));
+  // Legs: one smooth tapering cylinder each, dark hoof; hind legs set slightly back at the hock.
+  for (const [lx, lz, hind] of [[-0.19, 0.5, 0], [0.19, 0.5, 0], [-0.19, -0.5, 1], [0.19, -0.5, 1]]) {
+    const top = P(lx, torsoY - 0.05, lz), bot = P(lx, 0.09, lz - (hind ? 0.08 : 0));
+    const dir = new THREE.Vector3().subVectors(top, bot);
+    const len = dir.length();
+    const q = new THREE.Quaternion().setFromUnitVectors(_yAxis, dir.clone().normalize());
+    const m = new THREE.Matrix4().makeRotationFromQuaternion(q).setPosition((top.x + bot.x) / 2, (top.y + bot.y) / 2, (top.z + bot.z) / 2);
+    geos.push(part(new THREE.CylinderGeometry(hind ? 0.12 : 0.1, 0.045, len, 10), m, HIDE_NEUTRAL));
+    geos.push(sc(new THREE.CylinderGeometry(0.055, 0.07, 0.09, 8), 1, 1, 1.15, bot.x, 0.045, bot.z, HORN_DARK));
   }
 
-  // Tail — a thin capsule hanging from the rear.
-  geos.push(capsuleBetween(P(0, torsoY + 0.05, -torsoHalfLen - torsoRadius + 0.1), P(0, torsoY - 0.55, -torsoHalfLen - torsoRadius - 0.05), 0.035, HORN_DARK));
+  // Tail: thin rope with a dark switch tuft.
+  geos.push(capsuleBetween(P(0, torsoY + 0.2, -torsoHalfLen - torsoRadius + 0.05), P(0, 0.4, -torsoHalfLen - torsoRadius - 0.1), 0.022, HIDE_NEUTRAL, 3, 6));
+  geos.push(sc(new THREE.SphereGeometry(0.05, 6, 5), 1, 2.2, 1, 0, 0.32, -torsoHalfLen - torsoRadius - 0.1, HORN_DARK));
 
-  return mergeGeometries(geos);
+  const merged = mergeGeometries(geos);
+  // Seamless projected UVs so one hide texture runs across every part (hair grain, soft patches).
+  const pos = merged.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uv[i * 2] = pos.getZ(i) * 0.9 + pos.getX(i) * 1.3;
+    uv[i * 2 + 1] = pos.getY(i) * 0.9 + pos.getX(i) * 0.4;
+  }
+  merged.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return merged;
+}
+
+let _hideTex = null;
+/** Procedural hide: short-hair grain + soft blotches, as a mid-grey multiplier over vertex/instance colour. Shared. */
+function hideTextures() {
+  if (_hideTex) return _hideTex;
+  const N = 256;
+  const mk = () => { const c = document.createElement('canvas'); c.width = c.height = N; return c; };
+  const map = mk(), bump = mk();
+  const cm = map.getContext('2d'), cb = bump.getContext('2d');
+  cm.fillStyle = '#c8c8c8'; cm.fillRect(0, 0, N, N);
+  cb.fillStyle = '#808080'; cb.fillRect(0, 0, N, N);
+  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // soft blotches (wrapped so the tile is seamless)
+  for (let i = 0; i < 26; i++) {
+    const x = rnd() * N, y = rnd() * N, r = 20 + rnd() * 40, d = rnd() < 0.5 ? 0 : 255;
+    for (const ox of [-N, 0, N]) for (const oy of [-N, 0, N]) {
+      const g = cm.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+      g.addColorStop(0, `rgba(${d},${d},${d},0.16)`); g.addColorStop(1, `rgba(${d},${d},${d},0)`);
+      cm.fillStyle = g; cm.fillRect(0, 0, N, N);
+    }
+  }
+  // hair strokes along the body (mostly vertical flow)
+  for (let i = 0; i < 5200; i++) {
+    const x = rnd() * N, y = rnd() * N, l = 3 + rnd() * 5, v = Math.floor(rnd() * 255);
+    cm.strokeStyle = `rgba(${v},${v},${v},0.10)`; cm.lineWidth = 1;
+    cm.beginPath(); cm.moveTo(x, y); cm.lineTo(x + (rnd() - 0.5) * 2, (y + l) % N); cm.stroke();
+    cb.strokeStyle = `rgba(${v},${v},${v},0.5)`;
+    cb.beginPath(); cb.moveTo(x, y); cb.lineTo(x + (rnd() - 0.5) * 2, y + l); cb.stroke();
+  }
+  const t = (c, srgb) => { const tx = new THREE.CanvasTexture(c); tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.anisotropy = 4; if (srgb) tx.colorSpace = THREE.SRGBColorSpace; return tx; };
+  _hideTex = { map: t(map, true), bump: t(bump, false) };
+  return _hideTex;
 }
 
 /** A simple standing dog — body, head, snout, ears, tail, 4 legs, one merged
@@ -262,7 +306,8 @@ const DOG_FOOTPRINT_RADIUS = 0.4;
  * herd doesn't read as a frozen diorama (Wave 4 item 4: "slow grazing... motion"). */
 export function createCattleHerd(placements) {
   const geometry = buildBovineGeometry();
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
+  const hide = hideTextures();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.2, roughnessMap: hide.bump });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'cattle_herd';
   mesh.userData.colliderBoxes = placements.map((p) => animalColliderBox(p.x, p.z, p.rotationY ?? 0, p.buffalo ? 1.05 : 0.95, p.buffalo ? 0.5 : 0.42));
@@ -277,7 +322,7 @@ export function createCattleHerd(placements) {
     return { x: p.x, z: p.z, rotY: p.rotationY ?? 0, scale, t: i * 1.7 + (p.buffalo ? 3 : 0), rate: 0.35 + (i % 3) * 0.05 };
   });
   function applyInstance(i, inst, graze) {
-    _herdEuler.set(graze * 0.5, inst.rotY, 0);
+    _herdEuler.set(graze * 0.1, inst.rotY, 0);
     _herdQuat.setFromEuler(_herdEuler);
     _herdPos.set(inst.x, Math.max(graze, 0) * 0.015, inst.z);
     _herdScale.set(inst.scale.x, inst.scale.y, inst.scale.z);
