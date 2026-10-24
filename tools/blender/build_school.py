@@ -279,20 +279,7 @@ def build_boundary():
             z = z_in + (k + 0.5) * (2.2 / 12)
             kit.add('paint', limb('leaf_bar', (gx, z, 0.25), (gx, z, 2.15 + 0.12 * math.sin(k / 11 * math.pi)), 0.03, 0.03), 0x2B2B2E)
             kit.add('paint', sphere('leaf_finial', gx, z, 2.2 + 0.12 * math.sin(k / 11 * math.pi), 0.03, 0.03, 0.04, 1), 0x2B2B2E)
-    # bougainvillea over the west pillar and along the wall
-    pts = [(-3.2, -11.7, 0.3), (-3.6, -11.8, 1.5), (-4.4, -11.7, 2.4), (-5.4, -11.8, 1.6), (-6.2, -11.7, 0.8)]
-    for a, c in zip(pts, pts[1:]):
-        kit.add('paint', limb('bough_stem', a, c, 0.05, 0.05), 0x4A3B25)
-    for i in range(90):
-        t = rnd.random() * (len(pts) - 1)
-        k = int(t)
-        f = t - k
-        a, c = pts[k], pts[min(k + 1, len(pts) - 1)]
-        x = a[0] + (c[0] - a[0]) * f + rnd.uniform(-0.45, 0.45)
-        z = GZ + rnd.uniform(0.1, 0.5)
-        hh = a[2] + (c[2] - a[2]) * f + rnd.uniform(-0.4, 0.5)
-        col = rnd.choice((0xC2185B, 0xD94A8C, 0xB02A74)) if rnd.random() < 0.7 else rnd.choice(LEAF)
-        kit.add('paint', sphere('bough', x, z, hh, 0.14, 0.1, 0.12, 1), col)
+    # (bougainvillea removed 24 Oct: playtest item 2, it read as pink/green polyhedra)
     pot(kit, -2.0, GZ + 0.8, 0.0, 0.25, 0.34, flower=None)
 
 

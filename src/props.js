@@ -58,6 +58,30 @@ const WHITE = 0xf4f2ea;
 const GREEN = 0x0b7a3e;
 const CHAKRA_NAVY = 0x16215c;
 
+let FLAG_TEX = null;
+function flagTexture() {
+  if (FLAG_TEX) return FLAG_TEX;
+  const W = 384, H = 256, STRIP = 16, c = document.createElement('canvas'); c.width = W + STRIP; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#e8821e'; x.fillRect(0, 0, W, H / 3);
+  x.fillStyle = '#f4f2ea'; x.fillRect(0, H / 3, W, H / 3);
+  x.fillStyle = '#0b7a3e'; x.fillRect(0, (2 * H) / 3, W, H / 3);
+  const cx = W / 2, cy = H / 2, R = H / 6 - 2;
+  x.strokeStyle = '#16215c'; x.fillStyle = '#16215c'; x.lineWidth = 3;
+  x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
+  x.beginPath(); x.arc(cx, cy, 4, 0, 7); x.fill();
+  x.lineWidth = 1.2;
+  for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); x.stroke(); }
+  // woven-cloth grain
+  for (let i = 0; i < H; i += 2) { x.fillStyle = `rgba(0,0,0,${0.03 + (i % 4) * 0.01})`; x.fillRect(0, i, W, 1); }
+  for (let i = 0; i < W; i += 2) { x.fillStyle = 'rgba(255,255,255,0.03)'; x.fillRect(i, 0, 1, H); }
+  x.fillStyle = '#b9b8b0'; x.fillRect(W, 0, STRIP, H); // pole + halyard sample this strip so pole and flag share one mesh
+  FLAG_TEX = new THREE.CanvasTexture(c);
+  FLAG_TEX.colorSpace = THREE.SRGBColorSpace;
+  FLAG_TEX.anisotropy = 4;
+  return FLAG_TEX;
+}
+
 /**
  * reference-from-unity/MAP.md: "Flagpole flying the Indian national flag, at the
  * main chowk near the school/panchayat cluster — a common real feature of village
@@ -73,23 +97,28 @@ export function createFlagpoleProp(position) {
   // Small finial ball at the very top.
   geos.push(part(new THREE.SphereGeometry(0.07, 8, 6), new THREE.Matrix4().setPosition(0, poleHeight, 0), POLE_GREY));
 
-  // Flag — 3 horizontal stripes, flown to one side of the pole, a fixed-out static
-  // flag (no cloth simulation) rather than hanging limp against the pole.
-  const flagY = poleHeight - 0.9;
-  const flagW = 1.3; // extends in +X from the pole
-  const stripeH = 0.24;
-  const flagCx = 0.08 + flagW / 2;
-  geos.push(part(new THREE.BoxGeometry(flagW, stripeH, 0.015), new THREE.Matrix4().setPosition(flagCx, flagY + stripeH, 0), SAFFRON));
-  geos.push(part(new THREE.BoxGeometry(flagW, stripeH, 0.015), new THREE.Matrix4().setPosition(flagCx, flagY, 0), WHITE));
-  geos.push(part(new THREE.BoxGeometry(flagW, stripeH, 0.015), new THREE.Matrix4().setPosition(flagCx, flagY - stripeH, 0), GREEN));
-  // Chakra — simplified as a flat ring at the centre of the white stripe (a full
-  // 24-spoke wheel is finer detail than this low-poly style resolves at a
-  // distance; the ring alone already reads as "a mark on the white band", which is
-  // the recognisable cue, not a literal reproduction).
-  geos.push(part(new THREE.TorusGeometry(0.075, 0.015, 6, 16), new THREE.Matrix4().setPosition(flagCx, flagY, 0.01), CHAKRA_NAVY));
+  // Flag: a printed tricolour (canvas texture with a 24-spoke chakra and woven-cloth noise) on a gently rippled plane, 3:2, flown to +X.
+  const flagW = 1.8, flagH = 1.2, flagTop = poleHeight - 0.25;
+  const flagGeo = new THREE.PlaneGeometry(flagW, flagH, 18, 6);
+  const fp = flagGeo.attributes.position;
+  for (let i = 0; i < fp.count; i++) {
+    const u = (fp.getX(i) + flagW / 2) / flagW; // 0 at the pole, 1 at the fly end
+    fp.setZ(i, Math.sin(u * 7.5 + fp.getY(i) * 1.3) * 0.07 * u);
+  }
+  flagGeo.computeVertexNormals();
+  const fuv = flagGeo.attributes.uv;
+  for (let i = 0; i < fuv.count; i++) fuv.setX(i, fuv.getX(i) * (384 / 400));
+  flagGeo.translate(0.04 + flagW / 2, flagTop - flagH / 2, 0);
+  // Halyard rope and a pulley block at the top, a pair of toggles on the pole.
+  geos.push(part(new THREE.CylinderGeometry(0.008, 0.008, poleHeight - 0.4, 4), new THREE.Matrix4().setPosition(0.06, (poleHeight - 0.4) / 2 + 0.3, 0.03), 0x8a7a5a));
+  geos.push(part(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 10), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0.0, poleHeight - 0.08, 0.0), 0x555550));
+  const flagTex = flagTexture();
 
-  const merged = mergeGeometries(geos);
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75 });
+  for (const g of geos) { g.deleteAttribute('color'); const n = g.attributes.position.count; const uv = new Float32Array(n * 2); for (let i = 0; i < n; i++) { uv[i * 2] = 0.98; uv[i * 2 + 1] = 0.5; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); }
+  flagGeo.deleteAttribute('color');
+  geos.push(flagGeo);
+  const merged = mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g)));
+  const material = new THREE.MeshStandardMaterial({ map: flagTex, roughness: 0.8, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(merged, material);
   mesh.name = 'flagpole';
   mesh.castShadow = true;

@@ -906,27 +906,82 @@ export function createMelaGround(position) {
 }
 
 /** Khel maidan (SE edge): rolled cricket strip, stumps, boundary rope posts, a badminton net and a low pavilion shade. */
+let NET_TEX = null;
+/** Badminton net: black mesh on transparent, white tape along the top (alpha-cut). */
+function netTexture() {
+  if (NET_TEX) return NET_TEX;
+  const W = 512, H = 64, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.strokeStyle = 'rgba(22,22,22,0.95)'; x.lineWidth = 1.6;
+  for (let i = 8; i < W; i += 8) { x.beginPath(); x.moveTo(i, 10); x.lineTo(i, H); x.stroke(); }
+  for (let j = 14; j < H; j += 8) { x.beginPath(); x.moveTo(0, j); x.lineTo(W, j); x.stroke(); }
+  x.fillStyle = '#f2f0e8'; x.fillRect(0, 0, W, 12);
+  NET_TEX = new THREE.CanvasTexture(c);
+  NET_TEX.colorSpace = THREE.SRGBColorSpace;
+  NET_TEX.anisotropy = 4;
+  return NET_TEX;
+}
+
+/** Khel maidan (SE): cricket outfield on real grass, a packed-mud pitch with worn run-ups and creases, a badminton court with
+ *  regulation lines and a mesh net on poles, and a tin-roofed pavilion with a bench. Three meshes: grass, earth, structures (+ net). */
 export function createKhelMaidan(position) {
+  const grass = [flatBlob(24, 3, 0.03, 0x8f9a5a)];
+  const earth = [];
   const geos = [];
-  geos.push(flatBlob(24, 3, 0.03, 0x8f9a5a));
-  geos.push(bake(new THREE.BoxGeometry(3, 0.02, 20), at(0, 0.06, 0), 0xc2ab7a));
-  for (const sz of [-1, 1]) for (const sx of [-0.12, 0, 0.12]) geos.push(bake(new THREE.CylinderGeometry(0.025, 0.025, 0.72, 6), at(sx, 0.4, sz * 9.2), 0xe8dcb0));
+  // Pitch: dry clay strip 3 x 20 with darker worn patches at both ends (bowler run-up, batter's stance) and a crack-patched centre.
+  earth.push(bake(new THREE.BoxGeometry(3.2, 0.03, 21), at(0, 0.05, 0), 0xb59468));
+  for (const sz of [-1, 1]) {
+    earth.push(bake(new THREE.CylinderGeometry(1.5, 1.5, 0.03, 18), at(0, 0.07, sz * 8.2), 0x8d7048));
+    earth.push(bake(new THREE.BoxGeometry(1.2, 0.03, 4.5), at(0, 0.075, sz * 5.4), 0xa07f56));
+  }
+  earth.push(bake(new THREE.BoxGeometry(1.4, 0.03, 8), at(0.2, 0.08, 0), 0xc2a478));
+  // Creases: popping crease 1.22 m in front of the stumps, return creases, bowling crease through the stumps (chalk lines).
+  for (const sz of [-1, 1]) {
+    const stump = sz * 9.2;
+    geos.push(bake(new THREE.BoxGeometry(2.6, 0.012, 0.05), at(0, 0.1, stump - sz * 1.22), 0xf2eee0));
+    geos.push(bake(new THREE.BoxGeometry(2.6, 0.012, 0.05), at(0, 0.1, stump), 0xf2eee0));
+    for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.05, 0.012, 2.4), at(sx * 1.3, 0.1, stump - sz * 1.0), 0xf2eee0));
+    // wooden stumps with bails
+    for (const sx of [-0.1, 0, 0.1]) geos.push(bake(new THREE.CylinderGeometry(0.02, 0.02, 0.72, 8), at(sx, 0.42, stump), 0xd9c690));
+    for (const sx of [-0.05, 0.05]) geos.push(bake(new THREE.BoxGeometry(0.1, 0.02, 0.025), at(sx, 0.79, stump), 0xe8dcb0));
+  }
+  // Boundary rope: white marker posts around the outfield.
   for (let a = 0; a < 24; a++) {
     const t = (a / 24) * Math.PI * 2;
     geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 6), at(Math.cos(t) * 21, 0.45, Math.sin(t) * 21), 0xe8e2c8));
   }
-  // Badminton net on two poles, off to one side.
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6), at(11 + sx * 3.1, 0.8, 8), 0x5a5a5a));
-  geos.push(bake(new THREE.BoxGeometry(6.2, 0.7, 0.02), at(11, 1.25, 8), 0xdcdcd0));
+  // Badminton court (11, 8): packed-earth pad, regulation lines (13.4 x 6.1 doubles, 5.18 singles, service lines, centre line), net on two poles.
+  const cx = 11, cz = 8, L = 0.04, ly = 0.075;
+  earth.push(bake(new THREE.BoxGeometry(7.4, 0.03, 14.6), at(cx, 0.05, cz), 0x9d8461));
+  const line = (w, d, x, z) => geos.push(bake(new THREE.BoxGeometry(w, 0.012, d), at(cx + x, ly + 0.02, cz + z), 0xf4f2ea));
+  for (const sz of [-6.7, 6.7]) line(6.1 + L, L, 0, sz);                   // back lines
+  for (const sx of [-3.05, 3.05]) line(L, 13.4, sx, 0);                    // doubles side lines
+  for (const sx of [-2.59, 2.59]) line(L, 13.4, sx, 0);                    // singles side lines
+  for (const sz of [-1.98, 1.98]) line(6.1, L, 0, sz);                     // short service lines
+  for (const sz of [-5.94, 5.94]) line(6.1, L, 0, sz);                     // long service (doubles) lines
+  for (const sz of [-1, 1]) line(L, 4.72, 0, sz * 4.34); // centre lines (net-side half omitted by the service line)
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.05, 1.6, 8), at(cx + sx * 3.1, 0.8, cz), 0x5a5a5a));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.12, 0.08, 10), at(cx + sx * 3.1, 0.04, cz), 0x77746c)); // base plates
   // Pavilion shade: tin roof on four poles, a long bench.
   geos.push(bake(new THREE.BoxGeometry(6, 0.08, 2.8), new THREE.Matrix4().makeRotationX(-0.06).setPosition(-17, 2.7, 0), 0x8e969c));
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 2.7, 6), at(-17 + sx * 2.8, 1.35, sz * 1.2), 0x6f5233));
   geos.push(bake(new THREE.BoxGeometry(5, 0.08, 0.5), at(-17, 0.5, 1.0), 0x7a5a3a));
-  return finishSite('khel_maidan', geos, position, { solids: [
+  const group = finishSite('khel_maidan', geos, position, { solids: [
     [7.9, 8, 0.2, 0.2], [14.1, 8, 0.2, 0.2], // badminton net poles
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-17 + sx * 2.8, sz * 1.2, 0.25, 0.25]), // pavilion poles
     [-17, 1.0, 5, 0.5], // pavilion bench
   ], boards: [{ id: 'maidan', x: -17, y: 2.3, z: -1.2, w: 3.6 }] });
+  const grassMat = getTiledMaterial('grass', { repeatX: 1, repeatY: 1, vertexColors: true }).clone();
+  grassMat.name = 'maidan_grass'; grassMat.color.setScalar(1.5); grassMat.aoMap = null;
+  const grassMesh = new THREE.Mesh(mergeGeometries(grass), grassMat);
+  grassMesh.receiveShadow = true;
+  const earthMesh = new THREE.Mesh(mergeGeometries(earth), vcMat({ roughness: 1 }));
+  earthMesh.receiveShadow = true;
+  const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76).translate(cx, 1.14, cz), new THREE.MeshStandardMaterial({ map: netTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
+  netMesh.name = 'badminton_net';
+  netMesh.rotation.y = 0;
+  group.add(grassMesh, earthMesh, netMesh);
+  return group;
 }
 
 /** Gurukul inter college (SE, outside the abadi): two-storey classroom block around a yard with a gate and a flagless mast. */

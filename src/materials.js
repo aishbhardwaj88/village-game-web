@@ -16,6 +16,7 @@ const SETS = {
   metal: { base: 'assets/textures/metal/', maps: ['color', 'normal', 'roughness'] },
   terracotta: { base: 'assets/textures/terracotta/', maps: ['color', 'normal', 'roughness'] },
   ground: { base: 'assets/textures/ground/', maps: ['color', 'normal', 'roughness', 'ao'] },
+  grass: { base: 'assets/textures/grass/', maps: ['color', 'normal', 'roughness'] },
   crop: { base: 'assets/textures/crop/', maps: ['color', 'normal', 'roughness'] },
   lane: { base: 'assets/textures/lane/', maps: ['color', 'normal', 'roughness'] },
   // docs/FINISH_LINE.md Step C — tin roofing, jute sacking, tarpaulin/canvas
