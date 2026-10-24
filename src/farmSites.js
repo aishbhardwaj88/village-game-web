@@ -1638,8 +1638,8 @@ export function createCanalBankRoad(position, name = 'canal_bank_road') {
 export function createEastRoadLeg(leg) {
   const geos = [];
   const L = leg.len + 1.6; // overlap the next leg so the bend has no gap
-  const W = 5;
-  let seed = 41 + leg.i * 13;
+  const W = leg.w || 5;
+  let seed = 41 + leg.i * 13 + (leg.id.length * 7) % 29;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const strip = (w, y, x0, x1, z, color) => geos.push(bake(new THREE.BoxGeometry(x1 - x0, 0.02, w), at((x0 + x1) / 2, y, z), color));
   const n = Math.ceil(L / 3.5);
@@ -1663,8 +1663,8 @@ export function createEastRoadLeg(leg) {
   }
   // The north drain: dark silty bed between two stone lips, a slab bridge every ~38 m.
   const dz = -(W / 2 + 0.95);
-  strip(0.55, 0.012, -L / 2, L / 2, dz, 0x3b3226);
-  for (const lz of [dz - 0.36, dz + 0.36]) {
+  if (!leg.noDrain) strip(0.55, 0.012, -L / 2, L / 2, dz, 0x3b3226);
+  if (!leg.noDrain) for (const lz of [dz - 0.36, dz + 0.36]) {
     let x = -L / 2;
     while (x < L / 2) {
       const len = 0.8 + rnd() * 0.6;
@@ -1673,7 +1673,7 @@ export function createEastRoadLeg(leg) {
     }
   }
   const slabX = -L / 2 + 8 + rnd() * 10;
-  geos.push(bake(new THREE.BoxGeometry(2.2, 0.1, 1.5), at(slabX, 0.16, dz), 0xaaa290));
+  if (!leg.noDrain) geos.push(bake(new THREE.BoxGeometry(2.2, 0.1, 1.5), at(slabX, 0.16, dz), 0xaaa290));
   // Dung cakes, pebbles and a few dry straws of the day's traffic.
   for (let i = 0; i < L / 9; i++) geos.push(bake(new THREE.CylinderGeometry(0.26, 0.29, 0.05, 8), at(-L / 2 + rnd() * L, 0.06, (rnd() - 0.5) * 3.8), 0x6a5a3a));
   for (let i = 0; i < L / 2.5; i++) geos.push(bake(new THREE.DodecahedronGeometry(0.07 + rnd() * 0.08, 0), at(-L / 2 + rnd() * L, 0.07, (rnd() - 0.5) * 4.6, rnd() * 3), [0x9b9588, 0x8a8478, 0xa59c88][i % 3]));

@@ -7,6 +7,7 @@
  */
 
 import { QUEST_STEPS as S, OBJECTIVE_TEXT } from './quest.js';
+import { SPURS } from './eastRoad.js';
 import { JOBS } from './jobs/data.js';
 
 // World positions (1 unit = 1 m; +x east, +z south, so north is up on the map). Same numbers as the places' own source files.
@@ -57,6 +58,7 @@ export const PLACES = [
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
 export const LANES = [
+  ...SPURS.map((sp) => sp.pts), // spurs off the east road to the far-east places
   [[-48, 46], [-45, 46], [-45, 107]], // hero lane south from the house
   [[-48, 46], [-58, 47], [-58, 8]], // bazaar lane
   [[-44, 50.5], [-12, 55], [2, 51]], // temple lane

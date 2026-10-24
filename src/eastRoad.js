@@ -22,10 +22,30 @@ export function roadAt(s) {
   }
 }
 
+/** Spurs: 3.5 m earth tracks (no drain) leaving the east road to the far-east cluster. Each polyline ends at the edge of its place's radius (PLACES). */
+export const SPURS = [
+  { id: 'health', pts: [[106, 64.6], [106, 46]] },
+  { id: 'johad', pts: [[78, 69], [78, 85]] },
+  { id: 'masjid', pts: [[103, 66], [101, 100], [100, 117]] },
+  { id: 'gurukul', pts: [[152, 48], [152, 62]] },
+  { id: 'maidan', pts: [[128, 55], [128, 100], [128, 130], [139, 135]] },
+  { id: 'jain', pts: [[128, 130], [130, 142]] },
+  { id: 'haveli', pts: [[150, 49], [150, 8], [150, -4]] },
+];
+export const SPUR_WIDTH = 3.5;
+
 /** Streaming pieces: each polyline leg is one piece, with its end points, length and heading. */
 export function roadLegs() {
   return ROAD_PTS.slice(1).map((b, i) => {
     const a = ROAD_PTS[i];
     return { id: `east_road_${i}`, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] }, len: lens[i], i };
   });
+}
+
+/** Spur legs, same shape as roadLegs() plus a width and no drain. */
+export function spurLegs() {
+  return SPURS.flatMap((sp) => sp.pts.slice(1).map((b, i) => {
+    const a = sp.pts[i], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    return { id: `spur_${sp.id}_${i}`, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] }, len, i, w: SPUR_WIDTH, noDrain: true };
+  }));
 }

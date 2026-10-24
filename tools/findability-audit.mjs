@@ -5,6 +5,7 @@ const src = readFileSync(new URL('../src/freeRoam.js', import.meta.url), 'utf8')
 const placesSrc = src.match(/export const PLACES = (\[[\s\S]*?\n\]);/)[1];
 const lanesSrc = src.match(/export const LANES = (\[[\s\S]*?\n\]);/)[1];
 const PLACES = eval(placesSrc.replace(/\/\/.*$/gm, ''));
+const SPURS = eval(readFileSync(new URL('../src/eastRoad.js', import.meta.url), 'utf8').match(/export const SPURS = (\[[\s\S]*?\n\]);/)[1].replace(/\/\/.*$/gm, ''));
 const LANES = eval(lanesSrc.replace(/\/\/.*$/gm, ''));
 const way = readFileSync(new URL('../src/wayfinding.js', import.meta.url), 'utf8');
 const signed = new Set();
