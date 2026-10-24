@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z51, playtest block item 5, atta chakki smoothing):** Game change: chakki drum, lid, hopper, motor body, bin and scale pan now 24-40 segments (was 12-20) and a rimmed steel flour tray with a heap of fresh atta sits under the outlet chute (tools/blender/build_new_shops.py atta_chakki, new_shops.glb rebuilt, no new draw call). Proof docs/shots/chakki-2026-10-24c/{front,close}.png (headless, no subject check, so not tickable). Gaps: drum still reads faceted (flat shading, not segment count), sacks blocky, wall posts plaster tan, no real grinding stone; item 5 NOT ticked as a whole.
+NEXT: findability walk, far-LOD background buildings.
+
+---
+
 **2026-10-24 (cycle 39z50, playtest block item 4, tea stall glasses/jars):** Game change: the tea stall's six chai tumblers are now lathed waisted glasses (thick base, flared rim, tea fill) and the five shelf jars lathed barni jars with shoulder, neck, fill and knobbed lid (tools/blender/build_tea_stall.py, tea_stall.glb rebuilt), zero extra draw calls. Build ALL PASSED. Proof docs/shots/teaglass-2026-10-24/{glasses,jars}.png (headless, HUD in frame, so not tickable). Gaps: glass and tea fill take the plaster texture of the paint slot, so they read as pale ceramic not transparent glass, tea fill barely visible; no free-asset search done (small lathed shapes). Item 4 NOT ticked as a whole.
 NEXT: findability walk, chakki.
 

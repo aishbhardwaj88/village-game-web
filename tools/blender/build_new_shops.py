@@ -224,26 +224,29 @@ def atta_chakki():
     GREEN, BLUE, DARKS = 0x5F8A6E, 0x3E6A9A, 0x2A2A28
     # concrete plinth, cast-iron drum housing (flat top, bolted lid ring), square sheet-metal hopper with lid, flour-dusted
     kit.add('concrete', wb('plinth_m', sx - 0.55, sx + 0.55, sz - 0.5, sz + 0.5, 0.05, 0.2, 0.02)) if False else kit.add('paint', wb('plinth_m', sx - 0.55, sx + 0.55, sz - 0.5, sz + 0.5, 0.05, 0.2, 0.02), 0x9C9A92)
-    kit.add('metal', cyl('drum', sx, sz, 0.2, 0.82, 0.46, 0.46, 20), GREEN)
-    kit.add('metal', cyl('drum_lid', sx, sz, 0.82, 0.9, 0.49, 0.49, 20), 0x4C7058)
+    kit.add('metal', cyl('drum', sx, sz, 0.2, 0.82, 0.46, 0.46, 40), GREEN)
+    kit.add('metal', cyl('drum_lid', sx, sz, 0.82, 0.9, 0.49, 0.49, 40), 0x4C7058)
     for i in range(10):
         a_ = i / 10 * math.tau
         kit.add('metal', cyl('bolt', sx + 0.43 * math.cos(a_), sz + 0.43 * math.sin(a_), 0.9, 0.95, 0.025, 0.025, 6), 0x2A2A28)
-    kit.add('metal', cyl('hopper_neck', sx, sz, 0.95, 1.12, 0.14, 0.14, 12), BLUE)
-    kit.add('metal', cyl('hopper_cone', sx, sz, 1.12, 1.6, 0.14, 0.5, 12), BLUE)
-    kit.add('metal', cyl('hopper_rim', sx, sz, 1.6, 1.65, 0.52, 0.52, 12, cap=False), 0x2F5278)
+    kit.add('metal', cyl('hopper_neck', sx, sz, 0.95, 1.12, 0.14, 0.14, 24), BLUE)
+    kit.add('metal', cyl('hopper_cone', sx, sz, 1.12, 1.6, 0.14, 0.5, 32), BLUE)
+    kit.add('metal', cyl('hopper_rim', sx, sz, 1.6, 1.65, 0.52, 0.52, 32, cap=False), 0x2F5278)
     kit.add('paint', wb('hopper_grain', sx - 0.33, sx + 0.33, sz - 0.33, sz + 0.33, 1.5, 1.52, 0.0), 0xD9C58A)
     # outlet chute sloping forward from the drum into a sack held on a low platform scale
     kit.add('metal', limb('chute', (sx + 0.4, sz + 0.3, 0.55), (sx + 0.4, sz + 0.85, 0.3), 0.2, 0.2), 0x9AA0A4)
     sack(kit, sx + 0.4, sz + 1.0, 0.0, 0.0, 0xF3EFE2, 0.42, 0.3, 0.5, kind='jute')
+    # flat steel flour tray under the chute, rimmed, with a soft heap of fresh atta
+    kit.add('metal', wb('tray', sx - 0.35, sx + 0.05, sz + 0.55, sz + 1.2, 0.0, 0.07, 0.01), 0xA7ADB0)
+    kit.add('paint', sphere('tray_heap', sx - 0.15, sz + 0.88, 0.07, 0.17, 0.26, 0.07, 2), 0xF1ECDD)
     kit.add('metal', wb('scale_plate', sx + 0.1, sx + 0.7, sz + 0.75, sz + 1.25, 0.0, 0.05, 0.005), 0x3A3A38)
     # motor on the right: blue body with cooling ribs, mounting rails, pulley + crossed-less V-belt up to the drum shaft behind a mesh guard
     mx, mz = cx + 0.85, -0.45
     kit.add('metal', wb('rails', mx - 0.5, mx + 0.5, mz - 0.25, mz + 0.25, 0.0, 0.08, 0.008), DARKS)
-    kit.add('metal', cyl('motor_body', mx, mz, 0.08, 0.5, 0.2, 0.2, 16), BLUE)
+    kit.add('metal', cyl('motor_body', mx, mz, 0.08, 0.5, 0.2, 0.2, 32), BLUE)
     for i in range(6):
         hh = 0.14 + i * 0.06
-        kit.add('metal', cyl('rib', mx, mz, hh, hh + 0.025, 0.215, 0.215, 16), 0x2F5278)
+        kit.add('metal', cyl('rib', mx, mz, hh, hh + 0.025, 0.215, 0.215, 32), 0x2F5278)
     kit.add('metal', wb('term_box', mx - 0.1, mx + 0.1, mz + 0.18, mz + 0.34, 0.3, 0.45, 0.01), 0x2F5278)
     kit.add('metal', ring('pulley', mx - 0.3, mz, 0.3, 0.17, 0.035, axis='x'), DARKS)
     kit.add('paint', limb('belt_up', (mx - 0.3, mz, 0.47), (sx + 0.46, sz + 0.0, 0.7), 0.05, 0.05), 0x1A1A1A)
@@ -265,10 +268,10 @@ def atta_chakki():
     for i in range(3):
         sack(kit, cx + 1.2, 0.2 + i * 0.5, 0.0, 0.0, 0xF3EFE2, 0.42, 0.3, 0.5, kind='jute')
     sack(kit, cx + 1.2, 0.45, 0.5, -0.1, 0xF3EFE2, 0.42, 0.3, 0.45, kind='jute')
-    kit.add('metal', cyl('bin', cx + 0.4, 0.9, 0.0, 0.5, 0.25, 0.22, 14), 0x8F9AA2)
+    kit.add('metal', cyl('bin', cx + 0.4, 0.9, 0.0, 0.5, 0.25, 0.22, 28), 0x8F9AA2)
     kit.add('paint', sphere('flour_heap', cx + 0.4, 0.9, 0.52, 0.22, 0.22, 0.1, 1), 0xF3EFE2)
     kit.add('paint', limb('scale_hang', (cx - 0.5, 0.9, h - 0.2), (cx - 0.5, 0.9, 1.5), 0.015, 0.015), 0x333333)
-    kit.add('metal', cyl('scale_pan', cx - 0.5, 0.9, 1.45, 1.5, 0.17, 0.15, 12), STEEL)
+    kit.add('metal', cyl('scale_pan', cx - 0.5, 0.9, 1.45, 1.5, 0.17, 0.15, 24), STEEL)
     kit.add('paint', sphere('flour_spill', sx + 0.6, sz + 0.5, 0.06, 0.3, 0.22, 0.04, 1), 0xF3EFE2)
     # flour dust whitening the machine's top surfaces and the floor around it
     kit.add('paint', sphere('dust', sx, sz, 0.93, 0.4, 0.4, 0.03, 1), 0xF3EFE2)
