@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z80, playtest block item 7, on-foot findability walk, headless):** No game change (verification only). tmp/find-walk.mjs teleports to the nearest lane point (stand-off 14-69 m), faces each of 39 places with the real third-person camera and runs the shotlib subject check. 26 VISIBLE, 13 flagged occluded: school, chowk, post, ration, chakki, baagh, jalebi, khalihan, gaushala, cane, chemist, haveli, gurukul. The flag is unreliable for solid buildings (the check hits the building's own walls) and failed shots left no image, so those 13 are UNJUDGED, not confirmed hidden. Real stand-off is 36+ m for gaushala (69 m off a lane), field (69 m), cane (33 m), mandi (36 m), baagh (43 m): these need the map. Shots docs/shots/findwalk-2026-10-25/ (headless teleport, not a real walk, so the box stays open).
+NEXT: save raw shots for the 13 flagged and judge by eye, street life on roads, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z79, playtest block item 8, more spurs):** Game change: 4 more spur tracks (src/eastRoad.js SPURS): TV house off the east road, pond off the west gali, mela and gurudwara off the south gali. West/south spurs are `bare` (no lamps/trees) with a 24 m build radius to stay inside the draw-call ceiling. Static audit: 1 of 40 not findable without the map (cane field); only the gaushala is still >30 m from a lane. Gaushala spur was tried and dropped: at the bazaar view it pushed calls to 152 (ceiling 150). Baagh not given a spur (canal/chowk in the way, already within 30 m). Build 16/16. No proof shot taken (not tickable).
 NEXT: on-foot findability walk, street life on roads, triangle cuts (art director's call).
 
