@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z66, playtest block item 5, khel maidan outfield + boundary):** Game change: outfield now has mown-stripe and tuft colour variation (maidanOutfield), boundary posts carry a red paint band and a jute rope sags between them (src/farmSites.js createKhelMaidan); same three meshes. Build ALL PASSED. Proof docs/shots/khel-2026-10-24b/{outfield,rope}.png (headless, subject check passed). Gaps: stripes are subtle under the ground scan; outfield still a bit dull olive.
+NEXT: highway/road ends re-check, collision leftovers (0c), findability walk.
+
+---
+
 **2026-10-24 (cycle 39z65, playtest block item 5, khel maidan re-shot):** No code change (verification only). Re-shot the khel maidan with the subject check passing: cricket pitch has textured clay strip, worn run-up patches, creases and stumps; badminton court has packed-earth pad, doubles/singles/service lines and a net on poles. Proof docs/shots/khel-2026-10-24/{cricket_pitch,badminton}.png (headless; no capsules, no HUD). Gaps: outfield grass is uniform dull olive with no mowing/wear variation; boundary posts are plain white sticks.
 NEXT: highway/road ends re-check, outfield grass variation.
 

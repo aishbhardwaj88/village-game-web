@@ -1335,7 +1335,11 @@ function maidanOutfield(R) {
     const m = 0.5 + 0.5 * Math.sin(x * 0.52 + z * 0.37 + Math.sin(x * 0.11) * 3);
     c.copy(green).lerp(straw, THREE.MathUtils.clamp(n * 1.1 - 0.2, 0, 1));
     c.lerp(dust, THREE.MathUtils.clamp((m - 0.55) * 1.4, 0, 0.6) * (0.4 + r));
+    // Mown stripes (alternating 3 m bands, slightly lighter/darker) and fine tufty patchiness so the turf is not one flat olive.
+    const stripe = Math.sin(x * 1.05 + z * 0.25) > 0 ? 1.07 : 0.93;
+    const tuft = 0.92 + 0.16 * (0.5 + 0.5 * Math.sin(x * 2.3 + Math.sin(z * 1.9) * 1.7) * Math.sin(z * 2.7 - x * 0.8));
     c.lerp(dust, THREE.MathUtils.smoothstep(r, 0.72, 1.0) * 0.85);
+    c.multiplyScalar(stripe * tuft);
     col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -1370,6 +1374,10 @@ export function createKhelMaidan(position) {
   for (let a = 0; a < 24; a++) {
     const t = (a / 24) * Math.PI * 2;
     geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 6), at(Math.cos(t) * 21, 0.45, Math.sin(t) * 21), 0xe8e2c8));
+    geos.push(bake(new THREE.CylinderGeometry(0.045, 0.045, 0.18, 6), at(Math.cos(t) * 21, 0.6, Math.sin(t) * 21), 0xb0392e)); // red paint band
+    // Boundary rope sagging to the next post (thin jute cord).
+    const t2 = ((a + 1) / 24) * Math.PI * 2, mx = (Math.cos(t) + Math.cos(t2)) * 10.5, mz = (Math.sin(t) + Math.sin(t2)) * 10.5;
+    geos.push(bake(new THREE.CylinderGeometry(0.012, 0.012, 5.4, 4), new THREE.Matrix4().makeRotationZ(Math.PI / 2).premultiply(new THREE.Matrix4().makeRotationY(-(t + t2) / 2 - Math.PI / 2)).setPosition(mx, 0.74, mz), 0x9c8456));
   }
   // Badminton court (11, 8): packed-earth pad, regulation lines (13.4 x 6.1 doubles, 5.18 singles, service lines, centre line), net on two poles.
   const cx = 11, cz = 8, L = 0.04, ly = 0.075;
