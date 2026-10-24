@@ -1158,7 +1158,11 @@ export function createKhelMaidan(position) {
   grassMat.name = 'maidan_grass'; grassMat.color.setScalar(1.5); grassMat.aoMap = null;
   const grassMesh = new THREE.Mesh(mergeGeometries(grass), grassMat);
   grassMesh.receiveShadow = true;
-  const earthMesh = new THREE.Mesh(mergeGeometries(earth), vcMat({ roughness: 1 }));
+  // Box faces carry 0..1 UVs, which stretches the ground scan over each pad; remap to metric UVs (one tile per 2.5 m) so the mud grain stays fine.
+  const earthGeo = mergeGeometries(earth);
+  const ep = earthGeo.attributes.position, eu = earthGeo.attributes.uv;
+  for (let i = 0; i < ep.count; i++) eu.setXY(i, ep.getX(i) / 2.5, ep.getZ(i) / 2.5);
+  const earthMesh = new THREE.Mesh(earthGeo, vcMat({ roughness: 1 }));
   earthMesh.receiveShadow = true;
   const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76).translate(cx, 1.14, cz), new THREE.MeshStandardMaterial({ map: netTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
   netMesh.name = 'badminton_net';
