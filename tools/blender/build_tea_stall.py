@@ -13,7 +13,8 @@ from common import wb, limb, cyl, sphere, prism_x, quad, ROOT
 from arch import Kit, ring, dabba, STEEL, BRASS, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'tea_stall_raw.glb')
-kit = Kit()
+# real PBR wood and steel rides in the tin slot (the roof's draw call): hero view is at the 150 ceiling
+kit = Kit(route={'metal': 'tin'})
 rnd = random.Random(21)
 TEAL = 0x3E7F86
 TEAL_D = 0x2F646A
@@ -56,15 +57,15 @@ def counter_and_goods():
     # stove + big pot + kettle + tray of tea glasses + newspaper + steel containers on the counter
     kit.add('paint', wb('stove', -1.3, -0.65, 0.58, 0.95, 0.96, 1.2, 0.02), 0x2B2724)
     kit.add('paint', cyl('chulha_mouth', -0.97, 0.76, 1.2, 1.22, 0.14, 0.14, 12), 0x120F0E)
-    kit.add('paint', cyl('pot', -0.97, 0.76, 1.22, 1.46, 0.23, 0.25, 16), STEEL)
+    kit.add('metal', cyl('pot', -0.97, 0.76, 1.22, 1.46, 0.23, 0.25, 16), STEEL)
     kit.add('paint', cyl('pot_lid', -0.97, 0.76, 1.46, 1.49, 0.26, 0.26, 16), 0x8A8E93)
     kit.add('paint', cyl('tea_surface', -0.97, 0.76, 1.455, 1.465, 0.2, 0.2, 14), 0x9A5A2A)
     kit.add('paint', limb('handle_l', (-1.22, 0.76, 1.44), (-1.35, 0.76, 1.44), 0.035, 0.03), 0x222222)
     kit.add('paint', limb('handle_r', (-0.72, 0.76, 1.44), (-0.59, 0.76, 1.44), 0.035, 0.03), 0x222222)
-    kit.add('paint', cyl('kettle', -0.3, 0.7, 0.96, 1.2, 0.13, 0.1, 12), STEEL)
-    kit.add('paint', limb('kettle_spout', (-0.3, 0.8, 1.12), (-0.3, 0.97, 1.22), 0.035, 0.035), STEEL)
+    kit.add('metal', cyl('kettle', -0.3, 0.7, 0.96, 1.2, 0.13, 0.1, 12), STEEL)
+    kit.add('metal', limb('kettle_spout', (-0.3, 0.8, 1.12), (-0.3, 0.97, 1.22), 0.035, 0.035), STEEL)
     kit.add('paint', limb('kettle_handle', (-0.42, 0.7, 1.15), (-0.18, 0.7, 1.15), 0.025, 0.03), 0x222222)
-    kit.add('paint', wb('tray', 0.35, 1.1, 0.62, 0.94, 0.96, 0.99, 0.006), STEEL)
+    kit.add('metal', wb('tray', 0.35, 1.1, 0.62, 0.94, 0.96, 0.99, 0.006), STEEL)
     for i in range(3):
         for j in range(2):
             kit.add('paint', cyl('glass', 0.5 + i * 0.22, 0.7 + j * 0.15, 0.99, 1.1, 0.04, 0.045, 10), 0xD8E8E8)
@@ -82,7 +83,7 @@ def counter_and_goods():
         kit.add('paint', cyl('jar', x, -0.88, 1.55, 1.8, 0.1, 0.1, 12), (0xC9A56A, 0xE2C27E, 0xB8864A, 0xD9B45A, 0xC9A56A)[i])
         kit.add('paint', cyl('jar_lid', x, -0.88, 1.8, 1.84, 0.105, 0.105, 12), 0xC0392B if i % 2 else 0x2E86C1)
     # (the flat-colour box packets that stood here are now textured printed packs: src/shopGoods.js teaStallGoods)
-    kit.add('paint', cyl('steel_tin', 1.45, -0.85, 1.55, 1.75, 0.09, 0.09, 10), STEEL)
+    kit.add('metal', cyl('steel_tin', 1.45, -0.85, 1.55, 1.75, 0.09, 0.09, 10), STEEL)
     kit.add('paint', sphere('bulb', 0.2, 0.0, 2.2, 0.05, 0.05, 0.065, 1), 0xFFF0B0)
     kit.add('paint', limb('bulb_cable', (0.2, 0.0, 2.4), (0.2, 0.0, 2.26), 0.01, 0.01), 0x222222)
 
@@ -99,7 +100,7 @@ def front_furniture():
     kit.add('paint', cyl('stool_seat', -2.25, 1.7, 0.44, 0.49, 0.2, 0.2, 12), 0xC0392B)
     kit.add('paint', wb('jerrycan', -2.65, -2.35, 1.35, 1.65, 0.0, 0.5, 0.03), 0x2E6BD0)
     kit.add('paint', cyl('jerrycan_cap', -2.5, 1.5, 0.5, 0.56, 0.05, 0.05, 8), 0x1F4F9E)
-    kit.add('paint', cyl('bucket', 1.65, 1.8, 0.0, 0.34, 0.2, 0.17, 14), STEEL)
+    kit.add('metal', cyl('bucket', 1.65, 1.8, 0.0, 0.34, 0.2, 0.17, 14), STEEL)
     kit.add('paint', cyl('bucket_in', 1.65, 1.8, 0.33, 0.345, 0.17, 0.17, 14), 0x1B2A33)
     kit.add('wood', wb('stool_seat', 2.05, 2.4, 1.55, 1.9, 0.42, 0.47, 0.008))
     for dx, dz in ((2.1, 1.6), (2.35, 1.6), (2.1, 1.85), (2.35, 1.85)):
@@ -109,5 +110,5 @@ def front_furniture():
 structure()
 counter_and_goods()
 front_furniture()
-TINTS = {'hb_plaster': '#F2E6C6', 'hb_plinth': '#E0A83F', 'hb_trim': '#D8D2C2', 'hb_apron': '#9C8264', 'hb_tin': '#C8D0D4', 'hb_wood': '#A08568'}
+TINTS = {'hb_metal': '#C9CDD2', 'hb_plaster': '#F2E6C6', 'hb_plinth': '#E0A83F', 'hb_trim': '#D8D2C2', 'hb_apron': '#9C8264', 'hb_tin': '#C8D0D4', 'hb_wood': '#A08568'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.06, 'hb_apron': 0.08}, ao_strength=0.4)
