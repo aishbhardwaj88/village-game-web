@@ -1543,7 +1543,10 @@ async function main() {
           bike.group.rotation.y = Math.PI; // bike front is -Z, routines face +Z
           rider.add(bike.group);
           group.add(rider);
-          const ride = createWaypointLoop(rider, [a, edge((s0 + s1) / 2), b, edge((s0 + s1) / 2)], { speed: 3.2, pauseSeconds: 3 });
+          const ride = createWaypointLoop(rider, (() => {
+            const out = []; for (let s = s0; s <= s1; s += 10) out.push(edge(s)); // follow the road's bends, not a straight chord
+            return out.concat(out.slice(1, -1).reverse());
+          })(), { speed: 3.2, pauseSeconds: 3 });
           const last = new THREE.Vector3().copy(rider.position);
           return { group, onFrame: (dt) => {
             ride(dt);
