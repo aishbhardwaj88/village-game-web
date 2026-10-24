@@ -416,16 +416,16 @@ def dabba(kit, x, z, h, r=0.12, tall=0.28, colour=STEEL):
 
 
 def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55, kind='paint'):
-    """A flour/sugar sack: a slumped, tied-off bag."""
-    ca, sa = math.cos(ang), math.sin(ang)
-    # pillowy body (subdivided ellipsoid, flattened base, bulging belly) + gathered, tied neck
-    body = sphere('sack', x, z, h + hh * 0.46, w * 0.52, d * 0.55, hh * 0.5, 2)
-    for v in body.data.vertices:
-        if v.co.z < h + hh * 0.46 - hh * 0.38:
-            v.co.z = h + hh * 0.46 - hh * 0.38
-        v.co.z += 0.0
+    """A flour/grain sack: a stuffed rounded-box bag with a gathered, cord-tied mouth and a slightly slumped top."""
+    bw, bd = w * 0.5, d * 0.5
+    bevel = min(bd * 0.6, 0.09)
+    body = wb('sack', x - bw, x + bw, z - bd, z + bd, h, h + hh * 0.82, bevel, 3)
     for poly in body.data.polygons:
-        poly.use_smooth = True   # pillowy, not faceted
+        poly.use_smooth = True
     kit.add(kind, body, colour)
-    kit.add(kind, cyl('sack_neck', x, z, h + hh * 0.84, h + hh * 1.04, w * 0.2, w * 0.1, 8), colour)
-    kit.add(kind, sphere('sack_top', x, z, h + hh * 1.05, w * 0.14, d * 0.14, 0.05, 1), colour)
+    # cord tying the neck, then the gathered mouth above it
+    kit.add('paint', wb('sack_cord', x - bw * 0.52, x + bw * 0.52, z - bd * 0.52, z + bd * 0.52, h + hh * 0.8, h + hh * 0.86, 0.01, 2), 0x6A5238)
+    mouth = wb('sack_mouth', x - bw * 0.5, x + bw * 0.5, z - bd * 0.5, z + bd * 0.5, h + hh * 0.84, h + hh * 1.0, 0.04, 3)
+    for poly in mouth.data.polygons:
+        poly.use_smooth = True
+    kit.add(kind, mouth, colour)

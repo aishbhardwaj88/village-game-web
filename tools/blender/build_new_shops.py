@@ -191,10 +191,10 @@ def atta_chakki():
     for i in range(10):
         a_ = i / 10 * math.tau
         kit.add('metal', cyl('bolt', sx + 0.43 * math.cos(a_), sz + 0.43 * math.sin(a_), 0.9, 0.95, 0.025, 0.025, 6), 0x2A2A28)
-    kit.add('metal', wb('hopper_lo', sx - 0.32, sx + 0.32, sz - 0.32, sz + 0.32, 0.95, 1.2, 0.01), BLUE)
-    kit.add('metal', wb('hopper_mid', sx - 0.42, sx + 0.42, sz - 0.42, sz + 0.42, 1.2, 1.55, 0.015), BLUE)
-    kit.add('metal', wb('hopper_rim', sx - 0.46, sx + 0.46, sz - 0.46, sz + 0.46, 1.55, 1.6, 0.01), 0x2F5278)
-    kit.add('paint', wb('hopper_grain', sx - 0.38, sx + 0.38, sz - 0.38, sz + 0.38, 1.52, 1.57, 0.0), 0xD9C58A)
+    kit.add('metal', cyl('hopper_neck', sx, sz, 0.95, 1.12, 0.14, 0.14, 12), BLUE)
+    kit.add('metal', cyl('hopper_cone', sx, sz, 1.12, 1.6, 0.14, 0.5, 12), BLUE)
+    kit.add('metal', cyl('hopper_rim', sx, sz, 1.6, 1.65, 0.52, 0.52, 12, cap=False), 0x2F5278)
+    kit.add('paint', wb('hopper_grain', sx - 0.33, sx + 0.33, sz - 0.33, sz + 0.33, 1.5, 1.52, 0.0), 0xD9C58A)
     # outlet chute sloping forward from the drum into a sack held on a low platform scale
     kit.add('metal', limb('chute', (sx + 0.4, sz + 0.3, 0.55), (sx + 0.4, sz + 0.85, 0.3), 0.2, 0.2), 0x9AA0A4)
     sack(kit, sx + 0.4, sz + 1.0, 0.0, 0.0, 0xF3EFE2, 0.42, 0.3, 0.5, kind='jute')
