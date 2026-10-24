@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z72, playtest block item 5, post office post box):** Game change: the post office's red pillar box (tools/blender/build_new_shops.py post_office, new_shops.glb rebuilt) now has a rain hood over the mouth, rolled seam bands, a clearance door with lock and a plain timetable plate; was a bare cylinder with a slot. Same materials, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/postbox-2026-10-25/a.png (headless, no subject check, not tickable; box reads as a red pillar box, bands subtle). Gaps: counter and postbox still flat paint, no real metal PBR (it would cost a draw call in a view already at the ceiling); haystack at bazaar west end still not located.
+NEXT: collision leftovers (0c: cart legs, hero-house charpai), findability walk.
+
+---
+
 **2026-10-25 (cycle 39z71, playtest block item 4, market leftovers check):** No game change (verification only, no code touched). The "unsigned pale-yellow milk-can building" is the Dudh Dairy at (-112,18): it carries its bilingual board on both faces and the English reads at walking distance (docs/shots/market-2026-10-25/{west_a,west_b}.png, headless, no subject check, not tickable); that gap is closed. Also read the far-LOD abadi (build_abadi.py house_lod) and canal water (shares the blob shader's depth path, so it already gets the scum/damp rim): both were already reworked in earlier commits, so not redone. Not found: the haystack debris at the bazaar row's west end; no haystack stands near the dairy, the nearest sources are tea_stall_haystacks (-58,76) and tubewell stacks, not yet shot.
 NEXT: locate and shoot the west-end haystack, collision leftovers (0c), post office textures.
 
