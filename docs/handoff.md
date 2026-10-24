@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39s, playtest block item 3, halwai bhatti):** Game change: each halwai bhatti now has a fire mouth on the customer-facing face (sooty arch, black recess, glowing ember bed, half-burnt log) and the kadhai is rounder (sphere subdiv 3, no longer faceted). tools/blender/build_halwai.py, halwai_compound.glb rebuilt (+~500 tris). Proof docs/shots/halwai-fire-2026-10-24/mouth.png (headless). Build ALL PASSED, budget passed.
+Gaps: embers are a plain colour (no emissive slot in the kit), no soot on the wall behind, no heat shimmer; other shops' goods, Banta shop, Chaat thela still open.
+NEXT: other shops' goods (medical, mobile, bangle); findability walk; lanes.
+
+---
+
 **2026-10-24 (cycle 39r, 15-hour queue item 3, halwai fire rework):** Game change: halwai smoke is now thin tapering wisps (smaller, fading with height), steam finer, flame flecks smaller with a hot-yellow base going dark red, and every fire particle fades out inside ~3 m of the lens so no white blobs sit in front of the camera. The grey panel with black squares was a QR payment board plus a sound box (UPI-era props, after the ~2015 cut-off): removed from tools/blender/build_halwai.py, halwai_compound.glb rebuilt. Build ALL PASSED, budget 28.44 MB. Proof docs/shots/halwai-fire-2026-10-24/{wide,close}.png (headless). Regression not run (no movement code).
 Gaps: flame is still hard to see because the bhatti brick block has no fire mouth (needs a cut in build_halwai.py); no soot or heat shimmer; other shops' goods (medical, mobile, bangle) still boxes; Banta shop and Chaat thela unbuilt.
 NEXT: bhatti fire mouth + soot; other shops' goods; findability walk; lanes.

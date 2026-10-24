@@ -83,7 +83,12 @@ def front():
     for (kz, what) in ((-1.15, 'jalebi'), (1.15, 'samosa')):
         kx = (cx0 + cx1) / 2 + 0.02
         kit.add('brick', wb('bhatti', kx - 0.4, kx + 0.4, kz - 0.4, kz + 0.4, 0.98, 1.2, 0.01))
-        kit.add('paint', sphere('kadhai', kx, kz, 1.32, 0.42, 0.42, 0.17, 2), 0x1B1B1D)
+        # fire mouth on the customer-facing side: sooty arch, black recess, glowing ember bed and a half-burnt log
+        kit.add('paint', wb('fire_soot', kx - 0.408, kx - 0.4, kz - 0.26, kz + 0.26, 1.04, 1.2, 0.0), 0x2B2724)
+        kit.add('paint', wb('fire_mouth', kx - 0.43, kx - 0.4, kz - 0.17, kz + 0.17, 0.99, 1.13, 0.0), 0x0E0C0B)
+        kit.add('paint', wb('fire_embers', kx - 0.44, kx - 0.42, kz - 0.14, kz + 0.14, 0.99, 1.04, 0.0), 0xFF7A28)
+        kit.add('paint', limb('fire_log', (kx - 0.46, kz - 0.12, 1.07), (kx - 0.46, kz + 0.12, 1.05), 0.03, 0.03, 0.0), 0x3A2A20)
+        kit.add('paint', sphere('kadhai', kx, kz, 1.32, 0.42, 0.42, 0.17, 3), 0x1B1B1D)
         kit.add('paint', cyl('kadhai_oil', kx, kz, 1.4, 1.43, 0.37, 0.37, 18), 0xB8741F)
         kit.add('paint', ring('kadhai_rim', kx, kz, 1.46, 0.41, 0.018, axis='y'), 0x2A2A2C)
         if what == 'jalebi':
