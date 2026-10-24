@@ -1452,7 +1452,7 @@ export function createGurukul(position) {
     ...[0, 1, 2, 3, 4, 5].map((i) => [-9 + i * 3.6, -4.9, 0.5, 0.5]), // verandah columns
     [9, 12, 14, 0.4], [-0.2, 12, 1.0, 1.0], [4.2, 12, 1.0, 1.0], // yard wall + gate pillars
     [6, 4, 0.2, 0.2], // flag mast
-  ], boards: [{ id: 'gurukul', x: 0, y: 3.95, z: -3.88, w: 4.4 }] });
+  ], boards: [{ id: 'gurukul', x: 0, y: 3.95, z: -3.88, w: 4.4 }, { id: 'gurukul', x: 0, y: 4.6, z: -12.58, w: 5.2, ry: Math.PI }] }); // 2nd board on the lane-side (north) face
 }
 
 /** Old haveli (MAP.md, east, quiet): two-storey courtyard mansion, faded ochre plaster, arched-front jharokhas, closed carved gate, quiet and cared-for. */
