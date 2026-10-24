@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z24, playtest block item 7, water sheen):** Game change: the shared water shader (src/water.js, used by pond, johad, canal, hauz) now has a fresnel sky-reflection tint at grazing angles and faint broken glitter on ripple crests, keeping the depth tint; same material, no new draw calls. Build ALL PASSED. Proof docs/shots/water-sky-2026-10-24/pond.png (headless, no subject check, so item 7 NOT ticked). Still open in item 7: the pond lotus still reads as small pink cones (visible in the shot), buffaloes are peg-legged blocks.
+NEXT: real lotus pads and flowers, flat-tint barber/puncture props, Banta/Chaat real textures.
+
+---
+
 **2026-10-24 (cycle 39z23, playtest block item 2, milk cans):** Game change: the homestead's lone plain-cylinder milk can (tools/blender/build_kachcha.py) is now two lathed steel cans with shoulder, neck, lid and rolled bands, kachcha_homestead.glb rebuilt; the Dudh dairy cans were already proper dairy cans. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/milkcan-2026-10-24/{before,homestead_after}.png (headless, no subject check, so only noted on item 2, not ticked as whole). Still flat-tint: barber/puncture props. Cattle in homestead shed are peg-legged blocks (animal models).
 NEXT: flat-tint barber/puncture props, Banta/Chaat real textures, water texture (item 7).
 

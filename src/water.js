@@ -53,9 +53,14 @@ diffuseColor.a = uOpacity * (uConstDepth >= 0.0 ? 1.0 : smoothstep(0.0, 0.28, d)
   float hz = wHeight(wp + vec2(0.0, e));
   vec3 rn = normalize(vec3(-(hx - h0) * 1.6, 1.0, -(hz - h0) * 1.6)); // world-space ripple normal (water surface faces +Y)
   normal = normalize(mix(normal, normalize((viewMatrix * vec4(rn, 0.0)).xyz), 0.85));
+  // sky reflection: grazing view tints toward hazy afternoon sky, plus a faint broken glitter on the ripple crests
+  float fres = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 3.0);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.40, 0.45, 0.44), fres * 0.30);
+  float crest = smoothstep(0.62, 0.78, wHeight(wp * 2.3 + 7.0));
+  diffuseColor.rgb += vec3(0.06, 0.055, 0.04) * crest * (0.4 + 0.6 * fres);
 }`);
   };
-  mat.customProgramCacheKey = () => `village_water_${shallow}_${deep}_${scale}_${opacity}_${depth}`;
+  mat.customProgramCacheKey = () => `village_water2_${shallow}_${deep}_${scale}_${opacity}_${depth}`;
   return mat;
 }
 
