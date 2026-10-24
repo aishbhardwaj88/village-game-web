@@ -327,6 +327,28 @@ export function dairyGoods() {
   return buildGoodsMesh(items, new THREE.Matrix4(), 'dairy_stock');
 }
 
+/** Yadav tea stall stock (tea-stall frame, tools/blender/build_tea_stall.py): printed packs on the back shelf (y 1.55) and snack strings on the front beam. */
+export function teaStallGoods(world) {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 61.7) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  const kinds = [['biscuit', D.biscuitBlue], ['tea', D.tea], ['chips', D.chipsRed], ['biscuit', D.biscuitOrange], ['namkeen', D.namkeen], ['salt', D.salt], ['chips', D.chipsGreen]];
+  for (let row = 0; row < 2; row++) for (let i = 0; i < 6; i++) {
+    const [kind, design] = kinds[(i + row * 3) % kinds.length];
+    items.push({ kind, design, x: 0.35 + i * 0.18 + (rnd() - 0.5) * 0.02, y: 1.55, z: -0.97 + row * 0.14, ry: (rnd() - 0.5) * 0.3, rx: row ? -0.2 : -0.1, s: 0.9 + rnd() * 0.15 });
+  }
+  for (const [x0, designs] of [[-1.7, [D.chipsRed, D.chipsBlue, D.namkeen, D.chipsGreen]], [0.9, [D.chipsGreen, D.chipsRed, D.chipsBlue, D.namkeen]]]) {
+    designs.forEach((design, k) => items.push({ kind: 'chips', design, x: x0 + k * 0.2, y: 2.12 - (k % 2) * 0.05, z: 1.14, ry: (rnd() - 0.5) * 0.3, s: 0.8 }));
+  }
+  items.push({ kind: 'sachets', design: D.sachet, x: 0.2, y: 2.36, z: 1.14 });
+  items.push({ kind: 'sachets', design: D.sachet, x: -0.5, y: 2.36, z: 1.14 });
+  // a few packs lying on the counter beside the tray
+  items.push({ kind: 'biscuit', design: D.biscuitBlue, x: 1.2, y: 0.99, z: 0.66, ry: 0.4, rx: -Math.PI / 2, s: 1 });
+  items.push({ kind: 'biscuit', design: D.biscuitOrange, x: 1.22, y: 1.025, z: 0.68, ry: -0.3, rx: -Math.PI / 2, s: 1 });
+  return buildGoodsMesh(items, world, 'tea_stall_stock');
+}
+
 /** Fold several goods meshes (same atlas material) into one draw call; world transforms are baked in. */
 export function mergeGoodsMeshes(meshes, name) {
   const geos = meshes.map((m) => { m.updateMatrix(); return m.geometry.clone().applyMatrix4(m.matrix); });

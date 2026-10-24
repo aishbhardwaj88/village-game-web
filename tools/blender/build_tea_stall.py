@@ -81,8 +81,7 @@ def counter_and_goods():
         x = -1.55 + i * 0.32
         kit.add('paint', cyl('jar', x, -0.88, 1.55, 1.8, 0.1, 0.1, 12), (0xC9A56A, 0xE2C27E, 0xB8864A, 0xD9B45A, 0xC9A56A)[i])
         kit.add('paint', cyl('jar_lid', x, -0.88, 1.8, 1.84, 0.105, 0.105, 12), 0xC0392B if i % 2 else 0x2E86C1)
-    for i, c in enumerate((0xF2C21E, 0xD9382B, 0x2E9E5B, 0xF08A24, 0x7B4FB0, 0xF2C21E)):
-        kit.add('paint', wb('packet', 0.4 + i * 0.2, 0.55 + i * 0.2, -0.95, -0.9, 1.55, 1.8, 0.004), c)
+    # (the flat-colour box packets that stood here are now textured printed packs: src/shopGoods.js teaStallGoods)
     kit.add('paint', cyl('steel_tin', 1.45, -0.85, 1.55, 1.75, 0.09, 0.09, 10), STEEL)
     kit.add('paint', sphere('bulb', 0.2, 0.0, 2.2, 0.05, 0.05, 0.065, 1), 0xFFF0B0)
     kit.add('paint', limb('bulb_cable', (0.2, 0.0, 2.4), (0.2, 0.0, 2.26), 0.01, 0.01), 0x222222)

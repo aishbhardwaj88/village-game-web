@@ -120,7 +120,7 @@ import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoof
 import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { setPlantFocus } from './realPlants.js';
-import { generalStoreGoods, halwaiGoods } from './shopGoods.js';
+import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
@@ -403,7 +403,11 @@ async function main() {
     .catch((err) => console.error('Failed to build signboards', err));
 
   // Gupta General Store stock: real-shaped printed goods, one merged mesh (src/shopGoods.js), replaces the Blender box packets.
-  shopsGroup.add(generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)));
+  // The tea stall's stock is folded into the same mesh (same atlas material) so it costs no extra draw call.
+  shopsGroup.add(mergeGoodsMeshes([
+    generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)),
+    teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
+  ], 'general_store_stock'));
   shopsGroup.add(halwaiGoods(new THREE.Matrix4().setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
 
   // Halwai fascia board (FEEDBACK 24 Oct item 1: the stall had none). Bilingual, English dominant, on the front fascia.
