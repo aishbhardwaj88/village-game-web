@@ -132,6 +132,19 @@ def post_office():
     for k in range(6):
         kit.add('paint', wb('notice', cx - 1.42 + (k % 3) * 0.3, cx - 1.22 + (k % 3) * 0.3, 1.62, 1.64, 1.45 + (k // 3) * 0.3, 1.7 + (k // 3) * 0.3, 0), (0xE9E5D8, 0xF2C21E, 0xBFD0D8)[k % 3])
     sack(kit, cx - 1.4, 2.1, 0.0, 0.0, 0xB89A62, 0.5, 0.35, 0.55, kind='jute')
+    # counter work (counter top y = 0.96, z 1.45..1.92): envelope stack with a rubber band, black desk phone, brown-paper parcels tied with twine
+    top, cz = 0.96, 1.7
+    for i, col in enumerate((0xE9E3D0, 0xDCD3B8, 0xC9D6DC, 0xEFE6C8, 0xE2D5B4)):
+        kit.add('paint', wb('env', cx - 0.55 + 0.01 * (i % 2), cx - 0.31 + 0.01 * (i % 2), cz - 0.07, cz + 0.06, top + i * 0.012, top + (i + 1) * 0.012, 0.001), col)
+    kit.add('paint', wb('band', cx - 0.45, cx - 0.43, cz - 0.075, cz + 0.065, top, top + 0.062, 0.001), 0x8A2A24)
+    kit.add('paint', wb('phone', cx + 0.0, cx + 0.2, cz - 0.1, cz + 0.07, top, top + 0.09, 0.02), 0x1B1B1D)
+    kit.add('paint', cyl('dial', cx + 0.1, cz - 0.015, top + 0.09, top + 0.105, 0.055, 0.055, 12), 0x2B2B2E)
+    kit.add('paint', wb('handset', cx + 0.0, cx + 0.2, cz - 0.1, cz - 0.03, top + 0.105, top + 0.14, 0.015), 0x151517)
+    for i, (px, ang) in enumerate(((0.6, 0.05), (0.88, -0.08), (0.74, 0.1))):
+        pz, py = cz + 0.0, top + (0.2 if i == 2 else 0.0)
+        kit.add('jute', wb('parcel', cx + px - 0.15, cx + px + 0.15, pz - 0.12, pz + 0.12, py, py + 0.2, 0.012), (0xA8865A, 0xB59468, 0x9C7C52)[i])
+        kit.add('paint', wb('twine', cx + px - 0.008, cx + px + 0.008, pz - 0.125, pz + 0.125, py, py + 0.205, 0.001), 0x6B5A3A)
+        kit.add('paint', wb('twine', cx + px - 0.155, cx + px + 0.155, pz - 0.008, pz + 0.008, py, py + 0.205, 0.001), 0x6B5A3A)
     # the village postbox mounted on the wall + a bicycle is the postman's (NPC), none here
 
 

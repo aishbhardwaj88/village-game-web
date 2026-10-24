@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z45, playtest block item 5, post office counter stock):** Game change: post office counter now carries a rubber-banded envelope bundle, a black desk phone with dial and handset, and three twine-tied brown-paper parcels (tools/blender/build_new_shops.py post_office, new_shops.glb rebuilt, no new draw call). Lesson: src/newShops.js props are the INVISIBLE collision backing (group new_shops_old); visible furnishing for post office/ration/chakki must go in the Blender script. Build 16/16, budget under 40 MB. Proof docs/shots/postoffice-2026-10-24b/front.png (headless, no subject check, so item 5 NOT ticked). Gaps: post box and counter textures still plain wood/paint; ration and chakki JS-side props (tins, ledger, scale) are invisible and need the same move to Blender.
+NEXT: ration shop/chakki props into Blender, halwai/bazaar wood, tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z44, playtest block item 5, cricket field ground):** Game change: Khel maidan mud (pitch, run-ups, badminton pad) now tiles the ground scan at one tile per 5.5 m (was 2.5, read as wooden planks) and the outfield grass one per 6 m (was 3, showed a visible checker repeat), src/farmSites.js maidanOutfield / createKhelMaidan. No asset bytes, no draw call. Build ALL PASSED, budget 30.40 MB. Proof docs/shots/khel-2026-10-24b/pitch_walk.png vs khel-2026-10-24/pitch_walk.png (headless, subject check passed). Court lines and net were already built (docs/shots/khel-2026-10-24/badminton.png). Gaps: court pad still low-contrast against the pitch; stump and crease colours are flat vertex colour; item 5 NOT ticked as a whole (post office/chakki textures open).
 NEXT: post office stock, halwai/bazaar wood, tea glasses/jars, findability walk.
 
