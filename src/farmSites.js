@@ -521,7 +521,10 @@ function haystackGeos(x, z, k, n, tone) {
     p.setXYZ(v, p.getX(v) * (1 + 0.06 * h), p.getY(v), p.getZ(v) * (1 + 0.06 * h));
   }
   g.computeVertexNormals();
-  return [bake(g, at(x, 0, z, n), tone), bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), 0x8a7a50)];
+  // Trampled loose straw skirt round the base so the stack sits in the ground instead of on it.
+  const skirt = new THREE.ShapeGeometry(blobShape(2.9 * k, 3 + n));
+  skirt.rotateX(-Math.PI / 2);
+  return [bake(skirt, at(x, 0.035, z, n * 1.7), 0x9a8656), bake(g, at(x, 0, z, n), tone), bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), 0x8a7a50)];
 }
 
 /**

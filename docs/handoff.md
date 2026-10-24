@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z78, playtest block item 3, haystacks):** Game change: every bhoosa haystack (tubewell, Yadav tea stall, khalihan; src/farmSites.js haystackGeos) now sits on a trampled straw skirt, same merged mesh, no new draw call. Answer to her question: haystacks DO exist near the tubewell (3 stacks at (-47,-13)) and behind the Yadav tea stall (2 stacks at (-58,76)); both read as haystacks. Build ALL PASSED. Proof docs/shots/haystack-2026-10-25/{tubewell_hay,b_tea_hay}.png (headless, no subject check, not tickable). Gaps: skirt is a hard-edged flat patch; stacks are uniform beehive domes.
+NEXT: findability walk, street life on roads, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z77, playtest block item 8, spurs):** Game change: 7 earth spur tracks (3.5 m, edging, solar lamp every 45 m, shade trees, no drain) now leave the east road to health centre, johad, masjid, gurukul, khel maidan, Jain mandir and old haveli (src/eastRoad.js SPURS/spurLegs, same createEastRoadLeg with w/noDrain, streamed per leg in src/main.js, drawn on the map via LANES). Static findability audit: 1 of 40 places not findable without the map (was 15 off-lane); ALL places are now within 30 m of a lane. Nothing moved. Build ALL PASSED. Proof docs/shots/spurs-2026-10-25/masjid_spur.png (headless, capsule in frame, not tickable); junction.png has a bad camera (below ground), ignore. Gaps: spurs end open (no gate or forecourt), no traffic/street life on any road, pond/mela/gurudwara/gaushala/tvhouse/baagh still off the lane set, spur surface is vertex-tinted earth not PBR.
 NEXT: real on-foot findability walk, street life on the roads, triangle cuts (art director's call).
 
