@@ -342,6 +342,9 @@ async function main() {
   const postmasterNpc = createNPC(0x6a7a8a, { x: POST_OFFICE_POS.x + 0.7, z: POST_OFFICE_POS.z }, NEW_SHOPS_ROT, 'npc_postmaster');
   scene.add(postmasterNpc);
 
+  // Petrol pump attendant beside the east pump island (capsule stand-in until the 3D people arrive)
+  scene.add(createNPC(0x4a6a8a, { x: 189.4, z: 6.4 }, Math.PI / 2, 'npc_pump_attendant'));
+
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see
   // src/interactions.js's registerShopBuy doc comment).
@@ -889,6 +892,11 @@ async function main() {
       placements: [{ container: scene, position: new THREE.Vector3(FLOWER_STALL_POS.x, 0, FLOWER_STALL_POS.z), rotationY: 0 }],
     });
   }
+  // Roadside petrol pump (Blender, 2026-10-24): exact slot at the old pump site, highway cluster (205,40) + (-19,-35).
+  assetSlots.register('petrol_pump', {
+    exact: true,
+    placements: [{ container: scene, position: new THREE.Vector3(186, 0, 5), rotationY: 0 }],
+  });
   assetSlots.register('new_shops', {
     exact: true,
     hide: [scene.getObjectByName('new_shops_old')].filter(Boolean),

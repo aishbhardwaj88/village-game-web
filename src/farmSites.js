@@ -596,17 +596,7 @@ export function createHighwayCluster(position) {
   geos.push(bake(new THREE.BoxGeometry(14, 0.1, 150), at(0, 0.05, 0), 0x3d3d40));
   for (let z = -70; z <= 70; z += 8) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 3.5), at(0, 0.11, z), 0xe8e2c8));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 150), at(sx * 6.4, 0.11, 0), 0xe8e2c8));
-  // Petrol pump: forecourt slab, canopy on four posts, two pumps, small office.
-  geos.push(bake(new THREE.BoxGeometry(22, 0.12, 16), at(-19, 0.06, -35), 0x9a9890));
-  geos.push(bake(new THREE.BoxGeometry(14, 0.5, 9), at(-19, 5.0, -35), 0xd8d2c2));
-  geos.push(bake(new THREE.BoxGeometry(14.04, 0.2, 9.04), at(-19, 4.65, -35), 0xc4372f));
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.2, 0.2, 4.8, 8), at(-19 + sx * 5.5, 2.4, -35 + sz * 3.2), 0xd8d2c2));
-  for (const sx of [-1, 1]) {
-    geos.push(bake(new THREE.BoxGeometry(0.9, 1.7, 0.6), at(-19 + sx * 2.5, 0.97, -35), 0xc4372f));
-    geos.push(bake(new THREE.BoxGeometry(0.7, 0.4, 0.62), at(-19 + sx * 2.5, 1.5, -35), 0x2a2a2a));
-  }
-  geos.push(bake(new THREE.BoxGeometry(4, 3, 3.5), at(-27, 1.6, -41), 0xe4dcc6));
-  geos.push(bake(new THREE.BoxGeometry(4.4, 0.2, 3.9), at(-27, 3.2, -41), 0x8d8a82));
+  // Petrol pump: now the Blender model 'petrol_pump' (tools/blender/build_petrol_pump.py, asset slot in main.js); only its collision solids stay here.
   // Bus adda: tin-roof shelter, bench, kerb-side concrete pad.
   geos.push(bake(new THREE.BoxGeometry(8, 0.15, 3.5), at(-10, 0.08, 20), 0xa8a59c));
   geos.push(bake(new THREE.BoxGeometry(8.4, 0.08, 3.8), new THREE.Matrix4().makeRotationX(0.06).setPosition(-10, 3.0, 20), 0x8e969c));
@@ -625,7 +615,7 @@ export function createHighwayCluster(position) {
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
     [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
   ], boards: [
-    { id: 'petrol', x: -11.95, y: 5.2, z: -35, ry: Math.PI / 2, w: 4.2 }, // canopy front edge, facing the road
+    { id: 'petrol', x: -11.8, y: 5.1, z: -35, ry: Math.PI / 2, w: 4.2 }, // canopy front edge, facing the road
     { id: 'kanta', x: -14.3, y: 3.3, z: 50, ry: Math.PI / 2, w: 2.7 }, // standing on the cabin roof edge, facing the weighing platform
     { id: 'busadda', x: -10, y: 3.45, z: 18.1, ry: Math.PI, w: 4 }, // shelter roof front, facing the lane
   ] });
