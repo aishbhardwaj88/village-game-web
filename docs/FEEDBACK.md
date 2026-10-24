@@ -122,7 +122,7 @@ flowers - and it is still not there.
   handoff.md, and either make each one clearly what it is or remove it.
 
 ### 5. POST OFFICE, ATTA CHAKKI, SPECIFIC PLACES
-- **Post office**: she asked for a person sitting inside and did not get one. Put a
+- [PARTLY DONE 24 Oct 2026: capsule postmaster at the counter, 2 notice boards, post box was already there; proof docs/shots/postoffice-2026-10-24/front.png, notices.png; open: post box/counter textures] **Post office**: she asked for a person sitting inside and did not get one. Put a
   capsule NPC at the counter. Add labels and notices outside. Add the red Indian
   post box; a free 3D model of a post box is easy to find.
 - **Atta chakki**: random shapes, nothing is clear. Find a real mill/machinery model

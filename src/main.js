@@ -338,6 +338,9 @@ async function main() {
     .then((mesh) => shopsGroup.add(mesh))
     .catch((err) => console.error('Failed to build new-shop signboards', err));
   scene.add(shopsGroup);
+  // Postmaster behind the counter window (capsule stand-in until the 3D people arrive; local +z = world +x here)
+  const postmasterNpc = createNPC(0x6a7a8a, { x: POST_OFFICE_POS.x + 0.7, z: POST_OFFICE_POS.z }, NEW_SHOPS_ROT, 'npc_postmaster');
+  scene.add(postmasterNpc);
 
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see

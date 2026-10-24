@@ -19,6 +19,7 @@ import { buildWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
  */
 
 export const POST_OFFICE = { w: 3.2, d: 3, h: 3.0, counterTopY: 0.9, tint: PALETTE.fadedBlue, roofOverhang: 0.3 };
+const POST_NOTICE_X = 3.6; // local x of the forecourt notice boards (right of the window, clear of the ration shop)
 export const RATION_SHOP = { w: 3.6, d: 3, h: 3.0, counterTopY: 0.9, tint: PALETTE.mustard, roofOverhang: 0.3 };
 export const ATTA_CHAKKI = { w: 3, d: 2.8, h: 2.7, tint: PALETTE.terracotta, roofOverhang: 0.3 };
 
@@ -238,6 +239,9 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     cyl(metalGeos, world, 0.09, 0.012, 0.5, cy + 0.06, cz - 0.05, 0xb9b6aa, 12);
     box(woodGeos, world, 0.14, 0.02, 0.09, -0.4, cy, cz, 0.4, 0x2c2a4a); // ink pad
     cyl(woodGeos, world, 0.025, 0.07, -0.4, cy + 0.02, cz, 0x6a3a22, 8); // stamp
+    // two posts carrying the notice boards (drawn in buildNewShopSignboards)
+    for (const px of [POST_NOTICE_X - 0.8, POST_NOTICE_X + 0.8]) box(woodGeos, world, 0.08, 2.05, 0.08, px, 0, d / 2 + 0.5, 0, darken(PALETTE.woodTrim, 0.8));
+    colliders.push(colliderBoxFromTransform(1.8, 0.2, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(POST_NOTICE_X, 1.0, d / 2 + 0.52))));
     // pillar box outside, left of the window
     const bx = -POST_OFFICE.w / 2 - 0.35, bz = d / 2 + 0.55;
     cyl(metalGeos, world, 0.19, 1.0, bx, 0, bz, 0xa8281f, 14);
@@ -312,6 +316,9 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     { hi: 'डाकघर', en: 'Post Office', fg: '#6e1a12' },
     { hi: 'राशन की दुकान', en: 'Ration Shop', fg: '#173f20' },
     { hi: 'आटा चक्की', en: 'Atta Chakki', fg: '#14306e' },
+    // post office forecourt notice boards (cols 3-4), on the posts built in buildNewShopProps
+    { hi: 'स्पीड पोस्ट · मनी ऑर्डर · टिकट', en: 'Speed Post · Money Order · Stamps', fg: '#14306e' },
+    { hi: 'समय: सुबह 10 से शाम 4', en: 'Open 10 AM to 4 PM', fg: '#173f20' },
   ]);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
   material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
@@ -327,6 +334,15 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     const world = wallWorldMatrix(pos, rot).multiply(new THREE.Matrix4().makeTranslation(0, dims.h + 0.42, dims.d / 2 + 0.03));
     geo.applyMatrix4(world);
     geos.push(geo);
+  }
+  {
+    const world = wallWorldMatrix(postOfficePos, postOfficeRot);
+    [[3, 1.58], [4, 1.1]].forEach(([col, y]) => {
+      const geo = new THREE.BoxGeometry(1.8, 0.41, 0.04);
+      mapFrontFaceToRow(geo, col, rows);
+      geo.applyMatrix4(new THREE.Matrix4().makeTranslation(POST_NOTICE_X, y, POST_OFFICE.d / 2 + 0.55).premultiply(world));
+      geos.push(geo);
+    });
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);
   mesh.name = 'new_shop_signboards';
