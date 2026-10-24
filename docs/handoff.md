@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39x, playtest block item 5, atta chakki):** Game change: sacks (chakki + ration shop) now carry the real jute weave (new 'jute' kind in tools/blender/arch.py, own material in new_shops.glb), a capsule miller stands at the mill (src/main.js npc_miller). Draw-call cost paid for by turning shadow casting off on jute meshes (src/assetSlots.js), charpai and hand_pump. A 'metal' kind exists in arch.py but is NOT used (one extra draw call put the bazaar view at 153). Build 16/16 (bazaar 150, hero 146), budget 28.5 MB. Proof docs/shots/chakki-2026-10-24/v3_close.png (headless). Item NOT ticked: sacks still read faceted/boxy (checker-like weave scale), mill drum/hopper still flat-painted low-poly.
+NEXT: rounder sack mesh (subdivided, slumped), recover a draw call to enable metal on the mill; then dharam kanta.
+
+---
+
 **2026-10-24 (cycle 39w, playtest block item 5, atta chakki):** Honest result: no visible change. Removed the crude code-built mill duplicates (stone, motor, belt, hopper, tray, sacks shelf, scale) from src/newShops.js; they sat inside the Blender mill and the re-shot (docs/shots/chakki-2026-10-24/close.png, headless) is identical to before. Collider kept. Build ALL PASSED. Item NOT ticked.
 Real gap: the mill in tools/blender/build_new_shops.py atta_chakki() is flat-coloured faceted shapes (green drum, blue hopper, sacks that read as jars). Needs textured metal/jute materials, rounder sacks, a visible millstone/flour spout, a capsule miller at the machine.
 NEXT: rebuild the chakki mill and sacks with textured materials and a capsule operator; then dharam kanta.

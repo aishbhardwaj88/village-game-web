@@ -29,8 +29,8 @@ from common import (
 # vertex colours: kinds plaster/plinth/trim/floor/apron/wood/concrete/paint all fold into it) plus, only where used,
 # a brick mesh and a corrugated-tin mesh (their textures carry real detail) and the transparent decals.
 MAIN_KINDS_TEXTURE = ('plaster', 0.5)
-OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0), 'thatch': ('thatch', 1.0), 'wood': ('wood', 1.0)}
-OPT_IN_KINDS = ('thatch', 'wood')  # own real PBR set only when the script asks (Kit(own=(...))): each is one extra draw call per building
+OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0), 'thatch': ('thatch', 1.0), 'wood': ('wood', 1.0), 'metal': ('metal', 1.0), 'jute': ('jute', 0.7)}
+OPT_IN_KINDS = ('thatch', 'wood', 'metal', 'jute')  # own real PBR set only when the script asks (Kit(own=(...))): each is one extra draw call per building
 
 
 class Kit:
@@ -58,7 +58,7 @@ class Kit:
         """Colour every object (per-kind sRGB tint from `tints['hb_<kind>']`, or its own paint colour) into a 'Base'
         vertex-colour layer, join into hb_main / hb_brick / hb_tin, box-UV, bake dirty-vertex AO, then write
         AO(soft) x Base x a smooth +-drift into the exported COLOR_0 layer."""
-        groups = {'main': [], 'props': [], 'brick': [], 'tin': [], 'terracotta': [], 'thatch': [], 'wood': []}
+        groups = {'main': [], 'props': [], 'brick': [], 'tin': [], 'terracotta': [], 'thatch': [], 'wood': [], 'metal': [], 'jute': []}
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
@@ -412,8 +412,8 @@ def dabba(kit, x, z, h, r=0.12, tall=0.28, colour=STEEL):
     kit.add('paint', sphere('dabba_knob', x, z, h + tall + 0.06, 0.03, 0.03, 0.03, 1), 0x8A8E93)
 
 
-def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55):
+def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55, kind='paint'):
     """A flour/sugar sack: a slumped, tied-off bag."""
     ca, sa = math.cos(ang), math.sin(ang)
-    kit.add('paint', limb('sack', (x, z, h), (x, z, h + hh), w, d, 0.06), colour)
-    kit.add('paint', sphere('sack_top', x, z, h + hh, w * 0.42, d * 0.42, 0.09, 1), colour)
+    kit.add(kind, limb('sack', (x, z, h), (x, z, h + hh), w, d, 0.06), colour)
+    kit.add(kind, sphere('sack_top', x, z, h + hh, w * 0.42, d * 0.42, 0.09, 1), colour)

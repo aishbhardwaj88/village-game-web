@@ -240,9 +240,11 @@ export function createAssetSlotRegistry() {
           if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
           if (shared.vertexColors && !g.attributes.color) g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
           g.applyMatrix4(o.matrixWorld);
-          const key = `${shared.name}|${o.castShadow}`;
+          // small interior sacks/machinery in open-fronted shops: no shadow pass (each cast mesh costs a second draw call)
+          const cast = o.castShadow && !/^hb_(metal|jute)$/.test(mat.name);
+          const key = `${shared.name}|${cast}`;
           let b = buckets.get(key);
-          if (!b) buckets.set(key, (b = { material: shared, geos: [], cast: o.castShadow }));
+          if (!b) buckets.set(key, (b = { material: shared, geos: [], cast }));
           b.geos.push(g);
           dead.push(o);
         });

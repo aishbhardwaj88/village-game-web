@@ -345,6 +345,10 @@ async function main() {
   // Indoor capsule: its shadow pass costs a draw call the bazaar view (at the 150 ceiling) cannot spare; the interior is shaded anyway.
   postmasterNpc.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   scene.add(postmasterNpc);
+  // Miller beside the flour mill in the atta chakki (capsule stand-in until the 3D people arrive)
+  const millerNpc = createNPC(0x8a7a5a, { x: ATTA_CHAKKI_POS.x + 0.5, z: ATTA_CHAKKI_POS.z + 0.9 }, NEW_SHOPS_ROT, 'npc_miller');
+  millerNpc.traverse((o) => { if (o.isMesh) o.castShadow = false; });
+  scene.add(millerNpc);
 
   // Petrol pump attendant beside the east pump island (capsule stand-in until the 3D people arrive)
   scene.add(createNPC(0x4a6a8a, { x: 189.4, z: 6.4 }, Math.PI / 2, 'npc_pump_attendant'));
@@ -964,6 +968,8 @@ async function main() {
   // charpai/hand_pump (queue item 3 builds these — see src/village.js
   // buildHouseInteriorProps, which keeps each in its own small Group for exactly
   // this reason: independently hideable once a real model exists).
+  // tiny props: no shadow pass (each cast mesh costs a second draw call, the bazaar view sits at the 150 ceiling)
+  for (const grp of [houseCharpaiGroup, houseHandPumpGroup]) grp.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   assetSlots.register('charpai', {
     dimensions: { w: 0.9, h: 0.5, d: 1.9 },
     hide: houseCharpaiGroup.children.slice(),
