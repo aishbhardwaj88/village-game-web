@@ -72,45 +72,73 @@ function capsuleBetween(p0, p1, radius, color, capSegments = 4, radialSegments =
 
 const P = (x, y, z) => new THREE.Vector3(x, y, z);
 
-/** Returns a single merged Mesh — the recognisable monkey silhouette. */
+/** Returns a single merged Mesh — a rhesus macaque on all fours: deep chest tapering to a
+ * slim waist, haunch, shoulder hump, round skull with a pale bare face and brow, small ears,
+ * tapered limbs with hands/feet, and a long tail arcing up behind. Fur texture is shared
+ * with the cattle/dogs (hideTextures), so no new asset bytes. */
 export function buildMonkeyMesh() {
   const geos = [];
+  const sc = (g, sx, sy, sz, x, y, z, color) => part(g, new THREE.Matrix4().makeScale(sx, sy, sz).setPosition(x, y, z), color);
+  const taper = (top, bot, rt, rb, color) => {
+    const dir = new THREE.Vector3().subVectors(top, bot);
+    const q = new THREE.Quaternion().setFromUnitVectors(_yAxis, dir.clone().normalize());
+    const m = new THREE.Matrix4().makeRotationFromQuaternion(q).setPosition((top.x + bot.x) / 2, (top.y + bot.y) / 2, (top.z + bot.z) / 2);
+    return part(new THREE.CylinderGeometry(rt, rb, dir.length(), 8), m, color);
+  };
+  const BELLY = 0xa89878, DARK = 0x2a211a, RUMP = 0x9a6a50;
 
-  // Body — a horizontal capsule (rounder than a box, reads as a torso rather than a
-  // crate), running posture, centred at the hip/shoulder midline height.
-  const bodyGeo = new THREE.CapsuleGeometry(0.095, 0.22, 4, 8);
-  geos.push(part(bodyGeo, new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0.32, 0), HIDE));
+  // Torso: chest, waist, haunch, shoulder hump, pale belly.
+  geos.push(sc(new THREE.SphereGeometry(0.1, 12, 10), 1.0, 1.0, 1.5, 0, 0.33, 0.1, HIDE));
+  geos.push(sc(new THREE.SphereGeometry(0.085, 10, 8), 0.95, 0.95, 1.5, 0, 0.32, -0.08, HIDE));
+  geos.push(sc(new THREE.SphereGeometry(0.095, 10, 8), 1.05, 1.0, 1.1, 0, 0.32, -0.19, HIDE));
+  geos.push(sc(new THREE.SphereGeometry(0.075, 8, 6), 1.0, 0.9, 1.1, 0, 0.37, 0.14, HIDE)); // shoulders
+  geos.push(sc(new THREE.SphereGeometry(0.07, 8, 6), 0.9, 0.55, 1.7, 0, 0.26, 0.02, BELLY));
+  geos.push(sc(new THREE.SphereGeometry(0.035, 6, 5), 1.2, 0.8, 0.8, 0, 0.31, -0.28, RUMP)); // bare rump patch
 
-  // Head — a sphere just ahead of the body, round rather than boxy.
-  const headGeo = new THREE.SphereGeometry(0.095, 8, 6);
-  geos.push(part(headGeo, new THREE.Matrix4().setPosition(0, 0.41, 0.22), HIDE));
-  // Muzzle — lighter patch, the single clearest "this is a face" cue at mid distance.
-  geos.push(part(new THREE.BoxGeometry(0.07, 0.055, 0.07), new THREE.Matrix4().setPosition(0, 0.37, 0.31), FACE));
-  // Ears — small flattened spheres either side of the head.
+  // Neck and head: round skull, heavy brow, pale bare face, muzzle, nose, eyes, ears.
+  geos.push(capsuleBetween(P(0, 0.36, 0.17), P(0, 0.42, 0.25), 0.055, HIDE, 4, 8));
+  geos.push(sc(new THREE.SphereGeometry(0.075, 12, 10), 1.0, 1.0, 1.05, 0, 0.44, 0.27, HIDE)); // skull
+  geos.push(sc(new THREE.SphereGeometry(0.06, 10, 8), 1.0, 0.85, 0.9, 0, 0.425, 0.315, FACE)); // face
+  geos.push(sc(new THREE.SphereGeometry(0.04, 8, 6), 1.1, 0.8, 1.2, 0, 0.405, 0.365, FACE)); // muzzle
+  geos.push(sc(new THREE.SphereGeometry(0.075, 8, 4), 1.05, 0.28, 0.6, 0, 0.475, 0.31, DARK)); // brow ridge
+  geos.push(sc(new THREE.SphereGeometry(0.009, 5, 4), 3, 1, 1, 0, 0.402, 0.402, DARK)); // nostrils
   for (const side of [-1, 1]) {
-    geos.push(part(new THREE.SphereGeometry(0.035, 6, 5), new THREE.Matrix4().makeScale(1, 1, 0.5).setPosition(side * 0.085, 0.47, 0.2), HIDE));
+    geos.push(sc(new THREE.SphereGeometry(0.012, 6, 5), 1, 1, 1, side * 0.028, 0.452, 0.35, DARK)); // eye
+    geos.push(sc(new THREE.SphereGeometry(0.03, 8, 6), 0.4, 1.0, 1.0, side * 0.078, 0.445, 0.265, FACE)); // ear
   }
 
-  // Tail — three tapering segments, each spanning exactly to the next so they read
-  // as one continuous arc from the base of the spine up and forward over the back
-  // (the single most monkey-specific silhouette cue a capsule could never have).
-  const tailPts = [P(0, 0.32, -0.205), P(0, 0.4, -0.33), P(0, 0.52, -0.38), P(0, 0.63, -0.29)];
-  const tailThickness = [0.042, 0.036, 0.028];
-  for (let i = 0; i < 3; i++) geos.push(boxBetween(tailPts[i], tailPts[i + 1], tailThickness[i], HIDE));
+  // Tail: tapering, thick at the base and curving up over the rump.
+  const tailPts = [P(0, 0.33, -0.27), P(0, 0.38, -0.37), P(0, 0.5, -0.43), P(0, 0.63, -0.4), P(0, 0.7, -0.31)];
+  const tailR = [0.026, 0.023, 0.019, 0.014, 0.008];
+  for (let i = 0; i < 4; i++) geos.push(taper(tailPts[i + 1], tailPts[i], tailR[i + 1], tailR[i], HIDE));
+  for (let i = 1; i < 5; i++) geos.push(sc(new THREE.SphereGeometry(tailR[i], 6, 5), 1, 1, 1, tailPts[i].x, tailPts[i].y, tailPts[i].z, HIDE));
 
-  // Legs — mid-stride gallop: front legs reaching forward (one planted, one lifted),
-  // back legs trailing (one planted, one lifted) — hip/shoulder points on the body,
-  // feet at or near the ground.
-  const legs = [
-    [P(-0.07, 0.27, 0.16), P(-0.09, 0, 0.24)], // front-left, planted forward
-    [P(0.07, 0.27, 0.16), P(0.1, 0.1, 0.09)], // front-right, lifted mid-stride
-    [P(-0.07, 0.27, -0.15), P(-0.1, 0.1, -0.23)], // back-left, lifted mid-stride
-    [P(0.07, 0.27, -0.15), P(0.09, 0, -0.1)], // back-right, planted
+  // Legs mid-gallop: thigh/upper arm, bent knee/elbow, lower limb, hand/foot.
+  const limbs = [
+    // [shoulder/hip, joint, paw, radius, x sign]
+    [P(-0.07, 0.31, 0.16), P(-0.08, 0.17, 0.24), P(-0.08, 0.015, 0.29)], // front-left planted forward
+    [P(0.07, 0.31, 0.16), P(0.09, 0.24, 0.25), P(0.09, 0.14, 0.2)], // front-right lifted
+    [P(-0.07, 0.3, -0.18), P(-0.09, 0.22, -0.3), P(-0.09, 0.12, -0.26)], // back-left lifted
+    [P(0.07, 0.3, -0.18), P(0.09, 0.15, -0.14), P(0.09, 0.015, -0.2)], // back-right planted
   ];
-  for (const [hip, foot] of legs) geos.push(boxBetween(hip, foot, 0.055, HIDE));
+  for (const [hip, knee, paw] of limbs) {
+    geos.push(taper(hip, knee, 0.042, 0.03, HIDE));
+    geos.push(taper(knee, paw, 0.03, 0.019, HIDE));
+    geos.push(sc(new THREE.SphereGeometry(0.03, 8, 6), 1, 1, 1, knee.x, knee.y, knee.z, HIDE)); // knee/elbow
+    geos.push(sc(new THREE.SphereGeometry(0.042, 8, 6), 1, 1, 1, hip.x, hip.y, hip.z, HIDE)); // shoulder/hip
+    geos.push(sc(new THREE.SphereGeometry(0.026, 6, 5), 1, 0.55, 1.5, paw.x, Math.max(paw.y - 0.005, 0.012), paw.z + 0.015, DARK));
+  }
 
   const merged = mergeGeometries(geos);
-  const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, vertexColors: true });
+  const pos = merged.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uv[i * 2] = pos.getZ(i) * 7 + pos.getX(i) * 9;
+    uv[i * 2 + 1] = pos.getY(i) * 7 + pos.getX(i) * 2;
+  }
+  merged.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  const hide = hideTextures();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.0, roughnessMap: hide.bump });
   const mesh = new THREE.Mesh(merged, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;

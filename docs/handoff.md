@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z39, animals, monkey):** Game change: the M6 monkey (src/animals.js buildMonkeyMesh) rebuilt from capsule/box blobs into a rhesus macaque: deep chest to slim waist, haunch, shoulder hump, pale belly, round skull with brow ridge, pale bare face, muzzle, nostrils, eyes, ears, tapered limbs with elbow/knee joints and dark hands/feet, long tapering tail arcing over the rump, and the shared fur texture/bump from the cattle and dogs (no new asset bytes, still one merged Mesh, one draw call). Build ALL PASSED, budget 29.31 MB. Proof docs/shots/monkey-2026-10-24/{side,three_q,front}.png (isolated test scene tmp/monkeyview.html, not in-game; no in-game subject check, so "animal models" NOT ticked). Gaps: limbs still straight cylinders, no run animation, goats do not exist in code.
+NEXT: draw-call saving in the hero view (unblocks wood), tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z38, animals, dog):** Game change: street dogs (src/animals.js buildDogGeometry) rebuilt from capsule/box blobs into a lean pariah dog: deep chest tapering to a slim waist, haunch, neck, wedge skull and muzzle with nose, prick ears, eyes, sickle tail, tapered legs with a hock bend and pale paws, and the shared fur texture from the cattle (finer UV scale so it reads as fur, not wood). Same InstancedMesh, no new draw call, no asset bytes. Build ALL PASSED, budget 29.31 MB. Proof docs/shots/dog-2026-10-24/{side,three_q,front}.png (isolated test scene tmp/dogview.html, not in-game; no in-game subject check, so "animal models" NOT ticked). Gaps: legs still stick-thin and torso segments visibly lumpy, no walk animation, monkey and goats untouched.
 NEXT: draw-call saving in the hero view (unblocks wood), tea glasses/jars, monkey.
 
