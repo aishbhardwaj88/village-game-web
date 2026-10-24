@@ -47,6 +47,7 @@ import {
   buildBazaarCountersAndShutters,
   buildBazaarSignboards,
   buildBazaarInteriors,
+  buildBazaarKiranaGoods,
   buildTeaStallChowk,
   buildChowkPlaza,
   buildBazaarLane,
@@ -341,6 +342,8 @@ async function main() {
   scene.add(shopsGroup);
   // Postmaster behind the counter window (capsule stand-in until the 3D people arrive; local +z = world +x here)
   const postmasterNpc = createNPC(0x6a7a8a, { x: POST_OFFICE_POS.x + 0.7, z: POST_OFFICE_POS.z }, NEW_SHOPS_ROT, 'npc_postmaster');
+  // Indoor capsule: its shadow pass costs a draw call the bazaar view (at the 150 ceiling) cannot spare; the interior is shaded anyway.
+  postmasterNpc.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   scene.add(postmasterNpc);
 
   // Petrol pump attendant beside the east pump island (capsule stand-in until the 3D people arrive)
@@ -416,6 +419,7 @@ async function main() {
   scene.add(bazaarGroup);
   bazaarGroup.add(buildBazaarCountersAndShutters());
   bazaarGroup.add(buildBazaarInteriors());
+  bazaarGroup.add(buildBazaarKiranaGoods());
 
   // Chowk (item 4) — the second tea stall (Places V1/tea_stall_chowk/), a chabutra,
   // benches, a few plastic chairs, east of the bazaar row with open ground left

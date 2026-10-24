@@ -5,6 +5,7 @@ import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } fro
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
+import { buildGoodsMesh, DESIGN as GOODS } from './shopGoods.js';
 
 /**
  * Bazaar row — Places V1/bazaar_row/LAYOUT.md is the authority for counts, names,
@@ -483,6 +484,39 @@ export async function buildBazaarSignboards() {
 // close enough for small background props at this distance), and the bangle shop's
 // rings (torus, its own small batch since no other shop needs one). ---
 
+/** Kirana (unit 1) stock: real-shaped printed packets on the two shelf boards and the counter, one merged mesh (src/shopGoods.js atlas). */
+export function buildBazaarKiranaGoods() {
+  const cx = bazaarUnitCx(0);
+  const backZ = BAZAAR_ROW_CZ + BAZAAR_UNIT_D / 2 - WALL_THICKNESS - 0.18;
+  const D = GOODS;
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 53.3) + 1) * 0.5 * 9973) % 1; };
+  const half = (BAZAAR_UNIT_W - 0.7) / 2 - 0.1;
+  // shelf boards are at y 1.2 / 2.05 (+0.025 board half-thickness), depth 0.32 centred on backZ; shop faces -z, so packs turn by PI
+  for (const [y, row] of [[1.225, 0], [2.075, 1]]) {
+    let x = -half;
+    while (x < half) {
+      const roll = rnd();
+      const z = backZ - 0.04 + (rnd() - 0.5) * 0.08;
+      const ry = Math.PI + (rnd() - 0.5) * 0.35;
+      if (row === 0) {
+        if (roll < 0.4) { items.push({ kind: 'biscuit', design: rnd() < 0.5 ? D.biscuitBlue : D.biscuitOrange, x: cx + x, y, z, ry, rx: -0.1 }); x += 0.145; }
+        else if (roll < 0.7) { items.push({ kind: 'tea', design: D.tea, x: cx + x, y, z, ry }); x += 0.125; }
+        else { items.push({ kind: 'jar', design: D.toffeeJar, x: cx + x, y, z, ry: rnd() * 6, s: 0.95 }); x += 0.19; }
+      } else {
+        items.push({ kind: rnd() < 0.65 ? 'chips' : 'namkeen', design: rnd() < 0.65 ? [D.chipsRed, D.chipsGreen, D.chipsBlue][Math.floor(rnd() * 3)] : D.namkeen, x: cx + x, y, z, ry, s: 0.9 + rnd() * 0.15 });
+        x += 0.145;
+      }
+    }
+  }
+  // counter top (y 0.9): toffee jars and a row of soap
+  const counterZ = BAZAAR_FRONT_Z + 0.6;
+  for (const dx of [-1.3, -0.9, 1.3]) items.push({ kind: 'jar', design: D.toffeeJar, x: cx + dx, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: dx * 5, s: 1.05 });
+  for (let k = 0; k < 4; k++) items.push({ kind: 'soap', design: [D.soapGreen, D.soapPink, D.soapBlue][k % 3], x: cx + 0.2 + k * 0.11, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: (k - 1.5) * 0.1 });
+  return buildGoodsMesh(items, new THREE.Matrix4(), 'bazaar_kirana_stock');
+}
+
 export function buildBazaarInteriors() {
   const group = new THREE.Group();
   group.name = 'bazaar_interiors';
@@ -494,7 +528,6 @@ export function buildBazaarInteriors() {
   // future caller — never accumulates stale geometry from a previous run.
   const boxGeos = [];
   const cylGeos = [];
-  const torusGeos = [];
 
   function pushBox(w, h, d, x, y, z, tint, rotY = 0) {
     const mesh = texturedThickBox(w, h, d, 'wood', { tint, tileSize: Math.max(w, d, 0.4), roughness: 1 });
@@ -516,7 +549,7 @@ export function buildBazaarInteriors() {
     bakeFlatTintColors(geo, tint, 1);
     const m = new THREE.Matrix4().makeRotationX(rotX).setPosition(x, y, z);
     geo.applyMatrix4(m);
-    torusGeos.push(geo);
+    cylGeos.push(geo); // rings ride in the cylinder mesh (one draw call fewer; tinted rubber/glass rings read the same at lane distance)
   }
 
   /** Shelving common to most units: 2 boards against the back wall. */
@@ -641,14 +674,6 @@ export function buildBazaarInteriors() {
     cylMesh.receiveShadow = true;
     group.add(cylMesh);
   }
-  if (torusGeos.length) {
-    const torusMat = getTiledMaterial('metal', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true });
-    const torusMesh = new THREE.Mesh(mergeGeometries(torusGeos), torusMat);
-    torusMesh.name = 'bazaar_interior_rings';
-    torusMesh.castShadow = true;
-    group.add(torusMesh);
-  }
-
   return group;
 }
 

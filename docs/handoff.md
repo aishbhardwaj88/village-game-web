@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39q, playtest block item 4, bazaar kirana goods):** Game change: real printed packets (biscuit, tea, chips, namkeen, toffee jars, soap) now stock the bazaar kirana (unit 1) shelves and counter (src/bazaar.js buildBazaarKiranaGoods, atlas from src/shopGoods.js). Draw call cut: the indoor postmaster capsule no longer casts shadows (its shadow pass counted as a call; per-mesh visibility test showed ~every shadow-casting mesh costs 2 calls), plus the bangle/tyre torus rings ride the cylinder mesh. Bazaar view 150, hero 148, field 115. Build 16/16, budget 28.44 MB, regression 22/22. Proof docs/shots/shops-2026-10-24/kirana_bazaar.png (headless). Tried and rejected: merging kirana goods into the Gupta store mesh (bounding sphere spans both, hero view rose to 150). Tool: tmp/bz-meshes.mjs lists per-mesh call cost at the bazaar camera.
+Gaps: medical, mobile, bangle and other shops still box goods (need new atlas cells); Banta shop and Chaat thela unbuilt; zero headroom in bazaar view.
+NEXT: other shops' goods (medical, mobile, bangle) using the shadow trick (castShadow=false on small interior meshes) to buy calls.
+
+---
+
 **2026-10-24 (cycle 39p, playtest block item 4, bazaar kirana goods):** No game change kept. Real printed packets on the bazaar kirana (unit 1) shelves and counter were built (patch tmp/kirana-goods.patch, shot docs/shots/shops-2026-10-24/kirana_bazaar.png) but cost +1 draw call: bazaar view 151 > 150 (merging the bangle/tyre torus mesh saved nothing, it is not in that view). Reverted; asked in NEEDS_YOU. NEXT: find one call to cut in the bazaar view (list meshes drawn from the bazaar camera), then re-apply the patch; other shops (medical, mobile, bangle) need new atlas cells.
 
 ---

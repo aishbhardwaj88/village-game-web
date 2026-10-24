@@ -216,3 +216,13 @@ export function generalStoreGoods(world) {
   for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) items.push({ kind: 'bottle', design: [D.sodaOrange, D.sodaLime, D.sodaCola][(i + j) % 3], x: -1.5 + i * 0.13, y: 0.3, z: 1.85 + j * 0.15, ry: i * 1.7 + j });
   return buildGoodsMesh(items, world, 'general_store_stock');
 }
+
+/** Fold several goods meshes (same atlas material) into one draw call; world transforms are baked in. */
+export function mergeGoodsMeshes(meshes, name) {
+  const geos = meshes.map((m) => { m.updateMatrix(); return m.geometry.clone().applyMatrix4(m.matrix); });
+  const mesh = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
+  mesh.name = name;
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  return mesh;
+}
