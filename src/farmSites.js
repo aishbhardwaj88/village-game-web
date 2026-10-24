@@ -94,10 +94,10 @@ function flatBlob(radius, seed, y, color) {
 
 /** Textured (plaster PBR set, or ground for earth) tinted by baked vertex colours; water passes metalness/low roughness and keeps no maps. */
 const vcMat = (opts = {}) => {
-  const { roughness = 0.9, metalness, earth, ...rest } = opts;
+  const { roughness = 0.9, metalness, earth, set, ...rest } = opts;
   const water = roughness < 0.3;
   if (water) return new THREE.MeshStandardMaterial({ name: 'site_water', vertexColors: true, roughness, metalness, ...rest });
-  const base = getTiledMaterial(earth || roughness >= 1 ? 'ground' : 'plaster', { repeatX: 1, repeatY: 1, vertexColors: true });
+  const base = getTiledMaterial(set || (earth || roughness >= 1 ? 'ground' : 'plaster'), { repeatX: 1, repeatY: 1, vertexColors: true });
   const m = base.clone();
   m.name = 'site_props';
   m.aoMap = null;
@@ -689,12 +689,62 @@ export function createJainMandir(position) {
   return finishSite('jain_mandir', geos, position, { solids: [[0, 0, 7.4, 7.4]] });
 }
 
+/** Worn village highway (z -75..75 about the cluster origin): dark asphalt on the concrete PBR set with tar patches, hairline cracks, broken faded centre dashes and edge lines
+ *  (no crisp kerb), dust margins creeping onto the shoulder, sand drifts, and both ends running out as a narrowing dirt track with wheel ruts. Deterministic. */
+function roadGeos() {
+  const geos = [];
+  let sd = 91;
+  const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+  const Y = 0.105;
+  geos.push(bake(new THREE.BoxGeometry(14, 0.1, 150), at(0, 0.05, 0), 0x45454a));
+  // tar patches and repairs: darker or paler rectangles, a few in the wheel paths
+  for (let i = 0; i < 26; i++) {
+    const w = 0.8 + rnd() * 2.6, d = 1 + rnd() * 3.5, x = (rnd() - 0.5) * 12, z = (rnd() - 0.5) * 140;
+    geos.push(bake(new THREE.BoxGeometry(w, 0.012, d), at(x, Y, z, (rnd() - 0.5) * 0.15), [0x2c2c30, 0x36363a, 0x525257, 0x3a3a3f][i % 4]));
+  }
+  // cracks: thin long dark slivers, slightly skewed
+  for (let i = 0; i < 40; i++) {
+    const len = 1 + rnd() * 4.5, x = (rnd() - 0.5) * 12.5, z = (rnd() - 0.5) * 140;
+    geos.push(bake(new THREE.BoxGeometry(0.025 + rnd() * 0.03, 0.006, len), at(x, Y + 0.012, z, (rnd() - 0.5) * 0.7), 0x18181a));
+  }
+  // faded, broken centre dashes (some gone, none identical)
+  for (let z = -72; z <= 72; z += 8) {
+    if (rnd() < 0.18) continue;
+    const len = 2.4 + rnd() * 1.4, off = (rnd() - 0.5) * 0.12;
+    geos.push(bake(new THREE.BoxGeometry(0.18, 0.01, len), at(off, Y + 0.002, z + (rnd() - 0.5) * 0.8), rnd() < 0.5 ? 0xc9c3a8 : 0xb4ae95));
+  }
+  // edge lines: patchy, worn through, never a continuous ruler line
+  for (const sx of [-1, 1]) {
+    let z = -74;
+    while (z < 72) {
+      const len = 3 + rnd() * 9, gap = rnd() < 0.5 ? 0.8 + rnd() * 3 : 0;
+      geos.push(bake(new THREE.BoxGeometry(0.14 + rnd() * 0.06, 0.01, len), at(sx * (6.3 + (rnd() - 0.5) * 0.1), Y + 0.002, z + len / 2), 0xbdb79c));
+      z += len + gap;
+    }
+  }
+  // dust / earth margins creeping over the shoulder
+  for (const sx of [-1, 1]) {
+    for (let z = -74; z < 74; z += 2.5 + rnd() * 3.5) {
+      const w = 0.7 + rnd() * 1.7, d = 2.5 + rnd() * 3.5;
+      geos.push(bake(new THREE.BoxGeometry(w, 0.02, d), at(sx * (7.1 - w * 0.22 + rnd() * 0.3), 0.108, z), [0x7a6c52, 0x85775b, 0x6f6249][Math.floor(rnd() * 3)]));
+    }
+  }
+  // run-outs: the tarmac narrows (14 -> 9 -> 5.5 m), fades into packed earth, ends in two wheel ruts that join a field track
+  for (const sz of [-1, 1]) {
+    const z0 = sz * 75;
+    geos.push(bake(new THREE.BoxGeometry(11, 0.09, 8), at(0, 0.045, z0 + sz * 4), 0x4a4a4e));
+    geos.push(bake(new THREE.BoxGeometry(8, 0.07, 9), at(0, 0.036, z0 + sz * 12.5), 0x7a6c52));
+    geos.push(bake(new THREE.BoxGeometry(5.5, 0.05, 12), at(0, 0.026, z0 + sz * 23), 0x8a7a5a));
+    for (const rx of [-0.9, 0.9]) geos.push(bake(new THREE.BoxGeometry(0.45, 0.02, 14), at(rx, 0.052, z0 + sz * 24), 0x6a5c42));
+    for (let k = 0; k < 5; k++) geos.push(bake(new THREE.BoxGeometry(0.5 + rnd(), 0.02, 0.7 + rnd()), at((rnd() - 0.5) * 4, 0.06, z0 + sz * (8 + rnd() * 22)), 0x6f6248));
+  }
+  return geos;
+}
+
 /** Highway cluster (east edge): paved two-lane road strip, petrol pump with canopy, bus adda shelter and a dharam kanta weighbridge. Unbranded. */
 export function createHighwayCluster(position) {
   const geos = [];
-  geos.push(bake(new THREE.BoxGeometry(14, 0.1, 150), at(0, 0.05, 0), 0x3d3d40));
-  for (let z = -70; z <= 70; z += 8) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 3.5), at(0, 0.11, z), 0xe8e2c8));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.2, 0.02, 150), at(sx * 6.4, 0.11, 0), 0xe8e2c8));
+  const road = roadGeos(); // asphalt, patches, cracks, worn lines, dust margins, dirt run-outs: its own mesh on the concrete PBR set
   // Petrol pump: now the Blender model 'petrol_pump' (tools/blender/build_petrol_pump.py, asset slot in main.js); only its collision solids stay here.
   // Bus adda: tin-roof shelter, bench, kerb-side concrete pad.
   geos.push(bake(new THREE.BoxGeometry(8, 0.15, 3.5), at(-10, 0.08, 20), 0xa8a59c));
@@ -703,7 +753,7 @@ export function createHighwayCluster(position) {
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(-10, 0.6, 21.5), 0xc9b79a));
   geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.5), at(-10, 0.5, 20.8), 0x7a5a3a));
   // Dharam kanta: now the Blender model 'dharam_kanta' (tools/blender/build_dharam_kanta.py, asset slot in main.js); only its collision solids stay here.
-  return finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
+  const site = finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
     [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 0.8, 1.1], // petrol office, dharam kanta cabin, display post
     [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
@@ -713,6 +763,11 @@ export function createHighwayCluster(position) {
     { id: 'kanta', x: -14.3, y: 3.3, z: 50, ry: Math.PI / 2, w: 2.7 }, // standing on the cabin roof edge, facing the weighing platform
     { id: 'busadda', x: -10, y: 3.45, z: 18.1, ry: Math.PI, w: 4 }, // shelter roof front, facing the lane
   ] });
+  const roadMesh = new THREE.Mesh(mergeGeometries(road), vcMat({ set: 'concrete', roughness: 0.88 }));
+  roadMesh.name = 'highway_road';
+  roadMesh.receiveShadow = true;
+  site.add(roadMesh);
+  return site;
 }
 
 /** Jalebi + samosa stall: handcart with a wide black kadhai on a brazier, glass case of samosas and a striped tarp. Unbranded. */
@@ -1202,6 +1257,14 @@ export function createMandi(position) {
   // Paved yard slab with a kerb line, wide connecting road back to the highway.
   geos.push(bake(new THREE.BoxGeometry(24, 0.12, 74), at(0, 0.06, 0), 0x8f8e88));
   geos.push(bake(new THREE.BoxGeometry(14, 0.1, 10), at(-18, 0.05, 0), 0x3d3d40));
+  // The paved yard does not stop at a crisp edge: it frays into broken concrete, then packed earth with wheel ruts, both ends (road ends believably).
+  for (const sz of [-1, 1]) {
+    geos.push(bake(new THREE.BoxGeometry(16, 0.09, 5), at(0, 0.045, sz * 39.5), 0x7d7c76));
+    geos.push(bake(new THREE.BoxGeometry(10, 0.06, 9), at(0, 0.03, sz * 46.5), 0x7a6c52));
+    geos.push(bake(new THREE.BoxGeometry(6, 0.045, 12), at(0, 0.022, sz * 57), 0x8a7a5a));
+    for (const rx of [-1.1, 1.1]) geos.push(bake(new THREE.BoxGeometry(0.5, 0.02, 16), at(rx, 0.05, sz * 58), 0x6a5c42));
+    for (const [bx, bz, bw, bd] of [[-6.5, 38.6, 3, 2.2], [5.8, 40.2, 2.4, 3], [-3, 41.5, 2.2, 1.6]]) geos.push(bake(new THREE.BoxGeometry(bw, 0.05, bd), at(bx, 0.115, sz * bz, 0.2 * sz), 0x66655f)); // broken slab chunks at the fray
+  }
   geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 74), at(-12.1, 0.1, 0), 0xb4b0a4));
   // Grain wholesale godown: long warehouse, tin roof, big sliding doors, sacks stacked outside.
   geos.push(bake(new THREE.BoxGeometry(10, 5, 18), at(5, 2.6, -22), 0xe0d2b0));

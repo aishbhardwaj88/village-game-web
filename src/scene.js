@@ -22,8 +22,11 @@ export function loadTexture(loader, url, { srgb = false, repeat = 1 } = {}) {
 }
 
 export function createGround({ grassTint = null, grassCoverage = undefined, dampSpots = [] } = {}) {
-  const repeat = GROUND_SIZE / GROUND_TILE_METRES;
-  const geometry = ensureUv2(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE, 1, 1));
+  // The drawn plane is much larger than the playable extent (GROUND_SIZE) so the mandi/highway at x~230 never show the world's edge;
+  // same tiling density, so the look near the village is unchanged.
+  const drawn = GROUND_SIZE * 2.4;
+  const repeat = drawn / GROUND_TILE_METRES;
+  const geometry = ensureUv2(new THREE.PlaneGeometry(drawn, drawn, 1, 1));
   const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });
   material.aoMapIntensity = 0.8;
   // Fix 4/4 (playtest pass) + item 3a (real playtest report — "the village reads

@@ -324,13 +324,35 @@ def decal_quad(name, x0, x1, z0, z1, h, uv_rect, mat):
 TERRACOTTA_TONES = [0xB5693F, 0xA85C36, 0xC27546]
 
 
+def lathe(name, cx, cz, profile, seg=24, smooth=True):
+    """Surface of revolution about the vertical axis at (cx, cz): profile = [(radius, height), ...] bottom to top. Smooth-shaded, capped at the ends."""
+    import bmesh
+    from common import new_bmesh_obj
+    bm = bmesh.new()
+    rings = []
+    for r, h in profile:
+        rings.append([bm.verts.new((cx + r * math.cos(i / seg * math.tau), -(cz + r * math.sin(i / seg * math.tau)), h)) for i in range(seg)])
+    for k in range(len(rings) - 1):
+        for i in range(seg):
+            j = (i + 1) % seg
+            bm.faces.new((rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]))
+    if profile[0][0] > 0:
+        bm.faces.new(list(reversed(rings[0])))
+    if profile[-1][0] > 0:
+        bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    obj = new_bmesh_obj(name, bm)
+    if smooth:
+        for p in obj.data.polygons:
+            p.use_smooth = True
+    return obj
+
+
 def clay_pot(kit, x, z, s=1.0, tone=None):
-    """A round-bellied clay pot (matka): squashed sphere body + short neck + rim."""
+    """A real matka: one smooth lathed profile - flat-ish foot, round belly (widest at 40 %), tapering shoulder, short flared neck and a rolled rim."""
     c = tone or TERRACOTTA_TONES[int(abs(x * 7 + z * 13)) % 3]
-    kit.add('paint', sphere('matka', x, z, 0.3 * s, 0.26 * s, 0.26 * s, 0.26 * s, 2), c)
-    kit.add('paint', cyl('matka_neck', x, z, 0.5 * s, 0.62 * s, 0.13 * s, 0.17 * s, 12), c)
-    kit.add('paint', cyl('matka_rim', x, z, 0.6 * s, 0.65 * s, 0.185 * s, 0.185 * s, 12), c)
-    kit.add('paint', cyl('matka_foot', x, z, 0.0, 0.1 * s, 0.12 * s, 0.17 * s, 10), c)
+    prof = [(0.0, 0.0), (0.12, 0.0), (0.17, 0.03), (0.23, 0.13), (0.27, 0.27), (0.26, 0.38), (0.21, 0.49), (0.14, 0.57), (0.115, 0.61), (0.13, 0.65), (0.16, 0.675), (0.165, 0.69), (0.14, 0.695), (0.0, 0.69)]
+    kit.add('paint', lathe('matka', x, z, [(r * s, h * s) for r, h in prof], seg=22), c)
 
 
 def plastic_chair(kit, x, z, ang, colour, arms=False):
