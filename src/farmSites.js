@@ -688,7 +688,9 @@ export function createDudhDairy(position) {
   group.name = 'dudh_dairy';
   group.add(mesh);
   group.add(dairyGoods());
-  group.add(placeBoardsMesh([parapetBoard('dairy', { w: 5, d: 4, h: 3.0 }, 3.6)], 'dairy_boards'));
+  const dairyBoard = parapetBoard('dairy', { w: 5, d: 4, h: 3.0 }, 3.6);
+  // Second board on the lane (south) face: the front opens north, so walkers coming from the bazaar saw a blank back wall.
+  group.add(placeBoardsMesh([dairyBoard, { ...dairyBoard, z: -dairyBoard.z, ry: Math.PI }], 'dairy_boards'));
   group.position.set(position.x, 0, position.z);
   return group;
 }
