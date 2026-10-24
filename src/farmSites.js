@@ -858,7 +858,7 @@ export function createJainMandir(position) {
  *  (no crisp kerb), dust margins creeping onto the shoulder, sand drifts, and both ends running out as a narrowing dirt track with wheel ruts. Deterministic. */
 function flatQuad(w, d) { return new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2); }
 /** Flat tapering track strip (no steps): from (x,z0) along sz*z for len, width w0 -> w1, wobbling edges, vertex colour ramp through `ramp` (hex stops), so tarmac/slab frays into earth then into the grass tone. */
-function fadeStrip(x, z0, sz, len, w0, w1, ramp, y, seed = 1, segs = 14) {
+function fadeStrip(x, z0, sz, len, w0, w1, ramp, y, seed = 1, segs = 14, boost = 0) {
   const pos = [], col = [], idx = [];
   const stops = ramp.map((h) => new THREE.Color(h));
   const c = new THREE.Color();
@@ -867,6 +867,7 @@ function fadeStrip(x, z0, sz, len, w0, w1, ramp, y, seed = 1, segs = 14) {
     const t = i / segs, w = (w0 + (w1 - w0) * t) / 2 * (1 + (r(i) - 0.5) * 0.25 * Math.min(1, t * 3));
     const f = t * (stops.length - 1), a = Math.floor(f), b = Math.min(stops.length - 1, a + 1);
     c.copy(stops[a]).lerp(stops[b], f - a);
+    if (boost) c.multiplyScalar(1 + boost * Math.max(0, t - 0.12)); // the PBR concrete albedo is grey and mutes the tint; push the earth stops above 1 so the tail reads as dust, not tarmac
     const z = z0 + sz * len * t, yy = y - 0.012 * t;
     for (const side of [-1, 1]) { pos.push(x + side * (side < 0 ? w * (0.9 + r(i + 40) * 0.2) : w * (0.9 + r(i + 80) * 0.2)), yy, z); col.push(c.r, c.g, c.b); }
     if (i > 0) { const k = i * 2; if (sz > 0) idx.push(k - 2, k, k - 1, k - 1, k, k + 1); else idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
@@ -924,7 +925,7 @@ function roadGeos() {
   // run-outs: the tarmac frays in one continuous taper (no stepped slabs) into packed earth, then the grass tone, with two wheel ruts that fade out
   for (const sz of [-1, 1]) {
     const z0 = sz * 75;
-    geos.push(fadeStrip(0, z0, sz, 40, 13, 4.5, [0x4a4a4e, 0x5e564a, 0x7a6c52, 0x6f6a48], 0.108, 3 + sz));
+    geos.push(fadeStrip(0, z0, sz, 44, 13, 2.6, [0x4a4a4e, 0x7a6c52, 0x8a7a58, 0x7f7a50], 0.108, 3 + sz, 14, 3.2));
     for (const rx of [-0.95, 0.95]) geos.push(fadeStrip(rx, z0 + sz * 6, sz, 30, 0.45, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.114, 7 + sz, 10));
     for (let k = 0; k < 5; k++) geos.push(bake(new THREE.BoxGeometry(0.5 + rnd(), 0.02, 0.7 + rnd()), at((rnd() - 0.5) * 4, 0.06, z0 + sz * (8 + rnd() * 22)), 0x6f6248));
   }

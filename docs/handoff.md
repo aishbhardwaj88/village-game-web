@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z67, playtest block item 7, highway road ends):** Game change: the highway's two run-outs (src/farmSites.js roadGeos + fadeStrip boost param) now taper from 13 m to 2.6 m over 44 m and shade from asphalt to dusty tan with fading wheel ruts; before, the dark asphalt tongue stopped as a grey slab. Mandi yard end unchanged (boost is highway-only; an all-strip boost washed the mandi out). Proof docs/shots/roadend-2026-10-24b/{hw_s,hw_n,mandi_n}.png (headless, hw shots have no subject check so item 7 road-end line NOT ticked). Gaps: strip edge still has a hard straight seam where the main slab ends; no junction/cross-track.
+NEXT: collision leftovers (0c), findability walk.
+
+---
+
 **2026-10-24 (cycle 39z66, playtest block item 5, khel maidan outfield + boundary):** Game change: outfield now has mown-stripe and tuft colour variation (maidanOutfield), boundary posts carry a red paint band and a jute rope sags between them (src/farmSites.js createKhelMaidan); same three meshes. Build ALL PASSED. Proof docs/shots/khel-2026-10-24b/{outfield,rope}.png (headless, subject check passed). Gaps: stripes are subtle under the ground scan; outfield still a bit dull olive.
 NEXT: highway/road ends re-check, collision leftovers (0c), findability walk.
 
