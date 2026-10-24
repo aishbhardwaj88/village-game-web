@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z73, playtest block item 0c, collision leftovers):** Game change: the hero house's indoor charpai (src/village.js) is now solid (was walk-through; TV-house porch, dhaba, lane-laundry and kothri charpais already had colliders). Shop packets (src/shopGoods.js pillowPack) lose a third of their triangles (360 -> ~190 each, shop_goods_11 150k -> 125k). Build ALL PASSED. Regression 21/22: the one fail is "triangles under 400k", measured 586k now (609k BEFORE my change, so not caused by this cycle; the shop goods mesh is the single largest at 125k, then grass cards 46k, halwai row 37k, crop rows 36k, and the rest is long-tail). Needs the art director's call on where to cut. No proof shot (collider is invisible; not tickable).
+NEXT: triangle budget (586k vs 400k), findability walk, 0c remaining (vehicles vs trees).
+
+---
+
 **2026-10-25 (cycle 39z72, playtest block item 5, post office post box):** Game change: the post office's red pillar box (tools/blender/build_new_shops.py post_office, new_shops.glb rebuilt) now has a rain hood over the mouth, rolled seam bands, a clearance door with lock and a plain timetable plate; was a bare cylinder with a slot. Same materials, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/postbox-2026-10-25/a.png (headless, no subject check, not tickable; box reads as a red pillar box, bands subtle). Gaps: counter and postbox still flat paint, no real metal PBR (it would cost a draw call in a view already at the ceiling); haystack at bazaar west end still not located.
 NEXT: collision leftovers (0c: cart legs, hero-house charpai), findability walk.
 

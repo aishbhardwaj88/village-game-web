@@ -184,7 +184,7 @@ function setUVs(geo, design) {
 
 /** A pillow pack: front/back printed faces that bulge in the middle, flat crimped ends. */
 function pillowPack(w, h, d, design) {
-  const geo = new THREE.BoxGeometry(w, h, d, 6, 12, 1);
+  const geo = new THREE.BoxGeometry(w, h, d, 4, 8, 1);
   const p = geo.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
