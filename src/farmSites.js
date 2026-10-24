@@ -130,7 +130,7 @@ function lotusPadGeo(x, z, r, rot, tone) {
   g.setIndex(idx);
   g.computeVertexNormals();
   g.rotateY(rot);
-  g.translate(x, 0.075, z);
+  g.translate(x, 0.11, z);
   return bakeUv(g);
 }
 function lotusFlowerGeos(x, z, s, rot) {
@@ -157,7 +157,7 @@ function lotusFlowerGeos(x, z, s, rot) {
   for (let k = 0; k < geos.length - 1; k++) geos[k].computeVertexNormals();
   return geos.map((g, i) => {
     if (i < geos.length - 1) { g.deleteAttribute('uv'); }
-    const m = new THREE.Matrix4().makeScale(s, s, s).setPosition(x, 0.09, z);
+    const m = new THREE.Matrix4().makeScale(s, s, s).setPosition(x, 0.13, z);
     g.applyMatrix4(m);
     return i < geos.length - 1 ? bakeUv(g) : g;
   });
@@ -235,11 +235,11 @@ export function createPond(position) {
   const geos = [];
   for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
     const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 16; i++) {
       const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
-      const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.38 + rnd() * 0.42;
+      const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6;
       geos.push(lotusPadGeo(x, z, size, rnd() * 6.28, i % 3 ? 0x4a6e30 : 0x5d8238));
-      if (i % 5 === 0) geos.push(...lotusFlowerGeos(x + 0.35, z + 0.2, 0.9 + rnd() * 0.5, rnd() * 6.28));
+      if (i % 4 === 0) geos.push(...lotusFlowerGeos(x + 0.5, z + 0.3, 1.8 + rnd() * 0.7, rnd() * 6.28));
     }
   }
   const lotus = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), vcMat({ roughness: 0.8 }));

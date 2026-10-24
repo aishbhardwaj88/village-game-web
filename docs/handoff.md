@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z25, playtest block item 7, pond lotus):** Game change: pond lotus pads are ~1.5x larger (0.6-1.2 m) and sit above the water surface (they were half-sunk and invisible from the bank), flowers ~2x bigger and more frequent (src/farmSites.js createPond). Same single lotus mesh, no new draw call. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/lotus-2026-10-24/{pond_close,pond_wide}.png (headless, photo camera, no subject check, has HUD prompt, so item 7 NOT ticked). Pads and petals now read as lotus; petals are still faceted flat-colour (no petal texture). Buffaloes at the pond are still peg-legged blocks.
+NEXT: flat-tint barber/puncture props, Banta/Chaat real textures, animal models.
+
+---
+
 **2026-10-24 (cycle 39z24, playtest block item 7, water sheen):** Game change: the shared water shader (src/water.js, used by pond, johad, canal, hauz) now has a fresnel sky-reflection tint at grazing angles and faint broken glitter on ripple crests, keeping the depth tint; same material, no new draw calls. Build ALL PASSED. Proof docs/shots/water-sky-2026-10-24/pond.png (headless, no subject check, so item 7 NOT ticked). Still open in item 7: the pond lotus still reads as small pink cones (visible in the shot), buffaloes are peg-legged blocks.
 NEXT: real lotus pads and flowers, flat-tint barber/puncture props, Banta/Chaat real textures.
 
