@@ -897,6 +897,11 @@ async function main() {
     exact: true,
     placements: [{ container: scene, position: new THREE.Vector3(186, 0, 5), rotationY: 0 }],
   });
+  // Dharam kanta weighbridge (Blender, 2026-10-24): exact slot at highway cluster (205,40) + (-11,52).
+  assetSlots.register('dharam_kanta', {
+    exact: true,
+    placements: [{ container: scene, position: new THREE.Vector3(194, 0, 92), rotationY: 0 }],
+  });
   assetSlots.register('new_shops', {
     exact: true,
     hide: [scene.getObjectByName('new_shops_old')].filter(Boolean),

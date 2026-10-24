@@ -603,14 +603,9 @@ export function createHighwayCluster(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 3, 6), at(-10 + sx * 3.8, 1.5, 19), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(-10, 0.6, 21.5), 0xc9b79a));
   geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.5), at(-10, 0.5, 20.8), 0x7a5a3a));
-  // Dharam kanta: weighbridge platform flush with the road verge, small cabin with weighing display post.
-  geos.push(bake(new THREE.BoxGeometry(4, 0.2, 14), at(-11, 0.1, 55), 0x6d6d70));
-  geos.push(bake(new THREE.BoxGeometry(3.4, 0.05, 13.4), at(-11, 0.22, 55), 0x8a8a8c));
-  geos.push(bake(new THREE.BoxGeometry(3, 2.8, 3), at(-16, 1.4, 50), 0xdcd2b8));
-  geos.push(bake(new THREE.BoxGeometry(3.4, 0.18, 3.4), at(-16, 2.9, 50), 0x8d8a82));
-  geos.push(bake(new THREE.BoxGeometry(1.2, 0.6, 0.15), at(-13.5, 2.4, 50), 0x2a2a2a));
+  // Dharam kanta: now the Blender model 'dharam_kanta' (tools/blender/build_dharam_kanta.py, asset slot in main.js); only its collision solids stay here.
   return finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
-    [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 1.2, 0.2], // petrol office, dharam kanta cabin, display post
+    [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 0.8, 1.1], // petrol office, dharam kanta cabin, display post
     [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
     [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
