@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z55, playtest block item 7, pond mud):** Game change: pond wet-mud and damp-mud rings (src/farmSites.js shoreGeos) lightened (0x3f3426->0x594a35, 0x6b5a40->0x7a6848) so the waterline reads as wet earth, not a dark pit wall; no new draw call. Proof docs/shots/pond-2026-10-24d/pond_wide.png (headless, HUD and capsule dog in frame, so not tickable). Gaps: water shader unchanged (depth tint, ripples, sheen, soft edge already in); johad/canal/hauz mud not re-shot; item 7 NOT ticked as a whole.
+NEXT: findability walk, collision leftovers (0c).
+
+---
+
 **2026-10-24 (cycle 39z54, playtest block item 4, barber shelf bottles):** Game change: barber shelf bottles are now squat flip-cap toiletry bottles (new 'toiletry' kind, SQUAT lathe profile in src/shopGoods.js) with a light white/aqua SHAMPOO label, replacing long-neck dark-purple bottles that read as wine; same atlas, no new draw call, no asset bytes. Proof docs/shots/barberbottle-2026-10-24/barber.png (headless, bottles small and far behind the counter, so not tickable). Gaps: JS-side interior props in src/bazaar.js pushBox/pushCyl (tailor machine, mobile monitor, sabzi pan balance, kirana floor sacks) not re-checked; ration-shop hair-oil bottles still long-neck (amber/green, fine). Item 4 NOT ticked as a whole.
 NEXT: findability walk, unidentifiable-object list.
 

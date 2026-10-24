@@ -226,8 +226,8 @@ function shoreGeos(radius, seed, rnd) {
   const geos = [];
   geos.push(flatBlob(radius * 1.32, seed, 0.02, 0x8a7656));   // dry cracked outer mud
   geos.push(softShoulder(radius * 1.3, radius * 1.7, seed, 0x8a7656, 0x92b068, 0.016, 5));
-  geos.push(flatBlob(radius * 1.18, seed, 0.024, 0x6b5a40));  // damp mud
-  geos.push(flatBlob(radius * 1.06, seed, 0.028, 0x3f3426));  // wet dark mud at the waterline
+  geos.push(flatBlob(radius * 1.18, seed, 0.024, 0x7a6848));  // damp mud
+  geos.push(flatBlob(radius * 1.06, seed, 0.028, 0x594a35));  // wet dark mud at the waterline
   for (let i = 0; i < 26; i++) {
     const a = rnd() * Math.PI * 2, r = radius * (1.05 + rnd() * 0.2), k = 0.04 + rnd() * 0.08;
     geos.push(bake(new THREE.SphereGeometry(k, 6, 4), new THREE.Matrix4().makeScale(1, 0.55, 1).setPosition(Math.cos(a) * r, 0.04, Math.sin(a) * r), 0x8d8676));
