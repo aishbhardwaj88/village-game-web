@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z89, playtest block item 4, chowk plastic chairs):** Game change: the four plastic chairs at the chowk tea stall (src/bazaar.js buildChowkPlaza) now have raked backs, a slightly dished seat and splayed legs (new addTilted helper), per-chair rake and tint, so they read as stacking chairs, not upright wooden boxes. Same merged mesh, no new draw call. Build ALL PASSED. Proof docs/shots/chowk-chairs-2026-10-25/{a,b}.png (headless, subject check passed; item 4 NOT ticked as a whole). Gaps: chairs still use the wood texture family tinted (no plastic PBR set in the shared materials), benches are plain planks, other shops' interior props from the 24 Oct audit list (sewing machine, monitor, barber chair, tub) unchanged, jalebi/gaushala spurs still blocked by the 150 draw-call ceiling.
+NEXT: other shops' goods via src/shopGoods.js, triangle cuts (art director's call), spurs once draw calls are saved.
+
+---
+
 **2026-10-25 (cycle 39z88, playtest block item 6, Gurukul detail):** Game change: Gurukul College (src/farmSites.js createGurukul) now has a parapet ring on both blocks, a stair-head (mumty) and a rooftop water tank, a sill-level floor band, a colonnade cornice and three entrance steps, all in the same merged mesh (no new draw call). Build ALL PASSED, budget 30.80 MB. Proof docs/shots/gurukul-2026-10-25/yard.png (headless, player capsule in frame so not tickable; parapet, steps, stair-head read). Gaps: walls are still flat plaster with no stains or damp, no school yard furniture, jalebi/gaushala spurs still blocked by the draw-call ceiling.
 NEXT: save bazaar-view draw calls for spurs, triangle cuts (art director's call).
 

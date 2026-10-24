@@ -804,18 +804,34 @@ export function buildChowkPlaza() {
     addPart(1.3, 0.04, 0.04, 0, 0.16, 0, 0x3d2a1e, ox, oz, rot);
   });
 
-  // Moulded plastic chairs: seat, raked back with a slat gap, four thin legs. Each is turned and
-  // tinted a little differently so no two read as copies.
+  // Same as addPart but pitched about the part's own X axis (raked backs, splayed legs).
+  function addTilted(w, h, d, lx, ly, lz, tint, ox, oz, rotY, pitch, roll = 0) {
+    const part = texturedThickBox(w, h, d, 'wood', { tint, tileSize: 1, roughness: 1 });
+    material = material || part.material;
+    const m = new THREE.Matrix4().makeRotationY(rotY)
+      .multiply(new THREE.Matrix4().makeTranslation(lx, ly, lz))
+      .multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pitch, 0, roll)));
+    m.premultiply(new THREE.Matrix4().makeTranslation(ox, 0, oz));
+    geos.push(part.geometry.clone().applyMatrix4(m));
+  }
+
+  // Moulded plastic chairs: dished seat, back raked ~12 degrees with a slat gap, legs splayed
+  // outward like a real stacking chair. Each is turned, scaled in height and tinted a little
+  // differently so no two read as copies.
   const chairTints = [0xb23a3a, 0x3a9955, 0xa83434, 0x2f8a4d];
   chairTints.forEach((tint, i) => {
     const ox = CHOWK_TEA_POS.x - 4.5 + (i % 2) * 0.75 + (i === 2 ? 0.08 : 0);
     const oz = CHOWK_TEA_POS.z - 0.6 + Math.floor(i / 2) * 0.75;
     const rot = [0.25, -0.18, 0.4, -0.35][i];
-    addPart(0.42, 0.045, 0.4, 0, 0.43, 0, tint, ox, oz, rot);
-    addPart(0.42, 0.14, 0.035, 0, 0.7, -0.19, tint, ox, oz, rot);
-    addPart(0.42, 0.14, 0.035, 0, 0.53, -0.19, tint, ox, oz, rot);
-    for (const lx of [-0.18, 0.18]) addPart(0.035, 0.6, 0.035, lx, 0.5, -0.19, tint, ox, oz, rot);
-    for (const lx of [-0.18, 0.18]) addPart(0.035, 0.41, 0.035, lx, 0.205, 0.17, 0xdedad0, ox, oz, rot);
+    const rake = [0.2, 0.26, 0.17, 0.23][i];
+    addTilted(0.42, 0.045, 0.4, 0, 0.43, 0, tint, ox, oz, rot, -0.04);
+    addTilted(0.42, 0.14, 0.035, 0, 0.7, -0.2, tint, ox, oz, rot, rake);
+    addTilted(0.42, 0.14, 0.035, 0, 0.54, -0.19, tint, ox, oz, rot, rake * 0.8);
+    for (const lx of [-0.18, 0.18]) addTilted(0.035, 0.46, 0.035, lx, 0.6, -0.2, tint, ox, oz, rot, rake);
+    for (const lx of [-0.18, 0.18]) {
+      addTilted(0.035, 0.42, 0.035, lx * 1.12, 0.205, 0.18, 0xdedad0, ox, oz, rot, -0.07, lx > 0 ? -0.06 : 0.06);
+      addTilted(0.035, 0.42, 0.035, lx * 1.12, 0.205, -0.17, 0xdedad0, ox, oz, rot, 0.07, lx > 0 ? -0.06 : 0.06);
+    }
   });
 
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);
