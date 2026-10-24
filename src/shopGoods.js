@@ -155,7 +155,7 @@ function getAtlas() {
     cell(DESIGN.dahi, () => { g.fillStyle = '#f7f4ea'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#c0392b'; g.fillRect(0, 0, CELL, 54); g.fillRect(0, 202, CELL, 54); text('FRESH CURD', CELL / 2, 28, 28, '#ffffff'); text('DAHI', CELL / 2, 110, 56, '#8a1f14'); hindi('ताज़ा दही', CELL / 2, 164, 30, '#8a1f14'); text('400 g', CELL / 2, 230, 24, '#ffffff', 700); });
     // Barber and puncture shop: hair-oil and shampoo bottle labels, a striped cotton towel, a tyre with sidewall print and tread (generic names, no brands).
     cell(DESIGN.hairOil, () => { g.fillStyle = '#e9d9a0'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#1f6b3a'; g.fillRect(0, 0, CELL, 52); g.fillRect(0, 204, CELL, 52); g.fillStyle = '#f7f1d6'; g.beginPath(); g.ellipse(CELL / 2, 128, 96, 58, 0, 0, 7); g.fill(); text('AMLA', CELL / 2, 108, 50, '#1f5a30'); text('HAIR OIL', CELL / 2, 154, 30, '#7a3a08'); hindi('आंवला तेल', CELL / 2, 30, 26, '#ffffff'); text('200 ml', CELL / 2, 230, 24, '#ffffff', 700); });
-    cell(DESIGN.shampoo, () => { const gr = g.createLinearGradient(0, 0, 0, CELL); gr.addColorStop(0, '#6a2e8c'); gr.addColorStop(1, '#3d1a5a'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); g.fillStyle = 'rgba(255,255,255,.92)'; g.beginPath(); g.ellipse(CELL / 2, 124, 100, 54, 0, 0, 7); g.fill(); text('SILKY', CELL / 2, 108, 50, '#4a1f6a'); text('SHAMPOO', CELL / 2, 150, 30, '#4a1f6a'); hindi('शैम्पू', CELL / 2, 40, 28, '#f3e6ff'); text('100 ml', CELL / 2, 230, 24, '#f3e6ff', 700); });
+    cell(DESIGN.shampoo, () => { const gr = g.createLinearGradient(0, 0, 0, CELL); gr.addColorStop(0, '#f4f7f8'); gr.addColorStop(1, '#bfe0ea'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#2a7fa8'; g.fillRect(0, 0, CELL, 52); g.fillRect(0, 204, CELL, 52); g.fillStyle = 'rgba(255,255,255,.95)'; g.beginPath(); g.ellipse(CELL / 2, 124, 100, 54, 0, 0, 7); g.fill(); text('SILKY', CELL / 2, 108, 50, '#1f5f80'); text('SHAMPOO', CELL / 2, 150, 30, '#1f5f80'); hindi('शैम्पू', CELL / 2, 30, 28, '#ffffff'); text('100 ml', CELL / 2, 230, 24, '#ffffff', 700); });
     cell(DESIGN.towel, () => { g.fillStyle = '#f1ede2'; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 6; k++) { g.fillStyle = k % 2 ? '#2f5d9a' : '#b8352b'; g.fillRect(0, 20 + k * 38, CELL, k % 2 ? 10 : 18); } for (let k = 0; k < 3000; k++) { g.fillStyle = k % 2 ? 'rgba(120,110,95,.10)' : 'rgba(255,255,255,.18)'; g.fillRect(Math.random() * CELL, Math.random() * CELL, 1, 1 + Math.random() * 3); } g.fillStyle = 'rgba(160,150,130,.5)'; for (let x = 0; x < CELL; x += 4) g.fillRect(x, 0, 1, 12); });
     cell(DESIGN.tyre, () => { g.fillStyle = '#1b1b1a'; g.fillRect(0, 0, CELL, CELL); speckle(600, 'rgba(70,70,66,.55)', 2); for (let x = 0; x < CELL; x += 16) { g.fillStyle = 'rgba(8,8,8,.7)'; g.fillRect(x, 0, 6, CELL); } g.fillStyle = '#1b1b1a'; g.fillRect(0, 88, CELL, 80); speckle(240, 'rgba(90,90,84,.4)', 2); for (let k = 0; k < 4; k++) { text('TUBELESS', k * 64 + 32, 112, 12, 'rgba(210,210,200,.85)', 700); text('90/90-17', k * 64 + 32, 140, 12, 'rgba(210,210,200,.85)', 700); } });
     Math.random = realRandom;
@@ -208,6 +208,8 @@ function lathe(profile, design) {
   return setUVs(geo, design);
 }
 const BOTTLE = [[0, 0], [0.032, 0], [0.034, 0.012], [0.034, 0.17], [0.03, 0.2], [0.014, 0.235], [0.013, 0.265], [0.016, 0.268], [0.016, 0.28], [0, 0.28]];
+// squat toiletry bottle: wide body, short shoulder, flip-top cap (reads as shampoo/hair oil, not a wine neck)
+const SQUAT = [[0, 0], [0.034, 0], [0.037, 0.01], [0.037, 0.125], [0.03, 0.15], [0.016, 0.16], [0.016, 0.17], [0.02, 0.172], [0.02, 0.19], [0.014, 0.196], [0, 0.196]];
 const JAR = [[0, 0], [0.07, 0], [0.075, 0.02], [0.075, 0.2], [0.065, 0.225], [0.065, 0.26], [0, 0.26]];
 
 function place(geo, x, y, z, ry = 0, rz = 0, rx = 0) {
@@ -262,6 +264,7 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'milkpouch': g = pillowPack(0.13 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'tub': g = lathe([[0, 0], [0.045, 0], [0.058, 0.02], [0.062, 0.075], [0.066, 0.08], [0, 0.08]], it.design); g.scale(s, s, s); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;
+      case 'toiletry': g = lathe(SQUAT, it.design); g.scale(s, s, s); break;
       case 'jar': g = lathe(JAR, it.design); g.scale(s, s, s); break;
       case 'sachets': { // a strip of foil sachets on a string, hanging from y downward
         const parts = [];

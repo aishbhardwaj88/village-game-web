@@ -534,7 +534,7 @@ export function buildBazaarKiranaGoods() {
   [[0.85, 0], [1.2, 1]].forEach(([dx, k]) => { for (let l = 0; l < 4; l++) items.push({ kind: 'folded', design: [D.clothCheck, D.clothStripe, D.clothPrint][(k + l) % 3], x: tailCx + dx + (rnd() - 0.5) * 0.02, y: BAZAAR_COUNTER_H + 0.08 + l * 0.036, z: counterZ + 0.05, ry: (rnd() - 0.5) * 0.18, s: 0.85 }); });
   // Barber (unit 5): oil and shampoo bottles on the mirror shelf (top y 1.0, z backZ-0.15) and striped towels on the rail.
   const barCx = bazaarUnitCx(4);
-  for (let j = 0; j < 6; j++) items.push({ kind: 'bottle', design: j % 2 ? D.shampoo : D.hairOil, x: barCx - 0.8 + j * 0.3, y: 1.006, z: backZ - 0.15, ry: rnd() * 6, s: 0.95 + (j % 3) * 0.05 });
+  for (let j = 0; j < 6; j++) items.push({ kind: 'toiletry', design: j % 2 ? D.shampoo : D.hairOil, x: barCx - 0.8 + j * 0.3, y: 1.006, z: backZ - 0.15, ry: rnd() * 6, s: 1.1 + (j % 3) * 0.08 });
   for (let j = 0; j < 4; j++) items.push({ kind: 'towel', design: D.towel, x: barCx + 1.4 + j * 0.15, y: 1.7, z: backZ - 0.12, ry: Math.PI + (rnd() - 0.5) * 0.1, s: 0.9 + rnd() * 0.15 });
   // Puncture (unit 8): the tyre soaking in the tub and tyres and tubes hung from the front beam.
   const punCx = bazaarUnitCx(7);
