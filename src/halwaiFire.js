@@ -6,8 +6,8 @@ import * as THREE from 'three';
  * world positions of each kadhai's centre at rim height. Per-particle size/alpha/colour are attributes so flame,
  * smoke and steam share the one draw call.
  */
-const FLAME = 12;
-const SMOKE = 6;
+const FLAME = 14;
+const SMOKE = 10;
 const STEAM = 5;
 
 export function createHalwaiFire(sources) {
@@ -32,16 +32,16 @@ export function createHalwaiFire(sources) {
       attribute vec3 aColor; attribute float aSize; attribute float aAlpha;
       uniform float uScale; varying vec3 vC; varying float vA;
       void main() {
-        vC = aColor; vA = aAlpha;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = aSize * uScale / max(0.5, -mv.z);
+        vC = aColor; vA = aAlpha * smoothstep(1.2, 3.0, -mv.z); // fade out near the lens: no blobs in front of the camera
+        gl_PointSize = min(aSize * uScale / max(0.5, -mv.z), 90.0);
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
       varying vec3 vC; varying float vA;
       void main() {
         float d = length(gl_PointCoord - 0.5) * 2.0;
-        float a = exp(-d * d * 6.0) * (1.0 - smoothstep(0.8, 1.0, d)) * vA;
+        float a = exp(-d * d * 9.0) * (1.0 - smoothstep(0.8, 1.0, d)) * vA;
         if (a < 0.01) discard;
         gl_FragColor = vec4(vC, a);
       }`,
@@ -72,19 +72,19 @@ export function createHalwaiFire(sources) {
           x = o.x + Math.cos(ang) * rad;
           z = o.z + Math.sin(ang) * rad;
           y = o.y - 0.25 + life * 0.32;
-          sz = 0.3 * (1 - life * 0.5) * (0.85 + 0.3 * Math.sin(t * 14 + seed));
-          a = (1 - life) * 1.0;
-          r = 1.0; g = 0.78 - life * 0.5; b = 0.2 - life * 0.15;
+          sz = 0.2 * (1 - life * 0.65) * (0.85 + 0.3 * Math.sin(t * 14 + seed));
+          a = Math.pow(1 - life, 1.4);
+          r = 1.0; g = 0.9 - life * 0.62; b = 0.45 - life * 0.42;
         } else if (i < FLAME + SMOKE) {
           // wood smoke: slow, widening, drifts with a faint breeze, fades out ~2.4 m up
           const j = i - FLAME;
           const life = (t * 0.16 + j / SMOKE + rnd(seed, 4) * 0.1) % 1;
           x = o.x + Math.sin(t * 0.5 + j * 1.9) * 0.1 * life + life * 0.35;
           z = o.z + Math.cos(t * 0.4 + j * 2.3) * 0.1 * life;
-          y = o.y - 0.1 + life * 2.5;
-          sz = 0.3 + life * 0.9;
-          a = Math.sin(life * Math.PI) * 0.16;
-          r = 0.45; g = 0.45; b = 0.47;
+          y = o.y - 0.1 + life * 2.8;
+          sz = 0.14 + life * 0.34;
+          a = Math.sin(life * Math.PI) * (1 - life) * 0.2;
+          r = 0.42; g = 0.42; b = 0.44;
         } else {
           // oil steam: thin white wisps just over the rim
           const j = i - FLAME - SMOKE;
@@ -92,8 +92,8 @@ export function createHalwaiFire(sources) {
           x = o.x + Math.sin(t * 0.9 + j * 1.7) * 0.16 * (0.3 + life);
           z = o.z + Math.cos(t * 0.8 + j * 2.1) * 0.16 * (0.3 + life);
           y = o.y + 0.08 + life * 0.8;
-          sz = 0.2 + life * 0.3;
-          a = Math.sin(life * Math.PI) * 0.22;
+          sz = 0.1 + life * 0.16;
+          a = Math.sin(life * Math.PI) * (1 - life) * 0.2;
           r = 0.95; g = 0.95; b = 0.93;
         }
         pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;

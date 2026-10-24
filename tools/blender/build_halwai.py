@@ -104,14 +104,7 @@ def front():
             x = W0 + 0.15 + r * 0.14 + c * 0.0
             z = Z1 + 0.35 + c * 0.2 + r * 0.1
             kit.add('paint', limb('log', (x - 0.3, z, 0.1 + r * 0.17), (x + 0.3, z, 0.1 + r * 0.17), 0.17, 0.17, 0.0), 0x7A5A3A)
-    # QR payment board (made-up payer, generic block) on a string from the shutter box + a sound box on the counter
-    qx, qz = W0 - 0.5, 0.7
-    kit.add('paint', wb('qr_board', qx - 0.015, qx + 0.015, qz - 0.2, qz + 0.2, 1.55, 2.05, 0.004), 0xF1F1EA)
-    for a, b in ((-0.15, 1.9), (-0.15, 1.7), (0.0, 1.9), (0.05, 1.8), (-0.05, 1.65), (0.12, 1.7), (-0.1, 1.82), (0.1, 1.95)):
-        kit.add('paint', wb('qr_dot', qx - 0.02, qx + 0.02, qz + a - 0.03, qz + a + 0.03, b - 0.03, b + 0.03, 0), 0x1B1B1D)
-    kit.add('paint', limb('qr_string', (qx - 0.01, qz - 0.1, 2.05), (W0 - 0.3, qz - 0.1, 2.62), 0.006, 0.006), 0x222222)
-    kit.add('paint', limb('qr_string', (qx - 0.01, qz + 0.1, 2.05), (W0 - 0.3, qz + 0.1, 2.62), 0.006, 0.006), 0x222222)
-    kit.add('paint', wb('sound_box', cx1 - 0.2, cx1 - 0.05, -0.1, 0.1, 0.98, 1.1, 0.006), 0x222428)
+    # (QR board and sound box removed 24 Oct: UPI-era props are after the ~2015 cut-off and read as a grey panel with black squares)
 
 
 def back_and_cabinet():

@@ -197,7 +197,7 @@ Every box ticked on 23 Oct whose proof shot breaks a rule above gets a new shot.
 not untick the box; replace the shot and append "reshot 2026-10-24" to the line.
 Start with docs/shots/rooftops-2026-10-23/ (no rooftop is in frame in r1 or r5).
 
-### 3. HALWAI FIRE REWORK
+### 3. [PARTLY DONE 24 Oct 2026: wisps/embers reworked, lens-blobs fixed, grey panel (QR board) removed; proof docs/shots/halwai-fire-2026-10-24/close.png; flame still needs a fire mouth on the bhatti] HALWAI FIRE REWORK
 Smoke and steam currently read as white blobs in front of the lens; flame flecks read
 as flat yellow dots. Rework to thin rising wisps that thin out with height, and
 embers that read as fire at game distance. Also identify or remove the grey panel
