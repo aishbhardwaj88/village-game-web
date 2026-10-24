@@ -1,4 +1,4 @@
-import { dairyGoods } from './shopGoods.js';
+import { dairyGoods, chemistGoods } from './shopGoods.js';
 import { createNPC } from './npc.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import * as THREE from 'three';
@@ -730,7 +730,9 @@ export function createChemist(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.2, 1.2, 3.4), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(3.2, 1.0, 0.7), at(0, 0.85, 2.6), 0x9a7a52));
   geos.push(bake(new THREE.BoxGeometry(3.0, 0.9, 0.05), at(0, 1.8, 2.3), 0x9fb8bd));
-  return finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]], boards: [parapetBoard('chemist', { w: 4.2, d: 4, h: 3.1 }, 3.6)] });
+  const site = finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]], boards: [parapetBoard('chemist', { w: 4.2, d: 4, h: 3.1 }, 3.6)] });
+  site.add(chemistGoods());
+  return site;
 }
 
 /** Masjid: modest limewashed prayer hall with a green-and-white dome, one slim minaret and an ablution tap row. Scenery only. */

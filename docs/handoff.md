@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z34, playtest block item 4, chemist goods):** Game change: the chemist (src/farmSites.js createChemist) now carries textured stock from the shared goods atlas (src/shopGoods.js chemistGoods()): stacked printed medicine cartons, a row of amber cough-syrup bottles and loose cartons on the counter. Zone group only, no hero/bazaar draw-call cost. Build ALL PASSED, budget 29.34 MB. Proof docs/shots/chemistgoods-2026-10-24/{counter,front}.png (headless, subject check passed). Item 4 NOT ticked as a whole: tailor, puncture and barber goods still plain; tea glasses/jars/kettle still faceted flat paint. Gaps: chemist counter is a flat tan box and the glass front is an opaque pale panel (no wall shelves inside).
+NEXT: tailor/puncture/barber goods, draw-call saving in the hero view, wood in bazaar row, animal models.
+
+---
+
 **2026-10-24 (cycle 39z33, playtest block item 4, tea stall goods):** Game change: the tea stall's back shelf now carries printed biscuit/tea/chips/namkeen/salt packs in two rows, snack packs and sachet strips hang from the front beam, two biscuit packs lie on the counter (src/shopGoods.js teaStallGoods); the old flat-colour box packets are gone from tools/blender/build_tea_stall.py (tea_stall.glb rebuilt). Folded into the general-store stock mesh via mergeGoodsMeshes, so no new draw call. Build ALL PASSED. Proof docs/shots/teagoods-2026-10-24/{shelf,front}.png (headless, subject check passed). Item 4 NOT ticked as a whole: chemist, tailor, puncture and barber goods still plain; tea glasses/jars/kettle are still faceted flat paint.
 NEXT: chemist goods, tailor/puncture/barber goods, draw-call saving in the hero view, wood in bazaar row, animal models.
 

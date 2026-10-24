@@ -349,6 +349,24 @@ export function teaStallGoods(world) {
   return buildGoodsMesh(items, world, 'tea_stall_stock');
 }
 
+/** Chemist stock, chemist-local frame: counter top y 1.35 (x -1.6..1.6, z 2.25..2.95): stacked medicine cartons, syrup bottles in a row, a tray of strips. */
+export function chemistGoods() {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 47.3) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  // stacks of cartons along the back edge of the counter
+  for (let i = 0; i < 9; i++) {
+    const x = -1.4 + i * 0.34, h = 2 + Math.floor(rnd() * 3);
+    for (let k = 0; k < h; k++) items.push({ kind: 'medbox', design: (i + k) % 3 ? D.medWhite : D.medGreen, x: x + (rnd() - 0.5) * 0.02, y: 1.35 + k * 0.07, z: 2.4, ry: (rnd() - 0.5) * 0.3, s: 0.95 + rnd() * 0.1 });
+  }
+  // cough-syrup bottles in the middle and at the right end
+  for (let i = 0; i < 6; i++) items.push({ kind: 'syrup', design: D.syrup, x: -0.6 + i * 0.16, y: 1.35, z: 2.65 + (i % 2) * 0.08, ry: rnd() * 6, s: 0.9 + rnd() * 0.2 });
+  // loose cartons lying flat near the customer side
+  for (let i = 0; i < 5; i++) items.push({ kind: 'medbox', design: i % 2 ? D.medGreen : D.medWhite, x: 0.75 + (i % 3) * 0.2, y: 1.35 + Math.floor(i / 3) * 0.045, z: 2.78, ry: (rnd() - 0.5) * 0.5, rz: 0, s: 1 });
+  return buildGoodsMesh(items, new THREE.Matrix4(), 'chemist_stock');
+}
+
 /** Fold several goods meshes (same atlas material) into one draw call; world transforms are baked in. */
 export function mergeGoodsMeshes(meshes, name) {
   const geos = meshes.map((m) => { m.updateMatrix(); return m.geometry.clone().applyMatrix4(m.matrix); });
