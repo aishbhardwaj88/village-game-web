@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z87, playtest block item 7, west gali head signpost):** Game change: a second direction post (src/wayfinding.js 'west_gali_head', (-82.3,24), faces south) stands at the north end of the west gali pointing west to Jalebi stall and Gaushala, the two places a walker reached the lane end without any cue for. Same merged wayfinding mesh, no new draw call; build ALL PASSED. Proof docs/shots/wayfinding-2026-10-25/west_gali_head.png (English reads, arrows west; player capsule in frame so not tickable). Gaps: still no lane or track to the stall/gaushala (bare spurs cost 2+ draw calls over the 150 ceiling), baagh has a fork post only.
+NEXT: save bazaar-view draw calls for spurs, shot of camera under a neem, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z86, playtest block item 7, camera vs tree canopies):** Game change: the third-person camera (src/player.js) now also marches its ray through live tree canopy volumes (CANOPIES/canopyAt in src/trees.js, one cylinder per tree, ignored for zone-hidden/detached trees) and pulls in before entering one, unless the player already stands under that canopy. Not a movement collider, no new draw calls. Build ALL PASSED; regression 21/22 (only the known 536k-vs-400k triangle line). No proof shot: needs a moving-camera span near trees, not taken this cycle, not tickable. Gaps: canopy is a rough cylinder per species, not the real leaf-card shape; jalebi/gaushala spurs still blocked by the 150 draw-call ceiling in the bazaar view.
 NEXT: save bazaar-view draw calls for the jalebi/gaushala spurs, shot of the camera under a neem, triangle cuts (art director's call).
 
