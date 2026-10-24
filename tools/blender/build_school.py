@@ -24,7 +24,7 @@ from arch import (bicycle, Kit, Bldg, pot, flower_bed, barred_window, panel_door
                   decal_material, decal_quad, LEAF, TERRA, SOIL, MARI, STEEL, BRASS)
 
 OUT = os.path.join(ROOT, 'tmp', 'school_compound_raw.glb')
-kit = Kit()
+kit = Kit(split_props=False, wood_slot='props')
 rnd = random.Random(11)
 
 OCHRE = 0xCE8A33

@@ -18,7 +18,7 @@ export function createBellProp(position) {
   ].map((g) => (g.index ? g.toNonIndexed() : g));
   const bell = new THREE.Mesh(mergeGeometries(geos), ironMat);
   bell.name = 'school_bell_iron';
-  bell.castShadow = true;
+  bell.castShadow = false; // thin/small prop: its shadow pass cost a call at the hero-zone ceiling
   group.add(bell);
 
   group.position.set(position.x, 0, position.z);
@@ -112,7 +112,7 @@ export function createFlagpoleProp(position) {
   const material = new THREE.MeshStandardMaterial({ map: flagTex, roughness: 0.8, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(merged, material);
   mesh.name = 'flagpole';
-  mesh.castShadow = true;
+  mesh.castShadow = false; // thin/small prop: its shadow pass cost a call at the hero-zone ceiling
   mesh.receiveShadow = true;
 
   const group = new THREE.Group();

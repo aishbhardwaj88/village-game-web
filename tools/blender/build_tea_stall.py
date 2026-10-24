@@ -14,7 +14,7 @@ from arch import Kit, ring, dabba, STEEL, BRASS, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'tea_stall_raw.glb')
 # real PBR wood and steel rides in the tin slot (the roof's draw call): hero view is at the 150 ceiling
-kit = Kit(route={'metal': 'tin'})
+kit = Kit(split_props=False, route={'metal': 'tin'}, wood_slot='props')
 rnd = random.Random(21)
 TEAL = 0x3E7F86
 TEAL_D = 0x2F646A

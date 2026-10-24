@@ -69,10 +69,10 @@ CLOTH = [0xC0392B, 0x2E8B57, 0x3B5BA5, 0xE0B53A, 0xEEE6D2]
 COW = 0x8A5A3C
 
 from arch import Kit
-kit = Kit()
+kit = Kit(split_props=False, wood_slot='props')
 add = kit.add
 # sRGB multiplies baked into vertex colours (kinds: plaster/plinth/trim/wood/brick/floor, paint carries its own colour)
-TINTS = {'hb_plaster': '#BCD2E6', 'hb_plinth': '#7A91AB', 'hb_trim': '#AFC4D9', 'hb_wood': '#5A483E',
+TINTS = {'hb_plaster': '#BCD2E6', 'hb_plinth': '#7A91AB', 'hb_trim': '#AFC4D9', 'hb_wood': '#A8875F',
          'hb_brick': '#D98A68', 'hb_floor': '#B4C6D6'}
 
 

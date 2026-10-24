@@ -254,7 +254,7 @@ export async function createWayfinding() {
   }
   const mesh = new THREE.Mesh(mergeGeometries(allGeos, false), mat);
   mesh.name = 'wayfinding_signs';
-  mesh.castShadow = true;
+  mesh.castShadow = false; // thin/small prop: its shadow pass cost a call at the hero-zone ceiling
   mesh.receiveShadow = true;
   mesh.userData.colliderBoxes = allColliders;
   group.add(mesh);

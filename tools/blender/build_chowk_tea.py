@@ -12,7 +12,7 @@ from common import wb, limb, cyl, sphere, prism_x, quad, ROOT
 from arch import Kit, ring, dabba, clay_pot, plastic_chair, STEEL, BRASS
 
 OUT = os.path.join(ROOT, 'tmp', 'tea_stall_chowk_raw.glb')
-kit = Kit()
+kit = Kit(split_props=False, wood_slot='props')
 rnd = random.Random(14)
 TEAL = 0x3E7F86
 TEAL_D = 0x2F646A
