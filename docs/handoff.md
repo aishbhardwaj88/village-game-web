@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z68, playtest block item 7, water outline):** Game change: pond and johad water surface (src/water.js blobWaterGeometry) was mirrored in z against the mud rings (farmSites blobShape maps shape y to world -z), so one side showed a dark mud crescent inside the water and the water overran the ring on the other; z and winding flipped, water now fills its mud ring exactly. Same mesh, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/water-2026-10-24b/{pond_c,johad_c}.png (before pond_a/johad_a; headless, no subject check, buffalo/HUD-free but not tickable). Gaps: canal/hauz not re-judged, buffalo at pond still peg-legged blocks, no foam/shore wetness gradient on the water itself.
+NEXT: cottage-style house woods (item 6), post office textures, collision leftovers (0c).
+
+---
+
 **2026-10-24 (cycle 39z67, playtest block item 7, highway road ends):** Game change: the highway's two run-outs (src/farmSites.js roadGeos + fadeStrip boost param) now taper from 13 m to 2.6 m over 44 m and shade from asphalt to dusty tan with fading wheel ruts; before, the dark asphalt tongue stopped as a grey slab. Mandi yard end unchanged (boost is highway-only; an all-strip boost washed the mandi out). Proof docs/shots/roadend-2026-10-24b/{hw_s,hw_n,mandi_n}.png (headless, hw shots have no subject check so item 7 road-end line NOT ticked). Gaps: strip edge still has a hard straight seam where the main slab ends; no junction/cross-track.
 NEXT: collision leftovers (0c), findability walk.
 

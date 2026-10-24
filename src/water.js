@@ -76,16 +76,16 @@ export function blobWaterGeometry(radius, seed, y, rings = 7, segs = 32) {
     for (let i = 0; i < segs; i++) {
       const a = (i / segs) * Math.PI * 2;
       const edge = radius * (1 + 0.16 * Math.sin(a * 2 + seed) + 0.09 * Math.sin(a * 3 + seed * 2.3) + 0.05 * Math.sin(a * 5 + seed * 0.7));
-      pos.push(Math.cos(a) * edge * f, y, Math.sin(a) * edge * f);
+      pos.push(Math.cos(a) * edge * f, y, -Math.sin(a) * edge * f); // z negated: matches farmSites blobShape (shape y -> world -z), so water and mud ring share one outline
       dep.push(Math.pow(1 - f, 0.8)); // shelves off gently
     }
   }
-  for (let i = 0; i < segs; i++) idx.push(0, 1 + ((i + 1) % segs), 1 + i); // up-facing winding
+  for (let i = 0; i < segs; i++) idx.push(0, 1 + i, 1 + ((i + 1) % segs)); // up-facing winding (z is mirrored, so winding is too)
   for (let r = 1; r < rings; r++) {
     const a0 = 1 + (r - 1) * segs, b0 = 1 + r * segs;
     for (let i = 0; i < segs; i++) {
       const i1 = (i + 1) % segs;
-      idx.push(a0 + i, a0 + i1, b0 + i, a0 + i1, b0 + i1, b0 + i);
+      idx.push(a0 + i, b0 + i, a0 + i1, a0 + i1, b0 + i, b0 + i1);
     }
   }
   const g = new THREE.BufferGeometry();
