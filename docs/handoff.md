@@ -1,3 +1,7 @@
+**2026-10-24 (cycle 39p, playtest block item 4, bazaar kirana goods):** No game change kept. Real printed packets on the bazaar kirana (unit 1) shelves and counter were built (patch tmp/kirana-goods.patch, shot docs/shots/shops-2026-10-24/kirana_bazaar.png) but cost +1 draw call: bazaar view 151 > 150 (merging the bangle/tyre torus mesh saved nothing, it is not in that view). Reverted; asked in NEEDS_YOU. NEXT: find one call to cut in the bazaar view (list meshes drawn from the bazaar camera), then re-apply the patch; other shops (medical, mobile, bangle) need new atlas cells.
+
+---
+
 **2026-10-24 (cycle 39o, playtest block items 6 / queue 5, far-LOD abadi):** Game change: the far-LOD abadi row proxies (tools/blender/build_abadi.py house_lod) now carry rear windows (one per floor, dark painted openings) in addition to the front door/window/chajja, so distant houses seen from rooftops and fields no longer read as blank blocks (~80 extra triangles per LOD row model, +3 files in public/assets/models, assets 28.44 MB). Near models and abadiBoxes.json unchanged. Proof docs/shots/farlod-2026-10-24/far_a.png (centre-back blocks now show openings; headless, no subject check - look evidence only). Build ALL PASSED, budget passed. Regression not run (no movement code touched).
 Gaps: far blocks are still one plaster set with vertex tint, openings are small flat squares, no sills/frames; water tank model, other shops' goods, yellow swing, Banta shop and Chaat thela still open.
 
