@@ -12,7 +12,7 @@ from common import wb, limb, cyl, sphere, prism_x, boolean_cut, ROOT
 from arch import Kit, ring, dabba, STEEL
 
 OUT = os.path.join(ROOT, 'tmp', 'petrol_pump_raw.glb')
-kit = Kit(split_props=True)
+kit = Kit(split_props=True, wood_slot='tin')
 rnd = random.Random(31)
 RED, WHITE, GREY, DARK, YEL = 0xB3322B, 0xE6E1D3, 0x6E6E6A, 0x25231F, 0xE0B53A
 

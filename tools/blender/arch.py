@@ -34,8 +34,11 @@ OPT_IN_KINDS = ('thatch', 'wood', 'metal', 'jute')  # own real PBR set only when
 
 
 class Kit:
-    def __init__(self, split_props=True, own=(), tex_override=None, route=None):
+    def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
+        if wood_slot:   # real wood set riding in a material slot this building does not use (brick/terracotta/tin): zero extra draw calls
+            route = dict(route or {}, wood=wood_slot)
+            tex_override = dict(tex_override or {}, **{wood_slot: ('wood', 1.0)})
         self.split_props = split_props
         self.own = tuple(own)
         self.route = route or {}                 # e.g. {'thatch': 'props'}: send a kind into another group (its material/draw call)

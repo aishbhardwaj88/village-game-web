@@ -11,7 +11,7 @@ from common import wb, limb, cyl, sphere, prism_x, boolean_cut, ROOT
 from arch import Kit, sack, STEEL
 
 OUT = os.path.join(ROOT, 'tmp', 'dharam_kanta_raw.glb')
-kit = Kit(split_props=True)
+kit = Kit(split_props=True, wood_slot='brick')
 rnd = random.Random(52)
 RED, WHITE, YEL, DARK = 0xB3322B, 0xE6E1D3, 0xE0B53A, 0x25231F
 

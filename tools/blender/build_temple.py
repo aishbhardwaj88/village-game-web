@@ -14,7 +14,7 @@ from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, ROOT
 from arch import Kit, ring, clay_pot, pot, LEAF, MARI, BRASS, STEEL, SOIL
 
 OUT = os.path.join(ROOT, 'tmp', 'temple_raw.glb')
-kit = Kit()
+kit = Kit(wood_slot='terracotta')
 rnd = random.Random(31)
 PW, PD = 12.0, 10.0
 GATE = 2.6

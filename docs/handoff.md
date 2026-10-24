@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z10, playtest block item 6, wood slots):** Game change: temple, petrol pump and dharam kanta now carry the real wood PBR set (Kit(wood_slot=...) in tools/blender/arch.py routes wood into the unused tin/terracotta slot). Build 16/16, hero 148, bazaar 150 (hard ceiling), budget 29.34 MB. FINDING: a routed slot is NOT free - it is still a separate material = +1 draw call per building vs wood in plaster. I tried it on abadi, school, bazaar_row, bg_houses, tea_stall, chowk_tea, general_store: hero went 155, bazaar 157 (fails check 8a), so those seven are reverted (scripts back to plain Kit()). Needs the art director's call or draw-call savings (e.g. wood into a shared trim atlas on the plaster material). Proof shot docs/shots/wood-slot-2026-10-24/temple.png is bad (missed the temple, capsule in frame); not ticked.
+NEXT: draw-call savings or a plaster+wood atlas; flat-tint interior props; pond mud edge.
+
+---
+
 **2026-10-24 (cycle 39z9, playtest block item 7, highway decals):** Game change: highway tar patches, cracks, centre dashes and edge lines (src/farmSites.js roadGeos) are now flat quads instead of thin boxes; the boxes' side faces were rendering as dashed black lines at grazing angles. Patch tones closer to asphalt, layers separated in height. Build ALL PASSED, budget 28.64 MB. Proof docs/shots/water-road-2026-10-24/highway3.png (before: highway.png); pond.png shows the water/lotus/mud already built (headless). Gaps: pond mud outer ring still has a crisp edge; lotus flowers small; wood fall-through audit (39z8) and flat-tint shop props still open.
 NEXT: pond mud edge blend, flat-tint interior props, own=('wood',) with draw-call savings.
 
