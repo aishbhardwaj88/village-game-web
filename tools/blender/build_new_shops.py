@@ -182,31 +182,59 @@ def atta_chakki():
     kit.add('apron', wb('step', cx - w / 2, cx + w / 2, d / 2 - 0.05, d / 2 + 0.45, 0, 0.12, 0.01))
     back_window(cx + 0.6, -d / 2, 0.7, 1.5, 2.2)  # grilled vent window on the back wall
     # the mill: stone housing with a hopper above it, a green-grey motor with a flywheel + belt, an iron chimney pipe on the roof
-    sx, sz = cx - 0.5, -0.2
-    kit.add('paint', cyl('stone', sx, sz, 0.0, 0.5, 0.62, 0.62, 18), 0x8A8A86)
-    kit.add('paint', cyl('stone_ring', sx, sz, 0.5, 0.58, 0.64, 0.64, 18), 0x6E6E6A)
-    kit.add('paint', cyl('hopper', sx, sz, 0.58, 1.3, 0.55, 0.2, 14), 0x4A5A6A)
-    kit.add('paint', cyl('hopper_neck', sx, sz, 1.3, 1.55, 0.2, 0.2, 10), 0x4A5A6A)
-    kit.add('paint', wb('spout', sx + 0.55, sx + 0.95, sz - 0.1, sz + 0.1, 0.18, 0.28, 0.01), 0x6E6E6A)
-    mx, mz = cx + 0.75, -0.3
-    kit.add('paint', wb('motor_base', mx - 0.35, mx + 0.35, mz - 0.2, mz + 0.2, 0.0, 0.1, 0.01), 0x2A2A2A)
-    kit.add('paint', cyl('motor', mx, mz, 0.1, 0.55, 0.22, 0.22, 14), 0x4F6A5A)
-    kit.add('paint', ring('flywheel', mx - 0.3, mz, 0.4, 0.28, 0.035, axis='x'), 0x1C1C1C)
-    kit.add('paint', limb('shaft', (mx - 0.35, mz, 0.4), (sx + 0.55, sz, 0.55), 0.04, 0.04), 0x555555)
-    kit.add('paint', limb('belt_a', (mx - 0.3, mz + 0.03, 0.68), (sx + 0.5, sz + 0.03, 0.62), 0.02, 0.05), 0x1A1A1A)
-    kit.add('paint', limb('belt_b', (mx - 0.3, mz + 0.03, 0.12), (sx + 0.5, sz + 0.03, 0.42), 0.02, 0.05), 0x1A1A1A)
+    sx, sz = cx - 0.45, -0.45
+    GREEN, BLUE, DARKS = 0x5F8A6E, 0x3E6A9A, 0x2A2A28
+    # concrete plinth, cast-iron drum housing (flat top, bolted lid ring), square sheet-metal hopper with lid, flour-dusted
+    kit.add('concrete', wb('plinth_m', sx - 0.55, sx + 0.55, sz - 0.5, sz + 0.5, 0.05, 0.2, 0.02)) if False else kit.add('paint', wb('plinth_m', sx - 0.55, sx + 0.55, sz - 0.5, sz + 0.5, 0.05, 0.2, 0.02), 0x9C9A92)
+    kit.add('paint', cyl('drum', sx, sz, 0.2, 0.82, 0.46, 0.46, 20), GREEN)
+    kit.add('paint', cyl('drum_lid', sx, sz, 0.82, 0.9, 0.49, 0.49, 20), 0x4C7058)
+    for i in range(10):
+        a_ = i / 10 * math.tau
+        kit.add('paint', cyl('bolt', sx + 0.43 * math.cos(a_), sz + 0.43 * math.sin(a_), 0.9, 0.95, 0.025, 0.025, 6), 0x2A2A28)
+    kit.add('paint', wb('hopper_lo', sx - 0.32, sx + 0.32, sz - 0.32, sz + 0.32, 0.95, 1.2, 0.01), BLUE)
+    kit.add('paint', wb('hopper_mid', sx - 0.42, sx + 0.42, sz - 0.42, sz + 0.42, 1.2, 1.55, 0.015), BLUE)
+    kit.add('paint', wb('hopper_rim', sx - 0.46, sx + 0.46, sz - 0.46, sz + 0.46, 1.55, 1.6, 0.01), 0x2F5278)
+    kit.add('paint', wb('hopper_grain', sx - 0.38, sx + 0.38, sz - 0.38, sz + 0.38, 1.52, 1.57, 0.0), 0xD9C58A)
+    # outlet chute sloping forward from the drum into a sack held on a low platform scale
+    kit.add('paint', limb('chute', (sx + 0.4, sz + 0.3, 0.55), (sx + 0.4, sz + 0.85, 0.3), 0.2, 0.2), 0x9AA0A4)
+    sack(kit, sx + 0.4, sz + 1.0, 0.0, 0.0, 0xF3EFE2, 0.42, 0.3, 0.5)
+    kit.add('paint', wb('scale_plate', sx + 0.1, sx + 0.7, sz + 0.75, sz + 1.25, 0.0, 0.05, 0.005), 0x3A3A38)
+    # motor on the right: blue body with cooling ribs, mounting rails, pulley + crossed-less V-belt up to the drum shaft behind a mesh guard
+    mx, mz = cx + 0.85, -0.45
+    kit.add('paint', wb('rails', mx - 0.5, mx + 0.5, mz - 0.25, mz + 0.25, 0.0, 0.08, 0.008), DARKS)
+    kit.add('paint', cyl('motor_body', mx, mz, 0.08, 0.5, 0.2, 0.2, 16), BLUE)
+    for i in range(6):
+        hh = 0.14 + i * 0.06
+        kit.add('paint', cyl('rib', mx, mz, hh, hh + 0.025, 0.215, 0.215, 16), 0x2F5278)
+    kit.add('paint', wb('term_box', mx - 0.1, mx + 0.1, mz + 0.18, mz + 0.34, 0.3, 0.45, 0.01), 0x2F5278)
+    kit.add('paint', ring('pulley', mx - 0.3, mz, 0.3, 0.17, 0.035, axis='x'), DARKS)
+    kit.add('paint', limb('belt_up', (mx - 0.3, mz, 0.47), (sx + 0.46, sz + 0.0, 0.7), 0.05, 0.05), 0x1A1A1A)
+    kit.add('paint', limb('belt_dn', (mx - 0.3, mz, 0.13), (sx + 0.46, sz + 0.0, 0.5), 0.05, 0.05), 0x1A1A1A)
+    kit.add('paint', limb('guard', (mx - 0.28, mz + 0.06, 0.65), (sx + 0.5, sz + 0.06, 0.78), 0.05, 0.05), 0xB8A830)
+    # electrical: switch board on the back wall with a wire running to the motor, a hanging bulb on a flex
+    kit.add('paint', wb('board', cx + 0.7, cx + 1.1, -d / 2 + 0.22, -d / 2 + 0.3, 1.5, 1.95, 0.01), 0x3A3A38)
+    kit.add('paint', wb('switch', cx + 0.8, cx + 0.88, -d / 2 + 0.3, -d / 2 + 0.34, 1.65, 1.75, 0.004), 0xD0C8B0)
+    kit.add('paint', limb('wire', (cx + 0.9, -d / 2 + 0.3, 1.5), (mx, mz - 0.25, 0.45), 0.012, 0.012), 0x1A1A1A)
+    kit.add('paint', limb('flex', (cx - 0.1, 0.2, h - 0.2), (cx - 0.1, 0.2, h - 0.75), 0.012, 0.012), 0x1A1A1A)
+    kit.add('paint', sphere('bulb', cx - 0.1, 0.2, h - 0.82, 0.07, 0.07, 0.09, 1), 0xFFE9A8)
+    # chimney vent pipe on the roof
     kit.add('paint', cyl('chimney', cx + w / 2 - 0.35, -d / 2 + 0.4, h + 0.2, h + 2.2, 0.1, 0.1, 10), 0x4A4642)
     kit.add('paint', cyl('chimney_cap', cx + w / 2 - 0.35, -d / 2 + 0.4, h + 2.2, h + 2.3, 0.16, 0.12, 10), 0x4A4642)
-    # sacks of wheat (tan) and flour (white), a flour bin, a hanging scale, a heap of flour on the floor
+    # sacks of wheat (tan) and flour (white) stacked against the side posts, a flour bin with a heap, a hanging pan scale, a counter with ledger
     for i in range(3):
-        sack(kit, cx - 1.2 + i * 0.35, 0.8, 0.0, 0.0, 0xD9C58A, 0.45, 0.32, 0.55)
+        sack(kit, cx - 1.2 + (i % 2) * 0.05, 0.4 + i * 0.5, 0.0, 0.0, 0xD9C58A, 0.42, 0.3, 0.5)
+    sack(kit, cx - 1.18, 0.65, 0.5, 0.1, 0xD9C58A, 0.42, 0.3, 0.45)
     for i in range(3):
-        sack(kit, cx + 0.2 + i * 0.4, 0.95, 0.0, 0.0, 0xF3EFE2, 0.45, 0.32, 0.55)
-    kit.add('paint', cyl('bin', cx + 1.1, 0.85, 0.0, 0.6, 0.28, 0.25, 14), 0x8F9AA2)
-    kit.add('paint', sphere('flour_heap', cx + 1.1, 0.85, 0.62, 0.26, 0.26, 0.12, 1), 0xF3EFE2)
-    kit.add('paint', limb('scale_hang', (cx - 0.9, 0.4, h - 0.2), (cx - 0.9, 0.4, 1.6), 0.015, 0.015), 0x333333)
-    kit.add('paint', cyl('scale_pan', cx - 0.9, 0.4, 1.55, 1.6, 0.17, 0.15, 12), STEEL)
-    kit.add('paint', sphere('flour_spill', sx + 0.8, sz + 0.1, 0.07, 0.3, 0.22, 0.05, 1), 0xF3EFE2)
+        sack(kit, cx + 1.2, 0.2 + i * 0.5, 0.0, 0.0, 0xF3EFE2, 0.42, 0.3, 0.5)
+    sack(kit, cx + 1.2, 0.45, 0.5, -0.1, 0xF3EFE2, 0.42, 0.3, 0.45)
+    kit.add('paint', cyl('bin', cx + 0.4, 0.9, 0.0, 0.5, 0.25, 0.22, 14), 0x8F9AA2)
+    kit.add('paint', sphere('flour_heap', cx + 0.4, 0.9, 0.52, 0.22, 0.22, 0.1, 1), 0xF3EFE2)
+    kit.add('paint', limb('scale_hang', (cx - 0.5, 0.9, h - 0.2), (cx - 0.5, 0.9, 1.5), 0.015, 0.015), 0x333333)
+    kit.add('paint', cyl('scale_pan', cx - 0.5, 0.9, 1.45, 1.5, 0.17, 0.15, 12), STEEL)
+    kit.add('paint', sphere('flour_spill', sx + 0.6, sz + 0.5, 0.06, 0.3, 0.22, 0.04, 1), 0xF3EFE2)
+    # flour dust whitening the machine's top surfaces and the floor around it
+    kit.add('paint', sphere('dust', sx, sz, 0.93, 0.4, 0.4, 0.03, 1), 0xF3EFE2)
+    kit.add('paint', sphere('dust_floor', sx + 0.2, sz + 0.5, 0.055, 0.8, 0.6, 0.03, 1), 0xEFEAD8)
 
 
 post_office()

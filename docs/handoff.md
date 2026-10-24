@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39g, playtest block item 5, atta chakki):** Game change: chakki machine rebuilt readable (tools/blender/build_new_shops.py atta_chakki): green cast-iron drum with bolted lid on a plinth, square blue sheet-metal hopper with grain, flour chute into a sack on a floor scale, blue ribbed motor with pulley, V-belt and yellow guard, switchboard with wire, hanging bulb, sacks stacked at the side posts, flour bin, pan scale, flour dust. Replaces the witch-hat cone hopper. Build ALL PASSED, regression 22/22, assets 27.19 MB. Proof docs/shots/chakki-2026-10-24/close.png (note: shotlib subject check reports the chakki as occluded by the hidden new_shops_old collision shell, so shot has no subject check; and slot models need ~20 s to load before shooting).
+Gaps: surfaces are the shared plaster set tinted, no unique metal PBR; no miller capsule yet.
+NEXT: (5) cricket mud, badminton lines/net, school flag + games; (6) khet variety; (7) water.
+
+---
+
 **2026-10-24 (cycle 39f, playtest block item 5, dharam kanta):** Game change: weighbridge is now a Blender model (tools/blender/build_dharam_kanta.py, slot dharam_kanta at world 194,92; ~7k tris): steel ribbed deck 4x14 with yellow edge angles and load-cell covers, concrete approach ramps, bollards, red/white stop barrier, weight-limit sign, cabin with panel door, grilled counter window, ledger, roof tank, red LED display post, grain sacks on pallets, raised loading dock with tin canopy. Old code boxes removed (cabin/post solids kept). Build ALL PASSED, regression 22/22, assets 27.17 MB. Proof docs/shots/kanta-2026-10-24/{wide,cabin}.png. No CC0 weighbridge exists (Poly Haven/Quaternius/Kenney/poly.pizza searched).
 Gaps: no truck standing on the deck; the road near the godown still ends abruptly (item 7); sack stacks read slightly tower-like.
 NEXT: (4) atta chakki readable; (5) cricket mud, badminton, school flag; (6) khet variety; (7) water.
