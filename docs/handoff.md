@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z5, playtest block item 5, atta chakki sacks):** Game change: sacks (tools/blender/arch.py sack()) are now a subdivided pillowy ellipsoid with flat base, gathered neck and tie, replacing the faceted box; new_shops.glb rebuilt (11k tris after shrink). Build ALL PASSED. Proof docs/shots/chakki-2026-10-24/v4_close.png (headless, no subject check). Item NOT ticked: jute weave still reads as a checker pattern (texture scale), sacks slightly onion-shaped, mill drum/hopper still flat-painted low-poly. halwai/bazaar/dharam kanta models also call sack() but were not rebuilt.
+NEXT: jute UV scale/finer weave, textured metal for mill (needs a draw call saved), roof-level tank shot, barber/puncture props.
+
+---
+
 **2026-10-24 (cycle 39z4, playtest block item 4, sabzi produce + bangles):** Game change: sabzi shop now carries textured tomatoes, onions, potatoes, brinjal and leafy bunches (heaps in the three crates and on the counter), manihari has glass-bangle stacks with printed striped/gold-dot atlas cells (src/shopGoods.js produceAndBangleItems, atlas now 4x8, same material = zero extra draw call). Found and fixed: bangle rods (and the original rod cylinders) sat inside the back wall, so they never showed (src/bazaar.js). Build ALL PASSED (bazaar 150, hero 146), budget 28.39 MB. Proof docs/shots/shops-2026-10-24/{sabzi,bangle}_bazaar.png (headless). Free-asset search: no un-branded CC0 vegetable packs found suitable; skins are painted in code (diffuse only).
 Gaps: crate heaps hidden behind the counter from eye height; Blender hanging bangle strands still flat-tint tori; barber/puncture props flat; Banta shop, Chaat thela unbuilt; tank roof-level shot still open.
 NEXT: roof-level tank shot; barber/puncture props; chakki mill.

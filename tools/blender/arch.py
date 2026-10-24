@@ -415,5 +415,12 @@ def dabba(kit, x, z, h, r=0.12, tall=0.28, colour=STEEL):
 def sack(kit, x, z, h, ang=0.0, colour=0xE6DCC0, w=0.45, d=0.28, hh=0.55, kind='paint'):
     """A flour/sugar sack: a slumped, tied-off bag."""
     ca, sa = math.cos(ang), math.sin(ang)
-    kit.add(kind, limb('sack', (x, z, h), (x, z, h + hh), w, d, 0.06), colour)
-    kit.add(kind, sphere('sack_top', x, z, h + hh, w * 0.42, d * 0.42, 0.09, 1), colour)
+    # pillowy body (subdivided ellipsoid, flattened base, bulging belly) + gathered, tied neck
+    body = sphere('sack', x, z, h + hh * 0.46, w * 0.52, d * 0.55, hh * 0.5, 2)
+    for v in body.data.vertices:
+        if v.co.z < h + hh * 0.46 - hh * 0.38:
+            v.co.z = h + hh * 0.46 - hh * 0.38
+        v.co.z += 0.0
+    kit.add(kind, body, colour)
+    kit.add(kind, cyl('sack_neck', x, z, h + hh * 0.84, h + hh * 1.04, w * 0.2, w * 0.1, 8), colour)
+    kit.add(kind, sphere('sack_top', x, z, h + hh * 1.05, w * 0.14, d * 0.14, 0.05, 1), colour)
