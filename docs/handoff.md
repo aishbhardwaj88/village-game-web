@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z26, playtest block item 7, road ends):** Game change: the mandi yard and highway run-outs (src/farmSites.js fadeStrip) are now one continuous tapering flat strip with wobbled edges and fading wheel ruts, replacing the stepped hard-edged rectangle slabs that still read as an abrupt end; same meshes, no new draw call. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/roadend-2026-10-24/{mandi_end_n,mandi_end_n_after,mandi_end_s_after}.png (headless camera shots, no subject check, so item 7 NOT ticked). Gaps: strip colour ramp to earth barely shows under the concrete PBR texture, so the end is organic but still grey; highway end not re-shot (hw_end_after.png framed empty grass).
+NEXT: pond shoreline mud, flat-tint barber/puncture props, Banta/Chaat real textures.
+
+---
+
 **2026-10-24 (cycle 39z25, playtest block item 7, pond lotus):** Game change: pond lotus pads are ~1.5x larger (0.6-1.2 m) and sit above the water surface (they were half-sunk and invisible from the bank), flowers ~2x bigger and more frequent (src/farmSites.js createPond). Same single lotus mesh, no new draw call. Build ALL PASSED, budget 29.41 MB. Proof docs/shots/lotus-2026-10-24/{pond_close,pond_wide}.png (headless, photo camera, no subject check, has HUD prompt, so item 7 NOT ticked). Pads and petals now read as lotus; petals are still faceted flat-colour (no petal texture). Buffaloes at the pond are still peg-legged blocks.
 NEXT: flat-tint barber/puncture props, Banta/Chaat real textures, animal models.
 

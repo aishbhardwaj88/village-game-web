@@ -811,6 +811,32 @@ export function createJainMandir(position) {
 /** Worn village highway (z -75..75 about the cluster origin): dark asphalt on the concrete PBR set with tar patches, hairline cracks, broken faded centre dashes and edge lines
  *  (no crisp kerb), dust margins creeping onto the shoulder, sand drifts, and both ends running out as a narrowing dirt track with wheel ruts. Deterministic. */
 function flatQuad(w, d) { return new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2); }
+/** Flat tapering track strip (no steps): from (x,z0) along sz*z for len, width w0 -> w1, wobbling edges, vertex colour ramp through `ramp` (hex stops), so tarmac/slab frays into earth then into the grass tone. */
+function fadeStrip(x, z0, sz, len, w0, w1, ramp, y, seed = 1, segs = 14) {
+  const pos = [], col = [], idx = [];
+  const stops = ramp.map((h) => new THREE.Color(h));
+  const c = new THREE.Color();
+  const r = (k) => { const v = Math.sin(seed * 91.7 + k * 12.9898) * 43758.5453; return v - Math.floor(v); };
+  for (let i = 0; i <= segs; i++) {
+    const t = i / segs, w = (w0 + (w1 - w0) * t) / 2 * (1 + (r(i) - 0.5) * 0.25 * Math.min(1, t * 3));
+    const f = t * (stops.length - 1), a = Math.floor(f), b = Math.min(stops.length - 1, a + 1);
+    c.copy(stops[a]).lerp(stops[b], f - a);
+    const z = z0 + sz * len * t, yy = y - 0.012 * t;
+    for (const side of [-1, 1]) { pos.push(x + side * (side < 0 ? w * (0.9 + r(i + 40) * 0.2) : w * (0.9 + r(i + 80) * 0.2)), yy, z); col.push(c.r, c.g, c.b); }
+    if (i > 0) { const k = i * 2; if (sz > 0) idx.push(k - 2, k, k - 1, k - 1, k, k + 1); else idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const ng = g.toNonIndexed();
+  const uv = new Float32Array(ng.attributes.position.count * 2);
+  for (let i = 0; i < ng.attributes.normal.count; i++) { ng.attributes.normal.setXYZ(i, 0, 1, 0); uv[i * 2] = ng.attributes.position.getX(i) / 4; uv[i * 2 + 1] = ng.attributes.position.getZ(i) / 4; }
+  ng.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return ng;
+}
+
 function roadGeos() {
   const geos = [];
   let sd = 91;
@@ -849,13 +875,11 @@ function roadGeos() {
       geos.push(bake(new flatQuad(w, d), at(sx * (7.1 - w * 0.22 + rnd() * 0.3), 0.108, z), [0x7a6c52, 0x85775b, 0x6f6249][Math.floor(rnd() * 3)]));
     }
   }
-  // run-outs: the tarmac narrows (14 -> 9 -> 5.5 m), fades into packed earth, ends in two wheel ruts that join a field track
+  // run-outs: the tarmac frays in one continuous taper (no stepped slabs) into packed earth, then the grass tone, with two wheel ruts that fade out
   for (const sz of [-1, 1]) {
     const z0 = sz * 75;
-    geos.push(bake(new THREE.BoxGeometry(11, 0.09, 8), at(0, 0.045, z0 + sz * 4), 0x4a4a4e));
-    geos.push(bake(new THREE.BoxGeometry(8, 0.07, 9), at(0, 0.036, z0 + sz * 12.5), 0x7a6c52));
-    geos.push(bake(new THREE.BoxGeometry(5.5, 0.05, 12), at(0, 0.026, z0 + sz * 23), 0x8a7a5a));
-    for (const rx of [-0.9, 0.9]) geos.push(bake(new THREE.BoxGeometry(0.45, 0.02, 14), at(rx, 0.052, z0 + sz * 24), 0x6a5c42));
+    geos.push(fadeStrip(0, z0, sz, 40, 13, 4.5, [0x4a4a4e, 0x5e564a, 0x7a6c52, 0x6f6a48], 0.108, 3 + sz));
+    for (const rx of [-0.95, 0.95]) geos.push(fadeStrip(rx, z0 + sz * 6, sz, 30, 0.45, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.114, 7 + sz, 10));
     for (let k = 0; k < 5; k++) geos.push(bake(new THREE.BoxGeometry(0.5 + rnd(), 0.02, 0.7 + rnd()), at((rnd() - 0.5) * 4, 0.06, z0 + sz * (8 + rnd() * 22)), 0x6f6248));
   }
   return geos;
@@ -1453,11 +1477,9 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(14, 0.1, 10), at(-18, 0.05, 0), 0x3d3d40));
   // The paved yard does not stop at a crisp edge: it frays into broken concrete, then packed earth with wheel ruts, both ends (road ends believably).
   for (const sz of [-1, 1]) {
-    geos.push(bake(new THREE.BoxGeometry(16, 0.09, 5), at(0, 0.045, sz * 39.5), 0x7d7c76));
-    geos.push(bake(new THREE.BoxGeometry(10, 0.06, 9), at(0, 0.03, sz * 46.5), 0x7a6c52));
-    geos.push(bake(new THREE.BoxGeometry(6, 0.045, 12), at(0, 0.022, sz * 57), 0x8a7a5a));
-    for (const rx of [-1.1, 1.1]) geos.push(bake(new THREE.BoxGeometry(0.5, 0.02, 16), at(rx, 0.05, sz * 58), 0x6a5c42));
-    for (const [bx, bz, bw, bd] of [[-6.5, 38.6, 3, 2.2], [5.8, 40.2, 2.4, 3], [-3, 41.5, 2.2, 1.6]]) geos.push(bake(new THREE.BoxGeometry(bw, 0.05, bd), at(bx, 0.115, sz * bz, 0.2 * sz), 0x66655f)); // broken slab chunks at the fray
+    geos.push(fadeStrip(0, sz * 37, sz, 34, 17, 4.5, [0x8f8e88, 0x7d7c76, 0x7a6c52, 0x6f6a48], 0.121, 11 + sz));
+    for (const rx of [-1.1, 1.1]) geos.push(fadeStrip(rx, sz * 43, sz, 28, 0.5, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.126, 13 + sz, 10));
+    for (const [bx, bz, bw, bd] of [[-6.5, 38.6, 3, 2.2], [5.8, 40.2, 2.4, 3], [-3, 41.5, 2.2, 1.6]]) geos.push(bake(new THREE.BoxGeometry(bw, 0.05, bd), at(bx, 0.135, sz * bz, 0.2 * sz), 0x66655f)); // broken slab chunks at the fray
   }
   geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 74), at(-12.1, 0.1, 0), 0xb4b0a4));
   // Grain wholesale godown: long warehouse, tin roof, big sliding doors, sacks stacked outside.
