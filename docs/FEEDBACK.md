@@ -142,7 +142,7 @@ flowers - and it is still not there.
 - **The yellow swing** is not good or realistic. Rebuild or replace it.
 
 ### 6. BUILDINGS AND STRUCTURES
-- **The cottage-style houses look bad.** Better quality wood, better textures. Use
+- [PARTLY DONE 24 Oct: kachcha homestead posts/beams/gate now use the real PBR wood set (own material) and the veranda lean-to is real thatch, was flat plaster tan; proof docs/shots/cottage-2026-10-24/after_porch.png vs before_porch.png; other cottage-style houses (abadi/house_compound wood) not yet checked] **The cottage-style houses look bad.** Better quality wood, better textures. Use
   real free PBR wood and thatch sets, not flat colour.
 - [DONE 24 Oct: dishes removed from the rooftop pick list, antenna kept] **Dish TV antennas** read as random concave objects. She likes the new TV antenna;
   the dishes must be clearly dishes with a bracket and an arm, or be removed.

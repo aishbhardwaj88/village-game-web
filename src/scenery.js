@@ -329,7 +329,7 @@ export function buildBackgroundHouses(scene, kit) {
     if (kachcha) kachcha.visible = nearKachcha;
     shedHerd.mesh.visible = nearKachcha;
     // 80 m, not FAR_DIST: the far homestead is hazy fog-distance scenery, and drawing it from the hero zone cost a draw call at the 150 ceiling.
-    const near2 = Math.hypot(px - KACHCHA2.x, pz - KACHCHA2.z) < 80;
+    const near2 = Math.hypot(px - KACHCHA2.x, pz - KACHCHA2.z) < 60; // was 80: the homestead's real-wood material is a third call per copy, and the bazaar view sits 65 m off
     if (kachcha2) kachcha2.visible = near2;
     shedHerd2.mesh.visible = near2;
     if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();

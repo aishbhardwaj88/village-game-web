@@ -12,7 +12,7 @@ from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, ROOT
 from arch import Kit, Bldg, panel_door, barred_window, pot, clay_pot, lathe, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'kachcha_homestead_raw.glb')
-kit = Kit(split_props=False, tex_override={'props': ('thatch', 1.0)}, route={'thatch': 'props'})  # no separate paint-props mesh here: the 'props' slot carries the real thatch set (no extra draw call)
+kit = Kit(split_props=False, own=('wood',), tex_override={'props': ('thatch', 1.0)}, route={'thatch': 'props'})  # no separate paint-props mesh here: the 'props' slot carries the real thatch set (no extra draw call)
 rnd = random.Random(31)
 THATCH = [0xFFF4D6, 0xF2E6BE, 0xE8D8A8, 0xFFF8DC, 0xEBDDB2]
 LIME = 0xE8DFC8
@@ -68,11 +68,11 @@ def house():
         kit.add('wood', limb('rafter', (x, -1.2, 2.5), (x, 0.4, 2.3), 0.09, 0.09))
     thatch_roof_z(-6.5, 0.5, (-6.2, -3.5, -0.85), (2.2, 3.95, 2.2), 'roof')
     # lean-to thatch over the veranda, blending into the main roof's front eave
-    kit.add('paint', prism_x('lean', -6.4, 0.4, [(-1.0, 2.55), (0.55, 2.2), (0.55, 2.38), (-1.0, 2.75)]), THATCH[1])
+    kit.add('thatch', prism_x('lean', -6.4, 0.4, [(-1.0, 2.55), (0.55, 2.2), (0.55, 2.38), (-1.0, 2.75)]), THATCH[1])
     for k in range(8):
         f = (k + 0.5) / 8
         z = -1.0 + 1.55 * f
-        kit.add('paint', limb('lean_straw', (-6.35 + rnd.uniform(0, 0.3), z, 2.77 - 0.55 * f), (0.35 - rnd.uniform(0, 0.3), z, 2.77 - 0.55 * f), 0.2, 0.08), rnd.choice(THATCH))
+        kit.add('thatch', limb('lean_straw', (-6.35 + rnd.uniform(0, 0.3), z, 2.77 - 0.55 * f), (0.35 - rnd.uniform(0, 0.3), z, 2.77 - 0.55 * f), 0.2, 0.08), rnd.choice(THATCH))
     # chimney-less smoke vent, a low charpai on the veranda leaning wall, clay pots by the door
     clay_pot(kit, -1.9, 0.0, 1.0)
     clay_pot(kit, -4.4, -0.2, 0.9)
@@ -170,5 +170,5 @@ house()
 shed()
 compound()
 yard_props()
-TINTS = {'hb_plaster': '#B09572', 'hb_plinth': '#8A6F50', 'hb_trim': '#E8DFC8', 'hb_apron': '#9C8566', 'hb_wood': '#BFA07A'}
+TINTS = {'hb_plaster': '#B09572', 'hb_plinth': '#8A6F50', 'hb_trim': '#E8DFC8', 'hb_apron': '#9C8566', 'hb_wood': '#A8875F'}
 kit.finalize(OUT, TINTS, drift_amp=0.07, ao_strength=0.45)
