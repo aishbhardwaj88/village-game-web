@@ -29,13 +29,17 @@ from common import (
 # vertex colours: kinds plaster/plinth/trim/floor/apron/wood/concrete/paint all fold into it) plus, only where used,
 # a brick mesh and a corrugated-tin mesh (their textures carry real detail) and the transparent decals.
 MAIN_KINDS_TEXTURE = ('plaster', 0.5)
-OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0)}
+OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0), 'thatch': ('thatch', 1.0), 'wood': ('wood', 1.0)}
+OPT_IN_KINDS = ('thatch', 'wood')  # own real PBR set only when the script asks (Kit(own=(...))): each is one extra draw call per building
 
 
 class Kit:
-    def __init__(self, split_props=True):
+    def __init__(self, split_props=True, own=(), tex_override=None, route=None):
         clear_scene()
         self.split_props = split_props
+        self.own = tuple(own)
+        self.route = route or {}                 # e.g. {'thatch': 'props'}: send a kind into another group (its material/draw call)
+        self.tex_override = tex_override or {}   # e.g. {'tin': ('thatch', 1.0)}: a building with no tin of its own re-uses the tin slot (and its draw call) for another real set
         self.records = []   # (kind, obj, colour or None)
         self.extra = []     # objects exported as-is (decals), joined by the caller
 
@@ -54,17 +58,17 @@ class Kit:
         """Colour every object (per-kind sRGB tint from `tints['hb_<kind>']`, or its own paint colour) into a 'Base'
         vertex-colour layer, join into hb_main / hb_brick / hb_tin, box-UV, bake dirty-vertex AO, then write
         AO(soft) x Base x a smooth +-drift into the exported COLOR_0 layer."""
-        groups = {'main': [], 'props': [], 'brick': [], 'tin': [], 'terracotta': []}
+        groups = {'main': [], 'props': [], 'brick': [], 'tin': [], 'terracotta': [], 'thatch': [], 'wood': []}
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
             colorize(obj, color, attr='Base')
-            groups[kind if kind in ('brick', 'tin', 'terracotta') else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
+            groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
         for g, objs in groups.items():
             if not objs:
                 continue
-            tex, rep = OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)  # 'props' (kind paint) = same plaster set, its own material so it can skip the shadow pass
+            tex, rep = self.tex_override.get(g) or OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)  # 'props' (kind paint) = same plaster set, its own material so it can skip the shadow pass
             m = load_pbr_material('hb_' + g, tex, repeat=(rep, rep))
             wire_vertex_ao(m, strength=0.5)
             for o in objs:

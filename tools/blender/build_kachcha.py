@@ -9,12 +9,12 @@ import sys, os, math, random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
 from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, ROOT
-from arch import Kit, Bldg, panel_door, barred_window, pot, clay_pot, LEAF
+from arch import Kit, Bldg, panel_door, barred_window, pot, clay_pot, lathe, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'kachcha_homestead_raw.glb')
-kit = Kit()
+kit = Kit(split_props=False, tex_override={'props': ('thatch', 1.0)}, route={'thatch': 'props'})  # no separate paint-props mesh here: the 'props' slot carries the real thatch set (no extra draw call)
 rnd = random.Random(31)
-THATCH = [0xB89B58, 0xA88A48, 0x8F7440, 0xC4AA64, 0x9C8044]
+THATCH = [0xFFF4D6, 0xF2E6BE, 0xE8D8A8, 0xFFF8DC, 0xEBDDB2]
 LIME = 0xE8DFC8
 GEROO = 0xB4552F
 
@@ -24,7 +24,7 @@ def thatch_roof_z(x0, x1, zs, hs, name):
     zf, zr, zb = zs
     hf, hr, hb = hs
     t = 0.2
-    kit.add('paint', prism_x(name, x0, x1, [(zf, hf), (zr, hr), (zb, hb), (zb, hb + t), (zr, hr + t), (zf, hf + t)]), THATCH[2])
+    kit.add('thatch', prism_x(name, x0, x1, [(zf, hf), (zr, hr), (zb, hb), (zb, hb + t), (zr, hr + t), (zf, hf + t)]), 0xD8C690)
     # shaggy straw bundles lying along the slope (random lengths/colours), and a bound ridge cap
     for (za, ha, zc, hc) in ((zf, hf, zr, hr), (zb, hb, zr, hr)):
         for k in range(14):
@@ -33,11 +33,11 @@ def thatch_roof_z(x0, x1, zs, hs, name):
             h = ha + (hc - ha) * f + t + 0.02
             xa = x0 + rnd.uniform(0, 0.4)
             xb = x1 - rnd.uniform(0, 0.4)
-            kit.add('paint', limb(name + '_straw', (xa, z, h), (xb, z, h), 0.2, 0.09), rnd.choice(THATCH))
+            kit.add('thatch', limb(name + '_straw', (xa, z, h), (xb, z, h), 0.2, 0.09), rnd.choice(THATCH))
         for k in range(10):  # ragged hanging eave ends
             x = x0 + (x1 - x0) * (k + rnd.random() * 0.6) / 10
-            kit.add('paint', limb(name + '_eave', (x, za, ha + 0.1), (x + rnd.uniform(-0.05, 0.05), za + (za - zr) * 0.05, ha - 0.12), 0.16, 0.05), rnd.choice(THATCH))
-    kit.add('paint', limb(name + '_ridge', (x0 - 0.1, zr, hr + t + 0.05), (x1 + 0.1, zr, hr + t + 0.05), 0.28, 0.2), THATCH[3])
+            kit.add('thatch', limb(name + '_eave', (x, za, ha + 0.1), (x + rnd.uniform(-0.05, 0.05), za + (za - zr) * 0.05, ha - 0.12), 0.16, 0.05), rnd.choice(THATCH))
+    kit.add('thatch', limb(name + '_ridge', (x0 - 0.1, zr, hr + t + 0.05), (x1 + 0.1, zr, hr + t + 0.05), 0.28, 0.2), THATCH[3])
     for k in range(7):
         x = x0 + (x1 - x0) * (k + 0.5) / 7
         kit.add('paint', limb(name + '_bind', (x, zr - 0.14, hr + t + 0.04), (x, zr + 0.14, hr + t + 0.04), 0.03, 0.3), 0x6F5836)
@@ -156,11 +156,11 @@ def yard_props():
     kit.add('paint', cyl('milkcan', 3.2, -1.8, 0.0, 0.5, 0.15, 0.15, 12), 0xB9BDC2)
     # haystack (golden cone, bound) beside the shed
     hx, hz = 5.2, 3.2
-    kit.add('paint', cyl('stack', hx, hz, 0.0, 1.5, 1.35, 1.1, 14), THATCH[3])
-    kit.add('paint', cyl('stack_top', hx, hz, 1.5, 2.7, 1.1, 0.05, 14), THATCH[0])
+    kit.add('thatch', lathe('stack', hx, hz, [(0.0, 0.0), (1.25, 0.0), (1.42, 0.5), (1.38, 1.2), (1.12, 1.9), (0.7, 2.4), (0.28, 2.75), (0.0, 2.9)], seg=20), 0xF2E8C8)
+    kit.add('paint', limb('stack_rope', (hx - 1.43, hz, 0.8), (hx + 1.43, hz, 0.8), 0.05, 0.05), 0x7A6A48) if False else None
     for k in range(5):
         a = k * 1.26
-        kit.add('paint', sphere('hay_tuft', hx + 1.3 * math.cos(a), hz + 1.3 * math.sin(a), 0.2, 0.3, 0.3, 0.22, 1), rnd.choice(THATCH))
+        kit.add('thatch', sphere('hay_tuft', hx + 1.5 * math.cos(a), hz + 1.5 * math.sin(a), 0.2, 0.3, 0.3, 0.22, 1), 0xEADFBC)
     # swept courtyard floor, slightly darker dung-plastered earth, with a wider sweep-mark apron at the gate
     kit.add('apron', wb('yard_floor', -7.2, 7.2, -6.5, 6.2, 0.0, 0.04, 0.01))
     kit.add('paint', wb('gate_apron', -1.9, 1.9, 6.2, 8.2, 0.0, 0.03, 0.01), 0x9C8566)
@@ -170,5 +170,5 @@ house()
 shed()
 compound()
 yard_props()
-TINTS = {'hb_plaster': '#B09572', 'hb_plinth': '#8A6F50', 'hb_trim': '#E8DFC8', 'hb_apron': '#9C8566', 'hb_wood': '#7C5C3E'}
+TINTS = {'hb_plaster': '#B09572', 'hb_plinth': '#8A6F50', 'hb_trim': '#E8DFC8', 'hb_apron': '#9C8566', 'hb_wood': '#BFA07A'}
 kit.finalize(OUT, TINTS, drift_amp=0.07, ao_strength=0.45)
