@@ -11,7 +11,7 @@ import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK,
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
-import { roadLegs, spurLegs } from './eastRoad.js';
+import { roadLegs, spurLegs, roadAt } from './eastRoad.js';
 import { propCells, createPropCell } from './villageProps.js';
 import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
@@ -1508,6 +1508,23 @@ async function main() {
           }
           if (trees.length && !leg.bare) g.add(buildTrees(trees));
           return g;
+        },
+      });
+    }
+    // Street life on the east road: villagers (capsule placeholders until the 29 Oct models) walking its south edge, each pacing one stretch.
+    for (const [id, s0, s1, tint, speed] of [['east_road_walkers_a', 18, 95, 0x8a5a44, 1.1], ['east_road_walkers_b', 105, 175, 0x5f7f6a, 1.3]]) {
+      const p0 = roadAt((s0 + s1) / 2);
+      zoneManager.register(id, {
+        detail: true, x: p0.x, z: p0.z, buildRadius: 55, teardownRadius: 70,
+        build: () => {
+          const group = new THREE.Group();
+          group.name = 'zone_' + id;
+          const edge = (s) => { const r = roadAt(s); return { x: r.x - r.uz * 1.6, z: r.z + r.ux * 1.6 }; };
+          const a = edge(s0), b = edge(s1);
+          const npc = createNPC(tint, a, Math.PI / 2, 'npc_' + id);
+          group.add(npc);
+          const walk = createWaypointLoop(npc, [a, edge((s0 + s1) / 2), b, edge((s0 + s1) / 2)], { speed, pauseSeconds: 4 });
+          return { group, onFrame: (dt) => walk(dt) };
         },
       });
     }
