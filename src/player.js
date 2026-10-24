@@ -1,3 +1,4 @@
+import { STATIC_COLLIDERS } from './collision.js';
 import * as THREE from 'three';
 
 const PLAYER_HEIGHT = 2; // metres
@@ -9,6 +10,7 @@ const CAMERA_HEIGHT = 2.2;
 
 const OCCLUSION_MIN_DISTANCE = 1.5; // absolute floor once a wall forces the camera in
 const OCCLUSION_MARGIN = 0.3; // stop just short of the hit surface, not touching it
+const CAMERA_WALL_PAD = 0.3; // camera near-plane clearance from a wall collider
 const PULL_IN_RATE = 25; // fast — never show clipped geometry, even for one frame
 const EASE_OUT_RATE = 4; // slower — "easing smoothly back out" once the obstruction clears
 
@@ -98,6 +100,22 @@ export class ThirdPersonCamera {
       if (hit) {
         targetDistance = Math.max(OCCLUSION_MIN_DISTANCE, hit.distance - OCCLUSION_MARGIN);
       }
+    }
+
+    // Streamed zone buildings (post office, chakki, gurukul...) are not in `_obstacles`; march the ray through the
+    // real wall colliders so the camera never ends up inside a wall (findwalk-keys-2026-10-25 chakki/baagh shots).
+    const ox = this._pivot.x, oz = this._pivot.z;
+    for (let t = 0.5; t <= targetDistance; t += 0.25) {
+      const px = ox + this._offsetDir.x * t, pz = oz + this._offsetDir.z * t;
+      let inside = false;
+      for (const b of STATIC_COLLIDERS) {
+        if (b.animalBox) continue;
+        if (px > b.minX - CAMERA_WALL_PAD && px < b.maxX + CAMERA_WALL_PAD && pz > b.minZ - CAMERA_WALL_PAD && pz < b.maxZ + CAMERA_WALL_PAD) {
+          if (ox > b.minX && ox < b.maxX && oz > b.minZ && oz < b.maxZ) continue; // pivot itself already inside (stairs, porch): ignore
+          inside = true; break;
+        }
+      }
+      if (inside) { targetDistance = Math.max(OCCLUSION_MIN_DISTANCE, t - 0.25 - OCCLUSION_MARGIN); break; }
     }
 
     const rate = targetDistance < this._effectiveDistance ? PULL_IN_RATE : EASE_OUT_RATE;
