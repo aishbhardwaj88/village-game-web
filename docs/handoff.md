@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z46, playtest block item 5, ration shop stock in Blender):** Game change: the ration shop's invisible JS-side stock now actually renders, built in tools/blender/build_new_shops.py ration_shop(): six jute grain sacks stacked two high on the right flank, slatted wooden crates (two holding glass oil bottles) on the left, and on the counter a beam scale with two pans and cords, a register ledger with pages, and a row of lidded steel tins. new_shops.glb rebuilt, no new draw call (hero 149, bazaar 149). Build 16/16, budget 30.48 MB. Proof docs/shots/ration-2026-10-24b/{front,close}.png (headless, subject check passed). Gaps: bottles stand on crate tops not in slots, sacks still blocky; chakki counter ledger/post office rack textures still plain paint; item 5 NOT ticked as a whole.
+NEXT: halwai/bazaar wood, tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z45, playtest block item 5, post office counter stock):** Game change: post office counter now carries a rubber-banded envelope bundle, a black desk phone with dial and handset, and three twine-tied brown-paper parcels (tools/blender/build_new_shops.py post_office, new_shops.glb rebuilt, no new draw call). Lesson: src/newShops.js props are the INVISIBLE collision backing (group new_shops_old); visible furnishing for post office/ration/chakki must go in the Blender script. Build 16/16, budget under 40 MB. Proof docs/shots/postoffice-2026-10-24b/front.png (headless, no subject check, so item 5 NOT ticked). Gaps: post box and counter textures still plain wood/paint; ration and chakki JS-side props (tins, ledger, scale) are invisible and need the same move to Blender.
 NEXT: ration shop/chakki props into Blender, halwai/bazaar wood, tea glasses/jars, findability walk.
 

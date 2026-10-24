@@ -177,6 +177,31 @@ def ration_shop():
         kit.add('paint', limb('rail_post', (x, 3.0, 0.0), (x, 3.0, 0.95), 0.05, 0.05), 0x8A8E93)
     kit.add('paint', limb('rail_bar', (cx - 1.6, 3.0, 0.95), (cx + 1.6, 3.0, 0.95), 0.045, 0.045), 0x8A8E93)
     kit.add('paint', limb('rail_bar', (cx - 1.6, 3.0, 0.5), (cx + 1.6, 3.0, 0.5), 0.04, 0.04), 0x8A8E93)
+    # flank stock outside (the JS-side copies are invisible collision backing): jute grain/sugar sacks stacked two high on the right, slatted crates on the left
+    rr = random.Random(31)
+    for i in range(6):
+        sack(kit, cx + 2.25 + rr.uniform(-0.04, 0.04), 0.6 + (i % 3) * 0.5, (i // 3) * 0.36, rr.uniform(-0.2, 0.2), (0xC9B27A, 0xB59468, 0xD8C690, 0xA88A5E)[i % 4], 0.5, 0.36, 0.5, kind='jute')
+    for i, (dx, dd, dz) in enumerate(((0, 1.0, 0.0), (0.04, 1.5, 0.0), (0.0, 1.25, 0.34))):
+        x0, d0 = cx - 2.25 + dx, dd
+        kit.add('wood', wb('crate', x0 - 0.25, x0 + 0.25, d0 - 0.2, d0 + 0.2, dz, dz + 0.32, 0.008))
+        for sl in range(3):  # slats proud of the sides
+            kit.add('wood', wb('slat', x0 - 0.27, x0 + 0.27, d0 - 0.21, d0 + 0.21, dz + 0.04 + sl * 0.1, dz + 0.09 + sl * 0.1, 0.004))
+        if i < 2:  # a crate of glass oil bottles
+            for b in range(4):
+                kit.add('paint', cyl('bottle', x0 - 0.18 + b * 0.12, d0, dz + 0.32, dz + 0.58, 0.04, 0.04, 8), 0xC8A64A)
+    # counter work (top y 0.96, z 1.45..1.92): beam scale with two pans, register ledger, a row of lidded steel tins and measuring cans
+    top, cz = 0.96, 1.7
+    kit.add('metal', cyl('scale_stand', cx - 0.7, cz, top, top + 0.4, 0.03, 0.03, 8), 0x3A3D40)
+    kit.add('metal', wb('scale_beam', cx - 1.0, cx - 0.4, cz - 0.01, cz + 0.01, top + 0.4, top + 0.42, 0.003), 0x4A4D50)
+    for sx in (-0.28, 0.28):
+        kit.add('metal', cyl('scale_pan', cx - 0.7 + sx, cz, top + 0.22, top + 0.235, 0.11, 0.11, 12), 0x9A9484)
+        kit.add('paint', limb('scale_cord', (cx - 0.7 + sx, cz, top + 0.4), (cx - 0.7 + sx, cz, top + 0.235), 0.004, 0.004), 0x333333)
+    kit.add('paint', wb('ledger', cx + 0.3, cx + 0.62, cz - 0.16, cz + 0.06, top, top + 0.05, 0.004), 0x5A2A22)
+    kit.add('paint', wb('ledger_pages', cx + 0.31, cx + 0.6, cz - 0.15, cz + 0.05, top + 0.05, top + 0.075, 0.0), 0xE4DCC0)
+    for i in range(4):
+        h_ = 0.16 + (i % 2) * 0.05
+        kit.add('metal', cyl('tin', cx + 0.85 + i * 0.17, cz, top, top + h_, 0.065, 0.065, 12), (0x8F9AA2, 0xB9B6AA)[i % 2])
+        kit.add('metal', cyl('tin_lid', cx + 0.85 + i * 0.17, cz, top + h_, top + h_ + 0.02, 0.07, 0.07, 12), 0x6D7075)
 
 
 def atta_chakki():
