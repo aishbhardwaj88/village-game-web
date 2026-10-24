@@ -190,6 +190,12 @@ function plotCell(rx, rz) {
   return [Math.floor((rx + wob + 40) / 22), Math.floor((rz + wob * 0.6 + 70) / 20)];
 }
 
+/** True on an earthen bund (a plot boundary within ~1.2 m): same test the ground mesh uses to raise the ridge. */
+function onBund(rx, rz) {
+  const [a0, a1] = plotCell(rx, rz), [b0, b1] = plotCell(rx + 1.2, rz + 1.2), [c0, c1] = plotCell(rx - 1.2, rz - 1.2);
+  return a0 !== b0 || a1 !== b1 || a0 !== c0 || a1 !== c1;
+}
+
 /** 0..3 per plot cell in the stubble and sabzi thirds: stubble = normal / tall pale / ploughed bare / burnt-dark; sabzi = leafy / low / bare bed / lush. */
 function outerVariant(rx, rz) {
   const [ix, iz] = plotCell(rx, rz);
@@ -270,6 +276,7 @@ function buildCropRows() {
       const stubble = fx < 0.33;
       const sabziZone = fx > 0.67;
       if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
+      if (onBund(rx, rz)) continue; // earthen bund between plots: bare ridge, no crop growing out of it
       const ov = stubble || sabziZone ? outerVariant(rx, rz) : 0;
       if (ov === 2) continue; // a ploughed, bare plot among the stubble / an unsown sabzi bed (ground tint carries it)
       const kind = stubble || sabziZone ? null : plotKind(rx, rz);

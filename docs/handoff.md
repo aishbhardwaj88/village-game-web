@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z96b, playtest block item 3, bund crop culling):** Game change: crop tufts, cane, sarson and sabzi bushes (src/field.js buildCropRows) are no longer placed on the earthen bunds (new onBund(), same test as the raised ground ridge), so the ridges read as bare dividing banks instead of crops growing out of them. No new draw call, fewer instances. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/khet-2026-10-25c/overview.png (headless, no subject check, not tickable; bare bund lines visible between plots). Also checked: the halwai bhatti fire mouth is already built (build_halwai.py, shot docs/shots/halwai-fire-2026-10-24/mouth.png), the FEEDBACK item 3 header there is stale. Item 3 NOT ticked as a whole.
+NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
+
+---
+
 **2026-10-25 (cycle 39z96, playtest block item 3, brinjal and okra):** Game change: the sabzi third of the khet (src/field.js buildVegBushes) now has distinct brinjal (purple fruit, broad leaves) and okra (lobed leaves, upright pods) bushes in alternating bed bands, two crossed alpha cards each, procedural canvas textures, two InstancedMeshes (+2 draw calls, field view, frustum-culled so hero/bazaar counts unchanged). Build ALL PASSED 16/16. Proof docs/shots/vegbush-2026-10-25/{sabzi_close,sabzi_wide}.png (headless, no subject check, not tickable). Gaps: fruit is tiny at walking distance, procedural not photo texture, item 3 NOT ticked as a whole.
 NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
 
