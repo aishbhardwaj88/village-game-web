@@ -11,12 +11,13 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 const CELL = 256;
 const COLS = 4;
-const ROWS = 6;
+const ROWS = 8;
 // atlas cell index per design
 export const DESIGN = {
   chipsRed: 0, chipsGreen: 1, chipsBlue: 2, biscuitBlue: 3, biscuitOrange: 4, soapGreen: 5, soapPink: 6, soapBlue: 7,
   toffeeJar: 8, sachet: 9, sodaOrange: 10, sodaLime: 11, sodaCola: 12, namkeen: 13, tea: 14, salt: 15,
   medWhite: 16, medGreen: 17, syrup: 18, phoneBox: 19, chargerBox: 20, clothStripe: 21, clothCheck: 22, clothPrint: 23,
+  tomato: 24, onion: 25, potato: 26, greens: 27, brinjal: 28, bangleRed: 29, bangleBlue: 30, bangleGreen: 31,
 };
 
 let atlas = null;
@@ -128,6 +129,19 @@ function getAtlas() {
       g.fillStyle = '#6f7240'; g.fillRect(0, 0, CELL, CELL);
       for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const cx = x * 32 + (y % 2) * 16 + 16, cy = y * 32 + 16; g.fillStyle = '#efe3c0'; g.beginPath(); g.arc(cx, cy, 7, 0, 7); g.fill(); g.fillStyle = '#a8502c'; g.beginPath(); g.arc(cx, cy, 3, 0, 7); g.fill(); }
     });
+    // Produce skins: mottled colour with fine speckle so a heap reads as real vegetables, not tinted balls.
+    const speckle = (n, rgba, rmax) => { for (let k = 0; k < n; k++) { g.fillStyle = rgba; g.beginPath(); g.arc(Math.random() * CELL, Math.random() * CELL, 0.6 + Math.random() * rmax, 0, 7); g.fill(); } };
+    const seeded = (seed) => { let t = seed; Math.random = () => { t = (t * 16807) % 2147483647; return (t - 1) / 2147483646; }; };
+    const realRandom = Math.random;
+    seeded(4242);
+    cell(DESIGN.tomato, () => { const gr = g.createLinearGradient(0, 0, 0, CELL); gr.addColorStop(0, '#6e9a2e'); gr.addColorStop(0.18, '#d23a22'); gr.addColorStop(0.7, '#c42a1a'); gr.addColorStop(1, '#8e1a12'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); speckle(260, 'rgba(255,170,120,.18)', 3); speckle(160, 'rgba(70,0,0,.16)', 3); g.fillStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.ellipse(70, 110, 14, 34, 0.4, 0, 7); g.fill(); });
+    cell(DESIGN.onion, () => { g.fillStyle = '#b4607c'; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 40; k++) { g.fillStyle = k % 3 ? 'rgba(120,40,70,.28)' : 'rgba(235,190,200,.28)'; g.fillRect(k * 6.4 + Math.random() * 3, 0, 1.5 + Math.random() * 2.5, CELL); } g.fillStyle = '#c8a57a'; g.fillRect(0, 0, CELL, 22); speckle(120, 'rgba(255,230,230,.15)', 2); });
+    cell(DESIGN.potato, () => { g.fillStyle = '#b79463'; g.fillRect(0, 0, CELL, CELL); speckle(520, 'rgba(110,80,45,.28)', 4); speckle(300, 'rgba(235,210,165,.25)', 3); for (let k = 0; k < 9; k++) { g.fillStyle = 'rgba(70,45,25,.55)'; g.beginPath(); g.ellipse(Math.random() * CELL, Math.random() * CELL, 2.5, 1.6, Math.random() * 3, 0, 7); g.fill(); } });
+    cell(DESIGN.greens, () => { g.fillStyle = '#2f6a2a'; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 9; k++) { const x = 14 + k * 28; g.strokeStyle = 'rgba(190,225,140,.55)'; g.lineWidth = 3; g.beginPath(); g.moveTo(x, CELL); g.lineTo(x + (k % 2 ? 14 : -14), 0); g.stroke(); for (let j = 0; j < 7; j++) { g.lineWidth = 1.2; g.beginPath(); g.moveTo(x + (k % 2 ? 2 : -2) * j, CELL - j * 36); g.lineTo(x + 26, CELL - j * 36 - 24); g.moveTo(x + (k % 2 ? 2 : -2) * j, CELL - j * 36); g.lineTo(x - 26, CELL - j * 36 - 24); g.stroke(); } } speckle(300, 'rgba(20,50,15,.25)', 3); speckle(200, 'rgba(150,200,90,.2)', 2); g.fillStyle = '#d9e0b8'; g.fillRect(0, CELL - 30, CELL, 30); });
+    cell(DESIGN.brinjal, () => { const gr = g.createLinearGradient(0, 0, CELL, 0); gr.addColorStop(0, '#2a0f3e'); gr.addColorStop(0.35, '#5a2a7a'); gr.addColorStop(0.5, '#7a4a9a'); gr.addColorStop(1, '#2a0f3e'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); speckle(120, 'rgba(255,255,255,.07)', 3); g.fillStyle = '#4f7a35'; g.fillRect(0, 0, CELL, 38); });
+    const bangle = (i, base, hi) => cell(i, () => { g.fillStyle = base; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? hi : 'rgba(255,255,255,.35)'; g.fillRect(0, k * 32 + 12, CELL, 5); } g.fillStyle = '#e3c25a'; for (let x = 8; x < CELL; x += 24) { g.beginPath(); g.arc(x, 128, 4, 0, 7); g.fill(); } g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(0, 60, CELL, 8); speckle(180, 'rgba(255,255,255,.3)', 1.6); });
+    bangle(DESIGN.bangleRed, '#b8203f', '#e8c050'); bangle(DESIGN.bangleBlue, '#1f5fa8', '#d9e8f5'); bangle(DESIGN.bangleGreen, '#1f8a56', '#e8d068');
+    Math.random = realRandom;
     texture.needsUpdate = true;
   };
   paint();
@@ -203,6 +217,22 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'medbox': g = flatPack(0.13 * s, 0.07 * s, 0.045 * s, it.design); g.translate(0, 0.035 * s, 0); break;
       case 'phonebox': g = flatPack(0.1 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'bolt': g = lathe([[0, 0], [0.13, 0], [0.14, 0.01], [0.14, 0.49], [0.13, 0.5], [0, 0.5]], it.design); g.scale(s, s, s); break;
+      case 'tomato': g = new THREE.SphereGeometry(0.04, 12, 9); g.scale(s, 0.82 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
+      case 'onion': g = new THREE.SphereGeometry(0.045, 12, 9); g.scale(s, 0.88 * s, s); g.translate(0, 0.04 * s, 0); setUVs(g, it.design); break;
+      case 'potato': g = new THREE.SphereGeometry(0.045, 12, 9); g.scale(1.35 * s, 0.85 * s, s); g.translate(0, 0.038 * s, 0); setUVs(g, it.design); break;
+      case 'brinjal': g = new THREE.SphereGeometry(0.035, 12, 9); g.scale(s, 2.6 * s, s); g.rotateZ(Math.PI / 2); g.translate(0, 0.035 * s, 0); setUVs(g, it.design); break;
+      case 'greens': { // a bundle of leafy stalks: tilted double-sided blades fanning out from a tied base
+        const parts = [];
+        for (let k = 0; k < 7; k++) for (const flip of [0, Math.PI]) {
+          const blade = new THREE.PlaneGeometry(0.11 * s, 0.3 * s, 1, 3);
+          const bp = blade.attributes.position;
+          for (let i = 0; i < bp.count; i++) bp.setZ(i, Math.pow(bp.getY(i) / (0.15 * s) + 1, 2) * 0.02 * s * (1 + (bp.getX(i) / (0.055 * s)) ** 2 * 0.4)); // leaf droops outward
+          blade.translate(0, 0.15 * s, 0); blade.rotateX(-0.25 - ((k * 37) % 7) * 0.11); blade.rotateZ(((k * 53) % 5 - 2) * 0.09); blade.rotateY(flip + k * 0.9 + (k % 3) * 0.2);
+          parts.push(setUVs(blade.toNonIndexed(), it.design));
+        }
+        g = mergeGeometries(parts); g.translate(0, 0.02 * s, 0); break;
+      }
+      case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 6, 14); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;
       case 'jar': g = lathe(JAR, it.design); g.scale(s, s, s); break;
       case 'sachets': { // a strip of foil sachets on a string, hanging from y downward
@@ -273,4 +303,35 @@ export function mergeGoodsMeshes(meshes, name) {
   mesh.castShadow = false;
   mesh.receiveShadow = true;
   return mesh;
+}
+
+/** Sabzi (unit 2) produce heaps and the manihari's (unit 7) glass bangles; bazaar-row frame, y = surface. */
+export function produceAndBangleItems({ sabzi, bangle, counterH, counterZ, backZ }) {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 37.9) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  const heap = (x0, z0, w, d, y, kinds) => {
+    for (let layer = 0; layer < 3; layer++) {
+      const cnt = Math.round((w * d) / 0.012) - layer * 5;
+      for (let i = 0; i < cnt; i++) {
+        const kind = kinds[Math.floor(rnd() * kinds.length)];
+        const inset = layer * 0.07;
+        const x = x0 + (rnd() - 0.5) * (w - 0.1 - inset), z = z0 + (rnd() - 0.5) * (d - 0.1 - inset);
+        items.push({ kind, design: D[kind], x, y: y + layer * 0.055, z, ry: rnd() * 6.28, rz: kind === 'brinjal' ? 0 : (rnd() - 0.5) * 0.4, s: 0.85 + rnd() * 0.3 });
+      }
+    }
+  };
+  heap(sabzi.left, sabzi.crateZ, 0.62, 0.42, 0.35, ['tomato']);
+  heap(sabzi.left + 0.85, sabzi.crateZ, 0.62, 0.42, 0.35, ['onion', 'potato']);
+  heap(sabzi.right - 0.35, sabzi.crateZ, 0.62, 0.42, 0.35, ['potato', 'brinjal', 'tomato']);
+  for (let i = 0; i < 4; i++) items.push({ kind: 'greens', design: D.greens, x: sabzi.cx - 0.9 + i * 0.4, y: counterH + 0.08, z: counterZ + (i % 2) * 0.08, ry: 1.57 + (rnd() - 0.5) * 0.7, s: 0.9 + rnd() * 0.2 });
+  heap(sabzi.cx + 0.9, counterZ, 0.5, 0.35, counterH + 0.08, ['tomato', 'onion']);
+  // manihari: bangle stacks of three colours on the three rods (rod x offsets match bazaar.js)
+  const cols = [D.bangleRed, D.bangleBlue, D.bangleGreen];
+  for (let rod = 0; rod < 3; rod++) {
+    const rx = bangle.cx - 1.3 + rod * 1.3;
+    for (let i = 0; i < 40; i++) items.push({ kind: 'bangle', design: cols[(rod + Math.floor(i / 9)) % 3], x: rx, y: 1.08 + i * 0.019, z: bangle.rodZ, ry: rnd() * 6, s: 1 });
+  }
+  return items;
 }

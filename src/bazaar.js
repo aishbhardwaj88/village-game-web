@@ -5,7 +5,7 @@ import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } fro
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
-import { buildGoodsMesh, DESIGN as GOODS } from './shopGoods.js';
+import { buildGoodsMesh, produceAndBangleItems, DESIGN as GOODS } from './shopGoods.js';
 
 /**
  * Bazaar row — Places V1/bazaar_row/LAYOUT.md is the authority for counts, names,
@@ -533,6 +533,13 @@ export function buildBazaarKiranaGoods() {
   // Mobile (unit 6): phone and charger cartons on the shelves.
   const mobCx = bazaarUnitCx(5);
   for (const y of [1.225, 2.075]) for (let i = 0; i < 9; i++) items.push({ kind: 'phonebox', design: (i + (y > 2 ? 1 : 0)) % 3 === 0 ? D.chargerBox : D.phoneBox, x: mobCx - 1.6 + i * 0.4, y, z: backZ - 0.03 + (rnd() - 0.5) * 0.05, ry: Math.PI + (rnd() - 0.5) * 0.25, s: 0.95 + rnd() * 0.1 });
+  const sabziCx = bazaarUnitCx(1);
+  const sLeft = sabziCx - BAZAAR_UNIT_W / 2 + 0.5;
+  items.push(...produceAndBangleItems({
+    sabzi: { cx: sabziCx, left: sLeft, right: sabziCx + BAZAAR_UNIT_W / 2 - 0.5, crateZ: counterZ + 1.2 },
+    bangle: { cx: bazaarUnitCx(6), rodZ: backZ - 0.2 },
+    counterH: BAZAAR_COUNTER_H, counterZ, backZ,
+  }));
   return buildGoodsMesh(items, new THREE.Matrix4(), 'bazaar_kirana_stock');
 }
 
@@ -632,13 +639,10 @@ export function buildBazaarInteriors() {
       pushBox(0.05, 0.1, 0.05, cx, 0.95, counterZ - 0.1, 0x1a1a1a);
     } else if (unit.trade === 'bangle') {
       // Signature: rods on the back wall with stacked glass-bangle rings.
-      const bangleTints = [0xc94f6a, 0x4f9fc9, 0xc9a227, 0x4fc98a, 0xa04fc9];
       for (let rod = 0; rod < 3; rod++) {
         const rx = cx - 1.3 + rod * 1.3;
-        pushCyl(0.02, 0.02, 1.1, rx, 1.6, backInnerZ + 0.25, 0x8a6a4a);
-        for (let i = 0; i < 8; i++) {
-          pushTorus(0.09, 0.015, rx, 1.15 + i * 0.065, backInnerZ + 0.25, bangleTints[(rod + i) % bangleTints.length]);
-        }
+        pushCyl(0.02, 0.02, 1.1, rx, 1.6, backInnerZ - 0.2, 0x8a6a4a);
+        // glass bangles are textured goods now (shopGoods.js produceAndBangleItems)
       }
     } else if (unit.trade === 'puncture') {
       // Converted from a second sweet shop (docs/NEEDS_YOU.md). Three signature

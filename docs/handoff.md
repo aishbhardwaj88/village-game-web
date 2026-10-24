@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39z4, playtest block item 4, sabzi produce + bangles):** Game change: sabzi shop now carries textured tomatoes, onions, potatoes, brinjal and leafy bunches (heaps in the three crates and on the counter), manihari has glass-bangle stacks with printed striped/gold-dot atlas cells (src/shopGoods.js produceAndBangleItems, atlas now 4x8, same material = zero extra draw call). Found and fixed: bangle rods (and the original rod cylinders) sat inside the back wall, so they never showed (src/bazaar.js). Build ALL PASSED (bazaar 150, hero 146), budget 28.39 MB. Proof docs/shots/shops-2026-10-24/{sabzi,bangle}_bazaar.png (headless). Free-asset search: no un-branded CC0 vegetable packs found suitable; skins are painted in code (diffuse only).
+Gaps: crate heaps hidden behind the counter from eye height; Blender hanging bangle strands still flat-tint tori; barber/puncture props flat; Banta shop, Chaat thela unbuilt; tank roof-level shot still open.
+NEXT: roof-level tank shot; barber/puncture props; chakki mill.
+
+---
+
 **2026-10-24 (cycle 39z3, playtest block item 6, water tanks):** Game change: rooftop Sintex tanks (src/rooftops.js) rebuilt: 24-segment barrel, three moulded ribs, shoulder + domed lid, screw hatch, vent, outlet elbow, brass valve, float-feed pipe, plinth lip; same merged metal/concrete meshes, no new draw call. Free-asset search: Poly Pizza "water tank" (Quaternius, Kay Lousberg: stylised low-poly, rejected for the realism target), OpenGameArt node 5550 (.blend only), RenderHub/CGTrader (paid). Build ALL PASSED. Item NOT ticked: proof shots docs/shots/tanks-2026-10-24/c1.png show tanks too small/far to judge; need a close roof-level shot (camera cannot get roof height from the ground rig).
 Gaps: hand-built so far; ground-level and halwai/petrol/dharam-kanta tanks (Blender) not touched; sabzi/bangle goods still open.
 NEXT: roof-level close shot of a tank; sabzi produce and bangle textures.
