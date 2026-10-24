@@ -252,10 +252,17 @@ def tailor(i):
     for sgn in (-1, 1):
         kit.add('paint', limb('sleeve', (c - 1.15 + sgn * 0.25, BZ - 0.5, 2.2), (c - 1.15 + sgn * 0.5, BZ - 0.5, 1.8), 0.14, 0.04), 0xE8DCC0)
     kit.add('paint', ring('tape', c - 0.8, CZ + 0.1, 0.99, 0.06, 0.012, axis='y'), 0xE8C84A)
-    # mannequin torso with a half-stitched shirt
-    kit.add('paint', limb('mannequin', (c + 1.6, CZ + 1.4, 0.0), (c + 1.6, CZ + 1.4, 1.1), 0.04, 0.04), 0x3A3A3A)
-    kit.add('paint', sphere('torso', c + 1.6, CZ + 1.4, 1.4, 0.2, 0.14, 0.32, 2), 0xC9A227)
-    kit.add('paint', sphere('mhead', c + 1.6, CZ + 1.4, 1.85, 0.08, 0.08, 0.1, 1), 0xCFA77B)
+    # dress form: tripod feet, pole, tapered cloth torso with shoulders, wooden neck knob
+    mx, mz = c + 1.6, CZ + 1.4
+    for k in range(3):
+        a = k * 2.094 + 0.4
+        kit.add('paint', limb('dform_foot', (mx, mz, 0.04), (mx + math.cos(a) * 0.26, mz + math.sin(a) * 0.26, 0.02), 0.03, 0.03), 0x2A2A2A)
+    kit.add('paint', cyl('dform_pole', mx, mz, 0.0, 1.0, 0.018), 0x3A3A3A)
+    kit.add('paint', cyl('dform_hip', mx, mz, 0.98, 1.2, 0.19, 0.145, seg=14), 0xD8C9A8)
+    kit.add('paint', cyl('dform_chest', mx, mz, 1.2, 1.46, 0.145, 0.19, seg=14), 0xD8C9A8)
+    kit.add('paint', sphere('dform_shoulder', mx, mz, 1.46, 0.2, 0.13, 0.07, 2), 0xD8C9A8)
+    kit.add('paint', cyl('dform_knob', mx, mz, 1.5, 1.62, 0.03, 0.022, seg=8), 0x8A5A32)
+    kit.add('paint', ring('dform_tape', mx, mz, 1.3, 0.172, 0.008, axis='z'), 0xE8C84A)
 
 
 def barber(i):
