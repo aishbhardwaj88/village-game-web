@@ -195,6 +195,7 @@ export function createPond(position) {
   shore.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(11.9, 0.18, 2.0, 0.4), 0x8d8676));
   const bank = new THREE.Mesh(mergeGeometries(shore), vcMat({ roughness: 1 }));
   bank.receiveShadow = true;
+  bank.userData.colliderBoxes = solidBoxes(position, discSolids(0, 0, 8.4)); // water body, inside the blob's narrowest radius so the shore stays walkable
   group.add(bank);
   const water = new THREE.Mesh(blobWaterGeometry(9.6, 1.3, 0.06), createWaterMaterial({ shallow: 0x80784a, deep: 0x34402c, scale: 1.1 }));
   water.name = 'pond_water';
@@ -392,6 +393,7 @@ export function createJohad(position) {
   const rr = () => { sr = (sr * 16807) % 2147483647; return sr / 2147483647; };
   const rim = new THREE.Mesh(mergeGeometries(shoreGeos(5.4, 4.1, rr)), vcMat({ roughness: 1 }));
   rim.receiveShadow = true;
+  rim.userData.colliderBoxes = solidBoxes(position, discSolids(0, 0, 4.6, 0.9));
   group.add(rim);
   const water = new THREE.Mesh(blobWaterGeometry(5.4, 4.1, 0.06, 6, 28), createWaterMaterial({ shallow: 0x77704a, deep: 0x3a4630, scale: 1.4 }));
   water.name = 'johad_water';
@@ -574,6 +576,17 @@ export function createDudhDairy(position) {
 /** Local [cx, cz, w, d] footprints -> world AABBs (sites are unrotated), so streamed buildings block the player (zoneManager rebuilds STATIC_COLLIDERS on every zone change). */
 function solidBoxes(position, solids) {
   return solids.map(([cx, cz, w, d]) => ({ minX: position.x + cx - w / 2, maxX: position.x + cx + w / 2, minZ: position.z + cz - d / 2, maxZ: position.z + cz + d / 2 }));
+}
+
+/** Local [cx, cz, w, d] strips filling a disc of radius r centred at (cx, cz): water bodies block walking and driving (A0). Each strip is as wide as the disc at its farther edge, so none pokes past the disc. */
+function discSolids(cx, cz, r, strip = 1.2) {
+  const out = [];
+  for (let z = -r; z < r; z += strip) {
+    const far = Math.max(Math.abs(z), Math.abs(z + strip));
+    const hw = Math.sqrt(Math.max(0, r * r - far * far));
+    if (hw > 0.3) out.push([cx, cz + z + strip / 2, hw * 2, strip]);
+  }
+  return out;
 }
 
 /** World AABBs for local oriented rectangles [cx, cz, w, d, rot] inside a site group rotated by ry about its position (A0: charpais, pumps, poles block movement). */

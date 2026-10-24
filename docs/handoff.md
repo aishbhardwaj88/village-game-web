@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39m, playtest block item 0c):** Game change: the pond and the johad now block the player, NPCs and vehicles (water-disc colliders, src/farmSites.js discSolids; shore stays walkable). Real key-walk (hold W, 30 s, straight at the water) stops at the edge: pond end z=77.65 (centre 70), johad end z=109.85 (centre 105); proof docs/shots/collision-2026-10-24/{pond,johad}.png, script tmp/collide-walk-water.mjs. Audited and found already fine: sabzi/jalebi cart bodies and poles have solids; vehicle-vs-vehicle and followers already pass extra vehicle boxes (main.js otherVehicleBoxes); collider-audit reports every plaster wall footprint covered; animals are static so there are no animal routines to register for check 9 (check 9 covers every ROUTES entry incl. follow-capable NPCs' waypoint legs). Build 16/16, regression 22/22, assets 28.44 MB.
+Still open in the playtest block: school front board, Banta shop and Chaat thela not built (item 1); other shops' goods still boxes (item 4); real water tank models, far-LOD painted openings (items 6, queue 5); findability walk, lanes (queue 7-8). Triangles at ~394k of 400k: no headroom.
+
+---
+
 **2026-10-24 (cycle 39l, proof reshoot):** Rooftop proof re-taken with the clean tool (no overlay/fps/capsule): docs/shots/water-2026-10-24/roofs_a.png (water tank on plinth + antenna on an abadi roof, east gali) and roofs_b.png (west gali rooftops, far-LOD blocks visible in the distance as flat plaster). Replaces the shots in docs/shots/rooftops-2026-10-23 for queue item 2. status.json refreshed (triangles 394,458 / 400k: no headroom).
 
 ---
