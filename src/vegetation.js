@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PALETTE, darken } from './village.js';
+import { addPlantInstances } from './realPlants.js';
 
 /**
  * Item 3b (real playtest report — "the village reads as desert", no vegetation
@@ -306,16 +307,15 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
   const group = new THREE.Group();
   group.name = 'vegetation';
 
-  const tuftPositions = buildClusterPositions(tuftAnchors, 0.35);
-  const tuftMesh = buildInstancedKind(buildTuftGeometry(), tuftPositions, { scaleMin: 0.8, scaleMax: 1.3, map: makeGrassTexture('tuft') });
-  tuftMesh.name = 'grass_tufts';
-  group.add(tuftMesh);
+  // Real Poly Haven scans (src/realPlants.js), thinned to ~40% of the old card count: grass only where it would grow
+  // (the keep-outs already exclude drains, kerbs, canal, floors) and in small clumps, not a carpet.
+  const thin = (anchors, f) => anchors.map((a) => ({ ...a, count: Math.max(1, Math.round(a.count * f)) }));
+  const tuftPositions = buildClusterPositions(thin(tuftAnchors, 0.55), 0.35);
+  addPlantInstances(group, 'grass_medium_02', 0.5, tuftPositions.map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.5 })), { seed: 3, tint: 0.25 });
 
-  const scrubPositions = buildClusterPositions(scrubAnchors, 0.5);
-  const scrubMesh = buildInstancedKind(buildScrubGeometry(), scrubPositions, { scaleMin: 0.85, scaleMax: 1.25, map: makeGrassTexture('scrub') });
-  scrubMesh.name = 'scrub_bushes';
-  group.add(scrubMesh);
-
+  const scrubPositions = buildClusterPositions(thin(scrubAnchors, 0.5), 0.5);
+  const half = Math.ceil(scrubPositions.length / 2);
+  addPlantInstances(group, 'shrub_01', 0.55, scrubPositions.slice(0, half).map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.6 })), { seed: 5 });
   return group;
 }
 
@@ -326,61 +326,16 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
 // instance through an instanced attribute, no extra meshes).
 // ---------------------------------------------------------------------------
 export const GARDEN_KIND = { MARIGOLD: 0, BANANA: 1, TULSI: 2, BOUGAINVILLEA: 3, CREEPER: 4 };
-const GARDEN_SIZE = [
-  [1.1, 0.55], // marigold bed: wide, low
-  [2.6, 3.0], // banana clump: tall arching leaves
-  [0.6, 0.7], // tulsi bush
-  [1.5, 1.3], // bougainvillea mass
-  [1.5, 3.0], // wall creeper: money-plant curtain climbing a wall
-];
-
-function makeGardenAtlas() {
-  // Real ambientCG CC0 leaf photos cut out and arranged by tools/build-plant-atlas.mjs.
-  const tex = new THREE.TextureLoader().load('assets/plants/garden_atlas.webp');
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
-}
-
-/** `plants`: [{x, z, y?, kind: GARDEN_KIND.*, scale?}]. One InstancedMesh, one draw call. */
+/**
+ * `plants`: [{x, z, y?, kind: GARDEN_KIND.*, scale?}] -> Group (always a Group, possibly empty).
+ * Only kinds that have a real scanned model are drawn: MARIGOLD -> Poly Haven "Flower Gazania" (orange-yellow daisy beds).
+ * TULSI, BANANA, BOUGAINVILLEA and CREEPER used to be crossed alpha cards ("a poorly cut 2D image", the creeper glowed lime) and are
+ * now NOT drawn at all until real models exist: an unconvincing plant is worse than none (art director, 24 Oct). One draw call.
+ */
 export function buildGardenPlants(plants) {
-  plants = plants.filter((p) => !inKeepOut(p.x, p.z));
-  if (!plants.length) return null;
-  const parts = [];
-  for (let i = 0; i < 3; i++) {
-    const geo = new THREE.PlaneGeometry(1, 1);
-    geo.translate(0, 0.5, 0);
-    geo.rotateY((i * Math.PI) / 3 + 0.3);
-    parts.push(geo);
-  }
-  const geometry = mergeGeometries(parts);
-  const cell = new Float32Array(plants.length);
-  const material = new THREE.MeshStandardMaterial({ map: makeGardenAtlas(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 });
-  material.onBeforeCompile = (shader) => {
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float aCell;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vec2((vMapUv.x + mod(aCell, 3.0)) / 3.0, (vMapUv.y + 1.0 - floor(aCell / 3.0)) * 0.5);\n#endif');
-  };
-  const mesh = new THREE.InstancedMesh(geometry, material, plants.length);
-  mesh.name = 'flowering_plants';
-  mesh.castShadow = false;
-  mesh.receiveShadow = true;
-  const m = new THREE.Matrix4();
-  const q = new THREE.Quaternion();
-  const s = new THREE.Vector3();
-  const up = new THREE.Vector3(0, 1, 0);
-  const tint = new THREE.Color();
-  plants.forEach((p, i) => {
-    const [w, h] = GARDEN_SIZE[p.kind];
-    const k = (p.scale ?? 1) * (0.85 + Math.random() * 0.3);
-    q.setFromAxisAngle(up, Math.random() * Math.PI * 2);
-    s.set(w * k, h * k, w * k);
-    m.compose(new THREE.Vector3(p.x, p.y ?? 0, p.z), q, s);
-    mesh.setMatrixAt(i, m);
-    cell[i] = p.kind;
-    mesh.setColorAt(i, tint.setHSL(0.24 + Math.random() * 0.05, 0.1, 0.82 + Math.random() * 0.22));
-  });
-  geometry.setAttribute('aCell', new THREE.InstancedBufferAttribute(cell, 1));
-  mesh.instanceMatrix.needsUpdate = true;
-  return mesh;
+  const group = new THREE.Group();
+  group.name = 'flowering_plants';
+  const beds = plants.filter((p) => p.kind === GARDEN_KIND.MARIGOLD && !inKeepOut(p.x, p.z));
+  addPlantInstances(group, 'flower_gazania', 0.4, beds.map((p) => ({ x: p.x, z: p.z, y: p.y ?? 0, scale: (p.scale ?? 1) * 1.15 })), { seed: 11, tint: 0.2 });
+  return group;
 }

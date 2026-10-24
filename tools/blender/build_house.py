@@ -318,6 +318,7 @@ def build_kitchen_alcove():
 # ----------------------------------------------------------------------------- roof terrace
 def pot(x, z, h, r=0.17, tall=0.22, flower=None, leaf=None):
     """Terracotta pot with soil + either marigolds (flower list) or a leafy plant."""
+    return  # 24 Oct 2026: code-built pots removed on the art director's instruction (real scanned potted plants are instanced instead)
     add('paint', cyl('pot', x, z, h, h + tall, r * 0.72, r, 10), TERRA)
     add('paint', cyl('pot_rim', x, z, h + tall - 0.03, h + tall + 0.02, r * 1.07, r * 1.07, 10), TERRA)
     add('paint', cyl('soil', x, z, h + tall, h + tall + 0.025, r * 0.95, r * 0.95, 10), SOIL)

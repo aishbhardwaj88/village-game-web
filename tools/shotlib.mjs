@@ -85,7 +85,7 @@ export async function hideForCapture(page, { people, player = false }) {
       for (const n of d.npcs || []) hide(n);
       d.scene.traverse((o) => {
         if (o.isMesh && o.geometry && o.geometry.type === 'CapsuleGeometry') hide(o.parent && o.parent.isGroup && o.parent !== d.scene ? o.parent : o);
-        else if (/^(npc_|person|people|villager|crowd|ped_)/i.test(o.name || '')) hide(o);
+        else if (/^(npc_|person|people|villager|crowd|ped_|bazaar_life)/i.test(o.name || '')) hide(o);
       });
     }
   }, { people, player });

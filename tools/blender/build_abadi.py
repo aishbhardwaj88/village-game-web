@@ -214,9 +214,9 @@ def house(kit, rnd, x0, w, floors, wall, plinth, roof='flat', jh=True):
             kit.add('wood', limb('vpost', (x, ZF + 0.9, 0), (x, ZF + 0.9, H - 0.2), 0.12, 0.12), WOODD)
         kit.add('apron', wb('veranda', x0, x0 + w, ZF, ZF + 1.0, 0, 0.16, 0.01))
         kit.add('wood', wb('bench', x0 + 0.5, x0 + 1.9, ZF + 0.5, ZF + 0.85, 0.0, 0.4, 0.008), WOODL)
-    # marigold / leafy pots at the foot of the wall
-    pot(kit, wcx - 0.8 if left else wcx + 0.8, ZF + 0.62, 0.0, 0.18, 0.26, flower=MARI if rnd.random() < 0.6 else None)
-    pot(kit, dcx + (0.9 if left else -0.9), ZF + 0.5, 0.0, 0.16, 0.22, flower=MARI)
+    # (24 Oct 2026: the blocky code-built marigold/leafy pots were removed on the art director's instruction; real Poly Haven
+    # potted plants are instanced at the doorsteps by src/villageProps.js instead)
+    rnd.random()  # keep the random stream identical so every other detail stays where it was
     return H
 
 

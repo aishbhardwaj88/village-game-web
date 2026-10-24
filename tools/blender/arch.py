@@ -146,6 +146,9 @@ BRASS = 0xB08A3E
 
 
 def pot(kit, x, z, h, r=0.2, tall=0.26, flower=None, leaf=None):
+    # 24 Oct 2026 (art director: "flower pots: not improved, replace with real free pot models"): the faceted code-built pot with a
+    # blob of spheres for a plant is gone from every Blender building. Real Poly Haven potted plants are instanced by src/villageProps.js.
+    return
     kit.add('paint', cyl('pot', x, z, h, h + tall, r * 0.72, r, 10), TERRA)
     kit.add('paint', cyl('pot_rim', x, z, h + tall - 0.03, h + tall + 0.02, r * 1.07, r * 1.07, 10), TERRA)
     kit.add('paint', cyl('soil', x, z, h + tall, h + tall + 0.025, r * 0.95, r * 0.95, 10), SOIL)

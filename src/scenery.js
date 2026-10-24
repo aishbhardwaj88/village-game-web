@@ -111,7 +111,7 @@ export function abadiPropSites() {
  *  kind: tank / antenna / dish / solar / bricks, picked deterministically so the mix differs house to house. */
 export function abadiRoofSites() {
   const out = [];
-  const kinds = ['antenna', 'tank', 'dish', 'solar', 'bricks', 'antenna', 'tank'];
+  const kinds = ['antenna', 'tank', 'bricks', 'solar', 'antenna', 'bricks', 'tank']; // no satellite dishes: they read as random concave objects (art director, 24 Oct); the antenna she likes stays
   PLACEMENTS.forEach((p, i) => {
     const th = (p.q * Math.PI) / 2;
     const c = Math.round(Math.cos(th)), sn = Math.round(Math.sin(th));

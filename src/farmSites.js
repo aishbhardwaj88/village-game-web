@@ -851,7 +851,7 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   return g;
 }
 
-/** Lane water corner: a cast-iron hand pump on a cement platform with a drain apron, a stack of brass-and-clay matkas, two steel ghadas, a bucket and a washing slab. Visual only. */
+/** Lane water corner: a cement platform with a drain apron, a stack of clay matkas, two steel ghadas and a washing slab. No hand pump (removed on the art director's instruction, 24 Oct). Visual only. */
 export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   const geos = [];
   const R = (x, y, z, r = 0) => at(x, y, z, r);
@@ -863,16 +863,7 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
     const a = i * 0.7 + 0.3;
     geos.push(bake(new THREE.SphereGeometry(0.06 + (i % 3) * 0.015, 5, 4), R(0.1 + Math.cos(a) * 0.72, 0.03, 2.05 + Math.sin(a) * 0.62), i % 2 ? 0x8a867c : 0x6f6b62));
   }
-  // pump: base, body, spout, handle with grip
-  geos.push(bake(new THREE.CylinderGeometry(0.17, 0.2, 0.3, 10), R(0, 0.33, 0), 0x2f3a3d));
-  geos.push(bake(new THREE.CylinderGeometry(0.07, 0.09, 0.8, 8), R(0, 0.85, 0), 0x2f3a3d));
-  geos.push(bake(new THREE.CylinderGeometry(0.16, 0.16, 0.2, 10), R(0, 1.3, 0), 0x2f3a3d));
-  geos.push(bake(new THREE.BoxGeometry(0.06, 0.06, 0.4), R(0, 0.95, 0.28), 0x2f3a3d));
-  geos.push(bake(new THREE.BoxGeometry(0.05, 0.05, 1.0), new THREE.Matrix4().makeRotationX(0.5).setPosition(0, 1.5, -0.3), 0x2f3a3d));
-  geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 6), new THREE.Matrix4().makeRotationX(0.5).setPosition(0, 1.4, -0.7), 0x7a2a22));
-  // steel bucket under the spout, with a little water in it
-  geos.push(bake(new THREE.CylinderGeometry(0.2, 0.15, 0.3, 14), R(0, 0.34, 0.58), 0xb8bcc0));
-  geos.push(bake(new THREE.CylinderGeometry(0.18, 0.18, 0.01, 14), R(0, 0.47, 0.58), 0x6f8f98));
+  // (the lane hand pump was removed 2026-10-24 on the art director's instruction: no hand pumps in the house streets)
   // matkas: clay pots, two stacked on a wooden stand, one beside, plus two steel ghadas
   geos.push(bake(new THREE.BoxGeometry(0.9, 0.05, 0.45), R(-1.5, 0.3, -0.2), 0x6b4a2c));
   for (const lx of [-0.3, 0.3]) geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 5), R(-1.5 + lx, 0.15, -0.2), 0x5a3f27));
@@ -890,7 +881,7 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   geos.push(bake(new THREE.BoxGeometry(0.8, 0.12, 0.5), R(1.5, 0.06, -0.5, 0.2), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.55, 0.14, -0.5, 0.2), 0xd8c25a));
   const g = finishSite(name, geos, position);
-  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 0.5, 0.5], [-1.5, -0.2, 0.9, 0.45]]); // pump post + matka stand
+  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45]]); // matka stand
   g.rotation.y = ry;
   return g;
 }
