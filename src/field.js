@@ -99,14 +99,20 @@ function buildFieldGround(x0, x1, tint, name) {
     const wx = cx0 + gp.getX(i), wz = FIELD_CENTER.z - gp.getY(i);
     const fx = (wx - (FIELD_CENTER.x - FIELD_SIZE.x / 2)) / FIELD_SIZE.x;
     let t = [1, 1, 1];
-    if (fx >= STUBBLE_FRAC && fx <= 0.67) {
+    const outer = fx < STUBBLE_FRAC || fx > 0.67;
+    if (outer) { // the outer thirds are divided by bunds too, and each plot has its own soil tone (stubble ages, sabzi beds)
+      const [a0, a1] = plotCell(wx, wz), [b0, b1] = plotCell(wx + 1.2, wz + 1.2), [c0, c1] = plotCell(wx - 1.2, wz - 1.2);
+      if (a0 !== b0 || a1 !== b1 || a0 !== c0 || a1 !== c1) { gp.setZ(i, 0.14 + 0.05 * Math.sin(wx * 1.7 + wz * 2.3)); bund[i] = 1; }
+      const v = outerVariant(wx, wz);
+      t = fx < STUBBLE_FRAC ? [[1, 1, 1], [1.12, 1.06, 0.9], [0.72, 0.62, 0.5], [0.82, 0.76, 0.66]][v] : [[0.85, 1.35, 0.6], [0.7, 1.1, 0.5], [0.8, 0.66, 0.52], [0.95, 1.5, 0.65]][v];
+    } else {
       // Bund: where the plot cell changes within ~1.2 m, raise a low earthen ridge in drier, paler soil (khets are divided by bunds, not
       // painted blocks). Rides on the ground vertices, so no extra draw call.
       const [a0, a1] = plotCell(wx, wz), [b0, b1] = plotCell(wx + 1.2, wz + 1.2), [c0, c1] = plotCell(wx - 1.2, wz - 1.2);
       if (a0 !== b0 || a1 !== b1 || a0 !== c0 || a1 !== c1) { gp.setZ(i, 0.14 + 0.05 * Math.sin(wx * 1.7 + wz * 2.3)); bund[i] = 1; }
       const k = plotKind(wx, wz);
       t = k === 'sarson' ? [1.8, 2.95, 0.2] : k === 'wheat_young' ? [0.6, 1.9, 0.5] : k === 'wheat_gold' ? [1.4, 1.75, 0.7] : k === 'ploughed' ? [0.8, 0.62, 0.5] : [0.8, 1.3, 0.6];
-    } else if (fx > 0.67) t = [0.85, 1.35, 0.6];
+    }
     const n = 0.9 + 0.2 * (0.5 + 0.5 * Math.sin(wx * 0.9 + wz * 1.3) * Math.cos(wz * 0.7 - wx * 0.5));
     if (bund[i]) t = [1.25, 1.0, 0.7];
     cArr[i * 3] = t[0] * n; cArr[i * 3 + 1] = t[1] * n; cArr[i * 3 + 2] = t[2] * n;
@@ -184,6 +190,12 @@ function plotCell(rx, rz) {
   return [Math.floor((rx + wob + 40) / 22), Math.floor((rz + wob * 0.6 + 70) / 20)];
 }
 
+/** 0..3 per plot cell in the stubble and sabzi thirds: stubble = normal / tall pale / ploughed bare / burnt-dark; sabzi = leafy / low / bare bed / lush. */
+function outerVariant(rx, rz) {
+  const [ix, iz] = plotCell(rx, rz);
+  return (((ix * 3 + iz * 5 + ix * iz) % 4) + 4) % 4;
+}
+
 function plotKind(rx, rz) {
   const [ix, iz] = plotCell(rx, rz);
   return PLOT_KINDS[(((ix * 5 + iz * 7) % PLOT_KINDS.length) + PLOT_KINDS.length) % PLOT_KINDS.length];
@@ -257,6 +269,8 @@ function buildCropRows() {
       const stubble = fx < 0.33;
       const sabziZone = fx > 0.67;
       if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
+      const ov = stubble || sabziZone ? outerVariant(rx, rz) : 0;
+      if (ov === 2) continue; // a ploughed, bare plot among the stubble / an unsown sabzi bed (ground tint carries it)
       const kind = stubble || sabziZone ? null : plotKind(rx, rz);
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
       if (kind === 'cane') { if (k % 3 !== 2 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
@@ -270,10 +284,10 @@ function buildCropRows() {
       dummy.rotation.y = j * 3;
       const sc = 0.85 + 0.35 * (0.5 + 0.5 * Math.sin(rx * 3.1 - rz * 2.3));
       const lush = kind === 'sarson' ? 1.25 : 1;
-      dummy.scale.set(sc * lush, sc * (stubble ? 0.22 : sabzi ? 0.7 : kind === 'wheat_young' ? 0.55 : kind === 'sarson' ? 1.15 : 1), sc * lush);
+      dummy.scale.set(sc * lush, sc * (stubble ? (ov === 1 ? 0.4 : ov === 3 ? 0.12 : 0.22) : sabzi ? (ov === 1 ? 0.45 : ov === 3 ? 0.95 : 0.7) : kind === 'wheat_young' ? 0.55 : kind === 'sarson' ? 1.15 : 1), sc * lush);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
-      if (stubble) c.setRGB(1.2, 1.05, 0.62);
+      if (stubble) c.setRGB(ov === 3 ? 0.55 : 1.2, ov === 3 ? 0.5 : 1.05, ov === 3 ? 0.4 : 0.62);
       else if (sabzi) c.setRGB(0.5 + 0.15 * (r % 4), 1.25, 0.55);
       else if (kind === 'sarson') c.setRGB(1.1 + 0.08 * j, 1.05 + 0.06 * j, 0.35);          // flowering mustard: saturated yellow tops
       else if (kind === 'wheat_young') c.setRGB(0.55 + 0.08 * j, 1.12, 0.55);               // green knee-high wheat

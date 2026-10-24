@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z92, playtest block item 3, khet west/east variety):** Game change: the stubble (west) and sabzi (east) thirds of the khet (src/field.js) now have the same earthen bunds as the middle and four per-plot variants each (stubble: normal / tall pale / bare ploughed / burnt-dark; sabzi: leafy / low / bare bed / lush), via new outerVariant(). Ground vertex colour and existing crop instances only, no new draw call. Build ALL PASSED. Proof docs/shots/khet-2026-10-25b/overview.png (headless, no subject check, not tickable; plot tones differ on both sides, bunds visible). Gaps: crops still not culled on bund vertices, no distinct vegetable crop models (brinjal, okra), item 3 haystack question unchecked this cycle, item 3 NOT ticked as a whole.
+NEXT: haystack check near tubewell and chai stall, triangle cuts (art director's call), spurs once draw calls are saved.
+
+---
+
 **2026-10-25 (cycle 39z91, playtest block item 3, khet bunds):** Game change: plots in the khet's middle third are now divided by low earthen bunds (src/field.js buildFieldGround: ground vertices raised ~14 cm and tinted paler/drier where the plot cell changes, normals recomputed), so mustard, wheat, cane and ploughed plots read as separate fields, not painted blocks. Ground mesh only, no new draw call, no asset bytes. Build ALL PASSED. Proof docs/shots/khet-2026-10-25/{overview,close,track}.png (headless, no subject check, not tickable; bund ridges visible as brown lines between plots in overview). Gaps: bunds are ~2 m wide (2.2 m vertex grid) and crops are not culled on them; west stubble third and east sabzi third are still uniform; item 3 NOT ticked as a whole.
 NEXT: west/east third variety, triangle cuts (art director's call), spurs once draw calls are saved.
 
