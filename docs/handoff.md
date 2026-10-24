@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z64, playtest block item 5, chakki wall + belt):** Game change: atta chakki back wall now carries streaky flour-dust patches up to 2 m (was one low band on flat terracotta), drive belts are flat 9 cm bands (were round sticks), mesh-guard bars added (tools/blender/build_new_shops.py, new_shops.glb rebuilt). Build ALL PASSED, budget 30.80 MB. Proof docs/shots/chakki-2026-10-24d/close.png (headless, no subject check, so not tickable). Gaps: guard bars read as loose yellow rods; dust patches are hard-edged rectangles.
+NEXT: cricket/badminton re-shot, highway/road ends re-check.
+
+---
+
 **2026-10-24 (cycle 39z63, playtest block items 4/5, sacks):** Game change: the shared Blender `sack` helper (tools/blender/arch.py) is now one elliptical lathed bag (flat base, full belly, pinched neck with a cord ring, flared mouth, per-sack lean/bulge/fabric folds), was a bevelled box with pot-like ears; used by the chakki, kirana/bazaar row, halwai, post office, ration shop and dharam kanta. Rebuilt bazaar_row, halwai_compound, new_shops, dharam_kanta glbs; same draw calls. Proof docs/shots/sack-2026-10-24/{front,close}.png (headless; no subject check, capsule hidden, so not tickable). Gaps: chakki front wall still flat terracotta (no flour dust), belt/guard thin sticks.
 NEXT: chakki flour-dust wall + belt, cricket/badminton re-shot.
 

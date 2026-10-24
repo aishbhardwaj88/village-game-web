@@ -209,6 +209,10 @@ def atta_chakki():
     w, d, h = 3.0, 2.8, 2.7
     kit.add('wall_ac', wb('back', cx - w / 2, cx + w / 2, -d / 2, -d / 2 + 0.22, 0, h, 0.01))
     kit.add('trim', wb('flour_dust', cx - w / 2, cx + w / 2, -d / 2 + 0.22, -d / 2 + 0.235, 0, 1.2, 0.004))   # flour-whitened lower wall
+    # drifting flour dust: a taller streaky patch behind the mill and a thin high haze, so the wall is not one flat terracotta
+    kit.add('trim', wb('flour_dust_hi', cx - 1.1, cx - 0.1, -d / 2 + 0.22, -d / 2 + 0.24, 1.2, 1.75, 0.006))
+    kit.add('trim', wb('flour_dust_hi2', cx - 0.6, cx + 0.35, -d / 2 + 0.22, -d / 2 + 0.238, 1.75, 2.05, 0.006))
+    kit.add('trim', wb('flour_dust_streak', cx + 0.9, cx + 1.3, -d / 2 + 0.22, -d / 2 + 0.236, 0.9, 1.6, 0.006))
     kit.add('plinth', wb('band', cx - w / 2, cx + w / 2, -d / 2 - 0.02, -d / 2, 0, 0.6, 0.005))
     for x in (cx - w / 2 + 0.1, cx + w / 2 - 0.1):
         kit.add('wood', limb('post', (x, d / 2 - 0.1, 0.0), (x, d / 2 - 0.1, h), 0.13, 0.13, 0.006))
@@ -249,9 +253,11 @@ def atta_chakki():
         kit.add('metal', cyl('rib', mx, mz, hh, hh + 0.025, 0.215, 0.215, 32), 0x2F5278)
     kit.add('metal', wb('term_box', mx - 0.1, mx + 0.1, mz + 0.18, mz + 0.34, 0.3, 0.45, 0.01), 0x2F5278)
     kit.add('metal', ring('pulley', mx - 0.3, mz, 0.3, 0.17, 0.035, axis='x'), DARKS)
-    kit.add('paint', limb('belt_up', (mx - 0.3, mz, 0.47), (sx + 0.46, sz + 0.0, 0.7), 0.05, 0.05), 0x1A1A1A)
-    kit.add('paint', limb('belt_dn', (mx - 0.3, mz, 0.13), (sx + 0.46, sz + 0.0, 0.5), 0.05, 0.05), 0x1A1A1A)
+    kit.add('paint', limb('belt_up', (mx - 0.3, mz, 0.47), (sx + 0.46, sz + 0.0, 0.7), 0.09, 0.03), 0x1A1A1A)
+    kit.add('paint', limb('belt_dn', (mx - 0.3, mz, 0.13), (sx + 0.46, sz + 0.0, 0.5), 0.09, 0.03), 0x1A1A1A)
     kit.add('metal', limb('guard', (mx - 0.28, mz + 0.06, 0.65), (sx + 0.5, sz + 0.06, 0.78), 0.05, 0.05), 0xB8A830)
+    for gz in (0.0, 0.1, 0.2):   # expanded-mesh guard bars over the belt run
+        kit.add('metal', limb('guard_bar', (mx - 0.28, mz + 0.07 + gz * 0.0, 0.52 + gz), (sx + 0.5, sz + 0.07, 0.6 + gz), 0.012, 0.012), 0xB8A830)
     # electrical: switch board on the back wall with a wire running to the motor, a hanging bulb on a flex
     kit.add('paint', wb('board', cx + 0.7, cx + 1.1, -d / 2 + 0.22, -d / 2 + 0.3, 1.5, 1.95, 0.01), 0x3A3A38)
     kit.add('paint', wb('switch', cx + 0.8, cx + 0.88, -d / 2 + 0.3, -d / 2 + 0.34, 1.65, 1.75, 0.004), 0xD0C8B0)
