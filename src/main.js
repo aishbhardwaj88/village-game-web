@@ -781,6 +781,7 @@ async function main() {
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
   // boxes below, since those also occlude the camera even where they don't block
   // movement (e.g. a roof overhang).
+  const distGated = []; // merged shop-stock cells hidden beyond their gate range (triangle budget)
   const cameraObstacles = [heroZoneGroup, shopsGroup, bazaarGroup, templeGroup]; // backgroundHousesGroup pushed in once it streams in — see loadDeferredContent()
   camRig.setObstacles(cameraObstacles, player);
   camRig.update();
@@ -1401,6 +1402,7 @@ async function main() {
       skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);
+    villageStaticGroup.traverse((o) => { if (o.userData.distGate) distGated.push(o); });
 
     // Structural fix (playtest) — derive every static collider from the real,
     // now-fully-built scene graph, once, here (after the merges above, which
@@ -2624,6 +2626,7 @@ async function main() {
       halwaiFire.points.visible = Math.abs(listenerPos.x - HALWAI_CENTER.x) < 30 && Math.abs(listenerPos.z - HALWAI_CENTER.z) < 30;
       if (halwaiFire.points.visible) halwaiFire.update(dt);
       updateWater(performance.now() / 1000);
+      for (const m of distGated) { const g = m.userData.distGate; m.visible = Math.hypot(camera.position.x - g.x, camera.position.z - g.z) < g.r + g.range; }
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({

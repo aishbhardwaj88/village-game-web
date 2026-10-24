@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z74, triangle budget):** Game change: shop stock (src/shopGoods.js) is leaner: pillow packs 3x6 segments, food spheres 8x6, bottle/jar lathes 10 sides, bangles 5x12; merged stock is split into 100 m cells and a cell is hidden beyond its radius + 30 m (src/mergeUtils.js distGate, applied per frame in src/main.js). Build ALL PASSED (hero 149, bazaar 149 calls). Regression 21/22: triangles 586k -> 539k at the (-48,30) shot, still over 400k. Remaining top: shop stock 80k, grass cards 45k, halwai row 37k, crop rows 36k, bazaar hb_main 29k + props 26k, rest long tail. Reaching 400k needs cutting visible detail, which is the art director's call (no silent thinning). No proof shot (no visual change intended; not tickable).
+NEXT: findability walk, 0c remaining (vehicles vs trees), art director's call on triangle cuts.
+
+---
+
 **2026-10-25 (cycle 39z73, playtest block item 0c, collision leftovers):** Game change: the hero house's indoor charpai (src/village.js) is now solid (was walk-through; TV-house porch, dhaba, lane-laundry and kothri charpais already had colliders). Shop packets (src/shopGoods.js pillowPack) lose a third of their triangles (360 -> ~190 each, shop_goods_11 150k -> 125k). Build ALL PASSED. Regression 21/22: the one fail is "triangles under 400k", measured 586k now (609k BEFORE my change, so not caused by this cycle; the shop goods mesh is the single largest at 125k, then grass cards 46k, halwai row 37k, crop rows 36k, and the rest is long-tail). Needs the art director's call on where to cut. No proof shot (collider is invisible; not tickable).
 NEXT: triangle budget (586k vs 400k), findability walk, 0c remaining (vehicles vs trees).
 

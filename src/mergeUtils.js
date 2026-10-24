@@ -101,6 +101,7 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
  * assetSlots.js otherwise). */
 export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   const buckets = new Map();
+  const keyMaterial = new Map();
   const toRemove = [];
 
   for (const root of roots) {
@@ -109,8 +110,15 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
       if (obj !== root && skipNames.includes(obj.name)) return;
       if (obj.isMesh && obj.userData.lodExtra) toRemove.push(obj);
       else if (obj.isMesh && !obj.isInstancedMesh) {
-        let bucket = buckets.get(obj.material);
-        if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
+        // Shop stock (tiny packets, ~125k tris) is split into 100 m cells so the per-frame distance gate (userData.distGate) can drop far cells.
+        let key = obj.material;
+        if (obj.material.name === 'shop_goods') {
+          const c = new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
+          key = `shop_goods:${Math.floor(c.x / 100)}:${Math.floor(c.z / 100)}`;
+          keyMaterial.set(key, obj.material);
+        }
+        let bucket = buckets.get(key);
+        if (!bucket) buckets.set(key, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
         bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
         bucket.castShadow = bucket.castShadow || obj.castShadow;
         bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
@@ -124,10 +132,16 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   for (const obj of toRemove) obj.parent.remove(obj);
 
   let i = 0;
-  for (const [material, bucket] of buckets) {
+  for (const [key, bucket] of buckets) {
+    const material = keyMaterial.get(key) || key;
     const geometry = bucket.geometries.length > 1 ? mergeGeometries(bucket.geometries) : bucket.geometries[0];
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = `${material.name || 'merged'}_${i++}`;
+    if (material.name === 'shop_goods') {
+      geometry.computeBoundingSphere();
+      const bs = geometry.boundingSphere;
+      mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 30 };
+    }
     mesh.castShadow = mayCast(material, bucket.castShadow);
     mesh.receiveShadow = bucket.receiveShadow;
     mesh.userData.mergedStatic = true; // see mergeGroupByMaterial's own comment on this flag
