@@ -10,7 +10,7 @@ import sys, os, math, random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
 from common import wb, limb, cyl, sphere, prism_x, quad, ROOT
-from arch import Kit, ring, dabba, STEEL, BRASS, LEAF
+from arch import Kit, ring, dabba, lathe, STEEL, BRASS, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'tea_stall_raw.glb')
 # real PBR wood and steel rides in the tin slot (the roof's draw call): hero view is at the 150 ceiling
@@ -68,7 +68,10 @@ def counter_and_goods():
     kit.add('metal', wb('tray', 0.35, 1.1, 0.62, 0.94, 0.96, 0.99, 0.006), STEEL)
     for i in range(3):
         for j in range(2):
-            kit.add('paint', cyl('glass', 0.5 + i * 0.22, 0.7 + j * 0.15, 0.99, 1.1, 0.04, 0.045, 10), 0xD8E8E8)
+            gx, gz = 0.5 + i * 0.22, 0.7 + j * 0.15
+            # chai tumbler: thick base, waisted body flaring to the rim, tea inside; some drunk down
+            kit.add('paint', lathe('glass', gx, gz, [(0.0, 0.99), (0.032, 0.99), (0.035, 1.0), (0.036, 1.02), (0.034, 1.05), (0.038, 1.09), (0.043, 1.12), (0.04, 1.12), (0.0, 1.0)], seg=14), 0xDCEBEA)
+            kit.add('paint', cyl('tea_in_glass', gx, gz, 1.0, 1.04 + 0.025 * ((i + j) % 3), 0.034, 0.036, 12), 0xA8642C)
     kit.add('paint', cyl('cup', 1.35, 0.78, 0.96, 1.03, 0.04, 0.03, 10), 0xE8D8B8)
     kit.add('paint', cyl('cup', 1.5, 0.82, 0.96, 1.03, 0.04, 0.03, 10), 0xE8D8B8)
     kit.add('paint', quad('newspaper', [(1.45, 0.58, 0.965), (1.85, 0.58, 0.965), (1.85, 0.92, 0.965), (1.45, 0.92, 0.965)]), 0xE9E5D8)
@@ -80,8 +83,10 @@ def counter_and_goods():
         kit.add('wood', limb('shelf_bracket', (x, -1.03, 1.3), (x, -0.78, 1.5), 0.04, 0.05))
     for i in range(5):
         x = -1.55 + i * 0.32
-        kit.add('paint', cyl('jar', x, -0.88, 1.55, 1.8, 0.1, 0.1, 12), (0xC9A56A, 0xE2C27E, 0xB8864A, 0xD9B45A, 0xC9A56A)[i])
-        kit.add('paint', cyl('jar_lid', x, -0.88, 1.8, 1.84, 0.105, 0.105, 12), 0xC0392B if i % 2 else 0x2E86C1)
+        # glass barni jar: heavy base, bulging body, shoulder, neck, rim; contents (biscuits / namkeen) fill the body
+        kit.add('paint', lathe('jar', x, -0.88, [(0.0, 1.55), (0.085, 1.55), (0.1, 1.58), (0.105, 1.66), (0.1, 1.74), (0.075, 1.78), (0.068, 1.8), (0.075, 1.81), (0.0, 1.8)], seg=16), 0xDCE8E6)
+        kit.add('paint', lathe('jar_fill', x, -0.88, [(0.0, 1.57), (0.088, 1.58), (0.092, 1.66), (0.088, 1.73), (0.0, 1.73)], seg=14), (0xC9A56A, 0xE2C27E, 0xB8864A, 0xD9B45A, 0xC9A56A)[i])
+        kit.add('paint', lathe('jar_lid', x, -0.88, [(0.0, 1.81), (0.082, 1.81), (0.084, 1.83), (0.06, 1.84), (0.02, 1.855), (0.0, 1.86)], seg=14), 0xC0392B if i % 2 else 0x2E86C1)
     # (the flat-colour box packets that stood here are now textured printed packs: src/shopGoods.js teaStallGoods)
     kit.add('metal', cyl('steel_tin', 1.45, -0.85, 1.55, 1.75, 0.09, 0.09, 10), STEEL)
     kit.add('paint', sphere('bulb', 0.2, 0.0, 2.2, 0.05, 0.05, 0.065, 1), 0xFFF0B0)

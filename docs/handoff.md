@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z50, playtest block item 4, tea stall glasses/jars):** Game change: the tea stall's six chai tumblers are now lathed waisted glasses (thick base, flared rim, tea fill) and the five shelf jars lathed barni jars with shoulder, neck, fill and knobbed lid (tools/blender/build_tea_stall.py, tea_stall.glb rebuilt), zero extra draw calls. Build ALL PASSED. Proof docs/shots/teaglass-2026-10-24/{glasses,jars}.png (headless, HUD in frame, so not tickable). Gaps: glass and tea fill take the plaster texture of the paint slot, so they read as pale ceramic not transparent glass, tea fill barely visible; no free-asset search done (small lathed shapes). Item 4 NOT ticked as a whole.
+NEXT: findability walk, chakki.
+
+---
+
 **2026-10-24 (cycle 39z49, playtest block item 5, playground steel):** Game change: the anganwadi playground (slide chute/ladder, swing frame, chains, seesaw plank) now rides the real metal PBR set in its own mesh (+1 draw call at that zone only, 93 calls there), pipes 10-sided instead of 6 (src/farmSites.js createAnganwadi/limbGeo). Build ALL PASSED, budget 30.68 MB. Proof docs/shots/swing-2026-10-24/{angan,slide}.png (headless, HUD in frame, so not a tickable proof; before shots in swing-2026-10-24-before/). Gaps: I could not identify one "yellow swing" - the only yellow playground item is the slide rails; mela swing (blue) and the house jhoola bench were not re-shot; swing seats still flat black boxes; item 5 NOT ticked as a whole (chakki, cricket/badminton court).
 NEXT: tea glasses/jars, findability walk, chakki.
 
