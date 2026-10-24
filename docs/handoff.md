@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z12, playtest block item 3, khet sugarcane):** Game change: the khet now has sugarcane blocks (one plot kind 'cane' in src/field.js PLOT_KINDS; ~2.6 m jointed-stalk clumps with arching leaves, one InstancedMesh 'field_cane', hidden beyond 95 m of the field centre in src/main.js so the bazaar view stays at 150 draw calls). Build 16/16. Proof docs/shots/cane-2026-10-24/cane_close.png (headless, no subject check, so item 3 NOT ticked). Gaps: cane is flat vertex-colour (no leaf texture), plot edges hard; crop tufts still old flat cards; ploughed/veg/mustard already existed.
+NEXT: textured cane/crop cards, grey doorstep slabs -> continuous step, chakki mill metal, Banta shop / Chaat thela unbuilt.
+
+---
+
 **2026-10-24 (cycle 39z11, playtest block item 4, market props):** Game change: src/bazaar.js interior props rebuilt with real shapes in the same merged buckets (zero new draw calls): tailor's cast-iron sewing machine (base, pillar, arm, needle bar, spool, hand wheel, cloth), barber chair (base, chrome pedestal, seat, back, headrest, armrests, footrest, now facing the mirror), desktop computer (CRT, keyboard, CPU tower), puncture tub with water, pump foot plate and hose, cycle top tube and fork. Build ALL PASSED, draw calls 135-148 in shots. Proof docs/shots/market-props-2026-10-24/*.png (headless): sewing machine reads in tailor.png; barber chair, monitor and tub are hidden behind the counter and the shopkeeper capsule from street height, so NOT ticked. Props still use the tinted wood texture (dark rough on black parts), not real PBR metal/plastic.
 NEXT: sugarcane blocks inside the field loop; grey doorstep slabs -> continuous step; chakki mill metal; Banta shop / Chaat thela unbuilt.
 

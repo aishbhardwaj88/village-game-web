@@ -129,7 +129,7 @@ function buildFieldGround(x0, x1, tint, name) {
 
 /** Patchwork of plots in the middle third (real khets are never one crop): sarson in yellow flower, young green wheat, ripe golden wheat, bare
  * ploughed earth and a small vegetable patch. Deterministic per ~22 x 20 m plot, with the plot edge wobbled so borders are not ruler-straight. */
-const PLOT_KINDS = ['sarson', 'wheat_young', 'wheat_gold', 'sarson', 'ploughed', 'wheat_young', 'sarson', 'wheat_gold', 'veg', 'sarson', 'wheat_gold', 'wheat_young'];
+const PLOT_KINDS = ['sarson', 'wheat_young', 'wheat_gold', 'sarson', 'ploughed', 'cane', 'sarson', 'wheat_gold', 'veg', 'sarson', 'sarson', 'wheat_young'];
 function plotKind(rx, rz) {
   const wob = Math.sin(rz * 0.21) * 2.2 + Math.sin(rx * 0.17) * 1.6;
   const ix = Math.floor((rx + wob + 40) / 22), iz = Math.floor((rz + wob * 0.6 + 70) / 20);
@@ -189,6 +189,7 @@ function buildCropRows() {
   const dummy = new THREE.Object3D();
   const c = new THREE.Color();
   let index = 0;
+  const caneSpots = [];
   for (let r = 0; r < rows; r++) {
     const rz = FIELD_CENTER.z - halfZ + r * between;
     for (let k = 0; k < cols; k++) {
@@ -200,6 +201,7 @@ function buildCropRows() {
       if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
       const kind = stubble || sabziZone ? null : plotKind(rx, rz);
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
+      if (kind === 'cane') { if (r % 2 === 0 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
       const sabzi = sabziZone || kind === 'veg';
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
@@ -224,6 +226,50 @@ function buildCropRows() {
   mesh.count = index;
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
+  mesh.userData.caneSpots = caneSpots;
+  return mesh;
+}
+
+/** Sugarcane blocks inside the khet: ~2.6 m clumps (6 pale-green jointed stalks, arching leaf blades), one InstancedMesh for every cane plot. */
+function buildCaneClumps(spots) {
+  const pos = [], col = [];
+  const stalk = new THREE.Color(0x8a9a44), leaf = new THREE.Color(0x4f7a2a), leafTip = new THREE.Color(0x8aa23a);
+  const tri = (a, b, c2, ca, cb, cc) => { pos.push(...a, ...b, ...c2); col.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cc.r, cc.g, cc.b); };
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2, r = 0.12 + 0.05 * (i % 2), h = 2.3 + 0.12 * ((i * 5) % 4);
+    const x = Math.cos(a) * r, z = Math.sin(a) * r, px = -Math.sin(a) * 0.022, pz = Math.cos(a) * 0.022;
+    tri([x - px, 0, z - pz], [x + px, 0, z + pz], [x + px * 0.6, h, z + pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk.clone().multiplyScalar(0.7), stalk);
+    tri([x - px, 0, z - pz], [x + px * 0.6, h, z + pz * 0.6], [x - px * 0.6, h, z - pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk, stalk);
+  }
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2 + 0.2 * (i % 3), y0 = 1.0 + 0.1 * ((i * 7) % 12), len = 0.9 + 0.08 * ((i * 3) % 6);
+    const ca = Math.cos(a), sa = Math.sin(a), px = -sa * 0.05, pz = ca * 0.05;
+    const mx = ca * len * 0.55, mz = sa * len * 0.55, tx = ca * len, tz = sa * len;
+    tri([ca * 0.1 - px, y0, sa * 0.1 - pz], [ca * 0.1 + px, y0, sa * 0.1 + pz], [mx + px, y0 + len * 0.28, mz + pz], leaf, leaf, leaf);
+    tri([ca * 0.1 - px, y0, sa * 0.1 - pz], [mx + px, y0 + len * 0.28, mz + pz], [mx - px, y0 + len * 0.28, mz - pz], leaf, leaf, leaf);
+    tri([mx - px, y0 + len * 0.28, mz - pz], [mx + px, y0 + len * 0.28, mz + pz], [tx, y0 + len * 0.1, tz], leaf, leaf, leafTip);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ name: 'cane', vertexColors: true, roughness: 0.85, side: THREE.DoubleSide });
+  const mesh = new THREE.InstancedMesh(g, mat, spots.length);
+  mesh.name = 'field_cane';
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = false;
+  mesh.userData.groundLevel = true;
+  const d = new THREE.Object3D(), c = new THREE.Color();
+  spots.forEach(([x, z], i) => {
+    const j = Math.sin(x * 12.9 + z * 7.1), k = 0.85 + 0.3 * (0.5 + 0.5 * Math.sin(x * 3.1 - z * 2.3));
+    d.position.set(x, 0, z); d.rotation.y = j * 3; d.scale.set(k, 0.85 + 0.3 * (0.5 + 0.5 * Math.cos(x * 1.7 + z)), k); d.updateMatrix();
+    mesh.setMatrixAt(i, d.matrix);
+    const v = 0.85 + 0.2 * (0.5 + 0.5 * j);
+    mesh.setColorAt(i, c.setRGB(v, v, v * 0.92));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.instanceColor.needsUpdate = true;
   return mesh;
 }
 
@@ -232,7 +278,9 @@ export function buildField(scene) {
   group.name = 'field';
   group.add(buildFieldGround(0, STUBBLE_FRAC, STRAW_GROUND, 'field_ground_stubble'));
   group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground'));
-  group.add(buildCropRows());
+  const crops = buildCropRows();
+  group.add(crops);
+  if (crops.userData.caneSpots.length) group.add(buildCaneClumps(crops.userData.caneSpots));
   group.add(buildTrack());
   const verge = buildTrackVerge();
   if (verge) group.add(verge);
