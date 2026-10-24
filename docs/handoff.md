@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z75, playtest block item 0c, vehicles vs trees):** No game change (verification only; no collision bug found). Drove the tractor+trolley with the real physics step (tmp/tractor-tree.mjs, 1500 frames, floored throttle) straight at the tree at (-150,60) from all 4 sides: it stops 2.05 m from the trunk every time and its footprint never overlaps a collider (min clearance 1.74 m). Other runs started on other trees' lines ended at different obstacles, none inside a collider (min clearance >= 0.94 m). So the vehicles-vs-trees leftover of 0c is closed in code. Proof docs/shots/collision-2026-10-25/tractor_tree.png is a raw headless shot (fps text, canopy covers the tractor; the shotlib subject check failed 4x because the low neem canopy occludes the gap), so it is NOT tickable. Triangles still 539k vs 400k, the art director's call.
+NEXT: findability walk, art director's call on triangle cuts.
+
+---
+
 **2026-10-25 (cycle 39z74, triangle budget):** Game change: shop stock (src/shopGoods.js) is leaner: pillow packs 3x6 segments, food spheres 8x6, bottle/jar lathes 10 sides, bangles 5x12; merged stock is split into 100 m cells and a cell is hidden beyond its radius + 30 m (src/mergeUtils.js distGate, applied per frame in src/main.js). Build ALL PASSED (hero 149, bazaar 149 calls). Regression 21/22: triangles 586k -> 539k at the (-48,30) shot, still over 400k. Remaining top: shop stock 80k, grass cards 45k, halwai row 37k, crop rows 36k, bazaar hb_main 29k + props 26k, rest long tail. Reaching 400k needs cutting visible detail, which is the art director's call (no silent thinning). No proof shot (no visual change intended; not tickable).
 NEXT: findability walk, 0c remaining (vehicles vs trees), art director's call on triangle cuts.
 
