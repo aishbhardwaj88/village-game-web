@@ -13,7 +13,7 @@ import sys, os, math, random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
 from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, boolean_cut, ROOT
-from arch import bicycle, Kit, ring, pot, plastic_chair, dabba, sack, clay_pot, STEEL, BRASS, LEAF, MARI, TERRA, SOIL
+from arch import bicycle, lathe, Kit, ring, pot, plastic_chair, dabba, sack, clay_pot, STEEL, BRASS, LEAF, MARI, TERRA, SOIL
 
 OUT = os.path.join(ROOT, 'tmp', 'bazaar_row_raw.glb')
 kit = Kit(tex_override={'props': ('metal', 1.0)})  # painted props (tyres, pump, spanners, chairs, bottles) ride the real metal PBR set in their own slot: no extra draw call
@@ -274,13 +274,19 @@ def barber(i):
     # oil and shampoo bottles are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     cxs = c
     cz = CZ + 1.5
-    kit.add('paint', cyl('chair_base', cxs, cz, 0.0, 0.05, 0.28, 0.3, 14), 0x30343A)
-    kit.add('paint', cyl('chair_post', cxs, cz, 0.05, 0.45, 0.06, 0.06, 10), 0x6B6F72)
-    kit.add('paint', wb('chair_seat', cxs - 0.25, cxs + 0.25, cz - 0.25, cz + 0.25, 0.45, 0.58, 0.04), 0x8A2E2E)
-    kit.add('paint', wb('chair_back', cxs - 0.24, cxs + 0.24, cz + 0.2, cz + 0.3, 0.58, 1.25, 0.04), 0x8A2E2E)
+    # barber chair: flared cast base, chrome hydraulic pedestal with a bellows collar, plump
+    # cushioned seat/back/headrest (squashed spheres), chrome-capped padded armrests, footrest
+    kit.add('paint', lathe('chair_base', cxs, cz, [(0.0, 0.0), (0.3, 0.0), (0.31, 0.03), (0.24, 0.07), (0.1, 0.11), (0.0, 0.11)], seg=24), 0x30343A)
+    kit.add('paint', lathe('chair_post', cxs, cz, [(0.0, 0.11), (0.06, 0.11), (0.06, 0.2), (0.085, 0.22), (0.085, 0.3), (0.07, 0.32), (0.07, 0.4), (0.0, 0.4)], seg=16), 0x6B6F72)
+    kit.add('paint', lathe('chair_seat', cxs, cz, [(0.0, 0.43), (0.22, 0.43), (0.3, 0.46), (0.31, 0.51), (0.27, 0.57), (0.14, 0.6), (0.0, 0.6)], seg=20), 0x8A2E2E)
+    kit.add('paint', sphere('chair_back', cxs, cz + 0.27, 0.95, 0.27, 0.08, 0.36, 3), 0x8A2E2E)
+    kit.add('paint', sphere('chair_head', cxs, cz + 0.27, 1.38, 0.14, 0.07, 0.1, 3), 0x8A2E2E)
     for sgn in (-1, 1):
-        kit.add('paint', wb('chair_arm', cxs + sgn * 0.27 - 0.03, cxs + sgn * 0.27 + 0.03, cz - 0.2, cz + 0.22, 0.6, 0.66, 0.01), 0x30343A)
-    kit.add('paint', limb('chair_foot', (cxs, cz - 0.3, 0.12), (cxs, cz - 0.55, 0.12), 0.3, 0.04), 0x6B6F72)
+        ax = cxs + sgn * 0.31
+        kit.add('paint', limb('chair_arm', (ax, cz - 0.18, 0.66), (ax, cz + 0.22, 0.66), 0.06, 0.05, 0.015), 0x30343A)
+        kit.add('paint', cyl('chair_arm_post', ax, cz + 0.12, 0.5, 0.66, 0.02, 0.02, seg=8), 0xB8BCC0)
+    kit.add('paint', limb('chair_foot_strut', (cxs, cz - 0.1, 0.2), (cxs, cz - 0.42, 0.14), 0.035, 0.035), 0xB8BCC0)
+    kit.add('paint', wb('chair_foot', cxs - 0.2, cxs + 0.2, cz - 0.62, cz - 0.4, 0.1, 0.13, 0.01), 0x6B6F72)
     kit.add('wood', limb('towel_rail', (c + 1.3, BZ - 0.06, 1.75), (c + 2.0, BZ - 0.06, 1.75), 0.03, 0.03))  # towels hang from it: textured goods in src/bazaar.js
     kit.add('wood', wb('bench', c - 1.9, c - 0.9, CZ + 0.9, CZ + 1.3, 0.0, 0.45, 0.01))
     kit.add('paint', wb('clippers', c + 0.6, c + 0.75, CZ - 0.0, CZ + 0.1, 0.95, 1.05, 0.01), 0x1A1A1A)
