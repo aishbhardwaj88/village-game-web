@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z16, playtest block item 5, chakki mill metal):** Game change: atta chakki (build_new_shops.py, Kit own=('jute','metal')) now carries the real metal PBR set on drum, hopper, motor, pulley, bin (was flat plaster tan); all flour/sugar sacks (arch.sack) are smooth-shaded, no longer faceted. Build ALL PASSED, hero 148, bazaar 150, field 117, budget 29.33 MB. Proof docs/shots/chakki-metal-2026-10-24/close.png (headless, no subject check, so item 5 NOT ticked). Metal still reads painted/matte; chakki wall wood posts still plaster tan.
+NEXT: Banta shop / Chaat thela unbuilt (signage item 1), draw-call savings to unlock wood PBR, chakki wood posts.
+
+---
+
 **2026-10-24 (cycle 39z15, playtest block item 4, yellow oval identified):** Game change: the yellow oval at the tailor counter was the mannequin torso (a floating yellow ellipsoid on a stick). Rebuilt in tools/blender/build_bazaar_row.py as a dress form: tripod feet, pole, tapered cream-linen torso with shoulders, wooden neck knob, yellow measuring tape; bazaar_row.glb rebuilt, same material buckets (no new draw calls). Build ALL PASSED, bazaar view 140-146 calls. Proof docs/shots/dressform-2026-10-24/tailor_front.png (headless, capsule tailor visible; dress form reads left of the sewing machine; item 4 NOT ticked, other open gaps remain).
 NEXT: chakki mill metal, Banta shop / Chaat thela unbuilt, draw-call savings (flagpole, wayfinding, vehicle paint) to unlock wood PBR on abadi/school/bazaar.
 

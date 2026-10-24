@@ -15,7 +15,7 @@ from common import wb, limb, cyl, sphere, prism_x, boolean_cut, ROOT
 from arch import Kit, ring, dabba, sack, clay_pot, STEEL, BRASS, MARI
 
 OUT = os.path.join(ROOT, 'tmp', 'new_shops_raw.glb')
-kit = Kit(split_props=False, own=('jute',))
+kit = Kit(split_props=False, own=('jute', 'metal'))
 rnd = random.Random(44)
 
 
