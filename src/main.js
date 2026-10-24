@@ -117,6 +117,7 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
+import { placeBoardsMesh } from './placeBoards.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
@@ -384,6 +385,13 @@ async function main() {
   )
     .then((mesh) => shopsGroup.add(mesh))
     .catch((err) => console.error('Failed to build signboards', err));
+
+  // Halwai fascia board (FEEDBACK 24 Oct item 1: the stall had none). Bilingual, English dominant, on the front fascia.
+  {
+    const halwaiBoard = placeBoardsMesh([{ id: 'halwai', x: 0, y: 3.55, z: 3.1, w: 3.6 }], 'halwai_board');
+    halwaiBoard.position.set(HALWAI_CENTER.x, 0, HALWAI_CENTER.z);
+    shopsGroup.add(halwaiBoard);
+  }
 
   // Bazaar row (new request) — Places V1/bazaar_row/LAYOUT.md is the authority; see
   // src/bazaar.js for the full build. Real gameplay content (not distant scenery), so
@@ -2535,7 +2543,7 @@ async function main() {
       camRig.update();
       audio.update(dt);
       dust.update(dt, now / 1000);
-      updateSky(sky, now / 1000);
+      updateSky(sky, now / 1000, camera);
       contactShadows.update([
         ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
         { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },

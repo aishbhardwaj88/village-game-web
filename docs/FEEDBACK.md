@@ -67,7 +67,7 @@ Her words: the capsule is still crossing animals, buildings and trees.
 - DONE-WHEN: a real walk, with keys, straight at a tree, a wall, a cow and a building
   stops the player every time. Proof shot of each.
 
-### 1. SIGNAGE - the rule is in CLAUDE.md but the CODE still does the opposite
+### 1. [PARTLY DONE 24 Oct 2026: code now renders English bold/dominant, Hindi small/light on every board (signboards.js, bazaar.js, newShops.js); 20 new boards incl. the halwai; audit list in handoff.md; proof docs/shots/signage-2026-10-24/. Open: school front board, Banta shop and Chaat thela are not built] SIGNAGE - the rule is in CLAUDE.md but the CODE still does the opposite
 Her words: English in bold, Hindi not bold. Most of her users read English; only some
 read Hindi.
 - CLAUDE.md lines 111-121 already say English primary, larger and bolder. **The code
@@ -179,7 +179,7 @@ Her four newest proof shots were reviewed on 24 Oct. Two are FAIL. The verdicts 
 the new standing screenshot rules are at the bottom of docs/ART_REVIEW.md. Read them
 before item 1.
 
-### 1. FIX THE SCREENSHOT TOOL FIRST (blocks every tick below)
+### 1. [DONE 24 Oct 2026, see 0a above] FIX THE SCREENSHOT TOOL FIRST (blocks every tick below)
 Proof shots are being filed with debug text, tutorial overlays and capsule people in
 frame, and several do not show their own subject. Make this impossible in the tool,
 not a thing to remember. In tools/screenshot.js:
@@ -247,7 +247,7 @@ water tanks, lamp poles.
 - The creeper in rooftops/r1.png glows lime at the edges. That colour is outside the
   palette: natural dusty olive and deep neem green, never lime.
 
-### 11. CLOSE THE STALE NEEDS_YOU ITEMS
+### 11. [DONE 24 Oct 2026: 5 items marked done in NEEDS_YOU.md] CLOSE THE STALE NEEDS_YOU ITEMS
 Five items in docs/NEEDS_YOU.md say publishing is stuck because the Mac has no
 GitHub login. Push works over SSH now and origin/main and main are level. Mark those
 five `- status: done` with a one-line note. Do not touch the others.

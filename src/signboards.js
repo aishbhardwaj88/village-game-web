@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
- * Shop signboards — Devanagari larger on top, English smaller beneath (the one
- * painted-board exception to CLAUDE.md's language order), generated as canvas
+ * Shop signboards — Hindi on the TOP line, smaller and lighter, English on the second line,
+ * clearly larger and bolder (art director 2026-10-23/24, CLAUDE.md section 7: the English is
+ * the line a player reads at walking distance), both lines in the same dark paint colour, generated as canvas
  * textures in code so the spelling is exactly what the reference images say.
  *
  * Art review 1/2 (2026-10-21): the boards were blurred/faded/illegible. Root cause: each
@@ -17,40 +18,54 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 export const SIGN_CELL_W = 1024;
 export const SIGN_CELL_H = 232;
 
-/** entries: [{ hi, en, bg?, fg?, border? }] -> { texture, rows }. One row per board, stacked vertically. */
-export async function buildWideSignAtlas(entries) {
-  await document.fonts.load('700 100px "Noto Sans Devanagari"');
-  await document.fonts.ready;
+/**
+ * entries: [{ hi, en, bg?, fg?, border? }] -> { texture, rows, ready }. One row per board, stacked vertically.
+ * The canvas texture exists immediately and is painted as soon as the fonts are loaded (`ready` resolves then),
+ * so synchronous zone builders can use it. `cellW`/`cellH` default to the 1024x232 hero boards; fonts scale with width.
+ */
+export function createWideSignAtlas(entries, { cellW = SIGN_CELL_W, cellH = SIGN_CELL_H } = {}) {
+  const k = cellW / SIGN_CELL_W;
   const canvas = document.createElement('canvas');
-  canvas.width = SIGN_CELL_W;
-  canvas.height = SIGN_CELL_H * entries.length;
+  canvas.width = cellW;
+  canvas.height = cellH * entries.length;
   const ctx = canvas.getContext('2d');
-  entries.forEach((e, row) => {
-    const y = row * SIGN_CELL_H;
-    ctx.fillStyle = e.bg || '#efe3c8';
-    ctx.fillRect(0, y, SIGN_CELL_W, SIGN_CELL_H);
-    ctx.strokeStyle = e.border || '#7a2a1a';
-    ctx.lineWidth = 10;
-    ctx.strokeRect(8, y + 8, SIGN_CELL_W - 16, SIGN_CELL_H - 16);
-    ctx.fillStyle = e.fg || '#b3201a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const fit = (text, font, maxPx, startPx) => {
-      let px = startPx;
-      ctx.font = font(px);
-      while (ctx.measureText(text).width > maxPx && px > 20) { px -= 4; ctx.font = font(px); }
-    };
-    fit(e.hi, (px) => `700 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 90, 118);
-    ctx.fillText(e.hi, SIGN_CELL_W / 2, y + SIGN_CELL_H * 0.40);
-    ctx.fillStyle = e.fgEn || '#2a1a12';
-    fit(e.en, (px) => `700 ${px}px -apple-system, "Segoe UI", Helvetica, sans-serif`, SIGN_CELL_W - 90, 62);
-    ctx.fillText(e.en, SIGN_CELL_W / 2, y + SIGN_CELL_H * 0.78);
-  });
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
-  texture.needsUpdate = true;
-  return { texture, rows: entries.length };
+  const paint = () => {
+    entries.forEach((e, row) => {
+      const y = row * cellH;
+      ctx.fillStyle = e.bg || '#efe3c8';
+      ctx.fillRect(0, y, cellW, cellH);
+      ctx.strokeStyle = e.border || '#7a2a1a';
+      ctx.lineWidth = 10 * k;
+      ctx.strokeRect(8 * k, y + 8 * k, cellW - 16 * k, cellH - 16 * k);
+      ctx.fillStyle = e.fg || '#6e1a12'; // one dark paint colour for both lines (maroon / near-black / deep blue), never grey
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const fit = (text, font, maxPx, startPx) => {
+        let px = startPx;
+        ctx.font = font(px);
+        while (ctx.measureText(text).width > maxPx && px > 12) { px -= 2; ctx.font = font(px); }
+      };
+      // Hindi: top, small, light weight (reads as painted texture). English: bigger and bolder, dominant.
+      fit(e.hi, (px) => `500 ${px}px "Noto Sans Devanagari", sans-serif`, cellW - 140 * k, 56 * k);
+      ctx.fillText(e.hi, cellW / 2, y + cellH * 0.25);
+      fit(e.en, (px) => `900 ${px}px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif`, cellW - 90 * k, 132 * k);
+      ctx.fillText(e.en, cellW / 2, y + cellH * 0.64);
+    });
+    texture.needsUpdate = true;
+  };
+  paint(); // fallback fonts first, repainted with Noto once it is loaded
+  const ready = Promise.all([document.fonts.load('500 40px "Noto Sans Devanagari"'), document.fonts.ready]).then(paint, paint);
+  return { texture, rows: entries.length, ready };
+}
+
+/** entries: [{ hi, en, bg?, fg?, border? }] -> { texture, rows }. One row per board, stacked vertically. */
+export async function buildWideSignAtlas(entries) {
+  const atlas = createWideSignAtlas(entries);
+  await atlas.ready;
+  return { texture: atlas.texture, rows: atlas.rows };
 }
 
 /** Maps a BoxGeometry's +Z (front) face onto atlas row `row` of `rows`, filling the whole cell. */
@@ -76,8 +91,8 @@ export function mapFrontFaceToRow(geometry, row, rows) {
  */
 export async function buildSignboards(tea, store) {
   const { texture, rows } = await buildWideSignAtlas([
-    { hi: tea.hi, en: tea.en, bg: '#f0e4c6', fg: '#b3201a' },
-    { hi: store.hi, en: store.en, bg: '#f0e4c6', fg: '#b3201a' },
+    { hi: tea.hi, en: tea.en, bg: '#f0e4c6', fg: '#6e1a12' },
+    { hi: store.hi, en: store.en, bg: '#f0e4c6', fg: '#6e1a12' },
   ]);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
   material.name = 'signboard'; // world-validator (check 2) — wall/roof-mounted fixtures are correctly elevated above y=0 by design; named so that exclusion is precise, not a guess at merged-bucket identity

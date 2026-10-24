@@ -1,3 +1,4 @@
+import { placeBoardsMesh } from './placeBoards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
@@ -403,6 +404,11 @@ function smallBuilding({ w, d, h, wall, band, door, roof = 0x8d8a82 }) {
   return geos;
 }
 
+/** Rooftop parapet signboard for a smallBuilding(): centred on the +z face, sitting on the parapet. */
+function parapetBoard(id, { w, d, h }, bw) {
+  return { id, x: 0, y: 0.35 + h + 0.5, z: d / 2 + 0.24, w: bw ?? Math.min(w + 0.2, 4.4) };
+}
+
 /** Anganwadi: pink limewashed one-room childcare centre with a painted yard wall and a small slide. */
 export function createAnganwadi(position) {
   const geos = smallBuilding({ w: 7, d: 5, h: 3.1, wall: 0xe0b6b0, band: 0xc9877f, door: 0x2f6b5d });
@@ -422,6 +428,7 @@ export function createAnganwadi(position) {
   const group = new THREE.Group();
   group.name = 'anganwadi';
   group.add(mesh);
+  group.add(placeBoardsMesh([parapetBoard('anganwadi', { w: 7, d: 5, h: 3.1 }, 3.8)], 'anganwadi_boards'));
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -445,6 +452,7 @@ export function createDudhDairy(position) {
   const group = new THREE.Group();
   group.name = 'dudh_dairy';
   group.add(mesh);
+  group.add(placeBoardsMesh([parapetBoard('dairy', { w: 5, d: 4, h: 3.0 }, 3.6)], 'dairy_boards'));
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -473,6 +481,7 @@ function finishSite(name, geos, position, opts = {}) {
   const group = new THREE.Group();
   group.name = name;
   group.add(mesh);
+  if (opts.boards) group.add(placeBoardsMesh(opts.boards, name + '_boards')); // bilingual signboard(s), one draw call (src/placeBoards.js)
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -484,7 +493,7 @@ export function createHealthSubCentre(position) {
   for (const sx of [-1, 0, 1]) geos.push(bake(new THREE.BoxGeometry(0.25, 2.7, 0.25), at(sx * 4.2, 1.7, 4.8), 0xece6d6));
   geos.push(bake(new THREE.BoxGeometry(2.6, 0.08, 0.5), at(-2.4, 0.5, 4.2), 0x7a5a3a));
   geos.push(bake(new THREE.BoxGeometry(2.6, 0.5, 0.08), at(-2.4, 0.75, 3.95), 0x7a5a3a));
-  return finishSite('health_subcentre', geos, position, { solids: [[0, 0, 9.2, 5.7]] });
+  return finishSite('health_subcentre', geos, position, { solids: [[0, 0, 9.2, 5.7]], boards: [parapetBoard('health', { w: 9, d: 5.5, h: 3.2 }, 4.4)] });
 }
 
 /** Chemist: narrow cream shop with a green shutter, tin awning and a glass counter front. */
@@ -494,7 +503,7 @@ export function createChemist(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.2, 1.2, 3.4), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(3.2, 1.0, 0.7), at(0, 0.85, 2.6), 0x9a7a52));
   geos.push(bake(new THREE.BoxGeometry(3.0, 0.9, 0.05), at(0, 1.8, 2.3), 0x9fb8bd));
-  return finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]] });
+  return finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]], boards: [parapetBoard('chemist', { w: 4.2, d: 4, h: 3.1 }, 3.6)] });
 }
 
 /** Masjid: modest limewashed prayer hall with a green-and-white dome, one slim minaret and an ablution tap row. Scenery only. */
@@ -547,7 +556,7 @@ export function createManihari(position) {
   const cols = [0xc4372f, 0x2f7d5b, 0xd8a22a, 0x3a5aa6, 0x8a3a8a];
   for (let i = 0; i < 10; i++) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 0.22, 10), at(-1.35 + i * 0.3, 1.1, 0.1), cols[i % cols.length]));
   geos.push(bake(new THREE.BoxGeometry(1.0, 0.06, 0.5), at(-3, 0.35, 0.8), 0x7a5a3a)); // stool
-  return finishSite('manihari', geos, position, { solids: [[0, 0, 3.4, 1.4], [-3, 0.8, 1.0, 0.5]] }); // counter + stool
+  return finishSite('manihari', geos, position, { solids: [[0, 0, 3.4, 1.4], [-3, 0.8, 1.0, 0.5]], boards: [{ id: 'manihari', x: 0, y: 2.15, z: -0.52, w: 2.9 }] }); // counter + stool
 }
 
 /** Sabzi rehris: three wooden handcarts piled with vegetables, parked in a row under a tarpaulin shade. */
@@ -566,7 +575,7 @@ export function createSabziRehris(position) {
   });
   geos.push(bake(new THREE.BoxGeometry(10.2, 0.05, 3.6), new THREE.Matrix4().makeRotationX(0.1).setPosition(0, 2.9, 0.3), 0x9a5f3c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.9, 6), at(sx * 4.9, 1.45, -1.3), 0x5a5a5a));
-  return finishSite('sabzi_rehris', geos, position, { solids: [[-3.2, 0.2, 2.3, 1.3], [0, 0.2, 2.3, 1.3], [3.2, 0.2, 2.3, 1.3], [-4.9, -1.3, 0.12, 0.12], [4.9, -1.3, 0.12, 0.12]] }); // three carts + tarp poles
+  return finishSite('sabzi_rehris', geos, position, { solids: [[-3.2, 0.2, 2.3, 1.3], [0, 0.2, 2.3, 1.3], [3.2, 0.2, 2.3, 1.3], [-4.9, -1.3, 0.12, 0.12], [4.9, -1.3, 0.12, 0.12]], boards: [{ id: 'sabzi', x: 0, y: 2.35, z: -1.3, w: 4.4 }] }); // three carts + tarp poles
 }
 
 /** Jain mandir: small white shikhara temple on a plinth with a pillared porch. Scenery only, no tasks. */
@@ -615,6 +624,10 @@ export function createHighwayCluster(position) {
     [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
     [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
+  ], boards: [
+    { id: 'petrol', x: -11.95, y: 5.2, z: -35, ry: Math.PI / 2, w: 4.2 }, // canopy front edge, facing the road
+    { id: 'kanta', x: -14.3, y: 3.3, z: 50, ry: Math.PI / 2, w: 2.7 }, // standing on the cabin roof edge, facing the weighing platform
+    { id: 'busadda', x: -10, y: 3.45, z: 18.1, ry: Math.PI, w: 4 }, // shelter roof front, facing the lane
   ] });
 }
 
@@ -632,7 +645,7 @@ export function createJalebiStall(position) {
   geos.push(bake(new THREE.BoxGeometry(3.6, 0.05, 2.6), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 2.7, 0.1), 0xb85a3a));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 2.7, 6), at(sx * 1.7, 1.35, -1.0), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(0.6, 0.35, 0.6), at(2.1, 0.18, 0.2), 0x7a5a3a)); // stool
-  return finishSite('jalebi_stall', geos, position, { solids: [[0, 0, 3.0, 1.4], [2.1, 0.2, 0.6, 0.6], [-1.7, -1.0, 0.1, 0.1], [1.7, -1.0, 0.1, 0.1]] }); // cart, stool, tarp poles
+  return finishSite('jalebi_stall', geos, position, { solids: [[0, 0, 3.0, 1.4], [2.1, 0.2, 0.6, 0.6], [-1.7, -1.0, 0.1, 0.1], [1.7, -1.0, 0.1, 0.1]], boards: [{ id: 'jalebi', x: 0, y: 2.25, z: -1.0, w: 3.2 }] }); // cart, stool, tarp poles
 }
 
 /** Lane street life (MAP.md "carrom and ludo boards set up in the lane outside houses"): a jute mat, a carrom board, a ludo board,
@@ -913,7 +926,7 @@ export function createMelaGround(position) {
     ...[0, 1, 2, 3].map((i) => [0, -0.5 + i * 1.5, 5, 0.5]), // bench rows
     [13.4, 12, 0.3, 0.3], [16.6, 12, 0.3, 0.3], // swing legs
     ...[0, 1, 2].map((i) => [18, -12 + i * 6, 2.4, 1.2]), // stall counters
-  ] });
+  ], boards: [{ id: 'mela', x: 0, y: 3.55, z: -5.7, w: 6.4 }] });
 }
 
 /** Khel maidan (SE edge): rolled cricket strip, stumps, boundary rope posts, a badminton net and a low pavilion shade. */
@@ -937,7 +950,7 @@ export function createKhelMaidan(position) {
     [7.9, 8, 0.2, 0.2], [14.1, 8, 0.2, 0.2], // badminton net poles
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-17 + sx * 2.8, sz * 1.2, 0.25, 0.25]), // pavilion poles
     [-17, 1.0, 5, 0.5], // pavilion bench
-  ] });
+  ], boards: [{ id: 'maidan', x: -17, y: 2.3, z: -1.2, w: 3.6 }] });
 }
 
 /** Gurukul inter college (SE, outside the abadi): two-storey classroom block around a yard with a gate and a flagless mast. */
@@ -971,7 +984,7 @@ export function createGurukul(position) {
     ...[0, 1, 2, 3, 4, 5].map((i) => [-9 + i * 3.6, -4.9, 0.5, 0.5]), // verandah columns
     [9, 12, 14, 0.4], [-0.2, 12, 1.0, 1.0], [4.2, 12, 1.0, 1.0], // yard wall + gate pillars
     [6, 4, 0.2, 0.2], // flag mast
-  ] });
+  ], boards: [{ id: 'gurukul', x: 0, y: 3.95, z: -3.88, w: 4.4 }] });
 }
 
 /** Old haveli (MAP.md, east, quiet): two-storey courtyard mansion, faded ochre plaster, arched-front jharokhas, closed carved gate, quiet and cared-for. */
@@ -1013,7 +1026,7 @@ export function createOldHaveli(position) {
   // Low boundary wall and gate approach.
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(10, 1.2, 0.3), at(sx * 11, 0.6, 14), 0xd8c9a4));
   geos.push(bake(new THREE.BoxGeometry(12, 0.06, 4), at(0, 0.03, 12), 0xb09a78));
-  return finishSite('old_haveli', geos, position, { solids: ranges.map(([w, d, x, z]) => [x, z, w, d]) });
+  return finishSite('old_haveli', geos, position, { solids: ranges.map(([w, d, x, z]) => [x, z, w, d]), boards: [{ id: 'haveli', x: 0, y: 7.1, z: 10.12, w: 5.2 }] });
 }
 
 /** Gaushala (MAP.md, village edge): long open-sided cattle shed on posts, tin roof, feed trough, bhoosa heap, a few resting cows. */
@@ -1041,7 +1054,7 @@ export function createGaushala(position) {
   // Swept yard with a water tub and a low wall to the road.
   geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
   geos.push(bake(new THREE.BoxGeometry(L + 2, 0.8, 0.25), at(0, 0.4, D / 2 + 5), 0xcfc2a2));
-  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4], [0, D / 2 - 1.2, L - 4, 0.7], [-L / 2 - 2, D / 2 + 2, 1.6, 1.6], [L / 2 - 2.5, -D / 2 + 1.8, 3.6, 3.6]] }); // + feed trough, water tub, hay heap
+  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4], [0, D / 2 - 1.2, L - 4, 0.7], [-L / 2 - 2, D / 2 + 2, 1.6, 1.6], [L / 2 - 2.5, -D / 2 + 1.8, 3.6, 3.6]], boards: [{ id: 'gaushala', x: 2, y: 1.95, z: -D / 2 + 0.2, w: 3.4 }] }); // + feed trough, water tub, hay heap
 }
 
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
@@ -1096,14 +1109,20 @@ export function createMandi(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
   for (let i = 0; i < 4; i++) charpaiGeos(geos, 1.5 + i * 2.1, 25, Math.PI / 2 + (i % 2 ? 0.05 : -0.04));
-  geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(3.3, 2.55, 29.01), 0x2f5f4a));
   // Parked trucks in plain colours (no marks).
   truck(geos, 3, -2, 0xc4372f, 0.0);
   truck(geos, 9, 48, 0x3f7a5a, Math.PI);
   truck(geos, -4, 40, 0xd9a43a, 0.12);
-  const mandi = finishSite('mandi', geos, position, { roughness: 0.92 });
+  // Gantry over the road entrance (facing the highway) on two posts, so the mandi is named from the road.
+  for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(-12.6, 2.3, sz * 3.9), 0x5a5a5a));
+  const mandi = finishSite('mandi', geos, position, { roughness: 0.92, boards: [
+    { id: 'mandi', x: -12.7, y: 4.45, z: 0, ry: -Math.PI / 2, w: 7.2 },
+    { id: 'godown', x: -0.12, y: 4.1, z: -22, ry: -Math.PI / 2, w: 3.8 },
+    { id: 'dhaba', x: 5, y: 3.0, z: 28.94, ry: Math.PI, w: 3.4 },
+  ] });
   const truckSolid = (x, z, ry) => [x - Math.sin(ry) * 0.5, z - Math.cos(ry) * 0.5, 2.7, 8.6, ry]; // body centre sits 0.5 m behind the origin along the truck's own axis
   const rects = [
+    [-12.6, -3.9, 0.3, 0.3], [-12.6, 3.9, 0.3, 0.3], // road gantry posts
     [5, -22, 10.2, 18.2], // grain godown
     [5, 32, 9.2, 6.2], // dhaba hall
     [-11, 22, 3.6, 3.6], // weighbridge cabin

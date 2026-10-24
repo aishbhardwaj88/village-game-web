@@ -40,7 +40,7 @@ const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
 const EXCLUDE_NAMES = new Set([
   'lane', 'bazaar_lane', 'temple_lane',
   'wheat_sack_pile', 'general_store_goods',
-  'shop_signboards', 'bazaar_signboards', 'chowk_tea_sign',
+  'shop_signboards', 'halwai_board', 'bazaar_signboards', 'chowk_tea_sign',
   'shop_roofs', 'shop_counters_and_posts',
 ]);
 

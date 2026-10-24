@@ -309,9 +309,9 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
  * function in this codebase. */
 export async function buildNewShopSignboards(postOfficePos, postOfficeRot, rationShopPos, rationShopRot, attaChakkiPos, attaChakkiRot) {
   const { texture, rows } = await buildWideSignAtlas([
-    { hi: 'डाकघर', en: 'Post Office', fg: '#b3201a' },
-    { hi: 'राशन की दुकान', en: 'Ration Shop', fg: '#1f5a2e' },
-    { hi: 'आटा चक्की', en: 'Atta Chakki', fg: '#1f3f8a' },
+    { hi: 'डाकघर', en: 'Post Office', fg: '#6e1a12' },
+    { hi: 'राशन की दुकान', en: 'Ration Shop', fg: '#173f20' },
+    { hi: 'आटा चक्की', en: 'Atta Chakki', fg: '#14306e' },
   ]);
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
   material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment

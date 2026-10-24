@@ -357,18 +357,17 @@ function drawBazaarSign(ctx, col, row, hi, en) {
   const cx = x + SIGN_CELL_W / 2;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // Devanagari larger, on top; English smaller, beneath. Each line auto-fits the board width.
+  // Hindi top, small and light; English second line, larger and bolder (the line a player reads). One dark paint colour.
   const fit = (text, font, maxPx, startPx) => {
     let px = startPx;
     ctx.font = font(px);
     while (ctx.measureText(text).width > maxPx && px > 20) { px -= 4; ctx.font = font(px); }
   };
-  fit(hi, (px) => `800 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 100, 124);
-  ctx.fillStyle = '#a81e16';
-  ctx.fillText(hi, cx, y + SIGN_CELL_H * 0.38);
-  fit(en, (px) => `800 ${px}px -apple-system, "Segoe UI", sans-serif`, SIGN_CELL_W - 100, 64);
-  ctx.fillStyle = '#1e1410';
-  ctx.fillText(en, cx, y + SIGN_CELL_H * 0.78);
+  ctx.fillStyle = '#6e1a12';
+  fit(hi, (px) => `500 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 140, 60);
+  ctx.fillText(hi, cx, y + SIGN_CELL_H * 0.25);
+  fit(en, (px) => `900 ${px}px -apple-system, "Segoe UI", Arial, sans-serif`, SIGN_CELL_W - 100, 140);
+  ctx.fillText(en, cx, y + SIGN_CELL_H * 0.65);
 }
 
 async function buildBazaarSignAtlas() {

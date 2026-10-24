@@ -12,7 +12,7 @@ const VERTEX_SHADER = /* glsl */ `
   varying vec3 vWorldPosition;
   void main() {
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    vWorldPosition = worldPosition.xyz;
+    vWorldPosition = position; // direction from the dome centre (the dome follows the camera, so world position is meaningless)
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
   }
 `;
@@ -78,7 +78,7 @@ const FRAGMENT_SHADER = /* glsl */ `
     // The glow term (wide, gentle falloff) was the main cause of a large clipped-white
     // halo around the sun rather than a warm bright glow — pulled back alongside the
     // disc itself. See docs/parked.md.
-    float sunDot = max(dot(dir, normalize(sunDirection)), 0.0);
+    float sunDot = max(dot(dir, normalize(sunDirection)), 1e-4); // never exactly 0: pow(0.0, y) renders as a black patch on some GL implementations
     float sunDisc = pow(sunDot, 800.0) * 2.2;
     float sunGlow = pow(sunDot, 24.0) * 0.3;
     sky += sunColor * (sunDisc + sunGlow);
@@ -113,12 +113,16 @@ export function createSky(sunDirection, preset) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = 'sky';
   mesh.renderOrder = -1;
-  mesh.matrixAutoUpdate = false; // stays centred on the origin, never moves/rotates
+  mesh.matrixAutoUpdate = false; // never rotates; updateSky() re-centres it on the camera every frame
+  mesh.frustumCulled = false;
   return mesh;
 }
 
 /** Call once per frame (main.js) so the dust/haze veil drifts almost imperceptibly —
  * real elapsed seconds, not frame count, so it's framerate-independent. */
-export function updateSky(sky, elapsedSeconds) {
+export function updateSky(sky, elapsedSeconds, camera) {
+  // Centred on the camera: a dome fixed at the origin ran past the camera far plane (500) from the far east
+  // (x 205 looking west: 605 m away), clipping to a black dome in the sky.
+  if (camera) { sky.position.copy(camera.position); sky.updateMatrix(); sky.updateMatrixWorld(true); }
   if (sky.material.uniforms?.time) sky.material.uniforms.time.value = elapsedSeconds;
 }
