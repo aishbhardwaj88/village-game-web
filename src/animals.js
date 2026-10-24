@@ -251,21 +251,49 @@ function hideTextures() {
  * slightly longer, thinner body and rounder capsule legs instead of boxes. */
 export function buildDogGeometry() {
   const geos = [];
-  geos.push(part(new THREE.CapsuleGeometry(0.085, 0.34, 4, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0.32, 0), 0xffffff));
-  geos.push(part(new THREE.SphereGeometry(0.095, 8, 6), new THREE.Matrix4().setPosition(0, 0.4, 0.27), 0xffffff));
-  geos.push(part(new THREE.BoxGeometry(0.07, 0.06, 0.1), new THREE.Matrix4().setPosition(0, 0.35, 0.39), 0x3a332a)); // snout
+  const sc = (g, sx, sy, sz, x, y, z, color) => part(g, new THREE.Matrix4().makeScale(sx, sy, sz).setPosition(x, y, z), color);
+  const FUR = 0xffffff, DARK = 0x2e2822, PALE = 0xe6dcc8;
+  // Indian pariah dog: lean, deep chest tucked up to a slim waist, wedge head, prick ears, sickle tail.
+  geos.push(sc(new THREE.SphereGeometry(0.12, 12, 10), 0.95, 1.05, 1.5, 0, 0.36, 0.12, FUR)); // chest / ribcage
+  geos.push(sc(new THREE.SphereGeometry(0.095, 10, 8), 0.95, 1.0, 1.6, 0, 0.35, -0.12, FUR)); // waist and loin
+  geos.push(sc(new THREE.SphereGeometry(0.1, 10, 8), 1.0, 1.0, 1.1, 0, 0.35, -0.24, FUR)); // haunch
+  geos.push(sc(new THREE.SphereGeometry(0.075, 8, 6), 0.9, 0.8, 1.2, 0, 0.3, 0.2, PALE)); // pale chest patch
+  geos.push(capsuleBetween(P(0, 0.4, 0.2), P(0, 0.5, 0.31), 0.06, FUR, 4, 8)); // neck
+  geos.push(sc(new THREE.SphereGeometry(0.075, 10, 8), 0.95, 0.95, 1.15, 0, 0.51, 0.35, FUR)); // skull
+  geos.push(sc(new THREE.SphereGeometry(0.045, 8, 6), 0.9, 0.8, 1.7, 0, 0.485, 0.44, FUR)); // muzzle
+  geos.push(sc(new THREE.SphereGeometry(0.02, 6, 5), 1, 0.8, 1, 0, 0.49, 0.5, DARK)); // nose
   for (const side of [-1, 1]) {
-    geos.push(part(new THREE.BoxGeometry(0.045, 0.1, 0.03), new THREE.Matrix4().makeRotationZ(side * 0.3).setPosition(side * 0.075, 0.5, 0.29), 0xffffff));
+    const ear = new THREE.ConeGeometry(0.04, 0.1, 5);
+    geos.push(part(ear, new THREE.Matrix4().makeRotationZ(side * -0.25).setPosition(side * 0.045, 0.6, 0.32), FUR)); // prick ear
+    geos.push(sc(new THREE.SphereGeometry(0.009, 5, 4), 1, 1, 1, side * 0.045, 0.525, 0.4, DARK)); // eye
   }
-  geos.push(capsuleBetween(P(0, 0.34, -0.25), P(0, 0.5, -0.4), 0.03, 0xffffff)); // tail, curled up
-  const legs = [
-    [P(-0.065, 0.3, 0.18), P(-0.065, 0, 0.18)],
-    [P(0.065, 0.3, 0.18), P(0.065, 0, 0.18)],
-    [P(-0.065, 0.3, -0.19), P(-0.065, 0, -0.19)],
-    [P(0.065, 0.3, -0.19), P(0.065, 0, -0.19)],
-  ];
-  for (const [hip, foot] of legs) geos.push(capsuleBetween(hip, foot, 0.032, 0xffffff));
-  return mergeGeometries(geos);
+  // Sickle tail: base up and back, tip curling over the rump.
+  geos.push(capsuleBetween(P(0, 0.38, -0.31), P(0, 0.48, -0.4), 0.025, FUR, 3, 6));
+  geos.push(capsuleBetween(P(0, 0.48, -0.4), P(0, 0.55, -0.34), 0.017, FUR, 3, 6));
+  // Legs: tapering, with a hock bend on the hind pair and pale paws.
+  const taper = (top, bot, rt, rb, color) => {
+    const dir = new THREE.Vector3().subVectors(top, bot);
+    const q = new THREE.Quaternion().setFromUnitVectors(_yAxis, dir.clone().normalize());
+    const m = new THREE.Matrix4().makeRotationFromQuaternion(q).setPosition((top.x + bot.x) / 2, (top.y + bot.y) / 2, (top.z + bot.z) / 2);
+    return part(new THREE.CylinderGeometry(rt, rb, dir.length(), 7), m, color);
+  };
+  for (const side of [-1, 1]) {
+    const x = side * 0.06;
+    geos.push(taper(P(x, 0.33, 0.17), P(x, 0.03, 0.18), 0.036, 0.02, FUR)); // fore
+    geos.push(sc(new THREE.SphereGeometry(0.024, 6, 5), 1, 0.6, 1.4, x, 0.015, 0.195, PALE));
+    geos.push(taper(P(x, 0.33, -0.24), P(x, 0.17, -0.3), 0.045, 0.027, FUR)); // thigh
+    geos.push(taper(P(x, 0.17, -0.3), P(x, 0.03, -0.26), 0.025, 0.019, FUR)); // lower leg
+    geos.push(sc(new THREE.SphereGeometry(0.024, 6, 5), 1, 0.6, 1.4, x, 0.015, -0.245, PALE));
+  }
+  const merged = mergeGeometries(geos);
+  const pos = merged.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    uv[i * 2] = pos.getZ(i) * 7 + pos.getX(i) * 9;
+    uv[i * 2 + 1] = pos.getY(i) * 7 + pos.getX(i) * 2;
+  }
+  merged.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return merged;
 }
 
 const COW_TINTS = [0xd9c9a0, 0xe8e0d0, 0xc4a876]; // tan/white — cow
@@ -347,7 +375,8 @@ export function createCattleHerd(placements) {
  * slow idle sway as the cattle herd above. Returns `{ mesh, update(dt) }`. */
 export function createDogPack(placements) {
   const geometry = buildDogGeometry();
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
+  const hide = hideTextures();
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.0, roughnessMap: hide.bump });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'dog_pack';
   mesh.userData.colliderBoxes = placements.map((p) => animalColliderBox(p.x, p.z, p.rotationY ?? 0, 0.42, 0.2));
