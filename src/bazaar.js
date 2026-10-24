@@ -530,6 +530,16 @@ export function buildBazaarKiranaGoods() {
   const tailCx = bazaarUnitCx(3);
   [D.clothStripe, D.clothCheck, D.clothPrint, D.clothStripe, D.clothCheck].forEach((d, i) => items.push({ kind: 'bolt', design: d, x: tailCx - 1.4 + i * 0.7, y: 2.1, z: backZ, ry: i * 1.7, s: 0.95 + (i % 3) * 0.05 }));
   [D.clothPrint, D.clothCheck, D.clothStripe].forEach((d, i) => items.push({ kind: 'bolt', design: d, x: tailCx - 1.0 + i * 0.9, y: 1.25, z: backZ, ry: i * 2.3, s: 0.8 }));
+  // Tailor: folded cloth stacks on the counter beside the machine.
+  [[0.85, 0], [1.2, 1]].forEach(([dx, k]) => { for (let l = 0; l < 4; l++) items.push({ kind: 'folded', design: [D.clothCheck, D.clothStripe, D.clothPrint][(k + l) % 3], x: tailCx + dx + (rnd() - 0.5) * 0.02, y: BAZAAR_COUNTER_H + 0.08 + l * 0.036, z: counterZ + 0.05, ry: (rnd() - 0.5) * 0.18, s: 0.85 }); });
+  // Barber (unit 5): oil and shampoo bottles on the mirror shelf (top y 1.0, z backZ-0.15) and striped towels on the rail.
+  const barCx = bazaarUnitCx(4);
+  for (let j = 0; j < 6; j++) items.push({ kind: 'bottle', design: j % 2 ? D.shampoo : D.hairOil, x: barCx - 0.8 + j * 0.3, y: 1.006, z: backZ - 0.15, ry: rnd() * 6, s: 0.95 + (j % 3) * 0.05 });
+  for (let j = 0; j < 4; j++) items.push({ kind: 'towel', design: D.towel, x: barCx + 1.4 + j * 0.15, y: 1.7, z: backZ - 0.12, ry: Math.PI + (rnd() - 0.5) * 0.1, s: 0.9 + rnd() * 0.15 });
+  // Puncture (unit 8): the tyre soaking in the tub and tyres and tubes hung from the front beam.
+  const punCx = bazaarUnitCx(7);
+  items.push({ kind: 'tyre', design: D.tyre, x: punCx - 1.1, y: 0.31, z: counterZ + 1.0 - 0.3, rx: Math.PI / 2, ry: 0.3, s: 0.85 });
+  for (let j = 0; j < 5; j++) items.push({ kind: j % 2 ? 'tube' : 'tyre', design: D.tyre, x: punCx - 1.8 + j * 0.9, y: j % 2 ? 1.53 : 1.45, z: BAZAAR_FRONT_Z + 0.55, ry: (rnd() - 0.5) * 0.3, s: 0.9 + rnd() * 0.12 });
   // Mobile (unit 6): phone and charger cartons on the shelves.
   const mobCx = bazaarUnitCx(5);
   for (const y of [1.225, 2.075]) for (let i = 0; i < 9; i++) items.push({ kind: 'phonebox', design: (i + (y > 2 ? 1 : 0)) % 3 === 0 ? D.chargerBox : D.phoneBox, x: mobCx - 1.6 + i * 0.4, y, z: backZ - 0.03 + (rnd() - 0.5) * 0.05, ry: Math.PI + (rnd() - 0.5) * 0.25, s: 0.95 + rnd() * 0.1 });

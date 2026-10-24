@@ -271,8 +271,7 @@ def barber(i):
     kit.add('wood', wb('mirror_frame', c - 0.6, c + 0.6, BZ - 0.05, BZ + 0.02, 1.15, 2.25, 0.01))
     kit.add('paint', wb('mirror', c - 0.54, c + 0.54, BZ - 0.06, BZ - 0.04, 1.2, 2.2, 0), 0xBFD0D8)
     kit.add('wood', wb('mirror_shelf', c - 1.0, c + 1.0, BZ - 0.3, BZ - 0.02, 0.95, 1.0, 0.006))
-    for j in range(6):
-        kit.add('paint', cyl('bottle', c - 0.8 + j * 0.3, BZ - 0.15, 1.0, 1.2 + 0.03 * (j % 3), 0.04, 0.035, 8), (0x3E8E54, 0xC9A227, 0x2E86C1, 0xD9382B, 0xE0E0E0, 0x7B4FB0)[j])
+    # oil and shampoo bottles are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     cxs = c
     cz = CZ + 1.5
     kit.add('paint', cyl('chair_base', cxs, cz, 0.0, 0.05, 0.28, 0.3, 14), 0x30343A)
@@ -282,8 +281,7 @@ def barber(i):
     for sgn in (-1, 1):
         kit.add('paint', wb('chair_arm', cxs + sgn * 0.27 - 0.03, cxs + sgn * 0.27 + 0.03, cz - 0.2, cz + 0.22, 0.6, 0.66, 0.01), 0x30343A)
     kit.add('paint', limb('chair_foot', (cxs, cz - 0.3, 0.12), (cxs, cz - 0.55, 0.12), 0.3, 0.04), 0x6B6F72)
-    for j in range(4):
-        kit.add('paint', limb('towel_hook', (c + 1.4 + j * 0.15, BZ - 0.05, 1.7), (c + 1.4 + j * 0.15, BZ - 0.05, 1.3), 0.12, 0.02), (0xE8E6DD, 0x3A5A8A, 0xE8E6DD, 0xC0392B)[j])
+    kit.add('wood', limb('towel_rail', (c + 1.3, BZ - 0.06, 1.75), (c + 2.0, BZ - 0.06, 1.75), 0.03, 0.03))  # towels hang from it: textured goods in src/bazaar.js
     kit.add('wood', wb('bench', c - 1.9, c - 0.9, CZ + 0.9, CZ + 1.3, 0.0, 0.45, 0.01))
     kit.add('paint', wb('clippers', c + 0.6, c + 0.75, CZ - 0.0, CZ + 0.1, 0.95, 1.05, 0.01), 0x1A1A1A)
 
@@ -332,7 +330,6 @@ def puncture(i):
     # puncture tub with a tyre in it, hand pump, an upside-down cycle on a bench, hanging tubes/tyres, a spanner board
     kit.add('paint', cyl('tub', c - 1.1, CZ + 1.0, 0.0, 0.3, 0.34, 0.38, 14), 0x6A6A62)
     kit.add('paint', cyl('tub_water', c - 1.1, CZ + 1.0, 0.27, 0.285, 0.31, 0.31, 14), 0x3A5A66)
-    kit.add('paint', ring('tyre_in_tub', c - 1.1, CZ + 1.0, 0.31, 0.26, 0.055, axis='y'), 0x1C1C1C)
     kit.add('paint', cyl('pump_barrel', c + 1.1, BZ - 0.3, 0.0, 0.75, 0.05, 0.05, 10), 0x8A1F1F)
     kit.add('paint', limb('pump_handle', (c + 0.98, BZ - 0.3, 0.8), (c + 1.22, BZ - 0.3, 0.8), 0.03, 0.03), 0x2A2A2A)
     kit.add('paint', limb('pump_hose', (c + 1.1, BZ - 0.3, 0.6), (c + 0.8, BZ - 0.1, 0.1), 0.02, 0.02), 0x1C1C1C)
@@ -348,8 +345,7 @@ def puncture(i):
     kit.add('wood', wb('tool_board', c - 1.9, c - 0.2, BZ - 0.06, BZ - 0.02, 1.6, 2.4, 0.006))
     for j in range(6):  # spanners hung on the board
         kit.add('paint', limb('spanner', (c - 1.7 + j * 0.28, BZ - 0.1, 2.3), (c - 1.7 + j * 0.28, BZ - 0.1, 1.8 - 0.04 * (j % 3)), 0.04, 0.02), 0x9A9EA3)
-    for j in range(5):  # tubes and tyres hanging from the front beam
-        kit.add('paint', ring('hang_tube', c - 1.8 + j * 0.9, FRONT + 0.55, 1.75, 0.22, 0.04, axis='x') if j % 2 else ring('hang_tyre', c - 1.8 + j * 0.9, FRONT + 0.55, 1.75, 0.3, 0.05, axis='x'), 0x1C1C1C)
+    # tyres and tubes hanging from the beam, and the tyre in the tub, are the textured goods in src/bazaar.js
     kit.add('paint', limb('hang_beam', (c - 2.0, FRONT + 0.55, 2.2), (c + 2.0, FRONT + 0.55, 2.2), 0.05, 0.05), 0x4A4640)
 
 

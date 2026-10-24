@@ -11,7 +11,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 const CELL = 256;
 const COLS = 4;
-const ROWS = 10;
+const ROWS = 11;
 // atlas cell index per design
 export const DESIGN = {
   chipsRed: 0, chipsGreen: 1, chipsBlue: 2, biscuitBlue: 3, biscuitOrange: 4, soapGreen: 5, soapPink: 6, soapBlue: 7,
@@ -19,6 +19,7 @@ export const DESIGN = {
   medWhite: 16, medGreen: 17, syrup: 18, phoneBox: 19, chargerBox: 20, clothStripe: 21, clothCheck: 22, clothPrint: 23,
   tomato: 24, onion: 25, potato: 26, greens: 27, brinjal: 28, bangleRed: 29, bangleBlue: 30, bangleGreen: 31,
   laddoo: 32, gulab: 33, barfi: 34, jalebi: 35, samosa: 36, milk: 37, ghee: 38, dahi: 39,
+  hairOil: 40, shampoo: 41, towel: 42, tyre: 43,
 };
 
 let atlas = null;
@@ -152,6 +153,11 @@ function getAtlas() {
     cell(DESIGN.milk, () => { g.fillStyle = '#f4f1e8'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#2b6cb0'; g.fillRect(0, 0, CELL, 62); g.fillRect(0, 194, CELL, 62); g.fillStyle = '#7fb3e0'; g.beginPath(); g.ellipse(CELL / 2, 128, 86, 40, 0, 0, 7); g.fill(); text('TONED MILK', CELL / 2, 40, 30, '#ffffff'); text('FRESH DAIRY', CELL / 2, 118, 28, '#12406e'); hindi('टोंड दूध', CELL / 2, 148, 26, '#12406e'); text('500 ml', CELL / 2, 226, 26, '#ffffff', 700); for (let y = 0; y < CELL; y += 4) { g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(0, y, CELL, 1); } });
     cell(DESIGN.ghee, () => { const gr = g.createLinearGradient(0, 0, CELL, 0); gr.addColorStop(0, '#d9a41c'); gr.addColorStop(0.5, '#f2cd4e'); gr.addColorStop(1, '#b98710'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#fff6d8'; g.fillRect(0, 70, CELL, 120); text('PURE GHEE', CELL / 2, 108, 38, '#7a3a08'); hindi('शुद्ध घी', CELL / 2, 154, 30, '#7a3a08'); g.fillStyle = '#7a3a08'; g.fillRect(0, 60, CELL, 6); g.fillRect(0, 190, CELL, 6); text('1 kg', CELL / 2, 224, 26, '#5a2a04', 700); });
     cell(DESIGN.dahi, () => { g.fillStyle = '#f7f4ea'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#c0392b'; g.fillRect(0, 0, CELL, 54); g.fillRect(0, 202, CELL, 54); text('FRESH CURD', CELL / 2, 28, 28, '#ffffff'); text('DAHI', CELL / 2, 110, 56, '#8a1f14'); hindi('ताज़ा दही', CELL / 2, 164, 30, '#8a1f14'); text('400 g', CELL / 2, 230, 24, '#ffffff', 700); });
+    // Barber and puncture shop: hair-oil and shampoo bottle labels, a striped cotton towel, a tyre with sidewall print and tread (generic names, no brands).
+    cell(DESIGN.hairOil, () => { g.fillStyle = '#e9d9a0'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#1f6b3a'; g.fillRect(0, 0, CELL, 52); g.fillRect(0, 204, CELL, 52); g.fillStyle = '#f7f1d6'; g.beginPath(); g.ellipse(CELL / 2, 128, 96, 58, 0, 0, 7); g.fill(); text('AMLA', CELL / 2, 108, 50, '#1f5a30'); text('HAIR OIL', CELL / 2, 154, 30, '#7a3a08'); hindi('आंवला तेल', CELL / 2, 30, 26, '#ffffff'); text('200 ml', CELL / 2, 230, 24, '#ffffff', 700); });
+    cell(DESIGN.shampoo, () => { const gr = g.createLinearGradient(0, 0, 0, CELL); gr.addColorStop(0, '#6a2e8c'); gr.addColorStop(1, '#3d1a5a'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); g.fillStyle = 'rgba(255,255,255,.92)'; g.beginPath(); g.ellipse(CELL / 2, 124, 100, 54, 0, 0, 7); g.fill(); text('SILKY', CELL / 2, 108, 50, '#4a1f6a'); text('SHAMPOO', CELL / 2, 150, 30, '#4a1f6a'); hindi('शैम्पू', CELL / 2, 40, 28, '#f3e6ff'); text('100 ml', CELL / 2, 230, 24, '#f3e6ff', 700); });
+    cell(DESIGN.towel, () => { g.fillStyle = '#f1ede2'; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 6; k++) { g.fillStyle = k % 2 ? '#2f5d9a' : '#b8352b'; g.fillRect(0, 20 + k * 38, CELL, k % 2 ? 10 : 18); } for (let k = 0; k < 3000; k++) { g.fillStyle = k % 2 ? 'rgba(120,110,95,.10)' : 'rgba(255,255,255,.18)'; g.fillRect(Math.random() * CELL, Math.random() * CELL, 1, 1 + Math.random() * 3); } g.fillStyle = 'rgba(160,150,130,.5)'; for (let x = 0; x < CELL; x += 4) g.fillRect(x, 0, 1, 12); });
+    cell(DESIGN.tyre, () => { g.fillStyle = '#1b1b1a'; g.fillRect(0, 0, CELL, CELL); speckle(600, 'rgba(70,70,66,.55)', 2); for (let x = 0; x < CELL; x += 16) { g.fillStyle = 'rgba(8,8,8,.7)'; g.fillRect(x, 0, 6, CELL); } g.fillStyle = '#1b1b1a'; g.fillRect(0, 88, CELL, 80); speckle(240, 'rgba(90,90,84,.4)', 2); for (let k = 0; k < 4; k++) { text('TUBELESS', k * 64 + 32, 112, 12, 'rgba(210,210,200,.85)', 700); text('90/90-17', k * 64 + 32, 140, 12, 'rgba(210,210,200,.85)', 700); } });
     Math.random = realRandom;
     texture.needsUpdate = true;
   };
@@ -248,6 +254,10 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'barfi': g = flatPack(0.07 * s, 0.026 * s, 0.07 * s, it.design); g.translate(0, 0.013 * s, 0); break;
       case 'jalebi': { const t = new THREE.TorusGeometry(0.036 * s, 0.0085 * s, 6, 14); t.rotateX(Math.PI / 2); const t2 = new THREE.TorusGeometry(0.019 * s, 0.0085 * s, 6, 10); t2.rotateX(Math.PI / 2); t2.translate(0, 0.004 * s, 0); g = mergeGeometries([setUVs(t, it.design), setUVs(t2, it.design)]); g.translate(0, 0.01 * s, 0); break; }
       case 'samosa': g = new THREE.ConeGeometry(0.058 * s, 0.085 * s, 3, 1); g.rotateY(0.3); g.translate(0, 0.0425 * s, 0); g.scale(1, 0.9, 1); setUVs(g, it.design); break;
+      case 'towel': g = flatPack(0.14 * s, 0.4 * s, 0.012 * s, it.design); g.translate(0, -0.2 * s, 0); break;
+      case 'folded': g = flatPack(0.38 * s, 0.035 * s, 0.26 * s, it.design); g.translate(0, 0.0175 * s, 0); break;
+      case 'tyre': { g = new THREE.TorusGeometry(0.3 * s, 0.075 * s, 10, 26); g.scale(1, 1, 1.15); setUVs(g, it.design); g.translate(0, 0.3 * s, 0); break; }
+      case 'tube': { g = new THREE.TorusGeometry(0.22 * s, 0.04 * s, 8, 22); setUVs(g, it.design); g.translate(0, 0.22 * s, 0); break; }
       case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 6, 14); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
       case 'milkpouch': g = pillowPack(0.13 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'tub': g = lathe([[0, 0], [0.045, 0], [0.058, 0.02], [0.062, 0.075], [0.066, 0.08], [0, 0.08]], it.design); g.scale(s, s, s); break;
