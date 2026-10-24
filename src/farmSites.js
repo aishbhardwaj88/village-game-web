@@ -841,17 +841,43 @@ export function createManihari(position) {
   return finishSite('manihari', geos, position, { solids: [[0, 0, 3.4, 1.4], [-3, 0.8, 1.0, 0.5]], boards: [{ id: 'manihari', x: 0, y: 2.15, z: -0.52, w: 2.9 }] }); // counter + stool
 }
 
+/** Heap of real-shaped produce on a cart bed: individual fruits scattered over a dome (denser and taller at the centre), each with its own size, turn and colour jitter.
+ *  kind: tomato | onion (squashed spheres), carrot | chilli (thin cones lying every way), gourd | brinjal (long ellipsoids). Deterministic from seed. */
+function produceHeap(geos, cx, cy, cz, kind, colors, seed) {
+  let sd = seed * 7919 + 13;
+  const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+  const base = new THREE.Color(colors[0]), alt = new THREE.Color(colors[1]);
+  const thin = kind === 'chilli' || kind === 'carrot';
+  const n = thin ? 46 : 26;
+  for (let i = 0; i < n; i++) {
+    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 0.42;
+    const y = cy + (1 - (r / 0.46) ** 2) * 0.2 * (0.7 + rnd() * 0.3);
+    const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r * 0.85;
+    const col = base.clone().lerp(alt, rnd() < 0.2 ? 0.7 : rnd() * 0.25).multiplyScalar(0.85 + rnd() * 0.3);
+    // thin produce lies on the heap (cone axis near horizontal, any heading); round produce just gets a random turn
+    const m = new THREE.Matrix4().makeRotationFromEuler(thin ? new THREE.Euler((rnd() - 0.5) * 0.5, rnd() * 6.28, Math.PI / 2 + (rnd() - 0.5) * 0.5, 'YXZ') : new THREE.Euler(rnd() * 3, rnd() * 6.28, rnd() * 3)).setPosition(x, thin ? y - 0.03 : y, z);
+    let g;
+    if (kind === 'tomato') g = new THREE.SphereGeometry(0.065 + rnd() * 0.02, 7, 5);
+    else if (kind === 'onion') g = new THREE.SphereGeometry(0.07 + rnd() * 0.02, 7, 5).scale(1, 0.85, 1);
+    else if (kind === 'carrot' || kind === 'chilli') g = new THREE.ConeGeometry(kind === 'carrot' ? 0.03 : 0.014, kind === 'carrot' ? 0.2 + rnd() * 0.06 : 0.13 + rnd() * 0.05, 5);
+    else g = new THREE.SphereGeometry(kind === 'gourd' ? 0.065 : 0.05, 7, 5).scale(1, kind === 'gourd' ? 2.6 : 2.2, 1);
+    geos.push(bake(g, m, col));
+  }
+}
+
 /** Sabzi rehris: three wooden handcarts piled with vegetables, parked in a row under a tarpaulin shade. */
 export function createSabziRehris(position) {
   const geos = [];
   const piles = [[0xb2342b, 0xd8872a], [0x4f8f3a, 0x8aad3a], [0xd8c8a0, 0x7a3a8a]]; // tomato/carrot, gourd/chilli, onion/brinjal
+  const kinds = [['tomato', 'carrot'], ['gourd', 'chilli'], ['onion', 'brinjal']];
   piles.forEach((pc, i) => {
     const x = (i - 1) * 3.2;
     geos.push(bake(new THREE.BoxGeometry(2.2, 0.12, 1.2), at(x, 0.85, 0), 0x8a6a45));
     for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.BoxGeometry(0.08, 0.8, 0.08), at(x + sx * 0.95, 0.4, sz * 0.5), 0x6f5233));
     for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(2.2, 0.25, 0.06), at(x, 1.0, sz * 0.58), 0x7a5a3a));
-    geos.push(bake(new THREE.CylinderGeometry(0.4, 0.5, 0.4, 8), at(x - 0.5, 1.2, 0), pc[0]));
-    geos.push(bake(new THREE.CylinderGeometry(0.4, 0.5, 0.4, 8), at(x + 0.5, 1.2, 0), pc[1]));
+    const heapCols = [[[pc[0], 0xd9482f], [pc[1], 0xe8a23c]], [[pc[0], 0x6aa04a], [pc[1], 0x3f7a2c]], [[pc[0], 0xe3b9a0], [pc[1], 0x4a1f5a]]][i];
+    produceHeap(geos, x - 0.5, 0.97, 0, kinds[i][0], heapCols[0], i * 2 + 1);
+    produceHeap(geos, x + 0.5, 0.97, 0, kinds[i][1], heapCols[1], i * 2 + 2);
     for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.42, 0.42, 0.07, 14), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x + sx * 0.8, 0.42, 0.7), 0x3a3a3a));
     geos.push(bake(new THREE.BoxGeometry(0.1, 0.1, 1.6), at(x, 0.8, 1.7), 0x6f5233));
   });

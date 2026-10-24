@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z95, playtest block items 4/3, sabzi cart produce):** Game change: the sabzi rehris' flat-coloured cylinder piles (src/farmSites.js createSabziRehris) are now heaps of individual produce (new produceHeap): tomatoes, carrots, gourds, chillies, onions, brinjal, each with own size, turn and colour jitter, thin produce lying flat. Same merged mesh, no new draw call (+~0.5k triangles). Build ALL PASSED. Proof docs/shots/sabzi-produce-2026-10-25/carts_close2.png (free camera, headless, no capsule in frame; not ticked as an item). Checked and stale, no change: far-LOD abadi already has openings and the shared plaster atlas (docs/shots/farlod-2026-10-24/east_far_after.png), Banta/Chaat boards exist (src/placeBoards.js). Gaps: produce is vertex-colour only (no skin texture), bazaar vegetable stalls elsewhere not checked.
+NEXT: triangle cuts (art director's call), spurs once draw calls are saved, other flat-colour stock.
+
+---
+
 **2026-10-25 (cycle 39z94, playtest block item 7, highway run-out):** Game change: the highway's two ends (src/farmSites.js roadGeos) now taper over 52 m to a 0.7 m cart track whose colour ends on the grass tone (was a 2.6 m pale sandy tip), wheel ruts 40 m and fading to grass, so the road no longer stops at a visible blob. Mandi yard ends already fray to earth (checked, docs/shots/roadend-2026-10-25/). Build ALL PASSED, budget 30.80 MB, draw calls unchanged (79 in view). Proof docs/shots/roadend-2026-10-25/after/highway_s.png (before: ../highway_s.png). Item 7 road bullet not ticked: the taper still reads as a faint tip at haze distance; a real junction or dirt lane joining the village is the fuller fix.
 NEXT: far-LOD flat blocks, Banta shop and Chaat thela signage, triangle cuts (art director's call).
 
