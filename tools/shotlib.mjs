@@ -82,6 +82,7 @@ export async function hideForCapture(page, { people, player = false }) {
     const hide = (o) => { if (o.visible) { o.visible = false; d.__hidden.push(o); } };
     if (d.player && !player) hide(d.player);
     d.scene.traverse((o) => { if (o.isSprite) hide(o); }); // dev-only label sprites (tripo_* staging names) are debug text
+    d.scene.traverse((o) => { if (/^tripo_.*_placeholder$/.test(o.name || '')) hide(o); }); // dev-only judgement boxes, never in the live build
     if (!people) {
       for (const n of d.npcs || []) hide(n);
       d.scene.traverse((o) => {

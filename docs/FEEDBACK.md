@@ -80,7 +80,7 @@ read Hindi.
   illegible board, then fix every one.
 - DONE-WHEN: a shot of each board at game distance where the English reads first.
 
-### 2. [PARTLY DONE 24 Oct 2026: bougainvillea REMOVED (her option 1), carrom-side plant removed with all card plants, creeper (lime) removed, flower pots = real Poly Haven potted plants in clay pots at doorsteps (code-built Blender pots deleted from every building), grass = real scanned clumps, thinned and distance-limited, marigold beds = real Poly Haven gazania. Proof docs/shots/plants-2026-10-24/{abadi_doorsteps,halwai_grass,flower_stall}.png. Open: clay-pot matkas still faceted (Blender clay_pot), milk cans (the six white cylinders?) not yet reshaped, tulsi/banana have no real model so are not drawn] PLANTS, FLOWERS AND POTS - she has asked three times now
+### 2. [PARTLY DONE 24 Oct 2026: bougainvillea REMOVED (her option 1), carrom-side plant removed with all card plants, creeper (lime) removed, flower pots = real Poly Haven potted plants in clay pots at doorsteps (code-built Blender pots deleted from every building), grass = real scanned clumps, thinned and distance-limited, marigold beds = real Poly Haven gazania. Proof docs/shots/plants-2026-10-24/{abadi_doorsteps,halwai_grass,flower_stall}.png. Matkas checked 24 Oct: smooth lathed clay pots, read as pots (docs/shots/matka-2026-10-24/d.png). Open: milk cans (the six white cylinders?) not yet reshaped, tulsi/banana have no real model so are not drawn] PLANTS, FLOWERS AND POTS - she has asked three times now
 - **Bougainvillea is still random.** Either remove it entirely or replace it with
   good-looking bougainvillea. Her choice of words: those are the only two options.
 - **The plant next to the elders playing carrom looks like a poorly cut 2D image.**
