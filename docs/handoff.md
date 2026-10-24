@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39z2, playtest block item 5, swings):** Game change: crude swing/slide boxes replaced by real playground gear (src/farmSites.js swingSetGeos, slideGeos, limbGeo): two-seat swing set with A-frames, top bar, thin chains, rubber seats, footings at the mela ground and the anganwadi yard; anganwadi's yellow box ramp became a laddered, railed steel-chute slide (the likely "yellow swing"). Colliders added. Same merged mesh, no new draw call. Build ALL PASSED, budget 28.39 MB. Proof docs/shots/playground-2026-10-24/{anganwadi,anganwadi_swing,mela_swing}.png (headless). Checked: godown/kanta and highway road ends were already done (run-outs in roadGeos and createMandi).
+Gaps: slide is hidden behind the yard wall from the front; swing set is code-built (no free CC0 model searched yet); water tank real model, sabzi/bangle goods still open.
+NEXT: water tanks (real model search), sabzi produce and bangle shop textures.
+
+---
+
 **2026-10-24 (cycle 39z, playtest block item 5, cricket field + badminton court):** Game change: khel maidan mud pads (cricket pitch, run-ups, badminton court) used box 0..1 UVs, so the ground scan was stretched into smears; now metric UVs (one tile per 2.5 m) in src/farmSites.js createKhelMaidan. Pitch now reads as packed clay with fine grain; badminton court already had regulation lines and a mesh net (shown). Build ALL PASSED. Proof docs/shots/khel-2026-10-24/{pitch_walk,pitch,badminton}.png (headless).
 Gaps: outfield grass shows a faint checker repeat; pitch patch edges are hard-edged rectangles; godown/truck road end, water tanks, yellow swing, sabzi/bangle goods still open.
 NEXT: water tanks (real model), yellow swing, godown road end.

@@ -510,6 +510,53 @@ function parapetBoard(id, { w, d, h }, bw) {
   return { id, x: 0, y: 0.35 + h + 0.5, z: d / 2 + 0.24, w: bw ?? Math.min(w + 0.2, 4.4) };
 }
 
+/** Pipe or plank between two points (cylinder when `sq` is false, box otherwise). */
+function limbGeo(a, b, r, color, sq = false, rz = r) {
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), len = A.distanceTo(B);
+  const g = sq ? new THREE.BoxGeometry(r * 2, len, rz * 2) : new THREE.CylinderGeometry(r, r, len, 6);
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+  return bake(g, new THREE.Matrix4().compose(A.clone().add(B).multiplyScalar(0.5), q, new THREE.Vector3(1, 1, 1)), color);
+}
+
+/** Playground swing set: two A-frames, top bar, two swings on thin chains with black rubber seats, swung slightly forward. Local x = bar axis. */
+function swingSetGeos(x, z, ry = 0, frame = 0x2f5fa3) {
+  const geos = [], P = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return [x + v.x, y, z + v.z]; };
+  const top = 2.3;
+  for (const sx of [-1.6, 1.6]) {
+    for (const sz of [-0.8, 0.8]) geos.push(limbGeo(P(sx, 0, sz), P(sx, top, 0), 0.04, frame));
+    geos.push(limbGeo(P(sx, 0.9, -0.36), P(sx, 0.9, 0.36), 0.025, frame)); // cross brace
+    for (const sz of [-0.8, 0.8]) geos.push(bake(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 8), at(...P(sx, 0.03, sz)), 0x8f8a80)); // concrete footing
+  }
+  geos.push(limbGeo(P(-1.7, top, 0), P(1.7, top, 0), 0.05, frame));
+  for (const [i, sx] of [-0.65, 0.65].entries()) {
+    const sw = i ? 0.22 : 0.1; // each seat hangs at a slightly different angle
+    for (const dx of [-0.2, 0.2]) geos.push(limbGeo(P(sx + dx, top - 0.04, 0), P(sx + dx, 0.5, sw * 2.2), 0.008, 0x8d9296));
+    geos.push(bake(new THREE.BoxGeometry(0.46, 0.035, 0.2), at(...P(sx, 0.49, sw * 2.2), ry), 0x1f1d1b));
+  }
+  return geos;
+}
+
+/** Playground slide: ladder, railed platform, curved-lip steel chute run out along local +z. */
+function slideGeos(x, z, ry = 0, frame = 0xd8a22a) {
+  const geos = [], P = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return [x + v.x, y, z + v.z]; };
+  const H = 1.25, W = 0.38;
+  for (const sx of [-W, W]) {
+    geos.push(limbGeo(P(sx, 0, -0.9), P(sx, H, -0.35), 0.03, frame)); // ladder stile
+    geos.push(limbGeo(P(sx, 0, 0.2), P(sx, H, 0.2), 0.03, frame)); // platform post front
+    geos.push(limbGeo(P(sx, H, -0.35), P(sx, H, 0.2), 0.025, frame)); // platform side
+    geos.push(limbGeo(P(sx, H + 0.5, -0.35), P(sx, H + 0.5, 0.2), 0.02, frame)); // hand rail
+    geos.push(limbGeo(P(sx, H, -0.35), P(sx, H + 0.5, -0.35), 0.02, frame));
+    geos.push(limbGeo(P(sx, H, 0.2), P(sx, H + 0.5, 0.2), 0.02, frame));
+  }
+  for (let k = 1; k <= 4; k++) { const t = k / 5; geos.push(limbGeo(P(-W, H * t, -0.9 + 0.55 * t), P(W, H * t, -0.9 + 0.55 * t), 0.018, 0xb7bcc0)); } // rungs
+  geos.push(bake(new THREE.BoxGeometry(W * 2, 0.04, 0.55), at(...P(0, H, -0.08), ry), 0x7a5a3a)); // wooden platform deck
+  const A = P(0, H - 0.02, 0.2), B = P(0, 0.12, 2.5);
+  geos.push(limbGeo(A, B, W, 0xc3c8cc, true, 0.012)); // steel chute
+  for (const sx of [-W, W]) geos.push(limbGeo(P(sx, H + 0.05, 0.2), P(sx, 0.17, 2.5), 0.03, frame, true, 0.014)); // chute side lips
+  for (const sz of [0.9, 1.7]) geos.push(limbGeo(P(-W, 0, sz), P(-W, H - (H * (sz - 0.2)) / 2.3 - 0.02, sz), 0.02, frame), limbGeo(P(W, 0, sz), P(W, H - (H * (sz - 0.2)) / 2.3 - 0.02, sz), 0.02, frame)); // chute props
+  return geos;
+}
+
 /** Anganwadi: pink limewashed one-room childcare centre with a painted yard wall and a small slide. */
 export function createAnganwadi(position) {
   const geos = smallBuilding({ w: 7, d: 5, h: 3.1, wall: 0xe0b6b0, band: 0xc9877f, door: 0x2f6b5d });
@@ -517,13 +564,11 @@ export function createAnganwadi(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(3.6, 0.9, 0.2), at(sx * 3.5, 0.45, 6.5), 0xd9c9a8));
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(-5.2, 0.45, 3.0), 0xd9c9a8));
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(5.2, 0.45, 3.0), 0xd9c9a8));
-  geos.push(bake(new THREE.BoxGeometry(0.9, 0.08, 2.2), new THREE.Matrix4().makeRotationX(0.55).setPosition(3.6, 0.8, 4.6), 0xd8a22a));
-  geos.push(bake(new THREE.BoxGeometry(0.9, 0.08, 0.7), at(3.6, 1.45, 3.6), 0xd8a22a));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.06, 1.5, 0.06), at(3.6 + sx * 0.4, 0.75, 3.6), 0x6d6d6d));
-  geos.push(bake(new THREE.BoxGeometry(0.2, 0.3, 2.4), at(-3.4, 0.2, 4.2), 0x7a5a3a));
-  geos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-3.4, 0.5, 4.2, 0.1), 0x2f6b5d));
+  geos.push(...slideGeos(3.6, 3.4, 0), ...swingSetGeos(-4.3, 4.6, Math.PI / 2));
+  geos.push(bake(new THREE.BoxGeometry(0.2, 0.3, 2.4), at(-1.3, 0.2, 5.4), 0x7a5a3a));
+  geos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-1.3, 0.5, 5.4, 0.1), 0x2f6b5d));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
-  mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 7.2, 5.2]]);
+  mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 7.2, 5.2], [3.6, 4.0, 1.0, 1.3], [-4.3, 3.0, 1.8, 0.2], [-4.3, 6.2, 1.8, 0.2]]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -1065,13 +1110,8 @@ export function createMelaGround(position) {
   geos.push(bake(new THREE.BoxGeometry(5, 0.7, 3), at(0, 0.35, -4), 0x9a5f3c));
   geos.push(bake(new THREE.BoxGeometry(5, 0.05, 3), at(0, 0.72, -4), 0xc4372f));
   for (let i = 0; i < 4; i++) geos.push(bake(new THREE.BoxGeometry(5, 0.4, 0.5), at(0, 0.25, -0.5 + i * 1.5), 0x8e969c)); // plastic-free bench rows (tin)
-  // Swing frame (jhoola).
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 4, 6), new THREE.Matrix4().makeRotationZ(sx * 0.2).setPosition(15 + sx * 1.6, 2, 12), 0x3a5aa6));
-  geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 4, 6), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(15, 3.9, 12), 0x3a5aa6));
-  for (const sx of [-0.6, 0.6]) {
-    geos.push(bake(new THREE.BoxGeometry(0.03, 2.8, 0.03), at(15 + sx, 2.4, 12), 0x5a5a5a));
-    geos.push(bake(new THREE.BoxGeometry(0.6, 0.06, 0.4), at(15 + sx, 1.0, 12), 0x7a5a3a));
-  }
+  // Swing frame (jhoola): a proper two-seat swing set.
+  geos.push(...swingSetGeos(15, 12, 0, 0x3a5aa6));
   // Stalls: three small cloth-roofed counters along the east edge.
   for (let i = 0; i < 3; i++) {
     const z = -12 + i * 6;
@@ -1083,7 +1123,7 @@ export function createMelaGround(position) {
     [-9.7, -5.7, 0.25, 0.25], [9.7, -5.7, 0.25, 0.25], [-9.7, 5.7, 0.25, 0.25], [9.7, 5.7, 0.25, 0.25], // shamiana poles
     [0, -4, 5, 3], // stage
     ...[0, 1, 2, 3].map((i) => [0, -0.5 + i * 1.5, 5, 0.5]), // bench rows
-    [13.4, 12, 0.3, 0.3], [16.6, 12, 0.3, 0.3], // swing legs
+    [13.4, 12, 0.3, 1.8], [16.6, 12, 0.3, 1.8], // swing legs
     ...[0, 1, 2].map((i) => [18, -12 + i * 6, 2.4, 1.2]), // stall counters
   ], boards: [{ id: 'mela', x: 0, y: 3.55, z: -5.7, w: 6.4 }] });
 }
