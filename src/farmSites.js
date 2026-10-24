@@ -513,18 +513,33 @@ function strawMaterial() {
 
 /** One bhoosa (straw) haystack: lathe profile with a bulging flank tapering to a rounded crown, jittered so it reads as piled straw, wound with a rope band. */
 function haystackGeos(x, z, k, n, tone) {
-  const prof = [[1.9, 0], [2.0, 0.5], [1.95, 1.3], [1.7, 2.1], [1.2, 2.8], [0.55, 3.2], [0, 3.35]].map(([r, y]) => new THREE.Vector2(r * k, y * k));
+  // Three stack shapes by n so neighbours differ: rounded beehive, tall peaked cone with a straw tuft, squat wide heap.
+  const shapes = [
+    [[1.9, 0], [2.0, 0.5], [1.95, 1.3], [1.7, 2.1], [1.2, 2.8], [0.55, 3.2], [0, 3.35]],
+    [[1.7, 0], [1.85, 0.6], [1.75, 1.6], [1.45, 2.6], [0.95, 3.5], [0.4, 4.2], [0.12, 4.6], [0, 4.7]],
+    [[2.2, 0], [2.3, 0.4], [2.15, 1.0], [1.7, 1.7], [1.0, 2.2], [0.45, 2.45], [0, 2.55]],
+  ];
+  const prof = shapes[((n % 3) + 3) % 3].map(([r, y]) => new THREE.Vector2(r * k, y * k));
   const g = new THREE.LatheGeometry(prof, 24);
   const p = g.attributes.position;
+  const lean = 0.05 * Math.sin(n * 2.1 + 1);
+  // Rope band radius: profile radius where it crosses height 1.0 * k.
+  const hi = prof.findIndex((q) => q.y >= k);
+  const a = prof[hi - 1], b = prof[hi];
+  const ropeR = a.x + (b.x - a.x) * ((k - a.y) / (b.y - a.y));
   for (let v = 0; v < p.count; v++) {
-    const h = Math.sin(p.getX(v) * 3.1 + p.getY(v) * 2.3 + n) * Math.cos(p.getZ(v) * 2.7 + p.getY(v) * 1.9);
-    p.setXYZ(v, p.getX(v) * (1 + 0.06 * h), p.getY(v), p.getZ(v) * (1 + 0.06 * h));
+    const px = p.getX(v), py = p.getY(v), pz = p.getZ(v);
+    // Vertical creases where forkfuls were laid, plus a low-frequency lumpiness and a slight lean toward the crown.
+    const h = Math.sin(px * 3.1 + py * 2.3 + n) * Math.cos(pz * 2.7 + py * 1.9);
+    const crease = Math.sin(Math.atan2(pz, px) * 7 + n * 1.3) * 0.035;
+    const f = 1 + 0.06 * h + crease;
+    p.setXYZ(v, px * f * (1 + 0.05 * Math.cos(n)) + py * lean, py, pz * f * (1 - 0.05 * Math.cos(n)));
   }
   g.computeVertexNormals();
   // Trampled loose straw skirt round the base so the stack sits in the ground instead of on it.
   const skirt = new THREE.ShapeGeometry(blobShape(2.9 * k, 3 + n));
   skirt.rotateX(-Math.PI / 2);
-  return [bake(skirt, at(x, 0.035, z, n * 1.7), 0x9a8656), bake(g, at(x, 0, z, n), tone), bake(new THREE.TorusGeometry(1.95 * k, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), 0x8a7a50)];
+  return [bake(skirt, at(x, 0.035, z, n * 1.7), 0x9a8656), bake(g, at(x, 0, z, n), tone), bake(new THREE.TorusGeometry(ropeR * 1.02, 0.05, 4, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, 1.0 * k, z), 0x8a7a50)];
 }
 
 /**

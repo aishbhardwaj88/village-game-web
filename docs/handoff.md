@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z93, playtest block item 3, haystack shapes):** Game change: bhoosa haystacks (src/farmSites.js haystackGeos; tubewell, Yadav tea stall, khalihan) now come in three shapes by stack index (rounded beehive, tall peaked cone, squat wide heap) with vertical fork-crease ridges, per-stack ellipse and slight lean, and the rope band follows each profile. Same merged meshes, no new draw call, same triangle count. Build ALL PASSED. Proof docs/shots/haystack-2026-10-25c/{tea,tubewell}.png (headless, player capsule in frame so not tickable; neighbouring stacks now clearly differ). Haystack question for item 3 is answered (they exist, both places); item 3 NOT ticked as a whole. Gaps: no distinct vegetable crop models, skirt still a flat patch.
+NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
+
+---
+
 **2026-10-25 (cycle 39z92, playtest block item 3, khet west/east variety):** Game change: the stubble (west) and sabzi (east) thirds of the khet (src/field.js) now have the same earthen bunds as the middle and four per-plot variants each (stubble: normal / tall pale / bare ploughed / burnt-dark; sabzi: leafy / low / bare bed / lush), via new outerVariant(). Ground vertex colour and existing crop instances only, no new draw call. Build ALL PASSED. Proof docs/shots/khet-2026-10-25b/overview.png (headless, no subject check, not tickable; plot tones differ on both sides, bunds visible). Gaps: crops still not culled on bund vertices, no distinct vegetable crop models (brinjal, okra), item 3 haystack question unchecked this cycle, item 3 NOT ticked as a whole.
 NEXT: haystack check near tubewell and chai stall, triangle cuts (art director's call), spurs once draw calls are saved.
 
