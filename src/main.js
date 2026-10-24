@@ -1134,12 +1134,14 @@ async function main() {
   scene.add(ambientLife.group);
   let bgHousesGroup = null; // src/scenery.js — abadi rows, distance-culled per area each frame
   let fieldCane = null;
+  let fieldSarson = null;
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
     const fieldGroup = buildField(scene);
     fieldCane = fieldGroup.getObjectByName('field_cane');
+    fieldSarson = fieldGroup.getObjectByName('field_sarson');
 
     // Wave 4 item 1 — the nahar (canal), MAP.md: "between the village and the
     // family's own fields... a crossing". Standalone (not folded into any of the
@@ -2602,6 +2604,7 @@ async function main() {
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
       zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
+      if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)
       setPlantFocus(listenerPos.x, listenerPos.z);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);

@@ -190,6 +190,7 @@ function buildCropRows() {
   const c = new THREE.Color();
   let index = 0;
   const caneSpots = [];
+  const sarsonSpots = [];
   for (let r = 0; r < rows; r++) {
     const rz = FIELD_CENTER.z - halfZ + r * between;
     for (let k = 0; k < cols; k++) {
@@ -203,6 +204,7 @@ function buildCropRows() {
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
       if (kind === 'cane') { if (r % 2 === 0 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
       const sabzi = sabziZone || kind === 'veg';
+      if (kind === 'sarson' && (k + r) % 2 === 0 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) sarsonSpots.push([rx, rz]);
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
       if (inKeepOut(rx, rz)) continue; // no crop standing in the tubewell naali / any water footprint
@@ -227,6 +229,7 @@ function buildCropRows() {
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
   mesh.userData.caneSpots = caneSpots;
+  mesh.userData.sarsonSpots = sarsonSpots;
   return mesh;
 }
 
@@ -273,6 +276,48 @@ function buildCaneClumps(spots) {
   return mesh;
 }
 
+/** Mustard in flower: a dense canopy of yellow flower-head triangles over the sarson plots (one InstancedMesh, ~10 tris each) so the
+ * plot reads as a yellow carpet from a distance, not isolated sprigs on brown earth. Stems below are dark green. */
+function buildSarsonBloom(spots) {
+  const pos = [], col = [];
+  const stem = new THREE.Color(0x4a6420), bloomA = new THREE.Color(0xe8b81c), bloomB = new THREE.Color(0xf2cf3a);
+  const push = (pts, cols) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); };
+  for (let i = 0; i < 16; i++) {
+    const a = i * 2.399, r = 0.08 + 0.6 * Math.sqrt((i + 0.5) / 16);
+    const cx = Math.cos(a) * r, cz = Math.sin(a) * r, h = 0.78 + 0.22 * ((i * 7) % 5) / 4;
+    const w = 0.17 + 0.05 * (i % 3), t = a + 1.1;
+    const ux = Math.cos(t) * w, uz = Math.sin(t) * w, vx = -Math.sin(t) * w * 0.8, vz = Math.cos(t) * w * 0.8;
+    const cA = i % 2 ? bloomA : bloomB;
+    push([[cx - ux, h - 0.04, cz - uz], [cx + ux, h - 0.04, cz + uz], [cx + vx, h + 0.06, cz + vz]], [cA, cA, bloomB]);
+  }
+  for (let i = 0; i < 3; i++) {   // short stem bundles tying the canopy to the ground
+    const a = i * 2.1, x = Math.cos(a) * 0.2, z = Math.sin(a) * 0.2;
+    push([[x - 0.03, 0, z], [x + 0.03, 0, z], [x * 1.4, 0.82, z * 1.4]], [stem.clone().multiplyScalar(0.6), stem.clone().multiplyScalar(0.6), stem]);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ name: 'sarson', vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
+  const mesh = new THREE.InstancedMesh(g, mat, spots.length);
+  mesh.name = 'field_sarson';
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  mesh.frustumCulled = false;
+  mesh.userData.groundLevel = true;
+  const d = new THREE.Object3D(), c = new THREE.Color();
+  spots.forEach(([x, z], i) => {
+    const j = Math.sin(x * 12.9 + z * 7.1), k = 1.0 + 0.3 * (0.5 + 0.5 * Math.sin(x * 3.1 - z * 2.3));
+    d.position.set(x + j * 0.2, 0, z + Math.cos(x * 5.3 + z * 3.7) * 0.2); d.rotation.y = j * 3; d.scale.set(k, 0.9 + 0.25 * (0.5 + 0.5 * Math.cos(x * 1.7 + z)), k); d.updateMatrix();
+    mesh.setMatrixAt(i, d.matrix);
+    const v = 0.92 + 0.14 * (0.5 + 0.5 * j);
+    mesh.setColorAt(i, c.setRGB(v, v, v * 0.9));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.instanceColor.needsUpdate = true;
+  return mesh;
+}
+
 export function buildField(scene) {
   const group = new THREE.Group();
   group.name = 'field';
@@ -281,6 +326,7 @@ export function buildField(scene) {
   const crops = buildCropRows();
   group.add(crops);
   if (crops.userData.caneSpots.length) group.add(buildCaneClumps(crops.userData.caneSpots));
+  if (crops.userData.sarsonSpots.length) group.add(buildSarsonBloom(crops.userData.sarsonSpots));
   group.add(buildTrack());
   const verge = buildTrackVerge();
   if (verge) group.add(verge);
