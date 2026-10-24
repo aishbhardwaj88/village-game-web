@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z49, playtest block item 5, playground steel):** Game change: the anganwadi playground (slide chute/ladder, swing frame, chains, seesaw plank) now rides the real metal PBR set in its own mesh (+1 draw call at that zone only, 93 calls there), pipes 10-sided instead of 6 (src/farmSites.js createAnganwadi/limbGeo). Build ALL PASSED, budget 30.68 MB. Proof docs/shots/swing-2026-10-24/{angan,slide}.png (headless, HUD in frame, so not a tickable proof; before shots in swing-2026-10-24-before/). Gaps: I could not identify one "yellow swing" - the only yellow playground item is the slide rails; mela swing (blue) and the house jhoola bench were not re-shot; swing seats still flat black boxes; item 5 NOT ticked as a whole (chakki, cricket/badminton court).
+NEXT: tea glasses/jars, findability walk, chakki.
+
+---
+
 **2026-10-24 (cycle 39z48, playtest block item 6, bazaar wood):** Game change: bazaar row shop counters (body + plank lines) and door frames/leaves/panels now carry the real PBR wood set via the building's existing 'wood' slot (build_bazaar_row.py, bazaar_row.glb rebuilt), zero extra draw calls. Proof docs/shots/bazaar-wood-2026-10-24/{front,close}.png (headless). Build ALL PASSED, budget 30.68 MB.
 NEXT: tea glasses/jars, findability walk.
 

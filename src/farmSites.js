@@ -560,7 +560,7 @@ function parapetBoard(id, { w, d, h }, bw) {
 /** Pipe or plank between two points (cylinder when `sq` is false, box otherwise). */
 function limbGeo(a, b, r, color, sq = false, rz = r) {
   const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), len = A.distanceTo(B);
-  const g = sq ? new THREE.BoxGeometry(r * 2, len, rz * 2) : new THREE.CylinderGeometry(r, r, len, 6);
+  const g = sq ? new THREE.BoxGeometry(r * 2, len, rz * 2) : new THREE.CylinderGeometry(r, r, len, 10);
   const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
   return bake(g, new THREE.Matrix4().compose(A.clone().add(B).multiplyScalar(0.5), q, new THREE.Vector3(1, 1, 1)), color);
 }
@@ -611,9 +611,10 @@ export function createAnganwadi(position) {
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(3.6, 0.9, 0.2), at(sx * 3.5, 0.45, 6.5), 0xd9c9a8));
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(-5.2, 0.45, 3.0), 0xd9c9a8));
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.9, 8), at(5.2, 0.45, 3.0), 0xd9c9a8));
-  geos.push(...slideGeos(3.6, 3.4, 0), ...swingSetGeos(-4.3, 4.6, Math.PI / 2));
+  // Playground steel (slide, swing frame, chains, seesaw) rides the real metal PBR set in its own mesh; the building stays plaster.
+  const playGeos = [...slideGeos(3.6, 3.4, 0), ...swingSetGeos(-4.3, 4.6, Math.PI / 2)];
   geos.push(bake(new THREE.BoxGeometry(0.2, 0.3, 2.4), at(-1.3, 0.2, 5.4), 0x7a5a3a));
-  geos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-1.3, 0.5, 5.4, 0.1), 0x2f6b5d));
+  playGeos.push(bake(new THREE.BoxGeometry(2.6, 0.06, 0.35), at(-1.3, 0.5, 5.4, 0.1), 0x2f6b5d));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 7.2, 5.2], [3.6, 4.0, 1.0, 1.3], [-4.3, 3.0, 1.8, 0.2], [-4.3, 6.2, 1.8, 0.2]]);
   mesh.castShadow = true;
@@ -621,6 +622,10 @@ export function createAnganwadi(position) {
   const group = new THREE.Group();
   group.name = 'anganwadi';
   group.add(mesh);
+  const play = new THREE.Mesh(mergeGeometries(playGeos), vcMat({ set: 'metal', roughness: 0.62, metalness: 0.4 }));
+  play.name = 'anganwadi_playground';
+  play.castShadow = true;
+  group.add(play);
   group.add(placeBoardsMesh([parapetBoard('anganwadi', { w: 7, d: 5, h: 3.1 }, 3.8)], 'anganwadi_boards'));
   group.position.set(position.x, 0, position.z);
   return group;
