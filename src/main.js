@@ -23,7 +23,7 @@ import { buildVegetation, lanesideClusters, buildGardenPlants, GARDEN_KIND } fro
 import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
-import { spawnVehicles, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
+import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
@@ -1525,6 +1525,33 @@ async function main() {
           group.add(npc);
           const walk = createWaypointLoop(npc, [a, edge((s0 + s1) / 2), b, edge((s0 + s1) / 2)], { speed, pauseSeconds: 4 });
           return { group, onFrame: (dt) => walk(dt) };
+        },
+      });
+    }
+    // A cyclist (placeholder rider on a real bicycle model) rides the north edge of the east road, end to end and back.
+    {
+      const s0 = 30, s1 = 170, p0 = roadAt((s0 + s1) / 2);
+      zoneManager.register('east_road_cyclist', {
+        detail: true, x: p0.x, z: p0.z, buildRadius: 75, teardownRadius: 90,
+        build: () => {
+          const group = new THREE.Group();
+          group.name = 'zone_east_road_cyclist';
+          const edge = (s) => { const r = roadAt(s); return { x: r.x + r.uz * 1.6, z: r.z - r.ux * 1.6 }; };
+          const a = edge(s0), b = edge(s1);
+          const rider = createNPC(0x4a5f86, a, 0, 'npc_east_road_cyclist');
+          const bike = buildBikeGroup();
+          bike.group.rotation.y = Math.PI; // bike front is -Z, routines face +Z
+          rider.add(bike.group);
+          group.add(rider);
+          const ride = createWaypointLoop(rider, [a, edge((s0 + s1) / 2), b, edge((s0 + s1) / 2)], { speed: 3.2, pauseSeconds: 3 });
+          const last = new THREE.Vector3().copy(rider.position);
+          return { group, onFrame: (dt) => {
+            ride(dt);
+            const moved = rider.position.distanceTo(last); last.copy(rider.position);
+            const v = dt > 0 ? moved / dt : 0;
+            updateWheel(bike.frontWheel, { linearSpeed: v, radius: 0.34, dt });
+            updateWheel(bike.rearWheel, { linearSpeed: v, radius: 0.34, dt });
+          } };
         },
       });
     }

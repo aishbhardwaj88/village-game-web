@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z84, playtest block item 8, cyclist on the east road):** Game change: a capsule rider on the real bicycle model (buildBikeGroup, now exported from src/vehicles.js) rides the north edge of the east road (s 30-170 m, 3.2 m/s, wheels spin), streamed by zone 'east_road_cyclist' (src/main.js), routed through createWaypointLoop so the route check and collision resolver apply. Build ALL PASSED, budget 30.8 MB, regression 21/22 (only the known 537k-vs-400k triangle line). No proof shot: screenshot tool hides capsule people, moving subject; not tickable. Gaps: rider is a capsule standing through the bike (swaps after 29 Oct), no bullock cart traffic, west/south lanes have no walkers.
+NEXT: key-driven findability walk, cart on the road, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z83, playtest block item 8, street life on the east road):** Game change: two villagers (capsule placeholders until 29 Oct) now pace the south edge of the east road, one stretch each (s 18-95 and 105-175 m), streamed per stretch and built only near the road (src/main.js 'east_road_walkers_a/b', waypoints from roadAt). Build 16/16, check 9 route legs clear, budget 30.8 MB, regression 21/22 (only the known 540k-vs-400k triangle line, unchanged by this). No proof shot: the screenshot tool hides capsule people by rule, so not tickable. Gaps: no cycle/cart traffic, spurs and west/south lanes have no walkers.
 NEXT: bicycle/cart on the road, key-driven findability walk, triangle cuts (art director's call).
 

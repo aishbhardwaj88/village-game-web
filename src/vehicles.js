@@ -181,7 +181,7 @@ function createSpokedWheel(radius, width, spokeCount = 8) {
 
 /** Advances a wheel's rolling spin (angular velocity = linear speed / radius) and,
  * for front wheels, its steer angle. Called once per wheel per frame. */
-function updateWheel(wheel, { linearSpeed, radius, dt, steerAngle = null }) {
+export function updateWheel(wheel, { linearSpeed, radius, dt, steerAngle = null }) {
   // Playtest bug B root cause: this used `.rotation.x` — but the CylinderGeometry
   // tyre's own rotational-symmetry axis is local Y (three.js cylinders default to
   // an axis along Y), and `orient`'s fixed Rz(90°) parent transform only keeps
@@ -829,7 +829,7 @@ function tubeBetween(y1, z1, y2, z2, thickness, color, roughness = 0.6, metalnes
   return tube;
 }
 
-function buildBikeGroup() {
+export function buildBikeGroup() {
   const group = new THREE.Group();
 
   // Bug fix: this whole assembly below is authored with its front (handlebar, fork,
