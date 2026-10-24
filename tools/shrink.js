@@ -4,7 +4,7 @@
  * textures to 1K + convert to WebP -> Meshopt-compress the geometry.
  *
  * Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget]
- *   triangleBudget defaults to 20000.
+ *   triangleBudget defaults to 20000. Optional 4th arg: simplifier error (default 0.01; ~0.3 for foliage).
  */
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -16,7 +16,7 @@ import { resolve } from 'node:path';
 const TEXTURE_MAX_DIM = 1024;
 
 async function main() {
-  const [inputArg, outputArg, budgetArg] = process.argv.slice(2);
+  const [inputArg, outputArg, budgetArg, errorArg] = process.argv.slice(2);
   if (!inputArg || !outputArg) {
     console.error('Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget=20000]');
     process.exit(1);
@@ -45,7 +45,7 @@ async function main() {
   await document.transform(
     dedup({ keepUniqueNames: true }), // keep hb_props distinct from hb_main (same textures, different shadow behaviour)
     weld(),
-    simplify({ simplifier: MeshoptSimplifier, ratio, error: 0.01 }),
+    simplify({ simplifier: MeshoptSimplifier, ratio, error: errorArg ? parseFloat(errorArg) : 0.01 }), // errorArg: raise to ~0.3 for foliage scans, whose leaves are thin and disconnected
     textureCompress({
       encoder: sharp,
       targetFormat: 'webp',

@@ -30,37 +30,71 @@ function loadParts(file, height) {
   return cache.get(file);
 }
 
+const sets = new Set(); // every live distance-limited plant set
+let focusX = 1e9, focusZ = 1e9;
+/** Call every frame with the player/vehicle position: plant sets re-sort so only copies within their radius are drawn. */
+export function setPlantFocus(x, z) {
+  focusX = x; focusZ = z;
+  for (const set of sets) set.refresh();
+}
+
 /**
  * Adds instanced copies of `file` to `group`.
  * items: [{ x, z, y?, scale?, yaw? }]; `height` is the real-world height (m) of an unscaled copy; `tint` 0..1 per-instance
  * brightness variation range (default 0.18); `seed` makes the per-instance variation deterministic.
+ * `radius`: only copies within this many metres of the player are drawn (the 400k triangle budget cannot carry every scanned
+ * plant in the village; a tuft 60 m away is a few pixels). The set re-sorts itself when the player has moved 5 m.
  */
-export function addPlantInstances(group, file, height, items, { tint = 0.18, seed = 1, castShadow = false } = {}) {
+export function addPlantInstances(group, file, height, items, { tint = 0.18, seed = 1, castShadow = false, radius = 45 } = {}) {
   if (!items.length) return group;
   loadParts(file, height).then((parts) => {
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
     let s = seed * 9301 + 49297;
     const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     const rolls = items.map(() => [rnd(), rnd(), rnd(), rnd()]);
-    for (const part of parts) {
+    const insts = parts.map((part) => {
       const inst = new THREE.InstancedMesh(part.geometry, part.material, items.length);
-      items.forEach((it, i) => {
-        const [r0, r1, r2, r3] = rolls[i];
-        const k = (it.scale ?? 1) * (0.8 + r0 * 0.45);
-        e.set((r1 - 0.5) * 0.08, it.yaw ?? r2 * Math.PI * 2, (r3 - 0.5) * 0.08);
-        q.setFromEuler(e);
-        sc.set(k, k * (0.92 + r1 * 0.2), k);
-        m4.compose(v.set(it.x, it.y ?? 0, it.z), q, sc).multiply(part.matrix);
-        inst.setMatrixAt(i, m4);
-        const t = 1 - tint * r2;
-        inst.setColorAt(i, col.setRGB(t, t * (0.97 + r3 * 0.05), t * 0.95));
-      });
       inst.castShadow = castShadow;
       inst.receiveShadow = true;
       inst.name = `plant_${file}`;
       inst.userData.mergedStatic = true;
+      inst.frustumCulled = false; // bounding sphere would go stale as the drawn subset changes; the set hides itself when empty
       group.add(inst);
-    }
+      return inst;
+    });
+    // per-item matrices and colours for each part, computed once
+    const mats = parts.map((part) => items.map((it, i) => {
+      const [r0, r1, r2, r3] = rolls[i];
+      const k = (it.scale ?? 1) * (0.8 + r0 * 0.45);
+      e.set((r1 - 0.5) * 0.08, it.yaw ?? r2 * Math.PI * 2, (r3 - 0.5) * 0.08);
+      q.setFromEuler(e);
+      sc.set(k, k * (0.92 + r1 * 0.2), k);
+      return m4.compose(v.set(it.x, it.y ?? 0, it.z), q, sc).multiply(part.matrix).clone();
+    }));
+    const cols = items.map((it, i) => { const [, r1, r2, r3] = rolls[i]; const t = 1 - tint * r2; return new THREE.Color(t, t * (0.97 + r3 * 0.05), t * 0.95); });
+    const r2lim = radius * radius;
+    let lastX = 1e9, lastZ = 1e9;
+    const set = {
+      refresh(force = false) {
+        if (!insts[0].parent) { sets.delete(set); return; }
+        if (!force && Math.hypot(focusX - lastX, focusZ - lastZ) < 5) return;
+        lastX = focusX; lastZ = focusZ;
+        const near = [];
+        for (let i = 0; i < items.length; i++) {
+          const d2 = (items[i].x - focusX) ** 2 + (items[i].z - focusZ) ** 2;
+          if (d2 <= r2lim) near.push(i);
+        }
+        insts.forEach((inst, pi) => {
+          near.forEach((i, slot) => { inst.setMatrixAt(slot, mats[pi][i]); inst.setColorAt(slot, cols[i]); });
+          inst.count = near.length;
+          inst.visible = near.length > 0;
+          inst.instanceMatrix.needsUpdate = true;
+          if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
+        });
+      },
+    };
+    sets.add(set);
+    set.refresh(true);
   }).catch((err) => console.warn('plant model failed', file, err));
   return group;
 }

@@ -14,7 +14,7 @@ const MODELS = [
   ['wooden_stool_01', 0.42, 3], ['painted_wooden_stool', 0.4, 2], ['wooden_bucket_01', 0.3, 3], ['wooden_bucket_02', 0.28, 2],
   ['wicker_basket_01', 0.34, 2], ['wicker_basket_02', 0.3, 2], ['potted_plant_02', 0.6, 4], ['brass_pot_01', 0.3, 2],
   ['potted_plant_04', 0.3, 2], ['metal_jug', 0.28, 2], ['wooden_crate_01', 0.38, 2], ['wooden_crate_02', 0.34, 2],
-  ['old_tyre', 0.22, 1], ['potted_plant_01', 0.85, 2], ['plastic_monobloc_chair_01', 0.82, 2], ['painted_wooden_bench', 0.5, 1],
+  ['old_tyre', 0.22, 1], ['potted_plant_02', 0.7, 2], ['plastic_monobloc_chair_01', 0.82, 2], ['painted_wooden_bench', 0.5, 1],
 ];
 const TABLE = MODELS.flatMap((m, i) => Array(m[2]).fill(i));
 const CELL = 36; // metres

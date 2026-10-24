@@ -247,7 +247,21 @@ async function main() {
         return { calls: d.renderer.info.render.calls, triangles: d.renderer.info.render.triangles };
       });
       record('draw calls under 150', info.calls < 150, `${info.calls} calls`); // soft early-warning margin, 10 below docs/budgets.md's 150 hard ceiling (raised from 140 2026-10-20) — tools/world-validator.js's per-zone check 8a is the real hard gate
-      record('triangles under 400k', info.triangles < 400000, `${info.triangles} triangles`);
+      let topNote = '';
+      if (info.triangles >= 400000) { // diagnostic: biggest visible triangle contributors
+        const top = await page.evaluate(() => {
+          const d = window.__dopahar; const rows = [];
+          d.scene.traverse((o) => {
+            if (!(o.isMesh || o.isInstancedMesh)) return;
+            for (let a = o; a; a = a.parent) if (!a.visible) return;
+            const g = o.geometry; if (!g || !g.attributes || !g.attributes.position) return; const per = (g.index ? g.index.count : g.attributes.position.count) / 3;
+            rows.push([o.name || o.parent?.name || 'mesh', o.isInstancedMesh ? o.count : 1, Math.round(per * (o.isInstancedMesh ? o.count : 1))]);
+          });
+          return rows.sort((a, b) => b[2] - a[2]).slice(0, 6);
+        });
+        topNote = ' top: ' + JSON.stringify(top);
+      }
+      record('triangles under 400k', info.triangles < 400000, `${info.triangles} triangles${topNote}`);
     }
 
     // ---------------------------------------------------------------------

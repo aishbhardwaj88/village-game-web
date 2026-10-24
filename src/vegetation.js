@@ -310,12 +310,12 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
   // Real Poly Haven scans (src/realPlants.js), thinned to ~40% of the old card count: grass only where it would grow
   // (the keep-outs already exclude drains, kerbs, canal, floors) and in small clumps, not a carpet.
   const thin = (anchors, f) => anchors.map((a) => ({ ...a, count: Math.max(1, Math.round(a.count * f)) }));
-  const tuftPositions = buildClusterPositions(thin(tuftAnchors, 0.55), 0.35);
-  addPlantInstances(group, 'grass_medium_02', 0.5, tuftPositions.map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.5 })), { seed: 3, tint: 0.25 });
+  const tuftPositions = buildClusterPositions(thin(tuftAnchors, 0.4), 0.35);
+  addPlantInstances(group, 'grass_medium_02', 0.5, tuftPositions.map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.5 })), { seed: 3, tint: 0.25, radius: 28 });
 
   const scrubPositions = buildClusterPositions(thin(scrubAnchors, 0.5), 0.5);
   const half = Math.ceil(scrubPositions.length / 2);
-  addPlantInstances(group, 'shrub_01', 0.55, scrubPositions.slice(0, half).map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.6 })), { seed: 5 });
+  addPlantInstances(group, 'shrub_01', 0.55, scrubPositions.slice(0, half).map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.6 })), { seed: 5, radius: 36 });
   return group;
 }
 
@@ -336,6 +336,6 @@ export function buildGardenPlants(plants) {
   const group = new THREE.Group();
   group.name = 'flowering_plants';
   const beds = plants.filter((p) => p.kind === GARDEN_KIND.MARIGOLD && !inKeepOut(p.x, p.z));
-  addPlantInstances(group, 'flower_gazania', 0.4, beds.map((p) => ({ x: p.x, z: p.z, y: p.y ?? 0, scale: (p.scale ?? 1) * 1.15 })), { seed: 11, tint: 0.2 });
+  addPlantInstances(group, 'flower_gazania', 0.4, beds.map((p) => ({ x: p.x, z: p.z, y: p.y ?? 0, scale: (p.scale ?? 1) * 1.15 })), { seed: 11, tint: 0.2, radius: 38 });
   return group;
 }

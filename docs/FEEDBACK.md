@@ -80,7 +80,7 @@ read Hindi.
   illegible board, then fix every one.
 - DONE-WHEN: a shot of each board at game distance where the English reads first.
 
-### 2. PLANTS, FLOWERS AND POTS - she has asked three times now
+### 2. [PARTLY DONE 24 Oct 2026: bougainvillea REMOVED (her option 1), carrom-side plant removed with all card plants, creeper (lime) removed, flower pots = real Poly Haven potted plants in clay pots at doorsteps (code-built Blender pots deleted from every building), grass = real scanned clumps, thinned and distance-limited, marigold beds = real Poly Haven gazania. Proof docs/shots/plants-2026-10-24/{abadi_doorsteps,halwai_grass,flower_stall}.png. Open: clay-pot matkas still faceted (Blender clay_pot), milk cans (the six white cylinders?) not yet reshaped, tulsi/banana have no real model so are not drawn] PLANTS, FLOWERS AND POTS - she has asked three times now
 - **Bougainvillea is still random.** Either remove it entirely or replace it with
   good-looking bougainvillea. Her choice of words: those are the only two options.
 - **The plant next to the elders playing carrom looks like a poorly cut 2D image.**
@@ -144,12 +144,12 @@ flowers - and it is still not there.
 ### 6. BUILDINGS AND STRUCTURES
 - **The cottage-style houses look bad.** Better quality wood, better textures. Use
   real free PBR wood and thatch sets, not flat colour.
-- **Dish TV antennas** read as random concave objects. She likes the new TV antenna;
+- [DONE 24 Oct: dishes removed from the rooftop pick list, antenna kept] **Dish TV antennas** read as random concave objects. She likes the new TV antenna;
   the dishes must be clearly dishes with a bracket and an arm, or be removed.
 - **Water tanks** throughout the village: a free model of a plastic or cement water
   tank is easy to find. Use a real one.
 - **The hand pump in the middle of the house streets was asked to be removed and is
-  still there.** Remove it.
+  still there.** Remove it. [DONE 24 Oct: lane hand pumps removed (src/farmSites.js createLaneWaterCorner); the courtyard pump of the errand stays]
 - Far-LOD background buildings are flat untextured blocks visible in hero shots. Give
   the far LOD painted openings and a plaster tone.
 
