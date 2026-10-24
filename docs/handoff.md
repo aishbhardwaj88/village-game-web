@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z69, playtest block items 6/7, water shoreline + wood trial):** Game change: pond/johad water (src/water.js) now has a broken pale scum line at the waterline and a darkened damp rim where the alpha fades (blob water only; canal/hauz unchanged); same material, no new call. Build 16/16, budget 30.80 MB. Proof docs/shots/water-2026-10-25/{pond_d,johad_d}.png (headless, no subject check, buffalo in frame, not tickable); effect is subtle. Tried real PBR wood on abadi rows and new_shops (wood_slot='props'): it costs 3 draw calls (hero 153-154, bazaar 152, over the 150 ceiling), so REVERTED, nothing shipped; the NEEDS_YOU wood-on-houses question stays open. Gaps: canal/hauz shoreline, house wood still plaster-tan.
+NEXT: collision leftovers (0c), findability walk, post office textures.
+
+---
+
 **2026-10-24 (cycle 39z68, playtest block item 7, water outline):** Game change: pond and johad water surface (src/water.js blobWaterGeometry) was mirrored in z against the mud rings (farmSites blobShape maps shape y to world -z), so one side showed a dark mud crescent inside the water and the water overran the ring on the other; z and winding flipped, water now fills its mud ring exactly. Same mesh, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/water-2026-10-24b/{pond_c,johad_c}.png (before pond_a/johad_a; headless, no subject check, buffalo/HUD-free but not tickable). Gaps: canal/hauz not re-judged, buffalo at pond still peg-legged blocks, no foam/shore wetness gradient on the water itself.
 NEXT: cottage-style house woods (item 6), post office textures, collision leftovers (0c).
 

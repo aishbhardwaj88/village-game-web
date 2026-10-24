@@ -43,7 +43,15 @@ float wHeight(vec2 p) { return wNoise(p * 1.7 + vec2(uTime * 0.18, uTime * 0.11)
       .replace('#include <color_fragment>', `#include <color_fragment>
 float d = uConstDepth >= 0.0 ? uConstDepth : clamp(vDepth, 0.0, 1.0);
 diffuseColor.rgb = mix(uShallow, uDeep, smoothstep(0.0, 0.85, d));
-diffuseColor.a = uOpacity * (uConstDepth >= 0.0 ? 1.0 : smoothstep(0.0, 0.28, d));`)
+diffuseColor.a = uOpacity * (uConstDepth >= 0.0 ? 1.0 : smoothstep(0.0, 0.28, d));
+if (uConstDepth < 0.0) {
+  // shoreline: a broken pale scum line where the water meets the mud, and a damp dark rim just outside it (the fade-out zone)
+  float sn = wNoise(vWaterXZ * 2.6 + 3.0) * 0.6 + wNoise(vWaterXZ * 7.0 - 1.0) * 0.4;
+  float scum = smoothstep(0.06, 0.14, d) * (1.0 - smoothstep(0.14, 0.26, d)) * smoothstep(0.38, 0.62, sn);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.62, 0.60, 0.50), scum * 0.55);
+  diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.16, d));
+  diffuseColor.a = max(diffuseColor.a, uOpacity * scum * 0.5);
+}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 {
   vec2 wp = vWaterXZ * uRippleScale;
