@@ -11,6 +11,7 @@ import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK,
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
+import { roadLegs } from './eastRoad.js';
 import { propCells, createPropCell } from './villageProps.js';
 import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
@@ -112,7 +113,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1490,6 +1491,26 @@ async function main() {
     for (const cell of roofCells(abadiRoofSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 30, teardownRadius: 40, build: () => createRoofCell(cell) });
     // A-2c milestone stones on the east approach (src/milestones.js; positions and distances derived from PLACES).
     for (const site of milestoneSites()) zoneManager.register(site.id, { detail: true, x: site.x, z: site.z, buildRadius: 60, teardownRadius: 75, build: () => createMilestone(site) });
+    // East road (src/eastRoad.js): the east gali carried on to the highway, one streamed zone per leg: earth bed, edging, drain, solar lamps and neem shade.
+    for (const leg of roadLegs()) {
+      const mx = (leg.a.x + leg.b.x) / 2, mz = (leg.a.z + leg.b.z) / 2, half = leg.len / 2;
+      zoneManager.register(leg.id, {
+        detail: true, x: mx, z: mz, buildRadius: 45 + half, teardownRadius: 58 + half,
+        build: () => {
+          const g = new THREE.Group(); // lamps and trees are built in world coordinates, so they sit beside the (turned) leg, not inside it
+          g.name = leg.id + '_zone';
+          g.add(createEastRoadLeg(leg));
+          g.add(createStreetLamps([{ from: leg.a, to: leg.b, width: 5 }], { type: 'solar', everyMetres: 28 }));
+          const ux = (leg.b.x - leg.a.x) / leg.len, uz = (leg.b.z - leg.a.z) / leg.len, trees = [];
+          for (let k = 0; k < Math.floor(leg.len / 22); k++) {
+            const t = (k + 0.5 + ((leg.i + k) % 2) * 0.2) * 22, side = (leg.i + k) % 3 === 0 ? 1 : -1, off = 8 + ((leg.i * 5 + k * 3) % 5);
+            trees.push({ kind: ['neem', 'neem', 'babool', 'peepal'][(leg.i + k) % 4], x: leg.a.x + ux * t - uz * off * side, z: leg.a.z + uz * t + ux * off * side, seed: 60 + leg.i * 7 + k, rotationY: (leg.i + k) * 1.3 });
+          }
+          if (trees.length) g.add(buildTrees(trees));
+          return g;
+        },
+      });
+    }
     zoneManager.register('highway', { visibleRadius: LANDMARK_VIS, x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.

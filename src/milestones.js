@@ -9,9 +9,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLACES } from './freeRoam.js';
+import { roadAt } from './eastRoad.js';
 
-const START = { x: -2.6, z: 76.7 }; // east gali signpost (src/wayfinding.js)
-const SPACING = [30, 75, 120, 165]; // metres along the line towards the highway
+const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 const SIDE = 3.4; // stands this far to the right of the walker, clear of the carriageway
 const CELL = 256;
 const INK = '#2a1a14';
@@ -83,19 +83,17 @@ function regionUV(g, cell, cols) {
 export function milestoneSites() {
   const hw = byId('highway');
   if (!hw) return [];
-  const dx = hw.x - START.x;
-  const dz = hw.z - START.z;
-  const len = Math.hypot(dx, dz);
-  const ux = dx / len;
-  const uz = dz / len;
-  return SPACING.filter((d) => d < len - 10).map((d, i) => ({
-    id: `milestone_${i}`,
-    cell: i,
-    x: START.x + ux * d - uz * SIDE, // right of an eastbound walker (+z side)
-    z: START.z + uz * d + ux * SIDE,
-    ry: Math.atan2(-ux, -uz), // face normal points back west along the road, towards the approaching walker
-    toHighway: Math.round(Math.max(0, len - d) / 5) * 5,
-  }));
+  return SPACING.map((d, i) => {
+    const { x, z, ux, uz } = roadAt(d);
+    return {
+      id: `milestone_${i}`,
+      cell: i,
+      x: x - uz * SIDE, // right of an eastbound walker (+z side)
+      z: z + ux * SIDE,
+      ry: Math.atan2(-ux, -uz), // face normal points back west along the road, towards the approaching walker
+      toHighway: Math.round(Math.max(0, Math.hypot(hw.x - x, hw.z - z)) / 5) * 5,
+    };
+  });
 }
 
 export function createMilestone(site) {

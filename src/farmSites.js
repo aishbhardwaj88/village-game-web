@@ -1631,6 +1631,58 @@ export function createCanalBankRoad(position, name = 'canal_bank_road') {
 }
 
 /**
+ * One leg of the east road (src/eastRoad.js): packed-earth carriageway 5 m wide with twin ruts and dust, broken stone edging on both
+ * sides, and an open drain with stone lips on the north side, bridged by a slab where a lane or field track would cross.
+ * Built along local +x (centre at the midpoint of the leg), turned to the leg's heading. Visual only: edging and drain are kerb height.
+ */
+export function createEastRoadLeg(leg) {
+  const geos = [];
+  const L = leg.len + 1.6; // overlap the next leg so the bend has no gap
+  const W = 5;
+  let seed = 41 + leg.i * 13;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const strip = (w, y, x0, x1, z, color) => geos.push(bake(new THREE.BoxGeometry(x1 - x0, 0.02, w), at((x0 + x1) / 2, y, z), color));
+  const n = Math.ceil(L / 3.5);
+  for (let i = 0; i < n; i++) {
+    const x0 = -L / 2 + (i * L) / n, x1 = -L / 2 + ((i + 1) * L) / n + 0.15;
+    strip(W - 0.3 + rnd() * 0.5, 0.035, x0, x1, (rnd() - 0.5) * 0.25, [0x93805f, 0x8f7c5b, 0x9a8663, 0x92805d][i % 4]);
+  }
+  for (const rz of [-0.9, 0.9]) strip(0.38, 0.05, -L / 2, L / 2, rz, 0x7c6a4b);
+  for (let i = 0; i < L / 3; i++) { const x0 = -L / 2 + rnd() * (L - 6); strip(0.5 + rnd() * 0.6, 0.045, x0, x0 + 2 + rnd() * 4, (rnd() - 0.5) * 1.2, 0xa4916c); }
+  // Broken edging stones (whitewashed once, now dusty), each turned and tinted a little; gaps where carts pull in.
+  for (const side of [-1, 1]) {
+    let x = -L / 2 + rnd();
+    while (x < L / 2 - 1) {
+      const len = 0.5 + rnd() * 0.5;
+      if (rnd() > 0.12) {
+        const h = 0.08 + rnd() * 0.07;
+        geos.push(bake(new THREE.BoxGeometry(len, h, 0.16 + rnd() * 0.06), at(x + len / 2, h / 2, side * (W / 2 + (rnd() - 0.5) * 0.12), (rnd() - 0.5) * 0.1), [0xcfc6ae, 0xbfb59b, 0xd8cfb8, 0xa89e86][Math.floor(rnd() * 4)]));
+      }
+      x += len + 0.05 + (rnd() < 0.1 ? 1.2 : 0);
+    }
+  }
+  // The north drain: dark silty bed between two stone lips, a slab bridge every ~38 m.
+  const dz = -(W / 2 + 0.95);
+  strip(0.55, 0.012, -L / 2, L / 2, dz, 0x3b3226);
+  for (const lz of [dz - 0.36, dz + 0.36]) {
+    let x = -L / 2;
+    while (x < L / 2) {
+      const len = 0.8 + rnd() * 0.6;
+      geos.push(bake(new THREE.BoxGeometry(len, 0.12 + rnd() * 0.06, 0.17), at(x + len / 2, 0.07, lz, (rnd() - 0.5) * 0.06), [0x9a9282, 0xaaa290, 0x8c8474][Math.floor(rnd() * 3)]));
+      x += len + 0.03;
+    }
+  }
+  const slabX = -L / 2 + 8 + rnd() * 10;
+  geos.push(bake(new THREE.BoxGeometry(2.2, 0.1, 1.5), at(slabX, 0.16, dz), 0xaaa290));
+  // Dung cakes, pebbles and a few dry straws of the day's traffic.
+  for (let i = 0; i < L / 9; i++) geos.push(bake(new THREE.CylinderGeometry(0.26, 0.29, 0.05, 8), at(-L / 2 + rnd() * L, 0.06, (rnd() - 0.5) * 3.8), 0x6a5a3a));
+  for (let i = 0; i < L / 2.5; i++) geos.push(bake(new THREE.DodecahedronGeometry(0.07 + rnd() * 0.08, 0), at(-L / 2 + rnd() * L, 0.07, (rnd() - 0.5) * 4.6, rnd() * 3), [0x9b9588, 0x8a8478, 0xa59c88][i % 3]));
+  const g = finishSite(leg.id, geos, { x: (leg.a.x + leg.b.x) / 2, z: (leg.a.z + leg.b.z) / 2 });
+  g.rotation.y = Math.atan2(-(leg.b.z - leg.a.z), leg.b.x - leg.a.x);
+  return g;
+}
+
+/**
  * Village boundary wall (MAP.md organic edge): a low, cared-for compound wall of lime-washed plaster on a
  * brick-red plinth with cement coping, pilasters every 4 m and a gap for each lane that leaves the abadi.
  * `runs` are world-space {a:{x,z}, b:{x,z}} segments; `gaps` are world-space {x,z,w} openings. Visual only, no colliders.
