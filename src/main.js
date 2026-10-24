@@ -2049,10 +2049,11 @@ async function main() {
     }
     // Animals are stationary herds/packs (no routines), so a placement inside a wall or trunk is the
     // only way one can penetrate. Only meshes still attached to the scene (zone built) are checked.
+    const nonAnimalColliders = STATIC_COLLIDERS.filter((b) => !b.animalBox); // an animal's own box is not a wall
     for (const a of ANIMAL_MESHES) {
       if (!a.mesh.parent) continue;
       a.placements.forEach((pl, i) => {
-        const clearance = minSignedDistanceToColliders({ x: pl.x, z: pl.z }, a.radius, STATIC_COLLIDERS);
+        const clearance = minSignedDistanceToColliders({ x: pl.x, z: pl.z }, a.radius, nonAnimalColliders);
         if (clearance < 0) console.warn(`[collision guard] ${a.mesh.name}[${i}] overlaps a wall: pos=(${pl.x.toFixed(2)},${pl.z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
       });
     }

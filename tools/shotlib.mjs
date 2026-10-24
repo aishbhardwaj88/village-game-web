@@ -74,13 +74,13 @@ export async function measureFps(page, ms = 1500) {
 }
 
 /** Hide overlays, player and capsule people. Returns a restore() fn. */
-export async function hideForCapture(page, { people }) {
+export async function hideForCapture(page, { people, player = false }) {
   await page.evaluate((css) => { if (document.getElementById('shot-hide-css')) return; const st = document.createElement('style'); st.id = 'shot-hide-css'; st.textContent = css; document.head.appendChild(st); }, HIDE_CSS);
-  await page.evaluate(({ people }) => {
+  await page.evaluate(({ people, player }) => {
     const d = window.__dopahar;
     d.__hidden = [];
     const hide = (o) => { if (o.visible) { o.visible = false; d.__hidden.push(o); } };
-    if (d.player) hide(d.player);
+    if (d.player && !player) hide(d.player);
     if (!people) {
       for (const n of d.npcs || []) hide(n);
       d.scene.traverse((o) => {
@@ -88,7 +88,7 @@ export async function hideForCapture(page, { people }) {
         else if (/^(npc_|person|people|villager|crowd|ped_)/i.test(o.name || '')) hide(o);
       });
     }
-  }, { people });
+  }, { people, player });
 }
 export async function restoreAfterCapture(page) {
   await page.evaluate(() => { document.getElementById('shot-hide-css')?.remove(); const d = window.__dopahar; for (const o of d.__hidden || []) o.visible = true; d.__hidden = []; });
@@ -140,10 +140,10 @@ async function checkSubject(page, subject) {
  * The one capture function proof shots should use. Throws if the subject is not
  * visibly in frame. Returns { path, fps, headless }.
  */
-export async function cleanCapture(page, path, { subject, people = false, settleMs = 1200 } = {}) {
+export async function cleanCapture(page, path, { subject, people = false, player = false, settleMs = 1200 } = {}) {
   mkdirSync(dirname(path), { recursive: true });
   await dismissOverlays(page);
-  await hideForCapture(page, { people });
+  await hideForCapture(page, { people, player });
   await page.waitForTimeout(settleMs);
   try {
     if (subject) {

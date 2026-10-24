@@ -228,6 +228,15 @@ const COW_TINTS = [0xd9c9a0, 0xe8e0d0, 0xc4a876]; // tan/white — cow
 const BUFFALO_TINTS = [0x3a3a38, 0x2a2a28]; // dark grey/black — buffalo
 const DOG_TINTS = [0xb08858, 0x8a6a42, 0xc9b088];
 
+/** Axis-aligned world box around a stationary animal (body runs along local z, yaw `rotY`),
+ * so the player, NPCs and vehicles go around it instead of through it (A0 collision, FEEDBACK 0c).
+ * `animalBox` lets the dev penetration guard skip an animal's own box. */
+function animalColliderBox(x, z, rotY, halfLen, halfWid) {
+  const s = Math.abs(Math.sin(rotY)), c = Math.abs(Math.cos(rotY));
+  const hx = s * halfLen + c * halfWid, hz = c * halfLen + s * halfWid;
+  return { minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, animalBox: true };
+}
+
 const _herdMat = new THREE.Matrix4();
 const _herdPos = new THREE.Vector3();
 const _herdQuat = new THREE.Quaternion();
@@ -256,6 +265,7 @@ export function createCattleHerd(placements) {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'cattle_herd';
+  mesh.userData.colliderBoxes = placements.map((p) => animalColliderBox(p.x, p.z, p.rotationY ?? 0, p.buffalo ? 1.05 : 0.95, p.buffalo ? 0.5 : 0.42));
   ANIMAL_MESHES.push({ mesh, placements, radius: COW_FOOTPRINT_RADIUS });
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -295,6 +305,7 @@ export function createDogPack(placements) {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
   const mesh = new THREE.InstancedMesh(geometry, material, placements.length);
   mesh.name = 'dog_pack';
+  mesh.userData.colliderBoxes = placements.map((p) => animalColliderBox(p.x, p.z, p.rotationY ?? 0, 0.42, 0.2));
   ANIMAL_MESHES.push({ mesh, placements, radius: DOG_FOOTPRINT_RADIUS });
   mesh.castShadow = true;
   mesh.receiveShadow = true;

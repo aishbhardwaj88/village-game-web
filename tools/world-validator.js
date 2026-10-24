@@ -351,6 +351,17 @@ async function main() {
     // 'tree_foliage' (trunks, src/trees.js) added: tree trunks now carry real colliders (A0).
     // 'site_props' (farmSites.js pumps, charpais, poles, tubewell) and 'street_lamp' (src/props.js) added: they now carry real colliders (A0).
     const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick','tree_foliage','site_props','street_lamp','wayfinding','hb_plaster','hb_wood','hb_props'].includes(name);"); // hb_* = Blender kachcha homestead yard props (charpai, chulha, chabutra, matka stand, manger, haystack), now solid (A0)
+    // Animal herds/packs are InstancedMeshes (skipped by the triangle sampler above) and now carry real
+    // colliders (A0, FEEDBACK 24 Oct 0c): count each instance's own world position as real geometry.
+    solidPoints.push(...(await page.evaluate(() => {
+      const d = window.__dopahar;
+      const pts = [];
+      d.scene.traverse((o) => {
+        if (!o.isInstancedMesh || (o.name !== 'cattle_herd' && o.name !== 'dog_pack')) return;
+        for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, new d.Matrix4()); const m = new d.Matrix4(); o.getMatrixAt(i, m); pts.push(m.elements[12], m.elements[14]); }
+      });
+      return pts;
+    })));
     console.log(`${solidPoints.length / 2} real solid-surface sample points.`);
 
     // -------------------------------------------------------------------

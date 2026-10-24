@@ -58,7 +58,7 @@ and the buildings were still being built around her as she walked.
 - DONE-WHEN: walking the house-to-mandi route and the house-to-khet route, no object
   appears inside the frame. Record both walks as frame sequences and look at them.
 
-**0c. COLLISION STILL FAILS. She hit it again tonight.**
+**0c. [PARTLY DONE 24 Oct 2026: animals (cattle herds, dog packs) now carry real colliders, validator check 5 extended to count them; real key-walk (hold W, 30 s, straight at target) stopped at a tree (0.75 m from trunk centre), a wall, a cow (1.46 m from its centre) and a building, tmp/collide-walk.mjs, shots docs/shots/collision-2026-10-24/{cow,wall,building}.png; still open: cart legs, vehicle-vs-vehicle audit, animal routines in check 9] COLLISION STILL FAILS. She hit it again tonight.**
 Her words: the capsule is still crossing animals, buildings and trees.
 - Humans must not pass through walls, buildings, animals or trees. They go around.
 - Finish every open A0 item: colliders on cart legs, wells, pond and johad edges, the
