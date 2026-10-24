@@ -130,6 +130,49 @@ function buildFieldGround(x0, x1, tint, name) {
 /** Patchwork of plots in the middle third (real khets are never one crop): sarson in yellow flower, young green wheat, ripe golden wheat, bare
  * ploughed earth and a small vegetable patch. Deterministic per ~22 x 20 m plot, with the plot edge wobbled so borders are not ruler-straight. */
 const PLOT_KINDS = ['sarson', 'wheat_young', 'wheat_gold', 'sarson', 'ploughed', 'cane', 'sarson', 'wheat_gold', 'veg', 'sarson', 'sarson', 'wheat_young'];
+
+/** Shared procedural leaf atlas for the crop meshes (replaces flat vertex colour): left half = blade (dark edge, pale midrib, fine
+ * longitudinal veins, base-to-tip fade), right half = cane stalk (fine fibres + dark nodes every ~0.18 v), plus a speckle strip
+ * for mustard flower heads in the top rows. Greyscale-ish so the vertex/instance colour still sets the hue. */
+let _bladeTex = null;
+function bladeAtlas() {
+  if (_bladeTex) return _bladeTex;
+  const W = 256, H = 256;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  g.fillStyle = '#d8d8d8'; g.fillRect(0, 0, W, H);
+  for (let x = 0; x < W / 2; x++) { // blade half, u = x / 128, v from bottom (y = H - v*H)
+    const u = x / (W / 2), mid = 1 - Math.abs(u - 0.5) * 2; // 1 at the midrib, 0 at the edges
+    for (let y = 0; y < H; y++) {
+      const v = 1 - y / H;
+      let b = 0.62 + 0.3 * Math.pow(mid, 0.6) + 0.16 * Math.exp(-Math.pow((u - 0.5) / 0.035, 2));
+      b *= 0.78 + 0.22 * v;
+      b *= 0.9 + 0.1 * Math.sin(u * 150 + Math.sin(v * 9 + u * 30) * 1.4);
+      b *= 0.94 + 0.12 * rnd();
+      const k = Math.max(0, Math.min(255, Math.round(b * 255)));
+      g.fillStyle = `rgb(${k},${k},${k})`; g.fillRect(x, y, 1, 1);
+    }
+  }
+  for (let x = W / 2; x < W; x++) { // stalk half
+    const u = (x - W / 2) / (W / 2);
+    for (let y = 0; y < H; y++) {
+      const v = 1 - y / H, ring = Math.abs(((v * 5.5) % 1) - 0.02);
+      let b = 0.78 + 0.12 * Math.sin(u * 90) + 0.06 * (rnd() - 0.5);
+      if (ring < 0.045) b *= 0.5; else if (ring < 0.09) b *= 0.8 + (ring - 0.045) * 4;
+      b *= 0.86 + 0.14 * Math.sin(u * Math.PI);
+      const k = Math.max(0, Math.min(255, Math.round(b * 255)));
+      g.fillStyle = `rgb(${k},${k},${k})`; g.fillRect(x, y, 1, 1);
+    }
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.anisotropy = 4;
+  _bladeTex = t;
+  return t;
+}
+
 function plotKind(rx, rz) {
   const wob = Math.sin(rz * 0.21) * 2.2 + Math.sin(rx * 0.17) * 1.6;
   const ix = Math.floor((rx + wob + 40) / 22), iz = Math.floor((rz + wob * 0.6 + 70) / 20);
@@ -150,6 +193,7 @@ function buildCropRows() {
 
   const pos = [];
   const col = [];
+  const uv = [];
   const base = new THREE.Color(0x4f5f1f);
   const tipWheat = new THREE.Color(0xd2b84e);
   for (let i = 0; i < 6; i++) {
@@ -163,6 +207,7 @@ function buildCropRows() {
     const bx = ca * r0, bz = sa * r0;
     pos.push(bx - px, 0, bz - pz, bx + px, 0, bz + pz, bx + ca * lean, h, bz + sa * lean);
     col.push(base.r, base.g, base.b, base.r, base.g, base.b, tipWheat.r, tipWheat.g, tipWheat.b);
+    uv.push(0, 0, 0.5, 0, 0.25, 1);
   }
   // Four flower / ear spikes per tuft, standing at the top (one triangle each). Cream-gold by default; the per-instance colour turns them
   // saturated mustard yellow (sarson in flower), pale gold (ripe wheat ears) or leaf green (young wheat, sabzi tops).
@@ -173,12 +218,14 @@ function buildCropRows() {
     const px = -sa * 0.05, pz = ca * 0.05;
     pos.push(cx - px, h0, cz - pz, cx + px, h0, cz + pz, cx + ca * 0.02, h0 + 0.17, cz + sa * 0.02);
     for (let k = 0; k < 3; k++) col.push(0.95, 0.8, 0.28);
+    uv.push(0, 0, 0.5, 0, 0.25, 1);
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   geometry.computeVertexNormals();
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide });
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, map: bladeAtlas(), roughness: 1, side: THREE.DoubleSide });
   material.name = 'crop';
   const mesh = new THREE.InstancedMesh(geometry, material, cols * rows);
   mesh.castShadow = false;
@@ -235,14 +282,14 @@ function buildCropRows() {
 
 /** Sugarcane blocks inside the khet: ~2.6 m clumps (6 pale-green jointed stalks, arching leaf blades), one InstancedMesh for every cane plot. */
 function buildCaneClumps(spots) {
-  const pos = [], col = [];
+  const pos = [], col = [], uv = [];
   const stalk = new THREE.Color(0x8a9a44), leaf = new THREE.Color(0x4f7a2a), leafTip = new THREE.Color(0x8aa23a);
-  const tri = (a, b, c2, ca, cb, cc) => { pos.push(...a, ...b, ...c2); col.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cc.r, cc.g, cc.b); };
+  const tri = (a, b, c2, ca, cb, cc, stalkUv) => { pos.push(...a, ...b, ...c2); col.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cc.r, cc.g, cc.b); uv.push(...(stalkUv ? [0.52, 0, 0.98, 0, 0.75, 1] : [0.02, 0, 0.48, 0, 0.25, 1])); };
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2, r = 0.12 + 0.05 * (i % 2), h = 2.3 + 0.12 * ((i * 5) % 4);
     const x = Math.cos(a) * r, z = Math.sin(a) * r, px = -Math.sin(a) * 0.022, pz = Math.cos(a) * 0.022;
-    tri([x - px, 0, z - pz], [x + px, 0, z + pz], [x + px * 0.6, h, z + pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk.clone().multiplyScalar(0.7), stalk);
-    tri([x - px, 0, z - pz], [x + px * 0.6, h, z + pz * 0.6], [x - px * 0.6, h, z - pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk, stalk);
+    tri([x - px, 0, z - pz], [x + px, 0, z + pz], [x + px * 0.6, h, z + pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk.clone().multiplyScalar(0.7), stalk, true);
+    tri([x - px, 0, z - pz], [x + px * 0.6, h, z + pz * 0.6], [x - px * 0.6, h, z - pz * 0.6], stalk.clone().multiplyScalar(0.7), stalk, stalk, true);
   }
   for (let i = 0; i < 14; i++) {
     const a = (i / 14) * Math.PI * 2 + 0.2 * (i % 3), y0 = 1.0 + 0.1 * ((i * 7) % 12), len = 0.9 + 0.08 * ((i * 3) % 6);
@@ -255,8 +302,9 @@ function buildCaneClumps(spots) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ name: 'cane', vertexColors: true, roughness: 0.85, side: THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ name: 'cane', vertexColors: true, map: bladeAtlas(), roughness: 0.85, side: THREE.DoubleSide });
   const mesh = new THREE.InstancedMesh(g, mat, spots.length);
   mesh.name = 'field_cane';
   mesh.castShadow = false;
@@ -276,29 +324,59 @@ function buildCaneClumps(spots) {
   return mesh;
 }
 
-/** Mustard in flower: a dense canopy of yellow flower-head triangles over the sarson plots (one InstancedMesh, ~10 tris each) so the
- * plot reads as a yellow carpet from a distance, not isolated sprigs on brown earth. Stems below are dark green. */
+/** Procedural mustard flower-head card: a raceme of tiny four-petal yellow florets climbing a green stem, buds at the tip, cut out with alpha. */
+function sarsonBloomTexture() {
+  const W = 128, H = 128;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  g.clearRect(0, 0, W, H);
+  g.strokeStyle = '#4e6a22'; g.lineWidth = 2.5;
+  for (let s2 = 0; s2 < 5; s2++) { // five branching racemes
+    const x0 = 64 + (s2 - 2) * 14, lean = (s2 - 2) * 9;
+    g.beginPath(); g.moveTo(x0, H); g.quadraticCurveTo(x0 + lean * 0.4, H * 0.5, x0 + lean, 14 + (s2 % 2) * 12); g.stroke();
+    for (let i = 0; i < 22; i++) {
+      const t = i / 21, x = x0 + lean * t * t + (rnd() - 0.5) * 9, y = (14 + (s2 % 2) * 12) + t * 62 + (rnd() - 0.5) * 5;
+      const r = 3.6 - t * 1.4, hue = 46 + rnd() * 6;
+      g.fillStyle = `hsl(${hue},95%,${52 + rnd() * 8}%)`;
+      for (let p = 0; p < 4; p++) { const a = p * Math.PI / 2 + rnd() * 0.5; g.beginPath(); g.ellipse(x + Math.cos(a) * r * 0.8, y + Math.sin(a) * r * 0.8, r * 0.75, r * 0.5, a, 0, 6.3); g.fill(); }
+      g.fillStyle = '#8a9a24'; g.beginPath(); g.arc(x, y, 1, 0, 6.3); g.fill();
+    }
+    g.fillStyle = '#9ab02a'; for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(x0 + lean + (rnd() - 0.5) * 6, 10 + (s2 % 2) * 12 + rnd() * 10, 2.2, 0, 6.3); g.fill(); }
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** Mustard in flower: a dense canopy of alpha-cut flower-head cards (racemes of yellow florets, see sarsonBloomTexture) over the sarson
+ * plots (one InstancedMesh, 2 triangles per card) so the plot reads as a yellow carpet from a distance, not isolated sprigs. Stems below
+ * are dark green. */
 function buildSarsonBloom(spots) {
-  const pos = [], col = [];
-  const stem = new THREE.Color(0x4a6420), bloomA = new THREE.Color(0xe8b81c), bloomB = new THREE.Color(0xf2cf3a);
-  const push = (pts, cols) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); };
-  for (let i = 0; i < 16; i++) {
-    const a = i * 2.399, r = 0.08 + 0.6 * Math.sqrt((i + 0.5) / 16);
-    const cx = Math.cos(a) * r, cz = Math.sin(a) * r, h = 0.78 + 0.22 * ((i * 7) % 5) / 4;
-    const w = 0.17 + 0.05 * (i % 3), t = a + 1.1;
-    const ux = Math.cos(t) * w, uz = Math.sin(t) * w, vx = -Math.sin(t) * w * 0.8, vz = Math.cos(t) * w * 0.8;
-    const cA = i % 2 ? bloomA : bloomB;
-    push([[cx - ux, h - 0.04, cz - uz], [cx + ux, h - 0.04, cz + uz], [cx + vx, h + 0.06, cz + vz]], [cA, cA, bloomB]);
+  const pos = [], col = [], uv = [];
+  const stem = new THREE.Color(0x4a6420);
+  const push = (pts, cols, uvs) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); uvs.forEach((q) => uv.push(...q)); };
+  const white = new THREE.Color(1, 1, 1);
+  for (let i = 0; i < 12; i++) {
+    const a = i * 2.399, r = 0.08 + 0.55 * Math.sqrt((i + 0.5) / 12);
+    const cx = Math.cos(a) * r, cz = Math.sin(a) * r, h = 0.62 + 0.2 * ((i * 7) % 5) / 4;
+    const w = 0.3 + 0.06 * (i % 3), t = a + 1.1, hh = 0.34;
+    const ux = Math.cos(t) * w, uz = Math.sin(t) * w, tilt = 0.05;
+    const A = [cx - ux, h - hh * 0.5, cz - uz], B = [cx + ux, h - hh * 0.5, cz + uz], C = [cx + ux, h + hh * 0.5, cz + uz - tilt], D = [cx - ux, h + hh * 0.5, cz - uz - tilt];
+    push([A, B, C], [white, white, white], [[0, 0], [1, 0], [1, 1]]);
+    push([A, C, D], [white, white, white], [[0, 0], [1, 1], [0, 1]]);
   }
   for (let i = 0; i < 3; i++) {   // short stem bundles tying the canopy to the ground
     const a = i * 2.1, x = Math.cos(a) * 0.2, z = Math.sin(a) * 0.2;
-    push([[x - 0.03, 0, z], [x + 0.03, 0, z], [x * 1.4, 0.82, z * 1.4]], [stem.clone().multiplyScalar(0.6), stem.clone().multiplyScalar(0.6), stem]);
+    push([[x - 0.03, 0, z], [x + 0.03, 0, z], [x * 1.4, 0.7, z * 1.4]], [stem.clone().multiplyScalar(0.6), stem.clone().multiplyScalar(0.6), stem], [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ name: 'sarson', vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ name: 'sarson', vertexColors: true, map: sarsonBloomTexture(), alphaTest: 0.5, roughness: 0.9, side: THREE.DoubleSide });
   const mesh = new THREE.InstancedMesh(g, mat, spots.length);
   mesh.name = 'field_sarson';
   mesh.castShadow = false;
