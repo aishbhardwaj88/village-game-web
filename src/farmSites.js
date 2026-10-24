@@ -315,6 +315,23 @@ export function createTubewell(position) {
   return group;
 }
 
+/** Two bhoosa haystacks stacked behind the Yadav tea stall (fodder for the dairy cattle); reuses the shared straw material. */
+export function createTeaStallHaystacks(position) {
+  const hay = [[0, 0, 0.6, 1, 0xb4a276], [-2.6, 2.4, 0.42, 2, 0xc0ad80]];
+  const geos = [];
+  for (const [x, z, k, n, tone] of hay) geos.push(...haystackGeos(x, z, k, n, tone));
+  const mesh = new THREE.Mesh(mergeGeometries(geos), strawMaterial());
+  mesh.name = 'tea_stall_haystacks';
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData.colliderBoxes = orientedSolids(position, 0, hay.map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k]));
+  const group = new THREE.Group();
+  group.name = 'tea_stall_haystacks_prop';
+  group.add(mesh);
+  group.position.set(position.x, 0, position.z);
+  return group;
+}
+
 /**
  * Sugarcane belt: rows of 3 m clumps, 4 stalks + arching leaf blades each, one InstancedMesh.
  * Rows run along x with a one-clump-wide gap every few rows so the belt can be crossed (a rough maze).

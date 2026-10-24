@@ -112,7 +112,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1458,6 +1458,7 @@ async function main() {
         return { group, onFrame: (dt) => herd.update(dt) };
       },
     });
+    zoneManager.register('tea_haystacks', { visibleRadius: 45, x: -58, z: 76, buildRadius: 30, teardownRadius: 40, build: () => createTeaStallHaystacks({ x: -58, z: 76 }) });
     zoneManager.register('tubewell', { detail: true, x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
     zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
     zoneManager.register('khalihan', { detail: true, x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
