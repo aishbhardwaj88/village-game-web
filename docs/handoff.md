@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z28, playtest block items 1/4, Banta shop + Chaat thela real materials):** Game change: Banta kiosk and Chaat thela (src/farmSites.js, new finishSite opts.sets) now use real PBR wood (planks, posts, crate, stool, lime basket, spokes) and real metal (awning, ice tub, steel pot, rim, umbrella pole) instead of plaster tint; thela got spoked wheels (steel rim, hub, 8 spokes, were black discs) and an open wooden display tray with papdi/chana heaps (was a white box). Two extra local draw calls per stall, zones only drawn within 14 m. Build ALL PASSED, budget 29.44 MB. Proof docs/shots/bantachaat-2026-10-24/{banta,chaat_after2}.png (headless photo camera, has HUD, no subject check, so nothing ticked). Gaps: no see-through glass possible in merged meshes; shopkeeper capsules stay.
+NEXT: other shops' interior goods (item 4), wood in bazaar row, animal models.
+
+---
+
 **2026-10-24 (cycle 39z27, playtest block item 4/2, bazaar painted props):** Game change: the bazaar row's painted props (tyres, pump, spanners, bicycle, barber chair, bottles, plastic chairs; ~100 objects in tools/blender/build_bazaar_row.py) were plaster-textured; they now carry the real metal PBR set via Kit(tex_override={'props': ('metal', 1.0)}), same slot so no new draw call (materials still 3). bazaar_row.glb rebuilt. Build ALL PASSED, budget 29.44 MB. Proof docs/shots/bazaarprops-2026-10-24/{puncture,barber}.png (+_hi) are headless and the counter/awning hides the props from player height, so judged only roughly; nothing ticked. Honest gap: plastic chairs and bottles now read as painted metal, not plastic; wood in the bazaar is still plaster-tan.
 NEXT: wood in bazaar row (own PBR set, needs a draw-call saving first), other shops' interior goods, animal models.
 

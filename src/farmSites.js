@@ -699,6 +699,13 @@ function finishSite(name, geos, position, opts = {}) {
   const group = new THREE.Group();
   group.name = name;
   group.add(mesh);
+  // Optional extra material groups ({ wood: [...geos], metal: [...geos] }): real PBR sets for the parts that are not plaster.
+  for (const [set, list] of Object.entries(opts.sets || {})) {
+    if (!list.length) continue;
+    const m = new THREE.Mesh(mergeGeometries(list), vcMat({ set, roughness: opts.roughness }));
+    m.castShadow = true; m.receiveShadow = true; m.name = name + '_' + set;
+    group.add(m);
+  }
   if (opts.boards) group.add(placeBoardsMesh(opts.boards, name + '_boards')); // bilingual signboard(s), one draw call (src/placeBoards.js)
   group.position.set(position.x, 0, position.z);
   return group;
@@ -935,27 +942,27 @@ export function createJalebiStall(position) {
 /** Banta shop (goli soda, nimbu pani): a small plank kiosk with a counter, a wooden crate of marble-stoppered soda bottles,
  *  a steel tub of ice, a lime basket and a tin awning. Unbranded, non-alcoholic. */
 export function createBantaShop(position) {
-  const geos = [];
-  const box = (w, h, d, x, y, z, c, ry = 0) => geos.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
+  const geos = [], wood = [], metal = [];
+  const box = (w, h, d, x, y, z, c, ry = 0, to = wood) => to.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
   box(2.6, 0.1, 1.2, 0, 0.95, 0, 0x8a6a45); // counter top
   box(2.5, 0.9, 0.08, 0, 0.5, 0.55, 0x7a5a3a); // plank front
   box(0.08, 0.9, 1.1, -1.25, 0.5, 0, 0x7a5a3a);
   box(0.08, 0.9, 1.1, 1.25, 0.5, 0, 0x7a5a3a);
   box(2.6, 2.3, 0.08, 0, 1.15, -0.6, 0x9a7a52); // back plank wall
   for (const sx of [-1, 1]) box(0.1, 2.5, 0.1, sx * 1.3, 1.25, 0.65, 0x6f5233); // awning posts
-  geos.push(bake(new THREE.BoxGeometry(3.2, 0.05, 1.8), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.55, 0.2), 0x8e969c)); // tin awning
+  metal.push(bake(new THREE.BoxGeometry(3.2, 0.05, 1.8), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.55, 0.2), 0x8e969c)); // tin awning
   box(0.8, 0.28, 0.5, -0.8, 1.14, 0, 0x7a5a3a); // soda crate
   for (let i = 0; i < 6; i++) { // goli soda bottles standing in the crate, pale green glass
     const bx = -1.05 + (i % 3) * 0.25, bz = -0.12 + Math.floor(i / 3) * 0.24;
     geos.push(bake(new THREE.CylinderGeometry(0.05, 0.06, 0.26, 8), at(bx, 1.42, bz), 0x9fc4b0));
     geos.push(bake(new THREE.CylinderGeometry(0.02, 0.05, 0.1, 8), at(bx, 1.6, bz), 0x9fc4b0));
   }
-  geos.push(bake(new THREE.CylinderGeometry(0.38, 0.3, 0.32, 14), at(0.4, 1.17, 0), 0xb9bdc0)); // steel ice tub
+  metal.push(bake(new THREE.CylinderGeometry(0.38, 0.3, 0.32, 14), at(0.4, 1.17, 0), 0xb9bdc0)); // steel ice tub
   geos.push(bake(new THREE.CylinderGeometry(0.34, 0.34, 0.02, 14), at(0.4, 1.34, 0), 0xe4eef0)); // ice
-  geos.push(bake(new THREE.CylinderGeometry(0.28, 0.22, 0.2, 12), at(0.95, 1.1, 0.2), 0x9a7a52)); // lime basket
+  wood.push(bake(new THREE.CylinderGeometry(0.28, 0.22, 0.2, 12), at(0.95, 1.1, 0.2), 0x9a7a52)); // lime basket
   geos.push(bake(new THREE.SphereGeometry(0.12, 8, 6), at(0.95, 1.25, 0.2), 0x9cb83a)); // limes
   box(0.6, 0.35, 0.6, 1.9, 0.18, 0.3, 0x7a5a3a); // customer stool
-  const site = finishSite('banta_shop', geos, position, { solids: [[0, 0, 2.7, 1.3], [1.9, 0.3, 0.6, 0.6]], boards: [{ id: 'banta', x: 0, y: 2.1, z: 0.65, w: 2.4 }] });
+  const site = finishSite('banta_shop', geos, position, { sets: { wood, metal }, solids: [[0, 0, 2.7, 1.3], [1.9, 0.3, 0.6, 0.6]], boards: [{ id: 'banta', x: 0, y: 2.1, z: 0.65, w: 2.4 }] });
   site.add(createNPC(0xc0392b, { x: 0.1, z: -0.2 }, 0, 'npc_banta_keeper')); // shopkeeper behind the counter (capsule until the 3D people arrive)
   return site;
 }
@@ -963,22 +970,29 @@ export function createBantaShop(position) {
 /** Chaat thela: a two-wheeled push-cart with a glass-fronted chaat case, a steel pot of tamarind water, a stack of leaf
  *  bowls, a hanging bulb and a faded umbrella. Unbranded. */
 export function createChaatThela(position) {
-  const geos = [];
-  const box = (w, h, d, x, y, z, c, ry = 0) => geos.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
+  const geos = [], wood = [], metal = [];
+  const box = (w, h, d, x, y, z, c, ry = 0, to = wood) => to.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
   box(2.2, 0.1, 1.2, 0, 0.9, 0, 0x8a6a45); // cart bed
   box(2.2, 0.5, 0.08, 0, 0.62, 0.56, 0x7a5a3a);
   box(2.2, 0.5, 0.08, 0, 0.62, -0.56, 0x7a5a3a);
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.46, 0.46, 0.07, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(sx * 0.6, 0.46, 0.7), 0x3a3a3a)); // wheels
+  for (const sx of [-1, 1]) { // spoked cart wheels: steel rim, hub, eight wooden spokes
+    metal.push(bake(new THREE.TorusGeometry(0.44, 0.035, 6, 20), at(sx * 0.6, 0.46, 0.7), 0x4a4a48));
+    metal.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(sx * 0.6, 0.46, 0.7), 0x3a3a38));
+    for (let k = 0; k < 8; k++) wood.push(bake(new THREE.BoxGeometry(0.03, 0.84, 0.03), new THREE.Matrix4().makeRotationZ((k / 8) * Math.PI).setPosition(sx * 0.6, 0.46, 0.7), 0x7a5a3a));
+  }
   box(1.4, 0.06, 0.06, -1.6, 0.9, 0, 0x6f5233); // push handle
-  box(0.9, 0.6, 0.8, -0.5, 1.25, 0, 0xb8cdd0); // glass case
-  box(0.7, 0.18, 0.6, -0.5, 1.12, 0, 0xc98a3a); // papdi, chana
-  geos.push(bake(new THREE.CylinderGeometry(0.28, 0.24, 0.4, 14), at(0.4, 1.15, 0.1), 0xb9bdc0)); // steel pot
+  for (const [dx, dz] of [[-0.43, -0.38], [0.43, -0.38], [-0.43, 0.38], [0.43, 0.38]]) box(0.04, 0.6, 0.04, -0.5 + dx, 1.25, dz, 0x7a5a3a); // glass case frame
+  box(0.94, 0.04, 0.84, -0.5, 1.56, 0, 0x7a5a3a);
+  box(0.86, 0.04, 0.76, -0.5, 0.96, 0, 0x7a5a3a); // open display tray (the merged mesh cannot carry see-through glass)
+  for (let i = 0; i < 4; i++) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.08, 0.1, 10), at(-0.8 + i * 0.2, 1.05, 0), i % 2 ? 0xc98a3a : 0xb87a2a)); // heaps of papdi, chana, sev
+  box(0.7, 0.18, 0.6, -0.5, 1.12, 0, 0xc98a3a, 0, geos); // papdi, chana
+  metal.push(bake(new THREE.CylinderGeometry(0.28, 0.24, 0.4, 14), at(0.4, 1.15, 0.1), 0xb9bdc0)); // steel pot
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.3, 0.03, 14), at(0.4, 1.36, 0.1), 0x8a5a2a)); // tamarind water
   geos.push(bake(new THREE.CylinderGeometry(0.14, 0.12, 0.2, 10), at(0.95, 1.05, -0.1), 0x9a8a52)); // leaf-bowl stack
-  geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 6), at(0.9, 2.0, -0.45), 0x5a5a5a)); // umbrella pole
+  metal.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 6), at(0.9, 2.0, -0.45), 0x5a5a5a)); // umbrella pole
   geos.push(bake(new THREE.ConeGeometry(1.5, 0.45, 12), at(0.9, 3.0, -0.45), 0xb85a3a)); // umbrella
   geos.push(bake(new THREE.SphereGeometry(0.08, 8, 6), at(0.2, 2.3, 0.3), 0xf2e2a8)); // bulb
-  const site = finishSite('chaat_thela', geos, position, { solids: [[0, 0, 2.3, 1.3]], boards: [{ id: 'chaat', x: 0, y: 2.05, z: 0.7, w: 2.2 }] });
+  const site = finishSite('chaat_thela', geos, position, { sets: { wood, metal }, solids: [[0, 0, 2.3, 1.3]], boards: [{ id: 'chaat', x: 0, y: 2.05, z: 0.7, w: 2.2 }] });
   site.add(createNPC(0xd9a21e, { x: -0.1, z: -1.05 }, 0, 'npc_chaatwala')); // chaatwala behind the cart (capsule until the 3D people arrive)
   return site;
 }
