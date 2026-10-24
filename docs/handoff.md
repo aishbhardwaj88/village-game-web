@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z6, playtest block item 5, atta chakki jute):** Game change: jute weave texture scale 0.7 -> 2.6 repeats/m (tools/blender/arch.py), new_shops.glb rebuilt; the checker-pattern read on the sacks is gone, a fine burlap weave remains. Build ALL PASSED, budget 28.43 MB. Proof docs/shots/chakki-2026-10-24/v5_close.png (headless). Item NOT ticked: sacks still faceted (flat shading), mill drum/hopper still flat-painted.
+NEXT: smooth-shade sacks, textured metal for mill (needs a draw call saved), roof-level tank shot.
+
+---
+
 **2026-10-24 (cycle 39z5, playtest block item 5, atta chakki sacks):** Game change: sacks (tools/blender/arch.py sack()) are now a subdivided pillowy ellipsoid with flat base, gathered neck and tie, replacing the faceted box; new_shops.glb rebuilt (11k tris after shrink). Build ALL PASSED. Proof docs/shots/chakki-2026-10-24/v4_close.png (headless, no subject check). Item NOT ticked: jute weave still reads as a checker pattern (texture scale), sacks slightly onion-shaped, mill drum/hopper still flat-painted low-poly. halwai/bazaar/dharam kanta models also call sack() but were not rebuilt.
 NEXT: jute UV scale/finer weave, textured metal for mill (needs a draw call saved), roof-level tank shot, barber/puncture props.
 

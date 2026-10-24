@@ -29,7 +29,7 @@ from common import (
 # vertex colours: kinds plaster/plinth/trim/floor/apron/wood/concrete/paint all fold into it) plus, only where used,
 # a brick mesh and a corrugated-tin mesh (their textures carry real detail) and the transparent decals.
 MAIN_KINDS_TEXTURE = ('plaster', 0.5)
-OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0), 'thatch': ('thatch', 1.0), 'wood': ('wood', 1.0), 'metal': ('metal', 1.0), 'jute': ('jute', 0.7)}
+OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta': ('terracotta', 1.0), 'thatch': ('thatch', 1.0), 'wood': ('wood', 1.0), 'metal': ('metal', 1.0), 'jute': ('jute', 2.6)}
 OPT_IN_KINDS = ('thatch', 'wood', 'metal', 'jute')  # own real PBR set only when the script asks (Kit(own=(...))): each is one extra draw call per building
 
 
