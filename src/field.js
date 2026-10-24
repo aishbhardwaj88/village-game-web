@@ -93,19 +93,25 @@ function buildFieldGround(x0, x1, tint, name) {
   const geometry = ensureUv2(new THREE.PlaneGeometry(width, FIELD_SIZE.z, segX, segZ));
   // Per-vertex canopy tint: the ground under each plot carries the crop colour (flowering mustard yellow, green wheat...) so the field reads as a
   // continuous crop carpet from a distance. Values above 1 are intentional (the dark scanned soil needs overdriving). No extra draw call.
-  const gp = geometry.attributes.position, cArr = new Float32Array(gp.count * 3);
+  const gp = geometry.attributes.position, cArr = new Float32Array(gp.count * 3), bund = new Uint8Array(gp.count);
   const cx0 = FIELD_CENTER.x - FIELD_SIZE.x / 2 + FIELD_SIZE.x * (x0 + x1) / 2;
   for (let i = 0; i < gp.count; i++) {
     const wx = cx0 + gp.getX(i), wz = FIELD_CENTER.z - gp.getY(i);
     const fx = (wx - (FIELD_CENTER.x - FIELD_SIZE.x / 2)) / FIELD_SIZE.x;
     let t = [1, 1, 1];
     if (fx >= STUBBLE_FRAC && fx <= 0.67) {
+      // Bund: where the plot cell changes within ~1.2 m, raise a low earthen ridge in drier, paler soil (khets are divided by bunds, not
+      // painted blocks). Rides on the ground vertices, so no extra draw call.
+      const [a0, a1] = plotCell(wx, wz), [b0, b1] = plotCell(wx + 1.2, wz + 1.2), [c0, c1] = plotCell(wx - 1.2, wz - 1.2);
+      if (a0 !== b0 || a1 !== b1 || a0 !== c0 || a1 !== c1) { gp.setZ(i, 0.14 + 0.05 * Math.sin(wx * 1.7 + wz * 2.3)); bund[i] = 1; }
       const k = plotKind(wx, wz);
       t = k === 'sarson' ? [1.8, 2.95, 0.2] : k === 'wheat_young' ? [0.6, 1.9, 0.5] : k === 'wheat_gold' ? [1.4, 1.75, 0.7] : k === 'ploughed' ? [0.8, 0.62, 0.5] : [0.8, 1.3, 0.6];
     } else if (fx > 0.67) t = [0.85, 1.35, 0.6];
     const n = 0.9 + 0.2 * (0.5 + 0.5 * Math.sin(wx * 0.9 + wz * 1.3) * Math.cos(wz * 0.7 - wx * 0.5));
+    if (bund[i]) t = [1.25, 1.0, 0.7];
     cArr[i * 3] = t[0] * n; cArr[i * 3 + 1] = t[1] * n; cArr[i * 3 + 2] = t[2] * n;
   }
+  geometry.computeVertexNormals();
   geometry.setAttribute('color', new THREE.BufferAttribute(cArr, 3));
   const material = getTiledMaterial('ground', {
     repeatX: width / 5,
@@ -173,9 +179,13 @@ function bladeAtlas() {
   return t;
 }
 
-function plotKind(rx, rz) {
+function plotCell(rx, rz) {
   const wob = Math.sin(rz * 0.21) * 2.2 + Math.sin(rx * 0.17) * 1.6;
-  const ix = Math.floor((rx + wob + 40) / 22), iz = Math.floor((rz + wob * 0.6 + 70) / 20);
+  return [Math.floor((rx + wob + 40) / 22), Math.floor((rz + wob * 0.6 + 70) / 20)];
+}
+
+function plotKind(rx, rz) {
+  const [ix, iz] = plotCell(rx, rz);
   return PLOT_KINDS[(((ix * 5 + iz * 7) % PLOT_KINDS.length) + PLOT_KINDS.length) % PLOT_KINDS.length];
 }
 
