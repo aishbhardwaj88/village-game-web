@@ -127,10 +127,10 @@ flowers - and it is still not there.
   post box; a free 3D model of a post box is easy to find.
 - **Atta chakki**: random shapes, nothing is clear. Find a real mill/machinery model
   or build a readable chakki: hopper, grinding unit, belt, motor, flour sacks.
-- **Petrol pump**: does not look like a petrol pump at all. Free fuel pump models are
+- [DONE 24 Oct 2026: Blender canopy, two dispensers with hoses, office, price board, drums, tractor, capsule attendant; proof docs/shots/petrol-2026-10-24/{front,pumps}.png (attendant/tractor hidden by the clean-capture rule)] **Petrol pump**: does not look like a petrol pump at all. Free fuel pump models are
   common. Add the canopy, pump units, hoses, price board, a person, and a tractor or
   vehicle standing at it.
-- **The godown and large truck area near the highway**: nothing is clear and she could
+- [DONE 24 Oct 2026: Blender weighbridge deck, cabin with Dharam Kanta board, barrier, sacks, loading dock; proof docs/shots/kanta-2026-10-24/wide.png] **The godown and large truck area near the highway**: nothing is clear and she could
   not tell what the place is. She guessed dharam kanta. Make it unmistakable: a real
   weighbridge plate, a cabin with a readable board, sacks, a loading platform.
 - **Cricket field**: the ground texture is bad and does not read as mud. Replace it.
@@ -146,7 +146,7 @@ flowers - and it is still not there.
   real free PBR wood and thatch sets, not flat colour.
 - [DONE 24 Oct: dishes removed from the rooftop pick list, antenna kept] **Dish TV antennas** read as random concave objects. She likes the new TV antenna;
   the dishes must be clearly dishes with a bracket and an arm, or be removed.
-- **Water tanks** throughout the village: a free model of a plastic or cement water
+- [DONE 24 Oct 2026: ribbed Sintex-style tanks with domed lid, hatch, valve, plinth on abadi roofs (src/rooftops.js); no free tank model fits instanced rooftop use so built in code; proof docs/shots/tanks-2026-10-24/near1.png, near2.png (headless, subject check passed)] **Water tanks** throughout the village: a free model of a plastic or cement water
   tank is easy to find. Use a real one.
 - **The hand pump in the middle of the house streets was asked to be removed and is
   still there.** Remove it. [DONE 24 Oct: lane hand pumps removed (src/farmSites.js createLaneWaterCorner); the courtyard pump of the errand stays]
