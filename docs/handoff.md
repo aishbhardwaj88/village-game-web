@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z70, playtest block item 4, chowk furniture):** Game change: chowk plaza (src/bazaar.js buildChowkPlaza) plastic chairs and benches were single tinted boxes (the "plain tinted boxes" gap in the market object list); now chairs have seat, two-slat raked back, four legs, per-chair turn and tint, and benches have two planks, four legs and a stretcher. Same merged mesh, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/water-2026-10-25/chairs.png (folder name is a reuse; headless, no subject check, not tickable); benches.png missed (camera inside chabutra). Gaps: other market gaps remain (unsigned pale-yellow milk-can building at row east end, haystack debris cards at row west end).
+NEXT: haystack debris at bazaar west end, unsigned milk-can building, collision leftovers (0c).
+
+---
+
 **2026-10-25 (cycle 39z69, playtest block items 6/7, water shoreline + wood trial):** Game change: pond/johad water (src/water.js) now has a broken pale scum line at the waterline and a darkened damp rim where the alpha fades (blob water only; canal/hauz unchanged); same material, no new call. Build 16/16, budget 30.80 MB. Proof docs/shots/water-2026-10-25/{pond_d,johad_d}.png (headless, no subject check, buffalo in frame, not tickable); effect is subtle. Tried real PBR wood on abadi rows and new_shops (wood_slot='props'): it costs 3 draw calls (hero 153-154, bazaar 152, over the 150 ceiling), so REVERTED, nothing shipped; the NEEDS_YOU wood-on-houses question stays open. Gaps: canal/hauz shoreline, house wood still plaster-tan.
 NEXT: collision leftovers (0c), findability walk, post office textures.
 

@@ -785,21 +785,37 @@ export function buildChowkPlaza() {
   const deckLocal = new THREE.Matrix4().makeTranslation(chabX, 0.53, chabZ);
   geos.push(deckMesh.geometry.clone().applyMatrix4(deckLocal));
 
-  // Benches (2), maroon, near the stall's open front.
-  const benchMesh = texturedThickBox(1.4, 0.45, 0.4, 'wood', { tint: 0x6a2a2a, tileSize: 1, roughness: 1 });
-  material = material || benchMesh.material;
-  geos.push(benchMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(CHOWK_TEA_POS.x - 2.6, 0.225, CHOWK_TEA_POS.z - 1.5)));
-  geos.push(benchMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(CHOWK_TEA_POS.x - 2.6, 0.225, CHOWK_TEA_POS.z + 1.5)));
+  // Furniture is built from real parts (seat, back, legs, stretchers) with per-piece
+  // rotation and tint, not single boxes. Pieces are local to (x, z) and turned by rotY.
+  function addPart(w, h, d, lx, ly, lz, tint, ox, oz, rotY) {
+    const part = texturedThickBox(w, h, d, 'wood', { tint, tileSize: 1, roughness: 1 });
+    material = material || part.material;
+    const c = Math.cos(rotY), sn = Math.sin(rotY);
+    const m = new THREE.Matrix4().makeRotationY(rotY).setPosition(ox + lx * c + lz * sn, ly, oz - lx * sn + lz * c);
+    geos.push(part.geometry.clone().applyMatrix4(m));
+  }
 
-  // A few plastic chairs — plain tinted boxes, same crude-but-legible scale the
-  // halwai's own plastic chairs already use elsewhere in this game.
-  const chairTints = [0xb23a3a, 0x3a9955, 0xb23a3a, 0x3a9955];
+  // Benches (2): two seat planks on four legs with a stretcher, near the stall's open front.
+  [[-1.5, 0.04, 0x6a2a2a], [1.5, -0.05, 0x5c2626]].forEach(([dz, rot, tint]) => {
+    const ox = CHOWK_TEA_POS.x - 2.6, oz = CHOWK_TEA_POS.z + dz;
+    addPart(1.4, 0.05, 0.19, 0, 0.43, -0.1, tint, ox, oz, rot);
+    addPart(1.4, 0.05, 0.19, 0, 0.43, 0.1, darken(tint), ox, oz, rot);
+    for (const lx of [-0.62, 0.62]) for (const lz of [-0.14, 0.14]) addPart(0.06, 0.41, 0.06, lx, 0.205, lz, 0x3d2a1e, ox, oz, rot);
+    addPart(1.3, 0.04, 0.04, 0, 0.16, 0, 0x3d2a1e, ox, oz, rot);
+  });
+
+  // Moulded plastic chairs: seat, raked back with a slat gap, four thin legs. Each is turned and
+  // tinted a little differently so no two read as copies.
+  const chairTints = [0xb23a3a, 0x3a9955, 0xa83434, 0x2f8a4d];
   chairTints.forEach((tint, i) => {
-    const chairMesh = texturedThickBox(0.4, 0.4, 0.4, 'wood', { tint, tileSize: 1, roughness: 1 });
-    material = material || chairMesh.material;
-    const cx2 = CHOWK_TEA_POS.x - 4.5 + (i % 2) * 0.7;
-    const cz2 = CHOWK_TEA_POS.z - 0.6 + Math.floor(i / 2) * 0.7;
-    geos.push(chairMesh.geometry.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(cx2, 0.2, cz2)));
+    const ox = CHOWK_TEA_POS.x - 4.5 + (i % 2) * 0.75 + (i === 2 ? 0.08 : 0);
+    const oz = CHOWK_TEA_POS.z - 0.6 + Math.floor(i / 2) * 0.75;
+    const rot = [0.25, -0.18, 0.4, -0.35][i];
+    addPart(0.42, 0.045, 0.4, 0, 0.43, 0, tint, ox, oz, rot);
+    addPart(0.42, 0.14, 0.035, 0, 0.7, -0.19, tint, ox, oz, rot);
+    addPart(0.42, 0.14, 0.035, 0, 0.53, -0.19, tint, ox, oz, rot);
+    for (const lx of [-0.18, 0.18]) addPart(0.035, 0.6, 0.035, lx, 0.5, -0.19, tint, ox, oz, rot);
+    for (const lx of [-0.18, 0.18]) addPart(0.035, 0.41, 0.035, lx, 0.205, 0.17, 0xdedad0, ox, oz, rot);
   });
 
   const mesh = new THREE.Mesh(mergeGeometries(geos), material);
