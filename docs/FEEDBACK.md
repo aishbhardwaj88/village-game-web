@@ -158,7 +158,7 @@ flowers - and it is still not there.
   hauz. Real water: depth tint, movement, reflection, a soft shore line.
 - **The pond lotus is pink cones.** Find or build a real lotus with pads and flowers.
 - **The mud near the pond looks bad.** Realistic wet-earth texture at the shoreline.
-- **The highway is too smooth.** No village highway is that smooth. Patch it: worn
+- [DONE 24 Oct 2026: patches/cracks/lines now flat decals (no side walls = no black edge lines); proof docs/shots/water-road-2026-10-24/highway3.png vs highway.png; pond/lotus/mud/water already built in ac33011, see pond.png] **The highway is too smooth.** No village highway is that smooth. Patch it: worn
   edges, repairs, cracks, dust at the margins, no crisp kerb line.
 - **The road near the godown ends abruptly and turns into grassland.** Roads must
   terminate believably: a junction, a dirt continuation, or a reason to stop.

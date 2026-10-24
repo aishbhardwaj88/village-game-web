@@ -764,6 +764,7 @@ export function createJainMandir(position) {
 
 /** Worn village highway (z -75..75 about the cluster origin): dark asphalt on the concrete PBR set with tar patches, hairline cracks, broken faded centre dashes and edge lines
  *  (no crisp kerb), dust margins creeping onto the shoulder, sand drifts, and both ends running out as a narrowing dirt track with wheel ruts. Deterministic. */
+function flatQuad(w, d) { return new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2); }
 function roadGeos() {
   const geos = [];
   let sd = 91;
@@ -773,25 +774,25 @@ function roadGeos() {
   // tar patches and repairs: darker or paler rectangles, a few in the wheel paths
   for (let i = 0; i < 26; i++) {
     const w = 0.8 + rnd() * 2.6, d = 1 + rnd() * 3.5, x = (rnd() - 0.5) * 12, z = (rnd() - 0.5) * 140;
-    geos.push(bake(new THREE.BoxGeometry(w, 0.012, d), at(x, Y, z, (rnd() - 0.5) * 0.15), [0x2c2c30, 0x36363a, 0x525257, 0x3a3a3f][i % 4]));
+    geos.push(bake(new flatQuad(w, d), at(x, Y + 0.002, z, (rnd() - 0.5) * 0.15), [0x3a3a3e, 0x404044, 0x505054, 0x454549][i % 4]));
   }
   // cracks: thin long dark slivers, slightly skewed
   for (let i = 0; i < 40; i++) {
     const len = 1 + rnd() * 4.5, x = (rnd() - 0.5) * 12.5, z = (rnd() - 0.5) * 140;
-    geos.push(bake(new THREE.BoxGeometry(0.025 + rnd() * 0.03, 0.006, len), at(x, Y + 0.012, z, (rnd() - 0.5) * 0.7), 0x18181a));
+    geos.push(bake(new flatQuad(0.03 + rnd() * 0.03, len), at(x, Y + 0.026, z, (rnd() - 0.5) * 0.7), 0x2a2a2d));
   }
   // faded, broken centre dashes (some gone, none identical)
   for (let z = -72; z <= 72; z += 8) {
     if (rnd() < 0.18) continue;
     const len = 2.4 + rnd() * 1.4, off = (rnd() - 0.5) * 0.12;
-    geos.push(bake(new THREE.BoxGeometry(0.18, 0.01, len), at(off, Y + 0.002, z + (rnd() - 0.5) * 0.8), rnd() < 0.5 ? 0xc9c3a8 : 0xb4ae95));
+    geos.push(bake(new flatQuad(0.18, len), at(off, Y + 0.012, z + (rnd() - 0.5) * 0.8), rnd() < 0.5 ? 0xc9c3a8 : 0xb4ae95));
   }
   // edge lines: patchy, worn through, never a continuous ruler line
   for (const sx of [-1, 1]) {
     let z = -74;
     while (z < 72) {
       const len = 3 + rnd() * 9, gap = rnd() < 0.5 ? 0.8 + rnd() * 3 : 0;
-      geos.push(bake(new THREE.BoxGeometry(0.14 + rnd() * 0.06, 0.01, len), at(sx * (6.3 + (rnd() - 0.5) * 0.1), Y + 0.002, z + len / 2), 0xbdb79c));
+      geos.push(bake(new flatQuad(0.14 + rnd() * 0.06, len), at(sx * (6.3 + (rnd() - 0.5) * 0.1), Y + 0.012, z + len / 2), 0xbdb79c));
       z += len + gap;
     }
   }
@@ -799,7 +800,7 @@ function roadGeos() {
   for (const sx of [-1, 1]) {
     for (let z = -74; z < 74; z += 2.5 + rnd() * 3.5) {
       const w = 0.7 + rnd() * 1.7, d = 2.5 + rnd() * 3.5;
-      geos.push(bake(new THREE.BoxGeometry(w, 0.02, d), at(sx * (7.1 - w * 0.22 + rnd() * 0.3), 0.108, z), [0x7a6c52, 0x85775b, 0x6f6249][Math.floor(rnd() * 3)]));
+      geos.push(bake(new flatQuad(w, d), at(sx * (7.1 - w * 0.22 + rnd() * 0.3), 0.108, z), [0x7a6c52, 0x85775b, 0x6f6249][Math.floor(rnd() * 3)]));
     }
   }
   // run-outs: the tarmac narrows (14 -> 9 -> 5.5 m), fades into packed earth, ends in two wheel ruts that join a field track
