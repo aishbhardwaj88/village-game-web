@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z13, playtest block item 4, doorstep slabs):** Game change: removed the eight per-unit grey block steps in front of the bazaar shops (tools/blender/build_bazaar_row.py); the one continuous front step remains, bazaar_row.glb rebuilt. Build ALL PASSED, budget 29.33 MB. Proof docs/shots/doorstep-2026-10-24/front_a.png (headless, no subject check, so item 4 NOT ticked): no stray slabs, continuous step reads. Open: yellow oval at tailor counter still unidentified; chakki mill metal; Banta shop / Chaat thela unbuilt.
+NEXT: identify the yellow oval, chakki mill metal, Banta shop / Chaat thela, wood-slot draw-call savings.
+
+---
+
 **2026-10-24 (cycle 39z12, playtest block item 3, khet sugarcane):** Game change: the khet now has sugarcane blocks (one plot kind 'cane' in src/field.js PLOT_KINDS; ~2.6 m jointed-stalk clumps with arching leaves, one InstancedMesh 'field_cane', hidden beyond 95 m of the field centre in src/main.js so the bazaar view stays at 150 draw calls). Build 16/16. Proof docs/shots/cane-2026-10-24/cane_close.png (headless, no subject check, so item 3 NOT ticked). Gaps: cane is flat vertex-colour (no leaf texture), plot edges hard; crop tufts still old flat cards; ploughed/veg/mustard already existed.
 NEXT: textured cane/crop cards, grey doorstep slabs -> continuous step, chakki mill metal, Banta shop / Chaat thela unbuilt.
 

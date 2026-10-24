@@ -78,10 +78,8 @@ def shell():
     c = cx(4)
     kit.add('trim', wb('pediment_a', c - 1.6, c + 1.6, FRONT - 0.15, FRONT + 0.3, HEIGHTS[4] + 0.68, HEIGHTS[4] + 1.0, 0.01))
     kit.add('trim', wb('pediment_b', c - 0.9, c + 0.9, FRONT - 0.15, FRONT + 0.3, HEIGHTS[4] + 1.0, HEIGHTS[4] + 1.3, 0.01))
-    # continuous front step + a small block step per unit
+    # one continuous front step (the per-unit block steps read as stray grey slabs, removed)
     kit.add('apron', wb('step', -18.3, 18.3, FRONT - 0.6, FRONT, 0, 0.2, 0.012))
-    for i in range(8):
-        kit.add('apron', wb('unit_step', cx(i) - 0.9, cx(i) + 0.9, FRONT - 0.95, FRONT - 0.6, 0, 0.12, 0.01))
     # four barred windows high on the back wall: recess, painted frame, iron bars + rail, projecting sill
     for k in (0, 2, 4, 6):
         back_window_z(cx(k) + 1.1, BACK, 0.8, 2.4, 2.95)
