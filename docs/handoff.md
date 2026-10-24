@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z71, playtest block item 4, market leftovers check):** No game change (verification only, no code touched). The "unsigned pale-yellow milk-can building" is the Dudh Dairy at (-112,18): it carries its bilingual board on both faces and the English reads at walking distance (docs/shots/market-2026-10-25/{west_a,west_b}.png, headless, no subject check, not tickable); that gap is closed. Also read the far-LOD abadi (build_abadi.py house_lod) and canal water (shares the blob shader's depth path, so it already gets the scum/damp rim): both were already reworked in earlier commits, so not redone. Not found: the haystack debris at the bazaar row's west end; no haystack stands near the dairy, the nearest sources are tea_stall_haystacks (-58,76) and tubewell stacks, not yet shot.
+NEXT: locate and shoot the west-end haystack, collision leftovers (0c), post office textures.
+
+---
+
 **2026-10-25 (cycle 39z70, playtest block item 4, chowk furniture):** Game change: chowk plaza (src/bazaar.js buildChowkPlaza) plastic chairs and benches were single tinted boxes (the "plain tinted boxes" gap in the market object list); now chairs have seat, two-slat raked back, four legs, per-chair turn and tint, and benches have two planks, four legs and a stretcher. Same merged mesh, no new draw call. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/water-2026-10-25/chairs.png (folder name is a reuse; headless, no subject check, not tickable); benches.png missed (camera inside chabutra). Gaps: other market gaps remain (unsigned pale-yellow milk-can building at row east end, haystack debris cards at row west end).
 NEXT: haystack debris at bazaar west end, unsigned milk-can building, collision leftovers (0c).
 
