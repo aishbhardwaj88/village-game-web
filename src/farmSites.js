@@ -170,10 +170,38 @@ function bakeUv(g) {
   return g;
 }
 
+/** Soft outer shoulder: bands of the same blob outline stepping from dry mud into the surrounding grass tone, so the ring has no crisp rim. */
+function softShoulder(rIn, rOut, seed, cIn, cOut, y, bands = 4) {
+  const N = 28, pts = (r) => blobShape(r, seed).getPoints().slice(0, N);
+  const a = new THREE.Color(cIn), b = new THREE.Color(cOut);
+  const pos = [], col = [], idx = [];
+  for (let k = 0; k <= bands; k++) {
+    const t = k / bands, c = a.clone().lerp(b, t * t * (3 - 2 * t));
+    for (const p of pts(rIn + (rOut - rIn) * t)) { pos.push(p.x, 0, -p.y); col.push(c.r, c.g, c.b); }
+  }
+  for (let k = 0; k < bands; k++) for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N, i0 = k * N + i, j0 = k * N + j, i1 = (k + 1) * N + i, j1 = (k + 1) * N + j;
+    idx.push(i0, i1, j0, j0, i1, j1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  if (g.attributes.normal.getY(0) < 0) g.setIndex(idx.map((v, i, arr) => arr[i - (i % 3) + [0, 2, 1][i % 3]]));
+  g.computeVertexNormals();
+  g.translate(0, y, 0);
+  const n = g.attributes.position.count, uv = new Float32Array(n * 2);
+  for (let i = 0; i < n; i++) { uv[i * 2] = g.attributes.position.getX(i) / 1.4; uv[i * 2 + 1] = g.attributes.position.getZ(i) / 1.4; }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return g.toNonIndexed();
+}
+
 /** Wet-earth shoreline ring: pale dried-crack mud outside, dark glistening wet mud inside, with footprints-sized pebbles. Earth set at low roughness so the wet band catches light. */
 function shoreGeos(radius, seed, rnd) {
   const geos = [];
   geos.push(flatBlob(radius * 1.32, seed, 0.02, 0x8a7656));   // dry cracked outer mud
+  geos.push(softShoulder(radius * 1.3, radius * 1.7, seed, 0x8a7656, 0x92b068, 0.016, 5));
   geos.push(flatBlob(radius * 1.18, seed, 0.024, 0x6b5a40));  // damp mud
   geos.push(flatBlob(radius * 1.06, seed, 0.028, 0x3f3426));  // wet dark mud at the waterline
   for (let i = 0; i < 26; i++) {

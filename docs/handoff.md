@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z17, playtest block item 7, pond mud edge):** Game change: the pond (and johad rim) shoreline mud no longer ends in a crisp rim; src/farmSites.js softShoulder() adds five vertex-colour bands outside the dry-mud ring that grade from mud to the grass tone (same blob outline, merged into the existing shore mesh, no new draw call). Build ALL PASSED, budget 29.33 MB. Proof docs/shots/pond-soft-2026-10-24/pond.png (headless, no subject check, so item 7 NOT ticked). Also found: the interior-goods gaps listed in 39z7-39z11 for medical, tailor and mobile are already filled (buildBazaarKiranaGoods carries them); remaining flat-tint props are the barber chair, puncture-shop props, sewing machine and kirana floor sacks. Buffaloes at the pond read as peg-legged blocks (animal models), not touched.
+NEXT: flat-tint barber/puncture props, outfield grass checker, pitch patch edges, Banta shop / Chaat thela unbuilt.
+
+---
+
 **2026-10-24 (cycle 39z16, playtest block item 5, chakki mill metal):** Game change: atta chakki (build_new_shops.py, Kit own=('jute','metal')) now carries the real metal PBR set on drum, hopper, motor, pulley, bin (was flat plaster tan); all flour/sugar sacks (arch.sack) are smooth-shaded, no longer faceted. Build ALL PASSED, hero 148, bazaar 150, field 117, budget 29.33 MB. Proof docs/shots/chakki-metal-2026-10-24/close.png (headless, no subject check, so item 5 NOT ticked). Metal still reads painted/matte; chakki wall wood posts still plaster tan.
 NEXT: Banta shop / Chaat thela unbuilt (signage item 1), draw-call savings to unlock wood PBR, chakki wood posts.
 
