@@ -599,8 +599,14 @@ function swingSetGeos(x, z, ry = 0, frame = 0x2f5fa3) {
   geos.push(limbGeo(P(-1.7, top, 0), P(1.7, top, 0), 0.05, frame));
   for (const [i, sx] of [-0.65, 0.65].entries()) {
     const sw = i ? 0.22 : 0.1; // each seat hangs at a slightly different angle
-    for (const dx of [-0.2, 0.2]) geos.push(limbGeo(P(sx + dx, top - 0.04, 0), P(sx + dx, 0.5, sw * 2.2), 0.008, 0x8d9296));
-    geos.push(bake(new THREE.BoxGeometry(0.46, 0.035, 0.2), at(...P(sx, 0.49, sw * 2.2), ry), 0x1f1d1b));
+    for (const dx of [-0.2, 0.2]) {
+      geos.push(limbGeo(P(sx + dx, top - 0.04, 0), P(sx + dx, 0.54, sw * 2.2), 0.012, 0x8d9296)); // chain
+      geos.push(bake(new THREE.TorusGeometry(0.03, 0.008, 5, 10), at(...P(sx + dx, top - 0.04, 0)), 0x6f7378)); // top hanger ring
+      geos.push(bake(new THREE.CylinderGeometry(0.02, 0.02, 0.07, 6), at(...P(sx + dx, 0.53, sw * 2.2)), 0x6f7378)); // seat eye bolt
+    }
+    // moulded rubber seat: thick slab with a raised front and back lip, so it reads as a belt seat, not a plank
+    geos.push(bake(new THREE.BoxGeometry(0.5, 0.05, 0.22), at(...P(sx, 0.49, sw * 2.2), ry), 0x1f1d1b));
+    for (const dz of [-0.1, 0.1]) geos.push(bake(new THREE.BoxGeometry(0.5, 0.035, 0.03), at(...P(sx, 0.52, sw * 2.2 + dz), ry), 0x2a2826));
   }
   return geos;
 }

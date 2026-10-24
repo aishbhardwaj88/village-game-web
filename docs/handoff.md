@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z61, playtest block item 5, swing):** Game change: playground swing sets (anganwadi and mela, src/farmSites.js swingSetGeos) now have thicker chains with top hanger rings, eye bolts and moulded rubber seats with raised lips (were hairline wires and flat black planks). Same mesh, no new draw call. Cricket field mud and badminton court lines were already reworked (earlier cycles, farmSites createKhelMaidan), not re-shot this cycle. Build ALL PASSED. Proof docs/shots/swing-2026-10-24c/swing.png (headless, HUD in frame, so not tickable). Gaps: no single 'yellow swing' exists in code; the yellow item is the anganwadi slide rails; atta chakki still open.
+NEXT: atta chakki mill rework, cricket/badminton re-shot.
+
+---
+
 **2026-10-24 (cycle 39z60, playtest block item 3, khet variety):** Game change: sugarcane plots are now dense staggered cane (2 of every 3 cells planted, was every other row), so the cane block reads as a cane wall in the khet (src/field.js buildCropRows). Checked, no change needed: flowering sarson, young/ripe wheat, ploughed earth and veg patches already exist in the middle third; haystacks DO exist beside the tubewell and the Yadav tea stall and read as haystacks. Build ALL PASSED. Proof docs/shots/khet-2026-10-24/{cane_find,wide,west,aerial2,tea_hay,tubewell_hay}.png (headless, HUD/capsule in frame, so item 3 NOT ticked). Gaps: west third is uniform stubble and east third uniform sabzi per MAP.md; plot borders have no bunds.
 NEXT: cricket field mud texture, badminton court lines, yellow swing.
 
