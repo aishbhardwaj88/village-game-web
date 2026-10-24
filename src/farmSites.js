@@ -1440,6 +1440,19 @@ export function createGurukul(position) {
     }
   }
   doorOpening(geos, at(0, 0.4, -5.47), 1.6, 2.5); // main entrance, long block
+  // Roof detail so the blocks do not read as bare boxes: parapet ring, stair-head (mumty), rooftop water tank, entrance steps, floor band.
+  for (const [w, d, x, z] of [[22, 7, 0, -9], [7, 18, -7.5, 1]]) {
+    for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(w + 0.5, 0.7, 0.25), at(x, 8.0, z + sz * (d / 2 + 0.12)), 0xd9d0b8));
+    for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.25, 0.7, d + 0.5), at(x + sx * (w / 2 + 0.12), 8.0, z), 0xd9d0b8));
+    geos.push(bake(new THREE.BoxGeometry(w + 0.2, 0.18, d + 0.2), at(x, 2.0 + 0.0, z), 0xc9bfa6)); // plinth-to-sill band
+  }
+  geos.push(bake(new THREE.BoxGeometry(2.6, 2.4, 2.8), at(7.5, 8.9, -9), 0xe2d6b6)); // stair-head
+  geos.push(bake(new THREE.BoxGeometry(2.9, 0.2, 3.1), at(7.5, 10.2, -9), 0x8d8a82));
+  geos.push(bake(new THREE.CylinderGeometry(0.85, 0.85, 1.2, 14), at(-6, 8.9, -9), 0x2f3a44)); // rooftop tank
+  geos.push(bake(new THREE.CylinderGeometry(0.88, 0.88, 0.1, 14), at(-6, 9.55, -9), 0x252d35));
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(3 - i * 0.25, 0.14, 0.45), at(0, 0.45 + i * 0.14, -5.0 + (2 - i) * 0.45), 0xb8b0a0)); // entrance steps
+  // Cornice on the colonnade slab.
+  geos.push(bake(new THREE.BoxGeometry(22.4, 0.15, 2.3), at(0, 3.7, -4.9), 0xc9bfa6));
   // Verandah colonnade on the yard side of the long block.
   for (let i = 0; i < 6; i++) geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 3.2, 8), at(-9 + i * 3.6, 1.8, -4.9), 0xe9e2cf));
   geos.push(bake(new THREE.BoxGeometry(22, 0.25, 2), at(0, 3.5, -4.9), 0xd8d2c0));

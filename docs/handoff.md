@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z88, playtest block item 6, Gurukul detail):** Game change: Gurukul College (src/farmSites.js createGurukul) now has a parapet ring on both blocks, a stair-head (mumty) and a rooftop water tank, a sill-level floor band, a colonnade cornice and three entrance steps, all in the same merged mesh (no new draw call). Build ALL PASSED, budget 30.80 MB. Proof docs/shots/gurukul-2026-10-25/yard.png (headless, player capsule in frame so not tickable; parapet, steps, stair-head read). Gaps: walls are still flat plaster with no stains or damp, no school yard furniture, jalebi/gaushala spurs still blocked by the draw-call ceiling.
+NEXT: save bazaar-view draw calls for spurs, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z87, playtest block item 7, west gali head signpost):** Game change: a second direction post (src/wayfinding.js 'west_gali_head', (-82.3,24), faces south) stands at the north end of the west gali pointing west to Jalebi stall and Gaushala, the two places a walker reached the lane end without any cue for. Same merged wayfinding mesh, no new draw call; build ALL PASSED. Proof docs/shots/wayfinding-2026-10-25/west_gali_head.png (English reads, arrows west; player capsule in frame so not tickable). Gaps: still no lane or track to the stall/gaushala (bare spurs cost 2+ draw calls over the 150 ceiling), baagh has a fork post only.
 NEXT: save bazaar-view draw calls for spurs, shot of camera under a neem, triangle cuts (art director's call).
 
