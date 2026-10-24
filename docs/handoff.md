@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39y, playtest block item 4, other shops' goods):** Game change: medical (tablet cartons, amber syrup bottles), tailor (woven stripe / indigo check / block-print cloth bolts) and mobile (keypad-phone and charger cartons) shops now carry printed-atlas goods (src/shopGoods.js atlas 4x6, built in buildBazaarKiranaGoods so same material, zero extra draw call). Flat-colour boxes/bolts removed from src/bazaar.js and tools/blender/build_bazaar_row.py (bazaar_row.glb rebuilt). Build ALL PASSED (bazaar 150, hero 146), budget 28.39 MB. Proof docs/shots/shops-2026-10-24/{medical,tailor,mobile}_bazaar.png (headless).
+Gaps: bangle rings still flat-tint tori, sabzi veg spheres flat-colour, barber/puncture props flat; medical fridge/case painted boxes; chakki sacks/mill, yellow swing, Banta shop, Chaat thela still open.
+NEXT: sabzi produce and bangle shop textures (item 4); chakki sacks.
+
+---
+
 **2026-10-24 (cycle 39x, playtest block item 5, atta chakki):** Game change: sacks (chakki + ration shop) now carry the real jute weave (new 'jute' kind in tools/blender/arch.py, own material in new_shops.glb), a capsule miller stands at the mill (src/main.js npc_miller). Draw-call cost paid for by turning shadow casting off on jute meshes (src/assetSlots.js), charpai and hand_pump. A 'metal' kind exists in arch.py but is NOT used (one extra draw call put the bazaar view at 153). Build 16/16 (bazaar 150, hero 146), budget 28.5 MB. Proof docs/shots/chakki-2026-10-24/v3_close.png (headless). Item NOT ticked: sacks still read faceted/boxy (checker-like weave scale), mill drum/hopper still flat-painted low-poly.
 NEXT: rounder sack mesh (subdivided, slumped), recover a draw call to enable metal on the mill; then dharam kanta.
 

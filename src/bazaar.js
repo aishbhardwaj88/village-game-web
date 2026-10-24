@@ -514,6 +514,25 @@ export function buildBazaarKiranaGoods() {
   const counterZ = BAZAAR_FRONT_Z + 0.6;
   for (const dx of [-1.3, -0.9, 1.3]) items.push({ kind: 'jar', design: D.toffeeJar, x: cx + dx, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: dx * 5, s: 1.05 });
   for (let k = 0; k < 4; k++) items.push({ kind: 'soap', design: [D.soapGreen, D.soapPink, D.soapBlue][k % 3], x: cx + 0.2 + k * 0.11, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: (k - 1.5) * 0.1 });
+  // Medical (unit 3): tablet cartons and amber syrup bottles on the three shelf boards (y 1.225 / 2.075 / 2.625), a few on the counter.
+  const medCx = bazaarUnitCx(2);
+  for (const y of [1.225, 2.075, 2.625]) {
+    for (let x = -half; x < half; ) {
+      const roll = rnd();
+      const z = backZ - 0.03 + (rnd() - 0.5) * 0.06;
+      const ry = Math.PI + (rnd() - 0.5) * 0.3;
+      if (roll < 0.55) { items.push({ kind: 'medbox', design: rnd() < 0.5 ? D.medWhite : D.medGreen, x: medCx + x, y, z, ry }); if (rnd() < 0.6) items.push({ kind: 'medbox', design: rnd() < 0.5 ? D.medWhite : D.medGreen, x: medCx + x, y: y + 0.07, z, ry: ry + 0.1 }); x += 0.15; }
+      else { items.push({ kind: 'syrup', design: D.syrup, x: medCx + x, y, z, ry: rnd() * 6, s: 0.9 + rnd() * 0.2 }); x += 0.1; }
+    }
+  }
+  for (let k = 0; k < 3; k++) items.push({ kind: 'syrup', design: D.syrup, x: medCx - 0.6 + k * 0.14, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: k * 2 });
+  // Tailor (unit 4): bolts of printed and woven cloth standing along the upper shelf board.
+  const tailCx = bazaarUnitCx(3);
+  [D.clothStripe, D.clothCheck, D.clothPrint, D.clothStripe, D.clothCheck].forEach((d, i) => items.push({ kind: 'bolt', design: d, x: tailCx - 1.4 + i * 0.7, y: 2.1, z: backZ, ry: i * 1.7, s: 0.95 + (i % 3) * 0.05 }));
+  [D.clothPrint, D.clothCheck, D.clothStripe].forEach((d, i) => items.push({ kind: 'bolt', design: d, x: tailCx - 1.0 + i * 0.9, y: 1.25, z: backZ, ry: i * 2.3, s: 0.8 }));
+  // Mobile (unit 6): phone and charger cartons on the shelves.
+  const mobCx = bazaarUnitCx(5);
+  for (const y of [1.225, 2.075]) for (let i = 0; i < 9; i++) items.push({ kind: 'phonebox', design: (i + (y > 2 ? 1 : 0)) % 3 === 0 ? D.chargerBox : D.phoneBox, x: mobCx - 1.6 + i * 0.4, y, z: backZ - 0.03 + (rnd() - 0.5) * 0.05, ry: Math.PI + (rnd() - 0.5) * 0.25, s: 0.95 + rnd() * 0.1 });
   return buildGoodsMesh(items, new THREE.Matrix4(), 'bazaar_kirana_stock');
 }
 
@@ -584,19 +603,8 @@ export function buildBazaarInteriors() {
     } else if (unit.trade === 'medical') {
       addShelving(cx, wood);
       pushBox(BAZAAR_UNIT_W - 0.7, 0.05, 0.32, cx, 2.6, backInnerZ, wood);
-      // A grid of small medicine boxes across the 3 shelves, muted pastel tints.
-      const medTints = [0xb8ccd8, 0xd8c8a8, 0xc8d8b8, 0xd8b8b8, 0xb8c8d8];
-      const shelfYs = [1.28, 2.13, 2.68];
-      shelfYs.forEach((sy, si) => {
-        for (let i = 0; i < 7; i++) {
-          pushBox(0.12, 0.08, 0.2, cx - 1.8 + i * 0.6, sy + 0.05, backInnerZ + 0.08, medTints[(i + si) % medTints.length]);
-        }
-      });
     } else if (unit.trade === 'tailor') {
       addShelving(cx, wood);
-      // Bolts of cloth — short horizontal cylinders in varied tints, stacked on the shelf.
-      const clothTints = [0xa83a4a, 0x3a5a8a, 0xc9a227, 0x4a7a5a, 0x8a4a8a];
-      clothTints.forEach((t, i) => pushCyl(0.14, 0.14, 0.5, cx - 1.4 + i * 0.7, 2.05 + 0.16, backInnerZ, t));
       // Signature: a treadle sewing machine on the counter.
       pushBox(0.5, 0.18, 0.28, cx, 1.02, counterZ - 0.05, 0x1a1a1a);
       pushCyl(0.1, 0.1, 0.06, cx - 0.15, 0.88, counterZ - 0.05, 0x3a3a3a);
@@ -618,8 +626,6 @@ export function buildBazaarInteriors() {
       }
     } else if (unit.trade === 'mobile') {
       addShelving(cx, wood);
-      const boxTints = [0x2a2a2a, 0x3a3a3a, 0x8a2e2e, 0x2a5a2a];
-      for (let i = 0; i < 6; i++) pushBox(0.16, 0.08, 0.1, cx - 1.5 + i * 0.5, 2.09, backInnerZ + 0.1, boxTints[i % boxTints.length]);
       // Signature: a monitor on the counter.
       pushBox(0.4, 0.3, 0.05, cx, 1.1, counterZ - 0.1, 0x1a1a1a);
       pushBox(0.32, 0.22, 0.01, cx, 1.12, counterZ - 0.075, 0x3a5a6a);

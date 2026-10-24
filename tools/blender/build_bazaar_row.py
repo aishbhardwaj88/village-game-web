@@ -229,11 +229,7 @@ def sabzi(i):
 def medical(i):
     c = cx(i)
     shelves(i, (1.2, 2.05, 2.6))
-    tones = [0xB8CCD8, 0xD8C8A8, 0xC8D8B8, 0xD8B8B8, 0xB8C8D8, 0xF0F0E8]
-    for k, h in enumerate((1.25, 2.1, 2.65)):
-        for j in range(12):
-            x = c - 1.9 + j * 0.34
-            kit.add('paint', wb('med_box', x - 0.09, x + 0.09, BZ - 0.12, BZ - 0.03, h, h + 0.12 + 0.03 * (j % 3), 0.004), tones[(j + k) % 6])
+    # tablet cartons and syrup bottles are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # glass-fronted display counter top + a fridge + a weighing machine + a green-cross-free sign stand
     kit.add('paint', wb('fridge', c + 1.4, c + 2.0, BZ - 0.55, BZ - 0.1, 0.0, 1.6, 0.02), 0xE8E6DD)
     kit.add('paint', wb('fridge_door', c + 1.4, c + 2.0, BZ - 0.57, BZ - 0.55, 0.05, 1.55, 0.006), 0xD5D8D8)
@@ -247,11 +243,7 @@ def medical(i):
 def tailor(i):
     c = cx(i)
     shelves(i)
-    cloth = [0xA83A4A, 0x3A5A8A, 0xC9A227, 0x4A7A5A, 0x8A4A8A, 0xE8D8B8]
-    for j in range(6):
-        kit.add('paint', limb('bolt', (c - 1.9 + j * 0.76, BZ - 0.05, 2.12), (c - 1.9 + j * 0.76, BZ - 0.05, 2.62), 0.28, 0.28, 0.06), cloth[j])
-    for j in range(5):
-        kit.add('paint', limb('bolt', (c - 1.6 + j * 0.76, BZ - 0.05, 1.25), (c - 1.6 + j * 0.76, BZ - 0.05, 1.7), 0.26, 0.26, 0.06), cloth[(j + 2) % 6])
+    # cloth bolts are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # treadle sewing machine on the counter + a kurta on a hanger (the one the quest collects) + measuring tape
     kit.add('paint', wb('machine_base', c - 0.3, c + 0.3, CZ - 0.05, CZ + 0.25, 0.95, 1.02, 0.008), 0x1A1A1A)
     kit.add('paint', wb('machine_arm', c - 0.28, c + 0.2, CZ + 0.1, CZ + 0.22, 1.02, 1.3, 0.02), 0x1A1A1A)
@@ -294,11 +286,7 @@ def barber(i):
 def mobile(i):
     c = cx(i)
     shelves(i)
-    tones = [0x2A2A2A, 0x3A3A3A, 0x8A2E2E, 0x2A5A2A, 0x2E6BD0, 0xE8E6DD]
-    for k, h in enumerate((1.25, 2.1)):
-        for j in range(13):
-            x = c - 1.95 + j * 0.325
-            kit.add('paint', wb('phone_box', x - 0.08, x + 0.08, BZ - 0.1, BZ - 0.02, h, h + 0.18, 0.004), tones[(j + k) % 6])
+    # phone and charger cartons are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # desk with a monitor, keyboard, CPU tower; a rack of charging cables and generic recharge cards
     kit.add('wood', wb('desk', c - 0.9, c + 0.9, CZ - 0.0, CZ + 0.5, 0.0, 0.05, 0.005))
     kit.add('paint', wb('monitor', c - 0.25, c + 0.25, CZ + 0.15, CZ + 0.22, 1.0, 1.34, 0.01), 0x1A1A1A)

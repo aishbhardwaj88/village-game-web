@@ -11,11 +11,12 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 const CELL = 256;
 const COLS = 4;
-const ROWS = 4;
+const ROWS = 6;
 // atlas cell index per design
 export const DESIGN = {
   chipsRed: 0, chipsGreen: 1, chipsBlue: 2, biscuitBlue: 3, biscuitOrange: 4, soapGreen: 5, soapPink: 6, soapBlue: 7,
   toffeeJar: 8, sachet: 9, sodaOrange: 10, sodaLime: 11, sodaCola: 12, namkeen: 13, tea: 14, salt: 15,
+  medWhite: 16, medGreen: 17, syrup: 18, phoneBox: 19, chargerBox: 20, clothStripe: 21, clothCheck: 22, clothPrint: 23,
 };
 
 let atlas = null;
@@ -84,6 +85,49 @@ function getAtlas() {
     soda(DESIGN.sodaCola, '#3a1f12', '#f0e2d0', '#4a1f0c', 'COLA', 'कोला');
     pack(DESIGN.tea, '#2f7d4a', '#174d2c', 'CHAI', 'STRONG TEA', 'कड़क चाय', '#124a28', '#f2e8b0');
     cell(DESIGN.salt, () => { g.fillStyle = '#f2f2ee'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#2a5ea8'; g.fillRect(0, 0, CELL, 60); g.fillRect(0, CELL - 50, CELL, 50); text('SALT', CELL / 2, 125, 50, '#1d3f7a'); hindi('नमक', CELL / 2, 175, 32, '#1d3f7a'); text('1 kg', CELL / 2, 28, 24, '#fff', 800); });
+    const med = (i, bg, band, ink, title, hi) => cell(i, () => { // strip-tablet carton: white/green box, coloured band, bilingual generic name
+      g.fillStyle = bg; g.fillRect(0, 0, CELL, CELL);
+      g.fillStyle = band; g.fillRect(0, 150, CELL, 70);
+      text(title, CELL / 2, 92, 34, ink); hindi(hi, CELL / 2, 130, 24, ink);
+      text('10 TABLETS', CELL / 2, 196, 26, '#ffffff', 800);
+      g.fillStyle = 'rgba(0,0,0,.18)'; for (let k = 0; k < 5; k++) { g.beginPath(); g.arc(40 + k * 44, 40, 11, 0, 7); g.fill(); }
+    });
+    med(DESIGN.medWhite, '#f4f4ee', '#2f6fa8', '#1d3f66', 'PARACET', 'बुखार की गोली');
+    med(DESIGN.medGreen, '#dcebd2', '#3a8a4c', '#1c5a28', 'VITAMIN C', 'विटामिन सी');
+    cell(DESIGN.syrup, () => { // amber glass bottle: cap strip on top, cream label in the middle
+      g.fillStyle = '#7a3f12'; g.fillRect(0, 0, CELL, CELL);
+      g.fillStyle = '#d8d8d0'; g.fillRect(0, 0, CELL, 24);
+      g.fillStyle = 'rgba(255,230,180,.25)'; g.fillRect(18, 24, 20, CELL);
+      g.fillStyle = '#f4ecd6'; g.fillRect(0, 95, CELL, 105);
+      text('COUGH', CELL / 2, 135, 34, '#5a2a0a'); hindi('खाँसी सिरप', CELL / 2, 172, 26, '#5a2a0a');
+    });
+    cell(DESIGN.phoneBox, () => { // keypad-phone retail carton: dark blue, phone silhouette, generic name
+      g.fillStyle = '#1c2a44'; g.fillRect(0, 0, CELL, CELL);
+      g.fillStyle = '#0c0f18'; g.beginPath(); g.roundRect(78, 56, 100, 160, 14); g.fill();
+      g.fillStyle = '#6fa3b8'; g.fillRect(90, 70, 76, 44);
+      g.fillStyle = '#c8ccd0'; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) g.fillRect(92 + c * 26, 126 + r * 24, 20, 16);
+      text('KEYPAD 2 SIM', CELL / 2, 38, 26, '#f2c21e'); hindi('मोबाइल फ़ोन', CELL / 2, 244, 24, '#ffffff');
+    });
+    cell(DESIGN.chargerBox, () => {
+      g.fillStyle = '#e8e8e2'; g.fillRect(0, 0, CELL, CELL);
+      g.fillStyle = '#2a8a5a'; g.fillRect(0, 0, CELL, 64);
+      text('CHARGER', CELL / 2, 46, 36, '#ffffff'); hindi('मोबाइल चार्जर', CELL / 2, 120, 26, '#1c3a2a');
+      g.fillStyle = '#222'; g.fillRect(96, 150, 64, 56); g.fillStyle = '#999'; g.fillRect(108, 206, 12, 28); g.fillRect(136, 206, 12, 28);
+    });
+    cell(DESIGN.clothStripe, () => { // cloth bolt: woven stripes, warm madder-and-indigo
+      g.fillStyle = '#b8423a'; g.fillRect(0, 0, CELL, CELL);
+      for (let k = 0; k < 16; k++) { g.fillStyle = k % 4 === 0 ? '#f2e2b8' : k % 4 === 2 ? '#2c3f6e' : 'rgba(0,0,0,.12)'; g.fillRect(k * 16, 0, k % 4 === 1 ? 3 : 8, CELL); }
+      g.globalAlpha = 0.15; g.fillStyle = '#000'; for (let y = 0; y < CELL; y += 3) g.fillRect(0, y, CELL, 1); g.globalAlpha = 1;
+    });
+    cell(DESIGN.clothCheck, () => { // indigo-and-white check
+      g.fillStyle = '#e8e4d6'; g.fillRect(0, 0, CELL, CELL);
+      g.fillStyle = 'rgba(44,63,110,.8)'; for (let k = 0; k < 8; k++) { g.fillRect(k * 32, 0, 14, CELL); g.fillRect(0, k * 32, CELL, 14); }
+      g.globalAlpha = 0.12; g.fillStyle = '#000'; for (let y = 0; y < CELL; y += 3) g.fillRect(0, y, CELL, 1); g.globalAlpha = 1;
+    });
+    cell(DESIGN.clothPrint, () => { // block-print: olive ground, small cream and rust motifs
+      g.fillStyle = '#6f7240'; g.fillRect(0, 0, CELL, CELL);
+      for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const cx = x * 32 + (y % 2) * 16 + 16, cy = y * 32 + 16; g.fillStyle = '#efe3c0'; g.beginPath(); g.arc(cx, cy, 7, 0, 7); g.fill(); g.fillStyle = '#a8502c'; g.beginPath(); g.arc(cx, cy, 3, 0, 7); g.fill(); }
+    });
     texture.needsUpdate = true;
   };
   paint();
@@ -155,6 +199,10 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'salt': g = flatPack(0.1 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'biscuit': g = flatPack(0.13 * s, 0.2 * s, 0.035 * s, it.design); g.translate(0, 0.1 * s, 0); break;
       case 'soap': g = flatPack(0.085 * s, 0.05 * s, 0.1 * s, it.design); g.translate(0, 0.025 * s, 0); break;
+      case 'syrup': g = lathe(BOTTLE, it.design); g.scale(s * 1.15, s * 1.15, s * 1.15); break;
+      case 'medbox': g = flatPack(0.13 * s, 0.07 * s, 0.045 * s, it.design); g.translate(0, 0.035 * s, 0); break;
+      case 'phonebox': g = flatPack(0.1 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
+      case 'bolt': g = lathe([[0, 0], [0.13, 0], [0.14, 0.01], [0.14, 0.49], [0.13, 0.5], [0, 0.5]], it.design); g.scale(s, s, s); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;
       case 'jar': g = lathe(JAR, it.design); g.scale(s, s, s); break;
       case 'sachets': { // a strip of foil sachets on a string, hanging from y downward
