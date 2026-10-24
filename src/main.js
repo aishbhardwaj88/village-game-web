@@ -117,10 +117,10 @@ import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLa
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
-import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards } from './newShops.js';
+import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards, RATION_SHOP } from './newShops.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { setPlantFocus } from './realPlants.js';
-import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
+import { generalStoreGoods, rationGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
@@ -407,6 +407,7 @@ async function main() {
   shopsGroup.add(mergeGoodsMeshes([
     generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)),
     teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
+    rationGoods(new THREE.Matrix4().makeRotationY(NEW_SHOPS_ROT).setPosition(RATION_SHOP_POS.x, 0, RATION_SHOP_POS.z), RATION_SHOP.w, RATION_SHOP.d, RATION_SHOP.counterTopY),
   ], 'general_store_stock'));
   shopsGroup.add(halwaiGoods(new THREE.Matrix4().setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
 

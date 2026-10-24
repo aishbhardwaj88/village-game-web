@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z41, playtest block item 4, ration shop stock):** Game change: ration shop counter now carries real-shaped printed salt/tea packs, soap stacks and a second row of packs, plus a flank crate of oil/syrup bottles (src/shopGoods.js rationGoods, atlas designs reused, no asset bytes), merged into the existing general-store goods mesh in main.js so no new draw call (a separate mesh took hero view to 151, over the ceiling). Build ALL PASSED. Proof docs/shots/ration-2026-10-24/{front,close}.png (headless, subject check passed). Gaps: bottles stand loose on the grass, no crate under them; post office and atta chakki stock still primitive boxes/sacks; item 4 NOT ticked as a whole.
+NEXT: post office stock, draw-call saving in hero view, tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z40, playtest block item 3, mustard density):** Game change: sarson plots now get a flower-head canopy on every grid spot (was every other) with 16 cards per instance (was 12), so mustard reads as a continuous yellow carpet from khet distance, not scattered sprigs (src/field.js buildSarsonBloom / sarsonSpots). Same single InstancedMesh, no new draw call, no asset bytes. Khet variety already in code: sarson, young wheat, ripe wheat, ploughed earth, veg patch, sugarcane blocks; haystacks at tubewell and tea stall exist (docs/shots/khet-2026-10-24/haystacks_tubewell.png). Proof docs/shots/sarson-2026-10-24b/{overview,close}.png (headless, camera shots, no subject check). Item 3 NOT ticked as a whole: haystack-near-tea-stall shot not re-taken; crop blades still flat-card look at close range.
 NEXT: draw-call saving in the hero view (unblocks wood), tea glasses/jars, findability walk.
 

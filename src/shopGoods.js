@@ -447,3 +447,30 @@ export function halwaiGoods(world) {
   for (let i = 0; i < 8; i++) { const a = i * 0.8, r = i ? 0.2 : 0; items.push({ kind: 'samosa', design: D.samosa, x: kx + r * Math.cos(a), y: 1.425 + (i % 2) * 0.02, z: 1.15 + r * Math.sin(a), ry: rnd() * 6, rz: (rnd() - 0.5) * 0.4, s: 1.5 + rnd() * 0.25 }); }
   return buildGoodsMesh(items, world, 'halwai_stock');
 }
+
+/** Ration shop stock, shop-local frame (origin = block centre, counter window +z, counter top y 0.9, z = d/2+0.15 = 1.65): salt, tea, soap, hair-oil and syrup bottles on the counter and along a flank rack. */
+export function rationGoods(world, w = 3.6, d = 3, counterTopY = 0.9) {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 61.3) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  const cz = d / 2 + 0.2;
+  const half = (w - 1) / 2 - 0.15;
+  // counter front row: salt and tea packs standing, soap bars stacked, oil bottles; the scale and ledger sit at x -0.7 / 0.45
+  let x = -half;
+  while (x < half) {
+    if (Math.abs(x + 0.7) < 0.4 || Math.abs(x - 0.45) < 0.25) { x += 0.12; continue; }
+    const roll = rnd();
+    const z = cz + 0.1 + rnd() * 0.05, ry = (rnd() - 0.5) * 0.4;
+    if (roll < 0.35) { items.push({ kind: 'salt', design: D.salt, x, y: counterTopY, z, ry }); x += 0.12; }
+    else if (roll < 0.65) { items.push({ kind: 'tea', design: D.tea, x, y: counterTopY, z, ry }); x += 0.13; }
+    else if (roll < 0.85) { for (let k = 0; k < 3; k++) items.push({ kind: 'soap', design: [D.soapGreen, D.soapPink, D.soapBlue][Math.floor(rnd() * 3)], x: x + 0.04, y: counterTopY + k * 0.052, z, ry: (rnd() - 0.5) * 0.3 }); x += 0.14; }
+    else { items.push({ kind: 'bottle', design: [D.hairOil, D.syrup][Math.floor(rnd() * 2)], x, y: counterTopY, z, ry: rnd() * 6, s: 1.1 }); x += 0.1; }
+  }
+  // a second, taller row of stacked packs against the back of the counter ledge
+  for (let i = 0; i < 12; i++) items.push({ kind: i % 3 ? 'salt' : 'tea', design: i % 3 ? D.salt : D.tea, x: -half + i * 0.2 + (rnd() - 0.5) * 0.04, y: counterTopY + 0.17, z: cz - 0.02, ry: (rnd() - 0.5) * 0.3, rx: -0.05 });
+  // flank crate of oil bottles and syrup, right of the sacks
+  const fx = -(w / 2 + 0.45);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) items.push({ kind: 'bottle', design: (i + j) % 2 ? D.hairOil : D.syrup, x: fx - 0.12 + i * 0.12, y: 0.3, z: d / 2 - 0.65 + j * 0.13, ry: i * 1.9 + j, s: 1.1 });
+  return buildGoodsMesh(items, world, 'ration_stock');
+}
