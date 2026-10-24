@@ -158,30 +158,7 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     }
   }
 
-  // Atta chakki: a squat millstone cylinder + a small motor box, sitting just
-  // inside the open front — enough to read as "a grinding mill," not a
-  // detailed machine.
-  {
-    const world = wallWorldMatrix(attaChakkiPos, attaChakkiRot);
-    const stoneGeo = new THREE.CylinderGeometry(0.55, 0.6, 0.35, 12);
-    stoneGeo.applyMatrix4(new THREE.Matrix4().makeTranslation(-0.5, 0.18, -0.2)).applyMatrix4(world);
-    ensureUv2(stoneGeo);
-    bakeFlatTintColors(stoneGeo, darken(PALETTE.woodTrim, 0.6), 1);
-    woodGeos.push(stoneGeo);
-
-    const motorGeo = new THREE.BoxGeometry(0.4, 0.3, 0.3);
-    motorGeo.applyMatrix4(new THREE.Matrix4().makeTranslation(0.6, 0.15, -0.3)).applyMatrix4(world);
-    ensureUv2(motorGeo);
-    bakeFlatTintColors(motorGeo, 0x53585c, 1);
-    metalGeos.push(motorGeo);
-
-    const beltGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 8);
-    beltGeo.rotateZ(Math.PI / 2);
-    beltGeo.applyMatrix4(new THREE.Matrix4().makeTranslation(0.1, 0.22, -0.25)).applyMatrix4(world);
-    ensureUv2(beltGeo);
-    bakeFlatTintColors(beltGeo, 0x2a2a2a, 1);
-    metalGeos.push(beltGeo);
-  }
+  // Atta chakki: the mill itself (drum, hopper, motor, belt) is in new_shops.glb; only its collider is added below.
 
   // --- Furnishing (CLAUDE.md 5b rule 3): each trade's own stock and tools, hand-scattered with per-item
   // rotation, scale and tint, folded into the same wood/metal merges (+ one jute merge for sacks). ---
@@ -250,22 +227,10 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     colliders.push(colliderBoxFromTransform(0.4, 0.4, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(bx, 0.5, bz))));
   }
 
-  // Atta chakki: hopper over the stone, flour spout and collecting tray, sacks of grain and flour, scoops,
-  // a platform scale; flour dust is a pale tint on the floor and sacks.
+  // Atta chakki: collider for the mill (all visible parts are in the Blender model).
   {
     const world = wallWorldMatrix(attaChakkiPos, attaChakkiRot);
     const d = ATTA_CHAKKI.d;
-    put(metalGeos, new THREE.CylinderGeometry(0.4, 0.1, 0.5, 4, 1, true), world, -0.5, 1.0, -0.2, Math.PI / 4, 0x7e8288); // hopper
-    box(metalGeos, world, 0.06, 0.55, 0.06, -0.5, 0.35, -0.2, 0, 0x55595d); // feed pipe
-    box(woodGeos, world, 0.7, 0.05, 0.5, -0.5, 0.02, 0.25, 0, darken(PALETTE.woodTrim, 0.8)); // tray
-    box(metalGeos, world, 0.5, 0.5, 0.04, 0.0, 0.0, -d / 2 + 0.3, 0, 0x4a4d50); // belt guard
-    box(woodGeos, world, 0.9, 0.7, 0.05, 0.9, 0.8, -d / 2 + 0.2, 0, darken(PALETTE.woodTrim, 0.7)); // sack shelf
-    for (let i = 0; i < 4; i++) sack(world, 1.0 + (i % 2) * 0.5 + jit(0.04), Math.floor(i / 2) * 0.34, 0.1 + jit(0.1), jit(0.35), [0xd9d2bd, 0xcdc4a8, JUTE[0], 0xe2dccb][i]);
-    for (let i = 0; i < 3; i++) sack(world, -1.1 + jit(0.05), i * 0.34, 0.3 + jit(0.08), Math.PI / 2 + jit(0.2), [JUTE[1], 0xd6cfb8, JUTE[2]][i]);
-    box(metalGeos, world, 0.5, 0.06, 0.4, 0.3, 0, 0.8, 0.2, 0x5b5f63); // platform scale
-    cyl(metalGeos, world, 0.03, 0.9, 0.3, 0.06, 0.62, 0x4a4d50, 8);
-    cyl(metalGeos, world, 0.09, 0.07, -0.1, 0, 0.7, 0x9fa3a8, 10); // steel scoop bowl
-    box(woodGeos, world, 0.9, 0.012, 0.8, -0.35, 0, 0.0, 0.2, 0xe4dfd0); // flour dust on the floor
     colliders.push(colliderBoxFromTransform(1.2, 1.0, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(-0.5, 0.5, -0.2))));
   }
 

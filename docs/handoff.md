@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39w, playtest block item 5, atta chakki):** Honest result: no visible change. Removed the crude code-built mill duplicates (stone, motor, belt, hopper, tray, sacks shelf, scale) from src/newShops.js; they sat inside the Blender mill and the re-shot (docs/shots/chakki-2026-10-24/close.png, headless) is identical to before. Collider kept. Build ALL PASSED. Item NOT ticked.
+Real gap: the mill in tools/blender/build_new_shops.py atta_chakki() is flat-coloured faceted shapes (green drum, blue hopper, sacks that read as jars). Needs textured metal/jute materials, rounder sacks, a visible millstone/flour spout, a capsule miller at the machine.
+NEXT: rebuild the chakki mill and sacks with textured materials and a capsule operator; then dharam kanta.
+
+---
+
 **2026-10-24 (cycle 39v, playtest block item 5, petrol pump):** Game change: a farm tractor now stands at the east pumps (tools/blender/build_petrol_pump.py tractor(): body, hood, grille, seat, exhaust, big rear and small front wheels, same two meshes so no new draw call; petrol_pump.glb rebuilt; collider added in src/farmSites.js). Pump already had canopy, two dispensers with hoses, price pole, bilingual board, office, attendant capsule: re-shot, reads as a petrol pump. Proof docs/shots/petrol-2026-10-24/{road,road_close}.png (headless).
 Gaps: tractor tyres are thin tori, pump dispensers small; atta chakki, godown/dharam kanta, cricket field, badminton court, water tanks, other shops' goods, yellow swing still open.
 NEXT: atta chakki readability; dharam kanta.
