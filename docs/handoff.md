@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z62, playtest block item 5, atta chakki check):** No game change (survey only). Re-shot the chakki from inside: the Blender mill (tools/blender/build_new_shops.py atta_chakki) already reads as a flour mill: blue hopper over a green drum housing, blue motor with pulley and belt, scale pan, flour tray, wheat/flour sacks, bulb on a flex (docs/shots/chakki-2026-10-24/{mill_a,mill_b}.png, headless, capsule miller in frame so not tickable). Seen, not fixed: the miller capsule (expected placeholder) blocks the front view; the jute sacks (`sack` helper) are lumpy with pot-like ears and a flat tint; the belt/guard are thin sticks; the front wall is flat terracotta with no flour-dust texture. Item 5 chakki line left unticked.
+NEXT: sack helper reshape (shared by all shops), cricket/badminton re-shot.
+
+---
+
 **2026-10-24 (cycle 39z61, playtest block item 5, swing):** Game change: playground swing sets (anganwadi and mela, src/farmSites.js swingSetGeos) now have thicker chains with top hanger rings, eye bolts and moulded rubber seats with raised lips (were hairline wires and flat black planks). Same mesh, no new draw call. Cricket field mud and badminton court lines were already reworked (earlier cycles, farmSites createKhelMaidan), not re-shot this cycle. Build ALL PASSED. Proof docs/shots/swing-2026-10-24c/swing.png (headless, HUD in frame, so not tickable). Gaps: no single 'yellow swing' exists in code; the yellow item is the anganwadi slide rails; atta chakki still open.
 NEXT: atta chakki mill rework, cricket/badminton re-shot.
 
