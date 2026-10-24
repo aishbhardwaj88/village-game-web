@@ -111,13 +111,13 @@ def back_door_z(xc, zface, w, h, leaf):
     """Staff door in the back wall facing +z: recess, frame, leaf with raised panels and a rail, hinges, brass handle, step."""
     x0, x1 = xc - w / 2, xc + w / 2
     kit.add('paint', wb('drecess', x0 - 0.08, x1 + 0.08, zface, zface + 0.03, 0.0, h, 0), 0x14110E)
-    kit.add('paint', wb('dframe', x0 - 0.09, x1 + 0.09, zface, zface + 0.09, h, h + 0.09, 0.004), 0x2F2016)
+    kit.add('wood', wb('dframe', x0 - 0.09, x1 + 0.09, zface, zface + 0.09, h, h + 0.09, 0.004), 0x2F2016)
     for xx0, xx1 in ((x0 - 0.09, x0), (x1, x1 + 0.09)):
-        kit.add('paint', wb('dframe', xx0, xx1, zface, zface + 0.09, 0.0, h + 0.09, 0.004), 0x2F2016)
-    kit.add('paint', wb('leaf', x0, x1, zface + 0.02, zface + 0.07, 0.02, h, 0.004), leaf)
+        kit.add('wood', wb('dframe', xx0, xx1, zface, zface + 0.09, 0.0, h + 0.09, 0.004), 0x2F2016)
+    kit.add('wood', wb('leaf', x0, x1, zface + 0.02, zface + 0.07, 0.02, h, 0.004), leaf)
     for h0, h1 in ((0.2, h * 0.45), (h * 0.55, h - 0.2)):
-        kit.add('paint', wb('dpanel', x0 + 0.1, x1 - 0.1, zface + 0.07, zface + 0.1, h0, h1, 0.004), 0x3D2818)
-    kit.add('paint', wb('drail', x0, x1, zface + 0.07, zface + 0.1, h * 0.47, h * 0.53, 0.004), 0x2F2016)
+        kit.add('wood', wb('dpanel', x0 + 0.1, x1 - 0.1, zface + 0.07, zface + 0.1, h0, h1, 0.004), 0x3D2818)
+    kit.add('wood', wb('drail', x0, x1, zface + 0.07, zface + 0.1, h * 0.47, h * 0.53, 0.004), 0x2F2016)
     for hy in (0.3, h - 0.3):
         kit.add('paint', wb('hinge', x0, x0 + 0.16, zface + 0.07, zface + 0.1, hy, hy + 0.05, 0), 0x26262A)
     kit.add('paint', cyl('handle', x1 - 0.12, zface + 0.12, h * 0.5 - 0.02, h * 0.5 + 0.02, 0.025, 0.025, 8), BRASS)
@@ -157,9 +157,9 @@ def shutters_and_counters():
         # counter (0.9 high, 0.5 deep, 3.8 wide): planked front painted in the trade colour, wooden top
         cw = UW - 0.7
         kit.add('wood', wb('counter_top', c - cw / 2 - 0.04, c + cw / 2 + 0.04, COUNTER_Z0 - 0.04, COUNTER_Z1 + 0.04, 0.88, 0.95, 0.008))
-        kit.add('paint', wb('counter_body', c - cw / 2, c + cw / 2, COUNTER_Z0, COUNTER_Z1, 0.0, 0.88, 0.008), 0xB19468)
+        kit.add('wood', wb('counter_body', c - cw / 2, c + cw / 2, COUNTER_Z0, COUNTER_Z1, 0.0, 0.88, 0.008), 0xB19468)
         for h in (0.2, 0.42, 0.64):
-            kit.add('paint', wb('plank_line', c - cw / 2 + 0.02, c + cw / 2 - 0.02, COUNTER_Z0 - 0.012, COUNTER_Z0, h, h + 0.014, 0), 0x4F3E2E)
+            kit.add('wood', wb('plank_line', c - cw / 2 + 0.02, c + cw / 2 - 0.02, COUNTER_Z0 - 0.012, COUNTER_Z0, h, h + 0.014, 0), 0x4F3E2E)
         kit.add('paint', wb('counter_trim', c - cw / 2 - 0.02, c + cw / 2 + 0.02, COUNTER_Z0 - 0.02, COUNTER_Z0 + 0.04, 0.0, 0.12, 0.004), col)
 
 

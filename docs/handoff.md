@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z48, playtest block item 6, bazaar wood):** Game change: bazaar row shop counters (body + plank lines) and door frames/leaves/panels now carry the real PBR wood set via the building's existing 'wood' slot (build_bazaar_row.py, bazaar_row.glb rebuilt), zero extra draw calls. Proof docs/shots/bazaar-wood-2026-10-24/{front,close}.png (headless). Build ALL PASSED, budget 30.68 MB.
+NEXT: tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z47, playtest block item 6, halwai wood):** Game change: halwai stall frame posts/beam, counter posts/rail and the firewood stack now carry the real PBR wood set (build_halwai.py: Kit(split_props=False, wood_slot='props'), halwai kind 'wood'), zero extra draw calls (hero shot 147). halwai_compound.glb rebuilt. Build ALL PASSED, budget 30.68 MB. Proof docs/shots/halwai-wood-2026-10-24/{front,front2,close}.png (proof-shot.mjs, headless, HUD and capsule in frame, so not a tickable proof). Gaps: wood still reads dark/brown-black; bazaar row (props slot is metal) still flat; fire-pit bricks unchanged.
 NEXT: bazaar wood, tea glasses/jars, findability walk.
 
