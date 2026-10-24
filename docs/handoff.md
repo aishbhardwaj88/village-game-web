@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z86, playtest block item 7, camera vs tree canopies):** Game change: the third-person camera (src/player.js) now also marches its ray through live tree canopy volumes (CANOPIES/canopyAt in src/trees.js, one cylinder per tree, ignored for zone-hidden/detached trees) and pulls in before entering one, unless the player already stands under that canopy. Not a movement collider, no new draw calls. Build ALL PASSED; regression 21/22 (only the known 536k-vs-400k triangle line). No proof shot: needs a moving-camera span near trees, not taken this cycle, not tickable. Gaps: canopy is a rough cylinder per species, not the real leaf-card shape; jalebi/gaushala spurs still blocked by the 150 draw-call ceiling in the bazaar view.
+NEXT: save bazaar-view draw calls for the jalebi/gaushala spurs, shot of the camera under a neem, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z85, playtest block item 8, cyclist route fix):** Game change: the east-road cyclist (src/main.js) now rides waypoints every 10 m along the road instead of a 3-point chord, so it follows the bend and no longer clips the chemist's collider (build check 9 was FAILING at 0.33 m penetration after the last cycle; now 17 routes / 62 legs clear, build 16/16). Tried jalebi and gaushala bare spurs off the west gali: both push the bazaar view to 152-154 draw calls (ceiling 150), so reverted; those two stay not-findable-without-the-map until draw calls are saved elsewhere. No proof shot (moving capsule subject, not tickable).
 NEXT: save draw calls in the bazaar view to afford the jalebi/gaushala spurs, camera vs tree canopies, triangle cuts (art director's call).
 

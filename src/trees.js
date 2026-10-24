@@ -403,8 +403,32 @@ export function buildTrees(placements) {
     let trunkMesh = null;
     tree.traverse((o) => { if (!trunkMesh && o.isMesh && o.name.endsWith('_mesh')) trunkMesh = o; });
     if (trunkMesh) trunkMesh.userData.colliderBoxes = [{ minX: p.x - r, maxX: p.x + r, minZ: p.z - r, maxZ: p.z + r }];
+    // Canopy volume for the camera only (not a movement collider): see ThirdPersonCamera.update.
+    const spec = SPECS[p.kind], sc = p.scale ?? 1;
+    const reach = (spec.branchLen * 0.8 + spec.clusterR) * sc;
+    CANOPIES.push({ x: p.x, z: p.z, y0: (p.y ?? 0) + spec.height * spec.trunkFrac * 0.9 * sc, y1: (p.y ?? 0) + spec.height * 1.1 * sc, r: reach, root: group });
   }
   return group;
+}
+
+/** Leaf-canopy volumes (vertical cylinders) of every tree built so far; entries whose `root`
+ * group is detached or zone-hidden are ignored by canopyAt. */
+export const CANOPIES = [];
+
+function rootLive(o) {
+  for (let i = 0; o && i < 8; i++, o = o.parent) if (o.userData?.zoneHidden || o.visible === false) return false;
+  return true;
+}
+
+/** True when the world point is inside a live tree's leaf canopy. */
+export function canopyAt(x, y, z) {
+  for (const c of CANOPIES) {
+    if (y < c.y0 || y > c.y1) continue;
+    const dx = x - c.x, dz = z - c.z;
+    if (dx * dx + dz * dz > c.r * c.r) continue;
+    if (c.root.parent && rootLive(c.root)) return true;
+  }
+  return false;
 }
 
 // Trunk radius at the base plus a little flare, per species (matches SPECS trunkR).

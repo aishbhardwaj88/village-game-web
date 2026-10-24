@@ -1,4 +1,5 @@
 import { STATIC_COLLIDERS } from './collision.js';
+import { canopyAt } from './trees.js';
 import * as THREE from 'three';
 
 const PLAYER_HEIGHT = 2; // metres
@@ -116,6 +117,18 @@ export class ThirdPersonCamera {
         }
       }
       if (inside) { targetDistance = Math.max(OCCLUSION_MIN_DISTANCE, t - 0.25 - OCCLUSION_MARGIN); break; }
+    }
+
+    // Tree canopies are leaf cards, not colliders: pull the camera in before it enters one, unless the player
+    // is already standing under that canopy (then the camera would have nowhere to go).
+    const oy = this._pivot.y;
+    if (!canopyAt(ox, oy, oz)) {
+      for (let t = 0.5; t <= targetDistance; t += 0.25) {
+        if (canopyAt(ox + this._offsetDir.x * t, oy + this._offsetDir.y * t, oz + this._offsetDir.z * t)) {
+          targetDistance = Math.max(OCCLUSION_MIN_DISTANCE, t - 0.25 - OCCLUSION_MARGIN);
+          break;
+        }
+      }
     }
 
     const rate = targetDistance < this._effectiveDistance ? PULL_IN_RATE : EASE_OUT_RATE;
