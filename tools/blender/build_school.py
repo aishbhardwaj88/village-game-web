@@ -20,7 +20,7 @@ import random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
 from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, boolean_cut, ROOT
-from arch import (Kit, Bldg, pot, flower_bed, barred_window, panel_door, pillar, bench, school_bag, ring,
+from arch import (bicycle, Kit, Bldg, pot, flower_bed, barred_window, panel_door, pillar, bench, school_bag, ring,
                   decal_material, decal_quad, LEAF, TERRA, SOIL, MARI, STEEL, BRASS)
 
 OUT = os.path.join(ROOT, 'tmp', 'school_compound_raw.glb')
@@ -293,16 +293,8 @@ def build_yard():
     kit.add('paint', cyl('pump_col', px - 0.6, pz, 0.4, 1.15, 0.07, 0.06, 10), 0x2E5E3A)
     kit.add('paint', limb('pump_handle', (px - 0.6, pz, 1.1), (px - 1.05, pz, 1.35), 0.05, 0.05), 0x2E5E3A)
     kit.add('paint', limb('pump_spout', (px - 0.6, pz, 0.8), (px - 0.25, pz, 0.62), 0.05, 0.05), 0x2E5E3A)
-    for i, (bz, col) in enumerate(((-11.6, 0xC0392B), (-10.7, 0x2E86C1), (-9.9, 0xE0B53A))):
-        bx = -14.5
-        kit.add('paint', ring('bike_wheel_f', bx, bz, 0.3, 0.3, 0.025, axis='x'), 0x1B1B1D)
-        kit.add('paint', ring('bike_wheel_r', bx + 0.95, bz, 0.3, 0.3, 0.025, axis='x'), 0x1B1B1D)
-        kit.add('paint', limb('bike_frame1', (bx, bz, 0.3), (bx + 0.5, bz, 0.62), 0.03, 0.03), col)
-        kit.add('paint', limb('bike_frame2', (bx + 0.5, bz, 0.62), (bx + 0.95, bz, 0.3), 0.03, 0.03), col)
-        kit.add('paint', limb('bike_frame3', (bx + 0.5, bz, 0.62), (bx + 0.9, bz, 0.66), 0.03, 0.03), col)
-        kit.add('paint', limb('bike_bar', (bx + 0.05, bz - 0.2, 0.7), (bx + 0.05, bz + 0.2, 0.7), 0.025, 0.025), 0x333333)
-        kit.add('paint', limb('bike_fork', (bx, bz, 0.3), (bx + 0.05, bz, 0.7), 0.03, 0.03), 0x333333)
-        kit.add('paint', wb('bike_seat', bx + 0.82, bx + 1.02, bz - 0.06, bz + 0.06, 0.66, 0.7, 0.01), 0x222222)
+    for i, (bz, col) in enumerate(((-11.6, 0xC0392B), (-10.7, 0x2E86C1), (-9.9, 0x3A7A4A))):
+        bicycle(kit, -14.5, bz, col)
     # raised brick ring around a neem (the code-built tree is placed in it by src/main.js)
     rx, rz, R = -4.5, -6.2, 1.55
     n = 22

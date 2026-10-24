@@ -355,6 +355,39 @@ def clay_pot(kit, x, z, s=1.0, tone=None):
     kit.add('paint', lathe('matka', x, z, [(r * s, h * s) for r, h in prof], seg=22), c)
 
 
+def bicycle(kit, bx, bz, col=0x2A3A42, lean=0.0):
+    """A readable Indian roadster bicycle standing along +wx (front wheel at bx, rear at bx+1.05): tyres + rims + spokes + hubs in the (wx, h) plane,
+    diamond frame, fork, high handlebar with grips and a bell, saddle, crank + pedal, chain guard, rear carrier, headlamp. Size ~1.45 m long, 1.05 m high."""
+    R = 0.34
+    fx, rx = bx, bx + 1.05
+    for wx in (fx, rx):
+        kit.add('paint', ring('tyre', wx, bz, R + 0.01, R, 0.032, axis='z'), 0x1B1B1D)
+        kit.add('paint', ring('rim', wx, bz, R + 0.01, R - 0.045, 0.01, axis='z'), 0xB6BABD)
+        kit.add('paint', cyl('hub', wx, bz, R - 0.03, R + 0.05, 0.025, 0.025, 8), 0xB6BABD)
+        for k in range(8):
+            a = k / 8 * math.pi * 2
+            kit.add('paint', limb('spoke', (wx, bz, R + 0.01), (wx + (R - 0.045) * math.cos(a), bz, R + 0.01 + (R - 0.045) * math.sin(a)), 0.006, 0.006), 0xB6BABD)
+    hub_f, hub_r = (fx, bz, R + 0.01), (rx, bz, R + 0.01)
+    seat_top = (rx - 0.2, bz, 0.98)
+    bb = (rx - 0.45, bz, 0.3)                         # bottom bracket
+    head_b, head_t = (fx + 0.12, bz, 0.78), (fx + 0.2, bz, 0.95)
+    for a, b, t in ((hub_r, bb, 0.03), (hub_r, seat_top, 0.025), (bb, seat_top, 0.035), (bb, head_b, 0.045), (seat_top, head_t, 0.04), (hub_f, head_b, 0.03)):
+        kit.add('paint', limb('frame', a, b, t, t), col)
+    kit.add('paint', limb('stem', head_t, (fx + 0.14, bz, 1.06), 0.03, 0.03), 0x333333)
+    kit.add('paint', limb('bars', (fx + 0.14, bz - 0.28, 1.06), (fx + 0.14, bz + 0.28, 1.06), 0.022, 0.022), 0x2B2B2B)
+    for sg in (-1, 1):
+        kit.add('paint', limb('grip', (fx + 0.14, bz + sg * 0.25, 1.06), (fx + 0.14, bz + sg * 0.33, 1.05), 0.032, 0.032), 0x151515)
+    kit.add('paint', sphere('lamp', fx + 0.04, bz, 0.97, 0.06, 0.06, 0.05, 1), 0xE9E2B0)
+    kit.add('paint', sphere('bell', fx + 0.16, bz + 0.1, 1.1, 0.035, 0.035, 0.03, 1), 0xB6BABD)
+    kit.add('paint', wb('saddle', seat_top[0] - 0.12, seat_top[0] + 0.12, bz - 0.07, bz + 0.07, 0.98, 1.03, 0.015), 0x1C1C1C)
+    kit.add('paint', limb('crank', (bb[0], bz + 0.06, bb[2] + 0.12), (bb[0], bz + 0.06, bb[2] - 0.12), 0.022, 0.022), 0x555555)
+    kit.add('paint', wb('pedal', bb[0] - 0.05, bb[0] + 0.05, bz + 0.07, bz + 0.17, bb[2] - 0.14, bb[2] - 0.11, 0.004), 0x222222)
+    kit.add('paint', wb('chainguard', bb[0], rx, bz + 0.045, bz + 0.065, 0.22, 0.34, 0.01), 0x1E1E20)
+    kit.add('paint', wb('carrier', rx - 0.3, rx + 0.12, bz - 0.09, bz + 0.09, 0.78, 0.8, 0.005), 0x1E1E20)
+    kit.add('paint', limb('carrier_leg', (rx - 0.3, bz, 0.79), (rx, bz, R + 0.01), 0.012, 0.012), 0x1E1E20)
+    kit.add('paint', limb('stand', (bb[0] + 0.15, bz, 0.12), (bb[0] + 0.15, bz + 0.18, 0.0), 0.014, 0.014), 0x333333)
+
+
 def plastic_chair(kit, x, z, ang, colour, arms=False):
     """Moulded plastic chair: seat, tilted back, four legs (ang = rotation about the vertical, 0 faces +wz... back at -wz)."""
     ca, sa = math.cos(ang), math.sin(ang)

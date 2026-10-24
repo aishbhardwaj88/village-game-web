@@ -532,18 +532,33 @@ export function createAnganwadi(position) {
   return group;
 }
 
+/** One steel milk can, 0.78 m tall: lathe profile + lid dome + knob + two rolled bands + two side lugs. */
+function milkCanGeos(x, z, rot, tone) {
+  const prof = [[0.0, 0.0], [0.19, 0.0], [0.215, 0.04], [0.2, 0.08], [0.2, 0.5], [0.19, 0.56], [0.14, 0.62], [0.115, 0.66], [0.115, 0.7], [0.13, 0.71]].map(([r, y]) => new THREE.Vector2(r, y));
+  const body = new THREE.LatheGeometry(prof, 18);
+  const out = [bake(body, at(x, 0, z, rot), tone)];
+  out.push(bake(new THREE.SphereGeometry(0.135, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.Matrix4().makeScale(1, 0.55, 1).setPosition(x, 0.71, z), 0x9fa4a8)); // lid dome
+  out.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 8), at(x, 0.8, z), 0x7d8286));                                                                           // lid knob
+  for (const y of [0.1, 0.46]) out.push(bake(new THREE.TorusGeometry(0.205, 0.014, 5, 18), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(x, y, z), 0x8d9296)); // bands
+  for (const sx of [-1, 1]) out.push(bake(new THREE.TorusGeometry(0.045, 0.012, 5, 8, Math.PI), new THREE.Matrix4().makeRotationZ(Math.PI / 2 * sx).setPosition(x + sx * 0.18, 0.56, z), 0x8d9296)); // lugs
+  return out;
+}
+
 /** Dudh dairy: cream-walled collection room with a steel can stack, a milk-can rack and a tin awning. */
 export function createDudhDairy(position) {
   const geos = smallBuilding({ w: 5, d: 4, h: 3.0, wall: 0xe7dcc0, band: 0x4a78a6, door: 0x7a4a2a });
   geos.push(bake(new THREE.BoxGeometry(5.6, 0.07, 1.8), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 2.75, 3.0), 0x8e969c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.6, 1.2, 3.7), 0x5a5a5a));
-  // Milk cans (tall steel cylinders with lids) in two rows beside the door.
+  // Milk cans: real dairy cans (flared foot, straight body, sloped shoulder, narrow neck, domed lid with a knob, two rolled bands, side lugs), two rows beside the door.
   for (let i = 0; i < 6; i++) {
     const x = -2.2 + (i % 3) * 0.55, z = 2.9 + Math.floor(i / 3) * 0.55;
-    geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 0.8, 10), at(x, 0.4, z), 0xb9bdc0));
-    geos.push(bake(new THREE.CylinderGeometry(0.14, 0.2, 0.12, 10), at(x, 0.86, z), 0x9fa4a8));
+    geos.push(...milkCanGeos(x, z, i * 0.9, [0xb9bdc0, 0xaeb4b8, 0xc4c8ca][i % 3]));
   }
-  geos.push(bake(new THREE.BoxGeometry(1.4, 0.5, 0.9), at(2.0, 0.25, 3.1), 0x7a5a3a));
+  // Collection bench (plank top on four legs, brace rail) with two full cans on it, instead of a solid box.
+  geos.push(bake(new THREE.BoxGeometry(1.4, 0.06, 0.7), at(2.0, 0.48, 3.1), 0x7a5a3a));
+  for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.BoxGeometry(0.07, 0.45, 0.07), at(2.0 + lx * 0.62, 0.225, 3.1 + lz * 0.29), 0x5a3f27));
+  geos.push(bake(new THREE.BoxGeometry(1.2, 0.04, 0.05), at(2.0, 0.2, 3.1), 0x5a3f27));
+  for (const dx of [-0.32, 0.32]) geos.push(...milkCanGeos(2.0 + dx, 3.1, dx * 3, 0xb9bdc0).map((g) => g.translate(0, 0.51, 0)));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat({ roughness: 0.8 }));
   mesh.userData.colliderBoxes = solidBoxes(position, [[0, 0, 5.2, 4.2]]);
   mesh.castShadow = true;

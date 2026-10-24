@@ -13,7 +13,7 @@ import sys, os, math, random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
 from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, boolean_cut, ROOT
-from arch import Kit, ring, pot, plastic_chair, dabba, sack, clay_pot, STEEL, BRASS, LEAF, MARI, TERRA, SOIL
+from arch import bicycle, Kit, ring, pot, plastic_chair, dabba, sack, clay_pot, STEEL, BRASS, LEAF, MARI, TERRA, SOIL
 
 OUT = os.path.join(ROOT, 'tmp', 'bazaar_row_raw.glb')
 kit = Kit()
@@ -346,9 +346,9 @@ def puncture(i):
     kit.add('wood', wb('bench', c - 0.9, c + 0.9, BZ - 0.45, BZ - 0.05, 0.0, 0.85, 0.01))
     kit.add('wood', wb('bench_top', c - 0.95, c + 0.95, BZ - 0.5, BZ - 0.0, 0.85, 0.92, 0.008))
     for sgn in (-1, 1):  # cycle flipped: wheels up, resting on saddle + handlebars
-        kit.add('paint', ring('wheel', c + sgn * 0.5, BZ - 0.25, 1.28, 0.3, 0.025, axis='x'), 0x1C1C1C)
+        kit.add('paint', ring('wheel', c + sgn * 0.5, BZ - 0.25, 1.28, 0.3, 0.03, axis='z'), 0x1C1C1C)
         kit.add('paint', limb('spoke_a', (c + sgn * 0.5, BZ - 0.25, 0.98), (c + sgn * 0.5, BZ - 0.25, 1.58), 0.01, 0.01), 0x9A9EA3)
-        kit.add('paint', limb('spoke_b', (c + sgn * 0.5, BZ - 0.5, 1.28), (c + sgn * 0.5, BZ - 0.0, 1.28), 0.01, 0.01), 0x9A9EA3)
+        kit.add('paint', limb('spoke_b', (c + sgn * 0.5 - 0.3, BZ - 0.25, 1.28), (c + sgn * 0.5 + 0.3, BZ - 0.25, 1.28), 0.01, 0.01), 0x9A9EA3)
     kit.add('paint', limb('frame_bar', (c - 0.5, BZ - 0.25, 1.0), (c + 0.5, BZ - 0.25, 1.0), 0.05, 0.05), 0x2A3A42)
     kit.add('paint', limb('frame_up', (c - 0.5, BZ - 0.25, 1.0), (c - 0.1, BZ - 0.25, 1.2), 0.04, 0.04), 0x2A3A42)
     kit.add('paint', wb('saddle', c - 0.05, c + 0.15, BZ - 0.32, BZ - 0.18, 0.93, 1.0, 0.02), 0x1A1A1A)
@@ -363,14 +363,7 @@ def puncture(i):
 def frontage_dressing():
     # (from the reference) a cycle leaning at units 2-3, plastic chairs, a wooden bench, potted plants on the step
     bx0, bz = cx(2) - 1.2, FRONT - 0.78
-    kit.add('paint', ring('cyc_wheel_f', bx0, bz, 0.35, 0.34, 0.025, axis='x'), 0x1C1C1C)
-    kit.add('paint', ring('cyc_wheel_r', bx0 + 1.05, bz, 0.35, 0.34, 0.025, axis='x'), 0x1C1C1C)
-    kit.add('paint', limb('cyc_f1', (bx0, bz, 0.35), (bx0 + 0.5, bz, 0.7), 0.03, 0.03), 0x2A3A42)
-    kit.add('paint', limb('cyc_f2', (bx0 + 0.5, bz, 0.7), (bx0 + 1.05, bz, 0.35), 0.03, 0.03), 0x2A3A42)
-    kit.add('paint', limb('cyc_f3', (bx0 + 0.5, bz, 0.7), (bx0 + 1.0, bz, 0.75), 0.03, 0.03), 0x2A3A42)
-    kit.add('paint', limb('cyc_bar', (bx0 + 0.05, bz - 0.22, 0.8), (bx0 + 0.05, bz + 0.22, 0.8), 0.025, 0.025), 0x333333)
-    kit.add('paint', limb('cyc_fork', (bx0, bz, 0.35), (bx0 + 0.05, bz, 0.8), 0.03, 0.03), 0x333333)
-    kit.add('paint', wb('cyc_seat', bx0 + 0.9, bx0 + 1.12, bz - 0.06, bz + 0.06, 0.75, 0.8, 0.01), 0x222222)
+    bicycle(kit, bx0, bz, 0x2A3A42)
     plastic_chair(kit, cx(4) - 1.7, FRONT - 0.9, 0.0, 0x9FA3BA)
     plastic_chair(kit, cx(5) - 1.3, FRONT - 0.9, 0.0, 0x4FA8A8, arms=True)
     kit.add('wood', wb('b_seat', cx(5) - 0.4, cx(5) + 1.1, FRONT - 1.05, FRONT - 0.7, 0.42, 0.48, 0.01))
