@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39z3, playtest block item 6, water tanks):** Game change: rooftop Sintex tanks (src/rooftops.js) rebuilt: 24-segment barrel, three moulded ribs, shoulder + domed lid, screw hatch, vent, outlet elbow, brass valve, float-feed pipe, plinth lip; same merged metal/concrete meshes, no new draw call. Free-asset search: Poly Pizza "water tank" (Quaternius, Kay Lousberg: stylised low-poly, rejected for the realism target), OpenGameArt node 5550 (.blend only), RenderHub/CGTrader (paid). Build ALL PASSED. Item NOT ticked: proof shots docs/shots/tanks-2026-10-24/c1.png show tanks too small/far to judge; need a close roof-level shot (camera cannot get roof height from the ground rig).
+Gaps: hand-built so far; ground-level and halwai/petrol/dharam-kanta tanks (Blender) not touched; sabzi/bangle goods still open.
+NEXT: roof-level close shot of a tank; sabzi produce and bangle textures.
+
+---
+
 **2026-10-24 (cycle 39z2, playtest block item 5, swings):** Game change: crude swing/slide boxes replaced by real playground gear (src/farmSites.js swingSetGeos, slideGeos, limbGeo): two-seat swing set with A-frames, top bar, thin chains, rubber seats, footings at the mela ground and the anganwadi yard; anganwadi's yellow box ramp became a laddered, railed steel-chute slide (the likely "yellow swing"). Colliders added. Same merged mesh, no new draw call. Build ALL PASSED, budget 28.39 MB. Proof docs/shots/playground-2026-10-24/{anganwadi,anganwadi_swing,mela_swing}.png (headless). Checked: godown/kanta and highway road ends were already done (run-outs in roadGeos and createMandi).
 Gaps: slide is hidden behind the yard wall from the front; swing set is code-built (no free CC0 model searched yet); water tank real model, sabzi/bangle goods still open.
 NEXT: water tanks (real model search), sabzi produce and bangle shop textures.

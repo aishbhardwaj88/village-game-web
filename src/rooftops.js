@@ -60,11 +60,26 @@ export function createRoofCell(cell) {
     siteM.compose(p.set(s.x, s.y, s.z), q.setFromEuler(e.set(0, s.yaw + (r(1) - 0.5) * 0.5, 0)), one);
     if (s.kind === 'tank') {
       const rad = 0.42 + r(2) * 0.18, h = 0.85 + r(3) * 0.35, base = 0.28;
+      const pl = pickOf(PLASTIC, 4), rib = '#141a1e';
       parts.concrete.push(box(rad * 2.5, base, rad * 2.5, '#b9b4aa', local(s, 0, base / 2, 0)));
-      parts.metal.push(cyl(rad, rad * 1.04, h, pickOf(PLASTIC, 4), local(s, 0, base + h / 2, 0), 18));
-      parts.metal.push(cyl(rad * 0.97, rad * 0.97, 0.04, '#171c20', local(s, 0, base + h + 0.02, 0), 18)); // lid
-      parts.metal.push(cyl(rad * 0.3, rad * 0.3, 0.07, '#20262b', local(s, rad * 0.25, base + h + 0.07, 0.1), 10)); // hatch
-      parts.metal.push(cyl(0.025, 0.025, 0.7, '#6f7478', local(s, rad + 0.02, base + 0.45, 0), 8)); // down pipe
+      parts.concrete.push(box(rad * 2.5 + 0.06, 0.05, rad * 2.5 + 0.06, '#a7a298', local(s, 0, base + 0.01, 0))); // plinth lip
+      parts.metal.push(cyl(rad, rad * 1.04, h, pl, local(s, 0, base + h / 2, 0), 24));
+      // moulded ribs: three raised bands round the barrel, as on a real Sintex
+      for (const f of [0.22, 0.5, 0.78]) parts.metal.push(cyl(rad * 1.045, rad * 1.045, 0.035, rib, local(s, 0, base + h * f, 0), 24));
+      // shoulder, domed lid, screw hatch with a lip, vent cap
+      parts.metal.push(cyl(rad * 0.86, rad, 0.08, pl, local(s, 0, base + h + 0.04, 0), 24));
+      const dome = new THREE.SphereGeometry(rad * 0.86, 24, 6, 0, Math.PI * 2, 0, 0.55);
+      prep(dome, pl, rad * 2, rad * 2);
+      dome.scale(1, 0.55, 1).applyMatrix4(local(s, 0, base + h + 0.06, 0));
+      parts.metal.push(dome);
+      parts.metal.push(cyl(rad * 0.3, rad * 0.32, 0.06, '#20262b', local(s, rad * 0.22, base + h + 0.17, 0.1), 14));
+      parts.metal.push(cyl(rad * 0.18, rad * 0.2, 0.05, '#2c3338', local(s, rad * 0.22, base + h + 0.22, 0.1), 12));
+      parts.metal.push(cyl(0.03, 0.03, 0.08, '#171c20', local(s, -rad * 0.3, base + h + 0.16, -0.12), 8)); // vent
+      // plumbing: outlet elbow low on the barrel, down pipe with a brass valve, float-feed pipe up the side
+      parts.metal.push(cyl(0.032, 0.032, 0.16, '#6f7478', local(s, rad + 0.06, base + 0.18, 0, 0, 0, Math.PI / 2), 8));
+      parts.metal.push(cyl(0.028, 0.028, 0.7, '#6f7478', local(s, rad + 0.13, base + 0.0 + 0.12, 0), 8));
+      parts.metal.push(cyl(0.045, 0.045, 0.07, '#a98c3c', local(s, rad + 0.13, base + 0.3, 0), 8));
+      parts.metal.push(cyl(0.022, 0.022, h * 0.9, '#5d6266', local(s, -rad - 0.04, base + h * 0.45, 0.1), 8));
     } else if (s.kind === 'antenna') {
       const mast = 2.0 + r(2) * 1.3, lean = (r(3) - 0.5) * 0.08, al = pickOf(ALU, 4);
       parts.metal.push(cyl(0.022, 0.025, mast, al, local(s, 0, mast / 2, 0, lean, 0, -lean), 8));
