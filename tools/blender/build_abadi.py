@@ -325,6 +325,11 @@ def house_lod(kit, rnd, x0, w, floors, wall, plinth, roof):
     if floors == 2:
         kit.add('paint', wb('win2', wcx - 0.5, wcx + 0.5, ZF, ZF + 0.05, 3.9, 5.1, B), 0x4A3426)
         kit.add('wood', wb('jbay', dcx - 1.0, dcx + 1.0, ZF, ZF + 0.85, 3.2, 5.3, B), WOODD)
+    # rear and flank openings (seen from rooftops and the fields): one dark window per floor on the back, a small high vent
+    bx = x0 + w * (0.62 if left else 0.38)
+    kit.add('paint', wb('bwin', bx - 0.45, bx + 0.45, -ZF - 0.05, -ZF, 1.2, 2.2, B), 0x4A3426)
+    if floors == 2:
+        kit.add('paint', wb('bwin2', bx - 0.45, bx + 0.45, -ZF - 0.05, -ZF, 4.0, 5.1, B), 0x4A3426)
     if roof == 'flat':
         kit.add('trim', wb('roof', x0 - 0.1, x0 + w + 0.1, -ZF - 0.15, ZF + 0.2, H, H + 0.15, B), 0xD8D2C2)
         kit.add('plaster', wb('par_f', x0, x0 + w, ZF, ZF + 0.2, H + 0.15, H + 0.9, B), wall)

@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39o, playtest block items 6 / queue 5, far-LOD abadi):** Game change: the far-LOD abadi row proxies (tools/blender/build_abadi.py house_lod) now carry rear windows (one per floor, dark painted openings) in addition to the front door/window/chajja, so distant houses seen from rooftops and fields no longer read as blank blocks (~80 extra triangles per LOD row model, +3 files in public/assets/models, assets 28.44 MB). Near models and abadiBoxes.json unchanged. Proof docs/shots/farlod-2026-10-24/far_a.png (centre-back blocks now show openings; headless, no subject check - look evidence only). Build ALL PASSED, budget passed. Regression not run (no movement code touched).
+Gaps: far blocks are still one plaster set with vertex tint, openings are small flat squares, no sills/frames; water tank model, other shops' goods, yellow swing, Banta shop and Chaat thela still open.
+
+---
+
 **2026-10-24 (cycle 39n, playtest block item 1, school board):** Game change: the primary school now has a bilingual gate board (English "Primary School" bold and dominant, Hindi above, navy on cream) hanging over the south gate, facing the lane. Proof docs/shots/signage-2026-10-24/school_gate.png (script tmp/school-board-shot.mjs). It shares the halwai board mesh (src/main.js) so it costs no extra draw call; a separate mesh took the bazaar view to 151 > 150. Hero and bazaar views are now AT 150: no draw-call headroom either. Build 16/16, regression 22/22. Banta shop and Chaat thela remain unbuilt (new places, BACKLOG after the playtest block).
 
 ---
