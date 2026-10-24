@@ -46,7 +46,7 @@ tutorial and dialogue panel, hide capsule placeholder people and the player caps
 print the real fps, label headless shots as headless, and fail loudly if the named
 subject is not in frame.
 
-**0b. STREAMING IS BROKEN AND SHE CAN SEE IT. Highest priority bug.**
+**0b. [DONE 24 Oct 2026, see handoff for the one trade-off: zones now BUILD up to buildRadius+170 m ahead (frustum + travel-direction prefetch, time-sliced) and are DRAWN from buildRadius+80 m (big far landmarks 215 m). Proof: docs/shots/streaming-2026-10-24/{mandi,khet}/ and event logs tmp/walk-*.log; build 16/16, regression 22/22] STREAMING IS BROKEN AND SHE CAN SEE IT. Highest priority bug.**
 Her words: near the khet she could not see the trees; they only appeared **after she
 entered the farm**. At the "Mandi 110 m" milestone the mandi was still empty ground
 and the buildings were still being built around her as she walked.

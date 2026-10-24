@@ -66,14 +66,19 @@ export function colliderBoxFromTransform(width, depth, matrix) {
  * something solid is added to the scene afterward. */
 export function buildCollidersFromScene(scene) {
   const boxes = [];
-  scene.traverse((obj) => {
-    if (!obj.isMesh) return;
-    if (obj.userData.collider === true) {
-      _box3.setFromObject(obj, true);
-      if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+  // Zone groups that are built but not drawn yet (src/zoneManager.js builds early, shows
+  // within the zone's visible radius) carry userData.zoneHidden: no visual, so no collider.
+  (function walk(obj) {
+    if (obj.userData.zoneHidden) return;
+    if (obj.isMesh) {
+      if (obj.userData.collider === true) {
+        _box3.setFromObject(obj, true);
+        if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+      }
+      if (Array.isArray(obj.userData.colliderBoxes)) boxes.push(...obj.userData.colliderBoxes);
     }
-    if (Array.isArray(obj.userData.colliderBoxes)) boxes.push(...obj.userData.colliderBoxes);
-  });
+    for (const c of obj.children) walk(c);
+  })(scene);
   return boxes;
 }
 

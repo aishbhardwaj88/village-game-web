@@ -13,7 +13,7 @@ import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
 import { propCells, createPropCell } from './villageProps.js';
 import { roofCells, createRoofCell } from './rooftops.js';
-import { mergeAcrossGroups } from './mergeUtils.js';
+import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
@@ -1360,6 +1360,8 @@ async function main() {
     // vehicle-blocking collision) — a real moving herd is a bigger feature than
     // this pass's "recognisable, present in the world" bar.
     zoneManager = createZoneManager(scene);
+    // Big far landmarks are drawn from much further out (they stand in open ground, well past the hero-zone cameras); small detail zones keep their own radius (src/zoneManager.js).
+    const LANDMARK_VIS = 215;
     // A1 props: street lamps along the bazaar and temple lanes, streamed per lane
     // segment (the hero zone sits at the 150 draw-call ceiling, so lamps only
     // exist once the player is within ~8 m of that stretch of lane).
@@ -1369,6 +1371,7 @@ async function main() {
       ['lamps_temple_b', TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, 'rcc'],
     ]) {
       zoneManager.register(name, {
+        detail: true,
         x: (from.x + to.x) / 2,
         z: (from.z + to.z) / 2,
         buildRadius: 8 + Math.hypot(to.x - from.x, to.z - from.z) / 2,
@@ -1384,13 +1387,14 @@ async function main() {
       z: 122,
       buildRadius: 90,
       teardownRadius: 110,
+      detail: true, // hero zone sits at the draw-call ceiling; see the note above
       build: () => createWaterTankProp({ x: -22, z: 122 }),
     });
     // MAP.md farm and water sites (no coordinates in MAP.md; open ground picked, see src/farmSites.js).
     zoneManager.register('pond', { x: -132, z: 70, buildRadius: 55, teardownRadius: 70, build: () => createPond({ x: -132, z: 70 }) });
     // Two buffalo cooling off at the pond's muddy bank (one InstancedMesh, streamed with the pond).
     zoneManager.register('pond_buffalo', {
-      x: -132, z: 70, buildRadius: 55, teardownRadius: 70,
+      detail: true, x: -132, z: 70, buildRadius: 55, teardownRadius: 70,
       build: () => {
         const group = new THREE.Group();
         group.name = 'zone_pond_buffalo';
@@ -1402,44 +1406,44 @@ async function main() {
         return { group, onFrame: (dt) => herd.update(dt) };
       },
     });
-    zoneManager.register('tubewell', { x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
+    zoneManager.register('tubewell', { detail: true, x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
     zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
-    zoneManager.register('khalihan', { x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
-    zoneManager.register('anganwadi', { x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
+    zoneManager.register('khalihan', { detail: true, x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
+    zoneManager.register('anganwadi', { visibleRadius: 90, x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
     zoneManager.register('dudh_dairy', { x: -112, z: 18, buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy({ x: -112, z: 18 }) });
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
     zoneManager.register('health_subcentre', { x: 96, z: 30, buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre({ x: 96, z: 30 }) });
     zoneManager.register('chemist', { x: 96, z: 60, buildRadius: 40, teardownRadius: 52, build: () => createChemist({ x: 96, z: 60 }) });
-    zoneManager.register('masjid', { x: 100, z: 135, buildRadius: 45, teardownRadius: 58, build: () => createMasjid({ x: 100, z: 135 }) });
+    zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, x: 100, z: 135, buildRadius: 45, teardownRadius: 58, build: () => createMasjid({ x: 100, z: 135 }) });
     zoneManager.register('gurudwara', { x: -60, z: 175, buildRadius: 45, teardownRadius: 58, build: () => createGurudwara({ x: -60, z: 175 }) });
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
     zoneManager.register('tv_house', { x: 70, z: 12, buildRadius: 40, teardownRadius: 52, build: () => createTvHouse({ x: 70, z: 12 }) });
     zoneManager.register('manihari', { x: 90, z: 78, buildRadius: 35, teardownRadius: 48, build: () => createManihari({ x: 90, z: 78 }) });
     zoneManager.register('sabzi_rehris', { x: 88, z: 92, buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris({ x: 88, z: 92 }) });
-    zoneManager.register('jain_mandir', { x: 130, z: 160, buildRadius: 45, teardownRadius: 58, build: () => createJainMandir({ x: 130, z: 160 }) });
+    zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, x: 130, z: 160, buildRadius: 45, teardownRadius: 58, build: () => createJainMandir({ x: 130, z: 160 }) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).
-    for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
+    for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
     // Rooftop clutter (tanks, antennas, dishes, solar panels, brick stacks) on the abadi roofs, streamed per 36 m cell (src/rooftops.js).
-    for (const cell of roofCells(abadiRoofSites())) zoneManager.register(cell.id, { x: cell.x, z: cell.z, buildRadius: 30, teardownRadius: 40, build: () => createRoofCell(cell) });
+    for (const cell of roofCells(abadiRoofSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 30, teardownRadius: 40, build: () => createRoofCell(cell) });
     // A-2c milestone stones on the east approach (src/milestones.js; positions and distances derived from PLACES).
-    for (const site of milestoneSites()) zoneManager.register(site.id, { x: site.x, z: site.z, buildRadius: 60, teardownRadius: 75, build: () => createMilestone(site) });
-    zoneManager.register('highway', { x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
+    for (const site of milestoneSites()) zoneManager.register(site.id, { detail: true, x: site.x, z: site.z, buildRadius: 60, teardownRadius: 75, build: () => createMilestone(site) });
+    zoneManager.register('highway', { visibleRadius: LANDMARK_VIS, x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.
-    zoneManager.register('carrom_scene', { x: -46, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46, z: 5.5 }, 'carrom_scene', 0.3) });
+    zoneManager.register('carrom_scene', { detail: true, x: -46, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46, z: 5.5 }, 'carrom_scene', 0.3) });
     // Laundry corners also stand at the lane edge, on the non-drain side, so the lane stays clear for carts and cattle.
     for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
-      zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
+      zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
     // Water corners stand at the lane edge on the side away from the open drain (kerb + 0.6 m), spout facing the lane.
     for (const [id, x, z, ry] of [['lane_water_e1', 16, 78.6, Math.PI + 0.05], ['lane_water_w1', -86.6, 90, Math.PI / 2 + 0.08], ['lane_water_s1', -44, 142.6, Math.PI - 0.06], ['lane_water_e2', -3.6, 122, -Math.PI / 2 + 0.07], ['lane_water_w2', -65.5, 18.6, 0.05]]) {
-      zoneManager.register(id, { x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
+      zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
     const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 78.55], [-86.55, 74], [-58, 142.55], [-3.5, 104], [-72, 18.5], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
     for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3], ['lane_cattle_w2', -58, 24, 0.2]]) {
       zoneManager.register(id, {
-        x, z, buildRadius: 32, teardownRadius: 44,
+        detail: true, x, z, buildRadius: 32, teardownRadius: 44,
         build: () => {
           const group = new THREE.Group();
           group.name = 'zone_' + id;
@@ -1466,37 +1470,37 @@ async function main() {
     }
     zoneManager.register('jalebi_stall', { x: -104, z: 4, buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall({ x: -104, z: 4 }) });
     zoneManager.register('mela_ground', { x: -135, z: 150, buildRadius: 65, teardownRadius: 80, build: () => createMelaGround({ x: -135, z: 150 }) });
-    zoneManager.register('gurukul', { x: 160, z: 85, buildRadius: 55, teardownRadius: 70, build: () => createGurukul({ x: 160, z: 85 }) });
-    zoneManager.register('khel_maidan', { x: 165, z: 135, buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan({ x: 165, z: 135 }) });
+    zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, x: 160, z: 85, buildRadius: 55, teardownRadius: 70, build: () => createGurukul({ x: 160, z: 85 }) });
+    zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, x: 165, z: 135, buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan({ x: 165, z: 135 }) });
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
-    zoneManager.register('mandi', { x: 226, z: 60, buildRadius: 70, teardownRadius: 85, build: () => createMandi({ x: 226, z: 60 }) });
+    zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, x: 226, z: 60, buildRadius: 70, teardownRadius: 85, build: () => createMandi({ x: 226, z: 60 }) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
-    zoneManager.register('canal_bank_road', { x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
+    zoneManager.register('canal_bank_road', { detail: true, x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
-    zoneManager.register('canal_bank_road_n', { x: -8, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 38.8 }, 'canal_bank_road_n') });
+    zoneManager.register('canal_bank_road_n', { detail: true, x: -8, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 38.8 }, 'canal_bank_road_n') });
     // MAP.md organic village edge: low compound walls closing the abadi's west, south and east sides, gaps where lanes leave.
-    zoneManager.register('edge_wall_w', { x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
-    zoneManager.register('edge_wall_s', { x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
-    zoneManager.register('edge_wall_e', { x: 46, z: 78, buildRadius: 50, teardownRadius: 62, build: () => createBoundaryWall({ x: 46, z: 78 }, 'edge_wall_e', [{ a: { x: 46, z: 58 }, b: { x: 46, z: 100 } }], [{ x: 46, z: 76, w: 4 }]) });
+    zoneManager.register('edge_wall_w', { detail: true, x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
+    zoneManager.register('edge_wall_s', { detail: true, x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
+    zoneManager.register('edge_wall_e', { detail: true, x: 46, z: 78, buildRadius: 50, teardownRadius: 62, build: () => createBoundaryWall({ x: 46, z: 78 }, 'edge_wall_e', [{ a: { x: 46, z: 58 }, b: { x: 46, z: 100 } }], [{ x: 46, z: 76, w: 4 }]) });
     // Continuations of the edge wall: south-centre (stops at the sugarcane belt, x 0), west lower half (gap where lane S1 leaves), east lower half (stops at the cane belt, z 135).
-    zoneManager.register('edge_wall_s2', { x: -19, z: 157, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -19, z: 157 }, 'edge_wall_s2', [{ a: { x: -38, z: 157 }, b: { x: 0, z: 157 } }], [{ x: -6, z: 157, w: 4 }]) });
-    zoneManager.register('edge_wall_w2', { x: -101, z: 128, buildRadius: 45, teardownRadius: 58, build: () => createBoundaryWall({ x: -101, z: 128 }, 'edge_wall_w2', [{ a: { x: -101, z: 100 }, b: { x: -101, z: 157 } }], [{ x: -101, z: 140, w: 4.5 }]) });
-    zoneManager.register('edge_wall_e2', { x: 46, z: 118, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 118 }, 'edge_wall_e2', [{ a: { x: 46, z: 100 }, b: { x: 46, z: 135 } }]) });
-    zoneManager.register('edge_wall_e0', { x: 46, z: 40, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 40 }, 'edge_wall_e0', [{ a: { x: 46, z: 21 }, b: { x: 46, z: 58 } }]) });
-    zoneManager.register('edge_wall_e3', { x: 46, z: 146, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: 46, z: 146 }, 'edge_wall_e3', [{ a: { x: 46, z: 135 }, b: { x: 46, z: 157 } }]) });
-    zoneManager.register('edge_wall_w0', { x: -101, z: 27, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: -101, z: 27 }, 'edge_wall_w0', [{ a: { x: -101, z: 21 }, b: { x: -101, z: 34 } }]) });
-    zoneManager.register('edge_wall_n0', { x: -80, z: 21, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -80, z: 21 }, 'edge_wall_n0', [{ a: { x: -101, z: 21 }, b: { x: -58, z: 21 } }], [{ x: -88, z: 21, w: 3.5 }]) });
+    zoneManager.register('edge_wall_s2', { detail: true, x: -19, z: 157, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -19, z: 157 }, 'edge_wall_s2', [{ a: { x: -38, z: 157 }, b: { x: 0, z: 157 } }], [{ x: -6, z: 157, w: 4 }]) });
+    zoneManager.register('edge_wall_w2', { detail: true, x: -101, z: 128, buildRadius: 45, teardownRadius: 58, build: () => createBoundaryWall({ x: -101, z: 128 }, 'edge_wall_w2', [{ a: { x: -101, z: 100 }, b: { x: -101, z: 157 } }], [{ x: -101, z: 140, w: 4.5 }]) });
+    zoneManager.register('edge_wall_e2', { detail: true, x: 46, z: 118, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 118 }, 'edge_wall_e2', [{ a: { x: 46, z: 100 }, b: { x: 46, z: 135 } }]) });
+    zoneManager.register('edge_wall_e0', { detail: true, x: 46, z: 40, buildRadius: 35, teardownRadius: 48, build: () => createBoundaryWall({ x: 46, z: 40 }, 'edge_wall_e0', [{ a: { x: 46, z: 21 }, b: { x: 46, z: 58 } }]) });
+    zoneManager.register('edge_wall_e3', { detail: true, x: 46, z: 146, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: 46, z: 146 }, 'edge_wall_e3', [{ a: { x: 46, z: 135 }, b: { x: 46, z: 157 } }]) });
+    zoneManager.register('edge_wall_w0', { detail: true, x: -101, z: 27, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: -101, z: 27 }, 'edge_wall_w0', [{ a: { x: -101, z: 21 }, b: { x: -101, z: 34 } }]) });
+    zoneManager.register('edge_wall_n0', { detail: true, x: -80, z: 21, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -80, z: 21 }, 'edge_wall_n0', [{ a: { x: -101, z: 21 }, b: { x: -58, z: 21 } }], [{ x: -88, z: 21, w: 3.5 }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
-    zoneManager.register('old_haveli', { x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
+    zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
     zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
-    zoneManager.register('neighbour_orchard', { x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => buildTrees([
+    zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
       { kind: 'mango', x: 27, z: 129, seed: 12, scale: 0.8, rotationY: 1.2 },
-    ]) });
+    ]); mergeGroupByMaterial(g); return g; } });
     // Outskirts shade trees (A3 "reads green"): small streamed clusters by the village-edge sites.
     // Unmerged, so the per-tree distance LOD works. No coordinates in MAP.md; open ground picked.
-    zoneManager.register('trees_baagh', { x: BAAGH_POSITION.x, z: BAAGH_POSITION.z, buildRadius: 26, teardownRadius: 36, build: () => buildTrees(MANGO_TREE_PLACEMENTS) });
+    zoneManager.register('trees_baagh', { x: BAAGH_POSITION.x, z: BAAGH_POSITION.z, buildRadius: 26, teardownRadius: 36, build: () => { const g = buildTrees(MANGO_TREE_PLACEMENTS); mergeGroupByMaterial(g); return g; } }); // merged: 2 draw calls, the hero-zone budget has no room for per-tree LODs
     const outskirtTrees = (name, x, z, trees) => zoneManager.register(name, { x, z, buildRadius: 70, teardownRadius: 85, build: () => buildTrees(trees) });
     outskirtTrees('trees_pond', -132, 70, [
       { kind: 'neem', x: -150, z: 60, seed: 21 }, { kind: 'peepal', x: -112, z: 82, seed: 22, rotationY: 0.8 }, { kind: 'babool', x: -148, z: 84, seed: 23 },
@@ -1510,8 +1514,9 @@ async function main() {
     outskirtTrees('trees_gaushala', -125, -35, [
       { kind: 'neem', x: -106, z: -50, seed: 29 }, { kind: 'peepal', x: -146, z: -20, seed: 30, rotationY: 1.4 },
     ]);
-    zoneManager.register('sugarcane_belt', { x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
+    zoneManager.register('sugarcane_belt', { visibleRadius: 120, x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
+      detail: true,
       x: FIELD_CENTER.x,
       z: 21,
       buildRadius: 45,
@@ -2540,7 +2545,7 @@ async function main() {
       // doesn't fade with a wide third-person zoom.
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
-      zoneManager.update(listenerPos.x, listenerPos.z, dt);
+      zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
       freeRoam.update(dt);
       minimap.update(dt);
@@ -2635,6 +2640,7 @@ async function main() {
       pauseMenu,
       Box3: THREE.Box3,
       Raycaster: THREE.Raycaster,
+      get zoneManager() { return zoneManager; },
       Matrix4: THREE.Matrix4,
       Vector3: THREE.Vector3,
       // For scripted feature screenshots (tools/screenshot.js) — teleport near an

@@ -1,4 +1,24 @@
+import * as THREE from 'three';
 import { initStaticColliders } from './collision.js';
+
+// Anti-pop-in (FEEDBACK 24 Oct item 0b): a zone must exist BEFORE it enters the line of
+// sight, not when the player is on top of it. Fog hides things beyond ~250 m, so:
+//  - ALWAYS_EXTRA: every zone within buildRadius + this is built, whichever way the camera faces
+//  - SIGHT_EXTRA: a zone within buildRadius + this is built when it is in (or just outside) the
+//    camera frustum, or lies ahead of the direction of travel (prefetch)
+// Builds are time-sliced so a crossing never freezes the frame; teardown only happens well
+// beyond the sight radius. Frustum culling keeps draw calls to what is actually in view.
+const ALWAYS_EXTRA = 70;
+const SIGHT_EXTRA = 170;
+const TEARDOWN_EXTRA = 200;
+// Built early does not mean drawn early: a built zone is only DRAWN within buildRadius + VIS_EXTRA
+// (draw-call ceiling 150); `detail` zones (doorstep props, rooftop clutter, lane vignettes, boundary
+// walls, lamps: small things that are a few pixels at that range) keep their original radius. Built-but-hidden zones cost nothing per frame, so the reveal is a flip
+// at fog distance, never a visible assembly or a frame hitch.
+const VIS_EXTRA = 80;
+const FRAME_BUDGET_MS = 7;
+const WARMUP_BUDGET_MS = 45; // first seconds after Play: assemble the surroundings fast, behind the loading fade
+const WARMUP_S = 4;
 
 /**
  * Zone streaming (CLAUDE.md: "zone streaming plus distance and frustum culling...
@@ -25,6 +45,7 @@ import { initStaticColliders } from './collision.js';
  */
 export function createZoneManager(scene) {
   const zones = new Map();
+  const hooks = { onBuild: null, onShow: null }; // dev/test: onBuild(name, group, playerX, playerZ) after each zone is added
 
   /**
    * `build()` returns a THREE.Group (or Object3D) to add to the scene, OR
@@ -34,8 +55,8 @@ export function createZoneManager(scene) {
    * 1.5x buildRadius, a hysteresis gap so straddling the boundary doesn't thrash
    * build/dispose every frame) deactivates it again.
    */
-  function register(name, { x, z, buildRadius, teardownRadius = buildRadius * 1.5, build }) {
-    zones.set(name, { x, z, buildRadius, teardownRadius, build, group: null, active: false, onFrame: null });
+  function register(name, { x, z, buildRadius, teardownRadius = buildRadius * 1.5, build, detail = false, visibleRadius }) {
+    zones.set(name, { name, detail, visibleRadius: visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA), x, z, buildRadius, teardownRadius, build, group: null, active: false, onFrame: null });
   }
 
   function disposeObject(obj) {
@@ -48,33 +69,81 @@ export function createZoneManager(scene) {
     });
   }
 
-  /** Call once per frame (or every few frames — zone crossings are infrequent and
-   * the distance check itself is trivial) with the player's current x/z. */
-  function update(playerX, playerZ, dt = 0) {
+  const frustum = new THREE.Frustum();
+  const projView = new THREE.Matrix4();
+  const sphere = new THREE.Sphere();
+  let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
+
+  /** Call once per frame with the player's x/z and (optionally) the camera. */
+  function update(playerX, playerZ, dt = 0, camera = null) {
+    age += dt;
+    if (lastX !== null && dt > 0) {
+      const vx = (playerX - lastX) / dt, vz = (playerZ - lastZ) / dt;
+      const sp = Math.hypot(vx, vz);
+      if (sp > 0.3) { // smoothed heading, kept when standing still
+        travelX = travelX * 0.9 + (vx / sp) * 0.1;
+        travelZ = travelZ * 0.9 + (vz / sp) * 0.1;
+      }
+    }
+    lastX = playerX; lastZ = playerZ;
+    if (camera) {
+      camera.updateMatrixWorld();
+      projView.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(projView);
+    }
+    const heading = Math.hypot(travelX, travelZ);
+
+    const wanted = [];
     let changed = false;
     for (const zone of zones.values()) {
-      const d = Math.hypot(playerX - zone.x, playerZ - zone.z);
-      if (!zone.active && d <= zone.buildRadius) {
-        const built = zone.build();
-        const isPlain = built.isObject3D;
-        zone.group = isPlain ? built : built.group;
-        zone.onFrame = isPlain ? null : built.onFrame || null;
-        scene.add(zone.group);
-        zone.active = true;
-        changed = true;
-      } else if (zone.active && d > zone.teardownRadius) {
+      const dx = zone.x - playerX, dz = zone.z - playerZ;
+      const d = Math.hypot(dx, dz);
+      if (!zone.active) {
+        let want = d <= zone.buildRadius || d <= zone.buildRadius + ALWAYS_EXTRA;
+        if (!want && d <= zone.buildRadius + SIGHT_EXTRA) {
+          if (camera) {
+            sphere.center.set(zone.x, 2, zone.z);
+            sphere.radius = Math.max(zone.buildRadius * 0.6, 18) + 25; // margin: a turn of the head must not reveal an unbuilt zone
+            want = frustum.intersectsSphere(sphere);
+          }
+          if (!want && heading > 0.3 && (dx * travelX + dz * travelZ) / (d || 1) > 0.35) want = true; // prefetch ahead
+        }
+        if (want) wanted.push([d, zone]);
+      } else if (d > Math.max(zone.teardownRadius, zone.buildRadius + SIGHT_EXTRA + 30, TEARDOWN_EXTRA)) {
         scene.remove(zone.group);
         disposeObject(zone.group);
         zone.group = null;
         zone.onFrame = null;
         zone.active = false;
         changed = true;
-      } else if (zone.active && zone.onFrame) {
-        zone.onFrame(dt);
+      } else {
+        const showAt = zone.visibleRadius;
+        const shown = zone.group.visible;
+        if (shown && d > showAt + 1.5) { zone.group.visible = false; zone.group.userData.zoneHidden = true; changed = true; if (hooks.onShow) hooks.onShow(zone.name, false, d, zone.group); }
+        else if (!shown && d <= showAt) { zone.group.visible = true; zone.group.userData.zoneHidden = false; changed = true; if (hooks.onShow) hooks.onShow(zone.name, true, d, zone.group); }
+        if (zone.onFrame && zone.group.visible) zone.onFrame(dt);
+      }
+    }
+    if (wanted.length) {
+      wanted.sort((a, b) => a[0] - b[0]);
+      const budget = age < WARMUP_S ? WARMUP_BUDGET_MS : FRAME_BUDGET_MS;
+      const t0 = performance.now();
+      for (const [, zone] of wanted) {
+        const built = zone.build();
+        const isPlain = built.isObject3D;
+        zone.group = isPlain ? built : built.group;
+        zone.onFrame = isPlain ? null : built.onFrame || null;
+        scene.add(zone.group);
+        zone.group.visible = Math.hypot(zone.x - playerX, zone.z - playerZ) <= zone.visibleRadius;
+        zone.group.userData.zoneHidden = !zone.group.visible;
+        zone.active = true;
+        changed = true;
+        if (hooks.onBuild) hooks.onBuild(zone.name, zone.group, playerX, playerZ);
+        if (performance.now() - t0 > budget) break; // the rest build on the next frames, nearest first
       }
     }
     if (changed) initStaticColliders(scene); // cheap full-scene rebuild, see doc comment above
   }
 
-  return { register, update, zones };
+  return { register, update, zones, hooks };
 }
