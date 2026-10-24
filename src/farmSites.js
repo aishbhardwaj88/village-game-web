@@ -943,8 +943,8 @@ function roadGeos() {
   // run-outs: the tarmac frays in one continuous taper (no stepped slabs) into packed earth, then the grass tone, with two wheel ruts that fade out
   for (const sz of [-1, 1]) {
     const z0 = sz * 75;
-    geos.push(fadeStrip(0, z0, sz, 44, 13, 2.6, [0x4a4a4e, 0x7a6c52, 0x8a7a58, 0x7f7a50], 0.108, 3 + sz, 14, 3.2));
-    for (const rx of [-0.95, 0.95]) geos.push(fadeStrip(rx, z0 + sz * 6, sz, 30, 0.45, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.114, 7 + sz, 10));
+    geos.push(fadeStrip(0, z0, sz, 52, 13, 0.7, [0x4a4a4e, 0x7a6c52, 0x8a7a58, 0x6a6440, 0x464c28], 0.108, 3 + sz, 16, 3.2));
+    for (const rx of [-0.95, 0.95]) geos.push(fadeStrip(rx * (1 - 0.0), z0 + sz * 6, sz, 40, 0.45, 0.2, [0x6a5c42, 0x6a5c42, 0x5e5a38, 0x464c28], 0.114, 7 + sz, 12));
     for (let k = 0; k < 5; k++) geos.push(bake(new THREE.BoxGeometry(0.5 + rnd(), 0.02, 0.7 + rnd()), at((rnd() - 0.5) * 4, 0.06, z0 + sz * (8 + rnd() * 22)), 0x6f6248));
   }
   return geos;

@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z94, playtest block item 7, highway run-out):** Game change: the highway's two ends (src/farmSites.js roadGeos) now taper over 52 m to a 0.7 m cart track whose colour ends on the grass tone (was a 2.6 m pale sandy tip), wheel ruts 40 m and fading to grass, so the road no longer stops at a visible blob. Mandi yard ends already fray to earth (checked, docs/shots/roadend-2026-10-25/). Build ALL PASSED, budget 30.80 MB, draw calls unchanged (79 in view). Proof docs/shots/roadend-2026-10-25/after/highway_s.png (before: ../highway_s.png). Item 7 road bullet not ticked: the taper still reads as a faint tip at haze distance; a real junction or dirt lane joining the village is the fuller fix.
+NEXT: far-LOD flat blocks, Banta shop and Chaat thela signage, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z93, playtest block item 3, haystack shapes):** Game change: bhoosa haystacks (src/farmSites.js haystackGeos; tubewell, Yadav tea stall, khalihan) now come in three shapes by stack index (rounded beehive, tall peaked cone, squat wide heap) with vertical fork-crease ridges, per-stack ellipse and slight lean, and the rope band follows each profile. Same merged meshes, no new draw call, same triangle count. Build ALL PASSED. Proof docs/shots/haystack-2026-10-25c/{tea,tubewell}.png (headless, player capsule in frame so not tickable; neighbouring stacks now clearly differ). Haystack question for item 3 is answered (they exist, both places); item 3 NOT ticked as a whole. Gaps: no distinct vegetable crop models, skirt still a flat patch.
 NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
 
