@@ -112,7 +112,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1522,6 +1522,8 @@ async function main() {
       });
     }
     zoneManager.register('jalebi_stall', { x: -104, z: 4, buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall({ x: -104, z: 4 }) });
+    zoneManager.register('banta_shop', { visibleRadius: 14, x: -63, z: 22.5, buildRadius: 30, teardownRadius: 42, build: () => createBantaShop({ x: -63, z: 22.5 }) });
+    zoneManager.register('chaat_thela', { visibleRadius: 14, x: -63, z: 50.5, buildRadius: 30, teardownRadius: 42, build: () => createChaatThela({ x: -63, z: 50.5 }) });
     zoneManager.register('mela_ground', { x: -135, z: 150, buildRadius: 65, teardownRadius: 80, build: () => createMelaGround({ x: -135, z: 150 }) });
     zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, x: 160, z: 85, buildRadius: 55, teardownRadius: 70, build: () => createGurukul({ x: 160, z: 85 }) });
     zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, x: 165, z: 135, buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan({ x: 165, z: 135 }) });

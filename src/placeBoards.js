@@ -18,6 +18,8 @@ export const PLACE_BOARDS = [
   { id: 'school', hi: 'प्राथमिक पाठशाला', en: 'Primary School', fg: NAVY },
   { id: 'halwai', hi: 'हलवाई', en: 'Halwai - Sweets', fg: MAROON },
   { id: 'jalebi', hi: 'जलेबी और समोसा', en: 'Jalebi & Samosa', fg: MAROON },
+  { id: 'banta', hi: 'गोली सोडा - बंटा', en: 'Banta - Goli Soda', fg: NAVY },
+  { id: 'chaat', hi: 'चाट और गोलगप्पे', en: 'Chaat & Golgappa', fg: MAROON },
   { id: 'dairy', hi: 'दूध डेयरी', en: 'Dudh Dairy', fg: NAVY },
   { id: 'anganwadi', hi: 'आँगनवाड़ी केंद्र', en: 'Anganwadi Centre', fg: MAROON },
   { id: 'health', hi: 'स्वास्थ्य उप-केंद्र', en: 'Health Sub-Centre', fg: GREEN },

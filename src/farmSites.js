@@ -907,6 +907,53 @@ export function createJalebiStall(position) {
   return finishSite('jalebi_stall', geos, position, { solids: [[0, 0, 3.0, 1.4], [2.1, 0.2, 0.6, 0.6], [-1.7, -1.0, 0.1, 0.1], [1.7, -1.0, 0.1, 0.1]], boards: [{ id: 'jalebi', x: 0, y: 2.25, z: -1.0, w: 3.2 }] }); // cart, stool, tarp poles
 }
 
+/** Banta shop (goli soda, nimbu pani): a small plank kiosk with a counter, a wooden crate of marble-stoppered soda bottles,
+ *  a steel tub of ice, a lime basket and a tin awning. Unbranded, non-alcoholic. */
+export function createBantaShop(position) {
+  const geos = [];
+  const box = (w, h, d, x, y, z, c, ry = 0) => geos.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
+  box(2.6, 0.1, 1.2, 0, 0.95, 0, 0x8a6a45); // counter top
+  box(2.5, 0.9, 0.08, 0, 0.5, 0.55, 0x7a5a3a); // plank front
+  box(0.08, 0.9, 1.1, -1.25, 0.5, 0, 0x7a5a3a);
+  box(0.08, 0.9, 1.1, 1.25, 0.5, 0, 0x7a5a3a);
+  box(2.6, 2.3, 0.08, 0, 1.15, -0.6, 0x9a7a52); // back plank wall
+  for (const sx of [-1, 1]) box(0.1, 2.5, 0.1, sx * 1.3, 1.25, 0.65, 0x6f5233); // awning posts
+  geos.push(bake(new THREE.BoxGeometry(3.2, 0.05, 1.8), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.55, 0.2), 0x8e969c)); // tin awning
+  box(0.8, 0.28, 0.5, -0.8, 1.14, 0, 0x7a5a3a); // soda crate
+  for (let i = 0; i < 6; i++) { // goli soda bottles standing in the crate, pale green glass
+    const bx = -1.05 + (i % 3) * 0.25, bz = -0.12 + Math.floor(i / 3) * 0.24;
+    geos.push(bake(new THREE.CylinderGeometry(0.05, 0.06, 0.26, 8), at(bx, 1.42, bz), 0x9fc4b0));
+    geos.push(bake(new THREE.CylinderGeometry(0.02, 0.05, 0.1, 8), at(bx, 1.6, bz), 0x9fc4b0));
+  }
+  geos.push(bake(new THREE.CylinderGeometry(0.38, 0.3, 0.32, 14), at(0.4, 1.17, 0), 0xb9bdc0)); // steel ice tub
+  geos.push(bake(new THREE.CylinderGeometry(0.34, 0.34, 0.02, 14), at(0.4, 1.34, 0), 0xe4eef0)); // ice
+  geos.push(bake(new THREE.CylinderGeometry(0.28, 0.22, 0.2, 12), at(0.95, 1.1, 0.2), 0x9a7a52)); // lime basket
+  geos.push(bake(new THREE.SphereGeometry(0.12, 8, 6), at(0.95, 1.25, 0.2), 0x9cb83a)); // limes
+  box(0.6, 0.35, 0.6, 1.9, 0.18, 0.3, 0x7a5a3a); // customer stool
+  return finishSite('banta_shop', geos, position, { solids: [[0, 0, 2.7, 1.3], [1.9, 0.3, 0.6, 0.6]], boards: [{ id: 'banta', x: 0, y: 2.1, z: 0.65, w: 2.4 }] });
+}
+
+/** Chaat thela: a two-wheeled push-cart with a glass-fronted chaat case, a steel pot of tamarind water, a stack of leaf
+ *  bowls, a hanging bulb and a faded umbrella. Unbranded. */
+export function createChaatThela(position) {
+  const geos = [];
+  const box = (w, h, d, x, y, z, c, ry = 0) => geos.push(bake(new THREE.BoxGeometry(w, h, d), at(x, y, z, ry), c));
+  box(2.2, 0.1, 1.2, 0, 0.9, 0, 0x8a6a45); // cart bed
+  box(2.2, 0.5, 0.08, 0, 0.62, 0.56, 0x7a5a3a);
+  box(2.2, 0.5, 0.08, 0, 0.62, -0.56, 0x7a5a3a);
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.46, 0.46, 0.07, 16), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(sx * 0.6, 0.46, 0.7), 0x3a3a3a)); // wheels
+  box(1.4, 0.06, 0.06, -1.6, 0.9, 0, 0x6f5233); // push handle
+  box(0.9, 0.6, 0.8, -0.5, 1.25, 0, 0xb8cdd0); // glass case
+  box(0.7, 0.18, 0.6, -0.5, 1.12, 0, 0xc98a3a); // papdi, chana
+  geos.push(bake(new THREE.CylinderGeometry(0.28, 0.24, 0.4, 14), at(0.4, 1.15, 0.1), 0xb9bdc0)); // steel pot
+  geos.push(bake(new THREE.CylinderGeometry(0.3, 0.3, 0.03, 14), at(0.4, 1.36, 0.1), 0x8a5a2a)); // tamarind water
+  geos.push(bake(new THREE.CylinderGeometry(0.14, 0.12, 0.2, 10), at(0.95, 1.05, -0.1), 0x9a8a52)); // leaf-bowl stack
+  geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 6), at(0.9, 2.0, -0.45), 0x5a5a5a)); // umbrella pole
+  geos.push(bake(new THREE.ConeGeometry(1.5, 0.45, 12), at(0.9, 3.0, -0.45), 0xb85a3a)); // umbrella
+  geos.push(bake(new THREE.SphereGeometry(0.08, 8, 6), at(0.2, 2.3, 0.3), 0xf2e2a8)); // bulb
+  return finishSite('chaat_thela', geos, position, { solids: [[0, 0, 2.3, 1.3]], boards: [{ id: 'chaat', x: 0, y: 2.05, z: 0.7, w: 2.2 }] });
+}
+
 /** Lane street life (MAP.md "carrom and ludo boards set up in the lane outside houses"): a jute mat, a carrom board, a ludo board,
  *  four low wooden peedhas and a steel lota of water. Visual only; one mesh. `ry` turns it to sit along the lane. */
 export function createLaneGames(position, name = 'lane_games', ry = 0) {
