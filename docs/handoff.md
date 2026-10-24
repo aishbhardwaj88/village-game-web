@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z60, playtest block item 3, khet variety):** Game change: sugarcane plots are now dense staggered cane (2 of every 3 cells planted, was every other row), so the cane block reads as a cane wall in the khet (src/field.js buildCropRows). Checked, no change needed: flowering sarson, young/ripe wheat, ploughed earth and veg patches already exist in the middle third; haystacks DO exist beside the tubewell and the Yadav tea stall and read as haystacks. Build ALL PASSED. Proof docs/shots/khet-2026-10-24/{cane_find,wide,west,aerial2,tea_hay,tubewell_hay}.png (headless, HUD/capsule in frame, so item 3 NOT ticked). Gaps: west third is uniform stubble and east third uniform sabzi per MAP.md; plot borders have no bunds.
+NEXT: cricket field mud texture, badminton court lines, yellow swing.
+
+---
+
 **2026-10-24 (cycle 39z59, playtest block item 4, dairy sign):** Game change: the Dudh Dairy (-112,18) now carries its sign on BOTH faces (src/farmSites.js createDudhDairy); the front opens north so walkers from the bazaar lane saw a blank back wall with no board. Same atlas mesh, no new draw call. Build ALL PASSED. Proof docs/shots/dairy-2026-10-24/dairy_sign.png (headless, HUD in frame, so not tickable). Survey correction: the unsigned dairy is at the row's WEST end, not east. Not done: haystack spikes (source not located; the one beside the row is likely the kachcha stack in build_kachcha.py), tinted-box bazaar props.
 NEXT: haystack spike cleanup, collision leftovers (0c).
 
