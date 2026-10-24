@@ -18,7 +18,7 @@ export const DESIGN = {
   toffeeJar: 8, sachet: 9, sodaOrange: 10, sodaLime: 11, sodaCola: 12, namkeen: 13, tea: 14, salt: 15,
   medWhite: 16, medGreen: 17, syrup: 18, phoneBox: 19, chargerBox: 20, clothStripe: 21, clothCheck: 22, clothPrint: 23,
   tomato: 24, onion: 25, potato: 26, greens: 27, brinjal: 28, bangleRed: 29, bangleBlue: 30, bangleGreen: 31,
-  laddoo: 32, gulab: 33, barfi: 34, jalebi: 35, samosa: 36,
+  laddoo: 32, gulab: 33, barfi: 34, jalebi: 35, samosa: 36, milk: 37, ghee: 38, dahi: 39,
 };
 
 let atlas = null;
@@ -148,6 +148,10 @@ function getAtlas() {
     cell(DESIGN.barfi, () => { g.fillStyle = '#eddcae'; g.fillRect(0, 0, CELL, CELL); speckle(220, 'rgba(196,160,96,.35)', 3); g.fillStyle = 'rgba(214,220,226,.82)'; g.fillRect(0, 0, CELL, 70); for (let k = 0; k < 40; k++) { g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(Math.random() * CELL, Math.random() * 70, 6 + Math.random() * 22, 2); } g.fillStyle = '#7a9a4a'; for (let k = 0; k < 14; k++) { g.beginPath(); g.ellipse(30 + (k % 5) * 48, 120 + Math.floor(k / 5) * 44, 9, 4, Math.random() * 3, 0, 7); g.fill(); } });
     cell(DESIGN.jalebi, () => { const gr = g.createLinearGradient(0, 0, CELL, CELL); gr.addColorStop(0, '#f08a1c'); gr.addColorStop(1, '#c4520e'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 10; k++) { g.strokeStyle = k % 2 ? 'rgba(255,200,90,.55)' : 'rgba(150,50,6,.4)'; g.lineWidth = 7; g.beginPath(); g.arc(128, 128, 14 + k * 11, 0, 7); g.stroke(); } speckle(200, 'rgba(255,230,160,.35)', 2); });
     cell(DESIGN.samosa, () => { g.fillStyle = '#a2601a'; g.fillRect(0, 0, CELL, CELL); speckle(420, 'rgba(90,44,8,.45)', 5); speckle(260, 'rgba(214,150,64,.4)', 4); for (let k = 0; k < 9; k++) { g.strokeStyle = 'rgba(100,52,10,.45)'; g.lineWidth = 3; g.beginPath(); g.moveTo(k * 30, 0); g.lineTo(k * 30 + 12, CELL); g.stroke(); } });
+    // Dairy: a milk pouch, a ghee tin label and a curd-tub label (generic names, no brands).
+    cell(DESIGN.milk, () => { g.fillStyle = '#f4f1e8'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#2b6cb0'; g.fillRect(0, 0, CELL, 62); g.fillRect(0, 194, CELL, 62); g.fillStyle = '#7fb3e0'; g.beginPath(); g.ellipse(CELL / 2, 128, 86, 40, 0, 0, 7); g.fill(); text('TONED MILK', CELL / 2, 40, 30, '#ffffff'); text('FRESH DAIRY', CELL / 2, 118, 28, '#12406e'); hindi('टोंड दूध', CELL / 2, 148, 26, '#12406e'); text('500 ml', CELL / 2, 226, 26, '#ffffff', 700); for (let y = 0; y < CELL; y += 4) { g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(0, y, CELL, 1); } });
+    cell(DESIGN.ghee, () => { const gr = g.createLinearGradient(0, 0, CELL, 0); gr.addColorStop(0, '#d9a41c'); gr.addColorStop(0.5, '#f2cd4e'); gr.addColorStop(1, '#b98710'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#fff6d8'; g.fillRect(0, 70, CELL, 120); text('PURE GHEE', CELL / 2, 108, 38, '#7a3a08'); hindi('शुद्ध घी', CELL / 2, 154, 30, '#7a3a08'); g.fillStyle = '#7a3a08'; g.fillRect(0, 60, CELL, 6); g.fillRect(0, 190, CELL, 6); text('1 kg', CELL / 2, 224, 26, '#5a2a04', 700); });
+    cell(DESIGN.dahi, () => { g.fillStyle = '#f7f4ea'; g.fillRect(0, 0, CELL, CELL); g.fillStyle = '#c0392b'; g.fillRect(0, 0, CELL, 54); g.fillRect(0, 202, CELL, 54); text('FRESH CURD', CELL / 2, 28, 28, '#ffffff'); text('DAHI', CELL / 2, 110, 56, '#8a1f14'); hindi('ताज़ा दही', CELL / 2, 164, 30, '#8a1f14'); text('400 g', CELL / 2, 230, 24, '#ffffff', 700); });
     Math.random = realRandom;
     texture.needsUpdate = true;
   };
@@ -245,6 +249,8 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'jalebi': { const t = new THREE.TorusGeometry(0.036 * s, 0.0085 * s, 6, 14); t.rotateX(Math.PI / 2); const t2 = new THREE.TorusGeometry(0.019 * s, 0.0085 * s, 6, 10); t2.rotateX(Math.PI / 2); t2.translate(0, 0.004 * s, 0); g = mergeGeometries([setUVs(t, it.design), setUVs(t2, it.design)]); g.translate(0, 0.01 * s, 0); break; }
       case 'samosa': g = new THREE.ConeGeometry(0.058 * s, 0.085 * s, 3, 1); g.rotateY(0.3); g.translate(0, 0.0425 * s, 0); g.scale(1, 0.9, 1); setUVs(g, it.design); break;
       case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 6, 14); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
+      case 'milkpouch': g = pillowPack(0.13 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
+      case 'tub': g = lathe([[0, 0], [0.045, 0], [0.058, 0.02], [0.062, 0.075], [0.066, 0.08], [0, 0.08]], it.design); g.scale(s, s, s); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;
       case 'jar': g = lathe(JAR, it.design); g.scale(s, s, s); break;
       case 'sachets': { // a strip of foil sachets on a string, hanging from y downward
@@ -305,6 +311,20 @@ export function generalStoreGoods(world) {
   // the red crate of soda bottles outside, left of the counter
   for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) items.push({ kind: 'bottle', design: [D.sodaOrange, D.sodaLime, D.sodaCola][(i + j) % 3], x: -1.5 + i * 0.13, y: 0.3, z: 1.85 + j * 0.15, ry: i * 1.7 + j });
   return buildGoodsMesh(items, world, 'general_store_stock');
+}
+
+/** Dudh dairy stock, dairy-local frame (bench top y 0.51 at x 2.0, z 3.1; crates beside the cans): milk pouches, ghee tins, curd tubs. */
+export function dairyGoods() {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 71.1) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  // bench ends: a stack of curd tubs and a row of ghee tins, between/after the two cans
+  for (let k = 0; k < 3; k++) for (let j = 0; j < 4; j++) items.push({ kind: 'tub', design: D.dahi, x: 1.5 + (k % 2) * 0.01, y: 0.51 + j * 0.08, z: 3.1 + (k - 1) * 0.15, ry: rnd() * 6, s: 1 });
+  for (let k = 0; k < 4; k++) items.push({ kind: 'jar', design: D.ghee, x: 2.45, y: 0.51, z: 2.9 + k * 0.13, ry: rnd() * 6, s: 0.8 + rnd() * 0.1 });
+  // two stacks of milk pouches lying flat in rows on the floor beside the door (pillow pack lies on its back: rx = -90deg, y is its face)
+  for (const cx of [-0.05, 0.7]) for (let layer = 0; layer < 4; layer++) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) items.push({ kind: 'milkpouch', design: D.milk, x: cx + (i - 0.5) * 0.15 + (rnd() - 0.5) * 0.02, y: layer * 0.052, z: 3.55 + (j - 0.5) * 0.2, ry: (rnd() - 0.5) * 0.25, rx: -Math.PI / 2, s: 1 });
+  return buildGoodsMesh(items, new THREE.Matrix4(), 'dairy_stock');
 }
 
 /** Fold several goods meshes (same atlas material) into one draw call; world transforms are baked in. */

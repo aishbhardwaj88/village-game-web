@@ -1,3 +1,4 @@
+import { dairyGoods } from './shopGoods.js';
 import { createNPC } from './npc.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import * as THREE from 'three';
@@ -659,6 +660,7 @@ export function createDudhDairy(position) {
   const group = new THREE.Group();
   group.name = 'dudh_dairy';
   group.add(mesh);
+  group.add(dairyGoods());
   group.add(placeBoardsMesh([parapetBoard('dairy', { w: 5, d: 4, h: 3.0 }, 3.6)], 'dairy_boards'));
   group.position.set(position.x, 0, position.z);
   return group;
