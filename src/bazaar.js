@@ -579,15 +579,6 @@ export function buildBazaarInteriors() {
     cylGeos.push(geo);
   }
 
-  function pushTorus(radius, tube, x, y, z, tint, rotX = Math.PI / 2) {
-    const geo = new THREE.TorusGeometry(radius, tube, 8, 16);
-    ensureUv2(geo); // raw TorusGeometry has no uv2 — needed to merge with texturedThickBox's own 'metal' geometry
-    bakeFlatTintColors(geo, tint, 1);
-    const m = new THREE.Matrix4().makeRotationX(rotX).setPosition(x, y, z);
-    geo.applyMatrix4(m);
-    cylGeos.push(geo); // rings ride in the cylinder mesh (one draw call fewer; tinted rubber/glass rings read the same at lane distance)
-  }
-
   /** Shelving common to most units: 2 boards against the back wall. */
   function addShelving(cx, tint) {
     const w = BAZAAR_UNIT_W - 0.7;
@@ -616,90 +607,22 @@ export function buildBazaarInteriors() {
       pushBox(0.7, 0.35, 0.5, left + 0.85, 0.175, counterZ + 1.2, 0x9a7a50, -0.08);
       pushBox(0.7, 0.35, 0.5, right - 0.35, 0.175, counterZ + 1.2, 0xc29a68, 0.03);
       pushBox(0.66, 0.3, 0.46, left + 0.4, 0.5, counterZ + 1.2, 0xa88458, 0.1);
-      // Signature: a hanging pan balance — post, beam, two pans.
-      const balX = cx;
-      pushCyl(0.03, 0.03, 1.6, balX, 1.5, backInnerZ + 0.3, 0x2a2a2a);
-      pushBox(0.9, 0.04, 0.04, balX, 2.25, backInnerZ + 0.3, 0x2a2a2a);
-      pushCyl(0.16, 0.13, 0.08, balX - 0.4, 1.85, backInnerZ + 0.3, 0xb08040);
-      pushCyl(0.16, 0.13, 0.08, balX + 0.4, 1.85, backInnerZ + 0.3, 0xb08040);
+      // The hanging pan balance is part of the Blender row model (tools/blender/build_bazaar_row.py sabzi()).
     } else if (unit.trade === 'medical') {
       addShelving(cx, wood);
       pushBox(BAZAAR_UNIT_W - 0.7, 0.05, 0.32, cx, 2.6, backInnerZ, wood);
     } else if (unit.trade === 'tailor') {
       addShelving(cx, wood);
-      // Signature: a black cast-iron sewing machine on the counter: base plate, pillar,
-      // arm, needle bar, spool pin and a hand wheel at the right end.
-      const mz = counterZ - 0.05;
-      pushBox(0.48, 0.03, 0.2, cx, 0.965, mz, 0x1a1a1a);
-      pushBox(0.06, 0.2, 0.07, cx + 0.15, 1.08, mz, 0x1a1a1a);
-      pushBox(0.42, 0.06, 0.08, cx - 0.02, 1.2, mz, 0x1a1a1a);
-      pushBox(0.1, 0.08, 0.09, cx - 0.2, 1.12, mz, 0x2a2a2a);
-      pushCyl(0.008, 0.008, 0.1, cx - 0.17, 1.08, mz + 0.03, 0xb8b8b8);
-      pushCyl(0.012, 0.012, 0.07, cx + 0.04, 1.26, mz, 0xb8b8b8);
-      pushCyl(0.03, 0.03, 0.05, cx + 0.04, 1.3, mz, 0xe8e0cc);
-      pushTorus(0.065, 0.014, cx + 0.22, 1.2, mz, 0x3a3a3a, 0);
-      pushBox(0.2, 0.03, 0.16, cx - 0.33, 0.965, mz, 0x7a1f1f); // folded cloth under the foot
+      // Sewing machine, dress form and kurta are in the Blender row model (build_bazaar_row.py tailor()).
     } else if (unit.trade === 'barber') {
-      // Signature: mirror on the back wall + a chair.
-      pushBox(0.6, 0.8, 0.03, cx, 1.6, backInnerZ, 0xbfd0d8);
-      pushBox(1.0, 0.08, 0.35, cx, 0.95, backInnerZ + 0.3, wood);
-      // Barber chair faces the mirror: back to the street, footrest to the wall.
-      const chairX = cx, cz = counterZ + 1.1;
-      pushCyl(0.3, 0.32, 0.05, chairX, 0.025, cz, 0x2a2a2a); // heavy base
-      pushCyl(0.06, 0.06, 0.36, chairX, 0.23, cz, 0xc0c0c0); // chrome hydraulic pedestal
-      pushBox(0.5, 0.1, 0.5, chairX, 0.46, cz, 0x6a1f1f); // seat
-      pushBox(0.46, 0.66, 0.1, chairX, 0.84, cz - 0.22, 0x6a1f1f); // back
-      pushBox(0.22, 0.16, 0.08, chairX, 1.24, cz - 0.22, 0x6a1f1f); // headrest
-      for (const sx of [-1, 1]) {
-        pushBox(0.06, 0.05, 0.4, chairX + sx * 0.3, 0.64, cz, 0x2a2a2a); // armrest
-        pushBox(0.05, 0.18, 0.05, chairX + sx * 0.3, 0.54, cz + 0.12, 0xc0c0c0); // arm post
-      }
-      pushBox(0.4, 0.04, 0.22, chairX, 0.2, cz + 0.42, 0xb0b0b0); // footrest plate
-      pushBox(0.05, 0.28, 0.05, chairX, 0.33, cz + 0.3, 0xc0c0c0); // footrest strut
+      // Mirror, shelf and the swivel chair are in the Blender row model (build_bazaar_row.py barber()).
     } else if (unit.trade === 'mobile') {
       addShelving(cx, wood);
-      // Signature: a desktop computer on the counter: boxy CRT monitor, keyboard, CPU tower.
-      const pz = counterZ - 0.1;
-      pushBox(0.38, 0.32, 0.3, cx, 1.14, pz - 0.08, 0xcfc8b8); // CRT body
-      pushBox(0.34, 0.28, 0.02, cx, 1.14, pz + 0.08, 0xbdb6a6); // bezel
-      pushBox(0.28, 0.21, 0.01, cx, 1.15, pz + 0.095, 0x3a5a6a); // screen
-      pushBox(0.14, 0.04, 0.14, cx, 0.97, pz - 0.05, 0xbdb6a6); // swivel stand
-      pushBox(0.36, 0.02, 0.12, cx, 0.96, pz + 0.22, 0xcfc8b8); // keyboard
-      pushBox(0.2, 0.38, 0.36, cx - 0.5, 1.14, pz - 0.05, 0xcfc8b8); // CPU tower
-      pushBox(0.14, 0.02, 0.01, cx - 0.5, 1.28, pz + 0.135, 0x2a2a2a); // drive slot
+      // The desktop computer, card rack and cable rack are in the Blender row model (build_bazaar_row.py mobile()).
     } else if (unit.trade === 'bangle') {
-      // Signature: rods on the back wall with stacked glass-bangle rings.
-      for (let rod = 0; rod < 3; rod++) {
-        const rx = cx - 1.3 + rod * 1.3;
-        pushCyl(0.02, 0.02, 1.1, rx, 1.6, backInnerZ - 0.2, 0x8a6a4a);
-        // glass bangles are textured goods now (shopGoods.js produceAndBangleItems)
-      }
+      // Rods with glass bangles, the board and the try-on mirror are in the Blender row model (build_bazaar_row.py bangle()).
     } else if (unit.trade === 'puncture') {
-      // Converted from a second sweet shop (docs/NEEDS_YOU.md). Three signature
-      // props, all through the same three zero-extra-draw-call buckets every other
-      // unit's interior already shares (pushBox/pushCyl/pushTorus below merge into
-      // one mesh per category across all 8 units): a puncture tub with a tyre
-      // resting in it, a standing hand pump, and a cycle flipped upside down on its
-      // seat/handlebars for repair (wheels up) — the universal roadside-mechanic
-      // tableau.
-      pushCyl(0.32, 0.36, 0.3, cx - 1.1, 0.15, counterZ + 1.0, 0x6a6a62); // the tub
-      pushCyl(0.27, 0.27, 0.02, cx - 1.1, 0.29, counterZ + 1.0, 0x2a4a5a); // murky water in the tub
-      pushTorus(0.26, 0.055, cx - 1.1, 0.32, counterZ + 1.0, 0x1c1c1c); // tyre resting in the tub (face-up, default rotX)
-      pushCyl(0.045, 0.06, 0.05, cx - 1.1, 0.33, counterZ + 1.0, 0x8a8278); // tub base ring, under the tyre
-      pushCyl(0.03, 0.045, 0.72, cx + 1.1, 0.36, backInnerZ + 0.1, 0x8a1f1f); // standing hand pump, barrel
-      pushBox(0.22, 0.04, 0.05, cx + 1.1, 0.7, backInnerZ + 0.1, 0x2a2a2a); // pump handle
-      pushBox(0.1, 0.03, 0.1, cx + 1.1, 0.015, backInnerZ + 0.1, 0x2a2a2a); // foot plate
-      pushBox(0.04, 0.04, 0.3, cx + 1.1, 0.6, backInnerZ + 0.25, 0x1c1c1c); // hose
-      // Upside-down cycle on the back shelf: frame bar low, two wheels standing
-      // above it (same face-on torus orientation src/bazaar.js's bangle rods use).
-      pushBox(0.06, 0.06, 1.0, cx, 1.2, backInnerZ + 0.1, 0x2a3a42);
-      pushTorus(0.26, 0.05, cx - 0.5, 1.55, backInnerZ + 0.1, 0x1c1c1c);
-      pushTorus(0.26, 0.05, cx + 0.5, 1.55, backInnerZ + 0.1, 0x1c1c1c);
-      pushBox(0.05, 0.05, 0.35, cx - 0.5, 1.37, backInnerZ + 0.1, 0x3a3a3a);
-      pushBox(0.05, 0.05, 0.35, cx + 0.5, 1.37, backInnerZ + 0.1, 0x3a3a3a);
-      pushBox(0.5, 0.04, 0.04, cx, 1.55, backInnerZ + 0.1, 0x2a3a42); // top tube between the wheels
-      pushBox(0.04, 0.3, 0.04, cx - 0.5, 1.45, backInnerZ + 0.1, 0x3a3a3a); // fork
-      pushBox(0.22, 0.05, 0.14, cx, 1.02, backInnerZ + 0.1, 0x1a1a1a); // seat, resting on the (implicit) bench below
+      // Tub, hand pump, flipped cycle and spanner board are in the Blender row model (build_bazaar_row.py puncture()).
     }
   });
 

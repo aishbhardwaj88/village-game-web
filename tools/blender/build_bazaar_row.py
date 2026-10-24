@@ -243,10 +243,19 @@ def tailor(i):
     shelves(i)
     # cloth bolts are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # treadle sewing machine on the counter + a kurta on a hanger (the one the quest collects) + measuring tape
-    kit.add('paint', wb('machine_base', c - 0.3, c + 0.3, CZ - 0.05, CZ + 0.25, 0.95, 1.02, 0.008), 0x1A1A1A)
-    kit.add('paint', wb('machine_arm', c - 0.28, c + 0.2, CZ + 0.1, CZ + 0.22, 1.02, 1.3, 0.02), 0x1A1A1A)
-    kit.add('paint', wb('machine_head', c - 0.1, c + 0.2, CZ + 0.02, CZ + 0.22, 1.28, 1.36, 0.02), 0x2A2A2A)
-    kit.add('paint', ring('hand_wheel', c + 0.28, CZ + 0.14, 1.2, 0.09, 0.012, axis='x'), 0x888888)
+    # cast-iron machine: wide base plate, bed, rising pillar, curved arm over the bed, rounded head, needle bar + foot, spool pin and spool, gold-banded hand wheel
+    kit.add('paint', wb('machine_base', c - 0.32, c + 0.32, CZ - 0.07, CZ + 0.27, 0.95, 0.99, 0.01), 0x1A1A1A)
+    kit.add('paint', wb('machine_bed', c - 0.28, c + 0.2, CZ + 0.0, CZ + 0.2, 0.99, 1.04, 0.02), 0x222222)
+    kit.add('paint', wb('machine_pillar', c + 0.1, c + 0.2, CZ + 0.04, CZ + 0.18, 1.04, 1.3, 0.03), 0x1A1A1A)
+    kit.add('paint', wb('machine_arm', c - 0.2, c + 0.2, CZ + 0.04, CZ + 0.18, 1.26, 1.34, 0.03), 0x1A1A1A)
+    kit.add('paint', sphere('machine_head', c - 0.2, CZ + 0.11, 1.29, 0.09, 0.08, 0.1, 2), 0x222222)
+    kit.add('paint', cyl('needle_bar', c - 0.2, CZ + 0.11, 1.06, 1.24, 0.008, 0.008, seg=8), 0xB8B8B8)
+    kit.add('paint', wb('presser_foot', c - 0.24, c - 0.16, CZ + 0.07, CZ + 0.15, 1.04, 1.07, 0.004), 0xB8B8B8)
+    kit.add('paint', cyl('spool_pin', c - 0.02, CZ + 0.11, 1.34, 1.42, 0.006, 0.006, seg=6), 0xB8B8B8)
+    kit.add('paint', cyl('spool', c - 0.02, CZ + 0.11, 1.37, 1.42, 0.032, 0.032, seg=12), 0xE8E0CC)
+    kit.add('paint', cyl('hand_wheel_disc', c + 0.27, CZ + 0.11, 1.12, 1.22, 0.001, 0.001, seg=6), 0x888888)
+    kit.add('paint', ring('hand_wheel', c + 0.26, CZ + 0.11, 1.26, 0.075, 0.014, axis='x'), 0x555555)
+    kit.add('paint', ring('hand_wheel_gold', c + 0.26, CZ + 0.11, 1.26, 0.05, 0.007, axis='x'), BRASS)
     kit.add('paint', limb('hanger', (c - 1.4, BZ - 0.5, 2.3), (c - 0.9, BZ - 0.5, 2.3), 0.02, 0.02), 0x8A6A4A)
     kit.add('paint', limb('kurta', (c - 1.15, BZ - 0.5, 2.3), (c - 1.15, BZ - 0.5, 1.3), 0.5, 0.05, 0.02), 0xE8DCC0)
     for sgn in (-1, 1):
@@ -298,11 +307,21 @@ def mobile(i):
     # phone and charger cartons are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # desk with a monitor, keyboard, CPU tower; a rack of charging cables and generic recharge cards
     kit.add('wood', wb('desk', c - 0.9, c + 0.9, CZ - 0.0, CZ + 0.5, 0.0, 0.05, 0.005))
-    kit.add('paint', wb('monitor', c - 0.25, c + 0.25, CZ + 0.15, CZ + 0.22, 1.0, 1.34, 0.01), 0x1A1A1A)
-    kit.add('paint', wb('screen', c - 0.22, c + 0.22, CZ + 0.13, CZ + 0.15, 1.03, 1.31, 0), 0x3A5A6A)
-    kit.add('paint', wb('stand', c - 0.06, c + 0.06, CZ + 0.15, CZ + 0.22, 0.95, 1.0, 0.004), 0x1A1A1A)
-    kit.add('paint', wb('keyboard', c - 0.25, c + 0.25, CZ - 0.1, CZ + 0.05, 0.95, 0.975, 0.004), 0x2A2A2A)
-    kit.add('paint', wb('tower', c + 0.6, c + 0.8, CZ + 0.1, CZ + 0.45, 0.95, 1.4, 0.01), 0xD8D6CE)
+    # beige CRT: deep tapering tube housing behind a framed glass screen, swivel base, keyboard with key rows, CPU tower with drive slots
+    BEIGE = 0xCFC8B8
+    kit.add('paint', wb('crt_front', c - 0.27, c + 0.27, CZ + 0.13, CZ + 0.2, 0.99, 1.38, 0.02), BEIGE)
+    kit.add('paint', wb('crt_mid', c - 0.23, c + 0.23, CZ + 0.2, CZ + 0.38, 1.02, 1.35, 0.02), BEIGE)
+    kit.add('paint', wb('crt_rear', c - 0.15, c + 0.15, CZ + 0.38, CZ + 0.5, 1.07, 1.3, 0.02), 0xBDB6A6)
+    kit.add('paint', wb('screen', c - 0.22, c + 0.22, CZ + 0.12, CZ + 0.135, 1.03, 1.34, 0.01), 0x35505C)
+    kit.add('paint', wb('screen_glint', c - 0.19, c - 0.08, CZ + 0.108, CZ + 0.12, 1.22, 1.31, 0), 0x6E8E9C)
+    kit.add('paint', cyl('stand', c, CZ + 0.3, 0.95, 1.0, 0.09, 0.11, seg=14), 0xBDB6A6)
+    kit.add('paint', wb('keyboard', c - 0.25, c + 0.25, CZ - 0.12, CZ + 0.05, 0.95, 0.98, 0.006), BEIGE)
+    for r in range(3):
+        kit.add('paint', wb('keys', c - 0.22, c + 0.22, CZ - 0.1 + r * 0.05, CZ - 0.065 + r * 0.05, 0.98, 0.99, 0), 0x6A665C)
+    kit.add('paint', wb('tower', c + 0.6, c + 0.82, CZ + 0.1, CZ + 0.45, 0.95, 1.4, 0.012), 0xD8D6CE)
+    kit.add('paint', wb('tower_drive', c + 0.64, c + 0.78, CZ + 0.085, CZ + 0.1, 1.28, 1.33, 0), 0x2A2A2A)
+    kit.add('paint', wb('tower_drive2', c + 0.64, c + 0.78, CZ + 0.085, CZ + 0.1, 1.2, 1.25, 0), 0x2A2A2A)
+    kit.add('paint', cyl('tower_led', c + 0.7, CZ + 0.08, 1.1, 1.12, 0.01, 0.01, seg=6), 0x4FC98A)
     for j in range(6):
         kit.add('paint', wb('card', c + 1.3 + (j % 3) * 0.2 - 0.07, c + 1.3 + (j % 3) * 0.2 + 0.07, BZ - 0.1, BZ - 0.06, 1.5 + (j // 3) * 0.25, 1.7 + (j // 3) * 0.25, 0), (0xE0509A, 0x2E86C1, 0xF2C21E, 0x2E9E5B, 0xF08A24, 0xD9382B)[j])
     kit.add('paint', limb('cable_rack', (c - 1.9, BZ - 0.1, 2.6), (c - 0.9, BZ - 0.1, 2.6), 0.03, 0.03), 0x30343A)
