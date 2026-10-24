@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z52, playtest block item 7, pond lotus):** Game change: the pond lotus is rebuilt (src/farmSites.js lotusPadGeo, lotusFlowerGeos): pads are 28-segment round cupped discs with one slit (were 14-segment faceted with spike artifacts), flowers are three rings (9/7/5) of lens-shaped cupped petals on a 4x5 grid, cream base to soft pink tip, smaller scale (were 14 flat pink shards reading as crystals). Same mesh, no new draw call. Build ALL PASSED. Proof docs/shots/pond-2026-10-24c/{lotus_before,lotus_final,pond_before_wide,pond_after_wide}.png (headless, HUD and a capsule in frame, so not a tickable proof). Checked and already done, no change: far-LOD abadi openings (build_abadi.py house_lod), pond mud soft shoulder. Gaps: petals still faceted at close range, no stalks/buds, flowers uniform.
+NEXT: findability walk, other shops' goods, pond ring.
+
+---
+
 **2026-10-24 (cycle 39z51, playtest block item 5, atta chakki smoothing):** Game change: chakki drum, lid, hopper, motor body, bin and scale pan now 24-40 segments (was 12-20) and a rimmed steel flour tray with a heap of fresh atta sits under the outlet chute (tools/blender/build_new_shops.py atta_chakki, new_shops.glb rebuilt, no new draw call). Proof docs/shots/chakki-2026-10-24c/{front,close}.png (headless, no subject check, so not tickable). Gaps: drum still reads faceted (flat shading, not segment count), sacks blocky, wall posts plaster tan, no real grinding stone; item 5 NOT ticked as a whole.
 NEXT: findability walk, far-LOD background buildings.
 
