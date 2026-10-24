@@ -251,7 +251,7 @@ function buildCropRows() {
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
       if (kind === 'cane') { if (r % 2 === 0 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
       const sabzi = sabziZone || kind === 'veg';
-      if (kind === 'sarson' && (k + r) % 2 === 0 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) sarsonSpots.push([rx, rz]);
+      if (kind === 'sarson' && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) sarsonSpots.push([rx, rz]);
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
       if (inKeepOut(rx, rz)) continue; // no crop standing in the tubewell naali / any water footprint
@@ -358,8 +358,8 @@ function buildSarsonBloom(spots) {
   const stem = new THREE.Color(0x4a6420);
   const push = (pts, cols, uvs) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); uvs.forEach((q) => uv.push(...q)); };
   const white = new THREE.Color(1, 1, 1);
-  for (let i = 0; i < 12; i++) {
-    const a = i * 2.399, r = 0.08 + 0.55 * Math.sqrt((i + 0.5) / 12);
+  for (let i = 0; i < 16; i++) {
+    const a = i * 2.399, r = 0.08 + 0.62 * Math.sqrt((i + 0.5) / 16);
     const cx = Math.cos(a) * r, cz = Math.sin(a) * r, h = 0.62 + 0.2 * ((i * 7) % 5) / 4;
     const w = 0.3 + 0.06 * (i % 3), t = a + 1.1, hh = 0.34;
     const ux = Math.cos(t) * w, uz = Math.sin(t) * w, tilt = 0.05;
