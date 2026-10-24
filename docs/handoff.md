@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z22, playtest block items 4-6 proof pass):** Game change: the tailor's dress form (the unidentified yellow oval, tools/blender/build_bazaar_row.py) is now maroon cloth with wider shoulders, reads clearly as a tailor's dummy beside the sewing machine; bazaar_row.glb rebuilt, no new draw calls. Build ALL PASSED, budget 29.40 MB. Proof docs/shots/dressform-2026-10-24/tailor_maroon.png (headless, subject check passed). Also: proof shots taken and FEEDBACK ticked for rooftop water tanks (docs/shots/tanks-2026-10-24/near1.png, near2.png), petrol pump and dharam kanta (existing shots re-judged); matkas checked smooth (docs/shots/matka-2026-10-24/d.png). tools/shotlib.mjs now hides the dev-only tripo_*_placeholder boxes (coloured cuboids visible in dev shots only, not in the live build). Seen, not fixed: cattle at the halwai are peg-legged blocks (animal models).
+NEXT: flat-tint barber/puncture props, outfield pitch edges, Banta/Chaat real textures, milk cans.
+
+---
+
 **2026-10-24 (cycle 39z21, playtest block item 5, cricket outfield ground):** Game change: the khel maidan outfield (src/farmSites.js maidanOutfield) was one flat grass blob with a visible repeating diamond tile; it is now a subdivided disc with vertex-colour drift between green, dry straw and bare dust at 4-9 m scale, metric UVs, and a rim that fades to dirt (same single mesh, no new draw call). Build ALL PASSED, budget 29.40 MB. Proof docs/shots/maidan-2026-10-24/after_wide.png vs before_wide.png (headless, camera shot, no subject check, so item 5 NOT ticked; badminton court and lines already built). Reads as worn dry ground, not mud-brown; the pitch strip is still box geometry.
 NEXT: shopkeeper proof shot, flat-tint barber/puncture props, Banta/Chaat real textures.
 
