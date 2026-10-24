@@ -355,8 +355,8 @@ def build_yard():
     kit.add('paint', limb('sc_bar', (sx - 0.52, sz - 0.3, 0.98), (sx - 0.52, sz + 0.3, 0.98), 0.035, 0.035), 0x333333)
     kit.add('paint', wb('sc_seat', sx - 0.1, sx + 0.55, sz - 0.14, sz + 0.14, 0.68, 0.76, 0.02), 0x2B2420)
     # flower beds + grass strip along the main verandah (gap in the middle for the path)
-    flower_bed(kit, -8.6, -1.0, 1.4, 2.6, rnd=rnd, soil=0x4E7F34)
-    flower_bed(kit, 1.0, 8.6, 1.4, 2.6, rnd=rnd, soil=0x4E7F34)
+    flower_bed(kit, -8.6, -1.0, 1.4, 2.6, rnd=rnd, soil=0x5A4432)
+    flower_bed(kit, 1.0, 8.6, 1.4, 2.6, rnd=rnd, soil=0x5A4432)
     for x in (-7.5, -2.5, 3.0, 7.5):
         pot(kit, x, 3.0, 0.0, 0.18, 0.24, flower=MARI)
     # chalk games on the yard dirt (one decal atlas, 1024x512): hopscotch with numbered boxes (left quarter, 1 m x 2 m),

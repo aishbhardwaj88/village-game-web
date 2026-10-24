@@ -172,7 +172,7 @@ def pot(kit, x, z, h, r=0.2, tall=0.26, flower=None, leaf=None):
 
 
 def flower_bed(kit, x0, x1, z0, z1, h=0.0, rnd=None, soil=SOIL, colours=(0xE8891A, 0xF2B01E, 0xD9631A, 0xC2185B, 0xE04A7A, 0xF4E04D)):
-    """A brick-bordered bed of mixed flowering shrubs."""
+    """A brick-bordered bed of bare soil; src/main.js plants real flowers on it."""
     rnd = rnd or random.Random(3)
     t = 0.12
     kit.add('brick', wb('bed_n', x0, x1, z0, z0 + t, 0, 0.22, 0.01))
@@ -180,12 +180,8 @@ def flower_bed(kit, x0, x1, z0, z1, h=0.0, rnd=None, soil=SOIL, colours=(0xE8891
     kit.add('brick', wb('bed_w', x0, x0 + t, z0 + t, z1 - t, 0, 0.22, 0.01))
     kit.add('brick', wb('bed_e', x1 - t, x1, z0 + t, z1 - t, 0, 0.22, 0.01))
     kit.add('paint', wb('bed_soil', x0 + t, x1 - t, z0 + t, z1 - t, 0, 0.2, 0), soil)
-    n = int(((x1 - x0) * (z1 - z0)) * 14)
-    for i in range(n):
-        x = rnd.uniform(x0 + 0.15, x1 - 0.15)
-        z = rnd.uniform(z0 + 0.15, z1 - 0.15)
-        hh = h + 0.2 + rnd.uniform(0.0, 0.3)
-        kit.add('paint', sphere('shrub', x, z, hh, 0.085, 0.085, 0.07, 1), rnd.choice(colours) if rnd.random() < 0.5 else rnd.choice(LEAF))
+    # (blooms removed 24 Oct, playtest item 2: flat-coloured icosphere 'flowers' read as polyhedra; the game places real
+    #  scanned Poly Haven gazania on the bed instead, src/main.js)
 
 
 def barred_window(kit, b, face, u0, u1, h0, h1, depth=0.12):

@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39u, playtest block item 2, school flower beds):** Game change: faceted icosphere 'flowers' (flat colour polyhedra) removed from arch.flower_bed (school's two verandah beds; all Blender models rebuilt via make_all.sh, school model -5k triangles), real Poly Haven gazania planted on dark-earth beds instead (src/main.js, 16 plants, shared call-site draw call). Proof docs/shots/school-2026-10-24/marbles.png (headless). Build ALL PASSED, budget 28.34 MB.
+Gaps: see-saw no collider; petrol pump, atta chakki, godown, cricket field, badminton court, water tanks, other shops' goods, yellow swing still open.
+NEXT: petrol pump, atta chakki readability.
+
+---
+
 **2026-10-24 (cycle 39t, playtest block item 5, school games):** Game change: school yard now has numbered chalk hopscotch (2), a marble ring with pit and glass marbles, and a wooden see-saw (tools/blender/build_school.py, school_compound.glb rebuilt, atlas 1024x512, same single decal draw call). Earlier hopscotch decals sat under the verandah (x<-6.9) and were unseen; moved into the open yard. The flagpole already existed and reads well (docs/shots/school-2026-10-24/flag.png): her note was likely about visibility from the gate. Build ALL PASSED, budget 28.51 MB. Proof docs/shots/school-2026-10-24/{flag,hopscotch,marbles,seesaw}.png (headless, ~2-3 fps).
 Gaps: see-saw has no collider; marigold flower beds use faceted icosphere blooms (visible in marbles.png, fails realism rule); yellow swing still unidentified; petrol pump, atta chakki, godown, cricket field, badminton court, water tanks, other shops' goods still open.
 NEXT: flower_bed blooms (faceted icospheres) across all models; petrol pump; atta chakki.
