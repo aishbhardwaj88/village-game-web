@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z96, playtest block item 3, brinjal and okra):** Game change: the sabzi third of the khet (src/field.js buildVegBushes) now has distinct brinjal (purple fruit, broad leaves) and okra (lobed leaves, upright pods) bushes in alternating bed bands, two crossed alpha cards each, procedural canvas textures, two InstancedMeshes (+2 draw calls, field view, frustum-culled so hero/bazaar counts unchanged). Build ALL PASSED 16/16. Proof docs/shots/vegbush-2026-10-25/{sabzi_close,sabzi_wide}.png (headless, no subject check, not tickable). Gaps: fruit is tiny at walking distance, procedural not photo texture, item 3 NOT ticked as a whole.
+NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
+
+---
+
 **2026-10-25 (cycle 39z95, playtest block items 4/3, sabzi cart produce):** Game change: the sabzi rehris' flat-coloured cylinder piles (src/farmSites.js createSabziRehris) are now heaps of individual produce (new produceHeap): tomatoes, carrots, gourds, chillies, onions, brinjal, each with own size, turn and colour jitter, thin produce lying flat. Same merged mesh, no new draw call (+~0.5k triangles). Build ALL PASSED. Proof docs/shots/sabzi-produce-2026-10-25/carts_close2.png (free camera, headless, no capsule in frame; not ticked as an item). Checked and stale, no change: far-LOD abadi already has openings and the shared plaster atlas (docs/shots/farlod-2026-10-24/east_far_after.png), Banta/Chaat boards exist (src/placeBoards.js). Gaps: produce is vertex-colour only (no skin texture), bazaar vegetable stalls elsewhere not checked.
 NEXT: triangle cuts (art director's call), spurs once draw calls are saved, other flat-colour stock.
 

@@ -260,6 +260,7 @@ function buildCropRows() {
   let index = 0;
   const caneSpots = [];
   const sarsonSpots = [];
+  const vegSpots = { brinjal: [], okra: [] };
   for (let r = 0; r < rows; r++) {
     const rz = FIELD_CENTER.z - halfZ + r * between;
     for (let k = 0; k < cols; k++) {
@@ -275,6 +276,8 @@ function buildCropRows() {
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
       if (kind === 'cane') { if (k % 3 !== 2 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
       const sabzi = sabziZone || kind === 'veg';
+      // Sabzi beds carry real brinjal (aubergine) and okra bushes among the leafy tufts: every other bed band is one crop, one tuft in three.
+      if (sabziZone && ov !== 1 && k % 3 === 1 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) vegSpots[Math.floor(r / 4) % 2 ? 'okra' : 'brinjal'].push([rx, rz]);
       if (kind === 'sarson' && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) sarsonSpots.push([rx, rz]);
       // A real clearing around the mango baagh (src/baagh.js) — otherwise tufts would clip through trunks/canopies.
       if (Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) continue;
@@ -301,6 +304,7 @@ function buildCropRows() {
   mesh.instanceColor.needsUpdate = true;
   mesh.userData.caneSpots = caneSpots;
   mesh.userData.sarsonSpots = sarsonSpots;
+  mesh.userData.vegSpots = vegSpots;
   return mesh;
 }
 
@@ -420,6 +424,77 @@ function buildSarsonBloom(spots) {
   return mesh;
 }
 
+/** Procedural vegetable-plant card (alpha-cut): brinjal = broad lobed leaves with glossy purple fruit and a calyx; okra = lobed palmate leaves
+ * with upright green ridged pods. One texture per vegetable, cached. */
+const vegTex = {};
+function vegBushTexture(kind) {
+  if (vegTex[kind]) return vegTex[kind];
+  const W = 128, H = 128;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  let seed = kind === 'okra' ? 5 : 9; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  g.clearRect(0, 0, W, H);
+  g.strokeStyle = kind === 'okra' ? '#4f6a24' : '#4a3a3a'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(64, H); g.lineTo(64 + (rnd() - 0.5) * 6, 20); g.stroke();
+  const leaf = (x, y, s, a, lobed) => {
+    g.save(); g.translate(x, y); g.rotate(a);
+    const gr = g.createLinearGradient(0, 0, 0, -s);
+    gr.addColorStop(0, '#2f4a1a'); gr.addColorStop(1, kind === 'okra' ? '#6f9a34' : '#5b8a3a');
+    g.fillStyle = gr; g.beginPath();
+    if (lobed) { for (let i = 0; i < 5; i++) { const t = (i / 4 - 0.5) * 2.2; g.moveTo(0, 0); g.quadraticCurveTo(Math.sin(t) * s * 0.9, -Math.cos(t) * s * 0.4, Math.sin(t) * s * 0.55, -Math.cos(t) * s * 0.95); g.quadraticCurveTo(Math.sin(t) * s * 0.1, -Math.cos(t) * s * 0.5, 0, 0); } }
+    else { g.moveTo(0, 0); g.bezierCurveTo(s * 0.55, -s * 0.15, s * 0.5, -s * 0.8, 0, -s); g.bezierCurveTo(-s * 0.5, -s * 0.8, -s * 0.55, -s * 0.15, 0, 0); }
+    g.fill(); g.strokeStyle = 'rgba(200,220,150,0.55)'; g.lineWidth = 1; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -s * 0.9); g.stroke();
+    g.restore();
+  };
+  for (let i = 0; i < 9; i++) leaf(64 + (rnd() - 0.5) * 36, 118 - i * 9 - rnd() * 6, 28 + rnd() * 14, (rnd() - 0.5) * 2.2, kind === 'okra');
+  for (let i = 0; i < 4; i++) {
+    const x = 64 + (rnd() - 0.5) * 50, y = 70 + rnd() * 34;
+    if (kind === 'okra') { // upright tapered pod with ridges
+      g.fillStyle = '#6aa02e'; g.beginPath(); g.moveTo(x - 3, y); g.lineTo(x + 3, y); g.lineTo(x + 0.5, y - 20); g.closePath(); g.fill();
+      g.strokeStyle = '#3f6a1c'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 0.4, y - 19); g.stroke();
+    } else { // hanging glossy aubergine with green calyx
+      const gr = g.createRadialGradient(x - 2, y + 6, 1, x, y + 8, 11); gr.addColorStop(0, '#8a5aa8'); gr.addColorStop(0.5, '#4a1f66'); gr.addColorStop(1, '#22102e');
+      g.fillStyle = gr; g.beginPath(); g.ellipse(x, y + 9, 6, 12, 0.05, 0, 6.3); g.fill();
+      g.fillStyle = '#4f7a2a'; g.beginPath(); g.ellipse(x, y - 2, 6.5, 3, 0, 0, 6.3); g.fill();
+    }
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return (vegTex[kind] = t);
+}
+
+/** Brinjal / okra bushes: two crossed alpha cards per plant, one InstancedMesh per vegetable. */
+function buildVegBushes(kind, spots) {
+  const hw = kind === 'okra' ? 0.45 : 0.5, hh = kind === 'okra' ? 0.7 : 0.55;
+  const pos = [], uv = [];
+  for (const a of [0.3, 1.87]) {
+    const ux = Math.cos(a) * hw, uz = Math.sin(a) * hw;
+    pos.push(-ux, 0, -uz, ux, 0, uz, ux, hh * 2, uz, -ux, 0, -uz, ux, hh * 2, uz, -ux, hh * 2, -uz);
+    uv.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ name: 'veg_' + kind, map: vegBushTexture(kind), alphaTest: 0.5, roughness: 0.85, side: THREE.DoubleSide });
+  const mesh = new THREE.InstancedMesh(g, mat, spots.length);
+  mesh.name = 'field_' + kind;
+  mesh.castShadow = false; mesh.receiveShadow = true;
+  mesh.userData.groundLevel = true;
+  const d = new THREE.Object3D(), c = new THREE.Color();
+  spots.forEach(([x, z], i) => {
+    const j = Math.sin(x * 12.9 + z * 7.1), k = 0.8 + 0.4 * (0.5 + 0.5 * Math.sin(x * 3.1 - z * 2.3));
+    d.position.set(x + j * 0.2, 0, z + Math.cos(x * 5.3 + z * 3.7) * 0.2); d.rotation.y = j * 3; d.scale.set(k, 0.8 + 0.35 * (0.5 + 0.5 * Math.cos(x * 1.7 + z)), k); d.updateMatrix();
+    mesh.setMatrixAt(i, d.matrix);
+    const v = 0.85 + 0.2 * (0.5 + 0.5 * j);
+    mesh.setColorAt(i, c.setRGB(v, v, v * 0.95));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.instanceColor.needsUpdate = true;
+  mesh.computeBoundingSphere();
+  return mesh;
+}
+
 export function buildField(scene) {
   const group = new THREE.Group();
   group.name = 'field';
@@ -429,6 +504,7 @@ export function buildField(scene) {
   group.add(crops);
   if (crops.userData.caneSpots.length) group.add(buildCaneClumps(crops.userData.caneSpots));
   if (crops.userData.sarsonSpots.length) group.add(buildSarsonBloom(crops.userData.sarsonSpots));
+  for (const kind of ['brinjal', 'okra']) if (crops.userData.vegSpots[kind].length) group.add(buildVegBushes(kind, crops.userData.vegSpots[kind]));
   group.add(buildTrack());
   const verge = buildTrackVerge();
   if (verge) group.add(verge);
