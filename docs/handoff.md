@@ -1,3 +1,7 @@
+**2026-10-24 (cycle 39z47, playtest block item 6, halwai wood):** Game change: halwai stall frame posts/beam, counter posts/rail and the firewood stack now carry the real PBR wood set (build_halwai.py: Kit(split_props=False, wood_slot='props'), halwai kind 'wood'), zero extra draw calls (hero shot 147). halwai_compound.glb rebuilt. Build ALL PASSED, budget 30.68 MB. Proof docs/shots/halwai-wood-2026-10-24/{front,front2,close}.png (proof-shot.mjs, headless, HUD and capsule in frame, so not a tickable proof). Gaps: wood still reads dark/brown-black; bazaar row (props slot is metal) still flat; fire-pit bricks unchanged.
+NEXT: bazaar wood, tea glasses/jars, findability walk.
+
+---
 **2026-10-24 (cycle 39z46, playtest block item 5, ration shop stock in Blender):** Game change: the ration shop's invisible JS-side stock now actually renders, built in tools/blender/build_new_shops.py ration_shop(): six jute grain sacks stacked two high on the right flank, slatted wooden crates (two holding glass oil bottles) on the left, and on the counter a beam scale with two pans and cords, a register ledger with pages, and a row of lidded steel tins. new_shops.glb rebuilt, no new draw call (hero 149, bazaar 149). Build 16/16, budget 30.48 MB. Proof docs/shots/ration-2026-10-24b/{front,close}.png (headless, subject check passed). Gaps: bottles stand on crate tops not in slots, sacks still blocky; chakki counter ledger/post office rack textures still plain paint; item 5 NOT ticked as a whole.
 NEXT: halwai/bazaar wood, tea glasses/jars, findability walk.
 

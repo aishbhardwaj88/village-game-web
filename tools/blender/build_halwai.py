@@ -19,7 +19,7 @@ from common import wb, limb, cyl, sphere, prism_x, prism_z, quad, boolean_cut, j
 from arch import Kit, ring, clay_pot, plastic_chair, dabba, sack, STEEL, BRASS, TERRA, LEAF
 
 OUT = os.path.join(ROOT, 'tmp', 'halwai_compound_raw.glb')
-kit = Kit()
+kit = Kit(split_props=False, wood_slot='props')  # real PBR wood rides in the (otherwise paint-only) props slot: no extra draw call
 rnd = random.Random(5)
 
 W0, W1 = -2.25, 2.25      # x: front (street) .. back
@@ -60,8 +60,8 @@ def front():
     # teal-painted wooden frame around the opening + the raised wooden shutter box above it
     fx = W0 - 0.12
     for z in (Z0 + 0.5, Z1 - 0.5):
-        kit.add('paint', wb('frame_post', fx - 0.05, fx + 0.05, z - 0.05, z + 0.05, 0, 2.7, 0.006), TEAL)
-    kit.add('paint', wb('frame_beam', fx - 0.05, fx + 0.05, Z0 + 0.45, Z1 - 0.45, 2.62, 2.72, 0.006), TEAL)
+        kit.add('wood', wb('frame_post', fx - 0.05, fx + 0.05, z - 0.05, z + 0.05, 0, 2.7, 0.006), TEAL)
+    kit.add('wood', wb('frame_beam', fx - 0.05, fx + 0.05, Z0 + 0.45, Z1 - 0.45, 2.62, 2.72, 0.006), TEAL)
     wood(wb('shutter_box', fx - 0.2, fx + 0.12, Z0 + 0.35, Z1 - 0.35, 2.72, 3.4, 0.012))
     for k in range(4):  # plank lines across the box
         h = 2.8 + k * 0.17
@@ -73,9 +73,9 @@ def front():
     wood(wb('counter_body', cx0, cx1, Z0 + 0.4, Z1 - 0.4, 0.0, 0.9, 0.01))
     wood(wb('counter_top', cx0 - 0.05, cx1 + 0.05, Z0 + 0.35, Z1 - 0.35, 0.9, 0.98, 0.012))
     for z in (Z0 + 0.4, Z1 - 0.4, 0.0):   # teal frame posts + two panels either side
-        kit.add('paint', wb('counter_post', cx0 - 0.04, cx0 + 0.04, z - 0.05, z + 0.05, 0.0, 0.9, 0.004), TEAL)
+        kit.add('wood', wb('counter_post', cx0 - 0.04, cx0 + 0.04, z - 0.05, z + 0.05, 0.0, 0.9, 0.004), TEAL)
     for hh in (0.0, 0.88):
-        kit.add('paint', wb('counter_rail', cx0 - 0.04, cx0 + 0.04, Z0 + 0.4, Z1 - 0.4, hh, hh + 0.05, 0.004), TEAL)
+        kit.add('wood', wb('counter_rail', cx0 - 0.04, cx0 + 0.04, Z0 + 0.4, Z1 - 0.4, hh, hh + 0.05, 0.004), TEAL)
     for z0, z1 in ((Z0 + 0.5, -0.1), (0.1, Z1 - 0.5)):
         for hh in (0.12, 0.5):
             wood(wb('counter_panel', cx0 - 0.05, cx0 - 0.02, z0, z1, hh, hh + 0.3, 0.004))
@@ -100,7 +100,7 @@ def front():
         for c in range(4 - r):
             x = W0 + 0.15 + r * 0.14 + c * 0.0
             z = Z1 + 0.35 + c * 0.2 + r * 0.1
-            kit.add('paint', limb('log', (x - 0.3, z, 0.1 + r * 0.17), (x + 0.3, z, 0.1 + r * 0.17), 0.17, 0.17, 0.0), 0x7A5A3A)
+            kit.add('wood', limb('log', (x - 0.3, z, 0.1 + r * 0.17), (x + 0.3, z, 0.1 + r * 0.17), 0.17, 0.17, 0.0), 0xC9A47A)
     # (QR board and sound box removed 24 Oct: UPI-era props are after the ~2015 cut-off and read as a grey panel with black squares)
 
 
