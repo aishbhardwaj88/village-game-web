@@ -218,6 +218,7 @@ function buildHouseInteriorProps(houseGroup) {
   const charpaiTopY = 0.42;
   const frame = texturedBox(0.9, 0.08, 1.9, 'wood', { tint: PALETTE.woodTrim, tileSize: 1 });
   frame.position.set(charpaiCx, charpaiTopY, charpaiCz);
+  frame.userData.collider = true; // solid bed (A0); mergeGroupByMaterial carries the box
   charpaiGroup.add(frame);
   for (const [lx, lz] of [
     [-0.4, -0.85],
