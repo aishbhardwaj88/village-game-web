@@ -1286,7 +1286,7 @@ function netTexture() {
 }
 
 /** Khel maidan outfield: a subdivided disc whose vertex colours drift between green, dry straw and bare dust at 4-9 m scale (breaks the
- *  grass scan's tiling) and fade to dirt at the rim; metric UVs, one tile per 3 m. */
+ *  grass scan's tiling) and fade to dirt at the rim; metric UVs, one tile per 6 m. */
 function maidanOutfield(R) {
   const g = new THREE.RingGeometry(0.01, R, 72, 22);
   g.rotateX(-Math.PI / 2);
@@ -1295,7 +1295,7 @@ function maidanOutfield(R) {
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z) / R;
     p.setY(i, 0.03);
-    uv.setXY(i, x / 3, z / 3);
+    uv.setXY(i, x / 6, z / 6);
     const n = 0.5 + 0.25 * Math.sin(x * 0.21 + Math.sin(z * 0.17) * 2.1) + 0.25 * Math.sin(z * 0.13 - x * 0.09 + 1.7);
     const m = 0.5 + 0.5 * Math.sin(x * 0.52 + z * 0.37 + Math.sin(x * 0.11) * 3);
     c.copy(green).lerp(straw, THREE.MathUtils.clamp(n * 1.1 - 0.2, 0, 1));
@@ -1361,10 +1361,10 @@ export function createKhelMaidan(position) {
   grassMat.name = 'maidan_grass'; grassMat.color.setScalar(1.5); grassMat.aoMap = null;
   const grassMesh = new THREE.Mesh(mergeGeometries(grass), grassMat);
   grassMesh.receiveShadow = true;
-  // Box faces carry 0..1 UVs, which stretches the ground scan over each pad; remap to metric UVs (one tile per 2.5 m) so the mud grain stays fine.
+  // Box faces carry 0..1 UVs, which stretches the ground scan over each pad; remap to metric UVs (one tile per 5.5 m) so the scan reads as dried mud, not planks.
   const earthGeo = mergeGeometries(earth);
   const ep = earthGeo.attributes.position, eu = earthGeo.attributes.uv;
-  for (let i = 0; i < ep.count; i++) eu.setXY(i, ep.getX(i) / 2.5, ep.getZ(i) / 2.5);
+  for (let i = 0; i < ep.count; i++) eu.setXY(i, ep.getX(i) / 5.5 + ep.getZ(i) * 0.02, ep.getZ(i) / 5.5);
   const earthMesh = new THREE.Mesh(earthGeo, vcMat({ roughness: 1 }));
   earthMesh.receiveShadow = true;
   const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 0.76).translate(cx, 1.14, cz), new THREE.MeshStandardMaterial({ map: netTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));

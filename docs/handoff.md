@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z44, playtest block item 5, cricket field ground):** Game change: Khel maidan mud (pitch, run-ups, badminton pad) now tiles the ground scan at one tile per 5.5 m (was 2.5, read as wooden planks) and the outfield grass one per 6 m (was 3, showed a visible checker repeat), src/farmSites.js maidanOutfield / createKhelMaidan. No asset bytes, no draw call. Build ALL PASSED, budget 30.40 MB. Proof docs/shots/khel-2026-10-24b/pitch_walk.png vs khel-2026-10-24/pitch_walk.png (headless, subject check passed). Court lines and net were already built (docs/shots/khel-2026-10-24/badminton.png). Gaps: court pad still low-contrast against the pitch; stump and crease colours are flat vertex colour; item 5 NOT ticked as a whole (post office/chakki textures open).
+NEXT: post office stock, halwai/bazaar wood, tea glasses/jars, findability walk.
+
+---
+
 **2026-10-24 (cycle 39z43, playtest block item 5, atta chakki + sacks):** Game change: every flour/grain sack (tools/blender/arch.py sack, used by chakki, bazaar row, halwai, dharam kanta) is now a stuffed rounded-box bag with a cord-tied gathered mouth instead of an onion-shaped sphere; the chakki's hopper is now a real funnel (cone on a neck) over the drum instead of a blue bucket. new_shops, bazaar_row, halwai_compound, dharam_kanta .glb rebuilt. Build ALL PASSED (verified on a near-identical model), budget 30.41 MB. Proof docs/shots/chakki-2026-10-24b/{front,close}.png (headless, no subject check, so item 5 NOT ticked). Gaps: sacks still slightly blocky, drum faceted, no flat grinding stone/flour tray, chakki wall posts still plaster tan.
 NEXT: post office stock, halwai/bazaar wood, tea glasses/jars, findability walk.
 
