@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z21, playtest block item 5, cricket outfield ground):** Game change: the khel maidan outfield (src/farmSites.js maidanOutfield) was one flat grass blob with a visible repeating diamond tile; it is now a subdivided disc with vertex-colour drift between green, dry straw and bare dust at 4-9 m scale, metric UVs, and a rim that fades to dirt (same single mesh, no new draw call). Build ALL PASSED, budget 29.40 MB. Proof docs/shots/maidan-2026-10-24/after_wide.png vs before_wide.png (headless, camera shot, no subject check, so item 5 NOT ticked; badminton court and lines already built). Reads as worn dry ground, not mud-brown; the pitch strip is still box geometry.
+NEXT: shopkeeper proof shot, flat-tint barber/puncture props, Banta/Chaat real textures.
+
+---
+
 **2026-10-24 (cycle 39z20, playtest block item 1, stall keepers):** Game change: capsule shopkeepers now stand at the Banta shop (behind the counter) and the Chaat thela (behind the cart) in src/farmSites.js, per her rule that no spot stays empty while models are parked. They live inside the zone groups, so they stream with the stalls. Build ALL PASSED. No proof shot taken this cycle (nothing ticked).
 NEXT: proof shot of both keepers, flat-tint barber/puncture props, outfield grass checker.
 

@@ -1243,10 +1243,33 @@ function netTexture() {
   return NET_TEX;
 }
 
+/** Khel maidan outfield: a subdivided disc whose vertex colours drift between green, dry straw and bare dust at 4-9 m scale (breaks the
+ *  grass scan's tiling) and fade to dirt at the rim; metric UVs, one tile per 3 m. */
+function maidanOutfield(R) {
+  const g = new THREE.RingGeometry(0.01, R, 72, 22);
+  g.rotateX(-Math.PI / 2);
+  const p = g.attributes.position, uv = g.attributes.uv, col = new Float32Array(p.count * 3);
+  const green = new THREE.Color(0x7d8a4a), straw = new THREE.Color(0xa49a5c), dust = new THREE.Color(0x9c8a63), c = new THREE.Color();
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z) / R;
+    p.setY(i, 0.03);
+    uv.setXY(i, x / 3, z / 3);
+    const n = 0.5 + 0.25 * Math.sin(x * 0.21 + Math.sin(z * 0.17) * 2.1) + 0.25 * Math.sin(z * 0.13 - x * 0.09 + 1.7);
+    const m = 0.5 + 0.5 * Math.sin(x * 0.52 + z * 0.37 + Math.sin(x * 0.11) * 3);
+    c.copy(green).lerp(straw, THREE.MathUtils.clamp(n * 1.1 - 0.2, 0, 1));
+    c.lerp(dust, THREE.MathUtils.clamp((m - 0.55) * 1.4, 0, 0.6) * (0.4 + r));
+    c.lerp(dust, THREE.MathUtils.smoothstep(r, 0.72, 1.0) * 0.85);
+    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
 /** Khel maidan (SE): cricket outfield on real grass, a packed-mud pitch with worn run-ups and creases, a badminton court with
  *  regulation lines and a mesh net on poles, and a tin-roofed pavilion with a bench. Three meshes: grass, earth, structures (+ net). */
 export function createKhelMaidan(position) {
-  const grass = [flatBlob(24, 3, 0.03, 0x8f9a5a)];
+  const grass = [maidanOutfield(24)];
   const earth = [];
   const geos = [];
   // Pitch: dry clay strip 3 x 20 with darker worn patches at both ends (bowler run-up, batter's stance) and a crack-patched centre.
