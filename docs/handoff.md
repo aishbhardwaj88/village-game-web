@@ -1,3 +1,9 @@
+**2026-10-24 (cycle 39v, playtest block item 5, petrol pump):** Game change: a farm tractor now stands at the east pumps (tools/blender/build_petrol_pump.py tractor(): body, hood, grille, seat, exhaust, big rear and small front wheels, same two meshes so no new draw call; petrol_pump.glb rebuilt; collider added in src/farmSites.js). Pump already had canopy, two dispensers with hoses, price pole, bilingual board, office, attendant capsule: re-shot, reads as a petrol pump. Proof docs/shots/petrol-2026-10-24/{road,road_close}.png (headless).
+Gaps: tractor tyres are thin tori, pump dispensers small; atta chakki, godown/dharam kanta, cricket field, badminton court, water tanks, other shops' goods, yellow swing still open.
+NEXT: atta chakki readability; dharam kanta.
+
+---
+
 **2026-10-24 (cycle 39u, playtest block item 2, school flower beds):** Game change: faceted icosphere 'flowers' (flat colour polyhedra) removed from arch.flower_bed (school's two verandah beds; all Blender models rebuilt via make_all.sh, school model -5k triangles), real Poly Haven gazania planted on dark-earth beds instead (src/main.js, 16 plants, shared call-site draw call). Proof docs/shots/school-2026-10-24/marbles.png (headless). Build ALL PASSED, budget 28.34 MB.
 Gaps: see-saw no collider; petrol pump, atta chakki, godown, cricket field, badminton court, water tanks, other shops' goods, yellow swing still open.
 NEXT: petrol pump, atta chakki readability.

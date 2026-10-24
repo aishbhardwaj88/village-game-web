@@ -784,6 +784,7 @@ export function createHighwayCluster(position) {
   const site = finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
     [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 0.8, 1.1], // petrol office, dharam kanta cabin, display post
     [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
+    [-13.8, -34.7, 2.3, 3.0], // parked tractor at the east pumps (build_petrol_pump.py tractor())
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
     [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
   ], boards: [

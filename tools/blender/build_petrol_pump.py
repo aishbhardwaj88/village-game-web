@@ -153,6 +153,29 @@ def odds_and_ends():
         kit.add('paint', cyl('tyre', 3.6, -7.0, 0.12 + k * 0.2, 0.3 + k * 0.2, 0.36, 0.36, 16), 0x1C1C1A)
 
 
+def tractor(cx, cz):
+    """A farm tractor parked at the east pumps, nose to the -z end (diesel for the field): body, hood, grille, seat, exhaust, big rear and small front wheels (axle along x)."""
+    TRED, TGREY = 0xA8321F, 0x3A3A38
+    for z, R, tw, hw in ((cz + 0.95, 0.72, 0.34, 0.9), (cz - 1.1, 0.4, 0.16, 0.72)):
+        for sx in (-1, 1):
+            x = cx + sx * hw
+            kit.add('paint', ring('tyre', x, z, R + 0.01, R - (0.17 if R > 0.5 else 0.1), 0.17 if R > 0.5 else 0.1, axis='x', seg=14), 0x1B1B1D)
+            kit.add('paint', cyl('hubcap', x, z, R - 0.05, R + 0.07, 0.12, 0.12, 8), 0xC9A227 if R > 0.5 else TGREY)
+        kit.add('paint', limb('axle', (cx - hw, z, R + 0.01), (cx + hw, z, R + 0.01), 0.07, 0.07), TGREY)
+    kit.add('paint', wb('chassis', cx - 0.28, cx + 0.28, cz - 1.2, cz + 1.0, 0.45, 0.8, 0.03), TGREY)
+    kit.add('paint', wb('hood', cx - 0.36, cx + 0.36, cz - 1.35, cz - 0.15, 0.75, 1.3, 0.06), TRED)
+    kit.add('paint', wb('grille', cx - 0.3, cx + 0.3, cz - 1.38, cz - 1.34, 0.85, 1.2, 0.0), TGREY)
+    kit.add('paint', wb('dash', cx - 0.3, cx + 0.3, cz - 0.15, cz + 0.05, 0.8, 1.45, 0.03), TRED)
+    kit.add('paint', wb('seat', cx - 0.22, cx + 0.22, cz + 0.2, cz + 0.6, 1.0, 1.1, 0.03), DARK)
+    kit.add('paint', wb('seat_back', cx - 0.22, cx + 0.22, cz + 0.58, cz + 0.64, 1.1, 1.5, 0.03), DARK)
+    for sx in (-1, 1):
+        kit.add('paint', wb('fender', cx + sx * 0.9 - 0.2, cx + sx * 0.9 + 0.2, cz + 0.3, cz + 1.6, 1.2, 1.28, 0.03), TRED)
+    kit.add('paint', limb('steer', (cx, cz + 0.0, 1.45), (cx, cz + 0.2, 1.75), 0.04, 0.04), DARK)
+    kit.add('paint', cyl('exhaust', cx + 0.2, cz - 0.7, 1.3, 2.0, 0.04, 0.04, 8), GREY)
+    kit.add('paint', cyl('headlamp', cx + 0.2, cz - 1.36, 1.0, 1.08, 0.07, 0.07, 8), 0xF6F0D8)
+    kit.add('paint', cyl('headlamp', cx - 0.2, cz - 1.36, 1.0, 1.08, 0.07, 0.07, 8), 0xF6F0D8)
+
+
 forecourt()
 canopy()
 for cx in (-2.5, 2.5):
@@ -160,5 +183,6 @@ for cx in (-2.5, 2.5):
 office()
 price_pole()
 odds_and_ends()
+tractor(5.2, 0.3)
 TINTS = {'hb_plaster': '#E2DAC4', 'hb_plinth': '#B8A58A', 'hb_trim': '#CFC8B6', 'hb_concrete': '#9A978E', 'hb_wood': '#B08A5C'}
 kit.finalize(OUT, TINTS, drift_amp=0.05, ao_strength=0.45)
