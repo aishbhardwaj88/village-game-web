@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z56, playtest block item 4, bazaar floor props):** Game change: kirana floor sacks are now bulging jute sacks with a tied neck, and the sabzi crates are bare slatted-wood crates in varied wood tints, rotated, with one stacked (src/bazaar.js buildBazaarInteriors), replacing straight drums and green/red coloured boxes. Same meshes, no new draw call. Build ALL PASSED, budget 30.76 MB. Proof docs/shots/bazaar-props-2026-10-24/{sabzi,kirana}.png (headless, capsule in frame, and the counters hide the floor props from lane height, so I could not verify the result by eye and it is not tickable). Gaps: tailor machine, mobile monitor and pan balance still tinted-box builds; item 4 NOT ticked as a whole.
+NEXT: findability walk, unidentifiable-object list.
+
+---
+
 **2026-10-24 (cycle 39z55, playtest block item 7, pond mud):** Game change: pond wet-mud and damp-mud rings (src/farmSites.js shoreGeos) lightened (0x3f3426->0x594a35, 0x6b5a40->0x7a6848) so the waterline reads as wet earth, not a dark pit wall; no new draw call. Proof docs/shots/pond-2026-10-24d/pond_wide.png (headless, HUD and capsule dog in frame, so not tickable). Gaps: water shader unchanged (depth tint, ripples, sheen, soft edge already in); johad/canal/hauz mud not re-shot; item 7 NOT ticked as a whole.
 NEXT: findability walk, collision leftovers (0c).
 

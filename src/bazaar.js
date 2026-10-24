@@ -603,14 +603,19 @@ export function buildBazaarInteriors() {
     if (unit.trade === 'kirana') {
       addShelving(cx, wood);
       // Sacks on the floor, tins on the shelf.
-      pushCyl(0.22, 0.3, 0.55, left, 0.275, counterZ + 1.3, 0xc9a86a);
-      pushCyl(0.2, 0.28, 0.5, left + 0.5, 0.25, counterZ + 1.3, 0xb99456);
+      // Jute sacks: bulging body plus a narrow tied neck, so they read as grain sacks, not drums.
+      pushCyl(0.26, 0.3, 0.5, left, 0.25, counterZ + 1.3, 0xc9a86a);
+      pushCyl(0.1, 0.2, 0.14, left, 0.57, counterZ + 1.3, 0xb99456);
+      pushCyl(0.24, 0.28, 0.46, left + 0.5, 0.23, counterZ + 1.3, 0xb99456);
+      pushCyl(0.09, 0.18, 0.14, left + 0.5, 0.53, counterZ + 1.3, 0xa88646);
       for (let i = 0; i < 5; i++) pushCyl(0.09, 0.09, 0.22, cx - 1.2 + i * 0.45, 2.16, backInnerZ + 0.1, 0x8a9aa0 + i * 0x040000);
     } else if (unit.trade === 'sabzi') {
       // Crates instead of shelving — a produce shop's goods sit low, in the open.
-      pushBox(0.7, 0.35, 0.5, left, 0.175, counterZ + 1.2, 0x4a7a3a);
-      pushBox(0.7, 0.35, 0.5, left + 0.85, 0.175, counterZ + 1.2, 0x6a8a3f);
-      pushBox(0.7, 0.35, 0.5, right - 0.35, 0.175, counterZ + 1.2, 0x8a3a2f);
+      // Bare slatted-wood crates (varied wear), not coloured boxes; the produce itself sits on the counter.
+      pushBox(0.7, 0.35, 0.5, left, 0.175, counterZ + 1.2, 0xb08a5c, 0.05);
+      pushBox(0.7, 0.35, 0.5, left + 0.85, 0.175, counterZ + 1.2, 0x9a7a50, -0.08);
+      pushBox(0.7, 0.35, 0.5, right - 0.35, 0.175, counterZ + 1.2, 0xc29a68, 0.03);
+      pushBox(0.66, 0.3, 0.46, left + 0.4, 0.5, counterZ + 1.2, 0xa88458, 0.1);
       // Signature: a hanging pan balance — post, beam, two pans.
       const balX = cx;
       pushCyl(0.03, 0.03, 1.6, balX, 1.5, backInnerZ + 0.3, 0x2a2a2a);
