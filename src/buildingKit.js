@@ -55,14 +55,14 @@ export class BuildingKit {
     this.reveal.name = 'reveal';
     this._revealCount = 0;
 
-    const pipeMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.7, metalness: 0.3 });
+    const pipeMat = getTiledMaterial('metal', { repeatX: 0.25, repeatY: 2, tint: 0x4a4a48, roughness: 0.8 });
     this.drainpipe = new THREE.InstancedMesh(UNIT_CYLINDER, pipeMat, capacity);
     this.drainpipe.name = 'drainpipe';
     this.drainpipe.userData.groundLevel = true;
     this.drainpipe.castShadow = true;
     this._drainpipeCount = 0;
 
-    const boardMat = new THREE.MeshStandardMaterial({ color: 0x8a8a86, roughness: 0.6 });
+    const boardMat = getTiledMaterial('metal', { repeatX: 0.4, repeatY: 0.4, tint: 0x9a9a94, roughness: 0.8 });
     this.switchboard = new THREE.InstancedMesh(UNIT_BOX, boardMat, capacity);
     this.switchboard.name = 'switchboard';
     this.switchboard.castShadow = false; // 0.3 x 0.4 m wall box: its shadow is invisible, but costs a shadow-pass draw call
