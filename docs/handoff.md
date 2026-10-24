@@ -1,3 +1,8 @@
+**2026-10-24 (cycle 39z20, playtest block item 1, stall keepers):** Game change: capsule shopkeepers now stand at the Banta shop (behind the counter) and the Chaat thela (behind the cart) in src/farmSites.js, per her rule that no spot stays empty while models are parked. They live inside the zone groups, so they stream with the stalls. Build ALL PASSED. No proof shot taken this cycle (nothing ticked).
+NEXT: proof shot of both keepers, flat-tint barber/puncture props, outfield grass checker.
+
+---
+
 **2026-10-24 (cycle 39z19, playtest block item 1, Banta shop + Chaat thela built):** Game change: the two unbuilt places from signage item 1 now exist at their freeRoam coordinates, Banta shop (-63,22.5: plank kiosk, tin awning, crate of goli-soda bottles, steel ice tub, lime basket, stool) and Chaat thela (-63,50.5: push-cart, glass case, tamarind pot, leaf bowls, umbrella, bulb) in src/farmSites.js, each with an English-dominant bilingual board (src/placeBoards.js), colliders, zone-streamed and drawn only within 14 m so hero 148 / bazaar 150 hold. Build 16/16. Proof docs/shots/banta-chaat-2026-10-24/{banta,chaat}.png (headless, subject check passed; boards read English-first). Gaps: both are flat vertex-colour code geometry (no PBR textures, no Blender model), no goods variety, no shopkeeper capsule placed yet, MAP.md gives no coordinates for either (used freeRoam's). Item 1 still has its other open parts, not ticked.
 NEXT: shopkeeper capsules at both stalls, real textures/Blender rebuild of these two, flat-tint barber/puncture props, outfield grass checker.
 

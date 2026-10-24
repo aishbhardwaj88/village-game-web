@@ -1,3 +1,4 @@
+import { createNPC } from './npc.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -930,7 +931,9 @@ export function createBantaShop(position) {
   geos.push(bake(new THREE.CylinderGeometry(0.28, 0.22, 0.2, 12), at(0.95, 1.1, 0.2), 0x9a7a52)); // lime basket
   geos.push(bake(new THREE.SphereGeometry(0.12, 8, 6), at(0.95, 1.25, 0.2), 0x9cb83a)); // limes
   box(0.6, 0.35, 0.6, 1.9, 0.18, 0.3, 0x7a5a3a); // customer stool
-  return finishSite('banta_shop', geos, position, { solids: [[0, 0, 2.7, 1.3], [1.9, 0.3, 0.6, 0.6]], boards: [{ id: 'banta', x: 0, y: 2.1, z: 0.65, w: 2.4 }] });
+  const site = finishSite('banta_shop', geos, position, { solids: [[0, 0, 2.7, 1.3], [1.9, 0.3, 0.6, 0.6]], boards: [{ id: 'banta', x: 0, y: 2.1, z: 0.65, w: 2.4 }] });
+  site.add(createNPC(0xc0392b, { x: 0.1, z: -0.2 }, 0, 'npc_banta_keeper')); // shopkeeper behind the counter (capsule until the 3D people arrive)
+  return site;
 }
 
 /** Chaat thela: a two-wheeled push-cart with a glass-fronted chaat case, a steel pot of tamarind water, a stack of leaf
@@ -951,7 +954,9 @@ export function createChaatThela(position) {
   geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 6), at(0.9, 2.0, -0.45), 0x5a5a5a)); // umbrella pole
   geos.push(bake(new THREE.ConeGeometry(1.5, 0.45, 12), at(0.9, 3.0, -0.45), 0xb85a3a)); // umbrella
   geos.push(bake(new THREE.SphereGeometry(0.08, 8, 6), at(0.2, 2.3, 0.3), 0xf2e2a8)); // bulb
-  return finishSite('chaat_thela', geos, position, { solids: [[0, 0, 2.3, 1.3]], boards: [{ id: 'chaat', x: 0, y: 2.05, z: 0.7, w: 2.2 }] });
+  const site = finishSite('chaat_thela', geos, position, { solids: [[0, 0, 2.3, 1.3]], boards: [{ id: 'chaat', x: 0, y: 2.05, z: 0.7, w: 2.2 }] });
+  site.add(createNPC(0xd9a21e, { x: -0.1, z: -1.05 }, 0, 'npc_chaatwala')); // chaatwala behind the cart (capsule until the 3D people arrive)
+  return site;
 }
 
 /** Lane street life (MAP.md "carrom and ludo boards set up in the lane outside houses"): a jute mat, a carrom board, a ludo board,
