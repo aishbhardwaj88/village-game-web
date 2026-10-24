@@ -11,13 +11,14 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 const CELL = 256;
 const COLS = 4;
-const ROWS = 8;
+const ROWS = 10;
 // atlas cell index per design
 export const DESIGN = {
   chipsRed: 0, chipsGreen: 1, chipsBlue: 2, biscuitBlue: 3, biscuitOrange: 4, soapGreen: 5, soapPink: 6, soapBlue: 7,
   toffeeJar: 8, sachet: 9, sodaOrange: 10, sodaLime: 11, sodaCola: 12, namkeen: 13, tea: 14, salt: 15,
   medWhite: 16, medGreen: 17, syrup: 18, phoneBox: 19, chargerBox: 20, clothStripe: 21, clothCheck: 22, clothPrint: 23,
   tomato: 24, onion: 25, potato: 26, greens: 27, brinjal: 28, bangleRed: 29, bangleBlue: 30, bangleGreen: 31,
+  laddoo: 32, gulab: 33, barfi: 34, jalebi: 35, samosa: 36,
 };
 
 let atlas = null;
@@ -141,6 +142,12 @@ function getAtlas() {
     cell(DESIGN.brinjal, () => { const gr = g.createLinearGradient(0, 0, CELL, 0); gr.addColorStop(0, '#2a0f3e'); gr.addColorStop(0.35, '#5a2a7a'); gr.addColorStop(0.5, '#7a4a9a'); gr.addColorStop(1, '#2a0f3e'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); speckle(120, 'rgba(255,255,255,.07)', 3); g.fillStyle = '#4f7a35'; g.fillRect(0, 0, CELL, 38); });
     const bangle = (i, base, hi) => cell(i, () => { g.fillStyle = base; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? hi : 'rgba(255,255,255,.35)'; g.fillRect(0, k * 32 + 12, CELL, 5); } g.fillStyle = '#e3c25a'; for (let x = 8; x < CELL; x += 24) { g.beginPath(); g.arc(x, 128, 4, 0, 7); g.fill(); } g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(0, 60, CELL, 8); speckle(180, 'rgba(255,255,255,.3)', 1.6); });
     bangle(DESIGN.bangleRed, '#b8203f', '#e8c050'); bangle(DESIGN.bangleBlue, '#1f5fa8', '#d9e8f5'); bangle(DESIGN.bangleGreen, '#1f8a56', '#e8d068');
+    // Halwai sweets and fried snacks: a skin texture each (boondi bumps, syrup gloss, silver leaf, blistered pastry), no flat colour.
+    cell(DESIGN.laddoo, () => { g.fillStyle = '#e3a22a'; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 260; k++) { g.fillStyle = k % 3 ? 'rgba(255,214,110,.75)' : 'rgba(170,98,18,.55)'; g.beginPath(); g.arc(Math.random() * CELL, Math.random() * CELL, 4 + Math.random() * 5, 0, 7); g.fill(); } speckle(140, 'rgba(255,240,190,.4)', 2); });
+    cell(DESIGN.gulab, () => { const gr = g.createLinearGradient(0, 0, 0, CELL); gr.addColorStop(0, '#6a3014'); gr.addColorStop(0.5, '#3c1708'); gr.addColorStop(1, '#2a0f05'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); speckle(180, 'rgba(120,60,24,.35)', 4); g.fillStyle = 'rgba(255,200,140,.4)'; g.beginPath(); g.ellipse(70, 90, 22, 40, 0.5, 0, 7); g.fill(); g.fillStyle = 'rgba(255,170,90,.25)'; g.fillRect(0, 214, CELL, 6); });
+    cell(DESIGN.barfi, () => { g.fillStyle = '#eddcae'; g.fillRect(0, 0, CELL, CELL); speckle(220, 'rgba(196,160,96,.35)', 3); g.fillStyle = 'rgba(214,220,226,.82)'; g.fillRect(0, 0, CELL, 70); for (let k = 0; k < 40; k++) { g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(Math.random() * CELL, Math.random() * 70, 6 + Math.random() * 22, 2); } g.fillStyle = '#7a9a4a'; for (let k = 0; k < 14; k++) { g.beginPath(); g.ellipse(30 + (k % 5) * 48, 120 + Math.floor(k / 5) * 44, 9, 4, Math.random() * 3, 0, 7); g.fill(); } });
+    cell(DESIGN.jalebi, () => { const gr = g.createLinearGradient(0, 0, CELL, CELL); gr.addColorStop(0, '#f08a1c'); gr.addColorStop(1, '#c4520e'); g.fillStyle = gr; g.fillRect(0, 0, CELL, CELL); for (let k = 0; k < 10; k++) { g.strokeStyle = k % 2 ? 'rgba(255,200,90,.55)' : 'rgba(150,50,6,.4)'; g.lineWidth = 7; g.beginPath(); g.arc(128, 128, 14 + k * 11, 0, 7); g.stroke(); } speckle(200, 'rgba(255,230,160,.35)', 2); });
+    cell(DESIGN.samosa, () => { g.fillStyle = '#a2601a'; g.fillRect(0, 0, CELL, CELL); speckle(420, 'rgba(90,44,8,.45)', 5); speckle(260, 'rgba(214,150,64,.4)', 4); for (let k = 0; k < 9; k++) { g.strokeStyle = 'rgba(100,52,10,.45)'; g.lineWidth = 3; g.beginPath(); g.moveTo(k * 30, 0); g.lineTo(k * 30 + 12, CELL); g.stroke(); } });
     Math.random = realRandom;
     texture.needsUpdate = true;
   };
@@ -232,6 +239,11 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
         }
         g = mergeGeometries(parts); g.translate(0, 0.02 * s, 0); break;
       }
+      case 'laddoo': g = new THREE.SphereGeometry(0.036, 12, 9); g.scale(s, 0.92 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
+      case 'gulab': g = new THREE.SphereGeometry(0.034, 12, 9); g.scale(s, 0.85 * s, s); g.translate(0, 0.029 * s, 0); setUVs(g, it.design); break;
+      case 'barfi': g = flatPack(0.07 * s, 0.026 * s, 0.07 * s, it.design); g.translate(0, 0.013 * s, 0); break;
+      case 'jalebi': { const t = new THREE.TorusGeometry(0.036 * s, 0.0085 * s, 6, 14); t.rotateX(Math.PI / 2); const t2 = new THREE.TorusGeometry(0.019 * s, 0.0085 * s, 6, 10); t2.rotateX(Math.PI / 2); t2.translate(0, 0.004 * s, 0); g = mergeGeometries([setUVs(t, it.design), setUVs(t2, it.design)]); g.translate(0, 0.01 * s, 0); break; }
+      case 'samosa': g = new THREE.ConeGeometry(0.058 * s, 0.085 * s, 3, 1); g.rotateY(0.3); g.translate(0, 0.0425 * s, 0); g.scale(1, 0.9, 1); setUVs(g, it.design); break;
       case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 6, 14); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;
       case 'jar': g = lathe(JAR, it.design); g.scale(s, s, s); break;
@@ -334,4 +346,34 @@ export function produceAndBangleItems({ sabzi, bangle, counterH, counterZ, backZ
     for (let i = 0; i < 40; i++) items.push({ kind: 'bangle', design: cols[(rod + Math.floor(i / 9)) % 3], x: rx, y: 1.08 + i * 0.019, z: bangle.rodZ, ry: rnd() * 6, s: 1 });
   }
   return items;
+}
+
+/** Halwai (HALWAI_CENTER frame, x/z offsets as authored in tools/blender/build_halwai.py): mithai on the three display-cabinet tiers and the frying jalebi and samosa in the two kadhais. */
+export function halwaiGoods(world) {
+  const items = [];
+  let n = 0;
+  const rnd = () => { n++; return ((Math.sin(n * 53.3) + 1) * 0.5 * 9973) % 1; };
+  const D = DESIGN;
+  const tx = 1.7;
+  [0.55, 0.98, 1.38].forEach((hh, k) => {
+    for (let i = 0; i < 3; i++) {
+      const z = -1.75 + 0.28 + i * 0.47;
+      const y = hh + 0.045;
+      const mode = (i + k) % 3;
+      const count = mode === 1 ? 9 : 11;
+      for (let j = 0; j < count; j++) {
+        const ring = j < 7 ? 0.11 : j < 10 ? 0.055 : 0;
+        const a = (j < 7 ? j / 7 : (j - 7) / 3 + 0.4) * Math.PI * 2 + rnd() * 0.3;
+        const px = tx + ring * Math.cos(a), pz = z + ring * Math.sin(a);
+        const lift = j >= 7 ? (mode === 1 ? 0.026 : 0.05) : 0;
+        if (mode === 0) items.push({ kind: j % 2 ? 'laddoo' : 'gulab', design: j % 2 ? D.laddoo : D.gulab, x: px, y: y + lift, z: pz, ry: rnd() * 6, s: 0.92 + rnd() * 0.16 });
+        else if (mode === 1) items.push({ kind: 'barfi', design: D.barfi, x: px, y: y + lift, z: pz, ry: a + rnd() * 0.3, s: 0.95 + rnd() * 0.1 });
+        else items.push({ kind: 'jalebi', design: D.jalebi, x: px, y: y + lift * 0.4, z: pz, ry: rnd() * 6, s: 0.9 + rnd() * 0.3 });
+      }
+    }
+  });
+  const kx = -1.755;
+  for (let i = 0; i < 9; i++) { const a = i * 0.7, r = i ? 0.17 : 0; items.push({ kind: 'jalebi', design: D.jalebi, x: kx + r * Math.cos(a), y: 1.435, z: -1.15 + r * Math.sin(a), ry: rnd() * 6, s: 2.1 + (i % 3) * 0.4 }); }
+  for (let i = 0; i < 8; i++) { const a = i * 0.8, r = i ? 0.2 : 0; items.push({ kind: 'samosa', design: D.samosa, x: kx + r * Math.cos(a), y: 1.425 + (i % 2) * 0.02, z: 1.15 + r * Math.sin(a), ry: rnd() * 6, rz: (rnd() - 0.5) * 0.4, s: 1.5 + rnd() * 0.25 }); }
+  return buildGoodsMesh(items, world, 'halwai_stock');
 }

@@ -91,15 +91,7 @@ def front():
         kit.add('paint', sphere('kadhai', kx, kz, 1.32, 0.42, 0.42, 0.17, 3), 0x1B1B1D)
         kit.add('paint', cyl('kadhai_oil', kx, kz, 1.4, 1.43, 0.37, 0.37, 18), 0xB8741F)
         kit.add('paint', ring('kadhai_rim', kx, kz, 1.46, 0.41, 0.018, axis='y'), 0x2A2A2C)
-        if what == 'jalebi':
-            for i in range(9):
-                a = i * 0.7
-                rr = 0.06 + 0.02 * (i % 3)
-                kit.add('paint', ring('jalebi', kx + 0.17 * math.cos(a) * (1 if i else 0), kz + 0.17 * math.sin(a) * (1 if i else 0), 1.45, rr, 0.018, axis='y'), 0xE8751A)
-        else:
-            for i in range(8):
-                a = i * 0.8
-                kit.add('paint', cyl('samosa', kx + 0.18 * math.cos(a) * (1 if i else 0), kz + 0.18 * math.sin(a) * (1 if i else 0), 1.43, 1.53, 0.07, 0.01, 3), 0xC98A3A)
+        # the jalebi coils / samosas frying in the kadhai are textured goods now (src/shopGoods.js halwaiGoods)
         # ladle + jhara resting across the rim
         kit.add('paint', limb('ladle', (kx - 0.05, kz - 0.5, 1.58), (kx + 0.05, kz + 0.1, 1.46), 0.025, 0.025), STEEL)
         kit.add('paint', cyl('ladle_cup', kx + 0.05, kz + 0.1, 1.42, 1.47, 0.06, 0.06, 10), STEEL)
@@ -126,15 +118,7 @@ def back_and_cabinet():
             z = zc0 + 0.28 + i * 0.47
             tx = (cx0 + cx1) / 2
             kit.add('paint', cyl('thali', tx, z, hh + 0.025, hh + 0.045, 0.19, 0.19, 14), STEEL)
-            for j in range(7):
-                a = j / 7 * math.tau
-                px, pz = tx + 0.11 * math.cos(a), z + 0.11 * math.sin(a)
-                if (i + k) % 3 == 0:    # laddoo / gulab jamun
-                    kit.add('paint', sphere('mithai', px, pz, hh + 0.075, 0.045, 0.045, 0.04, 1), (0xD98A2B, 0x6B3A1E, 0xE6B24A)[j % 3])
-                elif (i + k) % 3 == 1:  # barfi squares
-                    kit.add('paint', wb('barfi', px - 0.04, px + 0.04, pz - 0.04, pz + 0.04, hh + 0.045, hh + 0.085, 0.004), (0xF1E6C6, 0x8A5A32)[j % 2])
-                else:                   # jalebi coils
-                    kit.add('paint', ring('jalebi', px, pz, hh + 0.06, 0.04, 0.012, axis='y'), 0xE8751A)
+            # mithai on the thali: textured goods now (src/shopGoods.js halwaiGoods)
     # shelf on the back wall with dabbas, jars, a marble slab, sacks of flour and sugar
     bx = W1 - 0.2
     wood(wb('back_shelf', bx - 0.3, bx, 0.3, 2.3, 1.3, 1.35, 0.006))
