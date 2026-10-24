@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z79, playtest block item 8, more spurs):** Game change: 4 more spur tracks (src/eastRoad.js SPURS): TV house off the east road, pond off the west gali, mela and gurudwara off the south gali. West/south spurs are `bare` (no lamps/trees) with a 24 m build radius to stay inside the draw-call ceiling. Static audit: 1 of 40 not findable without the map (cane field); only the gaushala is still >30 m from a lane. Gaushala spur was tried and dropped: at the bazaar view it pushed calls to 152 (ceiling 150). Baagh not given a spur (canal/chowk in the way, already within 30 m). Build 16/16. No proof shot taken (not tickable).
+NEXT: on-foot findability walk, street life on roads, triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z78, playtest block item 3, haystacks):** Game change: every bhoosa haystack (tubewell, Yadav tea stall, khalihan; src/farmSites.js haystackGeos) now sits on a trampled straw skirt, same merged mesh, no new draw call. Answer to her question: haystacks DO exist near the tubewell (3 stacks at (-47,-13)) and behind the Yadav tea stall (2 stacks at (-58,76)); both read as haystacks. Build ALL PASSED. Proof docs/shots/haystack-2026-10-25/{tubewell_hay,b_tea_hay}.png (headless, no subject check, not tickable). Gaps: skirt is a hard-edged flat patch; stacks are uniform beehive domes.
 NEXT: findability walk, street life on roads, triangle cuts (art director's call).
 

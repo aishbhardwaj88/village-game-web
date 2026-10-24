@@ -31,6 +31,11 @@ export const SPURS = [
   { id: 'maidan', pts: [[128, 55], [128, 100], [128, 130], [139, 135]] },
   { id: 'jain', pts: [[128, 130], [130, 142]] },
   { id: 'haveli', pts: [[150, 49], [150, 8], [150, -4]] },
+  { id: 'tvhouse', pts: [[62, 69.5], [68, 40], [70, 27]] },
+  // West and south spurs (the road does not reach them): off the west gali, the south gali and the gali north end.
+  { id: 'pond', bare: true, pts: [[-84, 70], [-113, 70]] },
+  { id: 'mela', pts: [[-100, 140], [-111, 145]] },
+  { id: 'gurudwara', pts: [[-60, 140], [-60, 158]] },
 ];
 export const SPUR_WIDTH = 3.5;
 
@@ -46,6 +51,6 @@ export function roadLegs() {
 export function spurLegs() {
   return SPURS.flatMap((sp) => sp.pts.slice(1).map((b, i) => {
     const a = sp.pts[i], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    return { id: `spur_${sp.id}_${i}`, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] }, len, i, w: SPUR_WIDTH, noDrain: true };
+    return { id: `spur_${sp.id}_${i}`, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] }, len, i, w: SPUR_WIDTH, noDrain: true, bare: sp.bare };
   }));
 }

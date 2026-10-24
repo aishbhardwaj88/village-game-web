@@ -1495,18 +1495,18 @@ async function main() {
     for (const leg of [...roadLegs(), ...spurLegs()]) {
       const mx = (leg.a.x + leg.b.x) / 2, mz = (leg.a.z + leg.b.z) / 2, half = leg.len / 2;
       zoneManager.register(leg.id, {
-        detail: true, x: mx, z: mz, buildRadius: 45 + half, teardownRadius: 58 + half,
+        detail: true, x: mx, z: mz, buildRadius: (leg.w ? 24 : 45) + half, teardownRadius: (leg.w ? 36 : 58) + half,
         build: () => {
           const g = new THREE.Group(); // lamps and trees are built in world coordinates, so they sit beside the (turned) leg, not inside it
           g.name = leg.id + '_zone';
           g.add(createEastRoadLeg(leg));
-          g.add(createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w || 5 }], { type: 'solar', everyMetres: leg.w ? 45 : 28 }));
+          if (!leg.bare) g.add(createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w || 5 }], { type: 'solar', everyMetres: leg.w ? 45 : 28 }));
           const ux = (leg.b.x - leg.a.x) / leg.len, uz = (leg.b.z - leg.a.z) / leg.len, trees = [];
           for (let k = 0; k < Math.floor(leg.len / 22); k++) {
             const t = (k + 0.5 + ((leg.i + k) % 2) * 0.2) * 22, side = (leg.i + k) % 3 === 0 ? 1 : -1, off = (leg.w ? 5 : 8) + ((leg.i * 5 + k * 3) % 5);
             trees.push({ kind: ['neem', 'neem', 'babool', 'peepal'][(leg.i + k) % 4], x: leg.a.x + ux * t - uz * off * side, z: leg.a.z + uz * t + ux * off * side, seed: 60 + leg.i * 7 + k, rotationY: (leg.i + k) * 1.3 });
           }
-          if (trees.length) g.add(buildTrees(trees));
+          if (trees.length && !leg.bare) g.add(buildTrees(trees));
           return g;
         },
       });
