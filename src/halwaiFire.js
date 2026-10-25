@@ -9,9 +9,10 @@ import * as THREE from 'three';
 const FLAME = 14;
 const SMOKE = 10;
 const STEAM = 5;
+const MOUTH = 7; // flame licking out of the bhatti's fire mouth (customer side, -x face)
 
 export function createHalwaiFire(sources) {
-  const per = FLAME + SMOKE + STEAM;
+  const per = FLAME + SMOKE + STEAM + MOUTH;
   const n = sources.length * per;
   const pos = new Float32Array(n * 3);
   const col = new Float32Array(n * 3);
@@ -85,6 +86,16 @@ export function createHalwaiFire(sources) {
           sz = 0.14 + life * 0.34;
           a = Math.sin(life * Math.PI) * (1 - life) * 0.2;
           r = 0.42; g = 0.42; b = 0.44;
+        } else if (i >= FLAME + SMOKE + STEAM) {
+          // mouth flame: short tongues from the arch (x - 0.45, y ~1.04), flickering up and out, red-orange to dark
+          const j = i - FLAME - SMOKE - STEAM;
+          const life = (t * (1.8 + rnd(seed, 6)) + rnd(seed, 7)) % 1;
+          x = o.x - 0.46 - life * 0.06;
+          z = o.z + (rnd(seed, 8) - 0.5) * 0.22 + Math.sin(t * 11 + j * 2) * 0.02;
+          y = o.y - 0.4 + life * 0.1 + rnd(seed, 9) * 0.04;
+          sz = 0.22 * (1 - life * 0.5) * (0.85 + 0.3 * Math.sin(t * 15 + seed));
+          a = Math.pow(1 - life, 1.2) * 0.9;
+          r = 1.0; g = 0.78 - life * 0.5; b = 0.3 - life * 0.28;
         } else {
           // oil steam: thin white wisps just over the rim
           const j = i - FLAME - SMOKE;

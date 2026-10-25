@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n10, playtest block item 3, halwai fire mouth):** Game change: halwaiFire.js gained 7 flame particles per bhatti flickering out of the brick fire mouth (same Points draw call, no new calls). Proof docs/shots/halwai-fire-2026-10-25/mouth.png (faint glowing flecks at the arch; modest, headless). Build ALL PASSED. Not ticked (item 3 stays PARTLY DONE; flame is subtle).
+NEXT: Banta shop / chaat thela not built; triangle cuts and cottage wood remain art-director calls.
+
+---
+
 **2026-10-25 (cycle 39z99n9, playtest block item 7 leftover, masjid + Jain mandir):** Game change: masjid (src/farmSites.js createMasjid) gained a four-pillar entrance iwan with green-banded canopy, three steps and two corner chhatris; Jain mandir gained two more porch pillars, three plinth steps and four mini corner spires (spires mostly hidden behind roof slab in the shot, pillars/steps read). Proof docs/shots/porch-2026-10-25/masjid.png and jain.png. Build ALL PASSED, budget 30.90 MB. Faith buildings: no tasks added.
 NEXT: triangle cuts and cottage wood (art director's call); otherwise BACKLOG section A in order.
 
