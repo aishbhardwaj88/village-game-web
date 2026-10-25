@@ -159,7 +159,7 @@ is in handoff.md, and build plus regression are green.
 - [ ] Moving a place must be a one-number change that carries its props, colliders, interaction points and NPC routes with it
 - [ ] Build in local coordinates and place by transform; merge per unit, never across units into one world mesh
 - [ ] Waypoints and NPC routes reference units rather than raw world coordinates where possible
-- [ ] AUDIT before tomorrow: write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
+- [x] AUDIT before tomorrow (done 26 Oct, top entry of docs/handoff.md): write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
 ### A0a. COLLISION TEST (art director FAIL 2026-10-25) - nothing else until this passes
