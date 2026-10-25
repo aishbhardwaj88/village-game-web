@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n22, stale-gap check):** NO game change (written honestly). Checked the "khel maidan outfield is uniform olive" gap: maidanOutfield (src/farmSites.js:1396) already has mown stripes, straw/dust patches, tuft noise and a dusty rim, so it is closed. Do not re-check. Everything left needs the art director: triangle limit (400k vs ~520k), draw-call ceiling (150 vs 164 in hero/bazaar; blocks lamps, cottage wood, jalebi/gaushala spurs), the 8 m lane gap at (-37,76) and the unjoined south gali (layout is her call), a plain crate (needs Blender), tri-audit rewrite.
+NEXT: act on her budget ruling; otherwise rewrite tools/tri-audit.mjs to read renderer.info after one forced render.
+
+---
+
 **2026-10-25 (cycle 39z99n21, bazaar shutter re-shot):** NO game change (written honestly). Re-shot the bazaar row from the lane (shopfronts face -z; camera at z=3 looking +z): all shutters are up, interiors lit, goods visible. Proof docs/shots/bazaar-open-2026-10-25/{bz_a,bz_b}.png; 147/144 calls, ~530k tris (same budget overage as before). FEEDBACK item 4 note updated. Note for next run: bazaar shots need camera south of z=12.5 (row_a/row_b in that folder are houses, ignore).
 NEXT: tri-audit rewrite (renderer.info after one forced render) or the art director's budget call.
 
