@@ -31,6 +31,38 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
 in them. Do not limit a fix to the place that was screenshotted.
 
+### A-2a. Tap the map to travel (Aishwarya, 25 Oct 2026) - FIRST ITEM AFTER THE CLOSE-OUT
+Her words: when the user is in explore mode, not doing any mission, they should be
+able to hit a particular spot on the map and land there instead of walking.
+
+**Do NOT start this during the 25 Oct close-out. Start it on the first run after
+`tmp/STOP`, once she has given her playtest feedback.**
+
+What exists already: the Notebook map has a "Visit place" LIST of 41 named places
+(A-2, done). What she is asking for is different: tapping a POINT on the map itself.
+
+- [ ] In explore mode (no active mission), tapping or clicking anywhere on the notebook
+      map moves the player to that point. Any point, not only the 41 named places.
+- [ ] The landing spot is the nearest walkable ground to the tapped point: on the
+      ground, outside walls and geometry, never inside a building, never in water.
+- [ ] The player faces the nearest place, road or lane after landing, not a blank field.
+- [ ] A visible marker or ripple confirms the tapped point before the jump, so a
+      mis-tap is obvious.
+- [ ] Works with touch on a phone and with the mouse on desktop.
+- [ ] During a mission it reuses the existing A-2 guard: first tap warns, second tap
+      confirms, quest state untouched.
+- [ ] Vehicle is dismounted first, same as the existing Visit place path.
+
+DONE-WHEN, all of these, nothing more:
+- 5 proof shots of arrivals from 5 different tapped points, including at least one
+  in open field away from any named place and one across the canal.
+- `npm run build` passes and `node tools/regression-check.js` is green.
+- Zero console errors on a full open-map, tap, land cycle.
+- Ticked here with the 5 shot paths.
+
+Do not extend this item. No route preview, no travel animation, no fog-of-war, no
+unlock rules. If you think of one, write it in BACKLOG section B and move on.
+
 ### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
 - [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [x] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)

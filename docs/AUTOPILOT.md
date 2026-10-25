@@ -1,3 +1,78 @@
+# STOP-AND-CLOSE ORDER - 25 Oct 2026, 17:10 IST. THIS OVERRIDES EVERY RULE BELOW.
+
+Aishwarya has been waiting 36 hours. She wants to play and give feedback TONIGHT.
+This order replaces "the loop does not stop". The loop now HAS an end, and you will
+reach it.
+
+## Hard clock. Check it with `date` at the start of every run.
+
+- **Until 18:10 IST**: finish only what is ALREADY in flight. See Phase 1.
+- **18:10 IST onward**: Phase 2 close-out only. Nothing else.
+- **At 18:40 IST the loop ends.** If it is already past 18:40 when you start, skip
+  Phase 1 entirely and do Phase 2 only.
+
+## Phase 1 (until 18:10 IST): land what is open, start nothing new
+
+- Commit whatever is uncommitted right now.
+- You may finish a task already half-built in the working tree. That is all.
+- **Forbidden until the loop ends**: new places, new features, new BACKLOG items, new
+  asset searches, new Blender builds, and any rework of something you already marked
+  done because it is "still weak". No exceptions.
+
+## Phase 2 (18:10 to 18:40 IST): close out. This is the definition of done.
+
+The loop is done when ALL FIVE of these are true. Nothing else counts.
+
+1. `npm run build` passes (world validator included).
+2. **Every numbered item 0 to 7 in the top playtest block of `docs/FEEDBACK.md`
+   carries a bracket marker.** No item may be left unmarked. Each marker is exactly
+   one of:
+   - `[DONE 25 Oct 2026: <what you did> ; proof <path>]`
+   - `[PARTLY DONE 25 Oct 2026: <what is done> ; STILL OPEN: <the named gaps> ; proof <path>]`
+   - `[NOT DONE: <one line why>]`
+   Items 4, 5, 6 and 7 have never been marked at all. They get marked this run, from
+   what is actually in the game. If you have no proof shot, write `no proof shot`.
+   Do not reword her items. Do not build anything to improve a marker.
+3. `docs/FINISH_LINE.md` is updated: tick only what you can prove, leave the rest.
+4. **`docs/PLAYTEST_READY.md` exists**, written for her, headers plus short bullets,
+   no long prose, no em dashes, and contains exactly these four sections:
+   - `## What changed since your last playtest` - max 15 bullets, plain language
+   - `## Look hardest at these 5` - the 5 things most likely to be wrong
+   - `## Known unfinished` - every gap from the markers above, one line each
+   - `## Live link` - https://aishbhardwaj88.github.io/village-game-web/
+5. Everything committed and `git push origin main` done, so `origin/main` and `main`
+   are level.
+
+Then, as the last action of that run:
+
+```
+touch tmp/STOP
+```
+
+That makes the loop print "Autopilot finished" and exit. **Creating `tmp/STOP` is a
+required step, not optional.** Do not start another item after it.
+
+## Two open questions, now answered. Stop asking them.
+
+- **The 400,000 triangle limit means VISIBLE triangles, not the browser counter that
+  also counts the shadow pass.** The busy market view is about 271,000 visible, which
+  is inside budget. The triangle budget is NOT a blocker. Close those NEEDS_YOU lines.
+- **Real wood texture on houses, school and bazaar: NO, not now.** Do not spend the
+  draw call, do not hunt for savings. It waits until after her feedback. Close that
+  NEEDS_YOU line as deferred.
+
+## After the loop ends (not now, do not start it during the close-out)
+
+Her newest request, 25 Oct: in explore mode she wants to tap a point on the notebook
+map and land there instead of walking. It is written up with its own DONE-WHEN as
+**BACKLOG A-2a**, and it is the first item on the next run after `tmp/STOP`, once she
+has given her playtest feedback. Do not touch it before then.
+
+## What she will judge you on
+
+Not how much you built. Whether she can open the link, play 10 minutes, and see an
+honest list of what is done and what is not. An unmarked item reads as a lie.
+
 # Autopilot run (Dopahar) - unattended, nobody is watching
 
 You are one run of a repeating loop. Do a solid batch of work (1 to 2 hours), commit,

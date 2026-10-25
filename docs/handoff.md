@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n50, tasks replay):** Game change: Tasks list (src/freeRoam.js) finished story missions can now be replayed from their hub step while the story is still running (before, only skip-ahead worked). Build ALL PASSED. No UI screenshot taken, so FEEDBACK item 12 is not ticked; waypoint switching for side jobs and skip-ahead were already in. Still open in item 12: shipped-minimap-conventions web research.
+NEXT: items 8/9/10 of the 15-hour queue (lanes street life, hand-built props, vegetation LODs).
+
+---
 **2026-10-25 (cycle 39z99n49b, hero lane lamps - tried, reverted):** Tried streamed solar lamps on the hero lane (house to halwai to school) in src/main.js. Result: +3 to +4 draw calls in both views (157->160, 166->170, already above 150 incl. shadow pass) and the lamps were not visible in the proof shots (docs/shots/hero-lamps-2026-10-25/), so the change was reverted: cost with no visible gain. No game change this cycle. Needs the art director: draw-call ceiling, and where exactly the hero lane runs (the straight house-halwai line is not the real lane centre).
 NEXT: item 12 task-menu leftovers (waypoint switching), then lanes street life.
 

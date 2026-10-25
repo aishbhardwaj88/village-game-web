@@ -357,7 +357,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
 
   // ------------------------------------------------------------------ "Tasks" list (art director 2026-10-23)
   // Story missions in order with their state, then the 10 side jobs. Switching is guarded: a mission can only be picked while it
-  // is the current one (its objective and waypoint are already live); later ones say what to finish first, earlier ones say done.
+  // is the current one (its objective and waypoint are already live); later ones can be skipped to, earlier ones can be replayed (story still running).
   // Side jobs only exist in free roam (docs/MISSIONS_PLAN.md), so before that they are listed as locked; in free roam picking one
   // walks the player to the job's place.
   const MISSIONS = [
@@ -397,7 +397,19 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     tasksList.textContent = '';
     const cur = missionIndex();
     MISSIONS.forEach((m, i) => {
-      if (i < cur) taskRow(`${i + 1}. ${m.en}`, m.hi, 'done', 'Done / पूरा', () => (tasksNote.textContent = 'Already done. / पहले ही पूरा हो चुका।'));
+      if (i < cur) {
+        // Out-of-order switching: a finished mission can be replayed from its hub step while the story is still running
+        // (after the story ends the saved state is free roam, so replay stays off there).
+        const replayStep = i === 0 ? S.NOT_STARTED : m.hub;
+        if (replayStep && onSetMission && !quest.storyDone)
+          taskRow(`${i + 1}. ${m.en}`, m.hi, 'done', 'Done - tap to play it again', () => {
+            if (onSetMission(replayStep)) {
+              onPinTask?.(null);
+              closeTasks();
+            } else tasksNote.textContent = 'Finish the chase first. / पहले पीछा पूरा करो।';
+          });
+        else taskRow(`${i + 1}. ${m.en}`, m.hi, 'done', 'Done / पूरा', () => (tasksNote.textContent = 'Already done. / पहले ही पूरा हो चुका।'));
+      }
       else if (i === cur) {
         const o = OBJECTIVE_TEXT[quest.step];
         const obj = typeof o === 'function' ? o(quest) : o;
