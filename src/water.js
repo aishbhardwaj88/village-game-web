@@ -17,8 +17,8 @@ export function updateWater(t) { uTime.value = t; }
  * @param {number} [o.depth] constant depth 0..1 when the geometry carries no `depth` attribute
  * @param {number} [o.scale] ripple scale (higher = finer)
  */
-export function createWaterMaterial({ shallow = 0x7b7a4a, deep = 0x3e4a32, depth = null, scale = 1.0, opacity = 0.93, roughness = 0.14 } = {}) {
-  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness, metalness: 0.0, transparent: true, envMapIntensity: 1.6 });
+export function createWaterMaterial({ shallow = 0x7b7a4a, deep = 0x3e4a32, depth = null, scale = 1.0, opacity = 0.93, roughness = 0.42 } = {}) {
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness, metalness: 0.0, transparent: true, envMapIntensity: 0.7 }) // tamed specular: the low sun on rippled normals was blowing the canal out to white;
   mat.name = 'village_water';
   mat.polygonOffset = true;
   mat.polygonOffsetFactor = -2;
@@ -68,7 +68,7 @@ if (uConstDepth < 0.0) {
   diffuseColor.rgb += vec3(0.06, 0.055, 0.04) * crest * (0.4 + 0.6 * fres);
 }`);
   };
-  mat.customProgramCacheKey = () => `village_water2_${shallow}_${deep}_${scale}_${opacity}_${depth}`;
+  mat.customProgramCacheKey = () => `village_water3_${shallow}_${deep}_${scale}_${opacity}_${depth}`;
   return mat;
 }
 
