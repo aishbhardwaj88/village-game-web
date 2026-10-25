@@ -57,15 +57,15 @@ The job: make the notebook map's place markers clickable, and call the existing
 `visitPlace` with the clicked place. Do not rebuild the landing logic. Do not build a
 second travel system beside the "Visit place" list; both call the same function.
 
-- [ ] Each place drawn on the notebook map gets a hit area, built from the same
+- [x] Each place drawn on the notebook map gets a hit area, built from the same
       PLACES data the map is drawn from, so a new or moved place works with no edit.
-- [ ] Clicking or tapping a place on the map travels there via `visitPlace`, in
+- [x] Clicking or tapping a place on the map travels there via `visitPlace`, in
       explore mode (no active mission).
-- [ ] The hit area is at least 44 px across on a phone, so a finger can hit it.
-- [ ] Hover or press shows the place name, so she knows what she is about to click.
-- [ ] Mid-mission it reuses the existing arm/confirm guard: first click warns, second
+- [x] The hit area is at least 44 px across on a phone, so a finger can hit it.
+- [x] Hover or press shows the place name, so she knows what she is about to click.
+- [x] Mid-mission it reuses the existing arm/confirm guard: first click warns, second
       confirms, quest state untouched. Vehicle is dismounted first.
-- [ ] Clicking empty map space does nothing at all. No arbitrary-point travel in this
+- [x] Clicking empty map space does nothing at all. No arbitrary-point travel in this
       item.
 
 DONE-WHEN, all of these, nothing more:
@@ -79,6 +79,15 @@ DONE-WHEN, all of these, nothing more:
 Do not extend this item. No travel animation, no route preview, no fog of war, no
 unlock rules, no arbitrary-point travel. If you think of one, write it in BACKLOG
 section B and move on.
+
+**Built 25 Oct 2026 (src/freeRoam.js, proof tool tools/map-click-test.mjs, real mouse input).** Proof shots in
+`docs/shots/map-click-2026-10-25/`: press shows the name `0_press_shows_name_school.png`; arrivals by clicking the map
+`1_arrived_school.png`, `2_arrived_canal.png` (across the canal), `3_arrived_temple.png`, `4_arrived_mandi.png` (past the highway),
+`5_arrived_gurukul.png`, `6_arrived_masjid.png`; 44 px target `7_press_20px_off_house.png`; mid-errand guard
+`8_midmission_first_click_warns.png`. Test output: 6/6 arrivals, empty space does nothing, 20 px off still hits, mid-errand
+first click warns and second travels with the quest step untouched, zero console errors. `npm run build` passes;
+`node tools/regression-check.js` is 21/22: every movement and mission check passes, the one failure is the triangle counter
+(475k incl. shadow pass), which was already failing before this item (see NEEDS_YOU, triangle limit).
 
 ### A-2b0. Pond lotus, done properly with a real model (Aishwarya, 25 Oct 2026)
 Her words: the lotus looks like craft paperwork. It has been code-built and reworked

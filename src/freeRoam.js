@@ -222,7 +222,18 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     ctx.fillText(hi, x, y + 13);
   }
 
+  // Click-to-travel (BACKLOG A-2a): every place drawn on the page is a hit target, built from the same PLACES data the page
+  // is drawn from, so a new or moved place is clickable with no edit here. Press shows the name, release on the same place
+  // travels there through onVisit (main.js visitPlace, the one travel function the Visit-place list uses too).
+  let mapHits = []; // { x, y, place } in canvas pixels, rebuilt on every draw
+  let hoverHit = null;
+  let pressedHit = null;
+  let mapArmed = null; // place id tapped once mid-mission
+  let mapWarn = '';
+  const HIT_CSS_PX = 44; // a finger needs a 44 px target
+
   function drawNotebook() {
+    mapHits = [];
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#f7f0dc';
@@ -260,6 +271,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     for (const p of PLACES) {
       // Nothing is hidden (art director 2026-10-23): every place is on the page from the first load; a small tick marks visited ones.
       const x = sx(p.x), y = sy(p.z);
+      mapHits.push({ x, y, place: p });
       icon(ctx, p.kind, x, y);
       if (isDiscovered(p.id)) pencil(ctx, [[x + 12, y - 12], [x + 15, y - 8], [x + 21, y - 17]], '#2f7a34', 2.5);
       if (clear(x, y)) {
@@ -272,6 +284,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
       if (!isDiscovered(m.id)) continue;
       icon(ctx, 'star', sx(m.x), sy(m.z));
       label(ctx, m.en, m.hi, sx(m.x), sy(m.z) + 24);
+      mapHits.push({ x: sx(m.x), y: sy(m.z), place: { ...m, radius: 10 } });
     }
     // you are here
     const p = getPlayerPos();
@@ -300,11 +313,118 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     ctx.fillStyle = '#4a5a8a';
     ctx.font = '600 11px "Noto Sans Devanagari",sans-serif';
     ctx.fillText(`जेब खर्च: ₹${quest.pocket}`, 48, H - 8);
+    // the place under the pointer: a ring and its name, so you know what a click will do
+    const hot = pressedHit || hoverHit;
+    if (hot) {
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.arc(hot.x, hot.y, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      const en = hot.place.en, hi = hot.place.hi;
+      ctx.font = '700 18px "Segoe Print","Bradley Hand","Comic Sans MS",cursive,sans-serif';
+      const w = Math.max(ctx.measureText(en).width, 120) + 28;
+      const bx = Math.min(Math.max(hot.x - w / 2, 8), W - w - 8);
+      const by = hot.y - 82 < 8 ? hot.y + 34 : hot.y - 82;
+      ctx.fillStyle = 'rgba(255,252,240,0.96)';
+      ctx.strokeStyle = '#1d2a55';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, w, 50, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#1d2a55';
+      ctx.textAlign = 'center';
+      ctx.fillText(en, bx + w / 2, by + 22);
+      ctx.fillStyle = '#4a5a8a';
+      ctx.font = '600 14px "Noto Sans Devanagari",sans-serif';
+      ctx.fillText(hi, bx + w / 2, by + 42);
+    }
+    if (mapWarn) {
+      ctx.font = '700 15px "Segoe Print","Comic Sans MS",cursive,sans-serif';
+      ctx.textAlign = 'center';
+      const w = Math.min(W - 40, ctx.measureText(mapWarn).width + 30);
+      ctx.fillStyle = 'rgba(255,244,214,0.97)';
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(W / 2 - w / 2, H - 76, w, 34, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#8a1f12';
+      ctx.fillText(mapWarn, W / 2, H - 54);
+    }
   }
+
+  /** The place whose icon is within a 44 CSS px target of the pointer, or null (empty page does nothing). */
+  function hitAt(e) {
+    const rect = canvas.getBoundingClientRect();
+    const kx = W / canvas.clientWidth;
+    const ky = H / canvas.clientHeight;
+    const cx = (e.clientX - rect.left - canvas.clientLeft) * kx;
+    const cy = (e.clientY - rect.top - canvas.clientTop) * ky;
+    const r = (HIT_CSS_PX / 2) * Math.max(kx, ky);
+    let best = null;
+    let bestD = Infinity;
+    for (const h of mapHits) {
+      const d = Math.hypot(h.x - cx, h.y - cy);
+      if (d <= r && d < bestD) { best = h; bestD = d; }
+    }
+    return best;
+  }
+  function travelTo(place) {
+    if (midMission() && mapArmed !== place.id) {
+      mapArmed = place.id;
+      mapWarn = `You are mid-errand. Click ${place.en} again to go there anyway; your errand keeps its place.`;
+      drawNotebook();
+      return;
+    }
+    if (onVisit?.(place)) {
+      mapArmed = null;
+      mapWarn = '';
+      closeNotebook();
+    } else {
+      mapWarn = 'Could not find a clear spot there.';
+      drawNotebook();
+    }
+  }
+  canvas.addEventListener('pointermove', (e) => {
+    if (!open) return;
+    const h = hitAt(e);
+    canvas.style.cursor = h ? 'pointer' : 'default';
+    if ((h && h.place.id) !== (hoverHit && hoverHit.place.id)) { hoverHit = h; drawNotebook(); }
+  });
+  canvas.addEventListener('pointerleave', () => {
+    if (!open || (!hoverHit && !pressedHit)) return;
+    hoverHit = null;
+    pressedHit = null;
+    drawNotebook();
+  });
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!open) return;
+    e.preventDefault();
+    pressedHit = hitAt(e);
+    hoverHit = pressedHit;
+    drawNotebook();
+  });
+  canvas.addEventListener('pointerup', (e) => {
+    if (!open) return;
+    const down = pressedHit;
+    pressedHit = null;
+    const h = hitAt(e);
+    if (down && h && h.place.id === down.place.id) travelTo(h.place);
+    else drawNotebook();
+  });
 
   let open = false;
   function openNotebook() {
     open = true;
+    hoverHit = null;
+    pressedHit = null;
+    mapArmed = null;
+    mapWarn = '';
     drawNotebook();
     overlay.classList.add('visible');
   }
@@ -455,5 +575,5 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
   }
   document.getElementById('tasks-close-btn')?.addEventListener('pointerdown', closeTasks);
 
-  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook, openVisit, closeVisit, isVisitOpen: () => visitOpen, openTasks, closeTasks, isTasksOpen: () => tasksOpen };
+  return { isDiscovered, discover, toast, update, openNotebook, closeNotebook, isOpen: () => open, drawNotebook, mapHits: () => mapHits.map((h) => ({ id: h.place.id, en: h.place.en, x: h.x, y: h.y })), openVisit, closeVisit, isVisitOpen: () => visitOpen, openTasks, closeTasks, isTasksOpen: () => tasksOpen };
 }
