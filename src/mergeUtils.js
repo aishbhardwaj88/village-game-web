@@ -12,9 +12,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * merged mesh has no way to move its parts independently afterwards.
  */
 
-/** Wall-mounted flat boards cast no useful shadow, and every caster costs a second
- * draw call in the shadow pass — headroom for the hero-zone ceiling. */
-const NO_SHADOW_MATERIALS = new Set(['signboard']);
+/** Wall-mounted flat boards and small jute sacks cast no useful shadow, and every
+ * caster costs a second draw call in the shadow pass — headroom for the hero-zone ceiling. */
+const NO_SHADOW_MATERIALS = new Set(['signboard', 'jute']);
 const mayCast = (material, castShadow) => castShadow && !NO_SHADOW_MATERIALS.has(material.name);
 
 /** Reads whatever collider information a source object (about to be merged away)
