@@ -1638,20 +1638,22 @@ export function createOldHaveli(position) {
   return finishSite('old_haveli', geos, position, { solids: ranges.map(([w, d, x, z]) => [x, z, w, d]), boards: [{ id: 'haveli', x: 0, y: 7.1, z: 10.12, w: 5.2 }] });
 }
 
-/** Gaushala (MAP.md, village edge): long open-sided cattle shed on posts, tin roof, feed trough, bhoosa heap, a few resting cows. */
+/** Gaushala (MAP.md, village edge). Rebuilt 25 Oct 2026 from the art director's approved
+ * Gemini reference (Places V1/gaushala/): a 36 x 28 m walled compound, built in Blender by
+ * tools/blender/build_gaushala.py -> public/assets/models/gaushala.glb.
+ * The old code-built shed is still constructed here and kept as an INVISIBLE merged mesh so
+ * the collider boxes and the world validator keep working exactly as before; it is hidden the
+ * moment the .glb loads, and stays visible if the file is missing or fails to load. */
 export function createGaushala(position) {
   const geos = [];
   const L = 24, D = 8;
   geos.push(bake(new THREE.BoxGeometry(L + 2, 0.12, D + 2), at(0, 0.06, 0), 0x8a7458));
   for (let i = 0; i <= 6; i++) for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 3.4, 8), at(-L / 2 + i * (L / 6), 1.7, sz * D / 2), 0x6f5233));
-  // Back wall (mud-plaster) and a sloped tin roof.
   geos.push(bake(new THREE.BoxGeometry(L, 2.6, 0.3), at(0, 1.3, -D / 2), 0xb89a74));
   geos.push(bake(new THREE.BoxGeometry(L + 1.2, 0.1, D + 1.6), new THREE.Matrix4().makeRotationX(0.1).setPosition(0, 3.6, 0), 0x8e969c));
-  // Feed trough (cement) along the front and a hay heap at one end.
   geos.push(bake(new THREE.BoxGeometry(L - 4, 0.5, 0.7), at(0, 0.3, D / 2 - 1.2), 0xa8a39a));
   geos.push(bake(new THREE.BoxGeometry(L - 4.4, 0.08, 0.5), at(0, 0.58, D / 2 - 1.2), 0xc7a85a));
   geos.push(bake(new THREE.SphereGeometry(2.2, 10, 8), at(L / 2 - 2.5, 0.6, -D / 2 + 1.8), 0xa88f52));
-  // Cows resting on the swept floor: barrel body, head, legs folded; per-cow hide colour.
   const hides = [0xe8e0d0, 0x8a6a4a, 0xd9cdb8, 0x5a4636, 0xb59a7c];
   for (let i = 0; i < 5; i++) {
     const x = -L / 2 + 3.2 + i * 4.3, z = -0.6 + (i % 2) * 0.8, ry = (i % 2 ? 0.15 : -0.1);
@@ -1660,10 +1662,46 @@ export function createGaushala(position) {
     geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 0.2), at(x + 1.3, 0.7, z, ry), 0x5a4a40));
     geos.push(bake(new THREE.BoxGeometry(0.3, 0.3, 0.25), at(x + 0.5, 0.95, z + 0.1, ry), hides[i]));
   }
-  // Swept yard with a water tub and a low wall to the road.
   geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
-  geos.push(bake(new THREE.BoxGeometry(L + 2, 0.8, 0.25), at(0, 0.4, D / 2 + 5), 0xcfc2a2));
-  return finishSite('gaushala', geos, position, { solids: [[0, -D / 2, L, 0.4], [0, D / 2 - 1.2, L - 4, 0.7], [-L / 2 - 2, D / 2 + 2, 1.6, 1.6], [L / 2 - 2.5, -D / 2 + 1.8, 3.6, 3.6]], boards: [{ id: 'gaushala', x: 2, y: 1.95, z: -D / 2 + 0.2, w: 3.4 }] }); // + feed trough, water tub, hay heap
+
+  // Collider boxes for the NEW 36 x 28 compound: [x, z, w, d] in the site's own frame.
+  const HX = 18, HZ = 14, T = 0.5;
+  const site = finishSite('gaushala', geos, position, {
+    solids: [
+      [0, -HZ, 2 * HX, T],              // back wall
+      [-HX, 0, T, 2 * HZ],              // west wall
+      [HX, 0, T, 2 * HZ],               // east wall
+      [-12, HZ, 12, T],                 // front wall, left of the gate
+      [12, HZ, 12, T],                  // front wall, right of the gate
+      [-3.1, HZ, 0.6, 0.6],             // gate pier, left
+      [3.1, HZ, 0.6, 0.6],              // gate pier, right
+      [12.2, 9.2, 7.2, 6.8],            // office block
+      [-14.4, -2.9, 7.3, 24.2],         // cattle shed + feed trough
+      [10.5, -10.4, 15.3, 7.2],         // hay store
+      [1.6, 2.2, 2.0, 8.4],             // water trough
+      [-3.4, 0.4, 4.6, 4.6],            // tree planter ring
+    ],
+    boards: [{ id: 'gaushala', x: 0, y: 3.55, z: HZ, w: 6.4 }],
+  });
+
+  // Swap in the Blender build. Async: the placeholder above stays visible until it lands,
+  // and stays visible for good if the file is missing or fails to load.
+  const placeholder = site.children.find((c) => c.isMesh);
+  getGLTFLoader().loadAsync('assets/models/gaushala.glb').then((gltf) => {
+    const model = gltf.scene;
+    model.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = true;
+      o.receiveShadow = true;
+    });
+    model.position.set(0, 0, 0);
+    site.add(model);
+    if (placeholder) placeholder.visible = false;   // colliders live in userData, not in the draw
+  }).catch((err) => {
+    console.warn('gaushala.glb did not load; keeping the placeholder', err);
+  });
+
+  return site;
 }
 
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
