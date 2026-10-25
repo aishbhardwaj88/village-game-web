@@ -272,5 +272,11 @@ export function createAssetSlotRegistry() {
     }
   }
 
-  return { register, resolveAll, slots, mergeSlotModels };
+  /** Resolves ONE slot now (zone-streamed sites register when their zone is built, long after resolveAll() ran). */
+  async function resolveOne(name) {
+    const slot = slots.get(name);
+    return slot ? resolveSlot(slot) : { name, replaced: false };
+  }
+
+  return { register, resolveAll, resolveOne, slots, mergeSlotModels };
 }

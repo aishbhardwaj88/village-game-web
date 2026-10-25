@@ -1,3 +1,4 @@
+import { pt } from './anchors.js';
 import * as THREE from 'three';
 
 /**
@@ -14,7 +15,7 @@ import * as THREE from 'three';
  * (BAAGH_CLEARING_RADIUS) so the wheat crop tufts don't visually clip through the
  * mango trees.
  */
-export const BAAGH_CENTER = { x: -15, z: 10 };
+export const BAAGH_CENTER = pt('baagh');
 export const BAAGH_CLEARING_RADIUS = 11; // covers the tree spread below (max |dx|/|dz| = 9) plus margin
 
 // A loose cluster of mango trees (src/trees.js's 'mango' species) around the

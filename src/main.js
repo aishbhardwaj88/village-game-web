@@ -25,6 +25,8 @@ import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './
 import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { WALKABLE_RECTS } from './walkable.js';
+import { pt } from './anchors.js';
+import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
@@ -135,7 +137,7 @@ import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
-import { createFreeRoam, LANES as MAP_LANES } from './freeRoam.js';
+import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
 import { createAmbientLife } from './ambient.js';
@@ -1424,6 +1426,8 @@ async function main() {
     // vehicle-blocking collision) — a real moving herd is a bigger feature than
     // this pass's "recognisable, present in the world" bar.
     zoneManager = createZoneManager(scene);
+    // Every streamed place has a drop-in model slot: public/assets/models/<zone name>.glb replaces its placeholder (src/siteSlots.js).
+    zoneManager.hooks.onBuild = (name, group) => wireSiteSlot(assetSlots, name, group);
     // Big far landmarks are drawn from much further out (they stand in open ground, well past the hero-zone cameras); small detail zones keep their own radius (src/zoneManager.js).
     const LANDMARK_VIS = 215;
     // A1 props: street lamps along the bazaar and temple lanes, streamed per lane
@@ -1472,7 +1476,7 @@ async function main() {
       build: () => createWaterTankProp({ x: -22, z: 122 }),
     });
     // MAP.md farm and water sites (no coordinates in MAP.md; open ground picked, see src/farmSites.js).
-    zoneManager.register('pond', { x: -132, z: 70, buildRadius: 55, teardownRadius: 70, build: () => createPond({ x: -132, z: 70 }) });
+    zoneManager.register('pond', { ...pt('pond'), buildRadius: 55, teardownRadius: 70, build: () => createPond(pt('pond')) });
     // Two buffalo cooling off at the pond's muddy bank (one InstancedMesh, streamed with the pond).
     zoneManager.register('pond_buffalo', {
       detail: true, x: -132, z: 70, buildRadius: 55, teardownRadius: 70,
@@ -1488,21 +1492,21 @@ async function main() {
       },
     });
     zoneManager.register('tea_haystacks', { visibleRadius: 45, x: -58, z: 76, buildRadius: 30, teardownRadius: 40, build: () => createTeaStallHaystacks({ x: -58, z: 76 }) });
-    zoneManager.register('tubewell', { detail: true, x: -40, z: -8, buildRadius: 30, teardownRadius: 40, build: () => createTubewell({ x: -40, z: -8 }) });
-    zoneManager.register('johad', { x: 78, z: 105, buildRadius: 45, teardownRadius: 60, build: () => createJohad({ x: 78, z: 105 }) });
-    zoneManager.register('khalihan', { detail: true, x: -78, z: -5, buildRadius: 28, teardownRadius: 40, build: () => createKhalihan({ x: -78, z: -5 }) });
-    zoneManager.register('anganwadi', { visibleRadius: 90, x: -104, z: 106, buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi({ x: -104, z: 106 }) });
-    zoneManager.register('dudh_dairy', { x: -112, z: 18, buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy({ x: -112, z: 18 }) });
+    zoneManager.register('tubewell', { detail: true, ...pt('tubewell'), buildRadius: 30, teardownRadius: 40, build: () => createTubewell(pt('tubewell')) });
+    zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
+    zoneManager.register('khalihan', { detail: true, ...pt('khalihan'), buildRadius: 28, teardownRadius: 40, build: () => createKhalihan(pt('khalihan')) });
+    zoneManager.register('anganwadi', { visibleRadius: 90, ...pt('anganwadi'), buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi(pt('anganwadi')) });
+    zoneManager.register('dudh_dairy', { ...pt('dairy'), buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy(pt('dairy')) });
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
-    zoneManager.register('health_subcentre', { x: 96, z: 30, buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre({ x: 96, z: 30 }) });
-    zoneManager.register('chemist', { x: 96, z: 60, buildRadius: 40, teardownRadius: 52, build: () => createChemist({ x: 96, z: 60 }) });
-    zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, x: 100, z: 135, buildRadius: 45, teardownRadius: 58, build: () => createMasjid({ x: 100, z: 135 }) });
-    zoneManager.register('gurudwara', { x: -60, z: 175, buildRadius: 45, teardownRadius: 58, build: () => createGurudwara({ x: -60, z: 175 }) });
+    zoneManager.register('health_subcentre', { ...pt('health'), buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre(pt('health')) });
+    zoneManager.register('chemist', { ...pt('chemist'), buildRadius: 40, teardownRadius: 52, build: () => createChemist(pt('chemist')) });
+    zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, ...pt('masjid'), buildRadius: 45, teardownRadius: 58, build: () => createMasjid(pt('masjid')) });
+    zoneManager.register('gurudwara', { ...pt('gurudwara'), buildRadius: 45, teardownRadius: 58, build: () => createGurudwara(pt('gurudwara')) });
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
-    zoneManager.register('tv_house', { x: 70, z: 12, buildRadius: 40, teardownRadius: 52, build: () => createTvHouse({ x: 70, z: 12 }) });
-    zoneManager.register('manihari', { x: 90, z: 78, buildRadius: 35, teardownRadius: 48, build: () => createManihari({ x: 90, z: 78 }) });
-    zoneManager.register('sabzi_rehris', { x: 88, z: 92, buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris({ x: 88, z: 92 }) });
-    zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, x: 130, z: 160, buildRadius: 45, teardownRadius: 58, build: () => createJainMandir({ x: 130, z: 160 }) });
+    zoneManager.register('tv_house', { ...pt('tvhouse'), buildRadius: 40, teardownRadius: 52, build: () => createTvHouse(pt('tvhouse')) });
+    zoneManager.register('manihari', { ...pt('manihari'), buildRadius: 35, teardownRadius: 48, build: () => createManihari(pt('manihari')) });
+    zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris(pt('sabzi')) });
+    zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, ...pt('jain'), buildRadius: 45, teardownRadius: 58, build: () => createJainMandir(pt('jain')) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).
     for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
     // Rooftop clutter (tanks, antennas, dishes, solar panels, brick stacks) on the abadi roofs, streamed per 36 m cell (src/rooftops.js).
@@ -1576,7 +1580,7 @@ async function main() {
         },
       });
     }
-    zoneManager.register('highway', { visibleRadius: LANDMARK_VIS, x: 205, z: 40, buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster({ x: 205, z: 40 }) });
+    zoneManager.register('highway', { visibleRadius: LANDMARK_VIS, ...pt('highway'), buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster(pt('highway')) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.
     zoneManager.register('carrom_scene', { detail: true, x: -46, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46, z: 5.5 }, 'carrom_scene', 0.3) });
@@ -1617,14 +1621,14 @@ async function main() {
         },
       });
     }
-    zoneManager.register('jalebi_stall', { x: -104, z: 4, buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall({ x: -104, z: 4 }) });
-    zoneManager.register('banta_shop', { visibleRadius: 14, x: -63, z: 22.5, buildRadius: 30, teardownRadius: 42, build: () => createBantaShop({ x: -63, z: 22.5 }) });
-    zoneManager.register('chaat_thela', { visibleRadius: 14, x: -63, z: 50.5, buildRadius: 30, teardownRadius: 42, build: () => createChaatThela({ x: -63, z: 50.5 }) });
-    zoneManager.register('mela_ground', { x: -135, z: 150, buildRadius: 65, teardownRadius: 80, build: () => createMelaGround({ x: -135, z: 150 }) });
-    zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, x: 160, z: 85, buildRadius: 55, teardownRadius: 70, build: () => createGurukul({ x: 160, z: 85 }) });
-    zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, x: 165, z: 135, buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan({ x: 165, z: 135 }) });
+    zoneManager.register('jalebi_stall', { ...pt('jalebi'), buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall(pt('jalebi')) });
+    zoneManager.register('banta_shop', { visibleRadius: 14, ...pt('banta'), buildRadius: 30, teardownRadius: 42, build: () => createBantaShop(pt('banta')) });
+    zoneManager.register('chaat_thela', { visibleRadius: 14, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => createChaatThela(pt('chaat')) });
+    zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => createMelaGround(pt('mela')) });
+    zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, ...pt('gurukul'), buildRadius: 55, teardownRadius: 70, build: () => createGurukul(pt('gurukul')) });
+    zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, ...pt('maidan'), buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan(pt('maidan')) });
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
-    zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, x: 226, z: 60, buildRadius: 70, teardownRadius: 85, build: () => createMandi({ x: 226, z: 60 }) });
+    zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
     zoneManager.register('canal_bank_road', { detail: true, x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
@@ -1642,8 +1646,8 @@ async function main() {
     zoneManager.register('edge_wall_w0', { detail: true, x: -101, z: 27, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: -101, z: 27 }, 'edge_wall_w0', [{ a: { x: -101, z: 21 }, b: { x: -101, z: 34 } }]) });
     zoneManager.register('edge_wall_n0', { detail: true, x: -80, z: 21, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -80, z: 21 }, 'edge_wall_n0', [{ a: { x: -101, z: 21 }, b: { x: -58, z: 21 } }], [{ x: -88, z: 21, w: 3.5 }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
-    zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, x: 150, z: -30, buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli({ x: 150, z: -30 }) });
-    zoneManager.register('gaushala', { x: -125, z: -35, buildRadius: 40, teardownRadius: 52, build: () => createGaushala({ x: -125, z: -35 }) });
+    zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, ...pt('haveli'), buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli(pt('haveli')) });
+    zoneManager.register('gaushala', { ...pt('gaushala'), buildRadius: 40, teardownRadius: 52, build: () => createGaushala(pt('gaushala')) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([
       { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
@@ -3089,6 +3093,10 @@ async function main() {
       },
       // tools/collision-test.js — what the collision test needs beyond the hooks above.
       playerRadius: PLAYER_COLLISION_RADIUS,
+      siteSlotInfo: slotInfo,
+      isPlaceSite,
+      places: PLACES,
+      assetSlotTable: () => Array.from(assetSlots.slots.values()).map((s) => ({ name: s.name, dimensions: s.dimensions, exact: s.exact })),
       autoBodyRadius: AUTO_BODY_RADIUS,
       colliderStats,
       getWalkableAreas: () => [...lastCarves, ...WALKABLE_RECTS],

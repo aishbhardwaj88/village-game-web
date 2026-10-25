@@ -61,8 +61,14 @@ function windowOpening(geos, face, w = 1.1, h = 1.3, frame = 0x4a3524, trim = 0x
   faceBox(geos, face, w + 0.3, 0.07, 0.26, 0, -h / 2 - t - 0.035, 0.1, trim); // sill
 }
 
+/** Doors per geometry list, consumed by finishSite() (or a site's own group) for its slot metadata (src/siteSlots.js). */
+const doorsOf = new WeakMap();
+const takeDoors = (geos) => { const d = doorsOf.get(geos) || []; doorsOf.delete(geos); return d; };
+
 /** Real door: dark recess, frame, two raised panels with a middle rail, hinges, handle, threshold step. */
 function doorOpening(geos, face, w = 1.1, h = 2.1, leaf = 0x4f3523, frame = 0x2f2016, trim = 0xcfc7b0) {
+  if (!doorsOf.has(geos)) doorsOf.set(geos, []);
+  doorsOf.get(geos).push({ x: face.elements[12], z: face.elements[14], nx: face.elements[8], nz: face.elements[10], w, h }); // site-slot metadata (docs/asset-slots.md): where the doors are and which way they face
   faceBox(geos, face, w + 0.2, h, 0.06, 0, h / 2, 0.01, 0x14110e); // recess
   const t = 0.09;
   faceBox(geos, face, w + 2 * t, t, 0.16, 0, h + t / 2, 0.07, frame);
@@ -724,6 +730,7 @@ export function createAnganwadi(position) {
   play.castShadow = true;
   group.add(play);
   group.add(placeBoardsMesh([parapetBoard('anganwadi', { w: 7, d: 5, h: 3.1 }, 3.8)], 'anganwadi_boards'));
+  group.userData.slotMeta = { doors: takeDoors(geos), boards: [], front: [0, 1] };
   group.position.set(position.x, 0, position.z);
   return group;
 }
@@ -761,6 +768,7 @@ export function createDudhDairy(position) {
   mesh.receiveShadow = true;
   const group = new THREE.Group();
   group.name = 'dudh_dairy';
+  group.userData.slotMeta = { doors: [], boards: [], front: [0, -1] }; // the dairy opens north (-z) onto the bazaar lane
   group.add(mesh);
   group.add(dairyGoods());
   const dairyBoard = parapetBoard('dairy', { w: 5, d: 4, h: 3.0 }, 3.6);
@@ -814,6 +822,7 @@ function finishSite(name, geos, position, opts = {}) {
   }
   if (opts.boards) group.add(placeBoardsMesh(opts.boards, name + '_boards')); // bilingual signboard(s), one draw call (src/placeBoards.js)
   group.position.set(position.x, 0, position.z);
+  group.userData.slotMeta = { doors: takeDoors(geos), boards: (opts.boards || []).map((b) => ({ x: b.x, z: b.z, ry: b.ry || 0 })) };
   return group;
 }
 
@@ -1686,6 +1695,7 @@ export function createGaushala(position) {
 
   // Swap in the Blender build. Async: the placeholder above stays visible until it lands,
   // and stays visible for good if the file is missing or fails to load.
+  site.userData.ownSlot = 'exact'; // loads its own model below, so the generic site slot (src/siteSlots.js) stays out
   const placeholder = site.children.find((c) => c.isMesh);
   getGLTFLoader().loadAsync('assets/models/gaushala.glb').then((gltf) => {
     const model = gltf.scene;

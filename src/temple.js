@@ -1,3 +1,4 @@
+import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -26,7 +27,7 @@ import { colliderBoxFromTransform } from './collision.js';
  * Plain and dignified per this task's own item 2 instruction and CLAUDE.md section
  * 4: no deity figures, no religious imagery, no text anywhere on or in it.
  */
-export const TEMPLE_POS = { x: 8, z: 52 }; // entrance faces west (-x), toward the approach lane
+export const TEMPLE_POS = pt('temple'); // entrance faces west (-x), toward the approach lane
 
 export const PLOT = { w: 12, d: 10 }; // boundary wall footprint
 export const PLINTH = { w: 6, d: 5, h: 0.4 };

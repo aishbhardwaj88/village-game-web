@@ -1,3 +1,4 @@
+import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { buildStripSegment } from './paths.js';
@@ -11,7 +12,7 @@ import { getPlantFocus } from './realPlants.js';
 // South-east of the hero zone lane, per item 3. Track is a closed ~400m loop with one
 // spur connecting it back to the lane near the house (see docs/parked.md for why a
 // single spur, not two).
-export const FIELD_CENTER = { x: 20, z: -20 };
+export const FIELD_CENTER = pt('field');
 export const FIELD_SIZE = { x: 110, z: 80 };
 
 const TRACK_NW = { x: -40, z: 25 };

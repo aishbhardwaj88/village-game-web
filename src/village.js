@@ -1,3 +1,4 @@
+import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -10,9 +11,9 @@ import { drawBilingual } from './signPaint.js';
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
 // SchoolCompound centre (-50, 106) 85x75m footprint).
-const HOUSE_CENTER = { x: -48, z: 39 };
-const SCHOOL_CENTER = { x: -50, z: 106 };
-const HALWAI_CENTER = { x: -40, z: 62 };
+const HOUSE_CENTER = pt('house'); // src/anchors.js is the one placement table
+const SCHOOL_CENTER = pt('school');
+const HALWAI_CENTER = pt('halwai');
 
 // Fixed palette, law — see docs/look-standard.md. Exact hex values, no per-call tuning.
 // Applied at WALL_TINT_STRENGTH (0.3) so the plaster texture's own grain/colour stays

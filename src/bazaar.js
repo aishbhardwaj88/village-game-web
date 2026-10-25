@@ -1,3 +1,4 @@
+import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -648,7 +649,7 @@ export function buildBazaarInteriors() {
 export const CHOWK_TEA = { w: 6, d: 3.5, roofEdgeH: 2.8, counterH: 0.9, backWallH: 2.8 };
 export const CHOWK_TEA_POS = { x: -55, z: 10 };
 export const CHOWK_TEA_ROT = -Math.PI / 2; // faces west, toward the bazaar row
-export const CHOWK_CENTER = { x: -54, z: 13 }; // the open plaza itself — chabutra/seating live here
+export const CHOWK_CENTER = pt('chowk'); // the open plaza itself — chabutra/seating live here
 
 function chowkWorldMatrix() {
   return new THREE.Matrix4().makeRotationY(CHOWK_TEA_ROT).setPosition(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z);
