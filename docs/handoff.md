@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n44, dhaba cook):** Game change: a capsule cook (blue, npc_dhaba_cook) now stands behind the mandi dhaba counter between tandoor and shelf (src/farmSites.js createMandi); first tint was tan and vanished against the wall, recoloured. Build ALL PASSED, no console errors; view 76 calls / 109k tris. Proof docs/shots/dhaba-cook-2026-10-25/cook.png (photo camera; capsule IS in frame on purpose, it is the subject). Gaps: dhaba plaster walls still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: bangle tori / medical fridge, then A-2c routes legibility.
+
+---
 **2026-10-25 (cycle 39z99n43, mandi dhaba):** Game change: the mandi's Highway Dhaba (src/farmSites.js createMandi) is a working roadside eatery now: timber counter with tea kettle, steel handi stack and a row of glasses on a shelf, a clay tandoor with rolled rim and dark mouth, tin roof with ribbed purlins and a flue on the truck-metal set, three timber verandah posts, six low wooden stools by the charpais (crate-wood set). No new draw call. Build ALL PASSED, no console errors; view 75 calls / 109k tris. Proof docs/shots/dhaba-2026-10-25/{front,counter}.png (photo camera; HUD chip and minimap visible, no capsule in frame). Looked at item 7 water too: pond/johad shots docs/shots/water-2026-10-25/{pond_d,johad_d}.png already have depth tint, wet-mud ring, real lotus pads/flowers; not ticked, her call. Gaps: dhaba plaster walls are still flat colour patches; no cook capsule at the tandoor; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: capsule cook at the dhaba tandoor, then bangle tori / medical fridge.
 
@@ -6,8 +10,6 @@ NEXT: capsule cook at the dhaba tandoor, then bangle tori / medical fridge.
 NEXT: item 7 water/shoreline check, then dhaba props.
 
 ---
-**2026-10-25 (cycle 39z99n44, dhaba cook):** Game change: a capsule cook (blue, npc_dhaba_cook) now stands behind the mandi dhaba counter between tandoor and shelf (src/farmSites.js createMandi); first tint was tan and vanished against the wall, recoloured. Build ALL PASSED, no console errors; view 76 calls / 109k tris. Proof docs/shots/dhaba-cook-2026-10-25/cook.png (photo camera; capsule IS in frame on purpose, it is the subject). Gaps: dhaba plaster walls still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
-NEXT: bangle tori / medical fridge, then A-2c routes legibility.
 
 ---
 
