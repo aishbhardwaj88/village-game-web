@@ -279,8 +279,11 @@ def barber(i):
     kit.add('paint', lathe('chair_base', cxs, cz, [(0.0, 0.0), (0.3, 0.0), (0.31, 0.03), (0.24, 0.07), (0.1, 0.11), (0.0, 0.11)], seg=24), 0x30343A)
     kit.add('paint', lathe('chair_post', cxs, cz, [(0.0, 0.11), (0.06, 0.11), (0.06, 0.2), (0.085, 0.22), (0.085, 0.3), (0.07, 0.32), (0.07, 0.4), (0.0, 0.4)], seg=16), 0x6B6F72)
     kit.add('paint', lathe('chair_seat', cxs, cz, [(0.0, 0.43), (0.22, 0.43), (0.3, 0.46), (0.31, 0.51), (0.27, 0.57), (0.14, 0.6), (0.0, 0.6)], seg=20), 0x8A2E2E)
-    kit.add('paint', sphere('chair_back', cxs, cz + 0.27, 0.95, 0.27, 0.08, 0.36, 3), 0x8A2E2E)
-    kit.add('paint', sphere('chair_head', cxs, cz + 0.27, 1.38, 0.14, 0.07, 0.1, 3), 0x8A2E2E)
+    # backrest: padded slab with a chrome stem, separate headrest pad, a lighter vinyl red so it reads as a chair
+    kit.add('paint', wb('chair_back', cxs - 0.26, cxs + 0.26, cz + 0.2, cz + 0.34, 0.62, 1.2, 0.05), 0xA83434)
+    kit.add('paint', wb('chair_back_trim', cxs - 0.29, cxs + 0.29, cz + 0.33, cz + 0.36, 0.6, 1.22, 0.015), 0x30343A)
+    kit.add('paint', cyl('chair_head_stem', cxs, cz + 0.28, 1.2, 1.32, 0.025, 0.025, seg=8), 0xB8BCC0)
+    kit.add('paint', wb('chair_head', cxs - 0.14, cxs + 0.14, cz + 0.22, cz + 0.33, 1.3, 1.55, 0.04), 0xA83434)
     for sgn in (-1, 1):
         ax = cxs + sgn * 0.31
         kit.add('paint', limb('chair_arm', (ax, cz - 0.18, 0.66), (ax, cz + 0.22, 0.66), 0.06, 0.05, 0.015), 0x30343A)
