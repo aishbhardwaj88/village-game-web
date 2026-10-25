@@ -1,7 +1,7 @@
 /**
  * Painted milestone stones on the east approach (docs/BACKLOG.md A-2c): from the east gali towards the highway and mandi.
- * Whitewashed stone with a yellow-ochre painted head, as on Indian roads. Hindi on top (smaller), English below (larger,
- * bolder), same dark paint. Distances are computed from PLACES at build time, so a moved highway/mandi re-labels the stones;
+ * Whitewashed stone with a yellow-ochre painted head, as on Indian roads. Hindi on top (bold, larger), English below (not bold,
+ * smaller but legible; src/signPaint.js), same dark paint. Distances are computed from PLACES at build time, so a moved highway/mandi re-labels the stones;
  * only the route start (the east gali signpost) and the stone spacing are written here.
  * One shared material and atlas; each stone is one merged mesh, streamed per stone by the zone manager.
  */
@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLACES } from './freeRoam.js';
 import { roadAt } from './eastRoad.js';
+import { drawBilingual } from './signPaint.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 // Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
@@ -63,18 +64,11 @@ function drawFace(s, cell, rows) {
   }
   ctx.fillStyle = INK;
   ctx.fillRect(ox, 94, CELL, 5); // black band between head and body
-  ctx.textAlign = 'center';
-  const line = (r, hiY, enY, enPx, ink) => {
-    ctx.fillStyle = ink;
-    ctx.font = '700 26px "Noto Sans Devanagari", sans-serif';
-    ctx.fillText(r.hi, ox + CELL / 2, hiY);
-    let px = enPx;
-    ctx.font = `800 ${px}px -apple-system, "Segoe UI", Arial, sans-serif`;
-    while (ctx.measureText(`${r.en} ${r.dist}`).width > CELL - 20 && px > 24) { px -= 2; ctx.font = `800 ${px}px -apple-system, "Segoe UI", Arial, sans-serif`; }
-    ctx.fillText(`${r.en} ${r.dist}`, ox + CELL / 2, enY);
-  };
-  line(rows[0], 30, 78, 44, INK);
-  line(rows[1], 140, 196, 50, INK);
+  // Two destinations per face: one on the ochre head, one on the whitewashed body. Hindi bold on top, English
+  // (with the distance) below, both in the same ink (src/signPaint.js).
+  const line = (r, y, h) => drawBilingual(ctx, r.hi, `${r.en} ${r.dist}`, { x: ox + CELL / 2, y, w: CELL - 24, h, fg: INK, fillFraction: 0.98 });
+  line(rows[0], 4, 88);
+  line(rows[1], 108, 140);
   s.tex.needsUpdate = true;
 }
 

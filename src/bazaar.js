@@ -4,6 +4,7 @@ import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { addToSignHub } from './signAtlasHub.js';
+import { drawBilingual } from './signPaint.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
 import { buildGoodsMesh, produceAndBangleItems, DESIGN as GOODS } from './shopGoods.js';
@@ -356,20 +357,8 @@ function drawBazaarSign(ctx, col, row, hi, en) {
   ctx.strokeStyle = '#7a2a1a';
   ctx.lineWidth = 12;
   ctx.strokeRect(x + 10, y + 10, SIGN_CELL_W - 20, SIGN_CELL_H - 20);
-  const cx = x + SIGN_CELL_W / 2;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  // Hindi top, small and light; English second line, larger and bolder (the line a player reads). One dark paint colour.
-  const fit = (text, font, maxPx, startPx) => {
-    let px = startPx;
-    ctx.font = font(px);
-    while (ctx.measureText(text).width > maxPx && px > 20) { px -= 4; ctx.font = font(px); }
-  };
-  ctx.fillStyle = '#6e1a12';
-  fit(hi, (px) => `500 ${px}px "Noto Sans Devanagari", sans-serif`, SIGN_CELL_W - 140, 60);
-  ctx.fillText(hi, cx, y + SIGN_CELL_H * 0.25);
-  fit(en, (px) => `900 ${px}px -apple-system, "Segoe UI", Arial, sans-serif`, SIGN_CELL_W - 100, 140);
-  ctx.fillText(en, cx, y + SIGN_CELL_H * 0.65);
+  // Hindi bold and larger on top, English not bold and smaller below (src/signPaint.js), one dark paint colour.
+  drawBilingual(ctx, hi, en, { x: x + SIGN_CELL_W / 2, y: y + 20, w: SIGN_CELL_W - 120, h: SIGN_CELL_H - 40, fg: '#6e1a12' });
 }
 
 async function buildBazaarSignAtlas() {

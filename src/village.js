@@ -5,6 +5,7 @@ import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { registerWalkable } from './walkable.js';
+import { drawBilingual } from './signPaint.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -595,12 +596,11 @@ function chartPaint(kind) {
       g.fillText('F  G  H  I  J', W / 2, H * 0.55);
       g.fillText('K  L  M  N  O', W / 2, H * 0.8);
     } else {
-      g.font = `bold ${H * 0.11}px sans-serif`;
-      g.fillText('Wash your hands', W / 2, H * 0.3);
+      // painted poster: Hindi bold and larger on top, English below (src/signPaint.js)
+      drawBilingual(g, 'हाथ धोएं', 'Wash your hands', { x: W / 2, y: H * 0.06, w: W * 0.84, h: H * 0.32, fg: '#5a2a1e' });
       g.fillStyle = '#244a6a'; g.fillRect(W * 0.2, H * 0.42, W * 0.6, H * 0.45);
-      g.fillStyle = '#e8e2d0'; g.font = `${H * 0.09}px sans-serif`;
-      g.fillText('Clean school', W / 2, H * 0.62);
-      g.fillText('Healthy village', W / 2, H * 0.78);
+      drawBilingual(g, 'साफ़ स्कूल', 'Clean school', { x: W / 2, y: H * 0.44, w: W * 0.54, h: H * 0.19, fg: '#e8e2d0', fillFraction: 1 });
+      drawBilingual(g, 'स्वस्थ गाँव', 'Healthy village', { x: W / 2, y: H * 0.65, w: W * 0.54, h: H * 0.19, fg: '#e8e2d0', fillFraction: 1 });
     }
     for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(120,90,60,${Math.random() * 0.08})`; g.fillRect(Math.random() * W, Math.random() * H, 30, 30); }
   };

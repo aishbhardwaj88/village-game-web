@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { addToSignHub } from './signAtlasHub.js';
+import { drawBilingual } from './signPaint.js';
 
 /**
- * Shop signboards — Hindi on the TOP line, smaller and lighter, English on the second line,
- * clearly larger and bolder (art director 2026-10-23/24, CLAUDE.md section 7: the English is
- * the line a player reads at walking distance), both lines in the same dark paint colour, generated as canvas
- * textures in code so the spelling is exactly what the reference images say.
+ * Shop signboards — art director's FINAL rule (2026-10-25, CLAUDE.md section 7, reverses 23 Oct): line 1 Hindi,
+ * BOLD, larger, dominant; line 2 English, not bold, smaller (cap height 60-70% of the Hindi, never below 55%) but
+ * still legible at walking distance; both lines the same dark paint colour. The painting itself lives in
+ * src/signPaint.js (shared by every board). Generated as canvas textures in code so the spelling is exactly what
+ * the reference images say.
  *
  * Art review 1/2 (2026-10-21): the boards were blurred/faded/illegible. Root cause: each
  * board was a SQUARE 512x512 atlas cell stretched over a ~4.4:1 wide board, squashing the
@@ -41,24 +43,13 @@ export function createWideSignAtlas(entries, { cellW = SIGN_CELL_W, cellH = SIGN
       ctx.strokeStyle = e.border || '#7a2a1a';
       ctx.lineWidth = 10 * k;
       ctx.strokeRect(8 * k, y + 8 * k, cellW - 16 * k, cellH - 16 * k);
-      ctx.fillStyle = e.fg || '#6e1a12'; // one dark paint colour for both lines (maroon / near-black / deep blue), never grey
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const fit = (text, font, maxPx, startPx) => {
-        let px = startPx;
-        ctx.font = font(px);
-        while (ctx.measureText(text).width > maxPx && px > 12) { px -= 2; ctx.font = font(px); }
-      };
-      // Hindi: top, small, light weight (reads as painted texture). English: bigger and bolder, dominant.
-      fit(e.hi, (px) => `500 ${px}px "Noto Sans Devanagari", sans-serif`, cellW - 140 * k, 56 * k);
-      ctx.fillText(e.hi, cellW / 2, y + cellH * 0.25);
-      fit(e.en, (px) => `900 ${px}px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif`, cellW - 90 * k, 132 * k);
-      ctx.fillText(e.en, cellW / 2, y + cellH * 0.64);
+      // one dark paint colour for both lines (maroon / near-black / deep blue), never grey
+      drawBilingual(ctx, e.hi, e.en, { x: cellW / 2, y: y + 16 * k, w: cellW - 120 * k, h: cellH - 32 * k, fg: e.fg || '#6e1a12' });
     });
     texture.needsUpdate = true;
   };
   paint(); // fallback fonts first, repainted with Noto once it is loaded
-  const ready = Promise.all([document.fonts.load('500 40px "Noto Sans Devanagari"'), document.fonts.ready]).then(paint, paint);
+  const ready = Promise.all([document.fonts.load('700 40px "Noto Sans Devanagari"'), document.fonts.ready]).then(paint, paint);
   return { texture, rows: entries.length, ready };
 }
 

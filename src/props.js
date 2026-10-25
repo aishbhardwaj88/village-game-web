@@ -1,3 +1,4 @@
+import { drawBilingual } from './signPaint.js';
 import { addToSignHub } from './signAtlasHub.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -138,10 +139,8 @@ export function createFlagpoleProp(position) {
  * schools. Visible, readable, and it updates." — "A painted board... 'Every rupee
  * goes to village schools' (English + Hindi beneath) and an amount read from a
  * small JSON file (public/data/donations.json, starts at 0). Scenery only, never a
- * store." English-first here (not src/signboards.js's Devanagari-first exception —
- * that rule is specifically for shop signboards painted in-world, CLAUDE.md
- * section 4; this is an informational notice, so the general English-primary rule
- * applies). Async (loads a font + fetches the JSON) — same pattern
+ * store." Painted in-world, so it follows the painted-board rule (CLAUDE.md
+ * section 7, 25 Oct FINAL): Hindi bold and larger on top, English below. Async (loads a font + fetches the JSON) — same pattern
  * src/bazaar.js's buildBazaarSignboards() already uses; caller does
  * `createDonationBoard(...).then((board) => group.add(board))`.
  */
@@ -170,27 +169,18 @@ export async function createDonationBoard(position, rotationY = 0) {
   ctx.strokeStyle = '#2f5a3a';
   ctx.lineWidth = 10;
   ctx.strokeRect(8, 8, W - 16, H - 16);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#1f3a28';
-  ctx.font = '700 52px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText('Every rupee goes to', W / 2, 110);
-  ctx.fillText('village schools', W / 2, 172);
-  ctx.font = '600 38px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText('हर रुपया गाँव के स्कूलों के लिए', W / 2, 240);
+  // Painted-board rule (CLAUDE.md 7, FINAL 25 Oct): Hindi bold and larger on top, English not bold and smaller below,
+  // one dark colour per block (src/signPaint.js).
+  drawBilingual(ctx, 'हर रुपया गाँव के स्कूलों के लिए', 'Every rupee goes to village schools', { x: W / 2, y: 28, w: W - 100, h: 236, fg: '#1f3a28' });
   ctx.strokeStyle = '#c9a227';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(W * 0.15, 280);
-  ctx.lineTo(W * 0.85, 280);
+  ctx.moveTo(W * 0.15, 282);
+  ctx.lineTo(W * 0.85, 282);
   ctx.stroke();
-  ctx.fillStyle = '#8a2e2e';
-  ctx.font = '700 64px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText(`₹${rupees.toLocaleString('en-IN')} raised`, W / 2, 380);
-  ctx.fillStyle = '#4a4238';
-  ctx.font = '500 30px -apple-system, "Segoe UI", sans-serif';
-  ctx.fillText('for UP village primary schools', W / 2, 440);
-  ctx.font = '500 26px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText('उत्तर प्रदेश के ग्रामीण प्राथमिक विद्यालयों के लिए', W / 2, 478);
+  const amount = `₹${rupees.toLocaleString('en-IN')}`;
+  drawBilingual(ctx, `${amount} जमा हुए`, `${amount} raised`, { x: W / 2, y: 296, w: W - 140, h: 120, fg: '#8a2e2e' });
+  drawBilingual(ctx, 'उत्तर प्रदेश के ग्रामीण प्राथमिक विद्यालयों के लिए', 'for UP village primary schools', { x: W / 2, y: 424, w: W - 100, h: 84, fg: '#1f3a28', fillFraction: 1 });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;

@@ -2,8 +2,8 @@
  * Diegetic wayfinding (docs/BACKLOG.md A-2c): painted direction signposts at lane junctions and a painted village notice board
  * at the chowk. Every destination, arrow side, compass word and distance is computed from PLACES (src/freeRoam.js, the one
  * placement list the map and Visit-place menu also read), so moving a place re-labels the signs by itself. Only the posts'
- * own x,z are written here. Signboard rule (CLAUDE.md 7): Hindi on top, smaller; English below, larger and bolder; both in
- * the same dark paint on a pale board.
+ * own x,z are written here. Signboard rule (CLAUDE.md 7, FINAL 25 Oct): Hindi on top, bold and larger; English below, not
+ * bold, smaller but legible (src/signPaint.js); both in the same dark paint on a pale board.
  *
  * Draw cost: one material (wood grain, boards and notice share the atlas), one merged mesh (2 calls with shadow). Colliders are explicit boxes.
  */
@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLACES } from './freeRoam.js';
+import { drawBilingual, hiFont, enFont } from './signPaint.js';
 
 const CELL_W = 1024;
 const CELL_H = 256;
@@ -95,19 +96,13 @@ function drawBoardCell(ctx, ox, oy, post, place) {
   const arrowX = ox + (arrowOnRight ? CELL_W - 110 : 110);
   drawArrow(ctx, arrowX, oy + CELL_H / 2, dir);
   const textX = ox + (arrowOnRight ? 50 : 215);
+  // Place name: Hindi bold on top, English below (src/signPaint.js); the distance sits under them in the same ink.
+  const textW = 700;
+  drawBilingual(ctx, place.hi, place.en, { x: textX, y: oy + 14, w: textW, h: 176, fg: INK, align: 'left', fillFraction: 0.98 });
   ctx.fillStyle = INK;
   ctx.textAlign = 'left';
-  ctx.font = '600 50px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText(place.hi, textX, oy + 88);
-  ctx.font = '800 92px -apple-system, "Segoe UI", Arial, sans-serif';
-  let size = 92;
-  while (ctx.measureText(place.en).width > 700 && size > 50) {
-    size -= 4;
-    ctx.font = `800 ${size}px -apple-system, "Segoe UI", Arial, sans-serif`;
-  }
-  ctx.fillText(place.en, textX, oy + 180);
-  ctx.font = '600 38px -apple-system, "Segoe UI", Arial, sans-serif';
-  ctx.fillText(`${Math.round(dist / 5) * 5} m`, textX, oy + 228);
+  ctx.font = enFont(38);
+  ctx.fillText(`${Math.round(dist / 5) * 5} m`, textX, oy + 232);
 }
 
 function cellGeometry(w, h, cell) {
@@ -133,27 +128,20 @@ function drawNotice(ctx, ox, oy) {
   ctx.strokeStyle = INK;
   ctx.lineWidth = 12;
   ctx.strokeRect(ox + 10, oy + 10, W - 20, H - 20);
-  ctx.fillStyle = INK;
-  ctx.textAlign = 'center';
-  ctx.font = '600 44px "Noto Sans Devanagari", sans-serif';
-  ctx.fillText('गाँव की सूचना', ox + W / 2, oy + 78);
-  ctx.font = '800 72px -apple-system, "Segoe UI", Arial, sans-serif';
-  ctx.fillText('Village Notice Board', ox + W / 2, oy + 150);
+  drawBilingual(ctx, 'गाँव की सूचना', 'Village Notice Board', { x: ox + W / 2, y: oy + 24, w: W - 140, h: 140, fg: INK });
   ctx.fillRect(ox + 70, oy + 172, W - 140, 5);
   NOTICE_LIST.map(byId).filter(Boolean).forEach((p, i) => {
     const y = oy + 232 + i * 98;
     const [cEn, cHi] = compass(p.x - NOTICE.x, p.z - NOTICE.z);
     const dist = Math.round(Math.hypot(p.x - NOTICE.x, p.z - NOTICE.z) / 5) * 5;
-    ctx.textAlign = 'left';
-    ctx.font = '500 34px "Noto Sans Devanagari", sans-serif';
-    ctx.fillText(p.hi, ox + 60, y);
-    ctx.font = '800 54px -apple-system, "Segoe UI", Arial, sans-serif';
-    ctx.fillText(p.en, ox + 60, y + 52);
+    // each row: Hindi place name bold on top, English below (src/signPaint.js), compass + distance on the right
+    ctx.fillStyle = INK;
+    drawBilingual(ctx, p.hi, p.en, { x: ox + 60, y: y - 52, w: W * 0.58, h: 96, fg: INK, align: 'left', fillFraction: 1 });
     ctx.textAlign = 'right';
-    ctx.font = '700 44px -apple-system, "Segoe UI", Arial, sans-serif';
-    ctx.fillText(`${cEn}  ${dist} m`, ox + W - 60, y + 50);
-    ctx.font = '500 30px "Noto Sans Devanagari", sans-serif';
-    ctx.fillText(cHi, ox + W - 60, y + 4);
+    ctx.font = hiFont(32);
+    ctx.fillText(cHi, ox + W - 60, y - 8);
+    ctx.font = enFont(40);
+    ctx.fillText(`${cEn}  ${dist} m`, ox + W - 60, y + 40);
   });
 }
 
@@ -176,8 +164,7 @@ function drawWoodGrain(ctx, x, y, w, h) {
 
 export async function createWayfinding() {
   try {
-    await document.fonts.load('600 40px "Noto Sans Devanagari"');
-    await document.fonts.load('800 40px "Noto Sans Devanagari"');
+    await document.fonts.load('700 40px "Noto Sans Devanagari"');
     await document.fonts.ready;
   } catch { /* fall back to the system font */ }
 
