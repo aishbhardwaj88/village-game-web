@@ -98,7 +98,7 @@ read Hindi.
 - The creeper near the rooftops glows lime at the edges. Palette is dusty olive and
   deep neem green, never lime.
 
-### 3. THE KHET - she asked for variety and did not get it
+### 3. [DONE 25 Oct 2026: verified by screenshot, sarson in yellow flower, sugarcane blocks, wheat, ploughed earth, veg patch all read; haystacks EXIST and read at the tubewell (behind the kothri) and behind the Yadav tea stall; proof docs/shots/khet-variety-2026-10-25/{field_wide,tubewell_hay,tea_hay}.png (proof-shot tool, free camera, no capsule in frame)] THE KHET - she asked for variety and did not get it
 Her words: she specifically wanted lots of variety in the khet - sugarcane, mustard
 flowers - and it is still not there.
 - Build real crop variety: sugarcane blocks, flowering yellow mustard (sarson),
