@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99i, playtest block item 7, findability walk):** NO game change this cycle (report only, written honestly: the remaining playtest items are blocked on art-director calls). Wrote docs/findability-walk-2026-10-25.md from the existing headless lane-walk shots: 36 of 39 places pass the subject check from a lane; post office, atta chakki and gurukul were checked by eye and are findable (shared signpost board / own board in frame). Not a continuous on-foot walk with a stopwatch, so item 7 stays UNTICKED. Open and blocked on her: cottage wood (draw-call ceiling, hero and bazaar at 150 of 150), triangle cuts (538k vs 400k), lamps on lanes (same ceiling).
+NEXT: continuous on-foot walk house to each far place with timing; lamps/street life on lanes once a draw-call call is made.
+
+---
+
 **2026-10-25 (cycle 39z99h, playtest block item 6, follower snags):** Game change: followers (Maa, sister; src/npcRoutines.js createFollowRoutine) now sidestep when the collision resolver holds them back ~0.6 s, so a prop between them and the player no longer pins them. Build ALL PASSED; regression 21/22, the one failure is `triangles under 400k` (538k, top: shop_goods_11, plant_grass_medium_02), unrelated to this logic-only change and already on the art director's triangle-cuts list. Audit found stale: hero-house charpai and pump are already solid (village.js), pond/johad/hauz bodies have colliders (farmSites.js), bazaar villager loops are registered with check 9, animals are static (no routines to register). No visual change, no proof shot, nothing ticked.
 NEXT: real on-foot findability walk (item 7), triangle cuts and cottage wood (art director's call).
 
