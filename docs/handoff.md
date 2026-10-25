@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99h, playtest block item 6, follower snags):** Game change: followers (Maa, sister; src/npcRoutines.js createFollowRoutine) now sidestep when the collision resolver holds them back ~0.6 s, so a prop between them and the player no longer pins them. Build ALL PASSED; regression 21/22, the one failure is `triangles under 400k` (538k, top: shop_goods_11, plant_grass_medium_02), unrelated to this logic-only change and already on the art director's triangle-cuts list. Audit found stale: hero-house charpai and pump are already solid (village.js), pond/johad/hauz bodies have colliders (farmSites.js), bazaar villager loops are registered with check 9, animals are static (no routines to register). No visual change, no proof shot, nothing ticked.
+NEXT: real on-foot findability walk (item 7), triangle cuts and cottage wood (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z99g, playtest block items 7/8, cane spur):** Game change: the sugarcane belt was the last of 40 places the static findability audit listed as not findable without the map (33 m from any lane). Added a bare earth spur (src/eastRoad.js SPURS 'cane', (-6,130) to (-6,146), off the east gali's south end, no lamps so no new draw calls in busy views) and added 'cane' to the school_lane signpost (src/wayfinding.js). Audit now 0 of 40 not findable. Build ALL PASSED. Proof docs/shots/cane-spur-2026-10-25/spur.png (headless free camera, subject check passed; spur leads to the cane belt; not tickable, the real on-foot walk of item 7 is still not done). Gaps: spur is vertex-tinted earth, no kerbs or street life; item 7 real walk and item 8 lamps/street life on lanes still open.
 NEXT: real on-foot findability walk (item 7), cottage wood and triangle cuts (art director's call).
 

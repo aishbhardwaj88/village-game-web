@@ -134,6 +134,7 @@ export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance 
   // (src/doorRouting.js), walk the chain of door points first instead of pushing at the wall.
   let queue = [];
   let queueKey = '';
+  let stuckTime = 0, sidestepTime = 0, sidestepSign = 1;
   const doorLegs = (target) => {
     for (const b of buildings) {
       const from = b.zoneOf(npcGroup.position.x, npcGroup.position.z);
@@ -163,7 +164,22 @@ export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance 
     if (dist > stop) {
       _toFollowTarget.multiplyScalar(1 / dist);
       const step = Math.min(speed * dt, dist - stop);
-      resolveMove(npcGroup.position, _toFollowTarget.x * step, _toFollowTarget.z * step, NPC_RADIUS, getExtraBoxes());
+      // Snag avoidance: if the swept resolver has held the follower back for ~0.6 s (a prop or corner between it and
+      // the goal), slide along the obstacle to one side for a second instead of pushing into it forever.
+      let dx = _toFollowTarget.x, dz = _toFollowTarget.z;
+      if (sidestepTime > 0) {
+        sidestepTime -= dt;
+        const k = 0.8; // mostly sideways, a little forward
+        const sx = -dz * sidestepSign, sz = dx * sidestepSign;
+        dx = sx * k + dx * (1 - k); dz = sz * k + dz * (1 - k);
+      }
+      const bx = npcGroup.position.x, bz = npcGroup.position.z;
+      resolveMove(npcGroup.position, dx * step, dz * step, NPC_RADIUS, getExtraBoxes());
+      const moved = Math.hypot(npcGroup.position.x - bx, npcGroup.position.z - bz);
+      if (moved < step * 0.35 && sidestepTime <= 0) {
+        stuckTime += dt;
+        if (stuckTime > 0.6) { stuckTime = 0; sidestepTime = 1.0; sidestepSign = -sidestepSign; }
+      } else if (moved >= step * 0.35) stuckTime = 0;
       const targetYaw = Math.atan2(_toFollowTarget.x, _toFollowTarget.z);
       let diff = targetYaw - npcGroup.rotation.y;
       diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
