@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n26, tri-audit re-run):** NO game change (written honestly). Grass tufts already have distance density LOD (realPlants.js addPlantInstances, radius 22, thins at 55%/80%), so that NEXT was already met. Re-ran tools/tri-audit.mjs on the hero view: renderer 496k tris / 135 calls, but the sum of visible meshes is only 271k; the rest is the shadow pass and composer. Largest: shop_goods 57k, bazaar hb_main 31k + hb_props 28k, grass 22k, lane_0 19k, tree foliage 18k + cards 18k, crop_rows 14k, sarson 9k. The 400k limit is under 400k if counted as visible mesh tris, over if counted as renderer.info; which one counts is the art director's call. No further cuts without her ruling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n25, sarson density LOD):** Game change: mustard bloom (field_sarson) now uses the same distance density LOD as the crop rows (shared addDensityLOD in field.js: past 70 m every other card, past 120 m one in four; sarson is hidden past 95 m so only the first tier applies). Build ALL PASSED, no console errors. Proof docs/shots/sarsonLOD-2026-10-25/far.png (yellow plot at left still reads as mustard; capsule in frame so not tickable; mid.png is a bad camera inside the cane, ignore). Field view 393k tris / 137 calls. Still over 400k elsewhere (hero/bazaar view ~516k): bazaar hb_main/hb_props, grass, lane_0, tree foliage. Grass-tuft LOD not done.
 NEXT: grass tuft distance LOD, then re-run tri-audit on the hero view.
 
