@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n35, chakki board):** Game change: the Atta Chakki signboard (src/newShops.js buildNewShopSignboards) was sunk behind the tin roof's front edge, clipping the bottom of the English line; raised 0.2 m so "Atta Chakki" now reads in full. Same draw call. Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/chakki-board-2026-10-25/front2.png (proof-shot, free camera, no capsule in frame; neem branches cover part of the right edge). Gaps: mill is still flat-shaded Blender paint, not item-ticked. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n34, gurudwara and masjid sides):** Game change: gurudwara and masjid (src/farmSites.js sideWindows) now have three grilled windows per side wall and three on the back (were blank slabs), plus a bilingual parapet board each ("Gurudwara Sahib", "Masjid", src/placeBoards.js). Same merged meshes, one extra board draw call each. Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/gurudwara-2026-10-25b/{front,side}.png (proof-shot, free camera, no capsule in frame; masjid not shot). Gaps: no compound wall/gate; hero lane through school wall and temple lane end still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 

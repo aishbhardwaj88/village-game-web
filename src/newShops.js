@@ -302,7 +302,7 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
   for (const [dims, pos, rot, col] of placements) {
     const geo = new THREE.BoxGeometry(Math.min(dims.w - 0.5, 2.2), 0.5, 0.04);
     mapFrontFaceToRow(geo, col, rows);
-    const world = wallWorldMatrix(pos, rot).multiply(new THREE.Matrix4().makeTranslation(0, dims.h + 0.42, dims.d / 2 + 0.03));
+    const world = wallWorldMatrix(pos, rot).multiply(new THREE.Matrix4().makeTranslation(0, dims.h + (col === 2 ? 0.62 : 0.42), dims.d / 2 + 0.03));
     geo.applyMatrix4(world);
     geos.push(geo);
   }
