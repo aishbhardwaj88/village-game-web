@@ -207,6 +207,24 @@ export function createAssetSlotRegistry() {
   }
 
   /**
+   * Same as resolveAll(), but also reports when the slots standing within `radius` m of `near` (the opening view)
+   * are done: `{ near, all }`. Slots on a moving container count as near (vehicles are always at the spawn).
+   * The title screen's Play button waits on `near` only, so a phone does not download the far half of the
+   * village before the first frame; the far models resolve in the background (they are out of sight and
+   * outside the zone draw range at the opening spawn).
+   */
+  function resolveAllNearFirst({ x, z, radius }) {
+    const isNear = (slot) => slot.placements.some((p) => {
+      if (p.container.isScene !== true) return true;
+      return Math.hypot(p.position.x - x, p.position.z - z) <= radius;
+    });
+    const all = Array.from(slots.values());
+    const nearP = Promise.allSettled(all.filter(isNear).map(resolveSlot));
+    const farP = nearP.then(() => Promise.allSettled(all.filter((s) => !isNear(s)).map(resolveSlot)));
+    return { near: nearP, all: Promise.all([nearP, farP]).then(([a, b]) => [...a, ...b]) };
+  }
+
+  /**
    * Draw-call budget (2026-10-21) — folds every loaded Blender building of a zone into ONE mesh per
    * material (hb_plaster, hb_concrete, hb_wood, hb_brick, hb_tin, hb_paint, hb_rangoli, hb_decal), instead of
    * ~6 meshes per building. All the Blender buildings share the same CC0 texture sets with tints baked into
@@ -278,5 +296,5 @@ export function createAssetSlotRegistry() {
     return slot ? resolveSlot(slot) : { name, replaced: false };
   }
 
-  return { register, resolveAll, resolveOne, slots, mergeSlotModels };
+  return { register, resolveAll, resolveAllNearFirst, resolveOne, slots, mergeSlotModels };
 }

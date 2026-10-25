@@ -36,6 +36,10 @@ const LOADING_SAFETY_TIMEOUT_MS = 9000; // never get stuck if some asset never r
  * that finish loading before this attaches would never be counted and onLoad could
  * fire before we're listening, or never fire again after.
  */
+let markReadyHook = () => {};
+/** Called by main.js once the models around the opening spawn are loaded: unlocks Play without waiting for the far half of the village. */
+export function markOpeningViewLoaded() { markReadyHook(); }
+
 export function setupLoadingScreen() {
   const overlay = document.getElementById('start-overlay');
   const progressFill = document.getElementById('progress-fill');
@@ -48,6 +52,7 @@ export function setupLoadingScreen() {
     overlay.classList.add('ready');
   };
 
+  markReadyHook = markReady;
   THREE.DefaultLoadingManager.onProgress = (url, loaded, total) => {
     progressFill.style.width = `${total > 0 ? (loaded / total) * 100 : 100}%`;
   };

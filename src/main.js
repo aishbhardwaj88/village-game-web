@@ -4,7 +4,7 @@ import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
-import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, isDevMode } from './ui.js';
+import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
@@ -1098,7 +1098,11 @@ async function main() {
   }
   if (isDevMode()) makeTripoStagingSlots();
 
-  assetSlots.resolveAll().then((results) => {
+  // Play unlocks once the models around the opening spawn are in (first view never pops); the far ones keep
+  // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
+  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 150 });
+  slotLoads.near.then(() => markOpeningViewLoaded());
+  slotLoads.all.then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
     // Draw-call budget: fold each CLUSTER of Blender buildings into one mesh per material (src/assetSlots.js
     // mergeSlotModels; exact because every Blender building shares the same CC0 sets with tints in vertex colours).
