@@ -361,7 +361,7 @@ export function createTubewell(position) {
   const water = new THREE.Mesh(mergeGeometries([
     new THREE.BoxGeometry(3.0, 0.04, 3.0).translate(cx, 0.5, cz),
     new THREE.BoxGeometry(0.22, 0.03, 4.3).translate(cx + 1.9, 0.12, cz + 3.8),
-  ]), createWaterMaterial({ shallow: 0x6f7550, deep: 0x4a5636, depth: 0.55, scale: 2.2, opacity: 0.96 }));
+  ]), createWaterMaterial({ shallow: 0x5f6a4e, deep: 0x33432f, depth: 0.7, scale: 2.2, opacity: 0.95 }));
   water.name = 'tubewell_water';
   // Woven charpai in the kothri's shade.
   charpaiGeos(geos, -0.5, 2.7, 0.15);
@@ -473,6 +473,33 @@ export function createSugarcaneBelt({ x0, z0, width, depth }) {
   return group;
 }
 
+/** One reed clump: tapered, bent leaf blades in mixed greens (some dry straw-yellow), and a couple of bulrush stalks with brown seed heads. */
+function reedClump(geos, cx, cz, rnd) {
+  const blades = 6 + Math.floor(rnd() * 5);
+  for (let k = 0; k < blades; k++) {
+    const h = 1.0 + rnd() * 0.9, w = 0.05 + rnd() * 0.03, lean = (rnd() - 0.5) * 0.7, yaw = rnd() * Math.PI;
+    const g = new THREE.PlaneGeometry(w, h, 1, 5);
+    const p = g.attributes.position;
+    for (let j = 0; j < p.count; j++) {
+      const t = (p.getY(j) + h / 2) / h; // 0 base .. 1 tip
+      p.setX(j, p.getX(j) * (1 - t * 0.95));
+      p.setY(j, t * h);
+      p.setZ(j, lean * t * t * h * 0.6);
+    }
+    g.computeVertexNormals();
+    const dry = rnd() < 0.2;
+    geos.push(bake(g, new THREE.Matrix4().makeRotationY(yaw).setPosition(cx + (rnd() - 0.5) * 0.5, 0, cz + (rnd() - 0.5) * 0.5), dry ? 0xa89a5c : k % 2 ? 0x6f7d3a : 0x56652e));
+  }
+  for (let k = 0; k < 2; k++) {
+    if (rnd() < 0.35) continue;
+    const h = 1.5 + rnd() * 0.6, x = cx + (rnd() - 0.5) * 0.5, z = cz + (rnd() - 0.5) * 0.5;
+    const stalk = new THREE.CylinderGeometry(0.008, 0.014, h, 4, 1, true); stalk.translate(0, h / 2, 0);
+    geos.push(bake(stalk, new THREE.Matrix4().setPosition(x, 0, z), 0x6a7338));
+    const head = new THREE.CylinderGeometry(0.035, 0.035, 0.26, 7); head.translate(0, h - 0.05, 0);
+    geos.push(bake(head, new THREE.Matrix4().setPosition(x, 0, z), 0x5a3d26));
+  }
+}
+
 /** Johad: small rain-fed village pond, a brown-green dip with a trampled rim and a few reeds. */
 export function createJohad(position) {
   const group = new THREE.Group();
@@ -493,12 +520,7 @@ export function createJohad(position) {
   // Reed clumps along the shore, and a flat stone where kids stand to throw pitthu.
   for (let i = 0; i < 14; i++) {
     const a = rnd() * Math.PI * 2, r = 5.8 + rnd() * 1.2;
-    for (let k = 0; k < 4; k++) {
-      const h = 0.9 + rnd() * 0.7;
-      const g = new THREE.CylinderGeometry(0.012, 0.03, h, 4, 1, true);
-      g.translate(0, h / 2, 0);
-      geos.push(bake(g, new THREE.Matrix4().makeRotationZ((rnd() - 0.5) * 0.35).setPosition(Math.cos(a) * r + (rnd() - 0.5) * 0.4, 0, Math.sin(a) * r + (rnd() - 0.5) * 0.4), k % 2 ? 0x6f7d3a : 0x58662f));
-    }
+    reedClump(geos, Math.cos(a) * r, Math.sin(a) * r, rnd);
   }
   geos.push(bake(new THREE.BoxGeometry(1.0, 0.22, 0.7), at(-7.0, 0.11, 1.5, 0.5), 0x948c7a));
   const props = new THREE.Mesh(mergeGeometries(geos), vcMat({ side: THREE.DoubleSide }));

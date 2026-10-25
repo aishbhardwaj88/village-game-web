@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n49, johad reeds):** Game change: johad reeds (src/farmSites.js reedClump) were plain dark sticks; now clumps of 6-10 tapered bent leaf blades in mixed greens (some dry straw) plus bulrush stalks with brown seed heads; tubewell hauz water retinted deeper/murkier. Same draw calls. Build ALL PASSED, no console errors. Proof docs/shots/reeds-2026-10-25/{johad_reeds2,hauz}.png (photo camera, no capsule in frame; not item-ticked, item 7 stays her call). Gaps: canal water untouched, pond lotus pink a little saturated. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: item 4 other shops' boxy goods / unidentified-objects list, then A-2c routes legibility.
+
+---
 **2026-10-25 (cycle 39z99n48, water glare):** Game change: shared water material (src/water.js) was blowing out to a white glare against the low sun on the johad; roughness 0.42->0.62, env reflection 0.7->0.45, ripple normal strength 1.6->1.1, glitter halved. Johad now reads as rippled water with a soft sheen. Build ALL PASSED, budget 30.92 MB, no console errors. Proof docs/shots/water-2026-10-25/{johad,johad2}.png (before/after; headless). Gaps: reeds are plain dark sticks, pond lotus still read faceted from this angle, tubewell hauz water flat green.
 NEXT: reeds/pond lotus polish, then A-2c routes legibility.
 
