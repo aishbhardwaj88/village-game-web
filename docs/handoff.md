@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n7, playtest block item 6, abadi wood check):** NO code change (written honestly). Looked at the abadi houses on the east lane (z 76) from 4 m: door/window frames, shutters, awning rafters and balcony rails all render as grained dark-brown wood with normal-map bump, not plain plaster tan, so the "abadi/house_compound wood not yet checked" gap in FEEDBACK item 6 looks closed for the abadi rows. Proof docs/shots/cottage-wood-2026-10-25/{lane_n,lane_s}.png (proof-shot tool, so the player capsule is in frame; not a ticked proof). Still open: house_compound (hero house) not photographed, triangles 510k vs 400k and draw-call ceiling remain art-director calls.
+NEXT: photograph house_compound wood; triangle cuts once the art director decides.
+
+---
+
 **2026-10-25 (cycle 39z99n6, draw calls, shared sign atlas):** Game change: hero shop boards, new-shop boards, bazaar boards and the school donation board now share ONE canvas atlas and material (src/signAtlasHub.js), so they merge into one draw call. Validator check 8a: hero 150 -> 148, bazaar 148 -> 146 (bazaar/hero figures from earlier handoffs). Build ALL PASSED, budget 30.90 MB, regression 21/22 (only triangles 513k vs 400k). Proof docs/shots/normal-mode-signboard-8m-2026-10-25T06-34-31-959Z/ (bazaar_unit4_Tailor_Shop.png, hero_tea_stall_Sharma_Tea_Stall.png: English reads first, Hindi above). Gaps: place boards (placeBoards.js) and classroom atlas still have own materials; Gupta store board is behind a tree in that shot (pre-existing framing). 2 spare calls now free for cottage wood / lamps.
 NEXT: cottage wood on abadi/house_compound using the freed calls, then triangle cuts (art director's call).
 
