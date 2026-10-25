@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n15, A-2b Tasks list):** Small game change: tapping the current mission in the Tasks list now clears any pinned side-job waypoint (src/freeRoam.js), so the waypoint returns to the live objective. Build ALL PASSED. No proof shot (menu logic only); box stays unticked. Re-audited FEEDBACK items 2 (milk cans) and 8 (lanes): already done. Still open: free out-of-order mission switching (needs per-mission state setup) and minimap-convention research; triangle cuts remain the art director's call.
+NEXT: A-2b out-of-order mission state setup.
+
+---
+
 **2026-10-25 (cycle 39z99n14, A-2c highway milestones):** Game change: two painted milestone stones on the highway's west verge (src/milestones.js HIGHWAY_STONES, one per travel direction, Hindi over English, Mandi and Chowk distances computed from PLACES). Proof docs/shots/milestones-highway-2026-10-25/{hw_a3,hw_b2}.png (photo camera, no capsule). Build ALL PASSED. A-2c wayfinding box stays unticked (approach road itself still open ground).
 NEXT: A-2c routes legibility / on-foot findability walk; triangle cuts remain art director's call.
 

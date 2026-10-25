@@ -401,7 +401,10 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
       else if (i === cur) {
         const o = OBJECTIVE_TEXT[quest.step];
         const obj = typeof o === 'function' ? o(quest) : o;
-        taskRow(`${i + 1}. ${m.en}`, m.hi, 'current', `Now: ${obj.en}`, () => closeTasks());
+        taskRow(`${i + 1}. ${m.en}`, m.hi, 'current', `Now: ${obj.en}`, () => {
+          onPinTask?.(null); // picking the live mission hands the waypoint back to its objective
+          closeTasks();
+        });
       } else taskRow(`${i + 1}. ${m.en}`, m.hi, 'locked', `Locked - finish mission ${cur + 1} first`, () => (tasksNote.textContent = `Finish "${MISSIONS[cur]?.en}" first. / पहले पिछला काम पूरा करो।`));
     });
     const roam = quest.storyDone || quest.step === S.FREE_ROAM;
