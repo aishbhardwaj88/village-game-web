@@ -142,20 +142,37 @@ function lotusPadGeo(x, z, r, rot, tone, lift = 0) {
   g.translate(x, 0.11 + lift, z);
   return bakeUv(g);
 }
+/** Painted petal map: cream base to pink tip with fine veins; the bottom strip is the yellow seed head. */
+let _petalTex = null;
+function lotusPetalTexture() {
+  if (_petalTex) return _petalTex;
+  const W = 128, H = 128, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, H * 0.9, 0, 0); // v=0.1 base ... v=1 tip (canvas y flipped)
+  grad.addColorStop(0, '#f8efe6'); grad.addColorStop(0.45, '#f3c9d3'); grad.addColorStop(0.8, '#e58fb0'); grad.addColorStop(1, '#d9709d');
+  g.fillStyle = grad; g.fillRect(0, 0, W, H * 0.9);
+  g.strokeStyle = 'rgba(190,90,130,0.28)'; g.lineWidth = 1;
+  for (let i = 0; i < 11; i++) { // veins fan from the base to the tip
+    const x0 = W * 0.5 + (i - 5) * 3, x1 = W * 0.5 + (i - 5) * 11;
+    g.beginPath(); g.moveTo(x0, H * 0.9); g.quadraticCurveTo((x0 + x1) / 2, H * 0.45, x1, 2); g.stroke();
+  }
+  g.fillStyle = '#d9b73a'; g.fillRect(0, H * 0.92, W, H * 0.08);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return (_petalTex = t);
+}
+/** Lotus flower geometries with their own UVs for lotusPetalTexture (three petal rings, wider and smoother, plus a seed head). */
 function lotusFlowerGeos(x, z, s, rot) {
   const geos = [];
-  // A petal is a 4x5 grid: lens-shaped outline (widest at 40%), cupped inward along its length, base cream to tip pink.
-  const petal = (len, wid, lean, ang, y0, tip, base) => {
-    const NU = 4, NV = 5, pos = [], col = [], idx = [];
-    const c0 = new THREE.Color(base), c1 = new THREE.Color(tip);
+  // A petal is a 5x8 grid: lens outline (widest ~45%), cupped across, rising then flaring outward at the tip.
+  const petal = (len, wid, lean, ang, y0, flare) => {
+    const NU = 5, NV = 8, pos = [], uv = [], idx = [];
     for (let v = 0; v < NV; v++) {
       const t = v / (NV - 1);
-      const w = wid * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.75) * 0.97 + 0.04), 0.8) * 0.5;
+      const w = wid * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8) * 0.96 + 0.06), 0.7) * 0.5;
       for (let u = 0; u < NU; u++) {
         const f = u / (NU - 1) * 2 - 1;
-        pos.push(f * w, t * len, -0.55 * len * t * t + 0.35 * wid * f * f * (0.4 + t));
-        const k = Math.pow(t, 1.2), c = c0.clone().lerp(c1, k);
-        col.push(c.r, c.g, c.b);
+        pos.push(f * w, t * len, flare * len * t * t * t + 0.3 * wid * f * f * (0.3 + t));
+        uv.push(u / (NU - 1), 0.1 + 0.9 * t);
       }
     }
     for (let v = 0; v < NV - 1; v++) for (let u = 0; u < NU - 1; u++) {
@@ -164,7 +181,7 @@ function lotusFlowerGeos(x, z, s, rot) {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     g.setIndex(idx);
     g.rotateX(lean);
     g.rotateY(ang);
@@ -172,18 +189,14 @@ function lotusFlowerGeos(x, z, s, rot) {
     g.computeVertexNormals();
     return g;
   };
-  for (let i = 0; i < 9; i++) geos.push(petal(0.34, 0.2, 1.05, (i / 9) * Math.PI * 2 + rot, 0.0, 0xec9db9, 0xfaf0ee));          // outer ring, open
-  for (let i = 0; i < 7; i++) geos.push(petal(0.3, 0.19, 0.62, (i / 7) * Math.PI * 2 + rot + 0.3, 0.012, 0xf2adc6, 0xfbf3f0)); // middle ring
-  for (let i = 0; i < 5; i++) geos.push(petal(0.24, 0.16, 0.25, (i / 5) * Math.PI * 2 + rot + 0.6, 0.02, 0xf5bccf, 0xfcf6f2)); // inner ring, upright
-  geos.push(new THREE.CylinderGeometry(0.05, 0.035, 0.05, 8).translate(0, 0.09, 0));                                               // seed head
-  geos[geos.length - 1] = bake(geos[geos.length - 1], new THREE.Matrix4(), 0xd9b73a);
-  for (let k = 0; k < geos.length - 1; k++) geos[k].computeVertexNormals();
-  return geos.map((g, i) => {
-    if (i < geos.length - 1) { g.deleteAttribute('uv'); }
-    const m = new THREE.Matrix4().makeScale(s, s, s).setPosition(x, 0.13, z);
-    g.applyMatrix4(m);
-    return i < geos.length - 1 ? bakeUv(g) : g;
-  });
+  for (let i = 0; i < 8; i++) geos.push(petal(0.36, 0.3, 1.0, (i / 8) * Math.PI * 2 + rot, 0.0, 0.25));
+  for (let i = 0; i < 6; i++) geos.push(petal(0.32, 0.28, 0.6, (i / 6) * Math.PI * 2 + rot + 0.4, 0.012, 0.15));
+  for (let i = 0; i < 5; i++) geos.push(petal(0.26, 0.22, 0.25, (i / 5) * Math.PI * 2 + rot + 0.7, 0.02, 0.05));
+  const seed = new THREE.CylinderGeometry(0.05, 0.035, 0.05, 8).translate(0, 0.09, 0);
+  const suv = seed.attributes.uv; for (let i = 0; i < suv.count; i++) suv.setXY(i, 0.5, 0.04);
+  geos.push(seed);
+  const m = new THREE.Matrix4().makeScale(s, s, s).setPosition(x, 0.13, z);
+  return geos.map((g) => { g.applyMatrix4(m); return g; });
 }
 /** Box-projected UVs for a geometry that already has colours (bake() does this for plain geometry; petals carry their own colours). */
 function bakeUv(g) {
@@ -255,14 +268,14 @@ export function createPond(position) {
   group.add(water);
 
   // Lotus: pads (notched, veined, cupped) and flowers (two petal rings + seed head), clustered not uniform.
-  const geos = [];
+  const geos = [], flowerGeos = [];
   for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
     const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
     for (let i = 0; i < 16; i++) {
       const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
       const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6;
       geos.push(lotusPadGeo(x, z, size, rnd() * 6.28, i % 3 ? 0x4a6e30 : 0x5d8238, (i % 5) * 0.012));
-      if (i % 4 === 0) geos.push(...lotusFlowerGeos(x + 0.5, z + 0.3, 1.5 + rnd() * 0.5, rnd() * 6.28));
+      if (i % 4 === 0) flowerGeos.push(...lotusFlowerGeos(x + 0.5, z + 0.3, 1.5 + rnd() * 0.5, rnd() * 6.28));
     }
   }
   const lotus = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), vcMat({ roughness: 0.8 }));
@@ -270,6 +283,12 @@ export function createPond(position) {
   lotus.castShadow = false;
   lotus.receiveShadow = true;
   group.add(lotus);
+  const flowers = new THREE.Mesh(
+    mergeGeometries(flowerGeos.map((g) => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'uv') n.deleteAttribute(k); return n; })),
+    new THREE.MeshStandardMaterial({ name: 'lotus_petals', map: lotusPetalTexture(), roughness: 0.62, metalness: 0, side: THREE.DoubleSide }));
+  flowers.castShadow = false;
+  flowers.receiveShadow = true;
+  group.add(flowers);
   group.position.set(position.x, 0, position.z);
   return group;
 }
