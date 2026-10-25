@@ -1,5 +1,11 @@
 # Autopilot run (Dopahar) - unattended, nobody is watching
 
+## READ docs/TONIGHT.md FIRST. IT OVERRIDES EVERYTHING BELOW UNTIL IT IS DONE.
+
+Tonight's only job is building the gaushala and the post office in Blender from the
+art director's approved Gemini reference drawings, and getting them into the game.
+Everything else, collision included, waits until that is finished.
+
 ## THE 25 OCT STOP ORDER IS CANCELLED
 
 The 17:10 IST stop-and-close order has been removed. It did its job: she played and
