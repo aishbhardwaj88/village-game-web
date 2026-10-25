@@ -38,7 +38,7 @@ FINISH_LINE.md until every item is ticked.
 - **Do not tick a box you have not looked at.** Open the image. If you would not show
   it to her, it is not done.
 
-### 0. FIRST: the screenshot tool, then the two engine bugs
+### 0. [PARTLY DONE 25 Oct 2026: 0a screenshot tool and 0b streaming done; 0c collision stops tree, wall, cow, building, pond, johad on a real key-walk ; STILL OPEN: vehicle-vs-building/tree collision and follower snagging only audited, not walked across a long run ; proof docs/shots/collision-2026-10-24/building.png] FIRST: the screenshot tool, then the two engine bugs
 These three block everything else. Do them in this order.
 
 **0a. [DONE 24 Oct 2026: tools/shotlib.mjs + tools/screenshot.js; proof docs/shots/2026-10-23T23-24-35-701Z/spawn_behind.png and docs/shots/shotlib-test-2026-10-24/halwai.png; subject check throws on occluded/off-frame, verified] tools/screenshot.js** - hide the fps counter and dev overlays, dismiss the
@@ -109,7 +109,7 @@ flowers - and it is still not there.
   stall. She could not tell. If they are missing, build them; if they are there,
   they are not reading as haystacks, so rebuild them.
 
-### 4. THE MARKET AND THE SHOPS
+### 4. [PARTLY DONE 25 Oct 2026: bazaar shutters rolled up, Gupta store has real-shaped packets and jars, medical fridge, barber clippers, mandi crates/sacks/trucks/dhaba rebuilt ; STILL OPEN: interior props of tailor, sabzi, puncture and barber are still small boxy clutter behind the counter; unidentifiable-object list written in handoff (cycle 39z57) but none removed; chowk plastic chairs still plain boxes ; proof docs/shots/bazaar-open-2026-10-25/bz_a.png] THE MARKET AND THE SHOPS
 - **Every shop in the market is half closed. Open them all.** Shutters up, interiors
   visible, goods on display. [PARTLY DONE 24 Oct: bazaar row shutters fully rolled up (build_bazaar_row.py rebuilt); RE-SHOT 25 Oct: shutters up, interiors lit with goods and sewing machine visible, proof docs/shots/bazaar-open-2026-10-25/{bz_a,bz_b}.png (capsule people in frame, so proof is for shutters only); interiors' own box goods still to replace]
 - [DONE 24 Oct for Gupta General Store: real-shaped printed chips/namkeen/biscuit/soap/tea packs, toffee jars, sachet strips, soda bottles - src/shopGoods.js, proof docs/shots/shops-2026-10-24/store_front.png + store_close.png; wrapper art is generic (no brands) drawn in code, no free un-branded packet photos exist. Other shops' goods still boxes] **Gupta General Store is the worst offender.** She asked for realistic items and
@@ -122,7 +122,7 @@ flowers - and it is still not there.
   market, find every object whose purpose is not instantly readable, LIST them in
   handoff.md, and either make each one clearly what it is or remove it.
 
-### 5. POST OFFICE, ATTA CHAKKI, SPECIFIC PLACES
+### 5. [PARTLY DONE 25 Oct 2026: post office has capsule postmaster, notices and red post box; petrol pump, dharam kanta, badminton court, cricket pitch, flagpole and school games built ; STILL OPEN: atta chakki walls are flat colour patches and hopper/drum are tinted paint; no single yellow swing exists, playground swings rebuilt instead, her reference images not re-checked; cricket outfield is uniform olive ; proof docs/shots/petrol-2026-10-24/front.png and docs/shots/chakki-housing-2026-10-25/close2.png]
 - [PARTLY DONE 24 Oct 2026: capsule postmaster at the counter, 2 notice boards, post box was already there; proof docs/shots/postoffice-2026-10-24/front.png, notices.png; open: post box/counter textures] **Post office**: she asked for a person sitting inside and did not get one. Put a
   capsule NPC at the counter. Add labels and notices outside. Add the red Indian
   post box; a free 3D model of a post box is easy to find.
@@ -142,7 +142,7 @@ flowers - and it is still not there.
   followed - find them in the repo references and follow them.
 - **The yellow swing** is not good or realistic. Rebuild or replace it.
 
-### 6. BUILDINGS AND STRUCTURES
+### 6. [PARTLY DONE 25 Oct 2026: dish antennas removed, ribbed water tanks, lane hand pumps removed, far-LOD buildings textured with openings, kachcha homestead on real wood and thatch ; STILL OPEN: abadi and house_compound cottages not checked for wood quality; real wood on houses, school and bazaar deferred until after her feedback ; proof docs/shots/farlod-2026-10-25/far_b.png and docs/shots/cottage-2026-10-24/after_porch.png]
 - [PARTLY DONE 24 Oct: kachcha homestead posts/beams/gate now use the real PBR wood set (own material) and the veranda lean-to is real thatch, was flat plaster tan; proof docs/shots/cottage-2026-10-24/after_porch.png vs before_porch.png; other cottage-style houses (abadi/house_compound wood) not yet checked] **The cottage-style houses look bad.** Better quality wood, better textures. Use
   real free PBR wood and thatch sets, not flat colour.
 - [DONE 24 Oct: dishes removed from the rooftop pick list, antenna kept] **Dish TV antennas** read as random concave objects. She likes the new TV antenna;
@@ -154,7 +154,7 @@ flowers - and it is still not there.
 - [DONE 25 Oct 2026, verified: far-LOD rows carry the shared PBR plaster set (colour+normal+roughness), window/door surrounds, grilles, sills, bands, parapets; proof docs/shots/farlod-2026-10-25/far_b.png] Far-LOD background buildings are flat untextured blocks visible in hero shots. Give
   the far LOD painted openings and a plaster tone.
 
-### 7. GROUND, WATER AND ROADS
+### 7. [PARTLY DONE 25 Oct 2026: highway patched and worn; pond and johad have depth tint, wet-mud ring, rebuilt lotus with pads, johad glare tamed, reeds rebuilt; road ends at kanta and mandi fray into dirt ruts ; STILL OPEN: canal water untouched, lotus pink a little saturated, hauz water flat, water not reviewed by her ; proof docs/shots/water-2026-10-25/johad.png and docs/shots/lotus-2026-10-25/a.png]
 - **Water texture throughout the game needs improving.** Pond, johad, canal, tubewell
   hauz. Real water: depth tint, movement, reflection, a soft shore line.
 - **The pond lotus is pink cones.** Find or build a real lotus with pads and flowers.

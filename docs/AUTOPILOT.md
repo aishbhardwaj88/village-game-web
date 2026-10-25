@@ -63,10 +63,13 @@ required step, not optional.** Do not start another item after it.
 
 ## After the loop ends (not now, do not start it during the close-out)
 
-Her newest request, 25 Oct: in explore mode she wants to tap a point on the notebook
-map and land there instead of walking. It is written up with its own DONE-WHEN as
-**BACKLOG A-2a**, and it is the first item on the next run after `tmp/STOP`, once she
-has given her playtest feedback. Do not touch it before then.
+Her newest request, 25 Oct: in explore mode she wants to click a PLACE on the
+notebook map and land there instead of walking, both for players exploring and to save
+her walking while she tests. The landing logic already exists (`visitPlace` in
+`src/main.js`); the only missing piece is hit testing on the notebook map canvas. It is
+written up with its own DONE-WHEN as **BACKLOG A-2a**, and it is the first item on the
+next run after `tmp/STOP`, once she has given her playtest feedback. Do not touch it
+before then.
 
 ## What she will judge you on
 

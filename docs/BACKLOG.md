@@ -31,37 +31,49 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
 in them. Do not limit a fix to the place that was screenshotted.
 
-### A-2a. Tap the map to travel (Aishwarya, 25 Oct 2026) - FIRST ITEM AFTER THE CLOSE-OUT
-Her words: when the user is in explore mode, not doing any mission, they should be
-able to hit a particular spot on the map and land there instead of walking.
+### A-2a. Click a place ON THE MAP to travel there (Aishwarya, 25 Oct 2026) - FIRST ITEM AFTER THE CLOSE-OUT
+Her words: on the map she wants to click on a place and go there. Two reasons she
+gave: it helps players who are just exploring the village, and it saves her walking
+while she tests.
 
 **Do NOT start this during the 25 Oct close-out. Start it on the first run after
 `tmp/STOP`, once she has given her playtest feedback.**
 
-What exists already: the Notebook map has a "Visit place" LIST of 41 named places
-(A-2, done). What she is asking for is different: tapping a POINT on the map itself.
+This is smaller than it looks. Almost all of it exists:
+- `visitPlace(place)` in `src/main.js` already finds a safe landing spot (rings around
+  the place, body-fit test, clear line to the place edge) and lands the player facing it.
+- `src/freeRoam.js` already builds the full place list from `PLACES` plus the side-job
+  markers, and already has the mid-mission arm/confirm guard.
+- The corner minimap already opens the full notebook map on tap.
+- **The missing piece is only this**: the notebook map is a drawn canvas with no hit
+  testing. Clicking a place on it does nothing.
 
-- [ ] In explore mode (no active mission), tapping or clicking anywhere on the notebook
-      map moves the player to that point. Any point, not only the 41 named places.
-- [ ] The landing spot is the nearest walkable ground to the tapped point: on the
-      ground, outside walls and geometry, never inside a building, never in water.
-- [ ] The player faces the nearest place, road or lane after landing, not a blank field.
-- [ ] A visible marker or ripple confirms the tapped point before the jump, so a
-      mis-tap is obvious.
-- [ ] Works with touch on a phone and with the mouse on desktop.
-- [ ] During a mission it reuses the existing A-2 guard: first tap warns, second tap
-      confirms, quest state untouched.
-- [ ] Vehicle is dismounted first, same as the existing Visit place path.
+The job: make the notebook map's place markers clickable, and call the existing
+`visitPlace` with the clicked place. Do not rebuild the landing logic. Do not build a
+second travel system beside the "Visit place" list; both call the same function.
+
+- [ ] Each place drawn on the notebook map gets a hit area, built from the same
+      PLACES data the map is drawn from, so a new or moved place works with no edit.
+- [ ] Clicking or tapping a place on the map travels there via `visitPlace`, in
+      explore mode (no active mission).
+- [ ] The hit area is at least 44 px across on a phone, so a finger can hit it.
+- [ ] Hover or press shows the place name, so she knows what she is about to click.
+- [ ] Mid-mission it reuses the existing arm/confirm guard: first click warns, second
+      confirms, quest state untouched. Vehicle is dismounted first.
+- [ ] Clicking empty map space does nothing at all. No arbitrary-point travel in this
+      item.
 
 DONE-WHEN, all of these, nothing more:
-- 5 proof shots of arrivals from 5 different tapped points, including at least one
-  in open field away from any named place and one across the canal.
+- 5 proof shots of arrivals reached by clicking the MAP, 5 different places, at least
+  one across the canal and one in the mandi past the highway.
+- 1 proof shot of the place name showing on press before travel.
 - `npm run build` passes and `node tools/regression-check.js` is green.
-- Zero console errors on a full open-map, tap, land cycle.
-- Ticked here with the 5 shot paths.
+- Zero console errors on a full open-map, click, land cycle.
+- Ticked here with those 6 shot paths.
 
-Do not extend this item. No route preview, no travel animation, no fog-of-war, no
-unlock rules. If you think of one, write it in BACKLOG section B and move on.
+Do not extend this item. No travel animation, no route preview, no fog of war, no
+unlock rules, no arbitrary-point travel. If you think of one, write it in BACKLOG
+section B and move on.
 
 ### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
 - [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
