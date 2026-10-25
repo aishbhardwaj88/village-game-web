@@ -799,7 +799,7 @@ async function main() {
   const fps = setupFpsCounter();
 
   // HDRI lighting (IBL) loads async; scene renders as soon as ground/sun/sky are up.
-  loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_1k.hdr').catch((err) =>
+  loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').catch((err) =>
     console.error('Failed to load environment HDRI', err)
   );
 

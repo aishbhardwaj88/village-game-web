@@ -14,8 +14,27 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = 5197;
 const URL_ = `http://localhost:${PORT}/village-game-web/`;
 
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore' });
-const stop = () => { try { server.kill(); } catch {} };
+// Own static server that mimics the host: Pages gzips js/css/html/json but not .glb/.webp.
+// vite preview does not compress at all, so using it counted the JS bundle ~3x too big.
+import http from 'node:http';
+import zlib from 'node:zlib';
+import fs from 'node:fs';
+import path from 'node:path';
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
+const GZ = new Set(['.html', '.js', '.css', '.json', '.svg']);
+const DIST = path.join(ROOT, 'dist');
+const srv = http.createServer((req, res) => {
+  let p = decodeURIComponent(req.url.split('?')[0]).replace('/village-game-web', '') || '/';
+  if (p.endsWith('/')) p += 'index.html';
+  const f = path.join(DIST, p);
+  if (!f.startsWith(DIST) || !fs.existsSync(f)) { res.statusCode = 404; return res.end(); }
+  const ext = path.extname(f);
+  let buf = fs.readFileSync(f);
+  const h = { 'content-type': MIME[ext] || 'application/octet-stream' };
+  if (GZ.has(ext) && /gzip/.test(req.headers['accept-encoding'] || '')) { buf = zlib.gzipSync(buf); h['content-encoding'] = 'gzip'; }
+  res.writeHead(200, h); res.end(buf);
+}).listen(PORT);
+const stop = () => { try { srv.close(); } catch {} };
 process.on('exit', stop);
 
 for (let i = 0; i < 100; i++) {
@@ -29,7 +48,9 @@ await cdp.send('Network.enable');
 await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 100, downloadThroughput: (9e6 / 8), uploadThroughput: (750e3 / 8) });
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU || 4) });
 let bytes = 0;
-cdp.on('Network.loadingFinished', e => { bytes += e.encodedDataLength || 0; });
+const reqUrl = new Map(); const sizes = [];
+cdp.on('Network.requestWillBeSent', e => reqUrl.set(e.requestId, e.request.url));
+cdp.on('Network.loadingFinished', e => { bytes += e.encodedDataLength || 0; sizes.push([e.encodedDataLength || 0, reqUrl.get(e.requestId)]); });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
 
@@ -42,6 +63,7 @@ const bytesAtTitle = bytes;
 await page.waitForSelector('#start-overlay.ready', { timeout: 120000 });
 const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
+if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, 25).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
 await browser.close(); stop();
 
 const mb = n => (n / 1048576).toFixed(2) + ' MB';
