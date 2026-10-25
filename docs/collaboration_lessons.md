@@ -43,3 +43,33 @@ before she had approved it.
 4. Never chain edits for anything beyond a single trivial change. Re-run from a fresh chat instead.
 5. Never save or file an output as final until she says it is right.
 6. Reuse the master prompt in `docs/gemini-character-master-prompt.md`. Do not rewrite it from memory.
+
+## Never write an open-ended instruction for an unattended loop (25 Oct 2026)
+
+Her words: "don't give it prompts like this, which are infinite, otherwise work will
+never get over. It is your responsibility to decide definition of done and tell it to
+Claude Code."
+
+What went wrong: `docs/FEEDBACK.md` told the loop "do not stop until this whole block
+is done" with no clock and no test for done. The loop ran 36 hours and 181 runs,
+committed about 205 times, kept quality rising, and never closed a single item marker
+for items 4 to 7. Items go PARTLY DONE and get reopened forever because "still weak"
+is always true.
+
+The rule from now on, for every instruction written for the autopilot or any
+unattended run:
+
+1. **A wall-clock deadline**, and the instruction says to check `date` each run.
+2. **A numbered, countable definition of done.** Not "good quality". Something that
+   can be answered yes or no without judgement, e.g. "every item 0 to 7 carries a
+   DONE / PARTLY DONE / NOT DONE marker with a proof path".
+3. **A named stop action**, e.g. `touch tmp/STOP`, listed as a required step.
+4. **An explicit forbidden list** for the window: no new places, no new features, no
+   rework of anything already marked done.
+5. **Pre-answer every open question** that could stall it, or tell it to assume a
+   default and move on. Never leave a decision pending with no default.
+6. **One item at a time with its own DONE-WHEN**, and the words "do not extend this
+   item" on anything that could grow.
+
+Her deeper point: deciding when work is finished is my job, not hers. Do not hand her
+an open loop and ask her to judge when it has gone on long enough.
