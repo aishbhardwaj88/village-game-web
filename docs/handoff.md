@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n24, crop-row density LOD):** Game change: crop_rows (field.js) now thins by distance from the player: past 70 m every other tuft, past 120 m one in four, repacked every 6 m of movement (getPlantFocus from realPlants.js). Standard screenshot run: 453k tris / 120 calls (was ~520k in the hero view; different view, so not a like-for-like number), build ALL PASSED, no console errors. Proof docs/shots/cropLOD-2026-10-25/{field_edge,field_mid}.png (proof-shot tool, capsule in frame, so not tickable). Still over 400k: next cuts are bazaar hb_main/hb_props 58k, grass 20k, lane_0 19k, field_sarson 19k, tree foliage/cards.
+NEXT: same density LOD for field_sarson bloom and grass tufts; then re-run tri-audit.
+
+---
+
 **2026-10-25 (cycle 39z99n23, triangle cuts):** Game change: shop goods trimmed (pillow packs 2x4 segments, spheres 6x4, tori fewer sides): goods mesh 84k -> 57k tris, hero/bazaar view 542k -> 516k renderer tris (still over 400k; ~290k are real visible mesh tris, rest is shadow pass + composer). tools/tri-audit.mjs rewritten to one forced render (works, ~1 min). Next biggest in that view: blender_bazaar_hb_main 30k + hb_props 28k, crop_rows 25k, grass 20k, lane_0 19k, field_sarson 19k, tree foliage/cards 18k each. Proof docs/shots/shopgoods-lod-2026-10-25/kirana_close.png (goods still read). Build ALL PASSED.
 NEXT: thin crop_rows/field_sarson/grass distance LOD, then re-run tri-audit.
 

@@ -33,6 +33,7 @@ function loadParts(file, height) {
 const sets = new Set(); // every live distance-limited plant set
 let focusX = 1e9, focusZ = 1e9;
 /** Call every frame with the player/vehicle position: plant sets re-sort so only copies within their radius are drawn. */
+export function getPlantFocus() { return [focusX, focusZ]; }
 export function setPlantFocus(x, z) {
   focusX = x; focusZ = z;
   for (const set of sets) set.refresh();
