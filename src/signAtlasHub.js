@@ -7,12 +7,12 @@ import * as THREE from 'three';
  * boards into a single draw call (was four).
  */
 const W = 2048;
-const H = 2440;
+const H = 2672;
 const SLOTS = {
   bazaar: { x: 0, y: 0, w: 2048, h: 1280 },
   hero: { x: 0, y: 1280, w: 1024, h: 464 },
   donation: { x: 0, y: 1744, w: 1024, h: 520 },
-  newShops: { x: 1024, y: 1280, w: 1024, h: 1160 },
+  newShops: { x: 1024, y: 1280, w: 1024, h: 1392 },
 };
 
 let hub = null;

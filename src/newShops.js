@@ -291,6 +291,8 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     // post office forecourt notice boards (cols 3-4), on the posts built in buildNewShopProps
     { hi: 'स्पीड पोस्ट · मनी ऑर्डर · टिकट', en: 'Speed Post · Money Order · Stamps', fg: '#14306e' },
     { hi: 'समय: सुबह 10 से शाम 4', en: 'Open 10 AM to 4 PM', fg: '#173f20' },
+    // pillar box collection plate (col 5)
+    { hi: 'निकासी', en: 'Clearance 10 · 4', fg: '#6e1a12' },
   ]);
   const { material, remap } = addToSignHub('newShops', texture);
   const geos = [];
@@ -314,6 +316,13 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
       geo.applyMatrix4(new THREE.Matrix4().makeTranslation(POST_NOTICE_X, y, POST_OFFICE.d / 2 + 0.55).premultiply(world));
       geos.push(geo);
     });
+  }
+  {
+    const world = wallWorldMatrix(postOfficePos, postOfficeRot);
+    const geo = new THREE.BoxGeometry(0.17, 0.09, 0.006);
+    mapFrontFaceToRow(geo, 5, rows);
+    geo.applyMatrix4(new THREE.Matrix4().makeTranslation(2.1, 0.8, 2.4 + 0.28).premultiply(world));
+    geos.push(geo);
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos.map(remap)), material);
   mesh.name = 'new_shop_signboards';

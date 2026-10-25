@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n34b, post box on the real model):** Game change: the visible red pillar box (Blender, tools/blender/build_new_shops.py) had its slot, hood, clearance door, lock and plate on the side facing the post office wall, so lane viewers saw a blank cylinder; all now face the street, and the plate carries printed text ("Clearance 10 · 4" + Hindi) as a signboard decal (src/newShops.js, one more atlas row, sign hub 2440 -> 2672 px tall). FOUND: cycle n33's post box edits went into the hidden 'new_shops_old' collision group, not the visible model (same trap may exist for other n-cycle "code" edits to post office / ration shop props). Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/postbox-plate-2026-10-25/plate.png (free camera, no capsule in frame; item 5 not ticked as a whole). Gaps: counter textures untouched. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: check other new-shop props (ration shop, chakki) were not edited only in the hidden group; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n35, chakki board):** Game change: the Atta Chakki signboard (src/newShops.js buildNewShopSignboards) was sunk behind the tin roof's front edge, clipping the bottom of the English line; raised 0.2 m so "Atta Chakki" now reads in full. Same draw call. Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/chakki-board-2026-10-25/front2.png (proof-shot, free camera, no capsule in frame; neem branches cover part of the right edge). Gaps: mill is still flat-shaded Blender paint, not item-ticked. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 

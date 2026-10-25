@@ -126,14 +126,14 @@ def post_office():
     lx = cx + 2.1
     kit.add('paint', cyl('postbox', lx, 2.4, 0.0, 1.25, 0.28, 0.26, 16), 0xC0392B)
     kit.add('paint', sphere('postbox_cap', lx, 2.4, 1.25, 0.28, 0.28, 0.12, 2), 0xA93226)
-    kit.add('paint', wb('slot', lx - 0.14, lx + 0.14, 2.4 - 0.29, 2.4 - 0.25, 0.95, 1.0, 0), 0x1A1A1A)
-    kit.add('paint', wb('slot_hood', lx - 0.18, lx + 0.18, 2.4 - 0.32, 2.4 - 0.27, 1.0, 1.05, 0.01), 0x8E2A20)  # rain hood over the mouth
+    kit.add('paint', wb('slot', lx - 0.14, lx + 0.14, 2.4 + 0.25, 2.4 + 0.29, 0.95, 1.0, 0), 0x1A1A1A)
+    kit.add('paint', wb('slot_hood', lx - 0.18, lx + 0.18, 2.4 + 0.27, 2.4 + 0.32, 1.0, 1.05, 0.01), 0x8E2A20)  # rain hood over the mouth
     kit.add('paint', cyl('postbox_base', lx, 2.4, 0.0, 0.12, 0.31, 0.31, 16), 0x333333)
     kit.add('paint', cyl('postbox_band_lo', lx, 2.4, 0.12, 0.17, 0.285, 0.285, 16), 0x7E241B)  # rolled seam bands
     kit.add('paint', cyl('postbox_band_hi', lx, 2.4, 0.88, 0.92, 0.275, 0.275, 16), 0x7E241B)
-    kit.add('paint', wb('collect_door', lx - 0.1, lx + 0.1, 2.4 - 0.285, 2.4 - 0.27, 0.3, 0.7, 0.004), 0x8E2A20)  # clearance door at the back-front
-    kit.add('paint', wb('collect_lock', lx - 0.02, lx + 0.02, 2.4 - 0.295, 2.4 - 0.285, 0.48, 0.54, 0), 0x2A2A2A)
-    kit.add('paint', wb('collect_plate', lx - 0.09, lx + 0.09, 2.4 - 0.275, 2.4 - 0.268, 0.76, 0.84, 0), 0xE9E5D8)  # timetable plate (no text)
+    kit.add('paint', wb('collect_door', lx - 0.1, lx + 0.1, 2.4 + 0.27, 2.4 + 0.285, 0.3, 0.7, 0.004), 0x8E2A20)  # clearance door, on the street face with the slot
+    kit.add('paint', wb('collect_lock', lx - 0.02, lx + 0.02, 2.4 + 0.285, 2.4 + 0.295, 0.48, 0.54, 0), 0x2A2A2A)
+    kit.add('paint', wb('collect_plate', lx - 0.09, lx + 0.09, 2.4 + 0.268, 2.4 + 0.275, 0.76, 0.84, 0), 0xE9E5D8)  # timetable plate (text is a signboard decal in src/newShops.js)
     kit.add('wood', wb('notice_board', cx - 1.5, cx - 0.5, 1.58, 1.62, 1.35, 2.05, 0.006))
     for k in range(6):
         kit.add('paint', wb('notice', cx - 1.42 + (k % 3) * 0.3, cx - 1.22 + (k % 3) * 0.3, 1.62, 1.64, 1.45 + (k // 3) * 0.3, 1.7 + (k // 3) * 0.3, 0), (0xE9E5D8, 0xF2C21E, 0xBFD0D8)[k % 3])
