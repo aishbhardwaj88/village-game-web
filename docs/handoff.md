@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n3, playtest block item 8, temple lane check):** NO game change this cycle (written honestly). Checked the earlier "temple lane ends inside the compound" finding: it is stale. TEMPLE_LANE_ARRIVE is (2,51) and the compound's west wall is at x = 8 - 12/2 = 2 (src/temple.js), buildStripSegment ends exactly at its end point, so the lane stops at the gate gap (z 52 +/- 1.3), not inside. Nothing to fix there. What is left in the playtest block is all blocked on art-director calls already in NEEDS_YOU.md: cottage wood and lamps/street life on lanes (draw calls at 150 of 150 in hero and bazaar views), triangle cuts (513k vs 400k), a lighter plain crate (needs Blender or a decimated plastic crate).
+NEXT: once a draw-call or triangle call is made, do lamps on lanes, cottage wood and the triangle cuts.
+
+---
+
 **2026-10-25 (cycle 39z99n2, playtest block item 8, hero lane ends at school gate):** Game change: the hero lane strip and its kerbs (src/village.js buildLane) now end at the school's south gate (z = centre - 13, SCHOOL_GATE_LANE_END) instead of running to the compound centre, so the dirt lane no longer crosses the school wall/yard. Build ALL PASSED, no new draw call. No proof shot of the gate (the screenshot run has no school-gate view), so nothing ticked. Gaps: temple lane still ends in the temple compound; kerbs/drains/lamps for the far lanes not extended; triangles still 513k (art director's call).
 NEXT: temple lane end, lane street life, triangle cuts.
 
