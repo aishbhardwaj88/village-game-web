@@ -225,6 +225,12 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     cyl(metalGeos, world, 0.19, 1.0, bx, 0, bz, 0xa8281f, 14);
     put(metalGeos, new THREE.SphereGeometry(0.2, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), world, bx, 1.0, bz, 0, 0x8f2019);
     box(metalGeos, world, 0.2, 0.025, 0.02, bx, 0.82, bz + 0.19, 0, 0x1a1a1a); // slot
+    cyl(metalGeos, world, 0.23, 0.07, bx, 0, bz, 0x6e1a14, 14); // flared foot
+    cyl(metalGeos, world, 0.21, 0.04, bx, 0.9, bz, 0x6e1a14, 14); // shoulder band under the cap
+    cyl(metalGeos, world, 0.205, 0.035, bx, 0.3, bz, 0x6e1a14, 14); // mid band
+    box(metalGeos, world, 0.26, 0.035, 0.07, bx, 0.86, bz + 0.2, 0, 0x8f2019); // hood over the slot
+    box(metalGeos, world, 0.16, 0.2, 0.012, bx, 0.45, bz + 0.19, 0, 0xd8d2c0); // collection-times plate
+    for (const [px, py] of [[-0.06, 0.52], [0.06, 0.52], [-0.06, 0.38], [0.06, 0.38]]) cyl(metalGeos, world, 0.008, 0.012, bx + px, py, bz + 0.2, 0x3a3d40, 6);
     colliders.push(colliderBoxFromTransform(0.4, 0.4, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(bx, 0.5, bz))));
   }
 

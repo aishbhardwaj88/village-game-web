@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n33, post box detail):** Game change: the red pillar post box outside the post office (src/newShops.js) now has a flared foot, two bands, a hood over the slot and a collection-times plate with screws (was a plain cylinder and dome). Same metal mesh, no new draw call. Build ALL PASSED, no console errors. Proof docs/shots/postbox-2026-10-25/front.png (proof-shot, capsule in frame, so not tickable). Gaps: plate is blank (no text), counter textures untouched. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n32, east road PBR bed):** Game change: the east road legs (createEastRoadLeg, src/farmSites.js) now use the scanned ground PBR set (colour+normal+roughness) under the baked tints instead of the plaster set; ruts, gravel and dust now read as real packed earth. Same mesh, no new draw call. Build ALL PASSED. Proof docs/shots/eastroad-pbr-2026-10-25/road_a.png (proof-shot, capsule in frame, not tickable; 139 calls, no console errors). Gaps: edging stones and drain lips share the earth texture (dusty, acceptable); no street life on the road. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 
