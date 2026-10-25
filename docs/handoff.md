@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z97, playtest block item 2, white pots):** Game change: the lane water corners (src/farmSites.js createLaneWaterCorner) now have lathed pots (belly, neck, rolled rim) instead of sphere+cylinder pairs: clay matkas (varied size/turn) and steel ghadas in the real metal PBR set with neck rings. The ghadas were flat grey tints that blew out to the "six white cylindrical objects" she could not identify. +1 metal draw call at those zones only (137 at the east corner, tris 456k free camera). Build ALL PASSED. Proof docs/shots/lane-water-2026-10-25/corner2.png (free camera, player capsule in frame, not tickable). Also: the 24 Oct "Banta/Chaat not built" note is stale, both exist with boards. Full-run screenshot.js still reports 507k triangles (art director's call).
+NEXT: triangle cuts (art director's call), far-LOD only via Blender (not installed), other flat-tint vessels.
+
+---
+
 **2026-10-25 (cycle 39z96b, playtest block item 3, bund crop culling):** Game change: crop tufts, cane, sarson and sabzi bushes (src/field.js buildCropRows) are no longer placed on the earthen bunds (new onBund(), same test as the raised ground ridge), so the ridges read as bare dividing banks instead of crops growing out of them. No new draw call, fewer instances. Build ALL PASSED, budget 30.80 MB. Proof docs/shots/khet-2026-10-25c/overview.png (headless, no subject check, not tickable; bare bund lines visible between plots). Also checked: the halwai bhatti fire mouth is already built (build_halwai.py, shot docs/shots/halwai-fire-2026-10-24/mouth.png), the FEEDBACK item 3 header there is stale. Item 3 NOT ticked as a whole.
 NEXT: triangle cuts (art director's call), spurs once draw calls are saved.
 
