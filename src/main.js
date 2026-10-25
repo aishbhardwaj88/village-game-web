@@ -1442,6 +1442,23 @@ async function main() {
         build: () => createStreetLamps([{ from, to, width }], { type: lampType, everyMetres: lampType === 'rcc' ? 14 : 22 }),
       });
     }
+    // Solar LEDs along the abadi galis (east, west, south), in chunks of at most 36 m so each streams only when the player is near that stretch.
+    for (const [id, a, b, width] of [['e1', { x: -37, z: 76 }, { x: 36, z: 76 }, 4], ['e2', { x: -6, z: 76 }, { x: -6, z: 130 }, 3.5], ['w1', { x: -84, z: 21 }, { x: -84, z: 104 }, 4], ['s1', { x: -100, z: 140 }, { x: -38, z: 140 }, 4]]) {
+      const n = Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 36);
+      for (let i = 0; i < n; i++) {
+        const from = { x: a.x + (b.x - a.x) * (i / n), z: a.z + (b.z - a.z) * (i / n) };
+        const to = { x: a.x + (b.x - a.x) * ((i + 1) / n), z: a.z + (b.z - a.z) * ((i + 1) / n) };
+        const half = Math.hypot(to.x - from.x, to.z - from.z) / 2;
+        zoneManager.register(`lamps_gali_${id}_${i}`, {
+          detail: true,
+          x: (from.x + to.x) / 2,
+          z: (from.z + to.z) / 2,
+          buildRadius: 8 + half,
+          teardownRadius: 9 + half,
+          build: () => createStreetLamps([{ from, to, width }], { type: 'solar', everyMetres: 18 }),
+        });
+      }
+    }
     // MAP.md landmarks: paani ki tanki + bijli transformer (tallest structure; radius capped at 90 m because the hero zone sits at exactly 150 draw calls and the
     // validator camera camera at (-48,30) is 96 m away; widen once hero-zone calls drop). MAP.md gives no coordinate: open ground just north-east of the school yard. Streamed
     // because the hero zone sits at the draw-call ceiling.
