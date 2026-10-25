@@ -1727,12 +1727,36 @@ export function createMandi(position) {
   geos.push(bake(new THREE.BoxGeometry(9.06, 0.4, 6.06), at(5, 0.9, 32), 0xb8574a));
   doorOpening(geos, at(2.6, 0.12, 29.0), 1.3, 2.2);
   windowOpening(geos, at(7.4, 2.0, 29.0), 1.4, 1.1);
-  geos.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.08, 0.08, 3.4, 6), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
-  geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
+  // Tin verandah roof on the truck-metal set with iron-ribbed purlins, timber posts on the crate-wood set, tin flue chimney.
+  const dhabaMetal = [], dhabaWood = [];
+  dhabaMetal.push(bake(new THREE.BoxGeometry(10.5, 0.1, 9), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.6, 30), 0x8e969c));
+  for (let i = 0; i < 8; i++) dhabaMetal.push(bake(new THREE.BoxGeometry(10.5, 0.07, 0.1), new THREE.Matrix4().makeRotationX(-0.07).setPosition(5, 3.68, 25.8 + i * 1.2), 0x6f747a));
+  for (const sx of [-1, 0, 1]) dhabaWood.push(bake(new THREE.CylinderGeometry(0.08, 0.1, 3.4, 8), at(5 + sx * 4.8, 1.7, 26), 0x6f5233));
+  dhabaMetal.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 12), at(8.5, 4.2, 33), 0x7a736a));
+  dhabaMetal.push(bake(new THREE.CylinderGeometry(0.4, 0.3, 0.2, 12), at(8.5, 5.3, 33), 0x5c5650));
+  // Working counter on the verandah: timber front, clay tandoor with a lit mouth, tall tea kettle, stacked steel handis, glasses shelf.
+  dhabaWood.push(bake(new THREE.BoxGeometry(3.2, 0.95, 0.7), at(6.6, 0.55, 27.2), 0x8a6a40));
+  dhabaWood.push(bake(new THREE.BoxGeometry(3.4, 0.07, 0.9), at(6.6, 1.06, 27.2), 0xa88650));
+  dhabaWood.push(bake(new THREE.BoxGeometry(3.0, 0.05, 0.32), at(6.6, 1.9, 28.55), 0x8a6a40));
+  for (const sx of [-1, 1]) dhabaWood.push(bake(new THREE.BoxGeometry(0.05, 0.9, 0.05), at(6.6 + sx * 1.5, 1.45, 28.55), 0x6f5233));
+  geos.push(bake(new THREE.CylinderGeometry(0.5, 0.62, 1.15, 14), at(4.4, 0.6, 27.6), 0xa65a38)); // clay tandoor body
+  geos.push(bake(new THREE.TorusGeometry(0.46, 0.07, 6, 14).rotateX(Math.PI / 2), at(4.4, 1.2, 27.6), 0x8b4a2e)); // rolled rim
+  geos.push(bake(new THREE.CylinderGeometry(0.34, 0.34, 0.06, 12), at(4.4, 1.12, 27.6), 0x1c1410)); // dark mouth
+  for (let i = 0; i < 4; i++) dhabaMetal.push(bake(new THREE.CylinderGeometry(0.2 - i * 0.02, 0.22 - i * 0.02, 0.22, 12), at(7.3, 1.2 + i * 0.22, 27.1), 0xb9b9bc)); // handi stack
+  dhabaMetal.push(bake(new THREE.CylinderGeometry(0.2, 0.26, 0.42, 12), at(6.2, 1.3, 27.2), 0xa4a4a8)); // kettle body
+  dhabaMetal.push(bake(new THREE.CylinderGeometry(0.1, 0.2, 0.14, 12), at(6.2, 1.57, 27.2), 0xa4a4a8));
+  dhabaMetal.push(bake(new THREE.BoxGeometry(0.4, 0.04, 0.04), at(6.0, 1.5, 27.2), 0x6f747a)); // spout
+  for (let i = 0; i < 7; i++) dhabaMetal.push(bake(new THREE.CylinderGeometry(0.045, 0.035, 0.1, 8), at(5.7 + i * 0.28, 1.97, 28.55), 0xcfd8dc)); // tea glasses
+  // Low wooden stools (patla) round the charpais, each a different yaw and slight tilt.
+  for (let i = 0; i < 6; i++) {
+    const a = i * 2.3 + 0.4, sx = 1.2 + i * 1.65, sz = 23.6 + (i % 2) * 0.4;
+    dhabaWood.push(bake(new THREE.BoxGeometry(0.36, 0.05, 0.36), at(sx, 0.4, sz, a), 0x8a6a40));
+    for (const [dx, dz] of [[-0.13, -0.13], [0.13, -0.13], [-0.13, 0.13], [0.13, 0.13]]) dhabaWood.push(bake(new THREE.BoxGeometry(0.05, 0.4, 0.05), at(sx + dx * Math.cos(a) - dz * Math.sin(a), 0.2, sz + dx * Math.sin(a) + dz * Math.cos(a), a), 0x6f5233));
+  }
   for (let i = 0; i < 4; i++) charpaiGeos(geos, 1.5 + i * 2.1, 25, Math.PI / 2 + (i % 2 ? 0.05 : -0.04));
   // Parked trucks in plain colours (no marks).
-  const truckMetal = [];
+  const truckMetal = dhabaMetal;
+  dhabaWood.forEach((g) => crateWood.push(g));
   truck(geos, 3, -2, 0xc4372f, 0.0, truckMetal, crateWood);
   truck(geos, 9, 48, 0x3f7a5a, Math.PI, truckMetal, crateWood);
   truck(geos, -4, 40, 0xd9a43a, 0.12, truckMetal, crateWood);
