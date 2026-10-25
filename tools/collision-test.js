@@ -47,14 +47,12 @@ function waitForServer(url, timeoutMs = 30000) {
 const NON_SOLID = NON_SOLID_RULES;
 const SKIP_TOP_RE = SKIP_TOP;
 
-// ---- everything below the marker runs inside the page ----
-function inPage(cfg) {
+/** Builds and shows every streamed zone and stops the zone manager from tearing them down again, so the test sees the
+ * whole village at once (src/zoneManager.js only keeps zones near the player). Async content (Blender .glb slot swaps)
+ * needs a moment to arrive, hence a separate call and a wait before the checks run. */
+function forceZones() {
   const d = window.__dopahar;
-  const R = d.playerRadius;
-  // Zone-streamed content (src/zoneManager.js) only exists near the player. Build and show EVERY zone, then rebuild the
-  // collider list exactly as the zone manager does after a change, so streamed objects are tested too. This all runs
-  // inside this one evaluate, so the game's frame loop cannot tear a zone down again before the checks finish.
-  let zonesForced = 0;
+  d.zoneManager.update = () => {}; // the frame loop calls zoneManager.update(); freeze it so forced zones stay put
   for (const z of d.zoneManager.zones.values()) {
     if (!z.active) {
       const built = z.build();
@@ -66,8 +64,17 @@ function inPage(cfg) {
     }
     z.group.visible = true;
     z.group.userData.zoneHidden = false;
-    zonesForced++;
   }
+}
+
+// ---- everything below the marker runs inside the page ----
+function inPage(cfg) {
+  const d = window.__dopahar;
+  const R = d.playerRadius;
+  // Zone-streamed content (src/zoneManager.js) only exists near the player. Build and show EVERY zone, then rebuild the
+  // collider list exactly as the zone manager does after a change, so streamed objects are tested too. This all runs
+  // inside this one evaluate, so the game's frame loop cannot tear a zone down again before the checks finish.
+  const zonesForced = d.zoneManager.zones.size; // built and shown by forceZones() before this runs
   d.rebuildColliders();
   const all = d.getStaticColliders();
 
@@ -398,6 +405,8 @@ async function main() {
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(2000);
+    await page.evaluate(forceZones);
+    await page.waitForTimeout(6000); // let zone-streamed .glb models arrive
     const t0 = Date.now();
     const r = await page.evaluate(inPage, { nonSolid: NON_SOLID.map(([re]) => [re.source, re.flags]), skipTop: [SKIP_TOP_RE.source, SKIP_TOP_RE.flags], skipVehicles: !!process.env.SKIP_VEHICLES });
     await browser.close();

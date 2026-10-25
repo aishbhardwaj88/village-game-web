@@ -355,7 +355,9 @@ async function main() {
     // alongside the existing structural-material families.
     // 'tree_foliage' (trunks, src/trees.js) added: tree trunks now carry real colliders (A0).
     // 'site_props' (farmSites.js pumps, charpais, poles, tubewell) and 'street_lamp' (src/props.js) added: they now carry real colliders (A0).
-    const solidPoints = await sampleMaterialSurface("return ['plaster','wood','metal','concrete','terracotta','brick','tree_foliage','site_props','straw','street_lamp','wayfinding','hb_plaster','hb_wood','hb_props','hb_tin','hb_main'].includes(name);"); // hb_* = Blender kachcha homestead yard props (charpai, chulha, chabutra, matka stand, manger, haystack), now solid (A0); hb_tin = the homestead's haystack (real thatch set in the tin slot)
+    // Any opaque material counts as real geometry (Blender models name theirs gsh_*, hb_*, ...), except ground-like and
+    // vegetation surfaces: a collider standing on bare ground is still an orphan.
+    const solidPoints = await sampleMaterialSurface("return !!name && !/^(ground|sky|lane|road|dirt|grass|water|crop|cane|leaf|tuft|foliage|canopy|kerb|drain|path)/i.test(name) || name === 'tree_foliage';"); // hb_*, gsh_* ... = Blender models' own materials; hb_tin = the homestead's haystack (real thatch set in the tin slot)
     // Animal herds/packs are InstancedMeshes (skipped by the triangle sampler above) and now carry real
     // colliders (A0, FEEDBACK 24 Oct 0c): count each instance's own world position as real geometry.
     solidPoints.push(...(await page.evaluate(() => {
