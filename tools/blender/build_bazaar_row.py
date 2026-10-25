@@ -292,7 +292,12 @@ def barber(i):
     kit.add('paint', wb('chair_foot', cxs - 0.2, cxs + 0.2, cz - 0.62, cz - 0.4, 0.1, 0.13, 0.01), 0x6B6F72)
     kit.add('wood', limb('towel_rail', (c + 1.3, BZ - 0.06, 1.75), (c + 2.0, BZ - 0.06, 1.75), 0.03, 0.03))  # towels hang from it: textured goods in src/bazaar.js
     kit.add('wood', wb('bench', c - 1.9, c - 0.9, CZ + 0.9, CZ + 1.3, 0.0, 0.45, 0.01))
-    kit.add('paint', wb('clippers', c + 0.6, c + 0.75, CZ - 0.0, CZ + 0.1, 0.95, 1.05, 0.01), 0x1A1A1A)
+    # hair clippers lying on the shelf: tapered body, steel blade comb with teeth, power cord
+    kit.add('paint', limb('clip_body', (c + 0.62, CZ + 0.05, 0.985), (c + 0.8, CZ + 0.05, 0.985), 0.034, 0.026, 0.01), 0x1A1A1A)
+    kit.add('paint', wb('clip_blade', c + 0.8, c + 0.86, CZ + 0.015, CZ + 0.085, 0.965, 1.0, 0.002), 0xB8BCC0)
+    for t in range(5):
+        kit.add('paint', wb('clip_tooth', c + 0.86, c + 0.885, CZ + 0.02 + t * 0.014, CZ + 0.028 + t * 0.014, 0.968, 0.985, 0), 0xB8BCC0)
+    kit.add('paint', limb('clip_cord', (c + 0.62, CZ + 0.05, 0.975), (c + 0.45, CZ + 0.12, 0.955), 0.006, 0.006), 0x1A1A1A)
 
 
 def mobile(i):
@@ -316,6 +321,7 @@ def mobile(i):
     kit.add('paint', wb('tower_drive', c + 0.64, c + 0.78, CZ + 0.085, CZ + 0.1, 1.28, 1.33, 0), 0x2A2A2A)
     kit.add('paint', wb('tower_drive2', c + 0.64, c + 0.78, CZ + 0.085, CZ + 0.1, 1.2, 1.25, 0), 0x2A2A2A)
     kit.add('paint', cyl('tower_led', c + 0.7, CZ + 0.08, 1.1, 1.12, 0.01, 0.01, seg=6), 0x4FC98A)
+    kit.add('wood', wb('card_board', c + 1.12, c + 1.78, BZ - 0.06, BZ - 0.03, 1.42, 2.0, 0.004))
     for j in range(6):
         kit.add('paint', wb('card', c + 1.3 + (j % 3) * 0.2 - 0.07, c + 1.3 + (j % 3) * 0.2 + 0.07, BZ - 0.1, BZ - 0.06, 1.5 + (j // 3) * 0.25, 1.7 + (j // 3) * 0.25, 0), (0xE0509A, 0x2E86C1, 0xF2C21E, 0x2E9E5B, 0xF08A24, 0xD9382B)[j])
     kit.add('paint', limb('cable_rack', (c - 1.9, BZ - 0.1, 2.6), (c - 0.9, BZ - 0.1, 2.6), 0.03, 0.03), 0x30343A)

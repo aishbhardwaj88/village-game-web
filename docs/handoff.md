@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n31, bazaar Blender leftovers):** Game change: BLENDER IS INSTALLED (~/Applications/Blender.app, tools/blender/make.sh works; the "not installed" notes in cycles n29/n28/n27 are stale). Rebuilt bazaar_row.glb: the barber's clippers are now a tapered body with steel blade comb, teeth and a power cord (was one black box), and the mobile shop's six recharge cards hang on a wooden pegboard (were six floating coloured rectangles). Same materials, no new draw call. Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/clippers-cards-2026-10-25/{barber,mobile}.png (proof-shot tool, capsule keepers in frame, so not tickable). Gaps: CRT/tower still vertex-colour paint (tinted metal PBR), item 4 NOT ticked as a whole. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n30, hero lane map line):** Small game change: the notebook map/minimap pencil line for the hero lane ran to z 107 (inside the school yard); it now ends at the school's south gate, z 93, matching the real lane (src/freeRoam.js LANES). Findability audit still 0 of 40 not findable. Build ALL PASSED. No screenshot taken (map line only), nothing ticked. Temple lane check: it ends at the temple's west gate gap (2,51), not inside the compound, so that old finding is stale. Everything else still needs the art director: triangle limit meaning, draw-call ceiling, Blender install.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 
