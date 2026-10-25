@@ -59,7 +59,7 @@ export const PLACES = [
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
 export const LANES = [
   ...SPURS.map((sp) => sp.pts), // spurs off the east road to the far-east places
-  [[-48, 46], [-45, 46], [-45, 107]], // hero lane south from the house
+  [[-48, 46], [-45, 46], [-45, 93]], // hero lane south from the house, ends at the school south gate (z 93, village.js SCHOOL_GATE_LANE_END)
   [[-48, 46], [-58, 47], [-58, 8]], // bazaar lane
   [[-44, 50.5], [-12, 55], [2, 51]], // temple lane
   [[-37, 76], [36, 76]], [[-6, 76], [-6, 130]], // east gali

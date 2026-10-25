@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n30, hero lane map line):** Small game change: the notebook map/minimap pencil line for the hero lane ran to z 107 (inside the school yard); it now ends at the school's south gate, z 93, matching the real lane (src/freeRoam.js LANES). Findability audit still 0 of 40 not findable. Build ALL PASSED. No screenshot taken (map line only), nothing ticked. Temple lane check: it ends at the temple's west gate gap (2,51), not inside the compound, so that old finding is stale. Everything else still needs the art director: triangle limit meaning, draw-call ceiling, Blender install.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n29, shop goods leftover check):** NO game change (written honestly). Checked what item 4's "other shops' goods still boxes" leaves: every bazaar unit's stock (kirana, sabzi, manihari, barber towels/oil, puncture tyres, mobile cartons) is already printed-atlas code goods in src/shopGoods.js/bazaar.js. What is still flat colour is Blender-side (barber clippers, mobile recharge cards, CRT) in tools/blender/build_bazaar_row.py, and Blender is not installed here, so they cannot be rebuilt. Still needs the art director: triangle limit meaning (visible 271k vs renderer ~500k), draw-call ceiling (hero/bazaar 159-166 vs 150), Blender install.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 
