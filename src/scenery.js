@@ -32,6 +32,8 @@ const LANES = [
   { name: 'W1', a: { x: -84, z: 21 }, b: { x: -84, z: 104 }, w: 4 },
   { name: 'W2', a: { x: -84, z: 21 }, b: { x: -61, z: 21 }, w: 3.5 },
   { name: 'S1', a: { x: -100, z: 140 }, b: { x: -38, z: 140 }, w: 4 },
+  { name: 'E0', a: { x: -45, z: 76 }, b: { x: -37, z: 76 }, w: 4, bare: true }, // closes the 8 m gap between the hero lane and the start of the east gali
+  { name: 'S2', a: { x: -38, z: 140 }, b: { x: -6, z: 140 }, w: 3.5, bare: true }, // joins the south gali to the east gali's south end (the cane spur at x -6)
 ];
 
 // quarter turns: 0 front +z, 1 front +x, 2 front -z, 3 front -x. area = which distance-culled region the row belongs to.
@@ -220,6 +222,7 @@ export function buildBackgroundHouses(scene, kit) {
   LANES.forEach((l, i) => {
     const m = buildStripSegment(new THREE.Vector3(l.a.x, 0, l.a.z), new THREE.Vector3(l.b.x, 0, l.b.z), l.w, { seed: 40 + i, tint: 0xb9a37c });
     lanes.add(m);
+    if (l.bare) return;
     // cement kerbs along the middle of each lane, clear of the junction ends
     for (const k of buildKerbSegments(l.a, l.b, l.w, 0.12, 0.88, { seed: 50 + i })) lanes.add(k);
     // open nali just outside one kerb (side alternates by lane)

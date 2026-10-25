@@ -65,6 +65,8 @@ export const LANES = [
   [[-37, 76], [36, 76]], [[-6, 76], [-6, 130]], // east gali
   [[-84, 21], [-84, 104]], [[-84, 21], [-61, 21]], // west gali
   [[-100, 140], [-38, 140]], // south gali
+  [[-45, 76], [-37, 76]], // closes the gap between the hero lane and the east gali (src/scenery.js E0)
+  [[-38, 140], [-6, 140]], // joins the south gali to the east gali's south end (src/scenery.js S2)
   [[36, 76], [60, 69], [90, 68.5], [103, 66], [116, 58], [135.3, 52.3], [174.7, 45.3], [194.4, 41.8]], // east road to the highway (src/eastRoad.js ROAD_PTS)
 ];
 const BOUNDS = { x0: -145, x1: 245, z0: -55, z1: 190 };

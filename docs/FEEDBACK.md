@@ -225,6 +225,7 @@ Remaining from the 23 Oct progress notes, in order:
 DONE-WHEN: every A0 box is ticked with a proof shot that passes item 1's rules.
 
 ### 7. THE REAL FINDABILITY WALK (A-2c)
+**[DONE 25 Oct 2026: key-driven bot walked from the house along the lanes to 41 of 41 places, 6 to 74 s each at 4.2 m/s; log docs/shots/onfoot-walk-2026-10-25/walk.log, arrival shots in the same folder (gurudwara.png is a close wall shot, the building there is a plain box). Two lane gaps found and closed: hero lane to east gali (8 m) and east gali to south gali (32 m). Still not findable without the map: none by lane; the hero lane south of z 94 still runs through the school compound wall and the temple lane ends in the temple compound (reported, not fixed).]**
 tools/findability-audit.mjs is a static estimate and the box rightly stays open. Do
 the real thing: walk on foot from the house to all 42 places using only what a player
 can see, screenshot each arrival, report walk time and whether a visible path leads
