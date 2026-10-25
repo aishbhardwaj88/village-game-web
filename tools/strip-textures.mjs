@@ -22,6 +22,6 @@ for (const m of doc.getRoot().listMaterials()) {
   m.setBaseColorTexture(null); m.setNormalTexture(null); m.setMetallicRoughnessTexture(null); m.setOcclusionTexture(null); m.setEmissiveTexture(null);
   n++;
 }
-await doc.transform(prune());
+await doc.transform(prune({ keepAttributes: true })); // the UVs must stay: the shared textures are applied in the game
 await io.write(out, doc);
 console.log(`stripped textures from ${n} materials -> ${out}`);

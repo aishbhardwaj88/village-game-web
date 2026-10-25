@@ -48,6 +48,7 @@ export const PLACE_BOARDS = [
   { id: 'post_v2', hi: 'डाकघर', en: 'Post Office', fg: MAROON },
   { id: 'chakki_v2', hi: 'आटा चक्की', en: 'Atta Chakki', fg: NAVY },
   { id: 'petrol_v2', hi: 'पेट्रोल पंप', en: 'Petrol Pump', fg: NAVY },
+  { id: 'panchayat_v2', hi: 'पंचायत भवन', en: 'Panchayat Bhavan', fg: NAVY },
   { id: 'school_donation', hi: 'दानदाता पट्टिका', en: 'Donors Board', fg: MAROON },
 ];
 const ROW = new Map(PLACE_BOARDS.map((b, i) => [b.id, i]));

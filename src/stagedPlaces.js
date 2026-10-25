@@ -26,6 +26,14 @@ export const STAGED_PLACES = [
     boards: [{ id: 'chakki_v2', x: 0, y: 3.05, z: 0.04, w: 2.4 }] },
   { id: 'yard_petrol', zone: 'petrol_pump_v2', model: 'petrol_pump_v2', en: 'Yard 13: Petrol pump', hi: 'यार्ड 13: पेट्रोल पंप', kind: 'bazaar', radius: 26, build: 55, front: 12,
     boards: [{ id: 'petrol_v2', x: -13.0, y: 5.3, z: 8.7, w: 2.2 }] },
+  { id: 'yard_panchayat', zone: 'panchayat_v2', model: 'panchayat_v2', en: 'Yard 14: Panchayat bhavan', hi: 'यार्ड 14: पंचायत भवन', kind: 'house', radius: 18, build: 45, front: 13,
+    boards: [{ id: 'panchayat_v2', x: 0, y: 4.55, z: 0.08, w: 2.6 }] },
+  { id: 'yard_tvhouse', zone: 'tv_house_v2', model: 'tv_house_v2', en: 'Yard 15: TV house', hi: 'यार्ड 15: टीवी वाला घर', kind: 'house', radius: 14, build: 45, front: 7.5, boards: [] },
+  { id: 'yard_bhatta', zone: 'bhatta_v2', model: 'bhatta_v2', en: 'Yard 16: Bhatta (brick kiln)', hi: 'यार्ड 16: ईंट भट्ठा', kind: 'bazaar', radius: 40, build: 90, front: 25, boards: [] },
+  { id: 'yard_khel', zone: 'khel_maidan_v2', model: 'khel_maidan_v2', en: 'Yard 17: Khel maidan', hi: 'यार्ड 17: खेल मैदान', kind: 'field', radius: 36, build: 80, front: 25, boards: [] },
+  { id: 'yard_khalihan', zone: 'khalihan_v2', model: 'khalihan_v2', en: 'Yard 18: Khalihan', hi: 'यार्ड 18: खलिहान', kind: 'field', radius: 20, build: 50, front: 15, boards: [] },
+  { id: 'yard_dharam_kanta', zone: 'dharam_kanta_v2', model: 'dharam_kanta_v2', en: 'Yard 19: Dharam kanta', hi: 'यार्ड 19: धर्म कांटा', kind: 'bazaar', radius: 16, build: 45, front: 5, boards: [] },
+  { id: 'yard_akhada', zone: 'akhada_v2', model: 'akhada_v2', en: 'Yard 20: Akhada', hi: 'यार्ड 20: अखाड़ा', kind: 'field', radius: 16, build: 45, front: 10, boards: [] },
 ];
 
 const STEP = 80, X0 = 320, Z0 = -160, COLS = 6;

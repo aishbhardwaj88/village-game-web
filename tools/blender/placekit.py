@@ -67,3 +67,51 @@ def brick_wall_run(kit, x0, z0, x1, z1, h=1.2, t=0.3, cope=True):
         kit.add('brick', wb('bw', x0 - t / 2, x0 + t / 2, min(z0, z1), max(z0, z1), 0, h, 0.0))
         if cope:
             kit.add('trim', wb('bw_cope', x0 - t / 2 - 0.04, x0 + t / 2 + 0.04, min(z0, z1) - 0.03, max(z0, z1) + 0.03, h, h + 0.08, 0.004), CEMENT)
+
+
+def flag_cloth(kit, x, z, h_top, w=1.5, h=1.0, nx=10, facing=0.0):
+    """Indian flag cloth (saffron, white + 24-spoke navy wheel, green) as a gently waved strip mesh, textured from a tiny decal atlas; facing 0 = cloth runs +x."""
+    import bpy
+    from common import quad
+    from arch import decal_material
+
+    def lin(c):
+        return tuple((v / 255.0) ** 2.2 for v in c)
+
+    def px(u, v):
+        if v > 2 / 3:
+            return lin((255, 153, 51)) + (1.0,)
+        if v < 1 / 3:
+            return lin((19, 136, 8)) + (1.0,)
+        dx, dy = (u - 0.5) * (w / h), v - 0.5
+        r = math.hypot(dx, dy)
+        if abs(r - 0.15) < 0.012 or r < 0.02 or (r < 0.15 and abs(math.sin(math.atan2(dy, dx) * 12)) > 0.96):
+            return lin((28, 42, 140)) + (1.0,)
+        return lin((248, 248, 242)) + (1.0,)
+    mat = decal_material('hb_flag', (192, 128), px)
+    for k in range(nx):
+        a, b = k / nx, (k + 1) / nx
+        pt = lambda t, y: (x + 0.05 * math.cos(facing) + w * t * math.cos(facing), z + 0.05 * math.sin(facing) + w * t * math.sin(facing) + 0.1 * math.sin(t * 6.0) * (0.3 + t) * math.cos(facing), h_top - y)
+        for rev in (False, True):
+            pts = [pt(a, h), pt(b, h), pt(b, 0.0), pt(a, 0.0)]
+            o = quad('cloth', list(reversed(pts)) if rev else pts)
+            uvl = o.data.uv_layers.new(name='UVMap')
+            me = o.data
+            for loop in me.loops:
+                co = me.vertices[loop.vertex_index].co
+                uvl.data[loop.index].uv = ((math.hypot(co.x - x, -co.y - z) - 0.05) / w, (co.z - (h_top - h)) / h)
+            me.materials.append(mat)
+            kit.extra.append(o)
+
+
+def lime_line(kit, x0, z0, x1, z1, rnd, h=0.045, w=(0.05, 0.09), col=0xE9E7DE, fade=0.15):
+    """A hand-laid lime/chalk line: short segments with jitter in width and a small wander."""
+    L = math.hypot(x1 - x0, z1 - z0)
+    n = max(2, int(L / 0.5))
+    px, pz = x0, z0
+    for i in range(1, n + 1):
+        t = i / n
+        x = x0 + (x1 - x0) * t + (rnd.uniform(-0.03, 0.03) if i < n else 0)
+        z = z0 + (z1 - z0) * t + (rnd.uniform(-0.03, 0.03) if i < n else 0)
+        kit.add('paint', limb('lime', (px, pz, h), (x, z, h), rnd.uniform(*w), 0.012), col if rnd.random() > fade else 0xCFCCBF)
+        px, pz = x, z
