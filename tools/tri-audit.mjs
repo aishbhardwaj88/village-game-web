@@ -13,15 +13,20 @@ try {
   await page.click('#play-btn'); await page.waitForTimeout(4000);
   const r = await page.evaluate(({ x, z, yaw }) => {
     const d = window.__dopahar; d.teleportPlayer(x, z); d.camRig.yaw = yaw; d.camRig.update(10);
-    return new Promise((res) => { let n = 0; const f = () => { if (++n < 8) requestAnimationFrame(f); else {
-      const cam = d.camera; cam.updateMatrixWorld(); const M = new d.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
-      const rows = [];
-      d.scene.traverse((o) => { if (!(o.isMesh)) return; let vis = true; for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; } if (!vis) return;
-        const g = o.geometry; const tri = (g.index ? g.index.count : g.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1);
-        rows.push([o.name || o.type, (o.parent && o.parent.name) || '', Math.round(tri), o.castShadow]); });
-      rows.sort((a, b) => b[2] - a[2]);
-      res({ info: d.renderer.info.render.triangles, calls: d.renderer.info.render.calls, rows: rows.slice(0, 22), total: rows.reduce((s, r) => s + r[2], 0) });
-    } }; requestAnimationFrame(f); });
+    // One forced render (no rAF waits: those hang under swiftshader), then count what is visible and in frustum.
+    d.renderer.info.reset(); d.composer.render();
+    const cam = d.camera; cam.updateMatrixWorld(); const M = new d.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    const e = M.elements, planes = [];
+    for (const [a, sg] of [[0, 1], [0, -1], [1, 1], [1, -1], [2, 1], [2, -1]]) planes.push([0, 1, 2, 3].map((k) => e[k * 4 + 3] + sg * e[k * 4 + a]));
+    const inF = (o) => { const g = o.geometry; if (o.isInstancedMesh) { if (!o.boundingSphere) o.computeBoundingSphere(); } else if (!g.boundingSphere) g.computeBoundingSphere();
+      const bs = o.isInstancedMesh ? o.boundingSphere : g.boundingSphere; if (!bs) return true; const c = bs.center.clone().applyMatrix4(o.matrixWorld); const sc = o.matrixWorld.getMaxScaleOnAxis() * bs.radius;
+      return planes.every((p) => p[0] * c.x + p[1] * c.y + p[2] * c.z + p[3] >= -sc); };
+    const rows = [];
+    d.scene.traverse((o) => { if (!o.isMesh) return; let vis = true; for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; } if (!vis || !inF(o)) return;
+      const g = o.geometry; const tri = (g.index ? g.index.count : g.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1);
+      rows.push([o.name || o.type, (o.parent && o.parent.name) || '', Math.round(tri), o.castShadow]); });
+    rows.sort((a, b) => b[2] - a[2]);
+    return { info: d.renderer.info.render.triangles, calls: d.renderer.info.render.calls, rows: rows.slice(0, 25), total: rows.reduce((s, r) => s + r[2], 0) };
   }, { x, z, yaw });
   console.log('renderer triangles', r.info, 'calls', r.calls, 'sum of visible mesh tris', r.total);
   for (const row of r.rows) console.log(row.join(' | '));

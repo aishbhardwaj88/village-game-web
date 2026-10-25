@@ -184,7 +184,7 @@ function setUVs(geo, design) {
 
 /** A pillow pack: front/back printed faces that bulge in the middle, flat crimped ends. */
 function pillowPack(w, h, d, design) {
-  const geo = new THREE.BoxGeometry(w, h, d, 3, 6, 1);
+  const geo = new THREE.BoxGeometry(w, h, d, 2, 4, 1);
   const p = geo.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -236,10 +236,10 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
       case 'medbox': g = flatPack(0.13 * s, 0.07 * s, 0.045 * s, it.design); g.translate(0, 0.035 * s, 0); break;
       case 'phonebox': g = flatPack(0.1 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'bolt': g = lathe([[0, 0], [0.13, 0], [0.14, 0.01], [0.14, 0.49], [0.13, 0.5], [0, 0.5]], it.design); g.scale(s, s, s); break;
-      case 'tomato': g = new THREE.SphereGeometry(0.04, 8, 6); g.scale(s, 0.82 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
-      case 'onion': g = new THREE.SphereGeometry(0.045, 8, 6); g.scale(s, 0.88 * s, s); g.translate(0, 0.04 * s, 0); setUVs(g, it.design); break;
-      case 'potato': g = new THREE.SphereGeometry(0.045, 8, 6); g.scale(1.35 * s, 0.85 * s, s); g.translate(0, 0.038 * s, 0); setUVs(g, it.design); break;
-      case 'brinjal': g = new THREE.SphereGeometry(0.035, 8, 6); g.scale(s, 2.6 * s, s); g.rotateZ(Math.PI / 2); g.translate(0, 0.035 * s, 0); setUVs(g, it.design); break;
+      case 'tomato': g = new THREE.SphereGeometry(0.04, 6, 4); g.scale(s, 0.82 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
+      case 'onion': g = new THREE.SphereGeometry(0.045, 6, 4); g.scale(s, 0.88 * s, s); g.translate(0, 0.04 * s, 0); setUVs(g, it.design); break;
+      case 'potato': g = new THREE.SphereGeometry(0.045, 6, 4); g.scale(1.35 * s, 0.85 * s, s); g.translate(0, 0.038 * s, 0); setUVs(g, it.design); break;
+      case 'brinjal': g = new THREE.SphereGeometry(0.035, 6, 4); g.scale(s, 2.6 * s, s); g.rotateZ(Math.PI / 2); g.translate(0, 0.035 * s, 0); setUVs(g, it.design); break;
       case 'greens': { // a bundle of leafy stalks: tilted double-sided blades fanning out from a tied base
         const parts = [];
         for (let k = 0; k < 7; k++) for (const flip of [0, Math.PI]) {
@@ -251,16 +251,16 @@ export function buildGoodsMesh(items, world, name = 'shop_goods') {
         }
         g = mergeGeometries(parts); g.translate(0, 0.02 * s, 0); break;
       }
-      case 'laddoo': g = new THREE.SphereGeometry(0.036, 8, 6); g.scale(s, 0.92 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
-      case 'gulab': g = new THREE.SphereGeometry(0.034, 8, 6); g.scale(s, 0.85 * s, s); g.translate(0, 0.029 * s, 0); setUVs(g, it.design); break;
+      case 'laddoo': g = new THREE.SphereGeometry(0.036, 6, 4); g.scale(s, 0.92 * s, s); g.translate(0, 0.033 * s, 0); setUVs(g, it.design); break;
+      case 'gulab': g = new THREE.SphereGeometry(0.034, 6, 4); g.scale(s, 0.85 * s, s); g.translate(0, 0.029 * s, 0); setUVs(g, it.design); break;
       case 'barfi': g = flatPack(0.07 * s, 0.026 * s, 0.07 * s, it.design); g.translate(0, 0.013 * s, 0); break;
-      case 'jalebi': { const t = new THREE.TorusGeometry(0.036 * s, 0.0085 * s, 6, 14); t.rotateX(Math.PI / 2); const t2 = new THREE.TorusGeometry(0.019 * s, 0.0085 * s, 6, 10); t2.rotateX(Math.PI / 2); t2.translate(0, 0.004 * s, 0); g = mergeGeometries([setUVs(t, it.design), setUVs(t2, it.design)]); g.translate(0, 0.01 * s, 0); break; }
+      case 'jalebi': { const t = new THREE.TorusGeometry(0.036 * s, 0.0085 * s, 5, 12); t.rotateX(Math.PI / 2); const t2 = new THREE.TorusGeometry(0.019 * s, 0.0085 * s, 5, 8); t2.rotateX(Math.PI / 2); t2.translate(0, 0.004 * s, 0); g = mergeGeometries([setUVs(t, it.design), setUVs(t2, it.design)]); g.translate(0, 0.01 * s, 0); break; }
       case 'samosa': g = new THREE.ConeGeometry(0.058 * s, 0.085 * s, 3, 1); g.rotateY(0.3); g.translate(0, 0.0425 * s, 0); g.scale(1, 0.9, 1); setUVs(g, it.design); break;
       case 'towel': g = flatPack(0.14 * s, 0.4 * s, 0.012 * s, it.design); g.translate(0, -0.2 * s, 0); break;
       case 'folded': g = flatPack(0.38 * s, 0.035 * s, 0.26 * s, it.design); g.translate(0, 0.0175 * s, 0); break;
-      case 'tyre': { g = new THREE.TorusGeometry(0.3 * s, 0.075 * s, 10, 26); g.scale(1, 1, 1.15); setUVs(g, it.design); g.translate(0, 0.3 * s, 0); break; }
-      case 'tube': { g = new THREE.TorusGeometry(0.22 * s, 0.04 * s, 8, 22); setUVs(g, it.design); g.translate(0, 0.22 * s, 0); break; }
-      case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 5, 12); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
+      case 'tyre': { g = new THREE.TorusGeometry(0.3 * s, 0.075 * s, 8, 20); g.scale(1, 1, 1.15); setUVs(g, it.design); g.translate(0, 0.3 * s, 0); break; }
+      case 'tube': { g = new THREE.TorusGeometry(0.22 * s, 0.04 * s, 6, 16); setUVs(g, it.design); g.translate(0, 0.22 * s, 0); break; }
+      case 'bangle': g = new THREE.TorusGeometry(0.042 * s, 0.0065 * s, 4, 10); g.rotateX(Math.PI / 2); setUVs(g, it.design); break;
       case 'milkpouch': g = pillowPack(0.13 * s, 0.17 * s, 0.05 * s, it.design); g.translate(0, 0.085 * s, 0); break;
       case 'tub': g = lathe([[0, 0], [0.045, 0], [0.058, 0.02], [0.062, 0.075], [0.066, 0.08], [0, 0.08]], it.design); g.scale(s, s, s); break;
       case 'bottle': g = lathe(BOTTLE, it.design); g.scale(s, s, s); break;

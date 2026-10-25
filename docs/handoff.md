@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n23, triangle cuts):** Game change: shop goods trimmed (pillow packs 2x4 segments, spheres 6x4, tori fewer sides): goods mesh 84k -> 57k tris, hero/bazaar view 542k -> 516k renderer tris (still over 400k; ~290k are real visible mesh tris, rest is shadow pass + composer). tools/tri-audit.mjs rewritten to one forced render (works, ~1 min). Next biggest in that view: blender_bazaar_hb_main 30k + hb_props 28k, crop_rows 25k, grass 20k, lane_0 19k, field_sarson 19k, tree foliage/cards 18k each. Proof docs/shots/shopgoods-lod-2026-10-25/kirana_close.png (goods still read). Build ALL PASSED.
+NEXT: thin crop_rows/field_sarson/grass distance LOD, then re-run tri-audit.
+
+---
+
 **2026-10-25 (cycle 39z99n22, stale-gap check):** NO game change (written honestly). Checked the "khel maidan outfield is uniform olive" gap: maidanOutfield (src/farmSites.js:1396) already has mown stripes, straw/dust patches, tuft noise and a dusty rim, so it is closed. Do not re-check. Everything left needs the art director: triangle limit (400k vs ~520k), draw-call ceiling (150 vs 164 in hero/bazaar; blocks lamps, cottage wood, jalebi/gaushala spurs), the 8 m lane gap at (-37,76) and the unjoined south gali (layout is her call), a plain crate (needs Blender), tri-audit rewrite.
 NEXT: act on her budget ruling; otherwise rewrite tools/tri-audit.mjs to read renderer.info after one forced render.
 
