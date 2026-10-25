@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n32, east road PBR bed):** Game change: the east road legs (createEastRoadLeg, src/farmSites.js) now use the scanned ground PBR set (colour+normal+roughness) under the baked tints instead of the plaster set; ruts, gravel and dust now read as real packed earth. Same mesh, no new draw call. Build ALL PASSED. Proof docs/shots/eastroad-pbr-2026-10-25/road_a.png (proof-shot, capsule in frame, not tickable; 139 calls, no console errors). Gaps: edging stones and drain lips share the earth texture (dusty, acceptable); no street life on the road. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n31b, A-2c lane lamps):** Game change: solar LED street lamps now line the east gali, its south leg (E2), the west gali and the south gali (src/main.js lamps_gali_*, streamed in 36 m chunks via the existing createStreetLamps, no new asset). Build ALL PASSED. Proof docs/shots/gali-lamps-2026-10-25/pole_close.png (proof-shot, free camera; poles are thin so at 20 m they barely read, close shot shows panel, arm, LED head). Stale audit items closed by code check: kachcha haystack debris already removed (39z98), dairy has boards on both faces, chowk chairs are moulded. Gaps: hero lane and spurs have no lamps; busy gali views read 180-197 calls incl. shadow pass, not re-measured with the validator's own counter. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: spur/hero-lane lamps only if draw calls allow; otherwise A-2c routes legibility.
 

@@ -1760,7 +1760,7 @@ export function createEastRoadLeg(leg) {
   // Dung cakes, pebbles and a few dry straws of the day's traffic.
   for (let i = 0; i < L / 9; i++) geos.push(bake(new THREE.CylinderGeometry(0.26, 0.29, 0.05, 8), at(-L / 2 + rnd() * L, 0.06, (rnd() - 0.5) * 3.8), 0x6a5a3a));
   for (let i = 0; i < L / 2.5; i++) geos.push(bake(new THREE.DodecahedronGeometry(0.07 + rnd() * 0.08, 0), at(-L / 2 + rnd() * L, 0.07, (rnd() - 0.5) * 4.6, rnd() * 3), [0x9b9588, 0x8a8478, 0xa59c88][i % 3]));
-  const g = finishSite(leg.id, geos, { x: (leg.a.x + leg.b.x) / 2, z: (leg.a.z + leg.b.z) / 2 });
+  const g = finishSite(leg.id, geos, { x: (leg.a.x + leg.b.x) / 2, z: (leg.a.z + leg.b.z) / 2 }, { earth: true }); // real scanned ground PBR set under the baked tints (same call count);
   g.rotation.y = Math.atan2(-(leg.b.z - leg.a.z), leg.b.x - leg.a.x);
   return g;
 }
