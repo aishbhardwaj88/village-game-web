@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n45, medical fridge):** Game change: the medical store's fridge (tools/blender/build_bazaar_row.py medical()) was a solid white block with a flat door; it is now a hollow upright display fridge: steel cabinet, door frame, handle, top vent grille, plinth, three glass shelves with vials/bottles inside. Same draw calls (bazaar_row.glb 38.7k tris). Build ALL PASSED, budget 30.91 MB, no console errors; view 117 calls / 416k tris (incl. shadow pass, not re-measured with validator counter). Proof docs/shots/medical-fridge-2026-10-25/fridge3.png (photo camera; a shopkeeper capsule edge is at the right border, fridge is the subject). Gaps: bangle tori are still tinted metal-set rings (read fine, not glass); no glass pane on the fridge (open-front chiller on purpose, a pane hid the stock). Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: playtest items 2/5 leftovers (cricket/badminton court, atta chakki housing), then A-2c routes legibility.
+
+---
 **2026-10-25 (cycle 39z99n44, dhaba cook):** Game change: a capsule cook (blue, npc_dhaba_cook) now stands behind the mandi dhaba counter between tandoor and shelf (src/farmSites.js createMandi); first tint was tan and vanished against the wall, recoloured. Build ALL PASSED, no console errors; view 76 calls / 109k tris. Proof docs/shots/dhaba-cook-2026-10-25/cook.png (photo camera; capsule IS in frame on purpose, it is the subject). Gaps: dhaba plaster walls still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: bangle tori / medical fridge, then A-2c routes legibility.
 

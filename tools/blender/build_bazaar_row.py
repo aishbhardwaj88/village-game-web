@@ -220,9 +220,27 @@ def medical(i):
     shelves(i, (1.2, 2.05, 2.6))
     # tablet cartons and syrup bottles are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     # glass-fronted display counter top + a fridge + a weighing machine + a green-cross-free sign stand
-    kit.add('paint', wb('fridge', c + 1.4, c + 2.0, BZ - 0.55, BZ - 0.1, 0.0, 1.6, 0.02), 0xE8E6DD)
-    kit.add('paint', wb('fridge_door', c + 1.4, c + 2.0, BZ - 0.57, BZ - 0.55, 0.05, 1.55, 0.006), 0xD5D8D8)
-    kit.add('paint', wb('fridge_handle', c + 1.45, c + 1.49, BZ - 0.6, BZ - 0.57, 0.7, 1.1, 0), 0x666A6E)
+    # upright glass-door medicine fridge: white steel body, dark glass door in a steel frame, lit shelves of vials and boxes, top vent grille, plinth feet
+    fx0, fx1, fz0, fz1 = c + 1.35, c + 2.05, BZ - 0.6, BZ - 0.1
+    kit.add('paint', wb('fridge_plinth', fx0 + 0.03, fx1 - 0.03, fz0 + 0.04, fz1 - 0.04, 0.0, 0.1, 0.0), 0x3A3C3E)
+    # hollow cabinet (sides, back, top, floor) so the shelves of stock inside actually show; the glass is a thin pane, no solid block behind it
+    kit.add('paint', wb('fridge_back', fx0, fx1, fz1 - 0.03, fz1, 0.1, 1.75, 0.0), 0xCFD6D6)
+    kit.add('paint', wb('fridge_l', fx0, fx0 + 0.04, fz0, fz1, 0.1, 1.75, 0.0), 0xE8E6DD)
+    kit.add('paint', wb('fridge_r', fx1 - 0.04, fx1, fz0, fz1, 0.1, 1.75, 0.0), 0xE8E6DD)
+    kit.add('paint', wb('fridge_top', fx0, fx1, fz0, fz1, 1.67, 1.75, 0.01), 0xE8E6DD)
+    kit.add('paint', wb('fridge_floor', fx0, fx1, fz0, fz1, 0.1, 0.2, 0.0), 0xE8E6DD)
+    for yy in (0.2, 1.46):
+        kit.add('paint', wb('fridge_frame_h', fx0 + 0.05, fx1 - 0.05, fz0 - 0.03, fz0, yy, yy + 0.05, 0.004), 0xB9BCBE)
+    for xx in (fx0 + 0.05, fx1 - 0.10):
+        kit.add('paint', wb('fridge_frame_v', xx, xx + 0.05, fz0 - 0.03, fz0, 0.2, 1.5, 0.004), 0xB9BCBE)
+    for k, yy in enumerate((0.55, 0.9, 1.25)):
+        kit.add('paint', wb('fridge_shelf', fx0 + 0.1, fx1 - 0.1, fz0 + 0.02, fz0 + 0.38, yy, yy + 0.012, 0.0), 0xC8CBCD)
+        for j in range(5):
+            bx = fx0 + 0.15 + j * 0.095
+            kit.add('paint', cyl('vial', bx, fz0 + 0.14 + 0.1 * (j % 2), yy + 0.012, yy + 0.012 + 0.09 + 0.02 * ((j + k) % 3), 0.022, 0.022, 10), [0xB8782A, 0xE9E7DD, 0x4F8A5A][(j + k) % 3])
+    kit.add('paint', wb('fridge_handle', fx1 - 0.13, fx1 - 0.10, fz0 - 0.07, fz0 - 0.03, 0.55, 1.15, 0.004), 0x8A8D90)
+    for g in range(5):
+        kit.add('paint', wb('fridge_vent', fx0 + 0.12, fx1 - 0.12, fz0 - 0.005, fz0 + 0.005, 1.6 + g * 0.025, 1.612 + g * 0.025, 0.0), 0x2A2C2E)
     kit.add('paint', wb('case', c - 1.4, c - 0.3, CZ - 0.05, CZ + 0.3, 0.95, 1.2, 0.01), 0xCFE3E0)
     kit.add('paint', wb('case_frame', c - 1.42, c - 0.28, CZ - 0.07, CZ + 0.32, 1.2, 1.24, 0.006), 0x4A4640)
     kit.add('paint', wb('scale', c + 0.4, c + 0.9, CZ + 0.35, CZ + 0.85, 0.0, 0.1, 0.01), 0x30343A)
