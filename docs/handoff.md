@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99j, playtest block item 2 + triangle budget, grass thinning):** Game change: Poly Haven grass clumps (src/vegetation.js buildVegetation) thinned from 40% to 28% of the old card count and drawn within 22 m (was 28), in line with "random grass looks bad, thin it". Busy-view triangles 538k -> 521k (regression check "triangles under 400k" still fails, same as before; top now shop_goods_11 84k, halwai row 39k, bazaar 30k+28k, grass 26k, crop_rows 25k; getting under 400k needs cutting shop goods or the bazaar, the art director's call). Build ALL PASSED, budget 30.90 MB, no new draw call, regression 21/22 (only that check). Look check docs/shots/2026-10-25T01-25-11-713Z/low_angle.png (full screenshot run, no bare ground). Not tickable.
+NEXT: shop goods triangle cut and cottage wood (art director's call), on-foot findability walk.
+
+---
+
 **2026-10-25 (cycle 39z99i, playtest block item 7, findability walk):** NO game change this cycle (report only, written honestly: the remaining playtest items are blocked on art-director calls). Wrote docs/findability-walk-2026-10-25.md from the existing headless lane-walk shots: 36 of 39 places pass the subject check from a lane; post office, atta chakki and gurukul were checked by eye and are findable (shared signpost board / own board in frame). Not a continuous on-foot walk with a stopwatch, so item 7 stays UNTICKED. Open and blocked on her: cottage wood (draw-call ceiling, hero and bazaar at 150 of 150), triangle cuts (538k vs 400k), lamps on lanes (same ceiling).
 NEXT: continuous on-foot walk house to each far place with timing; lamps/street life on lanes once a draw-call call is made.
 

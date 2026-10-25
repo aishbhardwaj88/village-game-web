@@ -310,8 +310,8 @@ export function buildVegetation(tuftAnchors, scrubAnchors) {
   // Real Poly Haven scans (src/realPlants.js), thinned to ~40% of the old card count: grass only where it would grow
   // (the keep-outs already exclude drains, kerbs, canal, floors) and in small clumps, not a carpet.
   const thin = (anchors, f) => anchors.map((a) => ({ ...a, count: Math.max(1, Math.round(a.count * f)) }));
-  const tuftPositions = buildClusterPositions(thin(tuftAnchors, 0.4), 0.35);
-  addPlantInstances(group, 'grass_medium_02', 0.5, tuftPositions.map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.5 })), { seed: 3, tint: 0.25, radius: 28 });
+  const tuftPositions = buildClusterPositions(thin(tuftAnchors, 0.28), 0.35);
+  addPlantInstances(group, 'grass_medium_02', 0.5, tuftPositions.map((p) => ({ ...p, scale: 0.9 + Math.random() * 0.5 })), { seed: 3, tint: 0.25, radius: 22 });
 
   const scrubPositions = buildClusterPositions(thin(scrubAnchors, 0.5), 0.5);
   const half = Math.ceil(scrubPositions.length / 2);
