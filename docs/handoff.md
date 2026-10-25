@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n20, collision audit + tri-audit retry):** NO game change (written honestly). Re-read the code: every NPC routine (waypoint loop/run, follow, bazaarLife) already moves through resolveMove; the only direct position sets are scripted teleports (main.js sister placements). So A0 "route every NPC through the resolver" is met in code, but it is not a visual item so it stays unticked (no screenshot proof possible). tools/tri-audit.mjs hung again (twice, 2nd with default view, 400 s) and crashed once at (-60,20): two attempts, stop retrying; it needs rewriting (avoid 8 rAF waits under swiftshader) before it can name the triangle cuts. Remaining work is art-director calls (triangle limit 400k vs ~520k, draw-call ceiling 150 vs 164).
+NEXT: rewrite tri-audit to read renderer.info after one forced render() instead of rAF waits, then propose cuts.
+
+---
+
 **2026-10-25 (cycle 39z99n19, A-2b minimap research):** NO game change (written honestly). One web search on minimap off-window marker conventions; thin but consistent with the shipped minimap.js (edge clamp, metre label). Shot docs/shots/minimap-2026-10-25/minimap_far_objective.png renders fine, 164 calls / 520k tris in that view. Boxes stay unticked. Remaining work is all art-director calls (triangle cuts, draw-call ceiling) or large builds (road to the east cluster, lamp posters need draw calls the hero zone lacks).
 NEXT: A-2c routes legibility or whatever the art director rules on budget.
 
