@@ -1,3 +1,6 @@
+**2026-10-26 (Tasks list proof, no look change):** Game change: none; the Tasks list switching (skip-ahead via hub steps, replay, locked side jobs refused, pin/unpin of the waypoint) was already built but never tested through the UI. New tools/tasks-switch-test.mjs taps real rows: 19 rows, skip to missions 2,3,4,5,7,8 each updates step + objective and resets money/sacks/mangoes, mission 1 replays, locked side job gives a plain note, zero console errors. Proof docs/shots/tasks-switch-2026-10-26/ (m8_after_switch.png, 9_locked_side_job_note.png, both looked at). Backlog A-2b Tasks + Guard items ticked. Not tested: side-job rows in free roam (visit path shared with map click). Mission 6 has no hub so it is entered by playing 5.
+NEXT: on-foot findability walk (A-2c), audio polish.
+
 **2026-10-26 (A0-LOAD check, no game change):** Staging yard is already zone-streamed; request log (LIST=1) shows no staged model or texture before Play, so the 'stop shipping it' item was already true. Play ready 15160 ms, 12.49 MB (core village models + shared textures). KTX2 step blocked: no toktx/basisu installed and it needs her before/after judgement (NEEDS_YOU). Build ALL PASSED, collision-test 4834 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed.
 NEXT: on-foot findability walk (A-2c), audio polish.
 
