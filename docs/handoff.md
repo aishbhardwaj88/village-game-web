@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99f, playtest block item 6, far-LOD check):** No game change (verification only). Checked the far-LOD abadi rows: abadi_row_*_lod.glb already uses hb_main with colour, normal and roughness maps plus openings, grilles, sills, bands and parapets (earlier cycles); proof docs/shots/farlod-2026-10-25/far_b.png (hero views 110-141 calls). Item 6 far-LOD line ticked in FEEDBACK.md. Remaining in the block is art-director-call work (cottage wood draw-call ceiling, triangle cuts) and bazaar interior props (sewing machine, puncture tub).
+NEXT: sewing machine and puncture tub props, then cottage wood once the draw-call call is made.
+
+---
+
 **2026-10-25 (cycle 39z99e, build gate):** Game change: small jute sacks (src/mergeUtils.js) no longer cast shadows, one shadow-pass draw call saved per view. The hero zone was 151 calls (check 8a failing since 39z99d, so the build was 15/16, not green as earlier entries implied); it is now 150, bazaar 149, field 118. Build ALL PASSED 16/16, budget 30.90 MB. No visible change (sack shadows are negligible), so no proof shot and no box ticked. Checked and stale: the tailor sewing machine, puncture pump/spanners and kirana scale already ride the real metal PBR set (Kit tex_override), so the "flat vertex-colour paint" gap noted in 39z99b/c is not real. Hero and bazaar zones sit at the ceiling with zero margin, so cottage wood (item 6) still needs the art director's draw-call call.
 NEXT: cottage wood and triangle cuts (both art director's call), far-LOD flat blocks via Blender.
 

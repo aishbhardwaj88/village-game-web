@@ -151,7 +151,7 @@ flowers - and it is still not there.
   tank is easy to find. Use a real one.
 - **The hand pump in the middle of the house streets was asked to be removed and is
   still there.** Remove it. [DONE 24 Oct: lane hand pumps removed (src/farmSites.js createLaneWaterCorner); the courtyard pump of the errand stays]
-- Far-LOD background buildings are flat untextured blocks visible in hero shots. Give
+- [DONE 25 Oct 2026, verified: far-LOD rows carry the shared PBR plaster set (colour+normal+roughness), window/door surrounds, grilles, sills, bands, parapets; proof docs/shots/farlod-2026-10-25/far_b.png] Far-LOD background buildings are flat untextured blocks visible in hero shots. Give
   the far LOD painted openings and a plaster tone.
 
 ### 7. GROUND, WATER AND ROADS
