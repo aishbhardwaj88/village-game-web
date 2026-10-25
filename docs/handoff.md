@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n27, signage check):** NO game change (written honestly). FEEDBACK item 1's "Banta shop and Chaat thela are not built" was stale: both exist (src/farmSites.js, freeRoam places). Shot both boards from game distance: "Banta - Goli Soda" and "Chaat & Golgappa" read English-first, Hindi small above, dark paint on cream. Proof docs/shots/banta-chaat-2026-10-25/{banta_s,chaat_s}.png (capsule keepers in frame, so not tickable). Everything left needs the art director: triangle limit meaning (visible 271k vs renderer ~500k), draw-call ceiling 150 (hero/bazaar 159-166), Blender is not installed so the bazaar row model and a plain crate cannot be rebuilt.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n26, tri-audit re-run):** NO game change (written honestly). Grass tufts already have distance density LOD (realPlants.js addPlantInstances, radius 22, thins at 55%/80%), so that NEXT was already met. Re-ran tools/tri-audit.mjs on the hero view: renderer 496k tris / 135 calls, but the sum of visible meshes is only 271k; the rest is the shadow pass and composer. Largest: shop_goods 57k, bazaar hb_main 31k + hb_props 28k, grass 22k, lane_0 19k, tree foliage 18k + cards 18k, crop_rows 14k, sarson 9k. The 400k limit is under 400k if counted as visible mesh tris, over if counted as renderer.info; which one counts is the art director's call. No further cuts without her ruling.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 
