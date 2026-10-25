@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n49b, hero lane lamps - tried, reverted):** Tried streamed solar lamps on the hero lane (house to halwai to school) in src/main.js. Result: +3 to +4 draw calls in both views (157->160, 166->170, already above 150 incl. shadow pass) and the lamps were not visible in the proof shots (docs/shots/hero-lamps-2026-10-25/), so the change was reverted: cost with no visible gain. No game change this cycle. Needs the art director: draw-call ceiling, and where exactly the hero lane runs (the straight house-halwai line is not the real lane centre).
+NEXT: item 12 task-menu leftovers (waypoint switching), then lanes street life.
+
+---
 **2026-10-25 (cycle 39z99n49, johad reeds):** Game change: johad reeds (src/farmSites.js reedClump) were plain dark sticks; now clumps of 6-10 tapered bent leaf blades in mixed greens (some dry straw) plus bulrush stalks with brown seed heads; tubewell hauz water retinted deeper/murkier. Same draw calls. Build ALL PASSED, no console errors. Proof docs/shots/reeds-2026-10-25/{johad_reeds2,hauz}.png (photo camera, no capsule in frame; not item-ticked, item 7 stays her call). Gaps: canal water untouched, pond lotus pink a little saturated. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: item 4 other shops' boxy goods / unidentified-objects list, then A-2c routes legibility.
 
