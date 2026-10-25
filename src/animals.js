@@ -184,7 +184,7 @@ const HORN_DARK = 0x3a332a;
  * way) — createCattleHerd() applies the "heavier/bigger" difference as a per-
  * instance non-uniform scale baked into that instance's own matrix, so the extra
  * bulk costs nothing structurally. */
-export function buildBovineGeometry() {
+export function buildBovineGeometry({ legs = true, udder = true } = {}) {
   const geos = [];
   const legLen = 0.82;
   const torsoRadius = 0.3;
@@ -197,7 +197,7 @@ export function buildBovineGeometry() {
   geos.push(sc(new THREE.SphereGeometry(0.3, 12, 10), 0.92, 0.95, 1.1, 0, torsoY + 0.04, -0.4, HIDE_NEUTRAL));
   geos.push(sc(new THREE.SphereGeometry(0.2, 10, 8), 0.7, 0.85, 1.2, 0, torsoY + 0.27, 0.4, HIDE_NEUTRAL));
   geos.push(sc(new THREE.SphereGeometry(0.12, 8, 6), 0.6, 1.0, 1.9, 0, torsoY - 0.2, 0.62, HIDE_NEUTRAL)); // dewlap
-  geos.push(sc(new THREE.SphereGeometry(0.1, 8, 6), 1, 0.9, 1.1, 0, torsoY - 0.3, -0.42, 0xc9a595)); // udder
+  if (udder) geos.push(sc(new THREE.SphereGeometry(0.1, 8, 6), 1, 0.9, 1.1, 0, torsoY - 0.3, -0.42, 0xc9a595)); // udder
 
   // Neck (stout, tapering to the head) and a long wedge-shaped face.
   const neckBase = P(0, torsoY + 0.05, torsoHalfLen + torsoRadius - 0.35);
@@ -214,7 +214,7 @@ export function buildBovineGeometry() {
   }
 
   // Legs: one smooth tapering cylinder each, dark hoof; hind legs set slightly back at the hock.
-  for (const [lx, lz, hind] of [[-0.19, 0.5, 0], [0.19, 0.5, 0], [-0.19, -0.5, 1], [0.19, -0.5, 1]]) {
+  if (legs) for (const [lx, lz, hind] of [[-0.19, 0.5, 0], [0.19, 0.5, 0], [-0.19, -0.5, 1], [0.19, -0.5, 1]]) {
     const top = P(lx, torsoY - 0.05, lz), bot = P(lx, 0.09, lz - (hind ? 0.08 : 0));
     const dir = new THREE.Vector3().subVectors(top, bot);
     const len = dir.length();
@@ -238,6 +238,13 @@ export function buildBovineGeometry() {
   }
   merged.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   return merged;
+}
+
+/** Shared hide material (grain map + bump) for a single, non-instanced bovine mesh, e.g. the bullock cart's pair.
+ * `tint` multiplies the near-white vertex colours, like setColorAt does for the herd. */
+export function createHideMaterial(tint) {
+  const hide = hideTextures();
+  return new THREE.MeshStandardMaterial({ vertexColors: true, color: tint, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.2, roughnessMap: hide.bump });
 }
 
 let _hideTex = null;

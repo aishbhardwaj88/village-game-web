@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { buildBovineGeometry, createHideMaterial } from './animals.js';
 import { STATIC_COLLIDERS, orientedBoxOverlapsAnyBox } from './collision.js';
 
 /**
@@ -655,10 +656,6 @@ const C = {
 // Task 3 (proportions pass): body length 1.5->1.6m, leg length 0.62->0.75m (both per
 // this task's brief), plus a shoulder hump — a real silhouette feature the "pale
 // boxes" placeholder was missing entirely, not an added decoration.
-const BULLOCK_BODY_LEN = 1.6;
-const BULLOCK_BODY_W = 0.55;
-const BULLOCK_BODY_H = 0.75;
-const BULLOCK_LEG_LEN = 0.75;
 
 /**
  * Task 2 (draw-call budget) — a bullock's body/hump/neck/head/horns never move
@@ -670,51 +667,32 @@ const BULLOCK_LEG_LEN = 0.75;
  * the caller to add directly under the cart's own group.
  */
 function buildBullock(offsetX, offsetZ) {
-  const staticGroup = new THREE.Group();
+  // Body, hump, neck, head, horns, tail: the same textured hide-and-vertex-colour bovine the herds use, minus
+  // its legs and udder (legs below swing; a bullock has no udder). Returned as a geometry already moved into
+  // cart-local position so buildCartGroup merges both bullocks into one mesh (one draw call).
+  const body = buildBovineGeometry({ legs: false, udder: false }).clone();
+  body.rotateY(Math.PI); // the herd bovine faces +z; the cart's yoke is at -z, so the bullocks must face -z
+  body.translate(offsetX, 0, offsetZ);
 
-  const body = pbox(BULLOCK_BODY_W, BULLOCK_BODY_H, BULLOCK_BODY_LEN, V.bullockHide, 0.9);
-  body.position.set(offsetX, C.bullockShoulderY - BULLOCK_BODY_H / 2, offsetZ);
-  staticGroup.add(body);
-
-  // Shoulder hump — zebu cattle's defining silhouette feature, sat just behind the
-  // neck junction, on top of the back.
-  const hump = pbox(0.3, 0.2, 0.32, V.bullockHide, 0.9);
-  hump.position.set(offsetX, C.bullockShoulderY + 0.1, offsetZ + BULLOCK_BODY_LEN / 2 - 0.28);
-  staticGroup.add(hump);
-
-  const neck = pbox(0.32, 0.32, 0.4, V.bullockHide, 0.9);
-  neck.position.set(offsetX, C.bullockShoulderY - 0.1, offsetZ + BULLOCK_BODY_LEN / 2 + 0.15);
-  staticGroup.add(neck);
-  const head = pbox(0.28, 0.3, 0.35, V.bullockHide, 0.9);
-  head.position.set(offsetX, C.bullockShoulderY, offsetZ + BULLOCK_BODY_LEN / 2 + 0.45);
-  staticGroup.add(head);
-  const hornGeo = new THREE.ConeGeometry(0.03, 0.22, 6);
-  for (const side of [-1, 1]) {
-    const horn = pmesh(hornGeo, 0xe8e2d0, 0.5);
-    horn.position.set(offsetX + side * 0.1, C.bullockShoulderY + 0.2, offsetZ + BULLOCK_BODY_LEN / 2 + 0.4);
-    horn.rotation.z = side * 0.5;
-    staticGroup.add(horn);
-  }
-
-  // Legs: bottom at the ground (y=0) by construction, top reaching BULLOCK_LEG_LEN —
-  // a little into the body's own bottom (0.75 vs the body's belly at shoulderY-bodyH
-  // = 0.6), which is correct/expected (legs plug into the torso volume, not a precise
-  // seam) rather than the old formula's arbitrary offset.
-  const legGeo = new THREE.BoxGeometry(0.13, BULLOCK_LEG_LEN, 0.13);
-  // Legs are pose-only proxies here; buildCartGroup draws all 8 as ONE InstancedMesh (8 draw calls -> 1).
-  const legMesh = pmesh(legGeo, V.bullockHide, 0.9);
+  // Legs: one tapering cylinder, top at the belly and hoof at the ground (pivot at its centre, as before);
+  // drawn as ONE InstancedMesh for all 8 (8 draw calls -> 1) with the same hide material.
+  const legH = 1.0;
+  const legGeo = new THREE.CylinderGeometry(0.13, 0.055, legH, 8);
+  const legMaterial = createHideMaterial(V.bullockHide);
+  legMaterial.vertexColors = false;
+  legMaterial.color.multiplyScalar(0.85); // body's vertex colour is near-white (0xd8d4c8), match it
   const legs = [];
   for (const [lx, lz] of [
-    [-0.18, BULLOCK_BODY_LEN / 2 - 0.15],
-    [0.18, BULLOCK_BODY_LEN / 2 - 0.15],
-    [-0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
-    [0.18, -BULLOCK_BODY_LEN / 2 + 0.15],
+    [-0.19, 0.5],
+    [0.19, 0.5],
+    [-0.19, -0.5],
+    [0.19, -0.5],
   ]) {
     const leg = new THREE.Object3D();
-    leg.position.set(offsetX + lx, BULLOCK_LEG_LEN / 2, offsetZ + lz);
+    leg.position.set(offsetX + lx, legH / 2 + 0.05, offsetZ + lz);
     legs.push(leg);
   }
-  return { staticGroup, legs, legGeometry: legMesh.geometry, legMaterial: legMesh.material };
+  return { bodyGeometry: body, legs, legGeometry: legGeo, legMaterial };
 }
 
 function buildCartGroup() {
@@ -775,19 +753,24 @@ function buildCartGroup() {
   const bullocksStatic = new THREE.Group();
   group.add(bullocksStatic);
   const bullocks = [];
+  const bodyGeos = [];
   const allLegs = [];
   let legGeometry, legMaterial;
   for (const side of [-1, 1]) {
     const offsetX = side * 0.42;
-    const offsetZ = -C.platformLen / 2 - C.yokeForward + 0.5;
+    const offsetZ = -C.platformLen / 2 - C.yokeForward + 0.4; // shoulders at the yoke tip, head forward of it
     const built = buildBullock(offsetX, offsetZ);
-    bullocksStatic.add(built.staticGroup);
+    bodyGeos.push(built.bodyGeometry);
     allLegs.push(...built.legs);
     legGeometry = built.legGeometry;
     legMaterial = built.legMaterial;
     bullocks.push({ userData: { legs: built.legs } });
   }
-  mergeGroupByMaterial(bullocksStatic);
+  const bullockBody = new THREE.Mesh(mergeGeometries(bodyGeos), createHideMaterial(V.bullockHide));
+  bullockBody.name = 'bullock_bodies';
+  bullockBody.castShadow = true;
+  bullockBody.receiveShadow = true;
+  bullocksStatic.add(bullockBody);
   // One draw call for every leg (thin, so no shadow); _updateBullockLegs rewrites the instance matrices.
   const legMesh = new THREE.InstancedMesh(legGeometry, legMaterial, allLegs.length);
   legMesh.frustumCulled = false;
