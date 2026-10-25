@@ -1,4 +1,8 @@
 ---
+**2026-10-26 (anchors wiring 4, no look change):** Game change: none visible. Side-job markers pump, kulfi, kanche, milk, gate, patang (src/jobs/data.js) are now offsets from the store / chaat / chowk / halwai / baagh anchors, so they move with the place; positions numerically identical (checked). Still baked: SchoolCompound in village.js, gilli MAIDAN (46,104, not a mapped place), pond/johad plant keep-outs, eastRoad ends, lane sites. Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed.
+NEXT: remaining baked anchors (school village.js), then the audio/menus polish pass.
+
+---
 **2026-10-26 (load time 2, no look change):** Game change: sky-lighting file halved (new public/assets/hdri/camdeboo_road_512.hdr, 382 KB vs 1.45 MB; tools/hdr-downscale.mjs; src/main.js loads it; before/after shots docs/shots/2026-10-25T21-11-18-113Z vs 2026-10-25T21-15-52-125Z low_angle.png look the same). tools/load-time-test.mjs now uses its own gzip static server (vite preview sends no gzip, GitHub Pages does) and `LIST=1` prints the biggest requests. Honest numbers: Play ready 15.2 s, 12.5 MB before Play (was 13.4-14 MB); JS is only 0.4 MB gzipped so the earlier "5 s before first model" guess was wrong: it is bandwidth. 4G at 9 Mbit moves 12.5 MB in ~11 s, so 10 s needs ~4 MB less before Play: models (house_compound 1.55, bazaar_row 1.14, tea_stall_chowk 1.03, halwai 0.96, temple 0.86 ...) plus ~4 MB of shared textures. That is a detail-vs-time trade, her call (NEEDS_YOU updated). Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed; budget 38.79 MB.
 NEXT: audio pass / save-menus.
 

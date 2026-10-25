@@ -3,16 +3,19 @@
  */
 import { pt } from '../anchors.js';
 
+/** A job marker standing at a fixed offset from a place's anchor, so it moves with the place. */
+const off = (id, dx, dz) => { const a = pt(id); return { x: a.x + dx, z: a.z + dz }; };
+
 export const JOBS = {
-  pump: { n: 7, en: 'Pump water for Dadi', hi: 'दादी के लिए पानी भरो', x: -55.5, z: 28 },
+  pump: { n: 7, en: 'Pump water for Dadi', hi: 'दादी के लिए पानी भरो', ...off('store', -3.5, 8) },
   ration: { n: 9, en: 'Ration run with Maa', hi: 'माँ के साथ राशन', ...pt('ration') },
-  kulfi: { n: 3, en: 'Kulfiwala', hi: 'कुल्फी वाला', x: -54, z: 40 },
-  kanche: { n: 10, en: 'Kanche and stapu', hi: 'कंचे और स्टापू', x: -46, z: 12 },
+  kulfi: { n: 3, en: 'Kulfiwala', hi: 'कुल्फी वाला', ...off('chaat', 9, -10.5) },
+  kanche: { n: 10, en: 'Kanche and stapu', hi: 'कंचे और स्टापू', ...off('chowk', 8, -1) },
   gilli: { n: 6, en: 'Gilli-danda', hi: 'गिल्ली-डंडा', x: 46, z: 104 },
-  milk: { n: 2, en: 'Milk round', hi: 'दूध का चक्कर', x: -44, z: 60 },
+  milk: { n: 2, en: 'Milk round', hi: 'दूध का चक्कर', ...off('halwai', -4, -2) },
   chakki: { n: 5, en: 'Atta chakki run', hi: 'आटा चक्की', ...pt('chakki') },
-  gate: { n: 4, en: 'Narrow khet gate', hi: 'तंग खेत का फाटक', x: 6, z: 14 },
-  patang: { n: 1, en: 'Patang loot', hi: 'पतंग लूट', x: -60, z: 60 },
+  gate: { n: 4, en: 'Narrow khet gate', hi: 'तंग खेत का फाटक', ...off('baagh', 21, 4) },
+  patang: { n: 1, en: 'Patang loot', hi: 'पतंग लूट', ...off('halwai', -20, -2) },
   mango: { n: 8, en: 'Mango varieties', hi: 'आम की किस्में', ...pt('baagh') },
 };
 // The postman hands these out in this order (the postcard names one new job each time he is passed).
