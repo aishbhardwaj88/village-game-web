@@ -74,6 +74,8 @@ class Kit:
             tex, rep = self.tex_override.get(g) or OWN_TEXTURE_KINDS.get(g, MAIN_KINDS_TEXTURE)  # 'props' (kind paint) = same plaster set, its own material so it can skip the shadow pass
             m = load_pbr_material('hb_' + g, tex, repeat=(rep, rep))
             wire_vertex_ao(m, strength=0.5)
+            m['dopahar_set'] = tex   # exported as glTF extras: staged places (tools/strip-textures.mjs) drop the embedded copies and src/stagingYard.js re-applies the shared set
+            m['dopahar_repeat'] = float(rep)
             for o in objs:
                 o.data.materials.clear()
                 o.data.materials.append(m)

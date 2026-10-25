@@ -2,7 +2,7 @@
 Gurukul Vidyalaya - built with arch.py's Kit to Places V1/gurukul/LAYOUT.md (spec) and the approved
 MAIN_gurukul_top_LOWRES.png (TOP = layout authority), MAIN_gurukul_isometric.png (look), MAIN_gurukul_front_sides.png (elevations).
 
-Run:  tools/blender/make.sh gurukul gurukul
+Run:  tools/blender/make.sh gurukul gurukul_v2
 
 Frame: site-local metres, +x east, +z south; compound x[-30,30] z[-22.5,22.5], gate at the centre of the front wall (z=+22.5).
   FRONT      2.5 m exposed red brick wall, cream coping, 5 m bottle-green two-leaf wrought-iron gate, brick pillars 4.5 m with stepped
@@ -23,7 +23,7 @@ import bpy
 from common import wb, limb, cyl, sphere, prism_x, prism_z, ROOT
 from arch import Kit, BRASS
 
-OUT = os.path.join(ROOT, 'tmp', 'gurukul_raw.glb')
+OUT = os.path.join(ROOT, 'tmp', 'gurukul_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 
 HX, HZ = 30.0, 22.5

@@ -792,7 +792,7 @@ def build_boundary():
     for nm, x0, x1, h0, h1 in (('t', 7.12, 10.88, 1.65, 1.71), ('b', 7.12, 10.88, 0.49, 0.55), ('l', 7.12, 7.2, 0.49, 1.71), ('r', 10.8, 10.88, 0.49, 1.71)):
         add('wood', wb('don_edge_' + nm, x0, x1, HZ + 0.08, HZ + 0.18, h0, h1, 0.005))
     # children's mural on the outer face of the left front wall: cream band between the ochre base and the coping
-    wall_decal('S', HZ + 0.035, -27.6, -15.6, 0.6, 1.7, (0.0, 0.875, 1.0, 1.0))
+    wall_decal('S', HZ + 0.035, -21.0, -9.0, 0.6, 1.7, (0.0, 0.875, 1.0, 1.0))
 
 
 # ------------------------------------------------------------------------------------------------ yard

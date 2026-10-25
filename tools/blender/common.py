@@ -293,6 +293,7 @@ def export_glb(objects, out_path, apply_transform=True):
         export_all_vertex_colors=False,
         export_image_format='WEBP',
         export_image_webp_fallback=False,
+        export_extras=True,
     )
     print(f'Exported {out_path}')
 

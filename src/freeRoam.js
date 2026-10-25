@@ -7,6 +7,7 @@
  */
 
 import { pt } from './anchors.js';
+import { STAGED_PLACES } from './stagedPlaces.js';
 import { QUEST_STEPS as S, OBJECTIVE_TEXT } from './quest.js';
 import { SPURS } from './eastRoad.js';
 import { JOBS } from './jobs/data.js';
@@ -55,10 +56,7 @@ export const PLACES = [
   { id: 'maidan', en: 'Khel maidan', hi: 'खेल मैदान', ...pt('maidan'), kind: 'field', radius: 26 },
   { id: 'highway', en: 'Highway and bus adda', hi: 'हाईवे और बस अड्डा', ...pt('highway'), kind: 'bazaar', radius: 30 },
   { id: 'mandi', en: 'Mandi', hi: 'मंडी', ...pt('mandi'), kind: 'bazaar', radius: 26 },
-  // Staging yard (src/stagingYard.js): newly built places wait here until the map is laid out.
-  { id: 'yard_school', en: 'Yard 1: Primary school', hi: 'यार्ड 1: प्राथमिक पाठशाला', ...pt('yard_school'), kind: 'school', radius: 40 },
-  { id: 'yard_gurukul', en: 'Yard 2: Gurukul', hi: 'यार्ड 2: गुरुकुल', ...pt('yard_gurukul'), kind: 'school', radius: 40 },
-  { id: 'yard_dairy', en: 'Yard 3: Dudh dairy', hi: 'यार्ड 3: दूध डेयरी', ...pt('yard_dairy'), kind: 'shop', radius: 20 },
+  ...STAGED_PLACES.map((p) => ({ id: p.id, en: p.en, hi: p.hi, ...pt(p.id), kind: p.kind, radius: p.radius })), // staging yard (src/stagedPlaces.js)
 ];
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
@@ -139,10 +137,12 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
 
   // The staging yard (src/stagingYard.js) is 80+ m east of everything, far off this page: its places are drawn in a small inset
   // box at the top right instead (same hit targets, same click-to-travel), one column per 80 m of the yard's grid.
-  const YARD_BOX = { x: 600, y: 8, w: 340, h: 86 };
-  const yardXY = (x) => [YARD_BOX.x + 62 + Math.max(0, Math.min(3, Math.round((x - 320) / 80))) * 108, YARD_BOX.y + 36];
-  const isYard = (p) => p.x > 300;
-  const mapXY = (p) => (isYard(p) ? yardXY(p.x) : [sx(p.x), sy(p.z)]);
+  const YARD_BOX = { x: 470, y: 6, w: 480, h: 88 };
+  const YARD_IDX = new Map(STAGED_PLACES.map((p, i) => [p.id, i]));
+  const yardXY = (id) => { const i = YARD_IDX.get(id) ?? 0; return [YARD_BOX.x + 24 + (i % 12) * 37.5, YARD_BOX.y + 36 + Math.floor(i / 12) * 34]; };
+  const isYard = (p) => p.id ? YARD_IDX.has(p.id) : p.x > 300;
+  const mapXY = (p) => (isYard(p) ? yardXY(p.id ?? nearestYardId(p)) : [sx(p.x), sy(p.z)]);
+  const nearestYardId = (p) => { let best = STAGED_PLACES[0].id, d = 1e9; for (const q of PLACES) if (YARD_IDX.has(q.id)) { const dd = Math.hypot(q.x - p.x, q.z - p.z); if (dd < d) { d = dd; best = q.id; } } return best; };
 
   function pencil(ctx, pts, colour, width) {
     ctx.strokeStyle = colour;
@@ -283,11 +283,11 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
       // Nothing is hidden (art director 2026-10-23): every place is on the page from the first load; a small tick marks visited ones.
       const [x, y] = mapXY(p);
       mapHits.push({ x, y, place: p });
-      icon(ctx, p.kind, x, y);
+      if (isYard(p)) { ctx.save(); ctx.translate(x, y); ctx.scale(0.55, 0.55); icon(ctx, p.kind, 0, 0); ctx.restore(); ctx.fillStyle = '#1d2a55'; ctx.font = '700 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(YARD_IDX.get(p.id) + 1), x, y + 17); } else icon(ctx, p.kind, x, y);
       if (isDiscovered(p.id)) pencil(ctx, [[x + 12, y - 12], [x + 15, y - 8], [x + 21, y - 17]], '#2f7a34', 2.5);
-      if (isYard(p) || clear(x, y)) {
-        label(ctx, p.en, p.hi, x, y + (isYard(p) ? 20 : 26));
-        if (!isYard(p)) labelled.push([x, y]);
+      if (!isYard(p) && clear(x, y)) {
+        label(ctx, p.en, p.hi, x, y + 26);
+        labelled.push([x, y]);
       }
     }
     ctx.strokeStyle = 'rgba(29,42,85,0.5)';
@@ -298,7 +298,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     ctx.fillStyle = '#4a5a8a';
     ctx.font = '600 11px "Segoe Print","Comic Sans MS",cursive,sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('Staging yard (far east) / नया यार्ड', YARD_BOX.x + 8, YARD_BOX.y + 13);
+    ctx.fillText('Staging yard, far east (tap a number to go) / नया यार्ड', YARD_BOX.x + 8, YARD_BOX.y + 13);
     // side-job stars
     for (const m of extraMarkers) {
       if (!isDiscovered(m.id)) continue;

@@ -24,7 +24,7 @@ export function loadTexture(loader, url, { srgb = false, repeat = 1 } = {}) {
 export function createGround({ grassTint = null, grassCoverage = undefined, dampSpots = [] } = {}) {
   // The drawn plane is much larger than the playable extent (GROUND_SIZE) so the mandi/highway at x~230 never show the world's edge;
   // same tiling density, so the look near the village is unchanged.
-  const drawn = GROUND_SIZE * 2.4;
+  const drawn = GROUND_SIZE * 3.8; // reaches x 912: the staging yard (src/stagedPlaces.js) lies east of the village
   const repeat = drawn / GROUND_TILE_METRES;
   const geometry = ensureUv2(new THREE.PlaneGeometry(drawn, drawn, 1, 1));
   const material = getTiledMaterial('ground', { repeatX: repeat, repeatY: repeat, roughness: 1.0 });

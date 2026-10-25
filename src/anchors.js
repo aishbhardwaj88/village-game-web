@@ -8,6 +8,8 @@
  * The coordinates are the ones the places were built at (nothing moved when this table was introduced). MAP.md gives
  * no coordinate for the streamed sites, so these are the positions picked on 23-25 Oct.
  */
+import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
+
 export const ANCHORS = {
   house: { x: -48, z: 39, ry: 0 },
   school: { x: -50, z: 106, ry: 0 },
@@ -50,10 +52,8 @@ export const ANCHORS = {
   maidan: { x: 165, z: 135, ry: 0 },
   highway: { x: 205, z: 40, ry: 0 },
   mandi: { x: 226, z: 60, ry: 0 },
-  // STAGING YARD (src/stagingYard.js): grid origin (320,-160), 80 m spacing, 6 per row. New places from Places V1 stand here until she lays out the map.
-  yard_school: { x: 320, z: -160, ry: 0 },
-  yard_gurukul: { x: 400, z: -160, ry: 0 },
-  yard_dairy: { x: 480, z: -160, ry: 0 },
+  // STAGING YARD (src/stagedPlaces.js): new places wait here, grid origin (320,-160), 80 m, until she lays out the map.
+  ...Object.fromEntries(STAGED_PLACES.map((p, n) => [p.id, { ...stagingPos(n), ry: 0 }])),
 };
 
 /** A fresh { x, z } for a place (callers may keep or mutate it). */

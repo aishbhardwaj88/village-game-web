@@ -41,6 +41,13 @@ export const PLACE_BOARDS = [
   { id: 'maidan', hi: 'खेल मैदान', en: 'Khel Maidan', fg: NAVY },
   { id: 'school_v2', hi: 'राजकीय प्राथमिक पाठशाला', en: 'Government Primary School', fg: NAVY },
   { id: 'gurukul_v2', hi: 'गुरुकुल विद्यालय', en: 'Gurukul Vidyalaya', fg: GREEN },
+  { id: 'dairy_slogan', hi: 'गाय हमारी माता है', en: 'The cow is our mother', fg: '#b3231c' },
+  { id: 'bus_adda', hi: 'बस अड्डा', en: 'Bus Adda', fg: '#ffffff', bg: '#1f6b3a', border: '#f4f4ee' },
+  { id: 'puncture', hi: 'पंक्चर की दुकान', en: 'Puncture Shop', fg: NAVY },
+  { id: 'ration_v2', hi: 'राशन की दुकान', en: 'Ration Shop', fg: MAROON },
+  { id: 'post_v2', hi: 'डाकघर', en: 'Post Office', fg: MAROON },
+  { id: 'chakki_v2', hi: 'आटा चक्की', en: 'Atta Chakki', fg: NAVY },
+  { id: 'petrol_v2', hi: 'पेट्रोल पंप', en: 'Petrol Pump', fg: NAVY },
   { id: 'school_donation', hi: 'दानदाता पट्टिका', en: 'Donors Board', fg: MAROON },
 ];
 const ROW = new Map(PLACE_BOARDS.map((b, i) => [b.id, i]));

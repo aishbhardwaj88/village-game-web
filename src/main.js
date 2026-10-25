@@ -116,7 +116,7 @@ import {
 } from './interactions.js';
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
-import { createStagedPlace, createStagingTrack } from './stagingYard.js';
+import { registerStagingYard } from './stagingYard.js';
 import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
@@ -144,7 +144,7 @@ import { createSideJobs } from './sideJobs.js';
 import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
-const GROUND_HALF_X = 540; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 576
+const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
 const MOVE_SPEED = 4.2; // m/s, walking pace
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
@@ -1628,15 +1628,8 @@ async function main() {
     zoneManager.register('chaat_thela', { visibleRadius: 14, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => createChaatThela(pt('chaat')) });
     zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => createMelaGround(pt('mela')) });
     zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, ...pt('gurukul'), buildRadius: 55, teardownRadius: 70, build: () => createGurukul(pt('gurukul')) });
-    // STAGING YARD (src/stagingYard.js): newly built places wait on their own pads east of the mandi until the map is laid out.
-    zoneManager.register('staging_track', { x: 400, z: -130, buildRadius: 150, teardownRadius: 180, build: () => { const g = new THREE.Group(); g.name = 'staging_track'; g.add(createStagingTrack()); return g; } });
-    zoneManager.register('primary_school_v2', { visibleRadius: LANDMARK_VIS, ...pt('yard_school'), buildRadius: 80, teardownRadius: 100, build: () => createStagedPlace('primary_school_v2', 'yard_school', 'primary_school', { boards: [
-      { id: 'school_v2', x: 0, y: 3.52, z: 24.97, w: 4.9 },
-      { id: 'school_donation', x: 9.0, y: 1.1, z: 25.19, w: 3.4 },
-    ] }) });
-    zoneManager.register('gurukul_v2', { visibleRadius: LANDMARK_VIS, ...pt('yard_gurukul'), buildRadius: 80, teardownRadius: 100, build: () => createStagedPlace('gurukul_v2', 'yard_gurukul', 'gurukul', { boards: [
-      { id: 'gurukul_v2', x: 0, y: 4.93, z: 22.66, w: 4.8 },
-    ] }) });
+    // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
+    registerStagingYard(zoneManager, LANDMARK_VIS);
     zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, ...pt('maidan'), buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan(pt('maidan')) });
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
