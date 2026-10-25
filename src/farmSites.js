@@ -799,6 +799,18 @@ export function createMasjid(position) {
   geos.push(bake(new THREE.SphereGeometry(0.65, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), at(-5.2, 7.6, -1.5), 0x3f7a5a));
   for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(0.4, 0.6, 0.3), at(2 + i * 0.9, 0.5, 4.2), 0xb9bdc0));
   geos.push(bake(new THREE.BoxGeometry(4, 0.12, 0.5), at(3, 0.4, 4.6), 0xb7b0a0));
+  // Entrance iwan (hall front faces +z): four slim pillars under a flat canopy with a green band, three steps, and two small corner chhatris on the roofline.
+  for (const px of [-2.2, -0.75, 0.75, 2.2]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.16, 0.2, 2.7, 10), at(px, 1.65, 5.1), 0xeee8d8));
+    geos.push(bake(new THREE.BoxGeometry(0.46, 0.16, 0.46), at(px, 3.1, 5.1), 0xd8d2c0));
+  }
+  geos.push(bake(new THREE.BoxGeometry(5.8, 0.22, 2.2), at(0, 3.3, 4.6), 0xd8d2c0));
+  geos.push(bake(new THREE.BoxGeometry(5.9, 0.12, 0.1), at(0, 3.52, 5.7), 0x3f7a5a));
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(5.6 + i * 0.4, 0.14, 1.1 - i * 0.25), at(0, 0.07 + i * 0.14, 5.7 - i * 0.1 + (2 - i) * 0.3), 0xe2dccc));
+  for (const sx of [-1, 1]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.3, 0.3, 0.4, 8), at(sx * 3.4, 3.8, 2.8), 0xd8d2c0));
+    geos.push(bake(new THREE.SphereGeometry(0.34, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), at(sx * 3.4, 4.0, 2.8), 0xf2eee2));
+  }
   return finishSite('masjid', geos, position, { solids: [[0, 0, 8.2, 7.2], [-5.2, -1.5, 1.2, 1.2]] });
 }
 
@@ -906,6 +918,10 @@ export function createJainMandir(position) {
   geos.push(bake(new THREE.SphereGeometry(0.2, 8, 6), at(0, 8.8, 0), 0xd9a63a));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.22, 0.26, 2.6, 8), at(sx * 1.6, 1.6, 3.9), 0xe9e2cf));
   geos.push(bake(new THREE.BoxGeometry(4.4, 0.25, 1.8), at(0, 3.0, 3.9), 0xd8d2c0));
+  // Porch completed: two more pillars, three plinth steps, and four small corner spires (mini shikharas) on the roof.
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 2.6, 8), at(sx * 2.8, 1.6, 3.9), 0xe9e2cf));
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(4.2 + i * 0.4, 0.12, 1.0 - i * 0.2), at(0, 0.06 + i * 0.12, 4.9 + (2 - i) * 0.25), 0xe2dccb));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) geos.push(bake(new THREE.ConeGeometry(0.45, 1.1, 4), at(sx * 2.4, 3.75, sz * 2.4, Math.PI / 4), 0xf3efe4));
   return finishSite('jain_mandir', geos, position, { solids: [[0, 0, 7.4, 7.4]] });
 }
 

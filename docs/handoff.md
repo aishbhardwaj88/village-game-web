@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n9, playtest block item 7 leftover, masjid + Jain mandir):** Game change: masjid (src/farmSites.js createMasjid) gained a four-pillar entrance iwan with green-banded canopy, three steps and two corner chhatris; Jain mandir gained two more porch pillars, three plinth steps and four mini corner spires (spires mostly hidden behind roof slab in the shot, pillars/steps read). Proof docs/shots/porch-2026-10-25/masjid.png and jain.png. Build ALL PASSED, budget 30.90 MB. Faith buildings: no tasks added.
+NEXT: triangle cuts and cottage wood (art director's call); otherwise BACKLOG section A in order.
+
+---
+
 **2026-10-25 (cycle 39z99n8, playtest block item 7 leftover, gurudwara):** Game change: the gurudwara (src/farmSites.js createGurudwara) was a plain box with a dome; now has a four-pillar entrance porch with gold-edged canopy, three marble steps and a kangura parapet along the roofline. Proof docs/shots/gurudwara-2026-10-25/front.png and side.png. Build ALL PASSED. No signboard added on purpose (faith buildings carry none). Unticked: triangles (over 400k, art director's call).
 NEXT: masjid and Jain mandir get the same porch treatment; triangle cuts and cottage wood (art director's call).
 
