@@ -293,6 +293,8 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     { hi: 'समय: सुबह 10 से शाम 4', en: 'Open 10 AM to 4 PM', fg: '#173f20' },
     // pillar box collection plate (col 5)
     { hi: 'निकासी', en: 'Clearance 10 · 4', fg: '#6e1a12' },
+    // ration shop rate plate on the parapet (col 6)
+    { hi: 'गेहूं · चावल · चीनी · तेल', en: 'Wheat · Rice · Sugar · Oil', fg: '#173f20' },
   ]);
   const { material, remap } = addToSignHub('newShops', texture);
   const geos = [];
@@ -322,6 +324,12 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     const geo = new THREE.BoxGeometry(0.17, 0.09, 0.006);
     mapFrontFaceToRow(geo, 5, rows);
     geo.applyMatrix4(new THREE.Matrix4().makeTranslation(2.1, 0.8, 2.4 + 0.28).premultiply(world));
+    geos.push(geo);
+  }
+  {
+    const geo = new THREE.BoxGeometry(1.8, 0.41, 0.04);
+    mapFrontFaceToRow(geo, 6, rows);
+    geo.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 2.72, RATION_SHOP.d / 2 + 0.03).premultiply(wallWorldMatrix(rationShopPos, rationShopRot)));
     geos.push(geo);
   }
   const mesh = new THREE.Mesh(mergeGeometries(geos.map(remap)), material);

@@ -171,9 +171,7 @@ def ration_shop():
     for s in (-1, 1):
         kit.add('paint', cyl('pan', cx + 0.9 + s * 0.4, 0.7, 1.15, 1.18, 0.14, 0.12, 12), BRASS)
         kit.add('paint', limb('pan_chain', (cx + 0.9 + s * 0.4, 0.7, 1.55), (cx + 0.9 + s * 0.4, 0.7, 1.18), 0.01, 0.01), 0x555555)
-    kit.add('paint', wb('rate_board', cx - 1.7, cx - 0.6, 1.57, 1.6, 1.4, 2.1, 0.004), 0x1D2B24)
-    for k in range(6):  # painted rows (no legible text): chalk ticks
-        kit.add('paint', wb('row', cx - 1.62, cx - 0.9 + (k % 2) * 0.2, 1.6, 1.62, 1.55 + k * 0.08, 1.58 + k * 0.08, 0), 0xE9E5D8)
+    # rate list is a printed plate (src/newShops.js sign atlas row 6) on the parapet wall, clear of the shutter
     kit.add('paint', wb('platform_scale', cx + 1.0, cx + 1.6, 2.0, 2.6, 0.0, 0.1, 0.01), 0x30343A)
     kit.add('paint', limb('scale_post', (cx + 1.3, 2.55, 0.1), (cx + 1.3, 2.55, 1.0), 0.05, 0.05), 0x30343A)
     kit.add('paint', sphere('scale_dial', cx + 1.3, 2.5, 1.05, 0.12, 0.04, 0.12, 1), 0xE9E7DD)
