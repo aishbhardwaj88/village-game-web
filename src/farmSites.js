@@ -1633,15 +1633,39 @@ function sack(list, tf, lx, y, lz, k) {
   list.push(bake(new THREE.CapsuleGeometry(0.5, 0.45, 3, 10).rotateZ(Math.PI / 2), tf.clone().multiply(m), [0x6c5a3c, 0x62523a, 0x74623f, 0x5a4a30][k % 4]));
 }
 
-function truck(geos, x, z, body, ry = 0, metal = geos) {
+function truck(geos, x, z, body, ry = 0, metal = geos, wood = geos) {
   const m = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return at(x + v.x, v.y, z + v.z, ry); };
-  geos.push(bake(new THREE.BoxGeometry(2.5, 0.35, 8), m(0, 0.9, -0.5), 0x2f2f33));
-  metal.push(bake(new THREE.BoxGeometry(2.5, 2.4, 5.6), m(0, 2.3, -1.7), new THREE.Color(body).multiplyScalar(1.9)));
-  metal.push(bake(new THREE.BoxGeometry(2.5, 1.9, 2.0), m(0, 1.95, 2.6), 0x6aa4e0));
-  for (const lz of [-3.2, -2.1, -1.0, 0.1]) metal.push(bake(new THREE.BoxGeometry(2.56, 0.06, 0.1), m(0, 1.7, lz), 0x2a2a2d)); // body rib rails
-  metal.push(bake(new THREE.BoxGeometry(2.6, 0.2, 0.25), m(0, 0.6, 3.72), 0x8a8a8c)); // front bumper
-  geos.push(bake(new THREE.BoxGeometry(2.3, 0.7, 0.1), m(0, 2.4, 3.62), 0x2a2f33));
-  for (const sx of [-1, 1]) for (const lz of [2.4, -2.2, -3.6]) geos.push(bake(new THREE.CylinderGeometry(0.55, 0.55, 0.35, 12), (() => { const mm = m(sx * 1.25, 0.55, lz); return mm.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)); })(), 0x1d1d1f));
+  const paint = new THREE.Color(body).multiplyScalar(1.9);
+  const dark = 0x2a2a2d, glass = 0x24323a;
+  // Ladder chassis, fuel tank and rear mudflap.
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(0.16, 0.3, 8.2), m(sx * 0.85, 0.85, -0.3), 0x2f2f33));
+  geos.push(bake(new THREE.CylinderGeometry(0.32, 0.32, 1.2, 10).rotateX(Math.PI / 2), m(1.15, 0.7, 0.9), 0x7d8286));
+  // Flatbed: floor, slatted wooden side boards on iron posts, headboard behind the cab and a tailgate.
+  wood.push(bake(new THREE.BoxGeometry(2.5, 0.1, 5.8), m(0, 1.1, -1.8), 0x8a6a40));
+  for (const sx of [-1, 1]) {
+    for (const ly of [1.4, 1.75, 2.1]) wood.push(bake(new THREE.BoxGeometry(0.06, 0.3, 5.8), m(sx * 1.22, ly, -1.8), [0x9a7a4a, 0x8a6a40, 0xa88650][Math.round(ly * 3) % 3]));
+    for (const lz of [-4.6, -3.1, -1.6, -0.1, 1.0]) metal.push(bake(new THREE.BoxGeometry(0.08, 1.15, 0.1), m(sx * 1.27, 1.65, lz), dark));
+  }
+  for (const ly of [1.4, 1.75, 2.1, 2.45]) wood.push(bake(new THREE.BoxGeometry(2.5, 0.3, 0.06), m(0, ly, 1.1), 0x8a6a40));
+  for (const ly of [1.4, 1.75]) wood.push(bake(new THREE.BoxGeometry(2.5, 0.3, 0.06), m(0, ly, -4.7), 0x9a7a4a));
+  // Forward-control cab: painted lower body, upper cab, big windscreen, side windows, door seams, grille, lamps, mirrors.
+  metal.push(bake(new THREE.BoxGeometry(2.4, 1.1, 2.0), m(0, 1.25, 2.55), paint));
+  metal.push(bake(new THREE.BoxGeometry(2.3, 1.1, 1.7), m(0, 2.35, 2.3), paint));
+  metal.push(bake(new THREE.BoxGeometry(2.0, 0.65, 0.06), m(0, 2.45, 3.18), glass));
+  for (const sx of [-1, 1]) {
+    metal.push(bake(new THREE.BoxGeometry(0.05, 0.6, 1.0), m(sx * 1.16, 2.45, 2.3), glass));
+    metal.push(bake(new THREE.BoxGeometry(0.06, 1.0, 0.05), m(sx * 1.17, 1.4, 2.0), dark)); // door seam
+    metal.push(bake(new THREE.BoxGeometry(0.1, 0.35, 0.18), m(sx * 1.35, 2.25, 3.0), dark)); // mirror
+    metal.push(bake(new THREE.CylinderGeometry(0.13, 0.13, 0.08, 10).rotateX(Math.PI / 2), m(sx * 0.8, 1.0, 3.58), 0xf0e2b0)); // headlamp
+  }
+  metal.push(bake(new THREE.BoxGeometry(1.4, 0.5, 0.06), m(0, 1.0, 3.56), dark)); // grille
+  metal.push(bake(new THREE.BoxGeometry(2.6, 0.2, 0.25), m(0, 0.55, 3.62), 0x8a8a8c)); // bumper
+  // Tyres with hubs: front pair single, rear pair doubled.
+  for (const sx of [-1, 1]) for (const lz of [2.5, -2.3, -3.6]) {
+    const tf = m(sx * 1.15, 0.55, lz).multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2));
+    geos.push(bake(new THREE.CylinderGeometry(0.55, 0.55, 0.38, 16), tf, 0x1d1d1f));
+    metal.push(bake(new THREE.CylinderGeometry(0.26, 0.26, 0.42, 10), tf, 0x9a9a9c));
+  }
 }
 
 export function createMandi(position) {
@@ -1709,9 +1733,9 @@ export function createMandi(position) {
   for (let i = 0; i < 4; i++) charpaiGeos(geos, 1.5 + i * 2.1, 25, Math.PI / 2 + (i % 2 ? 0.05 : -0.04));
   // Parked trucks in plain colours (no marks).
   const truckMetal = [];
-  truck(geos, 3, -2, 0xc4372f, 0.0, truckMetal);
-  truck(geos, 9, 48, 0x3f7a5a, Math.PI, truckMetal);
-  truck(geos, -4, 40, 0xd9a43a, 0.12, truckMetal);
+  truck(geos, 3, -2, 0xc4372f, 0.0, truckMetal, crateWood);
+  truck(geos, 9, 48, 0x3f7a5a, Math.PI, truckMetal, crateWood);
+  truck(geos, -4, 40, 0xd9a43a, 0.12, truckMetal, crateWood);
   // Gantry over the road entrance (facing the highway) on two posts, so the mandi is named from the road.
   for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(-12.6, 2.3, sz * 3.9), 0x5a5a5a));
   const mandi = finishSite('mandi', geos, position, { roughness: 0.92, sets: { wood: crateWood, jute: sacks, metal: truckMetal }, boards: [

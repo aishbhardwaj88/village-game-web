@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n42, mandi trucks):** Game change: the three mandi trucks are real trucks now (src/farmSites.js truck()): ladder chassis, flatbed with slatted wooden side boards on iron posts, headboard and tailgate, forward-control cab with windscreen, side windows, door seams, grille, headlamps, mirrors, bumper, fuel tank, tyres with hubs, rear axle doubled. Wood boards go on the crate wood set, rest on the truck metal set; no new draw call. Build ALL PASSED, budget 30.89 MB. Proof docs/shots/mandi-trucks-2026-10-25/{side,front34}.png (photo camera, headless, no capsule in frame; no formal subject check). Gaps: cab is still box-built (no rounded panels); dhaba props flat colour; bangle tori and medical fridge open. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: item 7 water/shoreline check, then dhaba props.
+
+---
+
 **2026-10-25 (cycle 39z99n41, mandi godown sacks):** Game change: the 12 flat cream boxes outside the mandi godown are now 20 stacked gunny sacks (capsule loaf shape, jute PBR set, own size/yaw/tone, 4 courses by each door); the three trucks' bodies, cabs and bumpers moved onto the metal set with rib rails (src/farmSites.js sack(), truck()). Build ALL PASSED, budget 30.89 MB, no console errors; view 70 calls / 99k tris. Proof docs/shots/mandi-sacks-2026-10-25/sacks.png (free camera, no capsule in frame). Gaps: truck bodies are still plain boxes with low-poly wheels (barely changed, see trucks.png); dhaba props still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: real truck shape (cab, flatbed with slatted sides, tyres), then item 7 water/shoreline.
 
