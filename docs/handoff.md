@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n12, playtest block item 6, house_compound wood):** NO game change (written honestly). Photographed the hero house from the road and the balcony: balcony rails, shutters, doors, brackets and gate render as dark-brown wood, not plain plaster tan. Closes the last "house_compound wood not checked" gap in FEEDBACK item 6. Proof docs/shots/house-wood-2026-10-25/{front,balcony}.png (proof-shot tool, so capsules/HUD in frame; not tickable). Front view 165 calls / 564k tris incl. shadow pass. Remaining playtest work still waits on the art director (triangle cuts, draw-call ceiling, plain crate needs Blender).
+NEXT: BACKLOG A-2b (active-task waypoint switching, minimap convention research) once the art director rules on the budget.
+
+---
+
 **2026-10-25 (cycle 39z99n11, playtest block item 1, banta/chaat check):** NO game change (written honestly). The "Banta shop and Chaat thela are not built" note in FEEDBACK item 1 is stale: createBantaShop (-63,22.5) and createChaatThela (-63,50.5) are registered in src/main.js and render (soda bottles on the counter, chaat cart with steam). Proof docs/shots/banta-chaat-2026-10-25/{banta,chaat}.png (normal mode, player capsule in frame so not tickable). Banta view reads 155 calls / 546k tris in this camera (shadow pass counted, validator metric is lower). Everything left in the playtest block is still an art-director call (triangle cuts 513k vs 400k, draw-call ceiling, plain crate needs Blender).
 NEXT: art-director call on triangles/draw calls, then cottage wood on house_compound; otherwise BACKLOG section A.
 
