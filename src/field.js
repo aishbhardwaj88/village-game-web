@@ -208,6 +208,33 @@ function plotKind(rx, rz) {
   return PLOT_KINDS[(((ix * 5 + iz * 7) % PLOT_KINDS.length) + PLOT_KINDS.length) % PLOT_KINDS.length];
 }
 
+/** Density LOD (triangle budget): past 70 m from the player only every other instance is drawn, past 120 m one in four. The full set is kept
+ * in master arrays; the drawn subset is repacked whenever the player has moved 6 m. Frustum culling stays on (subset lies inside the full bounds). */
+function addDensityLOD(mesh, total) {
+  const masterM = mesh.instanceMatrix.array.slice(0, total * 16);
+  const masterC = mesh.instanceColor.array.slice(0, total * 3);
+  const px = new Float32Array(total * 2);
+  for (let i = 0; i < total; i++) { px[i * 2] = masterM[i * 16 + 12]; px[i * 2 + 1] = masterM[i * 16 + 14]; }
+  let lastX = 1e9, lastZ = 1e9;
+  mesh.onBeforeRender = () => {
+    const [fx, fz] = getPlantFocus();
+    if (Math.hypot(fx - lastX, fz - lastZ) < 6) return;
+    lastX = fx; lastZ = fz;
+    const mA = mesh.instanceMatrix.array, cA = mesh.instanceColor.array;
+    let n = 0;
+    for (let i = 0; i < total; i++) {
+      const d2 = (px[i * 2] - fx) ** 2 + (px[i * 2 + 1] - fz) ** 2;
+      if (d2 > 4900 && (i % (d2 > 14400 ? 4 : 2)) !== 0) continue;
+      mA.set(masterM.subarray(i * 16, i * 16 + 16), n * 16);
+      cA.set(masterC.subarray(i * 3, i * 3 + 3), n * 3);
+      n++;
+    }
+    mesh.count = n;
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
+  };
+}
+
 /** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
  * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
  * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
@@ -310,31 +337,7 @@ function buildCropRows() {
   mesh.count = index;
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
-  // Density LOD (triangle budget): past 70 m from the player only every other tuft is drawn, past 120 m one in four. The full set is kept
-  // in master arrays; the drawn subset is repacked whenever the player has moved 6 m. Frustum culling stays on (subset lies inside the full bounds).
-  const total = index;
-  const masterM = mesh.instanceMatrix.array.slice(0, total * 16);
-  const masterC = mesh.instanceColor.array.slice(0, total * 3);
-  const px = new Float32Array(total * 2);
-  for (let i = 0; i < total; i++) { px[i * 2] = masterM[i * 16 + 12]; px[i * 2 + 1] = masterM[i * 16 + 14]; }
-  let lastX = 1e9, lastZ = 1e9;
-  mesh.onBeforeRender = () => {
-    const [fx, fz] = getPlantFocus();
-    if (Math.hypot(fx - lastX, fz - lastZ) < 6) return;
-    lastX = fx; lastZ = fz;
-    const mA = mesh.instanceMatrix.array, cA = mesh.instanceColor.array;
-    let n = 0;
-    for (let i = 0; i < total; i++) {
-      const d2 = (px[i * 2] - fx) ** 2 + (px[i * 2 + 1] - fz) ** 2;
-      if (d2 > 4900 && (i % (d2 > 14400 ? 4 : 2)) !== 0) continue;
-      mA.set(masterM.subarray(i * 16, i * 16 + 16), n * 16);
-      cA.set(masterC.subarray(i * 3, i * 3 + 3), n * 3);
-      n++;
-    }
-    mesh.count = n;
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.instanceColor.needsUpdate = true;
-  };
+  addDensityLOD(mesh, index);
   mesh.userData.caneSpots = caneSpots;
   mesh.userData.sarsonSpots = sarsonSpots;
   mesh.userData.vegSpots = vegSpots;
@@ -454,6 +457,7 @@ function buildSarsonBloom(spots) {
   });
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
+  addDensityLOD(mesh, spots.length);
   return mesh;
 }
 

@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n25, sarson density LOD):** Game change: mustard bloom (field_sarson) now uses the same distance density LOD as the crop rows (shared addDensityLOD in field.js: past 70 m every other card, past 120 m one in four; sarson is hidden past 95 m so only the first tier applies). Build ALL PASSED, no console errors. Proof docs/shots/sarsonLOD-2026-10-25/far.png (yellow plot at left still reads as mustard; capsule in frame so not tickable; mid.png is a bad camera inside the cane, ignore). Field view 393k tris / 137 calls. Still over 400k elsewhere (hero/bazaar view ~516k): bazaar hb_main/hb_props, grass, lane_0, tree foliage. Grass-tuft LOD not done.
+NEXT: grass tuft distance LOD, then re-run tri-audit on the hero view.
+
+---
+
 **2026-10-25 (cycle 39z99n24, crop-row density LOD):** Game change: crop_rows (field.js) now thins by distance from the player: past 70 m every other tuft, past 120 m one in four, repacked every 6 m of movement (getPlantFocus from realPlants.js). Standard screenshot run: 453k tris / 120 calls (was ~520k in the hero view; different view, so not a like-for-like number), build ALL PASSED, no console errors. Proof docs/shots/cropLOD-2026-10-25/{field_edge,field_mid}.png (proof-shot tool, capsule in frame, so not tickable). Still over 400k: next cuts are bazaar hb_main/hb_props 58k, grass 20k, lane_0 19k, field_sarson 19k, tree foliage/cards.
 NEXT: same density LOD for field_sarson bloom and grass tufts; then re-run tri-audit.
 
