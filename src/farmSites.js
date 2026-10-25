@@ -1626,11 +1626,20 @@ export function createGaushala(position) {
 }
 
 /** Mandi (town market past the highway, MAP.md): paved yard, grain godown, vegetable yard shed, big weighbridge, dhaba and parked trucks. Unbranded. */
-function truck(geos, x, z, body, ry = 0) {
+/** One gunny sack: a squashed rounded pillow on the jute set, own size and yaw per k. tf places the local frame. */
+function sack(list, tf, lx, y, lz, k) {
+  const r = ((k * 7919) % 97) / 97;
+  const m = new THREE.Matrix4().compose(new THREE.Vector3(lx, y, lz), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (r - 0.5) * 0.35), new THREE.Vector3(0.9 + r * 0.1, 0.5 + r * 0.05, 0.55 + r * 0.06));
+  list.push(bake(new THREE.CapsuleGeometry(0.5, 0.45, 3, 10).rotateZ(Math.PI / 2), tf.clone().multiply(m), [0x6c5a3c, 0x62523a, 0x74623f, 0x5a4a30][k % 4]));
+}
+
+function truck(geos, x, z, body, ry = 0, metal = geos) {
   const m = (lx, y, lz) => { const v = new THREE.Vector3(lx, y, lz).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry); return at(x + v.x, v.y, z + v.z, ry); };
   geos.push(bake(new THREE.BoxGeometry(2.5, 0.35, 8), m(0, 0.9, -0.5), 0x2f2f33));
-  geos.push(bake(new THREE.BoxGeometry(2.5, 2.4, 5.6), m(0, 2.3, -1.7), body));
-  geos.push(bake(new THREE.BoxGeometry(2.5, 1.9, 2.0), m(0, 1.95, 2.6), 0x3b6ea0));
+  metal.push(bake(new THREE.BoxGeometry(2.5, 2.4, 5.6), m(0, 2.3, -1.7), new THREE.Color(body).multiplyScalar(1.9)));
+  metal.push(bake(new THREE.BoxGeometry(2.5, 1.9, 2.0), m(0, 1.95, 2.6), 0x6aa4e0));
+  for (const lz of [-3.2, -2.1, -1.0, 0.1]) metal.push(bake(new THREE.BoxGeometry(2.56, 0.06, 0.1), m(0, 1.7, lz), 0x2a2a2d)); // body rib rails
+  metal.push(bake(new THREE.BoxGeometry(2.6, 0.2, 0.25), m(0, 0.6, 3.72), 0x8a8a8c)); // front bumper
   geos.push(bake(new THREE.BoxGeometry(2.3, 0.7, 0.1), m(0, 2.4, 3.62), 0x2a2f33));
   for (const sx of [-1, 1]) for (const lz of [2.4, -2.2, -3.6]) geos.push(bake(new THREE.CylinderGeometry(0.55, 0.55, 0.35, 12), (() => { const mm = m(sx * 1.25, 0.55, lz); return mm.multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)); })(), 0x1d1d1f));
 }
@@ -1654,7 +1663,9 @@ export function createMandi(position) {
   for (const lz of [-27, -17]) geos.push(bake(new THREE.BoxGeometry(0.2, 3.4, 4), at(-0.05, 1.9, lz), 0x4f6b7a));
   for (const lz of [-27, -17]) doorOpening(geos, at(-0.1, 0.12, lz, -Math.PI / 2), 3.4, 3.2, 0x3f5b6a, 0x2a2f33, 0xb4b0a4);
   for (const lz of [-24.5, -19.5]) windowOpening(geos, at(-0.1, 4.0, lz, -Math.PI / 2), 0.9, 0.7);
-  for (let i = 0; i < 12; i++) geos.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(-2.6 + (i % 4) * 0.95 * 0.0, 0.3 + Math.floor(i / 4) * 0.36, -22 + (i % 4) * 1.0 - 1.5), 0xd9c9a2));
+  // Stacked gunny sacks outside the godown door: 4 courses, brick-bonded, each with own size/yaw/tone (jute set).
+  const sacks = [];
+  for (const lz of [-27, -17]) for (let c = 0; c < 4; c++) for (let j = 0; j < 4 - c; j++) sack(sacks, at(-1.6 - (c % 2) * 0.15, 0.14 + c * 0.27, lz - 1.7 + c * 0.45 + j * 0.95), 0, 0, 0, lz * 7 + c * 5 + j);
   // Vegetable wholesale yard: open pillared tin shed, crates and gunny heaps.
   geos.push(bake(new THREE.BoxGeometry(12, 0.1, 14), new THREE.Matrix4().makeRotationX(0.05).setPosition(4, 3.4, 4), 0x8e969c));
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 3.4, 6), at(4 + sx * 5.5, 1.7, 4 + sz * 6.5), 0x6f5233));
@@ -1697,12 +1708,13 @@ export function createMandi(position) {
   geos.push(bake(new THREE.CylinderGeometry(0.3, 0.38, 2, 8), at(8.5, 4.2, 33), 0xb0a590));
   for (let i = 0; i < 4; i++) charpaiGeos(geos, 1.5 + i * 2.1, 25, Math.PI / 2 + (i % 2 ? 0.05 : -0.04));
   // Parked trucks in plain colours (no marks).
-  truck(geos, 3, -2, 0xc4372f, 0.0);
-  truck(geos, 9, 48, 0x3f7a5a, Math.PI);
-  truck(geos, -4, 40, 0xd9a43a, 0.12);
+  const truckMetal = [];
+  truck(geos, 3, -2, 0xc4372f, 0.0, truckMetal);
+  truck(geos, 9, 48, 0x3f7a5a, Math.PI, truckMetal);
+  truck(geos, -4, 40, 0xd9a43a, 0.12, truckMetal);
   // Gantry over the road entrance (facing the highway) on two posts, so the mandi is named from the road.
   for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(-12.6, 2.3, sz * 3.9), 0x5a5a5a));
-  const mandi = finishSite('mandi', geos, position, { roughness: 0.92, sets: { wood: crateWood }, boards: [
+  const mandi = finishSite('mandi', geos, position, { roughness: 0.92, sets: { wood: crateWood, jute: sacks, metal: truckMetal }, boards: [
     { id: 'mandi', x: -12.7, y: 4.45, z: 0, ry: -Math.PI / 2, w: 7.2 },
     { id: 'godown', x: -0.12, y: 4.1, z: -22, ry: -Math.PI / 2, w: 3.8 },
     { id: 'dhaba', x: 5, y: 3.0, z: 28.94, ry: Math.PI, w: 3.4 },
