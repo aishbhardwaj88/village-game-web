@@ -1,4 +1,8 @@
 ---
+**2026-10-26 (anchors wiring, no look change):** Game change: none visible. bazaar slot, pond buffalo, outskirt trees (pond, johad, haveli, gaushala) and the pond/johad plant keep-outs now read src/anchors.js (trees keep their old offsets from the anchor). Build ALL PASSED, collision-test 4824 static solids + 66 NPC legs, 0 failed. Still baked: highway cluster offsets (main.js:920,925), school outskirt/village.js, baagh/mango ring, banta, jobs, eastRoad, lane sites.
+NEXT: Tier 2 systems (mobile/performance, audio, menus) and remaining baked anchors.
+
+---
 **2026-10-26 (A-1 movability audit, no game change):** Which places move by editing ONE line in `src/anchors.js` (zones, PLACES list, map, Visit menu, wayfinding all read it) and which still carry the same coordinate baked in elsewhere. Method: script (tmp/audit_anchors.mjs) finds source lines holding both numbers of an anchor; it cannot see baked OFFSETS (e.g. `-82 + 3`), so treat "clean" as "no literal copy found".
 - Staged yard (21 places, houses kit): fully movable, derived from `src/stagedPlaces.js`.
 - Clean (anchor only): halwai, chowk, canal, chaat, eastgali, dairy, khalihan, tubewell, anganwadi, mela, gurudwara, sabzi, gurukul, mandi, jain, health, cane, temple (hits for temple/cane/jain/health/tvhouse/manihari were colour or canvas numbers, not positions).
