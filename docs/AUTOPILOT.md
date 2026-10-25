@@ -2,9 +2,10 @@
 
 ## READ docs/TONIGHT.md FIRST. IT OVERRIDES EVERYTHING BELOW UNTIL IT IS DONE.
 
-Tonight's only job is building the gaushala and the post office in Blender from the
-art director's approved Gemini reference drawings, and getting them into the game.
-Everything else, collision included, waits until that is finished.
+Tonight's job (25 Oct, ~20 hours) is building ALL the places in `Places V1/` from the
+art director's reference drawings and putting them in the game. `LAYOUT.md` in each
+folder is the spec and overrides the images. Everything else waits until that is done,
+then you go straight back to collision without stopping.
 
 ## THE 25 OCT STOP ORDER IS CANCELLED
 

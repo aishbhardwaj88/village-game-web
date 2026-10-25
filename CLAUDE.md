@@ -57,6 +57,28 @@ archived - **never touch it.**
 **Never delete, move, or rename them.** Read freely; extract individual licensed assets
 when a task calls for it.
 
+## 5a. PLACES V1 IS THE SPEC. READ LAYOUT.md FIRST, ALWAYS.
+
+`Places V1/<place>/LAYOUT.md` carries the art director's sizes, rules and the known
+mistakes in her images. **It overrides the images wherever they disagree, and it is
+read BEFORE any build or rework of that place.** A build that skipped it is wrong by
+definition, whatever it looks like. (Real failure, 25 Oct: a gaushala shipped with a
+4x oversized office, a 3x oversized straw store, timber posts instead of brick, and
+no biogas dome, because LAYOUT.md was never opened.)
+
+- Her proportions are not to be changed. Scale may be adjusted only if genuinely wrong
+  for the game, never the proportions, and the change must be named in the report.
+- Nothing in her drawings is decoration to be dropped: murals, painted signs, a
+  taraju, a notice board are all deliberate. Build them.
+- Metre numbers, arrows and view labels in the images are drawing notes, never built.
+- Her images carry no lettering. Write all names and signboards yourself, per the
+  signboard rule below.
+- Build with `tools/blender/arch.py`'s `Kit` and `Box`, not hand-rolled geometry.
+  `build_school.py` is the worked example. Texture repeats come from arch.py's own
+  table (brick 1.2, tin 0.8, plaster 0.5, wood 1.0, metal 1.0): `box_uv()` already
+  gives UVs in metres, so a larger repeat tiles to sub-pixel and averages to flat
+  colour. Colour comes from `finalize`'s tints, sampled from her reference image.
+
 ## 5b. THE STANDING GOAL (art director, 2026-10-23) - applies to every place, always
 
 **Maximum realism, without hurting load time or framerate.** Both halves are the

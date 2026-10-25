@@ -1,107 +1,128 @@
-# TONIGHT'S JOB - 25 Oct 2026, 21:30 IST. THIS IS THE ONLY THING THAT MATTERS.
+# OVERNIGHT ORDER - 25 Oct 2026, 23:30 IST. Runs ~20 hours. Do not stop.
 
-**Pause everything else.** Not collision, not signboards, not the backlog. All of it
-waits. The art director needs to know TONIGHT whether her Gemini reference pipeline
-works, because she is spending her time drawing the remaining places and does not
-want to invest further until one is proven in the game.
+The art director has finished a full set of 2D reference drawings for the village and
+is asleep. **Tonight's job is to build those places in 3D and put them in the game.**
 
-## THE GAUSHALA MODEL IS ALREADY BUILT. Your job is to WIRE IT IN.
+## Read this first, then `Places V1/README.md`
 
-`public/assets/models/gaushala.glb` exists, built in Blender from her reference by
-the art director's side. `tools/blender/build_gaushala.py` is the source script if
-you need to adjust it (re-run with `blender -b --python tools/blender/build_gaushala.py`).
+`Places V1/` has one folder per place, 32 of them with a `LAYOUT.md`.
 
-- 36 m x 28 m walled compound, built to the drawn dimensions.
-- 4,732 triangles, 1.2 MB, textures embedded (brick with normal map, tin with normal
-  map, concrete, wood, plaster).
-- Contains: brick perimeter walls with coping, front dwarf wall with iron railing,
-  twin gate between brick piers, blank signboard panel above the gate, cattle shed
-  with sloped tin roof on timber posts, concrete feed trough with fodder, straw
-  bedding, hay store with sloped tin roof and three haystacks, plastered office with
-  recessed door and two grilled windows, round brick tree planter, concrete water
-  trough with water and a standpipe tap, chaff cutter, wheelbarrow, dung-cake heaps,
-  buckets.
-- The tree itself is NOT in the model (she builds organics herself) - the planter is
-  there for a tree to sit in.
+**`LAYOUT.md` IS THE SPEC. READ IT BEFORE YOU LOOK AT ANYTHING ELSE. It overrides the
+images wherever they disagree.** It carries the sizes, her rules, and the known
+mistakes in the images.
 
-### Wiring task
-`createGaushala` in `src/farmSites.js` is zone-streamed via
-`zoneManager.register('gaushala', ...)` in `src/main.js` (anchor -125, -35), so the
-normal `assetSlots.register` pattern used for `house_compound` and `halwai_compound`
-does not apply directly. Wire it whichever way fits that streaming pattern:
-- Load `gaushala.glb` when the gaushala zone builds, placed at the zone anchor.
-- Keep the existing code-built geometry as an invisible named group so colliders and
-  the world validator stay exact, same approach as `house_shell_old`.
-- The model is authored in world offsets about its own centre, Y up, front facing
-  +Z. Place it EXACTLY, no fit-scaling.
-- The signboard panel above the gate is blank on purpose: paint the existing
-  `gaushala` board onto it through the normal board system.
+Then LOOK at the `MAIN_<place>_<view>.png` images with the Read tool. Actually look.
+Do not build from the filename or from what is already in the game.
 
-### Then the post office
-Only after the gaushala is in the game and screenshotted. Build it in Blender from
-`Places V1/post_office/MAIN_post_office_front_isometric.png`, `MAIN_post_office_sides.png`
-and `MAIN_post_office_back_top.png`. **LOOK AT THOSE IMAGES with the Read tool first.**
-Follow the same rules as below.
+## Two failures from earlier tonight. Do not repeat them.
 
-## Her answers to the build questions, 25 Oct
+A gaushala was built and shipped wrong. The causes, both avoidable:
 
-- **Build to the dimensions drawn on the reference.** The gaushala is 36 m x 28 m.
-  Build it at that size. Do not shrink it to fit what is in the game today.
-- **Layout collisions do not matter tonight.** She is unhappy with the current map and
-  will hand over a new one. Place the new build at its existing anchor, let it
-  overlap neighbours if it must, and note which neighbours it now intersects in
-  `docs/handoff.md`. Do not redesign the layout to make room.
-- **The dimensions are approximate but she approved them**, so honour them. You are
-  lead engineer: you may scale sensibly where something is clearly wrong, but keep
-  changes small and say in the report exactly what you changed and why.
-- **Build it as drawn.** She likes her Gemini output and wants it reproduced
-  faithfully, with good textures and a realistic look. This is not loose art
-  direction, it is the design.
-- **The dimension annotations are reference only.** The "36 m" lines, arrows, labels
-  and the "FRONT VIEW" text must NOT appear in the game. Model the building, not the
-  drawing.
+1. **`Places V1/gaushala/LAYOUT.md` was never opened.** The spec said a 4 x 3 m office,
+   a 6 x 5 m straw store, 4 m deep sheds on BRICK pillars, and a compost pit with a
+   round biogas dome. What got built had a 7.2 x 6.8 m office, a 15 m straw store,
+   6.4 m sheds on timber posts, and no biogas dome at all.
+2. **Texture repeat values were 4 to 11 times too high**, so every texture tiled to
+   sub-pixel and averaged out to flat colour. `box_uv()` already gives UVs in METRES.
+   The project's own working values live in `tools/blender/arch.py`:
+   `brick 1.2, tin 0.8, plaster 0.5, terracotta 1.0, thatch 1.0, wood 1.0, metal 1.0,
+   jute 2.6`. Use those. A repeat of 13.8 on a 36 m wall is 497 tiles. That is the bug.
 
-## Copyright: light differentiation only. Lead engineer's call.
+A third, deeper one: the build hand-rolled its own geometry and materials instead of
+using the project's existing pipeline.
 
-She asked for tweaks so a famous game cannot be challenged. The honest assessment:
-she is not shipping the images, she is hand-building 3D models from them, and generic
-village architecture (brick wall, tin roof, cattle shed) carries very thin protection.
-Heavy tweaking would damage a design she likes for almost no benefit. So:
-- **Invent all signage text, names and marks yourself.** Never copy lettering from
-  the reference. Existing no-real-brands and no-real-village-names rules still apply.
-- Vary small things as you build: bay counts, gate pattern, window placement, exact
-  colours, prop arrangement. Natural variation, not redesign.
-- Do NOT change the footprint, massing, roof form or overall character. That is what
-  she approved.
-- Note in the commit message that the model was hand-built from a dimensioned
-  reference.
+## Use the existing pipeline. Do not hand-roll.
 
-## Quality bar
+`tools/blender/arch.py` has `Kit` and `Box` and is what `build_school.py`,
+`build_house.py` and the rest already use. It handles texture groups, vertex-colour
+tinting, baked AO and draw-call grouping for you.
 
-CLAUDE.md section 5b still applies in full:
-- Blender, not code primitives. Real bevels, wall thickness, recessed openings.
-- Real CC0 PBR textures. **No solid-colour geometry anywhere.**
-- Real doors and windows: frames, panels, grilles, sills, recesses.
-- Source CC0 models for props (troughs, hay, buckets, carts, gates) before building.
-- **Organic things are never code-built.** Trees, plants, cattle: source a model or
-  leave them out and note it. She builds plants herself now.
-- Shrink with tools/shrink.js, stay inside the asset and draw-call budgets.
+- `Kit(split_props=..., own=(...), tex_override=..., route=..., wood_slot=...)`
+- `kit.add(kind, obj, color=None)` where kind is plaster / brick / tin / terracotta /
+  thatch / wood / metal / jute / plinth / trim / paint / props
+- `Box(name, x0, x1, z0, z1, h, t).fb() / .recess() / .through() / .solid()` for walls
+  with real thickness and recessed openings
+- `kit.finalize(out, tints, ...)` writes the `.glb`
+- Read `build_school.py` end to end before your first build. It is the worked example.
 
-## Done means
+**Colour comes from the `tints` dict in `finalize`, sampled from HER reference image,
+not from whatever the texture set happens to average to.** Sample the actual colours
+out of the reference before you build.
 
-1. The model is in the game, visible at its place, replacing the old one.
-2. `npm run build` passes including the world validator.
-3. Screenshots from the player camera at normal eye height, in the real game, not a
-   test scene: a front approach shot, a three-quarter shot and one interior or
-   courtyard shot. Save them under `docs/shots/gemini-build-2026-10-25/`.
-4. **You have LOOKED at those screenshots** and compared them against the reference.
-   Name the specific ways the build differs from the drawing in your report. If you
-   cannot name any difference, you have not looked properly.
-5. Committed and pushed.
-6. A short entry at the top of `docs/handoff.md`: what you built, what you changed
-   and why, which neighbours it now overlaps, and the screenshot paths.
+## The rules she gave, verbatim in effect
 
-## After both are done
+- **Proportions are hers and are not to be changed.** She spent a long time settling
+  them. You may adjust a size only if it is genuinely wrong for the game, and only in
+  scale, never in proportion. Say in the report what you changed and why.
+- **Do not remove anything.** If the drawing has a painted cow on the milk booth wall,
+  a mural, a notice, a taraju, a specific sign, build it. Those are deliberate.
+- **Metre numbers, arrows and view labels in the images are drawing notes.** Never
+  build them.
+- **Images carry no lettering. You write all names and signboards**, Hindi bold and
+  larger on top, English not bold and smaller below but comfortably legible (CLAUDE.md
+  section 7). Invent every name. No real brands, no real village names.
+- **Skip the khets and fields tonight**: sugarcane, mustard, paddy, mango_baagh. Skip
+  organics generally: trees, plants, crops, flowers, cows and people. She builds those.
+  Build the planters, platforms and troughs they sit in, and leave them empty.
+- **Replace what is already in the game.** Primary school, gurukul and dairy have all
+  been redrawn. The in-game versions are superseded.
 
-Go back to the normal priority order in `docs/AUTOPILOT.md`: collision first.
-Do not start anything else before these are finished.
+## Build order
+
+1. **Gaushala, rebuilt to `LAYOUT.md`.** The current `gaushala.glb` and
+   `tools/blender/build_gaushala.py` are wrong: rebuild them properly with `Kit`,
+   correct repeats, tints sampled from the reference, and every item in the spec
+   including the compost pit and biogas dome. Keep the wiring in `src/farmSites.js`
+   (it already loads `assets/models/gaushala.glb`), just fix the model and the
+   collider boxes to match the corrected footprint.
+2. **The three redrawn replacements**: `primary_school`, `gurukul`, `dudh_dairy`.
+3. Then the rest, simplest first so the count climbs:
+   `bus_adda`, `chaupal`, `volleyball`, `puncture`, `tubewell`, `paani_tanki`,
+   `dharam_kanta`, `akhada`, `ration_shop`, `post_office`, `atta_chakki`,
+   `petrol_pump`, `panchayat`, `tv_house`, `khalihan`, `canal`, `pond`,
+   `khel_maidan`, `bhatta`, `houses_kit`.
+4. `houses_kit` is 8 house types (A to H) for generating 100+ houses. Build the 8
+   types as separate models and wire them so the existing background houses draw
+   from them, instanced.
+
+## Done means, for every single place
+
+1. `LAYOUT.md` read, images looked at, every listed item present.
+2. Built with `Kit`, correct texture repeats, tints sampled from the reference.
+3. Model in the game, replacing the old one, with colliders matching the real
+   footprint. Keep the old geometry as an invisible named group so collision and the
+   world validator stay exact.
+4. `npm run build` passes, including the world validator.
+5. `node tools/screenshot.js` or an equivalent in-game capture, saved under
+   `docs/shots/places-2026-10-26/<place>/`.
+6. **You have LOOKED at that screenshot beside the reference image and named the
+   specific differences in your report.** "Proof shots taken" is not looking. If you
+   cannot name a difference, you have not looked.
+7. Committed and pushed. Push works over SSH now.
+8. One line at the top of `docs/handoff.md`: place, what you changed from the spec and
+   why, which neighbours it now overlaps, screenshot path.
+
+## Overlaps are expected and fine
+
+Several of these are much bigger than what they replace. She is redoing the map later.
+Place each at its existing anchor, let it overlap, and note the overlaps. **Do not
+redesign the layout to make room.**
+
+## When the places are done
+
+Do not stop and do not wait for her. Go straight back to the paused work in
+`docs/AUTOPILOT.md` and `docs/BACKLOG.md`, in this order:
+1. Collision (`tools/collision-test.js`, the A0a items) - there is uncommitted
+   collision work in the tree from the run before this one, finish it rather than
+   discarding it.
+2. Signboards to the 25 Oct final rule.
+3. Then Tier 1, 2, 3 of the 25 Oct NEW DIRECTION in `docs/ART_REVIEW.md`.
+
+## Never
+
+- Never stop the loop or create `tmp/STOP`.
+- Never skip `LAYOUT.md`.
+- Never hand-roll geometry when `arch.py` covers it.
+- Never report a place done on a screenshot you did not look at.
+- Never remove a detail from her drawings because it is fiddly.
+- Never spend money or credits.
