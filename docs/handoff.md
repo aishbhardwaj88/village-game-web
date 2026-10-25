@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n28, playtest block item 3, veg fruit size):** Game change: brinjal and okra bush fruit (src/field.js vegBushTexture) enlarged about 1.5x (5 fruits per bush, fatter aubergines, longer okra pods) so they read at walking distance. Texture only, no new draw call. Build ALL PASSED. Proof docs/shots/vegbush-2026-10-25b/sabzi_close.png (free camera, headless, no capsule in frame; brinjal reads clearly; item 3 not ticked as a whole). Still needs the art director: triangle limit meaning (visible 271k vs renderer ~500k), draw-call ceiling (hero/bazaar 159-166 vs 150).
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n27, signage check):** NO game change (written honestly). FEEDBACK item 1's "Banta shop and Chaat thela are not built" was stale: both exist (src/farmSites.js, freeRoam places). Shot both boards from game distance: "Banta - Goli Soda" and "Chaat & Golgappa" read English-first, Hindi small above, dark paint on cream. Proof docs/shots/banta-chaat-2026-10-25/{banta_s,chaat_s}.png (capsule keepers in frame, so not tickable). Everything left needs the art director: triangle limit meaning (visible 271k vs renderer ~500k), draw-call ceiling 150 (hero/bazaar 159-166), Blender is not installed so the bazaar row model and a plain crate cannot be rebuilt.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 

@@ -484,15 +484,15 @@ function vegBushTexture(kind) {
     g.restore();
   };
   for (let i = 0; i < 9; i++) leaf(64 + (rnd() - 0.5) * 36, 118 - i * 9 - rnd() * 6, 28 + rnd() * 14, (rnd() - 0.5) * 2.2, kind === 'okra');
-  for (let i = 0; i < 4; i++) {
-    const x = 64 + (rnd() - 0.5) * 50, y = 70 + rnd() * 34;
+  for (let i = 0; i < 5; i++) {
+    const x = 64 + (rnd() - 0.5) * 56, y = 62 + rnd() * 34;
     if (kind === 'okra') { // upright tapered pod with ridges
-      g.fillStyle = '#6aa02e'; g.beginPath(); g.moveTo(x - 3, y); g.lineTo(x + 3, y); g.lineTo(x + 0.5, y - 20); g.closePath(); g.fill();
-      g.strokeStyle = '#3f6a1c'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 0.4, y - 19); g.stroke();
+      g.fillStyle = '#6aa02e'; g.beginPath(); g.moveTo(x - 4.5, y); g.lineTo(x + 4.5, y); g.lineTo(x + 0.8, y - 32); g.closePath(); g.fill();
+      g.strokeStyle = '#3f6a1c'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 0.6, y - 30); g.stroke();
     } else { // hanging glossy aubergine with green calyx
-      const gr = g.createRadialGradient(x - 2, y + 6, 1, x, y + 8, 11); gr.addColorStop(0, '#8a5aa8'); gr.addColorStop(0.5, '#4a1f66'); gr.addColorStop(1, '#22102e');
-      g.fillStyle = gr; g.beginPath(); g.ellipse(x, y + 9, 6, 12, 0.05, 0, 6.3); g.fill();
-      g.fillStyle = '#4f7a2a'; g.beginPath(); g.ellipse(x, y - 2, 6.5, 3, 0, 0, 6.3); g.fill();
+      const gr = g.createRadialGradient(x - 3, y + 8, 1, x, y + 12, 16); gr.addColorStop(0, '#8a5aa8'); gr.addColorStop(0.5, '#4a1f66'); gr.addColorStop(1, '#22102e');
+      g.fillStyle = gr; g.beginPath(); g.ellipse(x, y + 12, 9, 17, 0.05, 0, 6.3); g.fill();
+      g.fillStyle = '#4f7a2a'; g.beginPath(); g.ellipse(x, y - 4, 9, 4, 0, 0, 6.3); g.fill();
     }
   }
   const t = new THREE.CanvasTexture(cv);
