@@ -411,7 +411,6 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
       else
         taskRow(j.en, j.hi, n ? 'done' : 'current', n ? `Done x${n} - tap to go there` : 'Tap to walk there', () => {
           onPinTask?.({ x: j.x, z: j.z });
-          onPinTask?.({ x: j.x, z: j.z });
           if (onVisit?.({ id: `job_${id}`, en: j.en, hi: j.hi, x: j.x, z: j.z })) closeTasks();
           else tasksNote.textContent = 'Could not find a clear spot there.';
         });

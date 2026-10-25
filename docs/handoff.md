@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n4, playtest block items 8/12, audit):** Almost no game change (written honestly): removed a duplicated onPinTask call in the Tasks list (src/freeRoam.js). Audited item 8: kerbs, drains and lamps already run the full length of the hero lane, temple lane, bazaar lane, abadi gallis and the east road (kerb+drain+solar lamps+neem shade+walkers+cyclist in src/main.js east-road zones); only the bare spurs (pond, cane) have none by design. Build ALL PASSED. Remaining playtest work is blocked on the art director: cottage wood and extra lamps (draw calls 150 of 150), triangle cuts (513k vs 400k), a light plain crate (needs Blender), and out-of-order story-mission switching (guarded by design, spec allows that).
+NEXT: once a draw-call or triangle call is made, do cottage wood and the cuts; otherwise BACKLOG section A in order.
+
+---
+
 **2026-10-25 (cycle 39z99n3, playtest block item 8, temple lane check):** NO game change this cycle (written honestly). Checked the earlier "temple lane ends inside the compound" finding: it is stale. TEMPLE_LANE_ARRIVE is (2,51) and the compound's west wall is at x = 8 - 12/2 = 2 (src/temple.js), buildStripSegment ends exactly at its end point, so the lane stops at the gate gap (z 52 +/- 1.3), not inside. Nothing to fix there. What is left in the playtest block is all blocked on art-director calls already in NEEDS_YOU.md: cottage wood and lamps/street life on lanes (draw calls at 150 of 150 in hero and bazaar views), triangle cuts (513k vs 400k), a lighter plain crate (needs Blender or a decimated plastic crate).
 NEXT: once a draw-call or triangle call is made, do lamps on lanes, cottage wood and the triangle cuts.
 
