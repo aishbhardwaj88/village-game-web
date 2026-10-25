@@ -102,11 +102,30 @@ out of the reference before you build.
 8. One line at the top of `docs/handoff.md`: place, what you changed from the spec and
    why, which neighbours it now overlaps, screenshot path.
 
-## Overlaps are expected and fine
+## WHERE TO PUT THEM: the staging yard. Her instruction, 25 Oct, supersedes everything.
 
-Several of these are much bigger than what they replace. She is redoing the map later.
-Place each at its existing anchor, let it overlap, and note the overlaps. **Do not
-redesign the layout to make room.**
+**Do NOT place these at the existing anchors and do NOT try to fit them into the
+current village.** She is going to rearrange the entire map later and does not like the
+current one. Your only job is to make each place EXIST in the game at full quality.
+
+Build a **staging yard** in empty ground east of everything (the furthest existing
+place is the mandi at x 226):
+
+- Grid origin x = 320, z = -160.
+- **80 m spacing** in both directions, 6 columns per row.
+  Place n goes at `x = 320 + 80 * (n % 6)`, `z = -160 + 80 * floor(n / 6)`.
+- Each place sits on its own flat pad, well clear of its neighbours. No overlaps, no
+  shared walls, no squeezing.
+- Keep a simple dirt track connecting them so she can walk the yard and review.
+- Record the yard index and coordinates of every place in `docs/handoff.md` and add
+  each one to the notebook map and the "Visit place" list, so she can jump straight
+  to any of them.
+
+**The old in-game version of a replaced place stays where it is for now.** Do not
+delete it, do not move it. She will sort the map out herself. Just note in the report
+which old one each new build supersedes.
+
+This removes every layout and overlap problem tonight. Nothing blocks on the map.
 
 ## When the places are done
 
@@ -117,6 +136,14 @@ Do not stop and do not wait for her. Go straight back to the paused work in
    discarding it.
 2. Signboards to the 25 Oct final rule.
 3. Then Tier 1, 2, 3 of the 25 Oct NEW DIRECTION in `docs/ART_REVIEW.md`.
+
+## She is away 15 to 20 hours, with two internet gaps of about 90 minutes
+
+- **Never treat a failed run as a reason to stop.** If a run fails because the network
+  is down, the loop's connectivity gate holds it and retries. Keep going afterwards.
+- Characters and Tripo stay parked until 29 Oct. **Capsule placeholders for all people
+  AND animals.** Do not generate, do not spend, do not ask about them again.
+- Trees and plants stay exactly as they are until she replaces them herself.
 
 ## Never
 
