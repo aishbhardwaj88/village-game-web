@@ -1,4 +1,4 @@
-import { dairyGoods, chemistGoods } from './shopGoods.js';
+import { dairyGoods, chemistGoods, buildGoodsMesh, DESIGN as GOODS } from './shopGoods.js';
 import { createNPC } from './npc.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import * as THREE from 'three';
@@ -1658,11 +1658,24 @@ export function createMandi(position) {
   // Vegetable wholesale yard: open pillared tin shed, crates and gunny heaps.
   geos.push(bake(new THREE.BoxGeometry(12, 0.1, 14), new THREE.Matrix4().makeRotationX(0.05).setPosition(4, 3.4, 4), 0x8e969c));
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 3.4, 6), at(4 + sx * 5.5, 1.7, 4 + sz * 6.5), 0x6f5233));
-  const veg = [0xb5472f, 0x5f8a3a, 0xd9a43a, 0x7b4a8a, 0xc9c27a];
+  // 14 open slatted wooden crates (real wood set, own tint each) heaped with tomato / potato / onion / brinjal from the shop-goods atlas.
+  const crateWood = [], produce = [];
+  const kinds = [['tomato'], ['potato'], ['onion'], ['brinjal', 'tomato'], ['potato', 'onion']];
+  let cs = 11; const crnd = () => ((cs = (cs * 16807) % 2147483647) / 2147483647);
+  const rel = (cx, cz, ry, lx, ly, lz) => at(cx, ly, cz, ry).multiply(new THREE.Matrix4().makeTranslation(lx, 0, lz));
   for (let i = 0; i < 14; i++) {
-    const cx = 0 + (i % 5) * 2.0, cz = 0 + Math.floor(i / 5) * 3.2;
-    geos.push(bake(new THREE.BoxGeometry(1.1, 0.4, 0.8), at(cx, 0.32, cz), 0x9a7a4a));
-    geos.push(bake(new THREE.BoxGeometry(0.95, 0.22, 0.65), at(cx, 0.6, cz), veg[i % veg.length]));
+    const cx = 0 + (i % 5) * 2.0, cz = 0 + Math.floor(i / 5) * 3.2, ry = (crnd() - 0.5) * 0.25;
+    const tint = [0x9a7a4a, 0x8a6a40, 0xa88650, 0x7f6038][Math.floor(crnd() * 4)];
+    crateWood.push(bake(new THREE.BoxGeometry(1.1, 0.03, 0.8), at(cx, 0.17, cz, ry), tint));
+    for (const sz of [-1, 1]) for (const lv of [0.26, 0.42]) crateWood.push(bake(new THREE.BoxGeometry(1.1, 0.12, 0.03), rel(cx, cz, ry, 0, lv, sz * 0.385), tint));
+    for (const sx of [-1, 1]) for (const lv of [0.26, 0.42]) crateWood.push(bake(new THREE.BoxGeometry(0.03, 0.12, 0.8), rel(cx, cz, ry, sx * 0.535, lv, 0), tint));
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) crateWood.push(bake(new THREE.BoxGeometry(0.06, 0.4, 0.06), rel(cx, cz, ry, sx * 0.52, 0.32, sz * 0.37), tint));
+    const k = kinds[i % kinds.length];
+    for (let layer = 0; layer < 3; layer++) for (let j = 0; j < 46 - layer * 12; j++) {
+      const kind = k[Math.floor(crnd() * k.length)], inset = layer * 0.08;
+      const lx = (crnd() - 0.5) * (0.92 - inset), lz = (crnd() - 0.5) * (0.62 - inset);
+      produce.push({ kind, design: GOODS[kind], x: cx + lx * Math.cos(ry) + lz * Math.sin(ry), y: 0.2 + layer * 0.07, z: cz - lx * Math.sin(ry) + lz * Math.cos(ry), ry: crnd() * 6.28, rz: kind === 'brinjal' ? 0 : (crnd() - 0.5) * 0.4, s: 1.35 + crnd() * 0.4 });
+    }
   }
   // Bigger weighing station: long platform, cabin with display board, boom barrier.
   geos.push(bake(new THREE.BoxGeometry(4.5, 0.25, 20), at(-6, 0.13, 22), 0x6d6d70));
@@ -1689,7 +1702,7 @@ export function createMandi(position) {
   truck(geos, -4, 40, 0xd9a43a, 0.12);
   // Gantry over the road entrance (facing the highway) on two posts, so the mandi is named from the road.
   for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(-12.6, 2.3, sz * 3.9), 0x5a5a5a));
-  const mandi = finishSite('mandi', geos, position, { roughness: 0.92, boards: [
+  const mandi = finishSite('mandi', geos, position, { roughness: 0.92, sets: { wood: crateWood }, boards: [
     { id: 'mandi', x: -12.7, y: 4.45, z: 0, ry: -Math.PI / 2, w: 7.2 },
     { id: 'godown', x: -0.12, y: 4.1, z: -22, ry: -Math.PI / 2, w: 3.8 },
     { id: 'dhaba', x: 5, y: 3.0, z: 28.94, ry: Math.PI, w: 3.4 },
@@ -1706,6 +1719,7 @@ export function createMandi(position) {
     ...[0, 1, 2, 3].map((i) => [1.5 + i * 2.1, 25, 1.9, 1.0, Math.PI / 2 + (i % 2 ? 0.05 : -0.04)]), // dhaba charpais
   ];
   mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, rects);
+  mandi.add(buildGoodsMesh(produce, new THREE.Matrix4(), 'mandi_produce'));
   return mandi;
 }
 
