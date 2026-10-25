@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-24T11:30:00.000Z",
+  "timestamp": "2026-10-25T17:58:40.709733Z",
   "drawCallsByZone": {
     "hero zone (house/school/halwai/tea-stall, general store ...)": 147,
     "bazaar row + chowk": 123,
@@ -12,8 +12,8 @@
   "assetsMB": 28.44,
   "assetsLimitMB": 40,
   "lastBuild": "pass",
-  "lastValidator": "ALL PASSED (cycle 39k)",
-  "lastRegressionCheck": "pass 22/22 (cycle 39k)",
+  "lastValidator": "16/16 checks passed + slot-swap + site-slot + collision tests (25 Oct, collision cycle)",
+  "lastRegressionCheck": "21/22: all movement and mission checks pass; triangles 475k by the browser counter (shadow pass included), pre-existing",
   "lastCheckBudget": "pass",
   "assetsRebuiltInBlender": [
     "house_compound",
@@ -29,5 +29,6 @@
     "new_shops (post office, ration shop, atta chakki)",
     "abadi_row_a/b/c (+ _lod proxies)"
   ],
-  "notes": "NOT COMPLETE. Deploy fixed: CI now runs build:unchecked with 15-minute timeouts and no Playwright (validators stay a local gate). ART_REVIEW items reworked this cycle (each has a 'Reworked' line + compare shot): house (west wing encloses the aangan), bazaar row (front elevation, shutter boxes, warm bounce), background houses (22 dense attached rows, instanced with near/far LOD, build_abadi.py), signboards (wide-cell atlas fixes squashed text everywhere), school (eucalyptus row, tyre-swing tree, kite), tea stall (sign on roof, X frame gone, steam), general store (sign fully visible), trees green + smooth, ground green. Still open: halwai fascia/antenna re-check, flower stall marigold garlands, post office/ration/chakki re-framed compare shots, canal colour, Blender hero buildings distance-culling (hero zone is at the 150 ceiling). Validator sampler now dedupes on a 0.1 m grid (it crashed at 6M points with the dense rows). Zero Tripo calls (no real key)."
+  "notes": "NOT COMPLETE. Deploy fixed: CI now runs build:unchecked with 15-minute timeouts and no Playwright (validators stay a local gate). ART_REVIEW items reworked this cycle (each has a 'Reworked' line + compare shot): house (west wing encloses the aangan), bazaar row (front elevation, shutter boxes, warm bounce), background houses (22 dense attached rows, instanced with near/far LOD, build_abadi.py), signboards (wide-cell atlas fixes squashed text everywhere), school (eucalyptus row, tyre-swing tree, kite), tea stall (sign on roof, X frame gone, steam), general store (sign fully visible), trees green + smooth, ground green. Still open: halwai fascia/antenna re-check, flower stall marigold garlands, post office/ration/chakki re-framed compare shots, canal colour, Blender hero buildings distance-culling (hero zone is at the 150 ceiling). Validator sampler now dedupes on a 0.1 m grid (it crashed at 6M points with the dense rows). Zero Tripo calls (no real key).",
+  "collisionTest": "1995 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs, 0 failed"
 }

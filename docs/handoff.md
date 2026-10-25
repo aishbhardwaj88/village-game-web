@@ -1,4 +1,7 @@
 ---
+**2026-10-25 (collision cycle):** Game change: collision is real now. Everything visible in the player's body band is solid unless listed walkable (src/autoColliders.js, src/solidRules.js); tools/collision-test.js proves it in npm run build (1995 solids, bike/cart/tractor+trolley, 66 NPC legs, 19.5k geometry cells, 0 failed; was 116 before). Bullock cart now collides with its bullocks. All painted boards follow the 25 Oct signboard rule (src/signPaint.js). Tier 1: src/anchors.js placement table, drop-in model slot for every streamed place (src/siteSlots.js) with generated dimensions in docs/asset-slots.md. Validator check 6 falls back to an A* path walk when a hand-written waypoint chain goes stale; check 5 counts any opaque material. Build ALL PASSED. regression-check 21/22 (triangles 475k browser counter, pre-existing; movement and missions pass).
+NEXT: Tier 2 systems (tasks list and minimap click-to-travel, A-2a notebook map click), then mobile/performance, audio.
+
 **2026-10-25 (cycle 39z99n50, tasks replay):** Game change: Tasks list (src/freeRoam.js) finished story missions can now be replayed from their hub step while the story is still running (before, only skip-ahead worked). Build ALL PASSED. No UI screenshot taken, so FEEDBACK item 12 is not ticked; waypoint switching for side jobs and skip-ahead were already in. Still open in item 12: shipped-minimap-conventions web research.
 NEXT: items 8/9/10 of the 15-hour queue (lanes street life, hand-built props, vegetation LODs).
 
