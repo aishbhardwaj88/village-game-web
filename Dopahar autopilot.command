@@ -32,6 +32,9 @@ while true; do
   i=$((i+1))
   if [ -f tmp/STOP ]; then echo "Stop requested. Done."; break; fi
   wait_for_net || break
+  # After a sleep/wake (lid closed in transit) a run can be killed mid-git and leave
+  # a stale lock that breaks every later git command. Clear any lock older than 5 min.
+  find .git -maxdepth 2 -name '*.lock' -mmin +5 -delete 2>/dev/null
   start=$(date +%s)
   echo "=== Run $i started $(date)" | tee -a tmp/autopilot.log
   claude -p "$(cat docs/AUTOPILOT.md)" --dangerously-skip-permissions >> tmp/autopilot.log 2>&1
