@@ -1780,6 +1780,7 @@ export function createMandi(position) {
   ];
   mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, rects);
   mandi.add(buildGoodsMesh(produce, new THREE.Matrix4(), 'mandi_produce'));
+  mandi.add(createNPC(0x3f6a8a, { x: 5.5, z: 28.0 }, Math.PI, 'npc_dhaba_cook')); // cook between tandoor and counter, facing the road (capsule until the 3D people arrive)
   return mandi;
 }
 

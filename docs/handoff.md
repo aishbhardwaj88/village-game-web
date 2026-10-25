@@ -6,6 +6,10 @@ NEXT: capsule cook at the dhaba tandoor, then bangle tori / medical fridge.
 NEXT: item 7 water/shoreline check, then dhaba props.
 
 ---
+**2026-10-25 (cycle 39z99n44, dhaba cook):** Game change: a capsule cook (blue, npc_dhaba_cook) now stands behind the mandi dhaba counter between tandoor and shelf (src/farmSites.js createMandi); first tint was tan and vanished against the wall, recoloured. Build ALL PASSED, no console errors; view 76 calls / 109k tris. Proof docs/shots/dhaba-cook-2026-10-25/cook.png (photo camera; capsule IS in frame on purpose, it is the subject). Gaps: dhaba plaster walls still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: bangle tori / medical fridge, then A-2c routes legibility.
+
+---
 
 **2026-10-25 (cycle 39z99n41, mandi godown sacks):** Game change: the 12 flat cream boxes outside the mandi godown are now 20 stacked gunny sacks (capsule loaf shape, jute PBR set, own size/yaw/tone, 4 courses by each door); the three trucks' bodies, cabs and bumpers moved onto the metal set with rib rails (src/farmSites.js sack(), truck()). Build ALL PASSED, budget 30.89 MB, no console errors; view 70 calls / 99k tris. Proof docs/shots/mandi-sacks-2026-10-25/sacks.png (free camera, no capsule in frame). Gaps: truck bodies are still plain boxes with low-poly wheels (barely changed, see trucks.png); dhaba props still flat colour; bangle tori and medical fridge still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: real truck shape (cab, flatbed with slatted sides, tyres), then item 7 water/shoreline.
