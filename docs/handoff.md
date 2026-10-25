@@ -1,4 +1,8 @@
 ---
+**2026-10-25 (cycle 39z99n48, water glare):** Game change: shared water material (src/water.js) was blowing out to a white glare against the low sun on the johad; roughness 0.42->0.62, env reflection 0.7->0.45, ripple normal strength 1.6->1.1, glitter halved. Johad now reads as rippled water with a soft sheen. Build ALL PASSED, budget 30.92 MB, no console errors. Proof docs/shots/water-2026-10-25/{johad,johad2}.png (before/after; headless). Gaps: reeds are plain dark sticks, pond lotus still read faceted from this angle, tubewell hauz water flat green.
+NEXT: reeds/pond lotus polish, then A-2c routes legibility.
+
+---
 **2026-10-25 (cycle 39z99n47, pond lotus):** Game change: the pond lotus flowers (src/farmSites.js lotusFlowerGeos) were faceted glossy pink spikes (plaster normal map sparkle); now three rings of wide smooth 5x8-grid petals that cup and flare, with a painted cream-to-pink veined petal texture and a yellow seed head, own non-normal-mapped material (one extra draw call, only in views that see the pond). Build ALL PASSED, budget 30.92 MB, no console errors. Proof docs/shots/lotus-2026-10-25/{a,c}.png (photo camera, buffalo capsules at left edge of c only). Also found Blender IS installed (~/Applications/Blender.app); the n29 'not installed' note was wrong, and barber clippers / recharge cards / CRT were already rebuilt in 9802b64, so item 4's goods leftover is closed. Gaps: pink is a little saturated, pads still low-poly.
 NEXT: item 7 water surface and shoreline close-up, then A-2c routes legibility.
 
