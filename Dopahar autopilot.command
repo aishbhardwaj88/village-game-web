@@ -31,6 +31,28 @@ wait_for_net() {
   return 0
 }
 
+# Independent auto-pusher. The loop only pushes when a run completes, so if a run
+# stalls or the loop is between runs, finished commits can sit unpushed for hours
+# (happened 25 Oct, ~3 h). This pushes anything local every 3 minutes regardless,
+# skipping while git is busy so it can never collide with a run's own git work.
+(
+  while true; do
+    sleep 180
+    [ -f tmp/STOP ] && exit 0
+    [ -e .git/index.lock ] && continue
+    ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null) || continue
+    if [ "${ahead:-0}" -gt 0 ]; then
+      if git push origin main >> tmp/autopilot.log 2>&1; then
+        echo "=== auto-push: $ahead commit(s) pushed $(date)" >> tmp/autopilot.log
+      else
+        echo "=== auto-push FAILED $(date) (will retry in 3 min)" >> tmp/autopilot.log
+      fi
+    fi
+  done
+) &
+PUSHER_PID=$!
+trap 'kill $PUSHER_PID 2>/dev/null' EXIT
+
 while true; do
   i=$((i+1))
   if [ -f tmp/STOP ]; then echo "Stop requested. Done."; break; fi
