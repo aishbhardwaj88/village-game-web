@@ -110,7 +110,7 @@ export class ThirdPersonCamera {
       const px = ox + this._offsetDir.x * t, pz = oz + this._offsetDir.z * t;
       let inside = false;
       for (const b of STATIC_COLLIDERS) {
-        if (b.animalBox) continue;
+        if (b.animalBox || b.auto) continue; // derived low-prop boxes never pull the camera in
         if (px > b.minX - CAMERA_WALL_PAD && px < b.maxX + CAMERA_WALL_PAD && pz > b.minZ - CAMERA_WALL_PAD && pz < b.maxZ + CAMERA_WALL_PAD) {
           if (ox > b.minX && ox < b.maxX && oz > b.minZ && oz < b.maxZ) continue; // pivot itself already inside (stairs, porch): ignore
           inside = true; break;

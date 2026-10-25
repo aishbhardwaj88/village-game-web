@@ -955,6 +955,8 @@ export const VEHICLE_PRESETS = {
     kind: 'cart',
     label: 'Bullock cart',
     body: { w: C.platformW, h: 1.5, d: C.platformLen },
+    // The cart is the platform AND its two bullocks (they stand ~5.5 m ahead of the tail): one oriented rect in local space (measured from the built group: x +-1.45 at the wheels, z -5.54..1.52).
+    assembly: { cz: -2.01, hw: 1.25, hd: 3.55 },
     maxSpeed: 1.8,
     accel: 1.1,
     brakeDecel: 2,

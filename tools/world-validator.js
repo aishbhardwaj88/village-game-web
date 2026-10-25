@@ -95,7 +95,10 @@ async function main() {
           }
         }
         for (const npc of d.npcs) {
-          const clearance = d.minDistanceToColliders({ x: npc.position.x, z: npc.position.z }, 0.33); // src/npc.js NPC_RADIUS
+          // Posed NPCs stand AT a counter, stove or bench on purpose, so they are checked against walls (hand-tagged
+          // boxes) only; derived prop colliders (src/autoColliders.js) are skipped here. Everything that WALKS is held
+          // to every collider by tools/collision-test.js part 4.
+          const clearance = d.minDistanceToColliders({ x: npc.position.x, z: npc.position.z }, 0.33, true); // src/npc.js NPC_RADIUS
           rows.push({ name: `npc:${npc.name}`, x: npc.position.x, z: npc.position.z, clearance });
         }
         // Bazaar's instanced villagers (src/bazaarLife.js) — not individually
@@ -108,7 +111,7 @@ async function main() {
             o.getMatrixAt(i, m);
             const x = m.elements[12];
             const z = m.elements[14];
-            const clearance = d.minDistanceToColliders({ x, z }, 0.32); // src/bazaarLife.js NPC_RADIUS
+            const clearance = d.minDistanceToColliders({ x, z }, 0.32, true); // src/bazaarLife.js NPC_RADIUS (walls only, see npc: above)
             rows.push({ name: `bazaar_life[${i}]`, x, z, clearance });
           }
         });
@@ -733,7 +736,72 @@ async function main() {
           return { reached: false, sidestepAttempts };
         }
 
+        // Pathfinding fallback. The hand-written waypoint chains above were each verified clear against the colliders of
+        // their day; every time a collider is added (the village edge walls, derived prop colliders) a chain can go
+        // stale without the target becoming unreachable. So when a chain walk fails, find a real path: A* over the
+        // live colliders for a player-sized circle, then WALK it with the same stepPlayerMove resolver. A target only
+        // counts as reached if that walk ends within its radius, so a genuinely sealed-off target still fails.
+        function findPath(sx, sz, gx, gz, gr) {
+          const R = d.playerRadius + 0.05, S = 0.2;
+          const M = 70, lim = d.groundHalfExtent;
+          const x0 = Math.max(-lim, Math.min(sx, gx) - M), x1 = Math.min(lim, Math.max(sx, gx) + M);
+          const z0 = Math.max(-lim, Math.min(sz, gz) - M), z1 = Math.min(lim, Math.max(sz, gz) + M);
+          const nx = Math.ceil((x1 - x0) / S), nz = Math.ceil((z1 - z0) / S);
+          const free = new Uint8Array(nx * nz); // 0 unknown, 1 free, 2 blocked
+          const isFree = (ix, iz) => {
+            if (ix < 0 || iz < 0 || ix >= nx || iz >= nz) return false;
+            const k = iz * nx + ix;
+            if (!free[k]) free[k] = d.isBlockedAt(x0 + (ix + 0.5) * S, z0 + (iz + 0.5) * S, R) ? 2 : 1;
+            return free[k] === 1;
+          };
+          const cx = (ix) => x0 + (ix + 0.5) * S, cz = (iz) => z0 + (iz + 0.5) * S;
+          const six = Math.floor((sx - x0) / S), siz = Math.floor((sz - z0) / S);
+          const g = new Float32Array(nx * nz).fill(1e9);
+          const parent = new Int32Array(nx * nz).fill(-1);
+          const closed = new Uint8Array(nx * nz);
+          const heap = []; // [f, k]
+          const push = (f, k) => { heap.push([f, k]); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+          const pop = () => { const top = heap[0]; const last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { let l = 2 * i + 1, r = l + 1, m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+          const h = (ix, iz) => { const dx = Math.abs(cx(ix) - gx), dz = Math.abs(cz(iz) - gz); return (Math.max(dx, dz) + 0.414 * Math.min(dx, dz)); };
+          const sk = siz * nx + six;
+          g[sk] = 0; push(h(six, siz), sk);
+          const goalR = Math.max(0.4, gr - 0.6); // end the search comfortably inside the target's own interaction radius (the walk may stop a little short of the last waypoint)
+          let found = -1, expanded = 0;
+          while (heap.length && expanded < 600000) {
+            const [, k] = pop();
+            if (closed[k]) continue;
+            closed[k] = 1; expanded++;
+            const ix = k % nx, iz = (k - ix) / nx;
+            if (Math.hypot(cx(ix) - gx, cz(iz) - gz) <= goalR) { found = k; break; }
+            for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+              if (!dx && !dz) continue;
+              const jx = ix + dx, jz = iz + dz;
+              if (!isFree(jx, jz)) continue;
+              if (dx && dz && (!isFree(ix + dx, iz) || !isFree(ix, iz + dz))) continue; // no corner cutting
+              const nk = jz * nx + jx;
+              const ng = g[k] + (dx && dz ? 1.414 : 1);
+              if (ng < g[nk]) { g[nk] = ng; parent[nk] = k; push(ng + h(jx, jz) / S, nk); }
+            }
+          }
+          if (found < 0) return null;
+          const cells = [];
+          for (let k = found; k >= 0; k = parent[k]) { const ix = k % nx; cells.push({ x: cx(ix), z: cz((k - ix) / nx) }); }
+          cells.reverse();
+          // string-pull: keep only the waypoints needed so each hop is a straight, clear segment
+          const clear = (a, b) => { const n = Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 0.15); for (let i = 1; i < n; i++) { const t = i / n; if (d.isBlockedAt(a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t, R)) return false; } return true; };
+          const out = [];
+          let at = 0;
+          while (at < cells.length - 1) {
+            let far = at + 1;
+            for (let j = Math.min(cells.length - 1, at + 40); j > at + 1; j--) if (clear(cells[at], cells[j])) { far = j; break; }
+            out.push(cells[far]);
+            at = far;
+          }
+          return out;
+        }
+
         const failures = [];
+        const viaPathfinder = [];
         for (const t of targets) {
           d.teleportPlayer(spawn.x, spawn.z);
           const budget = { frames: MAX_FRAMES };
@@ -755,15 +823,30 @@ async function main() {
             if (!reached) legFailed = 'final approach';
           }
           if (!reached) {
+            // chain walk failed: find and walk a real path from the spawn
+            d.teleportPlayer(spawn.x, spawn.z);
+            const path = findPath(spawn.x, spawn.z, t.x, t.z, t.radius);
+            if (path) {
+              const b2 = { frames: MAX_FRAMES * 2 };
+              let ok = true;
+              for (const wp of path) { if (!walkTo(wp, 0.35, b2).reached) { ok = false; break; } }
+              if (ok) {
+                const pos2 = d.player.position;
+                reached = Math.hypot(t.x - pos2.x, t.z - pos2.z) < t.radius;
+              }
+              if (reached) viaPathfinder.push(t.name);
+            }
+          }
+          if (!reached) {
             const pos = d.player.position;
             failures.push({ name: t.name, target: { x: +t.x.toFixed(2), z: +t.z.toFixed(2) }, stoppedAt: { x: +pos.x.toFixed(2), z: +pos.z.toFixed(2) }, distRemaining: +Math.hypot(t.x - pos.x, t.z - pos.z).toFixed(2), framesUsed: MAX_FRAMES - budget.frames, sidestepAttempts: totalSidesteps, failedAt: legFailed });
           }
         }
-        return { total: targets.length, failures };
+        return { total: targets.length, failures, viaPathfinder };
       },
       { targets: allTargets, spawn: spawnPos }
     );
-    record('check 6 — every interactive point/building entrance reachable on foot', reachResult.failures.length === 0, reachResult.failures.length === 0 ? `${reachResult.total} targets, all reached` : `${reachResult.failures.length}/${reachResult.total} unreachable: ${JSON.stringify(reachResult.failures)}`);
+    record('check 6 — every interactive point/building entrance reachable on foot', reachResult.failures.length === 0, reachResult.failures.length === 0 ? `${reachResult.total} targets, all reached${reachResult.viaPathfinder.length ? ` (${reachResult.viaPathfinder.length} needed the A* path walk because their hand-written waypoint chain is stale: ${reachResult.viaPathfinder.join(', ')})` : ''}` : `${reachResult.failures.length}/${reachResult.total} unreachable: ${JSON.stringify(reachResult.failures)}`);
     // Restore the player to its real spawn after this deliberately-invasive check.
     await page.evaluate((spawn) => window.__dopahar.teleportPlayer(spawn.x, spawn.z), spawnPos);
 

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { isAutoSolidMesh, deriveMeshBoxes } from './autoColliders.js';
+import { WALKABLE_RECTS } from './walkable.js';
 
 /**
  * Simple axis-aligned box colliders — no physics engine. Player and vehicles are
@@ -64,22 +66,72 @@ export function colliderBoxFromTransform(width, depth, matrix) {
  * run of separate walls into one solid span. Call once, after scene construction
  * finishes (main.js) — not per-frame; the result only needs recomputing if
  * something solid is added to the scene afterward. */
+/** The doorway rectangles of the last collider build (the test reads them: nothing derived stands in a doorway by design). */
+export let lastCarves = [];
+
 export function buildCollidersFromScene(scene) {
   const boxes = [];
+  const autoMeshes = []; // [mesh, topLevelName] - visible opaque meshes that may get a derived collider (src/autoColliders.js)
   // Zone groups that are built but not drawn yet (src/zoneManager.js builds early, shows
   // within the zone's visible radius) carry userData.zoneHidden: no visual, so no collider.
-  (function walk(obj) {
+  (function walk(obj, top, hidden) {
     if (obj.userData.zoneHidden) return;
+    if (obj.parent === scene) top = obj.name;
+    if (obj.visible === false) hidden = true;
     if (obj.isMesh) {
       if (obj.userData.collider === true) {
         _box3.setFromObject(obj, true);
         if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
       }
       if (Array.isArray(obj.userData.colliderBoxes)) boxes.push(...obj.userData.colliderBoxes);
+      if (!hidden && isAutoSolidMesh(obj, top)) autoMeshes.push([obj, top]);
     }
-    for (const c of obj.children) walk(c);
-  })(scene);
+    for (const c of obj.children) walk(c, top, hidden);
+  })(scene, '', false);
+  // Cells inside, or within 0.3 m of, a hand-tagged box need no derived collider: a hand-tagged wall already keeps the
+  // 0.45 m player circle off it, so door jambs, sills, grilles and awning posts hugging a wall add nothing but
+  // closing the doorways the hand-tagged walls deliberately leave open.
+  const tagged = buildBoxGrid(boxes);
+  const doorways = findDoorways(boxes);
+  lastCarves = doorways;
+  const covered = (x, z) => {
+    for (const c of doorways) if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
+    for (const c of WALKABLE_RECTS) if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
+    for (const b of tagged(x, z)) if (x >= b.minX - 0.3 && x <= b.maxX + 0.3 && z >= b.minZ - 0.3 && z <= b.maxZ + 0.3) return true;
+    return false;
+  };
+  for (const [m, top] of autoMeshes) boxes.push(...deriveMeshBoxes(m, covered, top));
   return boxes;
+}
+
+
+/** Doorways: a gap of 0.7-3.5 m between the collinear ends of two hand-tagged wall boxes is a door or gate somebody left
+ * open on purpose. Returns a rectangle across each gap (plus 1.3 m either side of the wall line) in which derived
+ * colliders are not allowed, so door frames, thresholds and props beside the door can never close it. */
+function findDoorways(boxes) {
+  const walls = boxes.filter((b) => b.maxX - b.minX > 0 && b.maxZ - b.minZ > 0 && Math.min(b.maxX - b.minX, b.maxZ - b.minZ) <= 0.7 && Math.max(b.maxX - b.minX, b.maxZ - b.minZ) >= 0.8);
+  const horiz = walls.filter((b) => b.maxX - b.minX > b.maxZ - b.minZ); // run along x
+  const vert = walls.filter((b) => b.maxX - b.minX <= b.maxZ - b.minZ);
+  const out = [];
+  const pair = (list, axisMin, axisMax, perpMin, perpMax, make) => {
+    list.sort((a, b) => a[axisMin] - b[axisMin]);
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      const ac = (a[perpMin] + a[perpMax]) / 2;
+      for (let j = i + 1; j < list.length; j++) {
+        const b = list[j];
+        const gap = b[axisMin] - a[axisMax];
+        if (gap > 3.5) break;
+        if (gap < 0.7) continue;
+        const bc = (b[perpMin] + b[perpMax]) / 2;
+        if (Math.abs(ac - bc) > 0.3) continue;
+        out.push(make(a[axisMax], b[axisMin], ac));
+      }
+    }
+  };
+  pair(horiz, 'minX', 'maxX', 'minZ', 'maxZ', (g0, g1, c) => ({ minX: g0, maxX: g1, minZ: c - 1.3, maxZ: c + 1.3 }));
+  pair(vert, 'minZ', 'maxZ', 'minX', 'maxX', (g0, g1, c) => ({ minX: c - 1.3, maxX: c + 1.3, minZ: g0, maxZ: g1 }));
+  return out;
 }
 
 // Populated once by initStaticColliders() (main.js, after scene construction).
@@ -88,14 +140,96 @@ export function buildCollidersFromScene(scene) {
 // one and only place that array is built.
 export let STATIC_COLLIDERS = [];
 
+// Spatial hash over STATIC_COLLIDERS so every query touches only the boxes near the body, however many
+// there are (derived colliders add thousands). Rebuilt whenever the list changes.
+const GRID_CELL = 6;
+const gkey = (gx, gz) => (gx + 4096) * 8192 + (gz + 4096);
+
+/** Returns a lookup (x, z) -> boxes in that grid cell, for a given box list. */
+function buildBoxGrid(boxes) {
+  const grid = new Map();
+  for (const b of boxes) {
+    const x0 = Math.floor(b.minX / GRID_CELL), x1 = Math.floor(b.maxX / GRID_CELL);
+    const z0 = Math.floor(b.minZ / GRID_CELL), z1 = Math.floor(b.maxZ / GRID_CELL);
+    for (let gx = x0; gx <= x1; gx++) for (let gz = z0; gz <= z1; gz++) {
+      const k = gkey(gx, gz);
+      let a = grid.get(k);
+      if (!a) grid.set(k, (a = []));
+      a.push(b);
+    }
+  }
+  const none = [];
+  return (x, z) => grid.get(gkey(Math.floor(x / GRID_CELL), Math.floor(z / GRID_CELL))) || none;
+}
+
+let staticGrid = new Map();
+function rebuildStaticGrid() {
+  staticGrid = new Map();
+  for (const b of STATIC_COLLIDERS) {
+    const x0 = Math.floor(b.minX / GRID_CELL), x1 = Math.floor(b.maxX / GRID_CELL);
+    const z0 = Math.floor(b.minZ / GRID_CELL), z1 = Math.floor(b.maxZ / GRID_CELL);
+    for (let gx = x0; gx <= x1; gx++) for (let gz = z0; gz <= z1; gz++) {
+      const k = gkey(gx, gz);
+      let a = staticGrid.get(k);
+      if (!a) staticGrid.set(k, (a = []));
+      a.push(b);
+    }
+  }
+}
+
+let _stamp = 0;
+const _near = [];
+/** The static boxes within `r` of (x, z) (each once). The returned array is reused: copy it if you keep it. */
+export function staticBoxesNear(x, z, r) {
+  _near.length = 0;
+  _stamp++;
+  const x0 = Math.floor((x - r) / GRID_CELL), x1 = Math.floor((x + r) / GRID_CELL);
+  const z0 = Math.floor((z - r) / GRID_CELL), z1 = Math.floor((z + r) / GRID_CELL);
+  for (let gx = x0; gx <= x1; gx++) for (let gz = z0; gz <= z1; gz++) {
+    const a = staticGrid.get(gkey(gx, gz));
+    if (!a) continue;
+    for (const b of a) {
+      if (b._s === _stamp) continue;
+      b._s = _stamp;
+      _near.push(b);
+    }
+  }
+  return _near;
+}
+
+/** Cumulative cost of building the collider list (dev/test readout: the derivation must stay cheap at load). */
+export const colliderStats = { builds: 0, ms: 0, worstMs: 0 };
+
 export function initStaticColliders(scene) {
+  const t0 = performance.now();
   STATIC_COLLIDERS = buildCollidersFromScene(scene);
+  rebuildStaticGrid();
+  const dt = performance.now() - t0;
+  colliderStats.builds++;
+  colliderStats.ms += dt;
+  if (dt > colliderStats.worstMs) colliderStats.worstMs = dt;
+}
+
+/** Swaps the collider list wholesale. Only tools/collision-test.js uses this (via a ?dev=1 hook): it drives a
+ * body at one object against just that object's neighbours, so thousands of runs stay fast. Same resolver code. */
+export function setStaticColliders(boxes) {
+  STATIC_COLLIDERS = boxes;
+  rebuildStaticGrid();
 }
 
 /** Push a circle (in the XZ plane) out of a box if it overlaps, returning true if a
  * correction was applied. Pushing out along the shallowest penetration axis (not
  * straight back toward the circle's previous position) is what produces sliding. */
+/** Derived prop colliders (src/autoColliders.js: stools, crates, desks, rails) are soft: a walking body only keeps
+ * AUTO_BODY_RADIUS (about half a shoulder width) off them, so it brushes past furniture and squeezes through a cluttered
+ * classroom or a market lane instead of needing a full 0.9 m gap between every two props. Walls stay at full radius. */
+export const AUTO_BODY_RADIUS = 0.2;
+// Only person-sized bodies (player 0.45, NPCs 0.33) get the soft treatment; a bike, cart or tractor is a hard body.
+const PERSON_MAX_RADIUS = 0.6;
+const effRadius = (box, radius) => (box.auto && radius > AUTO_BODY_RADIUS && radius <= PERSON_MAX_RADIUS ? AUTO_BODY_RADIUS : radius);
+
 function resolveCircleVsBox(pos, radius, box) {
+  radius = effRadius(box, radius);
   const closestX = Math.min(Math.max(pos.x, box.minX), box.maxX);
   const closestZ = Math.min(Math.max(pos.z, box.minZ), box.maxZ);
   const dx = pos.x - closestX;
@@ -150,7 +284,7 @@ const MAX_RESOLVE_PASSES = 6; // verified empirically (tools/trolley-corner-test
 export function resolveCollisions(pos, radius, extraBoxes = []) {
   for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
     let corrected = false;
-    for (const box of STATIC_COLLIDERS) {
+    for (const box of staticBoxesNear(pos.x, pos.z, radius + 0.5)) {
       if (resolveCircleVsBox(pos, radius, box)) corrected = true;
     }
     for (const box of extraBoxes) {
@@ -225,7 +359,7 @@ function resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box) {
 export function resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes = []) {
   for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
     let corrected = false;
-    for (const box of STATIC_COLLIDERS) {
+    for (const box of staticBoxesNear(pos.x, pos.z, Math.hypot(halfW, halfD) + 0.5)) {
       if (resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box)) corrected = true;
     }
     for (const box of extraBoxes) {
@@ -329,11 +463,12 @@ export function orientedBoxOverlapsAnyBox(pos, yaw, halfW, halfD, boxes) {
  * point along a proposed path that's still clear, without mutating `pos`. */
 export function circleHitsAnyBox(pos, radius, boxes) {
   for (const box of boxes) {
+    const r = effRadius(box, radius);
     const closestX = Math.min(Math.max(pos.x, box.minX), box.maxX);
     const closestZ = Math.min(Math.max(pos.z, box.minZ), box.maxZ);
     const dx = pos.x - closestX;
     const dz = pos.z - closestZ;
-    if (dx * dx + dz * dz < radius * radius) return true;
+    if (dx * dx + dz * dz < r * r) return true;
   }
   return false;
 }
@@ -350,10 +485,27 @@ export function minSignedDistanceToColliders(pos, radius, boxes) {
     const closestZ = Math.min(Math.max(pos.z, box.minZ), box.maxZ);
     const dx = pos.x - closestX;
     const dz = pos.z - closestZ;
-    const dist = Math.hypot(dx, dz) - radius;
+    const dist = Math.hypot(dx, dz) - effRadius(box, radius);
     if (dist < min) min = dist;
   }
   return min;
+}
+
+/** Every box a parked/driving vehicle contributes to other bodies' collision. Most vehicles are one box; the
+ * bullock cart (platform + two bullocks, 7 m long) is its oriented `assembly` rect cut into 3 slices so a
+ * diagonal cart does not bloat into one huge square. */
+export function vehicleSolidBoxes(vehicle) {
+  const a = vehicle.preset.assembly;
+  if (!a) return [vehicleFootprintBox(vehicle)];
+  const yaw = vehicle.group.rotation.y;
+  const sin = Math.sin(yaw), cos = Math.cos(yaw);
+  const slices = 3, sliceHalf = a.hd / slices;
+  const out = [];
+  for (let i = 0; i < slices; i++) {
+    const lz = a.cz - a.hd + sliceHalf * (2 * i + 1);
+    out.push(orientedFootprintBox(vehicle.group.position.x + lz * sin, vehicle.group.position.z + lz * cos, yaw, a.hw, sliceHalf));
+  }
+  return out;
 }
 
 /** An axis-aligned box matching a vehicle's current footprint, for blocking other

@@ -111,7 +111,14 @@ export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSecon
 
     _toTarget.multiplyScalar(1 / dist);
     const step = Math.min(speed * dt, dist);
-    resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
+    // Collision is 2D, so a body on a roof would be stopped by the walls beneath it: while the leg is elevated
+    // (rooftop chase) the NPC walks over them; at ground level it goes through the one resolver as always.
+    if ((target.y ?? 0) > 0.5 || npcGroup.position.y > 0.5) {
+      npcGroup.position.x += _toTarget.x * step;
+      npcGroup.position.z += _toTarget.z * step;
+    } else {
+      resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
+    }
     const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
     let diff = targetYaw - npcGroup.rotation.y;
     diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;

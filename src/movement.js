@@ -1,4 +1,4 @@
-import { resolveCollisions, resolveOrientedCollisions, circleHitsAnyBox, STATIC_COLLIDERS } from './collision.js';
+import { resolveCollisions, resolveOrientedCollisions, circleHitsAnyBox, staticBoxesNear } from './collision.js';
 
 /**
  * Structural fix 2/3 (playtest): the single movement resolver. Before this,
@@ -58,7 +58,7 @@ export function resolveOrientedMove(pos, yaw, dx, dz, halfW, halfD, extraBoxes =
  * "would this be blocked" without committing to moving there (the tractor
  * asking whether its towed trolley's target spot is clear, below). */
 export function positionBlocked(pos, radius, extraBoxes = []) {
-  return circleHitsAnyBox(pos, radius, STATIC_COLLIDERS) || circleHitsAnyBox(pos, radius, extraBoxes);
+  return circleHitsAnyBox(pos, radius, staticBoxesNear(pos.x, pos.z, radius + 0.5)) || circleHitsAnyBox(pos, radius, extraBoxes);
 }
 
 /**

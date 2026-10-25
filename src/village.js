@@ -4,6 +4,7 @@ import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedF
 import { getGLTFLoader } from './loaders.js';
 import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
+import { registerWalkable } from './walkable.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -144,6 +145,7 @@ function addDoorFrameX(kit, center, width, height, wallThickness) {
  * slabs) — one merged mesh regardless of step count. Runs along Z, climbing as z
  * decreases from `zStart`. */
 function buildStaircase(x, zStart, steps, stepDepth, stepRise, stepWidth, materialName, tint) {
+  registerWalkable({ minX: x - stepWidth / 2 - 0.3, maxX: x + stepWidth / 2 + 0.3, minZ: zStart - steps * stepDepth - 0.3, maxZ: zStart + 0.3 });
   const geos = [];
   for (let i = 0; i < steps; i++) {
     const stepHeight = (i + 1) * stepRise;

@@ -50,10 +50,10 @@ const VILLAGER_LOOPS = [
   [{ x: -46.5, z: 86 }, { x: -46.5, z: 91 }],
   [{ x: -47, z: 51 }, { x: -45, z: 57 }],
   // a few more walkers so the bazaar frontage and lane are not empty
-  [{ x: BAZAAR_WEST_X + 10, z: 11 }, { x: BAZAAR_WEST_X + 26, z: 11 }],
-  [{ x: BAZAAR_EAST_X - 10, z: 11 }, { x: BAZAAR_EAST_X - 26, z: 11 }],
+  [{ x: BAZAAR_WEST_X + 10, z: 10 }, { x: BAZAAR_WEST_X + 26, z: 10 }], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
+  [{ x: BAZAAR_EAST_X - 10, z: 10 }, { x: BAZAAR_EAST_X - 26, z: 10 }],
   [{ x: -46, z: 62 }, { x: -46.5, z: 69 }],
-  [{ x: -47.5, z: 99 }, { x: -46, z: 106 }],
+  [{ x: -48, z: 99 }, { x: -48, z: 106 }], // west of the fence strip at x -47..-45
 ];
 
 const SPEED = 1.1;

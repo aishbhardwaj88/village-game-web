@@ -24,6 +24,7 @@ import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
 import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
+import { WALKABLE_RECTS } from './walkable.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
@@ -42,7 +43,7 @@ import {
   TEMPLE_LANE_ARRIVE,
   TEMPLE_LANE_WIDTH,
 } from './temple.js';
-import { vehicleFootprintBox, orientedFootprintBox, orientedBoxClearance, orientedBoxWorstClearance, initStaticColliders, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
+import { vehicleFootprintBox, vehicleSolidBoxes, orientedFootprintBox, orientedBoxClearance, orientedBoxWorstClearance, initStaticColliders, setStaticColliders, AUTO_BODY_RADIUS, lastCarves, colliderStats, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -680,7 +681,7 @@ async function main() {
       { x: startX, z: startZ, y: 0 },
       { x: bazaarUnitCx(3), z: BAZAAR_ROW_CZ, y: roofY }, // up onto the darzi's own roof
       { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY }, // across the rooftops, east
-      { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 1.5, y: 0 }, // back down to the lane
+      { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 3, y: 0 }, // back down to the lane (3 m out: the shopfront props stand 1-2 m from the front)
       { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
     ];
   }
@@ -2161,7 +2162,7 @@ async function main() {
   function otherVehicleBoxes(excludeVehicle) {
     const boxes = [];
     for (const v of vehicles) {
-      if (v !== excludeVehicle) boxes.push(vehicleFootprintBox(v));
+      if (v !== excludeVehicle) boxes.push(...vehicleSolidBoxes(v));
     }
     const owningTractor = vehicles.find((v) => v.trolley);
     const trolley = (owningTractor && owningTractor.trolley) || looseTrolley;
@@ -2169,6 +2170,33 @@ async function main() {
       boxes.push(orientedFootprintBox(trolley.group.position.x, trolley.group.position.z, trolley.group.rotation.y, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH));
     }
     return boxes;
+  }
+
+  // Bike: a circle. Bullock cart: its whole assembly (platform + bullocks) as an oriented rect about the assembly
+  // centre, so the bullocks stop at walls too, and re-resolved after the move because turning swings the nose.
+  function moveSmallVehicle(vehicle, dx, dz) {
+    const p = vehicle.preset;
+    if (!p.assembly) {
+      resolveMove(vehicle.group.position, dx, dz, Math.hypot(p.body.w, p.body.d) / 2, otherVehicleBoxes(vehicle));
+      return;
+    }
+    const yaw = vehicle.group.rotation.y;
+    const ox = p.assembly.cz * Math.sin(yaw), oz = p.assembly.cz * Math.cos(yaw);
+    const centre = { x: vehicle.group.position.x + ox, z: vehicle.group.position.z + oz };
+    const boxes = otherVehicleBoxes(vehicle);
+    resolveOrientedMove(centre, yaw, dx, dz, p.assembly.hw, p.assembly.hd, boxes);
+    resolveOrientedCollisions(centre, yaw, p.assembly.hw, p.assembly.hd, boxes);
+    vehicle.group.position.x = centre.x - ox;
+    vehicle.group.position.z = centre.z - oz;
+  }
+
+  // The ONE on-foot movement step: the real per-frame loop and tools/collision-test.js
+  // (via window.__dopahar.stepPlayerMove) both call this, so the test drives the code that ships.
+  function movePlayerBy(dx, dz) {
+    resolveMove(player.position, dx, dz, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
+    player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+    player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+    player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
   }
 
   // Item 4 (real playtest regression) — a permanent dev-mode guard, not a one-off
@@ -2566,8 +2594,7 @@ async function main() {
         if (p.kind === 'tractor') {
           resolveOrientedMove(vehicle.group.position, vehicle.group.rotation.y, vehicle.pendingDx, vehicle.pendingDz, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
         } else {
-          const vehicleRadius = Math.hypot(p.body.w, p.body.d) / 2;
-          resolveMove(vehicle.group.position, vehicle.pendingDx, vehicle.pendingDz, vehicleRadius, otherVehicleBoxes(vehicle));
+          moveSmallVehicle(vehicle, vehicle.pendingDx, vehicle.pendingDz);
         }
         vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
         vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
@@ -2674,10 +2701,7 @@ async function main() {
         // Structural fix (playtest, item 2) — swept resolveMove(), same as every
         // other moving body, instead of moving the full step then resolving only
         // the endpoint.
-        resolveMove(player.position, moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
-        player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
+        movePlayerBy(moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
         audio.setSurface(surfaceAt(player.position.x, player.position.z));
 
@@ -2928,11 +2952,11 @@ async function main() {
       // Item 4 acceptance measurement — "report the minimum distance between
       // each collider pair; any negative value is a failure."
       npcRoutes: NPC_ROUTES,
-      minDistanceToColliders: (pos, radius) => minSignedDistanceToColliders(pos, radius, STATIC_COLLIDERS),
+      minDistanceToColliders: (pos, radius, skipDerived = false) => minSignedDistanceToColliders(pos, radius, skipDerived ? STATIC_COLLIDERS.filter((b) => !b.auto) : STATIC_COLLIDERS),
       staticColliderCount: () => STATIC_COLLIDERS.length,
       // tools/collider-audit.js — the raw box list, for auditing coverage against
       // real visual geometry (not just re-checking the boxes against themselves).
-      getStaticColliders: () => STATIC_COLLIDERS.map((b) => ({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ })),
+      getStaticColliders: () => STATIC_COLLIDERS.map((b) => ({ minX: b.minX, maxX: b.maxX, minZ: b.minZ, maxZ: b.maxZ, auto: !!b.auto, src: b.src })),
       // tools/trolley-corner-test.js / tools/trolley-drive-test.js — the exact
       // half-extents the collision resolver protects for the trolley (the real
       // 3.5 x 2.0 BED, same definition the bug report's own fix formula used —
@@ -3006,7 +3030,7 @@ async function main() {
         v.group.position.set(x, 0, z);
         v.group.rotation.y = yaw;
         v.speed = 0;
-        if (v.trolley) v.attachTrolley(v.trolley);
+        if (v.trolley) return v.attachTrolley(v.trolley); // false = the trolley's rest spot is blocked, so it was NOT snapped behind the tractor
         return true;
       },
       // tools/trolley-drive-test.js — a deterministic, fixed-dt single step of
@@ -3060,11 +3084,32 @@ async function main() {
         const len = Math.hypot(dirX, dirZ);
         const nx = len > 1e-6 ? dirX / len : 0;
         const nz = len > 1e-6 ? dirZ / len : 0;
-        resolveMove(player.position, nx * MOVE_SPEED * dt, nz * MOVE_SPEED * dt, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
-        player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
+        movePlayerBy(nx * MOVE_SPEED * dt, nz * MOVE_SPEED * dt);
         return { x: player.position.x, z: player.position.z };
+      },
+      // tools/collision-test.js — what the collision test needs beyond the hooks above.
+      playerRadius: PLAYER_COLLISION_RADIUS,
+      autoBodyRadius: AUTO_BODY_RADIUS,
+      colliderStats,
+      getWalkableAreas: () => [...lastCarves, ...WALKABLE_RECTS],
+      groundHalfExtent: GROUND_HALF_EXTENT,
+      isBlockedAt: (x, z, r) => positionBlocked({ x, z }, r, otherVehicleBoxes(null)),
+      rebuildColliders: () => initStaticColliders(scene),
+      setStaticColliders: (boxes) => setStaticColliders(boxes),
+      resolveMove: (pos, dx, dz, radius) => resolveMove(pos, dx, dz, radius, otherVehicleBoxes(null)),
+      getDynamicBoxes: () => otherVehicleBoxes(null),
+      getVehicleSolids: () => vehicles.map((v) => ({ kind: v.preset.kind, boxes: vehicleSolidBoxes(v), assembly: v.preset.assembly || null })),
+      getVehicleFootprints: () => vehicles.map((v) => ({ kind: v.preset.kind, x: v.group.position.x, z: v.group.position.z, yaw: v.group.rotation.y, halfW: v.preset.body.w / 2, halfD: v.preset.body.d / 2 })),
+      // Bike/cart step, mirroring the mounted-vehicle branch of the real loop (circle resolve, speed zeroed on a block).
+      stepVehicle: (kind, dt = 1 / 60, throttleZ = -1, steerX = 0) => {
+        if (kind === 'tractor') return window.__dopahar.stepTractorTrolleyPhysics(dt, throttleZ, steerX);
+        const vehicle = vehicles.find((v) => v.preset.kind === kind);
+        if (!vehicle) return null;
+        vehicle.update(dt, { moveZ: throttleZ, moveX: steerX });
+        moveSmallVehicle(vehicle, vehicle.pendingDx, vehicle.pendingDz);
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        return { x: vehicle.group.position.x, z: vehicle.group.position.z, speed: vehicle.speed, yaw: vehicle.group.rotation.y };
       },
     };
   }
