@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n13, playtest block, stale-gap audit):** NO game change (written honestly). Checked three "gaps" in older entries against the code and they are already closed: khet west/east thirds have per-plot variants (src/field.js outerVariant), the east road bed uses the PBR ground set via finishSite/vcMat, and plant sets already carry a density LOD (src/realPlants.js). Tried tools/tri-audit.mjs at the default view to find the biggest triangle cut; it produced no output in ~15 min (hung under swiftshader, killed). Do not re-check these. What is left is the art director's call on triangle cuts (513k vs 400k) and draw-call ceiling.
+NEXT: re-run tri-audit with explicit coordinates (it hung at the default view) and propose cuts.
+
+---
+
 **2026-10-25 (cycle 39z99n12, playtest block item 6, house_compound wood):** NO game change (written honestly). Photographed the hero house from the road and the balcony: balcony rails, shutters, doors, brackets and gate render as dark-brown wood, not plain plaster tan. Closes the last "house_compound wood not checked" gap in FEEDBACK item 6. Proof docs/shots/house-wood-2026-10-25/{front,balcony}.png (proof-shot tool, so capsules/HUD in frame; not tickable). Front view 165 calls / 564k tris incl. shadow pass. Remaining playtest work still waits on the art director (triangle cuts, draw-call ceiling, plain crate needs Blender).
 NEXT: BACKLOG A-2b (active-task waypoint switching, minimap convention research) once the art director rules on the budget.
 
