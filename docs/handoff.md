@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99g, playtest block items 7/8, cane spur):** Game change: the sugarcane belt was the last of 40 places the static findability audit listed as not findable without the map (33 m from any lane). Added a bare earth spur (src/eastRoad.js SPURS 'cane', (-6,130) to (-6,146), off the east gali's south end, no lamps so no new draw calls in busy views) and added 'cane' to the school_lane signpost (src/wayfinding.js). Audit now 0 of 40 not findable. Build ALL PASSED. Proof docs/shots/cane-spur-2026-10-25/spur.png (headless free camera, subject check passed; spur leads to the cane belt; not tickable, the real on-foot walk of item 7 is still not done). Gaps: spur is vertex-tinted earth, no kerbs or street life; item 7 real walk and item 8 lamps/street life on lanes still open.
+NEXT: real on-foot findability walk (item 7), cottage wood and triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z99f, playtest block item 6, far-LOD check):** No game change (verification only). Checked the far-LOD abadi rows: abadi_row_*_lod.glb already uses hb_main with colour, normal and roughness maps plus openings, grilles, sills, bands and parapets (earlier cycles); proof docs/shots/farlod-2026-10-25/far_b.png (hero views 110-141 calls). Item 6 far-LOD line ticked in FEEDBACK.md. Remaining in the block is art-director-call work (cottage wood draw-call ceiling, triangle cuts) and bazaar interior props (sewing machine, puncture tub).
 NEXT: sewing machine and puncture tub props, then cottage wood once the draw-call call is made.
 

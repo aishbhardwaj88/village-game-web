@@ -35,6 +35,7 @@ export const SPURS = [
   // West and south spurs (the road does not reach them): off the west gali, the south gali and the gali north end.
   { id: 'pond', bare: true, pts: [[-84, 70], [-113, 70]] },
   { id: 'mela', pts: [[-100, 140], [-111, 145]] },
+  { id: 'cane', bare: true, pts: [[-6, 130], [-6, 146]] }, // sugarcane belt, off the east gali's south end
   { id: 'gurudwara', pts: [[-60, 140], [-60, 158]] },
 ];
 export const SPUR_WIDTH = 3.5;

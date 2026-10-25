@@ -32,7 +32,7 @@ const SIGNPOSTS = [
   { id: 'east_gali', x: -2.6, z: 76.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
   { id: 'east_far_a', x: 35, z: 73.5, ry: -Math.PI / 2, to: ['tvhouse', 'chemist', 'manihari', 'sabzi', 'johad'] },
   { id: 'east_far_b', x: 75, z: 73.5, ry: -Math.PI / 2, to: ['masjid', 'jain', 'maidan', 'highway'] },
-  { id: 'school_lane', x: -41.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela'] },
+  { id: 'school_lane', x: -41.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela', 'cane'] },
   { id: 'west_gali', x: -82.5, z: 41, ry: Math.PI, to: ['pond', 'dairy', 'jalebi', 'gaushala'] },
   // Lane head: the west gali ends at (-84,21) with jalebi 26 m and gaushala 69 m beyond it; faces south for walkers arriving up the lane.
   { id: 'west_gali_head', x: -82.3, z: 24, ry: 0, to: ['jalebi', 'gaushala'] },
