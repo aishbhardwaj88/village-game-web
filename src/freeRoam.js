@@ -76,7 +76,7 @@ export function registerJobMarker(marker) {
   extraMarkers.push(marker);
 }
 
-export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTask }) {
+export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTask, onSetMission }) {
   const overlay = document.getElementById('notebook-overlay');
   const canvas = document.getElementById('notebook-canvas');
   const closeBtn = document.getElementById('notebook-close-btn');
@@ -362,13 +362,13 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
   // walks the player to the job's place.
   const MISSIONS = [
     { en: 'Jalebi for Maa', hi: 'माँ के लिए जलेबी', steps: [S.NOT_STARTED, S.HAVE_MONEY, S.HAVE_JALEBI, S.COMPLETE] },
-    { en: 'Tiffin to school, bring sister home', hi: 'स्कूल में टिफिन, बहन को घर लाओ', steps: [S.HAVE_TIFFIN, S.HAVE_SISTER, S.ERRAND2_COMPLETE] },
-    { en: 'Wheat sacks to the kirana', hi: 'गेहूं की बोरियाँ किराना पर', steps: [S.LOADING_WHEAT, S.WHEAT_DELIVERED, S.BOUGHT_GOODS, S.ERRAND3_COMPLETE] },
-    { en: "Find the postman, Bua's letter", hi: 'डाकिया और बुआ की चिट्ठी', steps: [S.FINDING_POSTMAN, S.HAVE_LETTER, S.ERRAND4_COMPLETE] },
-    { en: "Dada's kurta from the darzi", hi: 'दादा का कुर्ता दर्जी से', steps: [S.GOING_TO_DARZI, S.HAVE_KURTA] },
+    { en: 'Tiffin to school, bring sister home', hi: 'स्कूल में टिफिन, बहन को घर लाओ', hub: S.COMPLETE, steps: [S.HAVE_TIFFIN, S.HAVE_SISTER, S.ERRAND2_COMPLETE] },
+    { en: 'Wheat sacks to the kirana', hi: 'गेहूं की बोरियाँ किराना पर', hub: S.ERRAND2_COMPLETE, steps: [S.LOADING_WHEAT, S.WHEAT_DELIVERED, S.BOUGHT_GOODS, S.ERRAND3_COMPLETE] },
+    { en: "Find the postman, Bua's letter", hi: 'डाकिया और बुआ की चिट्ठी', hub: S.ERRAND3_COMPLETE, steps: [S.FINDING_POSTMAN, S.HAVE_LETTER, S.ERRAND4_COMPLETE] },
+    { en: "Dada's kurta from the darzi", hi: 'दादा का कुर्ता दर्जी से', hub: S.ERRAND4_COMPLETE, steps: [S.GOING_TO_DARZI, S.HAVE_KURTA] },
     { en: 'The monkey and the kurta', hi: 'बंदर और कुर्ता', steps: [S.KURTA_STOLEN, S.KURTA_RECOVERED, S.ERRAND6_COMPLETE] },
-    { en: 'Mango baagh run', hi: 'आम के बाग की सैर', steps: [S.GOING_TO_BAAGH, S.KNOCKING_MANGOES, S.MANGOES_LOADED, S.ERRAND7_COMPLETE] },
-    { en: 'Sunset on the roof', hi: 'छत पर सूर्यास्त', steps: [S.GOING_TO_ROOF, S.ALL_COMPLETE] },
+    { en: 'Mango baagh run', hi: 'आम के बाग की सैर', hub: S.ERRAND6_COMPLETE, steps: [S.GOING_TO_BAAGH, S.KNOCKING_MANGOES, S.MANGOES_LOADED, S.ERRAND7_COMPLETE] },
+    { en: 'Sunset on the roof', hi: 'छत पर सूर्यास्त', hub: S.ERRAND7_COMPLETE, steps: [S.GOING_TO_ROOF, S.ALL_COMPLETE] },
   ];
   function missionIndex() {
     if (quest.storyDone || quest.step === S.FREE_ROAM) return MISSIONS.length;
@@ -404,6 +404,13 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
         taskRow(`${i + 1}. ${m.en}`, m.hi, 'current', `Now: ${obj.en}`, () => {
           onPinTask?.(null); // picking the live mission hands the waypoint back to its objective
           closeTasks();
+        });
+      } else if (m.hub && onSetMission) {
+        taskRow(`${i + 1}. ${m.en}`, m.hi, 'locked', 'Skip ahead - tap to start this one', () => {
+          if (onSetMission(m.hub)) {
+            onPinTask?.(null);
+            closeTasks();
+          } else tasksNote.textContent = 'Finish the chase first. / पहले पीछा पूरा करो।';
         });
       } else taskRow(`${i + 1}. ${m.en}`, m.hi, 'locked', `Locked - finish mission ${cur + 1} first`, () => (tasksNote.textContent = `Finish "${MISSIONS[cur]?.en}" first. / पहले पिछला काम पूरा करो।`));
     });

@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n18, A-2b Tasks list):** Game change: later story missions in the Tasks list are now tappable "Skip ahead" rows. Tapping lands the quest on the hub step just before that mission (Maa/Pitaji "talk to" state), resets sack/money/mango counters and sister-following, clears the pin (main.js onSetMission, freeRoam.js MISSIONS hub). Monkey mission has no hub (auto-starts from the kurta) so stays locked; blocked mid-chase. Build ALL PASSED. No proof shot (menu logic; not shot), A-2b boxes stay unticked. Backward replay not built.
+NEXT: minimap shot for research box; triangle cuts remain the art director's call.
+
+---
+
 **2026-10-25 (cycle 39z99n17, A-2b minimap):** Game change: minimap now prints the objective's distance in metres and draws an edge pointer when the objective is outside the 110 m window (conventions from shipped open-world minimaps: off-map objectives clamp to the edge with a direction marker, GTA III critique: edge-only markers lose relative position, hence the distance). Build ALL PASSED. No proof shot (canvas change, not shot); research box stays unticked until a shot is taken.
 NEXT: out-of-order mission state setup; triangle cuts remain the art director's call.
 

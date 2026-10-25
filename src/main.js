@@ -1796,6 +1796,20 @@ async function main() {
       return ok;
     },
     onPinTask: (p) => { pinnedTask = p ? { x: p.x, z: p.z } : null; },
+    // Tasks list: jump forward to a later mission by landing on the hub step just before it (the same clean
+    // "talk to X" states Continue restores), with carried counters reset so nothing on screen contradicts the state.
+    onSetMission: (hubStep) => {
+      if (quest.step === QUEST_STEPS.KURTA_STOLEN) return false; // monkey chase in progress
+      quest.step = hubStep;
+      quest.sacksCollected = 0;
+      quest.sacksDelivered = 0;
+      quest.money = 0;
+      quest.mangoesCollected = 0;
+      sisterFollowing = false;
+      pinnedTask = null;
+      updateObjective();
+      return true;
+    },
   });
   const objectivePanel = document.getElementById('objective-panel');
   const objectiveHiEl = document.getElementById('objective-hi');
