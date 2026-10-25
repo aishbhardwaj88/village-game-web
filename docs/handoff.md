@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n8, playtest block item 7 leftover, gurudwara):** Game change: the gurudwara (src/farmSites.js createGurudwara) was a plain box with a dome; now has a four-pillar entrance porch with gold-edged canopy, three marble steps and a kangura parapet along the roofline. Proof docs/shots/gurudwara-2026-10-25/front.png and side.png. Build ALL PASSED. No signboard added on purpose (faith buildings carry none). Unticked: triangles (over 400k, art director's call).
+NEXT: masjid and Jain mandir get the same porch treatment; triangle cuts and cottage wood (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z99n7, playtest block item 6, abadi wood check):** NO code change (written honestly). Looked at the abadi houses on the east lane (z 76) from 4 m: door/window frames, shutters, awning rafters and balcony rails all render as grained dark-brown wood with normal-map bump, not plain plaster tan, so the "abadi/house_compound wood not yet checked" gap in FEEDBACK item 6 looks closed for the abadi rows. Proof docs/shots/cottage-wood-2026-10-25/{lane_n,lane_s}.png (proof-shot tool, so the player capsule is in frame; not a ticked proof). Still open: house_compound (hero house) not photographed, triangles 510k vs 400k and draw-call ceiling remain art-director calls.
 NEXT: photograph house_compound wood; triangle cuts once the art director decides.
 

@@ -812,6 +812,17 @@ export function createGurudwara(position) {
     geos.push(bake(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 8), at(sx * 3.7, 4.6, sz * 2.7), 0xdcd6c6));
     geos.push(bake(new THREE.SphereGeometry(0.45, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), at(sx * 3.7, 4.85, sz * 2.7), 0xf6f2e6));
   }
+  // Entrance porch (the hall front faces +z): four fluted pillars, a flat canopy with a gold edge, and three marble steps.
+  for (const px of [-2.4, -0.8, 0.8, 2.4]) {
+    geos.push(bake(new THREE.CylinderGeometry(0.2, 0.24, 2.9, 10), at(px, 1.8, 5.3), 0xf1ede2));
+    geos.push(bake(new THREE.BoxGeometry(0.55, 0.18, 0.55), at(px, 0.44, 5.3), 0xdcd6c6));
+    geos.push(bake(new THREE.BoxGeometry(0.55, 0.18, 0.55), at(px, 3.3, 5.3), 0xdcd6c6));
+  }
+  geos.push(bake(new THREE.BoxGeometry(6.4, 0.22, 2.6), at(0, 3.5, 4.8), 0xdcd6c6));
+  geos.push(bake(new THREE.BoxGeometry(6.5, 0.1, 0.1), at(0, 3.7, 6.1), 0xd69a2e));
+  for (let i = 0; i < 3; i++) geos.push(bake(new THREE.BoxGeometry(6.2 + i * 0.5, 0.14, 1.2 - i * 0.3), at(0, 0.07 + i * 0.14, 6.1 - i * 0.1 + (2 - i) * 0.3), 0xe4dfd0));
+  // Kanguras (scalloped parapet teeth) along the hall roofline.
+  for (let i = -4; i <= 4; i++) geos.push(bake(new THREE.ConeGeometry(0.22, 0.45, 4), at(i, 4.55, 3.62), 0xf6f2e6));
   geos.push(bake(new THREE.CylinderGeometry(0.1, 0.12, 9, 8), at(6.5, 4.5, 4.5), 0xd9d3c3));
   geos.push(bake(new THREE.BoxGeometry(0.05, 1.3, 0.9), at(6.5, 8.2, 4.95), 0xe0861f));
   return finishSite('gurudwara', geos, position, { solids: [[0, 0, 9.2, 7.2]] });
