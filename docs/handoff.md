@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n5, playtest block, draw-call audit):** NO game change this cycle (written honestly). Ran tools/draw-call-audit.mjs -48 30 3.14159 (hero view, 146 calls). Where calls could be freed for cottage wood / lamps, none safely: charpai and hand_pump are separate on purpose (asset slots + interactions, skipped by the static merge in src/main.js ~1403); 4 signboard meshes in village_static_merged need an atlas to merge; 5 vehiclePaint meshes and 6 capsule NPC meshes are parked (characters/vehicles swap after 29 Oct). Cheapest real saving is the signboard atlas (-3 calls) plus merging vehiclePaint variants per vehicle; both are a few hours of work, not started. Everything else in the playtest block still waits on the art director (triangle cuts 513k vs 400k, draw-call ceiling).
+NEXT: signboard atlas merge (saves ~3 calls, then cottage wood), or art-director call on triangles/draw calls.
+
+---
+
 **2026-10-25 (cycle 39z99n4, playtest block items 8/12, audit):** Almost no game change (written honestly): removed a duplicated onPinTask call in the Tasks list (src/freeRoam.js). Audited item 8: kerbs, drains and lamps already run the full length of the hero lane, temple lane, bazaar lane, abadi gallis and the east road (kerb+drain+solar lamps+neem shade+walkers+cyclist in src/main.js east-road zones); only the bare spurs (pond, cane) have none by design. Build ALL PASSED. Remaining playtest work is blocked on the art director: cottage wood and extra lamps (draw calls 150 of 150), triangle cuts (513k vs 400k), a light plain crate (needs Blender), and out-of-order story-mission switching (guarded by design, spec allows that).
 NEXT: once a draw-call or triangle call is made, do cottage wood and the cuts; otherwise BACKLOG section A in order.
 
