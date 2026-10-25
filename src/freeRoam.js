@@ -76,7 +76,7 @@ export function registerJobMarker(marker) {
   extraMarkers.push(marker);
 }
 
-export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit }) {
+export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTask }) {
   const overlay = document.getElementById('notebook-overlay');
   const canvas = document.getElementById('notebook-canvas');
   const closeBtn = document.getElementById('notebook-close-btn');
@@ -410,6 +410,8 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit }) {
       if (!roam) taskRow(j.en, j.hi, 'locked', 'Side job - opens after the story', () => (tasksNote.textContent = 'Side jobs open once the story is finished. / कहानी के बाद खुलेंगे।'));
       else
         taskRow(j.en, j.hi, n ? 'done' : 'current', n ? `Done x${n} - tap to go there` : 'Tap to walk there', () => {
+          onPinTask?.({ x: j.x, z: j.z });
+          onPinTask?.({ x: j.x, z: j.z });
           if (onVisit?.({ id: `job_${id}`, en: j.en, hi: j.hi, x: j.x, z: j.z })) closeTasks();
           else tasksNote.textContent = 'Could not find a clear spot there.';
         });

@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99l, playtest block item 12, task pin):** Game change: in free roam, tapping a side job in the pause-menu Tasks list now also pins it as the active task: the waypoint arrow and the minimap star point at that job's place until the player gets within 6 m (src/freeRoam.js onPinTask, src/main.js pinnedTask in currentWaypointTarget; a job's own live waypoint still wins). Build ALL PASSED, regression 21/22 (only `triangles under 400k`, 535k, pre-existing). No screenshot taken (UI/logic only), so nothing ticked. Gaps: free out-of-order story-mission switching and the shipped-minimap web research are still not done; story missions already show their waypoint when current.
+NEXT: item 9 CC0 props search (hand pump, charpai, sacks), triangle cuts and cottage wood (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z99k2, playtest block item 7, lane gaps closed):** Game change: two real gaps in the lane network closed with bare dirt strips (src/scenery.js E0 (-45,76)-(-37,76), S2 (-38,140)-(-6,140); also in LANES of src/freeRoam.js so the map and bot see them). Before this the east gali was not joined to the hero lane and the south gali joined nothing, so gurudwara/mela/south gali were unreachable by lane. Build ALL PASSED (16/16). On-foot bot walk now 41 of 41 places arrived (gurudwara 72 s, health 64, highway 68, mandi 74; docs/shots/onfoot-walk-2026-10-25/walk.log). Item 7 ticked in FEEDBACK.md. Gaps: the gurudwara arrival shot is a close shot of a plain box wall; hero lane south of z 94 still crosses the school compound wall; temple lane ends in the temple compound. Movement code untouched, regression not rerun.
 NEXT: item 8 lamps/street life on lanes (draw-call ceiling, art director's call), cottage wood, triangle cuts.
 

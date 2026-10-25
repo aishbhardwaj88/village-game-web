@@ -1795,6 +1795,7 @@ async function main() {
       if (ok) pauseMenu.close();
       return ok;
     },
+    onPinTask: (p) => { pinnedTask = p ? { x: p.x, z: p.z } : null; },
   });
   const objectivePanel = document.getElementById('objective-panel');
   const objectiveHiEl = document.getElementById('objective-hi');
@@ -1991,8 +1992,15 @@ async function main() {
 
   // Free-roam side jobs can point the waypoint arrow at their current stop (src/jobs/milk.js etc.); null = none.
   let jobWaypoint = null;
+  // Side job picked in the Tasks list (free roam): arrow and minimap star point at its place until the player arrives.
+  let pinnedTask = null;
   function currentWaypointTarget() {
     if (jobWaypoint && quest.step === QUEST_STEPS.FREE_ROAM) return jobWaypoint;
+    if (pinnedTask) {
+      const pp = mountedVehicle ? mountedVehicle.group.position : player.position;
+      if (quest.step !== QUEST_STEPS.FREE_ROAM || Math.hypot(pp.x - pinnedTask.x, pp.z - pinnedTask.z) < 6) pinnedTask = null;
+      else return pinnedTask;
+    }
     if (quest.step === QUEST_STEPS.NOT_STARTED) return MAA_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_MONEY) return HALWAI_NPC_POSITION;
     if (quest.step === QUEST_STEPS.HAVE_JALEBI) return MAA_POSITION;
