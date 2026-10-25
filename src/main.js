@@ -920,12 +920,12 @@ async function main() {
   // Roadside petrol pump (Blender, 2026-10-24): exact slot at the old pump site, highway cluster (205,40) + (-19,-35).
   assetSlots.register('petrol_pump', {
     exact: true,
-    placements: [{ container: scene, position: new THREE.Vector3(186, 0, 5), rotationY: 0 }],
+    placements: [{ container: scene, position: new THREE.Vector3(pt('highway').x - 19, 0, pt('highway').z - 35), rotationY: 0 }],
   });
   // Dharam kanta weighbridge (Blender, 2026-10-24): exact slot at highway cluster (205,40) + (-11,52).
   assetSlots.register('dharam_kanta', {
     exact: true,
-    placements: [{ container: scene, position: new THREE.Vector3(194, 0, 92), rotationY: 0 }],
+    placements: [{ container: scene, position: new THREE.Vector3(pt('highway').x - 11, 0, pt('highway').z + 52), rotationY: 0 }],
   });
   assetSlots.register('new_shops', {
     exact: true,

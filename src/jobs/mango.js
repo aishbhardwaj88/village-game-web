@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { pt } from '../anchors.js';
 import { MANGO_TREE_PLACEMENTS } from '../baagh.js';
 
 /**
@@ -19,7 +20,7 @@ export function registerMangoJob(api, env) {
   // fall back to a ring round the baagh if fewer than six trees are exported
   while (spots.length < 6) {
     const a = spots.length * 1.1;
-    spots.push({ x: -15 + Math.cos(a) * 9, z: 10 + Math.sin(a) * 9 });
+    spots.push({ x: pt('baagh').x + Math.cos(a) * 9, z: pt('baagh').z + Math.sin(a) * 9 });
   }
   VARIETIES.forEach((v, i) => {
     const sp = spots[i];

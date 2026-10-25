@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { pt } from '../anchors.js';
 import { buildBantaCart, buildChaatThela } from './props.js';
 
 /**
@@ -43,7 +44,7 @@ const STALLS = [
     seller: { en: 'Banta shop', hi: 'बंटा की दुकान' },
     role: 'bantawala',
     build: buildBantaCart,
-    pos: { x: -63.2, z: 22.5 },
+    pos: { x: pt('banta').x - 0.2, z: pt('banta').z },
     rotY: 0, // handle toward +x (the lane)
     buyAt: { x: -61.4, z: 22.9 },
     greeting: { en: 'Ice-cold banta, fresh jaljeera! What will it be?', hi: 'ठंडा बंटा, ताज़ा जलजीरा! क्या लोगे?' },
