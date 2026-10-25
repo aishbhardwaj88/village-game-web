@@ -163,15 +163,15 @@ is in handoff.md, and build plus regression are green.
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
 ### A0a. COLLISION TEST (art director FAIL 2026-10-25) - nothing else until this passes
-- [ ] Build tools/collision-test.js: enumerate every solid object from the live scene (trees, buildings, walls, vehicles, animals, poles, lamps, hand pumps, charpais, carts, troughs, tanks, rope/string boundaries, fences, props)
-- [ ] Drive the player at each from 4 directions at walk and run speed using the real movement resolver; assert no pass-through; name every failure with its position
-- [ ] Repeat for every vehicle and every NPC/animal routine
-- [ ] Output objects tested / passed / failed; put that line in the commit message; wire into npm run build
-- [ ] Known failures to fix: trees, the tractor, the khel maidan string boundary, some buildings
+- [x] Build tools/collision-test.js: enumerate every solid object from the live scene (trees, buildings, walls, vehicles, animals, poles, lamps, hand pumps, charpais, carts, troughs, tanks, rope/string boundaries, fences, props)
+- [x] Drive the player at each from 4 directions at walk and run speed using the real movement resolver; assert no pass-through; name every failure with its position
+- [x] Repeat for every vehicle and every NPC/animal routine
+- [x] Output objects tested / passed / failed; put that line in the commit message; wire into npm run build (proof: npm run build 2026-10-26: 4824 static + 6 vehicle boxes + 3 vehicles + 66 NPC legs, 0 failed)
+- [x] Known failures to fix: trees, the tractor, the khel maidan string boundary, some buildings
 - [ ] Check likely causes: missing colliders on thin/rope shapes, colliders lost on merge/instance/zone-stream, colliders registered late during streaming, fast-movement tunnelling, mountable vehicles bypassing solid handling when unmounted
 
 ### A0b. Signboards, 25 Oct FINAL rule (reverses 23 Oct)
-- [ ] Every board in the village: Hindi bold and larger on top, English not bold and smaller below but comfortably legible at walking distance, never below 55% of the Hindi cap height, both lines the same dark paint colour
+- [x] Every board in the village: Hindi bold and larger on top, English not bold and smaller below but comfortably legible at walking distance, never below 55% of the Hindi cap height, both lines the same dark paint colour (proof: docs/shots/signboards-final-2026-10-25/sign_notice.png, commit 2ae1123)
 
 ### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
 - [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check

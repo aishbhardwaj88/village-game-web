@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { part, mergeProp, buildKiteGeometryParts } from './props.js';
+import { pt } from '../anchors.js';
 
 /**
  * Job 1 — Patang loot (docs/MISSIONS_PLAN.md): a cut kite drifts across the sky; race three kids to where it lands. Reach the
@@ -10,7 +11,7 @@ const STARTER = { x: -58.5, z: 18.5 };
 const SPOTS = [
   { x: 2, z: 30 }, { x: -22, z: 25 }, { x: 24, z: 34 }, { x: -30, z: 60 }, { x: 18, z: 20 },
 ];
-const KID_START = [{ x: -56, z: 20 }, { x: -60, z: 24 }, { x: -52, z: 26 }];
+const KID_START = [{ x: -4, z: 0 }, { x: -8, z: 4 }, { x: 0, z: 6 }].map((o) => ({ x: pt('store').x + o.x, z: pt('store').z + o.z })); // offsets from the store anchor
 
 export function registerPatangJob(api, env) {
   const st = { stage: 'idle', t: 0, from: null, to: null, spot: null, runners: [] };

@@ -46,7 +46,7 @@ const STALLS = [
     build: buildBantaCart,
     pos: { x: pt('banta').x - 0.2, z: pt('banta').z },
     rotY: 0, // handle toward +x (the lane)
-    buyAt: { x: -61.4, z: 22.9 },
+    buyAt: { x: pt('banta').x + 1.6, z: pt('banta').z + 0.4 },
     greeting: { en: 'Ice-cold banta, fresh jaljeera! What will it be?', hi: 'ठंडा बंटा, ताज़ा जलजीरा! क्या लोगे?' },
     items: [
       { en: 'Lemon banta', hi: 'नींबू बंटा', price: 8, line: { en: 'Pop! The marble drops and the banta fizzes — sweet, sour, cold.', hi: 'पॉप! कंचा गिरा और बंटा फिस्स — मीठा, खट्टा, ठंडा।' } },

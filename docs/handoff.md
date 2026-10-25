@@ -1,4 +1,8 @@
 ---
+**2026-10-26 (anchors wiring 3, no look change):** Game change: none visible. Patang kid start points and the banta buy spot now read src/anchors.js (offsets from store / banta). Backlog A0a collision and A0b signboards ticked with their proof (collision-test output, docs/shots/signboards-final-2026-10-25/). Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed.
+NEXT: Tier 2 systems (mobile/performance, audio, menus).
+
+---
 **2026-10-26 (anchors wiring 2, no look change):** Game change: none visible. Petrol pump and dharam kanta slots (offsets from the highway anchor), banta cart, and the mango fallback ring now read src/anchors.js; positions numerically identical. Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs, 0 failed. Still baked: school/village.js SchoolCompound, patang KID_START, job marker offsets in jobs/data.js (pump, kulfi, kanche, gilli, milk, gate, patang), eastRoad, lane sites.
 NEXT: Tier 2 systems (mobile/performance, audio, menus).
 
