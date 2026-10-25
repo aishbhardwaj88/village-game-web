@@ -55,6 +55,10 @@ export const PLACES = [
   { id: 'maidan', en: 'Khel maidan', hi: 'खेल मैदान', ...pt('maidan'), kind: 'field', radius: 26 },
   { id: 'highway', en: 'Highway and bus adda', hi: 'हाईवे और बस अड्डा', ...pt('highway'), kind: 'bazaar', radius: 30 },
   { id: 'mandi', en: 'Mandi', hi: 'मंडी', ...pt('mandi'), kind: 'bazaar', radius: 26 },
+  // Staging yard (src/stagingYard.js): newly built places wait here until the map is laid out.
+  { id: 'yard_school', en: 'Yard 1: Primary school', hi: 'यार्ड 1: प्राथमिक पाठशाला', ...pt('yard_school'), kind: 'school', radius: 40 },
+  { id: 'yard_gurukul', en: 'Yard 2: Gurukul', hi: 'यार्ड 2: गुरुकुल', ...pt('yard_gurukul'), kind: 'school', radius: 40 },
+  { id: 'yard_dairy', en: 'Yard 3: Dudh dairy', hi: 'यार्ड 3: दूध डेयरी', ...pt('yard_dairy'), kind: 'shop', radius: 20 },
 ];
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
@@ -132,6 +136,13 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
   const PAD = 46;
   const sx = (x) => PAD + ((x - BOUNDS.x0) / (BOUNDS.x1 - BOUNDS.x0)) * (W - PAD * 2);
   const sy = (z) => 100 + ((z - BOUNDS.z0) / (BOUNDS.z1 - BOUNDS.z0)) * (H - 100 - 56);
+
+  // The staging yard (src/stagingYard.js) is 80+ m east of everything, far off this page: its places are drawn in a small inset
+  // box at the top right instead (same hit targets, same click-to-travel), one column per 80 m of the yard's grid.
+  const YARD_BOX = { x: 600, y: 8, w: 340, h: 86 };
+  const yardXY = (x) => [YARD_BOX.x + 62 + Math.max(0, Math.min(3, Math.round((x - 320) / 80))) * 108, YARD_BOX.y + 36];
+  const isYard = (p) => p.x > 300;
+  const mapXY = (p) => (isYard(p) ? yardXY(p.x) : [sx(p.x), sy(p.z)]);
 
   function pencil(ctx, pts, colour, width) {
     ctx.strokeStyle = colour;
@@ -270,15 +281,24 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     const clear = (x, y) => labelled.every(([lx, ly]) => Math.abs(lx - x) > 96 || Math.abs(ly - y) > 40);
     for (const p of PLACES) {
       // Nothing is hidden (art director 2026-10-23): every place is on the page from the first load; a small tick marks visited ones.
-      const x = sx(p.x), y = sy(p.z);
+      const [x, y] = mapXY(p);
       mapHits.push({ x, y, place: p });
       icon(ctx, p.kind, x, y);
       if (isDiscovered(p.id)) pencil(ctx, [[x + 12, y - 12], [x + 15, y - 8], [x + 21, y - 17]], '#2f7a34', 2.5);
-      if (clear(x, y)) {
-        label(ctx, p.en, p.hi, x, y + 26);
-        labelled.push([x, y]);
+      if (isYard(p) || clear(x, y)) {
+        label(ctx, p.en, p.hi, x, y + (isYard(p) ? 20 : 26));
+        if (!isYard(p)) labelled.push([x, y]);
       }
     }
+    ctx.strokeStyle = 'rgba(29,42,85,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(YARD_BOX.x, YARD_BOX.y, YARD_BOX.w, YARD_BOX.h);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#4a5a8a';
+    ctx.font = '600 11px "Segoe Print","Comic Sans MS",cursive,sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Staging yard (far east) / नया यार्ड', YARD_BOX.x + 8, YARD_BOX.y + 13);
     // side-job stars
     for (const m of extraMarkers) {
       if (!isDiscovered(m.id)) continue;
@@ -290,7 +310,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     const p = getPlayerPos();
     ctx.strokeStyle = '#c0392b';
     ctx.lineWidth = 3.5;
-    const px = sx(p.x), py = sy(p.z);
+    const [px, py] = mapXY(p);
     ctx.beginPath();
     ctx.moveTo(px - 7, py - 7);
     ctx.lineTo(px + 7, py + 7);

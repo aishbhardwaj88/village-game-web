@@ -39,6 +39,9 @@ export const PLACE_BOARDS = [
   { id: 'busadda', hi: 'बस अड्डा', en: 'Bus Adda', fg: NAVY },
   { id: 'mela', hi: 'मेला मैदान', en: 'Mela Ground', fg: MAROON },
   { id: 'maidan', hi: 'खेल मैदान', en: 'Khel Maidan', fg: NAVY },
+  { id: 'school_v2', hi: 'राजकीय प्राथमिक पाठशाला', en: 'Government Primary School', fg: NAVY },
+  { id: 'gurukul_v2', hi: 'गुरुकुल विद्यालय', en: 'Gurukul Vidyalaya', fg: GREEN },
+  { id: 'school_donation', hi: 'दानदाता पट्टिका', en: 'Donors Board', fg: MAROON },
 ];
 const ROW = new Map(PLACE_BOARDS.map((b, i) => [b.id, i]));
 const CELL_W = 640, CELL_H = 145; // 4.4:1, same ratio as every other board

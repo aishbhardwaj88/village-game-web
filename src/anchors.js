@@ -50,6 +50,10 @@ export const ANCHORS = {
   maidan: { x: 165, z: 135, ry: 0 },
   highway: { x: 205, z: 40, ry: 0 },
   mandi: { x: 226, z: 60, ry: 0 },
+  // STAGING YARD (src/stagingYard.js): grid origin (320,-160), 80 m spacing, 6 per row. New places from Places V1 stand here until she lays out the map.
+  yard_school: { x: 320, z: -160, ry: 0 },
+  yard_gurukul: { x: 400, z: -160, ry: 0 },
+  yard_dairy: { x: 480, z: -160, ry: 0 },
 };
 
 /** A fresh { x, z } for a place (callers may keep or mutate it). */
