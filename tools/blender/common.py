@@ -361,7 +361,11 @@ def cyl(name, cx, cz, h0, h1, r0, r1=None, seg=12, cap=True):
     bm = bmesh.new()
     bmesh.ops.create_cone(bm, cap_ends=cap, cap_tris=False, segments=seg, radius1=r0, radius2=r1, depth=h1 - h0)
     bmesh.ops.translate(bm, vec=(cx, -cz, (h0 + h1) / 2), verts=bm.verts)
-    return new_bmesh_obj(name, bm)
+    obj = new_bmesh_obj(name, bm)
+    if seg >= 16:   # round bodies read round: smooth the sides, keep the end caps flat
+        for p in obj.data.polygons:
+            p.use_smooth = abs(p.normal.z) < 0.9
+    return obj
 
 
 def sphere(name, cx, cz, h, rx, rz=None, rh=None, subdiv=1):
