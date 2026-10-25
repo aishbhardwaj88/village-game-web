@@ -176,10 +176,7 @@ def shelves(i, levels=(1.2, 2.05), full=True, w=None):
 def kirana(i):
     c = cx(i)
     shelves(i)
-    for k, h in enumerate((1.25, 2.1)):
-        for j in range(9):
-            x = c - 1.75 + j * 0.44
-            kit.add('paint', wb('packet', x - 0.09, x + 0.09, BZ - 0.1, BZ - 0.04, h, h + 0.22 + 0.04 * (j % 3), 0.004), (0xF2C21E, 0xD9382B, 0x2E9E5B, 0xF08A24, 0x2E86C1, 0xE0509A)[(j + k) % 6])
+    # packets on the shelves and the hanging snack strips are the printed-atlas goods in src/bazaar.js (buildBazaarKiranaGoods)
     for j in range(5):
         dabba(kit, c - 1.5 + j * 0.62, BZ - 0.02, 2.1 + 0.05, 0.1, 0.24, (STEEL, 0x9AA0A6)[j % 2])
     for j, col in enumerate((0xC9A86A, 0xB99456)):  # open sacks of grain/dal on the floor
@@ -191,11 +188,6 @@ def kirana(i):
     kit.add('paint', cyl('scale_base', c - 0.9, CZ + 0.05, 0.95, 0.99, 0.13, 0.13, 12), 0x30343A)
     kit.add('paint', sphere('scale_dial', c - 0.9, CZ + 0.05, 1.3, 0.1, 0.03, 0.1, 1), 0xE9E7DD)
     kit.add('paint', limb('scale_post', (c - 0.9, CZ + 0.05, 0.99), (c - 0.9, CZ + 0.05, 1.3), 0.03, 0.03), 0x30343A)
-    # strings of hanging snack packets on the front jambs
-    for sgn in (-1, 1):
-        x = c + sgn * 1.85
-        for k in range(7):
-            kit.add('paint', wb('hang_packet', x - 0.07, x + 0.07, FRONT + 0.3, FRONT + 0.35, 1.9 - k * 0.2, 2.05 - k * 0.2, 0.004), (0xF2C21E, 0xD9382B, 0x2E9E5B, 0xF08A24)[(k + (sgn > 0)) % 4])
 
 
 def sabzi(i):
@@ -206,8 +198,7 @@ def sabzi(i):
     for j, (col, nm) in enumerate(produce):
         x = c - 1.7 + j * 0.68
         kit.add('wood', wb('crate', x - 0.3, x + 0.3, CZ + 0.85, CZ + 1.4, 0.3, 0.52, 0.008))
-        for _ in range(10):
-            kit.add('paint', sphere('veg', x + rnd.uniform(-0.2, 0.2), CZ + 1.12 + rnd.uniform(-0.18, 0.18), 0.58 + rnd.uniform(0, 0.08), 0.07, 0.07, 0.06, 1), col)
+        # the produce heaps are the printed-atlas goods in src/bazaar.js (produceAndBangleItems)
     for j in range(5):  # hanging bunches of greens / bananas on a rail
         kit.add('paint', limb('hang', (c - 1.6 + j * 0.8, BZ - 0.2, 2.35), (c - 1.6 + j * 0.8, BZ - 0.2, 1.7), 0.05, 0.05), (0x4F8F3A, 0xE8C84A, 0x4F8F3A, 0xE8C84A, 0x4F8F3A)[j])
     kit.add('wood', wb('hang_rail', c - 2.0, c + 2.0, BZ - 0.25, BZ - 0.15, 2.35, 2.4, 0.005))

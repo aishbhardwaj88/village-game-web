@@ -514,6 +514,8 @@ export function buildBazaarKiranaGoods() {
   const counterZ = BAZAAR_FRONT_Z + 0.6;
   for (const dx of [-1.3, -0.9, 1.3]) items.push({ kind: 'jar', design: D.toffeeJar, x: cx + dx, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: dx * 5, s: 1.05 });
   for (let k = 0; k < 4; k++) items.push({ kind: 'soap', design: [D.soapGreen, D.soapPink, D.soapBlue][k % 3], x: cx + 0.2 + k * 0.11, y: BAZAAR_COUNTER_H + 0.08, z: counterZ, ry: (k - 1.5) * 0.1 });
+  // Kirana: two strips of foil snack sachets on each front jamb (were flat-coloured boxes in the Blender row).
+  for (const sgn of [-1, 1]) for (let k = 0; k < 2; k++) items.push({ kind: 'sachets', design: [D.sachet, D.chipsRed, D.namkeen, D.chipsGreen][(k + (sgn > 0 ? 1 : 0)) % 4], x: cx + sgn * (1.85 - k * 0.2), y: 2.05 - k * 0.12, z: BAZAAR_FRONT_Z + 0.3 + k * 0.02, ry: Math.PI + (rnd() - 0.5) * 0.2, s: 1.6 });
   // Medical (unit 3): tablet cartons and amber syrup bottles on the three shelf boards (y 1.225 / 2.075 / 2.625), a few on the counter.
   const medCx = bazaarUnitCx(2);
   for (const y of [1.225, 2.075, 2.625]) {

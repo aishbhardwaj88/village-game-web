@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99b, playtest block item 4, bazaar flat stock):** Game change: the Blender bazaar row (tools/blender/build_bazaar_row.py) lost its flat-colour duplicates of goods that already exist as printed-atlas stock: kirana shelf packets, kirana hanging snack boxes, and the sabzi crate veg spheres. The kirana jamb snack strips are now textured foil sachet strips (src/bazaar.js buildBazaarKiranaGoods), same merged mesh, no new draw call. bazaar_row.glb rebuilt. Build ALL PASSED, budget 30.73 MB. Proof docs/shots/kirana-stock-2026-10-25/{kirana,sabzi}.png (headless, subject check passed, no capsule in frame). Gaps: kirana counter jars/scale, medical fridge/case, barber mirror and mobile-shop CRT are still flat vertex-colour paint; item 4 NOT ticked as a whole.
+NEXT: remaining flat-paint interior props (medical, mobile, barber), triangle cuts (art director's call).
+
+---
+
 **2026-10-25 (cycle 39z99, playtest block item 7, water glare):** Game change: village water (src/water.js, canal/pond/johad/hauz) was blowing out to white-blue glints under the low sun; env reflection 1.6 -> 0.7 and roughness 0.14 -> 0.42, so it now reads as pale muted olive water. Build ALL PASSED 16/16, budget 30.80 MB, no new draw call (a MeshPhysicalMaterial trial gave the best look but added a call, hero zone 151, so REVERTED). Proof docs/shots/canal-2026-10-25/after/canal.png (before ../canal.png; headless free camera, not tickable). Gaps: still pale at haze distance, no foam; the "canal/hauz shoreline unchanged" note is stale for the canal (it already shares the scum shader). Cottage wood (item 6) still blocked by the draw-call ceiling.
 NEXT: cottage wood needs the art director's draw-call call; far-LOD blocks, triangle cuts.
 
