@@ -883,7 +883,7 @@ async function main() {
     assetSlots.register('bazaar_row', {
       exact: true,
       hide: bazaarOld,
-      placements: [{ container: scene, position: new THREE.Vector3(-82, 0, 15), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(pt('bazaar').x, 0, pt('bazaar').z), rotationY: 0 }],
     });
   }
   {
@@ -1481,13 +1481,13 @@ async function main() {
     zoneManager.register('pond', { ...pt('pond'), buildRadius: 55, teardownRadius: 70, build: () => createPond(pt('pond')) });
     // Two buffalo cooling off at the pond's muddy bank (one InstancedMesh, streamed with the pond).
     zoneManager.register('pond_buffalo', {
-      detail: true, x: -132, z: 70, buildRadius: 55, teardownRadius: 70,
+      detail: true, x: pt('pond').x, z: pt('pond').z, buildRadius: 55, teardownRadius: 70,
       build: () => {
         const group = new THREE.Group();
         group.name = 'zone_pond_buffalo';
         const herd = createCattleHerd([
-          { x: -132 + 11.2, z: 70 + 2.5, rotationY: 1.2, buffalo: true },
-          { x: -132 + 9.6, z: 70 + 7.0, rotationY: 2.3, buffalo: true },
+          { x: pt('pond').x + 11.2, z: pt('pond').z + 2.5, rotationY: 1.2, buffalo: true },
+          { x: pt('pond').x + 9.6, z: pt('pond').z + 7.0, rotationY: 2.3, buffalo: true },
         ]);
         group.add(herd.mesh);
         return { group, onFrame: (dt) => herd.update(dt) };
@@ -1661,18 +1661,18 @@ async function main() {
     // Unmerged, so the per-tree distance LOD works. No coordinates in MAP.md; open ground picked.
     zoneManager.register('trees_baagh', { x: BAAGH_POSITION.x, z: BAAGH_POSITION.z, buildRadius: 26, teardownRadius: 36, build: () => { const g = buildTrees(MANGO_TREE_PLACEMENTS); mergeGroupByMaterial(g); return g; } }); // merged: 2 draw calls, the hero-zone budget has no room for per-tree LODs
     const outskirtTrees = (name, x, z, trees) => zoneManager.register(name, { x, z, buildRadius: 70, teardownRadius: 85, build: () => buildTrees(trees) });
-    outskirtTrees('trees_pond', -132, 70, [
-      { kind: 'neem', x: -150, z: 60, seed: 21 }, { kind: 'peepal', x: -112, z: 82, seed: 22, rotationY: 0.8 }, { kind: 'babool', x: -148, z: 84, seed: 23 },
-    ]);
-    outskirtTrees('trees_johad', 78, 105, [
-      { kind: 'babool', x: 62, z: 96, seed: 24 }, { kind: 'neem', x: 96, z: 118, seed: 25, rotationY: 2.0 }, { kind: 'babool', x: 64, z: 120, seed: 26, rotationY: 1.0 },
-    ]);
-    outskirtTrees('trees_haveli', 150, -30, [
-      { kind: 'peepal', x: 132, z: -18, seed: 27 }, { kind: 'neem', x: 170, z: -46, seed: 28, rotationY: 0.5 },
-    ]);
-    outskirtTrees('trees_gaushala', -125, -35, [
-      { kind: 'neem', x: -106, z: -50, seed: 29 }, { kind: 'peepal', x: -146, z: -20, seed: 30, rotationY: 1.4 },
-    ]);
+    { const A = pt('pond'); outskirtTrees('trees_pond', A.x, A.z, [
+      { kind: 'neem', x: A.x + -18, z: A.z + -10, seed: 21 }, { kind: 'peepal', x: A.x + 20, z: A.z + 12, seed: 22, rotationY: 0.8 }, { kind: 'babool', x: A.x + -16, z: A.z + 14, seed: 23 },
+    ]); }
+    { const A = pt('johad'); outskirtTrees('trees_johad', A.x, A.z, [
+      { kind: 'babool', x: A.x + -16, z: A.z + -9, seed: 24 }, { kind: 'neem', x: A.x + 18, z: A.z + 13, seed: 25, rotationY: 2.0 }, { kind: 'babool', x: A.x + -14, z: A.z + 15, seed: 26, rotationY: 1.0 },
+    ]); }
+    { const A = pt('haveli'); outskirtTrees('trees_haveli', A.x, A.z, [
+      { kind: 'peepal', x: A.x + -18, z: A.z + 12, seed: 27 }, { kind: 'neem', x: A.x + 20, z: A.z + -16, seed: 28, rotationY: 0.5 },
+    ]); }
+    { const A = pt('gaushala'); outskirtTrees('trees_gaushala', A.x, A.z, [
+      { kind: 'neem', x: A.x + 19, z: A.z + -15, seed: 29 }, { kind: 'peepal', x: A.x + -21, z: A.z + 15, seed: 30, rotationY: 1.4 },
+    ]); }
     zoneManager.register('sugarcane_belt', { visibleRadius: 120, x: 20, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0, z0: 135, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
       detail: true,

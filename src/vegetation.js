@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { pt } from './anchors.js';
 import { PALETTE, darken } from './village.js';
 import { addPlantInstances } from './realPlants.js';
 
@@ -136,8 +137,8 @@ function buildScrubGeometry() { return buildCardGeometry(0.95, 0.8); }
 export const VEG_KEEP_OUT = [
   { x: -36.1, z: -7.6, r: 3.0 }, // tubewell hauz + its outlet naali start
   { x: -34.2, z: -3.8, r: 2.6 }, // tubewell outlet channel
-  { x: -132, z: 70, r: 11 }, // pond
-  { x: 78, z: 105, r: 8 }, // johad
+  { ...pt('pond'), r: 11 }, // pond
+  { ...pt('johad'), r: 8 }, // johad
   { zMin: 29.5, zMax: 36.5, xMin: -28, xMax: 0 }, // canal water + banks
   { zMin: 96.5, zMax: 115.5, xMin: -65.5, xMax: -58.5 }, // school classroom (SCHOOL_ROOM in village.js): grass was sprouting through its floor
 ];
