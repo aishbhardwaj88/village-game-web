@@ -164,9 +164,9 @@ is in handoff.md, and build plus regression are green.
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
 ### A0-LOAD. Load time (art director approved 2026-10-26)
-- [ ] Stop shipping the staging yard in the initial payload; load the 22 staged places only when she travels to the yard (~10 MB, zero visual change, nothing deleted)
-- [ ] Re-measure with tools/load-time-test.mjs and report the new number
-- [ ] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge
+- [x] Stop shipping the staging yard in the initial payload; load the 22 staged places only when she travels to the yard (~10 MB, zero visual change, nothing deleted) (already true: staged places are zone-streamed by distance; LIST=1 request log from tools/load-time-test.mjs on 26 Oct shows zero staged models or staging textures before Play)
+- [x] Re-measure with tools/load-time-test.mjs and report the new number (26 Oct: Play ready 15160 ms, 12.49 MB; unchanged because the yard was never in the payload)
+- [!] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge BLOCKED: no KTX2 encoder (toktx/basisu) is installed on this Mac and GPU-compressed textures need her before/after judgement.
 - [ ] Do not drop the HDRI further, do not drop prop textures to 512, do not simplify hero buildings
 
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places

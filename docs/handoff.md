@@ -1,3 +1,6 @@
+**2026-10-26 (A0-LOAD check, no game change):** Staging yard is already zone-streamed; request log (LIST=1) shows no staged model or texture before Play, so the 'stop shipping it' item was already true. Play ready 15160 ms, 12.49 MB (core village models + shared textures). KTX2 step blocked: no toktx/basisu installed and it needs her before/after judgement (NEEDS_YOU). Build ALL PASSED, collision-test 4834 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed.
+NEXT: on-foot findability walk (A-2c), audio polish.
+
 **2026-10-26 (A0-TEX pots, tried and reverted, no game change):** Tried the CC0 gazania scan inside the tv house yard pots and the dharam kanta tulsi pot (src/stagedGreenery.js `pots`). Shot docs/shots/places-2026-10-26/pots/kanta_tulsi.png: the flowers are a few thin dark sprigs floating above the pot rim, they read as dead twigs; she would reject it (her rule: an unconvincing plant is worse than none). Reverted. Tv house pots hide behind the yard wall in the front view, so not judged. Real fix needs a proper potted-plant model fitted INTO the pot (potted_plant_04 brings its own pot, so the model's empty clay pots would have to be dropped); parked, plants are hers per the 25 Oct direction. No build run (nothing changed).
 NEXT: re-tint remaining pairs, then Tier 2 leftovers (on-foot findability walk, audio polish).
 
