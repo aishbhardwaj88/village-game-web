@@ -266,9 +266,9 @@ async function main() {
   // waypoint, src/bazaar.js), east of it, facing the lane.
   const shopsGroup = new THREE.Group();
   shopsGroup.name = 'shops';
-  const TEA_SHOP_POS = { x: -52, z: 78 };
+  const TEA_SHOP_POS = pt('teastall');
   const TEA_SHOP_ROT = Math.PI / 2; // west of the lane, facing east
-  const STORE_POS = { x: -52, z: 20 };
+  const STORE_POS = pt('store');
   const STORE_ROT = -Math.PI / 2; // east of the hero-zone-to-bazaar lane, facing west
   // steam over the tea stall's kettle + big pot (art review 1). Model-local (x, wz) -> world via the stall's yaw (PI/2: x' = wz, z' = -x).
   const teaSteam = createSteam([{ x: TEA_SHOP_POS.x + 0.7, y: 1.3, z: TEA_SHOP_POS.z + 0.3 }, { x: TEA_SHOP_POS.x + 0.76, y: 1.5, z: TEA_SHOP_POS.z + 0.97 }]);
@@ -327,9 +327,9 @@ async function main() {
   // minDistanceToColliders probing with the real building half-extents
   // (tmp/scan-newshops-area.mjs + tmp/verify-newshops-reloc2.mjs) — 3.4m+
   // clearance at every one of the 3 new centres.
-  const POST_OFFICE_POS = { x: -68, z: 26 };
-  const RATION_SHOP_POS = { x: -68, z: 31 };
-  const ATTA_CHAKKI_POS = { x: -68, z: 36 };
+  const POST_OFFICE_POS = pt('post');
+  const RATION_SHOP_POS = pt('ration');
+  const ATTA_CHAKKI_POS = pt('chakki');
   const NEW_SHOPS_ROT = Math.PI / 2; // faces +X, toward the bazaar lane
   shopsGroup.add(buildPostOffice(POST_OFFICE_POS, NEW_SHOPS_ROT));
   shopsGroup.add(buildRationShop(RATION_SHOP_POS, NEW_SHOPS_ROT));

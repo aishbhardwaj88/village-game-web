@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { buildMaidan } from './props.js';
 import { powerMeter } from './minigames.js';
+import { pt } from '../anchors.js';
 
 /**
  * Job 6 — Gilli-danda at the khel maidan (docs/MISSIONS_PLAN.md): a timing power meter decides how far the gilli flies; beat three
@@ -8,7 +9,7 @@ import { powerMeter } from './minigames.js';
  * peepal poster or by hearing the kids shout (sound radar).
  */
 const MAIDAN = { x: 46, z: 104 };
-const KHEL_MAIDAN = { x: 165, z: 135 }; // createKhelMaidan in main.js
+const KHEL_MAIDAN = pt('maidan'); // createKhelMaidan in main.js
 const RIVALS = [
   { role: 'kid_a', name: 'Bittu', score: 22 },
   { role: 'kid_b', name: 'Guddu', score: 29 },

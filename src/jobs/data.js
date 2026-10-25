@@ -1,17 +1,19 @@
 /**
  * Static data for the side jobs: map markers, the order the postman hands postcards out in, and the texts (postcard + gossip).
  */
+import { pt } from '../anchors.js';
+
 export const JOBS = {
   pump: { n: 7, en: 'Pump water for Dadi', hi: 'दादी के लिए पानी भरो', x: -55.5, z: 28 },
-  ration: { n: 9, en: 'Ration run with Maa', hi: 'माँ के साथ राशन', x: -68, z: 31 },
+  ration: { n: 9, en: 'Ration run with Maa', hi: 'माँ के साथ राशन', ...pt('ration') },
   kulfi: { n: 3, en: 'Kulfiwala', hi: 'कुल्फी वाला', x: -54, z: 40 },
   kanche: { n: 10, en: 'Kanche and stapu', hi: 'कंचे और स्टापू', x: -46, z: 12 },
   gilli: { n: 6, en: 'Gilli-danda', hi: 'गिल्ली-डंडा', x: 46, z: 104 },
   milk: { n: 2, en: 'Milk round', hi: 'दूध का चक्कर', x: -44, z: 60 },
-  chakki: { n: 5, en: 'Atta chakki run', hi: 'आटा चक्की', x: -68, z: 36 },
+  chakki: { n: 5, en: 'Atta chakki run', hi: 'आटा चक्की', ...pt('chakki') },
   gate: { n: 4, en: 'Narrow khet gate', hi: 'तंग खेत का फाटक', x: 6, z: 14 },
   patang: { n: 1, en: 'Patang loot', hi: 'पतंग लूट', x: -60, z: 60 },
-  mango: { n: 8, en: 'Mango varieties', hi: 'आम की किस्में', x: -15, z: 10 },
+  mango: { n: 8, en: 'Mango varieties', hi: 'आम की किस्में', ...pt('baagh') },
 };
 // The postman hands these out in this order (the postcard names one new job each time he is passed).
 export const POSTCARD_ORDER = ['pump', 'ration', 'kulfi', 'milk', 'kanche', 'chakki', 'gate', 'mango', 'gilli', 'patang'];
