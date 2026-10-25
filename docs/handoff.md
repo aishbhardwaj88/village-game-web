@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n14, A-2c highway milestones):** Game change: two painted milestone stones on the highway's west verge (src/milestones.js HIGHWAY_STONES, one per travel direction, Hindi over English, Mandi and Chowk distances computed from PLACES). Proof docs/shots/milestones-highway-2026-10-25/{hw_a3,hw_b2}.png (photo camera, no capsule). Build ALL PASSED. A-2c wayfinding box stays unticked (approach road itself still open ground).
+NEXT: A-2c routes legibility / on-foot findability walk; triangle cuts remain art director's call.
+
+---
+
 **2026-10-25 (cycle 39z99n13, playtest block, stale-gap audit):** NO game change (written honestly). Checked three "gaps" in older entries against the code and they are already closed: khet west/east thirds have per-plot variants (src/field.js outerVariant), the east road bed uses the PBR ground set via finishSite/vcMat, and plant sets already carry a density LOD (src/realPlants.js). Tried tools/tri-audit.mjs at the default view to find the biggest triangle cut; it produced no output in ~15 min (hung under swiftshader, killed). Do not re-check these. What is left is the art director's call on triangle cuts (513k vs 400k) and draw-call ceiling.
 NEXT: re-run tri-audit with explicit coordinates (it hung at the default view) and propose cuts.
 

@@ -12,6 +12,11 @@ import { PLACES } from './freeRoam.js';
 import { roadAt } from './eastRoad.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
+// Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
+const HIGHWAY_STONES = [
+  { x: 196.6, z: -18, ry: Math.PI, to: 'mandi', back: 'chowk' },
+  { x: 196.6, z: 82, ry: 0, to: 'mandi', back: 'chowk' },
+];
 const SIDE = 3.4; // stands this far to the right of the walker, clear of the carriageway
 const CELL = 256;
 const INK = '#2a1a14';
@@ -21,7 +26,7 @@ const byId = (id) => PLACES.find((p) => p.id === id);
 let shared = null;
 function getShared() {
   if (shared) return shared;
-  const COLS = SPACING.length + 1; // last cell = stone body grain
+  const COLS = SPACING.length + HIGHWAY_STONES.length + 1; // last cell = stone body grain
   const atlas = document.createElement('canvas');
   atlas.width = CELL * COLS;
   atlas.height = CELL;
@@ -83,7 +88,8 @@ function regionUV(g, cell, cols) {
 export function milestoneSites() {
   const hw = byId('highway');
   if (!hw) return [];
-  return SPACING.map((d, i) => {
+  const hwSites = HIGHWAY_STONES.map((h, i) => ({ id: `milestone_hw${i}`, cell: SPACING.length + i, x: h.x, z: h.z, ry: h.ry, hw: h }));
+  return [...hwSites, ...SPACING.map((d, i) => {
     const { x, z, ux, uz } = roadAt(d);
     return {
       id: `milestone_${i}`,
@@ -93,7 +99,7 @@ export function milestoneSites() {
       ry: Math.atan2(-ux, -uz), // face normal points back west along the road, towards the approaching walker
       toHighway: Math.round(Math.max(0, Math.hypot(hw.x - x, hw.z - z)) / 5) * 5,
     };
-  });
+  })];
 }
 
 export function createMilestone(site) {
@@ -101,7 +107,15 @@ export function createMilestone(site) {
   const hw = byId('highway');
   const mandi = byId('mandi');
   const mDist = mandi ? Math.round(Math.hypot(mandi.x - site.x, mandi.z - site.z) / 5) * 5 : 0;
-  drawFace(s, site.cell, [
+  const dist = (p) => `${Math.round(Math.hypot(p.x - site.x, p.z - site.z) / 5) * 5} m`;
+  if (site.hw) {
+    const to = byId(site.hw.to);
+    const back = byId(site.hw.back);
+    drawFace(s, site.cell, [
+      { hi: to.hi, en: to.en, dist: dist(to) },
+      { hi: back.hi, en: 'Chowk', dist: dist(back) },
+    ]);
+  } else drawFace(s, site.cell, [
     { hi: 'हाईवे', en: 'Highway', dist: `${site.toHighway} m` },
     { hi: mandi ? mandi.hi : 'मंडी', en: 'Mandi', dist: `${mDist} m` },
   ]);
