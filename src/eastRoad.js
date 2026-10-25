@@ -33,7 +33,7 @@ export const SPURS = [
   { id: 'haveli', pts: [[150, 49], [150, 8], [150, -4]] },
   { id: 'tvhouse', pts: [[62, 69.5], [68, 40], [70, 27]] },
   // West and south spurs (the road does not reach them): off the west gali, the south gali and the gali north end.
-  { id: 'pond', bare: true, pts: [[-84, 70], [-113, 70]] },
+  { id: 'pond', bare: true, pts: [[-84, 32], [-104, 32], [-114, 50], [-114, 62]] }, // leaves the west gali north of the W1 rows (the rows are continuous z 41-103, a spur through them hit house walls)
   { id: 'mela', pts: [[-100, 140], [-111, 145]] },
   { id: 'cane', bare: true, pts: [[-6, 130], [-6, 146]] }, // sugarcane belt, off the east gali's south end
   { id: 'gurudwara', pts: [[-60, 140], [-60, 158]] },

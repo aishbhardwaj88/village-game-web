@@ -1495,7 +1495,7 @@ async function main() {
     for (const leg of [...roadLegs(), ...spurLegs()]) {
       const mx = (leg.a.x + leg.b.x) / 2, mz = (leg.a.z + leg.b.z) / 2, half = leg.len / 2;
       zoneManager.register(leg.id, {
-        detail: true, x: mx, z: mz, buildRadius: (leg.w ? 24 : 45) + half, teardownRadius: (leg.w ? 36 : 58) + half,
+        detail: true, x: mx, z: mz, buildRadius: (leg.bare ? 16 : leg.w ? 24 : 45) + half, teardownRadius: (leg.bare ? 28 : leg.w ? 36 : 58) + half, // bare spurs are plain earth: built late so they cost no draw calls in the bazaar view
         build: () => {
           const g = new THREE.Group(); // lamps and trees are built in world coordinates, so they sit beside the (turned) leg, not inside it
           g.name = leg.id + '_zone';
