@@ -163,6 +163,13 @@ is in handoff.md, and build plus regression are green.
 - [x] AUDIT before tomorrow (done 26 Oct, top entry of docs/handoff.md): write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
+### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
+- [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
+- [ ] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing
+- [ ] Re-tint every staged place from colours SAMPLED out of her Places V1/<place>/MAIN_*.png, not picked by eye or reused from village defaults
+- [ ] Add the greenery her drawings show (grass, bushes, creepers, potted plants, trees) using real CC0 plant models only, never hand-built foliage; still skip khets and field crops
+- [ ] Only after the above: resume building the remaining places
+
 ### A0a. COLLISION TEST (art director FAIL 2026-10-25) - nothing else until this passes
 - [x] Build tools/collision-test.js: enumerate every solid object from the live scene (trees, buildings, walls, vehicles, animals, poles, lamps, hand pumps, charpais, carts, troughs, tanks, rope/string boundaries, fences, props)
 - [x] Drive the player at each from 4 directions at walk and run speed using the real movement resolver; assert no pass-through; name every failure with its position
