@@ -14,9 +14,12 @@ i=0
 # resume by itself the moment it is.
 wait_for_net() {
   local waited=0
-  while ! curl -s -m 8 -o /dev/null https://api.anthropic.com/ 2>/dev/null; do
+  # Not just "is there a network": a cafe/office captive portal happily answers 200
+  # with its own login page. Require the real API's own unauthenticated response
+  # (401/403/404), which a portal cannot fake.
+  while ! case "$(curl -s -m 8 -o /dev/null -w '%{http_code}' https://api.anthropic.com/v1/messages 2>/dev/null)" in 401|403|404|405) true ;; *) false ;; esac; do
     if [ "$waited" -eq 0 ]; then
-      echo "=== No internet. Paused $(date). Will resume by itself." | tee -a tmp/autopilot.log
+      echo "=== No usable internet (offline, or a wifi login page not signed into). Paused $(date). Resumes by itself." | tee -a tmp/autopilot.log
     fi
     if [ -f tmp/STOP ]; then return 1; fi
     sleep 30
