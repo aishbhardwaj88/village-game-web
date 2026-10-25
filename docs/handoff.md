@@ -1,4 +1,8 @@
 ---
+**2026-10-26 (ending screen check, no game change):** Checked the true ending end to end: regression-check "all eight missions complete end to end" passes (ended at all_complete), screenshot run has zero console errors, and docs/shots/2026-10-25T22-02-20-735Z/final_end_card.png shows the end card correctly (English headline larger, Hindi beneath; Continue roaming / Play again / Credits buttons, all bilingual). Not a defect found, nothing changed. Regression 21/22: the only fail is the triangle counter (476k incl. shadow pass; her 25 Oct ruling says the limit means visible triangles, ~271k busy market). Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed. FINISH_LINE Shell box not ticked (settings-from-pause and loading screen not separately proven).
+NEXT: lanes to field/gaushala/baagh/mandi need her call (NEEDS_YOU); otherwise remaining Tier 2: on-foot findability walk, audio polish.
+
+---
 **2026-10-26 (findability audit refreshed, no game change):** `node tools/findability-audit.mjs` crashed since the anchors refactor (PLACES now spreads `pt()`); repaired, staging yard excluded. Result on the 40 village places: 0 not findable without the map (11 on 23 Oct) because each has a signpost/milestone. Four have no lane within 30 m: field 69 m, gaushala 69 m, baagh 43 m, mandi 36 m (signposted, no visible path). It is a static heuristic, not an on-foot walk, so the A-2c audit box stays open. Build not rerun (tool-only change).
 NEXT: lane/path to those four (needs her layout call, so NEEDS_YOU), then audio polish / ending screen check.
 
