@@ -418,6 +418,14 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
           else tasksNote.textContent = 'Could not find a clear spot there.';
         });
     }
+    // Free roam stays its own entry: never a mission, never locked once the story is done.
+    taskRow('Continue roaming', 'घूमते रहो', roam ? 'current' : 'locked', roam ? 'No task - just wander' : 'Opens after the story', () => {
+      if (!roam) tasksNote.textContent = 'Free roam opens once the story is finished. / कहानी के बाद खुलेगा।';
+      else {
+        onPinTask?.(null);
+        closeTasks();
+      }
+    });
     tasksOpen = true;
     tasksOverlay.classList.add('visible');
   }

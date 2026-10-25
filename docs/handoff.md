@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n16, A-2b Tasks list):** Small game change: Tasks list gained its own "Continue roaming / घूमते रहो" entry (locked with a reason until the story is done, then clears any pin and closes). Build ALL PASSED, no console errors. Proof docs/shots/tasks-2026-10-25/tasks_fresh.png (menu renders; new row is at the foot of the scroll, not in frame). A-2b boxes stay unticked (free out-of-order mission switching and minimap-convention research still open; locked-with-reason is the current guard).
+NEXT: minimap-convention research, then out-of-order mission state setup.
+
+---
+
 **2026-10-25 (cycle 39z99n15, A-2b Tasks list):** Small game change: tapping the current mission in the Tasks list now clears any pinned side-job waypoint (src/freeRoam.js), so the waypoint returns to the live objective. Build ALL PASSED. No proof shot (menu logic only); box stays unticked. Re-audited FEEDBACK items 2 (milk cans) and 8 (lanes): already done. Still open: free out-of-order mission switching (needs per-mission state setup) and minimap-convention research; triangle cuts remain the art director's call.
 NEXT: A-2b out-of-order mission state setup.
 
