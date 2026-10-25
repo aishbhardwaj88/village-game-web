@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS, HOUSE_CENTER } from './village.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
+import { addToSignHub } from './signAtlasHub.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
 import { buildGoodsMesh, produceAndBangleItems, DESIGN as GOODS } from './shopGoods.js';
@@ -438,8 +439,7 @@ function mapFrontFaceToAtlasCell(geometry, col, row) {
  * (font/canvas), same pattern as src/signboards.js — not awaited inline by the caller. */
 export async function buildBazaarSignboards() {
   const texture = await buildBazaarSignAtlas();
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
-  material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
+  const { material, remap } = addToSignHub('bazaar', texture);
   const geos = [];
   BAZAAR_UNITS.forEach((unit, idx) => {
     const cx = bazaarUnitCx(idx);
@@ -468,7 +468,7 @@ export async function buildBazaarSignboards() {
     const chowkLocal = new THREE.Matrix4().makeTranslation(0, CHOWK_TEA.roofEdgeH + 0.5 + (CHOWK_TEA.w - 1.2) / 8, -CHOWK_TEA.d / 2 - 0.05);
     geos.push(chowkGeo.applyMatrix4(chowkLocal).applyMatrix4(chowkWorld));
   }
-  const mesh = new THREE.Mesh(mergeGeometries(geos), material);
+  const mesh = new THREE.Mesh(mergeGeometries(geos.map(remap)), material);
   mesh.castShadow = true;
   mesh.name = 'bazaar_signboards';
   return mesh;

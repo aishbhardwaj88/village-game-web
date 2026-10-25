@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { addToSignHub } from './signAtlasHub.js';
 
 /**
  * Shop signboards — Hindi on the TOP line, smaller and lighter, English on the second line,
@@ -94,8 +95,7 @@ export async function buildSignboards(tea, store) {
     { hi: tea.hi, en: tea.en, bg: '#f0e4c6', fg: '#6e1a12' },
     { hi: store.hi, en: store.en, bg: '#f0e4c6', fg: '#6e1a12' },
   ]);
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
-  material.name = 'signboard'; // world-validator (check 2) — wall/roof-mounted fixtures are correctly elevated above y=0 by design; named so that exclusion is precise, not a guess at merged-bucket identity
+  const { material, remap } = addToSignHub('hero', texture);
 
   const teaGeo = new THREE.BoxGeometry(tea.width, 0.5, 0.04);
   mapFrontFaceToRow(teaGeo, 0, rows);
@@ -109,7 +109,7 @@ export async function buildSignboards(tea, store) {
   const storeWorld = new THREE.Matrix4().makeRotationY(store.rotationY).setPosition(store.position.x, 0, store.position.z);
   storeGeo.applyMatrix4(storeLocal).applyMatrix4(storeWorld);
 
-  const mesh = new THREE.Mesh(mergeGeometries([teaGeo, storeGeo]), material);
+  const mesh = new THREE.Mesh(mergeGeometries([teaGeo, storeGeo].map(remap)), material);
   mesh.castShadow = true;
   mesh.name = 'shop_signboards';
   return mesh;

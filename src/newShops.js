@@ -4,6 +4,7 @@ import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from
 import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.js';
 import { colliderBoxFromTransform } from './collision.js';
 import { buildWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
+import { addToSignHub } from './signAtlasHub.js';
 
 /**
  * Item 4 ("keep building the village") — 3 more abadi-core locations from
@@ -285,8 +286,7 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
     { hi: 'स्पीड पोस्ट · मनी ऑर्डर · टिकट', en: 'Speed Post · Money Order · Stamps', fg: '#14306e' },
     { hi: 'समय: सुबह 10 से शाम 4', en: 'Open 10 AM to 4 PM', fg: '#173f20' },
   ]);
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
-  material.name = 'signboard'; // world-validator (check 2) — see src/signboards.js's matching comment
+  const { material, remap } = addToSignHub('newShops', texture);
   const geos = [];
   const placements = [
     [POST_OFFICE, postOfficePos, postOfficeRot, 0],
@@ -309,7 +309,7 @@ export async function buildNewShopSignboards(postOfficePos, postOfficeRot, ratio
       geos.push(geo);
     });
   }
-  const mesh = new THREE.Mesh(mergeGeometries(geos), material);
+  const mesh = new THREE.Mesh(mergeGeometries(geos.map(remap)), material);
   mesh.name = 'new_shop_signboards';
   mesh.castShadow = true;
   mesh.receiveShadow = true;

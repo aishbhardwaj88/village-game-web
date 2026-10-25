@@ -1,3 +1,4 @@
+import { addToSignHub } from './signAtlasHub.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
@@ -194,18 +195,10 @@ export async function createDonationBoard(position, rotationY = 0) {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9 });
-  // Same name every other wall-mounted signboard material in this codebase uses
-  // (src/bazaar.js/signboards.js/newShops.js) — purely a label src/mergeUtils.js
-  // bakes into the merged mesh's name (grouping itself is by material object
-  // identity, not this string, so this never merges with a DIFFERENT signboard's
-  // own distinct material/texture); tools/world-validator.js's "nothing floats"
-  // check specifically excludes anything named 'signboard*' as a correctly-
-  // elevated wall fixture, not a floating-object bug.
-  material.name = 'signboard';
+  const { material, remap } = addToSignHub('donation', texture); // shared sign atlas, one draw call with the shop boards
   const boardW = 3.0;
   const boardH = (boardW * H) / W;
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(boardW, boardH, 0.05), material);
+  const mesh = new THREE.Mesh(remap(new THREE.BoxGeometry(boardW, boardH, 0.05)), material);
   mesh.name = 'donation_board';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
