@@ -4,6 +4,7 @@ import { getGLTFLoader } from './loaders.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { ANCHORS, pt } from './anchors.js';
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
+import { addPlaceGreenery } from './stagedGreenery.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
 
 /**
@@ -120,6 +121,7 @@ function createStagedPlace(def) {
     }).catch((err) => console.warn('house kit did not load', err));
     return group;
   }
+  addPlaceGreenery(group, def, STAGED_PLACES.indexOf(def) + 1);
   getGLTFLoader().loadAsync(`assets/models/${def.model}.glb`).then((gltf) => {
     const m = gltf.scene;
     m.name = def.zone + '_model';
