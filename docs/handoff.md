@@ -1,4 +1,7 @@
 ---
+**2026-10-26 (menus: title Settings, volume saved):** Game change: the title screen has a Settings link (quality High/Medium/Low + volume, bilingual) beside Controls, and the volume choice is now remembered across reloads (localStorage `dopahar_volume`, src/quality.js; pause menu slider and title slider stay in step, src/pause.js). Proof: docs/shots/settings-2026-10-26/title_settings.png (real browser: slider set to 35, reload shows 35 in both sliders, zero console errors). Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed. Anchor wiring audit re-checked: school is already read from src/anchors.js; remaining baked copies are the minor ones listed in the A-1 entry below.
+NEXT: audio polish / ending screen check, then wayfinding audit (A-2c).
+
 **2026-10-26 (anchors wiring 4, no look change):** Game change: none visible. Side-job markers pump, kulfi, kanche, milk, gate, patang (src/jobs/data.js) are now offsets from the store / chaat / chowk / halwai / baagh anchors, so they move with the place; positions numerically identical (checked). Still baked: SchoolCompound in village.js, gilli MAIDAN (46,104, not a mapped place), pond/johad plant keep-outs, eastRoad ends, lane sites. Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed.
 NEXT: remaining baked anchors (school village.js), then the audio/menus polish pass.
 

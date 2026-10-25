@@ -104,3 +104,24 @@ export function applyQuality(level, { renderer, sun, isTouch }) {
 
   return { enableBloom: p.bloom, enableGrain: p.grain, pixelRatioCap };
 }
+
+const VOLUME_KEY = 'dopahar_volume';
+
+/** Master volume 0..1, same try/catch-and-fall-back shape as the quality choice above. */
+export function loadSavedVolume(defaultVolume = 1) {
+  try {
+    const v = parseFloat(localStorage.getItem(VOLUME_KEY));
+    if (Number.isFinite(v) && v >= 0 && v <= 1) return v;
+  } catch (e) {
+    // storage blocked/unavailable — fall through to the default
+  }
+  return defaultVolume;
+}
+
+export function saveVolume(v) {
+  try {
+    localStorage.setItem(VOLUME_KEY, String(v));
+  } catch (e) {
+    // storage blocked/unavailable — volume still applies for this session
+  }
+}

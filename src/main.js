@@ -133,7 +133,7 @@ import { updateWater } from './water.js';
 import { Dialogue } from './dialogue.js';
 import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
-import { applyQuality, loadSavedQuality, saveQuality } from './quality.js';
+import { applyQuality, loadSavedQuality, saveQuality, loadSavedVolume, saveVolume } from './quality.js';
 import { loadSavedGame, saveGame } from './save.js';
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
@@ -2116,6 +2116,10 @@ async function main() {
     controlsHelp.open();
   }
   document.getElementById('start-controls-btn').addEventListener('pointerdown', showControlsHelp);
+  // Title-screen Settings (quality + volume): the quality buttons inside it are wired by setupPauseMenu like the pause ones.
+  const settingsOverlay = document.getElementById('settings-overlay');
+  document.getElementById('start-settings-btn').addEventListener('pointerdown', () => settingsOverlay.classList.add('visible'));
+  document.getElementById('settings-close-btn').addEventListener('pointerdown', () => settingsOverlay.classList.remove('visible'));
 
   // Shared context passed to every interaction point's label()/available()/onInteract().
   const interactionCtx = {
@@ -2459,10 +2463,12 @@ async function main() {
     if (b) b.innerHTML = minimap.isHidden() ? '<span class="btn-en">Minimap: off</span><span class="btn-hi">छोटा नक्शा: बंद</span>' : '<span class="btn-en">Minimap: on</span><span class="btn-hi">छोटा नक्शा: चालू</span>';
   };
   syncMinimapBtn();
+  audio.setMasterVolume(loadSavedVolume(1));
   const pauseMenu = setupPauseMenu({
     onToggleMinimap: () => { minimap.setHidden(!minimap.isHidden()); syncMinimapBtn(); },
     isTouch: touch,
     initialQuality: currentQuality,
+    initialVolume: loadSavedVolume(1),
     onOpen: () => {
       paused = true;
       if (!touch) document.exitPointerLock?.();
@@ -2475,7 +2481,7 @@ async function main() {
     },
     onRestart: restartErrand,
     onQualityChange: setQuality,
-    onVolumeChange: (v) => audio.setMasterVolume(v),
+    onVolumeChange: (v) => { audio.setMasterVolume(v); saveVolume(v); },
     onShowCredits: showCredits,
     onShowControls: showControlsHelp,
     onShowNotebook: () => freeRoam.openNotebook(),

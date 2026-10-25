@@ -203,7 +203,8 @@
         font-size: 0.68rem;
         opacity: 0.75;
       }
-      #start-overlay.ready #start-controls-btn {
+      #start-overlay.ready #start-controls-btn,
+      #start-overlay.ready #start-settings-btn {
         display: inline-flex;
       }
 
@@ -893,7 +894,7 @@
         background: rgba(255, 255, 255, 0.1);
         color: #f8ead0;
       }
-      #quality-row {
+      #quality-row, #settings-quality-row {
         margin: 20px 0 4px;
       }
       .quality-label-en {
@@ -910,7 +911,7 @@
         opacity: 0.5;
         margin: 2px 0 10px;
       }
-      #quality-options {
+      #quality-options, #settings-quality-options {
         display: flex;
         gap: 8px;
       }
@@ -933,10 +934,10 @@
       }
       /* Item 8 (audio mix pass) — master volume slider, styled to match the quality
          buttons above it: same warm accent colour on the filled track/thumb. */
-      #volume-row {
+      #volume-row, #settings-volume-row {
         margin: 16px 0 4px;
       }
-      #volume-slider {
+      #volume-slider, #settings-volume-slider {
         width: 100%;
         accent-color: #f2b25c;
         cursor: pointer;
@@ -945,7 +946,7 @@
       /* --- Controls help screen — reachable from both the title screen and the pause
          menu (two trigger buttons, one shared overlay), same dimmed-backdrop/
          panel-card look as the pause menu itself. */
-      #controls-overlay {
+      #controls-overlay, #settings-overlay {
         position: fixed;
         inset: 0;
         z-index: 130; /* above the pause panel (90) and the credits screen (120), since either can open this */
@@ -955,7 +956,7 @@
         justify-content: center;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
-      #controls-overlay.visible {
+      #controls-overlay.visible, #settings-overlay.visible {
         display: flex;
       }
       .controls-row {
@@ -1237,6 +1238,29 @@
         <p id="dialogue-hi"></p>
         <p id="dialogue-hint">Click / tap / space to continue</p>
       </div>
+      <div id="settings-overlay">
+        <div id="settings-panel" class="panel-card">
+          <p class="panel-title-en">Settings</p>
+          <p class="panel-title-hi">सेटिंग्स</p>
+          <div id="settings-quality-row">
+            <p class="quality-label-en">Quality</p>
+            <p class="quality-label-hi">गुणवत्ता</p>
+            <div id="settings-quality-options">
+              <button class="quality-btn" type="button" data-quality="high">High</button>
+              <button class="quality-btn" type="button" data-quality="medium">Medium</button>
+              <button class="quality-btn" type="button" data-quality="low">Low</button>
+            </div>
+          </div>
+          <div id="settings-volume-row">
+            <p class="quality-label-en">Volume</p>
+            <p class="quality-label-hi">आवाज़</p>
+            <input id="settings-volume-slider" type="range" min="0" max="100" value="100" />
+          </div>
+          <button id="settings-close-btn" class="panel-btn" type="button" style="margin-top: 16px">
+            <span class="btn-en">Close</span><span class="btn-hi">बंद करें</span>
+          </button>
+        </div>
+      </div>
       <div id="start-overlay">
         <p class="title-en">Dopahar</p>
         <p class="title-hi">दोपहर</p>
@@ -1254,6 +1278,10 @@
         <button id="start-controls-btn" type="button" class="secondary-link-btn">
           <span class="play-en">Controls</span>
           <span class="play-hi">नियंत्रण</span>
+        </button>
+        <button id="start-settings-btn" type="button" class="secondary-link-btn">
+          <span class="play-en">Settings</span>
+          <span class="play-hi">सेटिंग्स</span>
         </button>
         <p id="start-overlay-hint"></p>
       </div>

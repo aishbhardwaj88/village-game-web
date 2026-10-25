@@ -16,9 +16,11 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
   const notebookBtn = document.getElementById('pause-notebook-btn');
   const qualityBtns = Array.from(document.querySelectorAll('.quality-btn'));
   const volumeSlider = document.getElementById('volume-slider');
+  const settingsVolumeSlider = document.getElementById('settings-volume-slider');
 
   if (isTouch) touchBtn.classList.add('visible');
   volumeSlider.value = String(Math.round(initialVolume * 100));
+  if (settingsVolumeSlider) settingsVolumeSlider.value = volumeSlider.value;
 
   let open = false;
 
@@ -99,9 +101,14 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
     });
   }
 
-  volumeSlider.addEventListener('input', () => {
-    onVolumeChange?.(Number(volumeSlider.value) / 100);
-  });
+  // The title-screen Settings panel carries its own slider; keep the two in step.
+  for (const slider of [volumeSlider, settingsVolumeSlider]) {
+    slider?.addEventListener('input', () => {
+      volumeSlider.value = slider.value;
+      if (settingsVolumeSlider) settingsVolumeSlider.value = slider.value;
+      onVolumeChange?.(Number(slider.value) / 100);
+    });
+  }
 
   return {
     isOpen: () => open,
