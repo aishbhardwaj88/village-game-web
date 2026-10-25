@@ -160,10 +160,9 @@ def yard_props():
     # haystack (golden cone, bound) beside the shed
     hx, hz = 5.2, 3.2
     kit.add('thatch', lathe('stack', hx, hz, [(0.0, 0.0), (1.25, 0.0), (1.42, 0.5), (1.38, 1.2), (1.12, 1.9), (0.7, 2.4), (0.28, 2.75), (0.0, 2.9)], seg=20), 0xF2E8C8)
-    kit.add('paint', limb('stack_rope', (hx - 1.43, hz, 0.8), (hx + 1.43, hz, 0.8), 0.05, 0.05), 0x7A6A48) if False else None
-    for k in range(5):
-        a = k * 1.26
-        kit.add('thatch', sphere('hay_tuft', hx + 1.5 * math.cos(a), hz + 1.5 * math.sin(a), 0.2, 0.3, 0.3, 0.22, 1), 0xEADFBC)
+    # two twisted-rope bands round the stack (no loose tuft blobs: they read as debris at walking distance)
+    for rh, rr in ((0.85, 1.43), (1.6, 1.26)):
+        kit.add('paint', lathe('stack_rope', hx, hz, [(rr - 0.05, rh), (rr, rh + 0.02), (rr, rh + 0.08), (rr - 0.05, rh + 0.1)], seg=20), 0x7A6A48)
     # swept courtyard floor, slightly darker dung-plastered earth, with a wider sweep-mark apron at the gate
     kit.add('apron', wb('yard_floor', -7.2, 7.2, -6.5, 6.2, 0.0, 0.04, 0.01))
     kit.add('paint', wb('gate_apron', -1.9, 1.9, 6.2, 8.2, 0.0, 0.03, 0.01), 0x9C8566)
