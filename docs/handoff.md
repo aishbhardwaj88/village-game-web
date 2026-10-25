@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n17, A-2b minimap):** Game change: minimap now prints the objective's distance in metres and draws an edge pointer when the objective is outside the 110 m window (conventions from shipped open-world minimaps: off-map objectives clamp to the edge with a direction marker, GTA III critique: edge-only markers lose relative position, hence the distance). Build ALL PASSED. No proof shot (canvas change, not shot); research box stays unticked until a shot is taken.
+NEXT: out-of-order mission state setup; triangle cuts remain the art director's call.
+
+---
+
 **2026-10-25 (cycle 39z99n16, A-2b Tasks list):** Small game change: Tasks list gained its own "Continue roaming / घूमते रहो" entry (locked with a reason until the story is done, then clears any pin and closes). Build ALL PASSED, no console errors. Proof docs/shots/tasks-2026-10-25/tasks_fresh.png (menu renders; new row is at the foot of the scroll, not in frame). A-2b boxes stay unticked (free out-of-order mission switching and minimap-convention research still open; locked-with-reason is the current guard).
 NEXT: minimap-convention research, then out-of-order mission state setup.
 

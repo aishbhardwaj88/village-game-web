@@ -119,8 +119,19 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
     if (o) {
       let ox = wx(o.x), oy = wy(o.z);
       const m = 11;
+      const off = ox < m || oy < m || ox > S - m || oy > S - m;
       ox = Math.min(S - m, Math.max(m, ox));
       oy = Math.min(S - m, Math.max(m, oy));
+      if (off) {
+        // off-window: a small pointer toward the objective (shipped-game convention)
+        const a = Math.atan2(o.z - p.z, o.x - p.x);
+        ctx.save();
+        ctx.translate(ox + Math.cos(a) * 0, oy + Math.sin(a) * 0);
+        ctx.rotate(a);
+        ctx.fillStyle = '#8a5a00';
+        ctx.beginPath(); ctx.moveTo(15, 0); ctx.lineTo(9, -4); ctx.lineTo(9, 4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
       ctx.fillStyle = '#e0a21b';
       ctx.strokeStyle = '#8a5a00';
       ctx.lineWidth = 1.4;
@@ -131,6 +142,12 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
         ctx.lineTo(ox + Math.cos(a) * r, oy + Math.sin(a) * r);
       }
       ctx.closePath(); ctx.fill(); ctx.stroke();
+      // distance in metres, so a far objective still says how far
+      const dist = Math.round(Math.hypot(o.x - p.x, o.z - p.z));
+      ctx.fillStyle = INK;
+      ctx.font = '700 9px "Segoe Print","Comic Sans MS",cursive,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(dist + ' m', Math.min(S - 14, Math.max(14, ox)), oy < S / 2 ? oy + 19 : oy - 12);
     }
     // player arrow at the centre, pointing where the camera looks
     const d = getCameraDir();
