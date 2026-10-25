@@ -1519,6 +1519,14 @@ export function createGurukul(position) {
     }
   }
   doorOpening(geos, at(0, 0.4, -5.47), 1.6, 2.5); // main entrance, long block
+  // Weathering and trim so the blocks read as a lived-in college: concrete sunshades (chhajja) over every window, a damp-stained
+  // dado band at the foot of each wall, rainwater downpipes at the corners and a door canopy.
+  for (let i = 0; i < 6; i++) for (const y of [2.2, 5.6]) geos.push(bake(new THREE.BoxGeometry(1.9 + (i % 2) * 0.1, 0.1, 0.55), at(-11 + 2 + i * 3.6 + 0, y + 0.95, -5.45 + 0.27), 0xb9b0a0));
+  for (let i = 0; i < 4; i++) for (const y of [2.2, 5.6]) geos.push(bake(new THREE.BoxGeometry(0.55, 0.1, 1.9), at(-4 + 0.27, y + 0.95, 1 - 9 + 3 + i * 4 + 0.0 + 1 - 1), 0xb9b0a0));
+  geos.push(bake(new THREE.BoxGeometry(22.04, 0.9, 7.04), at(0, 0.85, -9), 0xa89c86));
+  geos.push(bake(new THREE.BoxGeometry(7.04, 0.9, 18.04), at(-7.5, 0.85, 1), 0xa89c86));
+  for (const [px, pz] of [[-10.9, -5.45], [10.9, -5.45], [-4.05, 9.95]]) geos.push(bake(new THREE.CylinderGeometry(0.06, 0.06, 7.4, 8), at(px, 3.9, pz), 0x4d5258));
+  geos.push(bake(new THREE.BoxGeometry(2.4, 0.12, 0.9), at(0, 3.0, -5.85), 0x9a8f7c));
   // Roof detail so the blocks do not read as bare boxes: parapet ring, stair-head (mumty), rooftop water tank, entrance steps, floor band.
   for (const [w, d, x, z] of [[22, 7, 0, -9], [7, 18, -7.5, 1]]) {
     for (const sz of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(w + 0.5, 0.7, 0.25), at(x, 8.0, z + sz * (d / 2 + 0.12)), 0xd9d0b8));
@@ -1544,7 +1552,7 @@ export function createGurukul(position) {
     ...[0, 1, 2, 3, 4, 5].map((i) => [-9 + i * 3.6, -4.9, 0.5, 0.5]), // verandah columns
     [9, 12, 14, 0.4], [-0.2, 12, 1.0, 1.0], [4.2, 12, 1.0, 1.0], // yard wall + gate pillars
     [6, 4, 0.2, 0.2], // flag mast
-  ], boards: [{ id: 'gurukul', x: 0, y: 3.95, z: -3.88, w: 4.4 }, { id: 'gurukul', x: 0, y: 4.6, z: -12.58, w: 5.2, ry: Math.PI }] }); // 2nd board on the lane-side (north) face
+  ], boards: [{ id: 'gurukul', x: 0, y: 4.5, z: -3.88, w: 4.4 }, { id: 'gurukul', x: 0, y: 4.6, z: -12.58, w: 5.2, ry: Math.PI }] }); // 2nd board on the lane-side (north) face
 }
 
 /** Old haveli (MAP.md, east, quiet): two-storey courtyard mansion, faded ochre plaster, arched-front jharokhas, closed carved gate, quiet and cared-for. */
