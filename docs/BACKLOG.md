@@ -163,6 +163,12 @@ is in handoff.md, and build plus regression are green.
 - [x] AUDIT before tomorrow (done 26 Oct, top entry of docs/handoff.md): write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
 
+### A0-LOAD. Load time (art director approved 2026-10-26)
+- [ ] Stop shipping the staging yard in the initial payload; load the 22 staged places only when she travels to the yard (~10 MB, zero visual change, nothing deleted)
+- [ ] Re-measure with tools/load-time-test.mjs and report the new number
+- [ ] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge
+- [ ] Do not drop the HDRI further, do not drop prop textures to 512, do not simplify hero buildings
+
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
 - [ ] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing

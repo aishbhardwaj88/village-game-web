@@ -1061,3 +1061,34 @@ composition. The staged places are bare dirt.
 2. Re-tint every staged place from her reference colours.
 3. Add the greenery each drawing shows.
 4. Only then build the remaining places.
+
+---
+
+## 2026-10-26 (art director) - LOAD TIME: cut the weight, do NOT cut quality.
+
+Load time is 12.8 s on simulated 4G against a 10 s target, and `public/assets/` is at
+43 MB against the 40 MB ceiling. Models are 28 MB of it. Her decision, approved:
+
+### Do this, it is free
+**Stop shipping the staging yard in the main payload.** The 22 staged places
+(`src/stagedPlaces.js`, `src/stagingYard.js`) exist for the art director's review, not
+for players. Load them only when she travels to the yard.
+- ~10 MB out of the initial payload against a 4 MB target, so this alone should fix it.
+- Zero visual change anywhere. The yard still works exactly as now when visited.
+- Everything stays in the repo. Nothing is deleted.
+
+Then re-measure with `tools/load-time-test.mjs` and report the new number.
+
+### Only if it is STILL over after that
+KTX2/Basis compression, applied carefully. **She will not compromise on quality**, so:
+- Apply it ONLY to ground, walls, roofs, soil and props.
+- **NEVER to signboards, painted text, or anything a player reads.** It softens
+  sharp high-contrast edges and the signboards took real work to make legible.
+- Produce a before/after comparison at the same camera and show her before keeping it.
+
+### Do not do, unless she asks
+- Do not drop the HDRI further. It is already halved.
+- Do not drop prop textures to 512.
+- Do not apply heavier mesh simplification to the hero buildings.
+
+**Quality is not the lever. Payload is.**
