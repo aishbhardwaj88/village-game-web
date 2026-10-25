@@ -397,11 +397,23 @@ def plastic_chair(kit, x, z, ang, colour, arms=False):
 
     def p(dx, dz, hh):
         return (x + dx * ca - dz * sa, z + dx * sa + dz * ca, hh)
-    kit.add('paint', limb('seat', p(0, 0, 0.45), p(0, 0, 0.5), 0.44, 0.44, 0.012), colour)
-    kit.add('paint', limb('back', p(0, -0.2, 0.5), p(0, -0.26, 0.9), 0.42, 0.04, 0.01), colour)
+    # monobloc silhouette: dished seat with a thick front lip, rear legs sweeping up into the back uprights, slatted back with a wide top rail, splayed tapered legs, front stretcher
+    kit.add('paint', limb('seat', p(0, 0, 0.45), p(0, 0, 0.485), 0.42, 0.40, 0.014), colour)
+    kit.add('paint', limb('seat_lip', p(0, 0.205, 0.43), p(0, 0.205, 0.5), 0.40, 0.03, 0.012), colour)
+    kit.add('paint', limb('seat_rim_l', p(-0.215, 0, 0.47), p(-0.215, 0, 0.51), 0.03, 0.40, 0.008), colour)
+    kit.add('paint', limb('seat_rim_r', p(0.215, 0, 0.47), p(0.215, 0, 0.51), 0.03, 0.40, 0.008), colour)
+    for dx in (-0.19, 0.19):
+        kit.add('paint', limb('upright_lo', p(dx, -0.17, 0.46), p(dx, -0.235, 0.7), 0.04, 0.03, 0.008), colour)
+        kit.add('paint', limb('upright_hi', p(dx, -0.235, 0.7), p(dx, -0.29, 0.92), 0.04, 0.03, 0.008), colour)
+    kit.add('paint', limb('back_top', p(0, -0.285, 0.9), p(0, -0.295, 0.95), 0.44, 0.05, 0.012), colour)
+    for k in range(3):
+        hh = 0.58 + k * 0.1
+        kit.add('paint', limb('back_slat', p(0, -0.2 - (hh - 0.5) * 0.2, hh), p(0, -0.2 - (hh - 0.5) * 0.2, hh + 0.05), 0.36, 0.022, 0.006), colour)
     for dx in (-0.18, 0.18):
-        for dz in (-0.18, 0.18):
-            kit.add('paint', limb('leg', p(dx, dz, 0.0), p(dx * 1.05, dz * 1.05, 0.46), 0.04, 0.04), colour)
+        kit.add('paint', limb('leg', p(dx * 1.12, 0.19 * 1.12, 0.0), p(dx, 0.17, 0.46), 0.032, 0.04, 0.008), colour)
+        kit.add('paint', limb('leg', p(dx * 1.12, -0.19 * 1.12, 0.0), p(dx, -0.17, 0.46), 0.032, 0.04, 0.008), colour)
+    kit.add('paint', limb('stretcher', p(-0.18, 0.18, 0.18), p(0.18, 0.18, 0.18), 0.022, 0.022), colour)
+    kit.add('paint', limb('stretcher_b', p(-0.18, -0.18, 0.18), p(0.18, -0.18, 0.18), 0.022, 0.022), colour)
     if arms:
         for dx in (-0.22, 0.22):
             kit.add('paint', limb('arm', p(dx, 0.2, 0.62), p(dx, -0.2, 0.62), 0.035, 0.035), colour)
