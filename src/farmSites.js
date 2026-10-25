@@ -592,6 +592,16 @@ function smallBuilding({ w, d, h, wall, band, door, roof = 0x8d8a82 }) {
   return geos;
 }
 
+/** Grilled windows on the two side walls and the back wall of a smallBuilding(), so no faith-building face is a blank slab. */
+function sideWindows(geos, { w, d, h }, perSide = 3) {
+  const y = 0.35 + 1.7;
+  for (let i = 0; i < perSide; i++) {
+    const z = (i - (perSide - 1) / 2) * (d * 0.62 / Math.max(1, perSide - 1));
+    for (const sx of [-1, 1]) windowOpening(geos, at(sx * w / 2, y, z, sx * Math.PI / 2), 0.9, 1.0, 0x4a3524, 0xe9e2cf);
+  }
+  for (const sx of [-1, 0, 1]) windowOpening(geos, at(sx * w * 0.28, y, -d / 2, Math.PI), 0.9, 1.0, 0x4a3524, 0xe9e2cf);
+}
+
 /** Rooftop parapet signboard for a smallBuilding(): centred on the +z face, sitting on the parapet. */
 function parapetBoard(id, { w, d, h }, bw) {
   return { id, x: 0, y: 0.35 + h + 0.5, z: d / 2 + 0.24, w: bw ?? Math.min(w + 0.2, 4.4) };
@@ -791,6 +801,7 @@ export function createChemist(position) {
 /** Masjid: modest limewashed prayer hall with a green-and-white dome, one slim minaret and an ablution tap row. Scenery only. */
 export function createMasjid(position) {
   const geos = smallBuilding({ w: 8, d: 7, h: 3.6, wall: 0xeee8d8, band: 0x3f7a5a, door: 0x2f5d49, roof: 0xd8d2c0 });
+  sideWindows(geos, { w: 8, d: 7, h: 3.6 });
   geos.push(bake(new THREE.CylinderGeometry(2.4, 2.6, 0.5, 16), at(0, 4.6, 0), 0xd8d2c0));
   geos.push(bake(new THREE.SphereGeometry(2.3, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), at(0, 4.85, 0), 0xf2eee2));
   geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6), at(0, 7.6, 0), 0xc8a24a));
@@ -811,12 +822,13 @@ export function createMasjid(position) {
     geos.push(bake(new THREE.CylinderGeometry(0.3, 0.3, 0.4, 8), at(sx * 3.4, 3.8, 2.8), 0xd8d2c0));
     geos.push(bake(new THREE.SphereGeometry(0.34, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), at(sx * 3.4, 4.0, 2.8), 0xf2eee2));
   }
-  return finishSite('masjid', geos, position, { solids: [[0, 0, 8.2, 7.2], [-5.2, -1.5, 1.2, 1.2]] });
+  return finishSite('masjid', geos, position, { solids: [[0, 0, 8.2, 7.2], [-5.2, -1.5, 1.2, 1.2]], boards: [parapetBoard('masjid', { w: 8, d: 7, h: 3.6 }, 3.6)] });
 }
 
 /** Gurudwara: white hall with a gold-topped dome, small chhatris, and a saffron nishan sahib flagpole. Scenery only. */
 export function createGurudwara(position) {
   const geos = smallBuilding({ w: 9, d: 7, h: 3.6, wall: 0xf1ede2, band: 0xd69a2e, door: 0x6a4a2a, roof: 0xdcd6c6 });
+  sideWindows(geos, { w: 9, d: 7, h: 3.6 });
   geos.push(bake(new THREE.CylinderGeometry(2.2, 2.4, 0.5, 16), at(0, 4.6, 0), 0xdcd6c6));
   geos.push(bake(new THREE.SphereGeometry(2.1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), at(0, 4.85, 0), 0xf6f2e6));
   geos.push(bake(new THREE.ConeGeometry(0.22, 1.0, 8), at(0, 7.4, 0), 0xd9a63a));
@@ -837,7 +849,7 @@ export function createGurudwara(position) {
   for (let i = -4; i <= 4; i++) geos.push(bake(new THREE.ConeGeometry(0.22, 0.45, 4), at(i, 4.55, 3.62), 0xf6f2e6));
   geos.push(bake(new THREE.CylinderGeometry(0.1, 0.12, 9, 8), at(6.5, 4.5, 4.5), 0xd9d3c3));
   geos.push(bake(new THREE.BoxGeometry(0.05, 1.3, 0.9), at(6.5, 8.2, 4.95), 0xe0861f));
-  return finishSite('gurudwara', geos, position, { solids: [[0, 0, 9.2, 7.2]] });
+  return finishSite('gurudwara', geos, position, { solids: [[0, 0, 9.2, 7.2]], boards: [parapetBoard('gurudwara', { w: 9, d: 7, h: 3.6 }, 4.4)] });
 }
 
 /** TV house: the one house with a television. Pale-green plaster, flat roof, and a rooftop antenna mast. No brand marks. */

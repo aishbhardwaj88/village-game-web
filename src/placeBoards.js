@@ -26,6 +26,8 @@ export const PLACE_BOARDS = [
   { id: 'chemist', hi: 'दवाई की दुकान', en: 'Chemist', fg: GREEN },
   { id: 'manihari', hi: 'मनिहारी - चूड़ियाँ', en: 'Manihari - Bangles', fg: MAROON },
   { id: 'sabzi', hi: 'ताज़ी सब्ज़ी', en: 'Fresh Sabzi', fg: GREEN },
+  { id: 'gurudwara', hi: 'गुरुद्वारा साहिब', en: 'Gurudwara Sahib', fg: NAVY },
+  { id: 'masjid', hi: 'मस्जिद', en: 'Masjid', fg: GREEN },
   { id: 'gaushala', hi: 'गौशाला', en: 'Gaushala', fg: INK },
   { id: 'gurukul', hi: 'गुरुकुल कॉलेज', en: 'Gurukul College', fg: NAVY },
   { id: 'haveli', hi: 'पुरानी हवेली', en: 'Old Haveli', fg: INK },

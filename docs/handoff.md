@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n34, gurudwara and masjid sides):** Game change: gurudwara and masjid (src/farmSites.js sideWindows) now have three grilled windows per side wall and three on the back (were blank slabs), plus a bilingual parapet board each ("Gurudwara Sahib", "Masjid", src/placeBoards.js). Same merged meshes, one extra board draw call each. Build ALL PASSED, budget 30.90 MB, no console errors. Proof docs/shots/gurudwara-2026-10-25b/{front,side}.png (proof-shot, free camera, no capsule in frame; masjid not shot). Gaps: no compound wall/gate; hero lane through school wall and temple lane end still open. Still needs the art director: triangle limit meaning, draw-call ceiling.
+NEXT: act on her ruling; otherwise A-2c routes legibility.
+
+---
+
 **2026-10-25 (cycle 39z99n33, post box detail):** Game change: the red pillar post box outside the post office (src/newShops.js) now has a flared foot, two bands, a hood over the slot and a collection-times plate with screws (was a plain cylinder and dome). Same metal mesh, no new draw call. Build ALL PASSED, no console errors. Proof docs/shots/postbox-2026-10-25/front.png (proof-shot, capsule in frame, so not tickable). Gaps: plate is blank (no text), counter textures untouched. Still needs the art director: triangle limit meaning, draw-call ceiling.
 NEXT: act on her ruling; otherwise A-2c routes legibility.
 
