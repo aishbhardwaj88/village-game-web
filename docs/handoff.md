@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n21, bazaar shutter re-shot):** NO game change (written honestly). Re-shot the bazaar row from the lane (shopfronts face -z; camera at z=3 looking +z): all shutters are up, interiors lit, goods visible. Proof docs/shots/bazaar-open-2026-10-25/{bz_a,bz_b}.png; 147/144 calls, ~530k tris (same budget overage as before). FEEDBACK item 4 note updated. Note for next run: bazaar shots need camera south of z=12.5 (row_a/row_b in that folder are houses, ignore).
+NEXT: tri-audit rewrite (renderer.info after one forced render) or the art director's budget call.
+
+---
+
 **2026-10-25 (cycle 39z99n20, collision audit + tri-audit retry):** NO game change (written honestly). Re-read the code: every NPC routine (waypoint loop/run, follow, bazaarLife) already moves through resolveMove; the only direct position sets are scripted teleports (main.js sister placements). So A0 "route every NPC through the resolver" is met in code, but it is not a visual item so it stays unticked (no screenshot proof possible). tools/tri-audit.mjs hung again (twice, 2nd with default view, 400 s) and crashed once at (-60,20): two attempts, stop retrying; it needs rewriting (avoid 8 rAF waits under swiftshader) before it can name the triangle cuts. Remaining work is art-director calls (triangle limit 400k vs ~520k, draw-call ceiling 150 vs 164).
 NEXT: rewrite tri-audit to read renderer.info after one forced render() instead of rAF waits, then propose cuts.
 
