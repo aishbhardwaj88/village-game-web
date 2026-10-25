@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n2, playtest block item 8, hero lane ends at school gate):** Game change: the hero lane strip and its kerbs (src/village.js buildLane) now end at the school's south gate (z = centre - 13, SCHOOL_GATE_LANE_END) instead of running to the compound centre, so the dirt lane no longer crosses the school wall/yard. Build ALL PASSED, no new draw call. No proof shot of the gate (the screenshot run has no school-gate view), so nothing ticked. Gaps: temple lane still ends in the temple compound; kerbs/drains/lamps for the far lanes not extended; triangles still 513k (art director's call).
+NEXT: temple lane end, lane street life, triangle cuts.
+
+---
+
 **2026-10-25 (cycle 39z99n, playtest block item 10, plant density LOD):** Game change: scanned plant sets (src/realPlants.js addPlantInstances) now thin by distance: past 55% of a set's radius only every other copy is drawn, past 80% one in four (stable per-item pick, independent of scale). Build ALL PASSED, regression 21/22, triangles 513k (was 535k; still over 400k, only that check fails, art director's call on the rest). No screenshot taken, so nothing ticked; far grass/pots will look slightly sparser. Gaps: no real mid/far mesh LOD (needs Blender), grass/crop flat cards not replaced.
 NEXT: item 12 leftovers, atta chakki readability, triangle cuts (art director's call).
 

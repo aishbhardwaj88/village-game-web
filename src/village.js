@@ -845,12 +845,19 @@ function buildHalwai(kit) {
   return group;
 }
 
+// The lane ends at the school's south gate (z = centre - 13), not at the compound's centre, so it no longer runs through the yard wall.
+const SCHOOL_GATE_LANE_END = (() => {
+  const z = SCHOOL_CENTER.z - 13;
+  const t = (z - HALWAI_CENTER.z) / (SCHOOL_CENTER.z - HALWAI_CENTER.z);
+  return { x: HALWAI_CENTER.x + (SCHOOL_CENTER.x - HALWAI_CENTER.x) * t, z };
+})();
+
 function buildLane() {
   // Task 2 (draw-call budget) — both segments share the lane's default tint, and
   // buildStripSegment now bakes its own repeat/tint into the geometry (see
   // paths.js), so they merge into a single mesh instead of a 2-mesh group.
   const mesh = mergeMeshList(
-    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_CENTER, 6, { seed: 2.0, ruts: true }), ...buildKerbSegments(HALWAI_CENTER, SCHOOL_CENTER, 6, 0.12, 0.88, { seed: 2.0 })],
+    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_GATE_LANE_END, 6, { seed: 2.0, ruts: true }), ...buildKerbSegments(HALWAI_CENTER, SCHOOL_GATE_LANE_END, 6, 0.12, 0.88, { seed: 2.0 })],
     'lane'
   );
   return mesh;
