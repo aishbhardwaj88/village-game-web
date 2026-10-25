@@ -42,7 +42,7 @@ export function setPlantFocus(x, z) {
  * Adds instanced copies of `file` to `group`.
  * items: [{ x, z, y?, scale?, yaw? }]; `height` is the real-world height (m) of an unscaled copy; `tint` 0..1 per-instance
  * brightness variation range (default 0.18); `seed` makes the per-instance variation deterministic.
- * `radius`: only copies within this many metres of the player are drawn (the 400k triangle budget cannot carry every scanned
+ * `radius`: (density thins past 55% and 80% of it) only copies within this many metres of the player are drawn (the 400k triangle budget cannot carry every scanned
  * plant in the village; a tuft 60 m away is a few pixels). The set re-sorts itself when the player has moved 5 m.
  */
 export function addPlantInstances(group, file, height, items, { tint = 0.18, seed = 1, castShadow = false, radius = 45 } = {}) {
@@ -72,7 +72,7 @@ export function addPlantInstances(group, file, height, items, { tint = 0.18, see
       return m4.compose(v.set(it.x, it.y ?? 0, it.z), q, sc).multiply(part.matrix).clone();
     }));
     const cols = items.map((it, i) => { const [, r1, r2, r3] = rolls[i]; const t = 1 - tint * r2; return new THREE.Color(t, t * (0.97 + r3 * 0.05), t * 0.95); });
-    const r2lim = radius * radius;
+    const r2lim = radius * radius, r2mid = r2lim * 0.3, r2far = r2lim * 0.64;
     let lastX = 1e9, lastZ = 1e9;
     const set = {
       refresh(force = false) {
@@ -82,7 +82,10 @@ export function addPlantInstances(group, file, height, items, { tint = 0.18, see
         const near = [];
         for (let i = 0; i < items.length; i++) {
           const d2 = (items[i].x - focusX) ** 2 + (items[i].z - focusZ) ** 2;
-          if (d2 <= r2lim) near.push(i);
+          // density LOD: past 55% of the radius only every other copy (a stable pick per item) is drawn, past 80% only one in four
+          if (d2 > r2lim) continue;
+          if (d2 > r2mid && rolls[i][3] >= (d2 > r2far ? 0.25 : 0.5)) continue;
+          near.push(i);
         }
         insts.forEach((inst, pi) => {
           near.forEach((i, slot) => { inst.setMatrixAt(slot, mats[pi][i]); inst.setColorAt(slot, cols[i]); });
