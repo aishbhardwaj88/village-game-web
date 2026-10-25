@@ -1,4 +1,8 @@
 ---
+**2026-10-26 (findability audit refreshed, no game change):** `node tools/findability-audit.mjs` crashed since the anchors refactor (PLACES now spreads `pt()`); repaired, staging yard excluded. Result on the 40 village places: 0 not findable without the map (11 on 23 Oct) because each has a signpost/milestone. Four have no lane within 30 m: field 69 m, gaushala 69 m, baagh 43 m, mandi 36 m (signposted, no visible path). It is a static heuristic, not an on-foot walk, so the A-2c audit box stays open. Build not rerun (tool-only change).
+NEXT: lane/path to those four (needs her layout call, so NEEDS_YOU), then audio polish / ending screen check.
+
+---
 **2026-10-26 (menus: title Settings, volume saved):** Game change: the title screen has a Settings link (quality High/Medium/Low + volume, bilingual) beside Controls, and the volume choice is now remembered across reloads (localStorage `dopahar_volume`, src/quality.js; pause menu slider and title slider stay in step, src/pause.js). Proof: docs/shots/settings-2026-10-26/title_settings.png (real browser: slider set to 35, reload shows 35 in both sliders, zero console errors). Build ALL PASSED, collision-test 4824 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed. Anchor wiring audit re-checked: school is already read from src/anchors.js; remaining baked copies are the minor ones listed in the A-1 entry below.
 NEXT: audio polish / ending screen check, then wayfinding audit (A-2c).
 
