@@ -73,3 +73,71 @@ unattended run:
 
 Her deeper point: deciding when work is finished is my job, not hers. Do not hand her
 an open loop and ask her to judge when it has gone on long enough.
+
+## Judge the approach before building, not the result after (25 Oct 2026)
+
+Her words on the pond lotus: "This Lotus 3D rendering is so bad. It is looking like
+craft paperwork. So why was it even approved?"
+
+The record: the lotus was rebuilt **5 times** (22 Oct, 24 Oct x3, 25 Oct), every time
+hand-built in code with grid petals and a 128 px canvas texture, every time approved
+by the run that built it. Hours on one flower that still fails.
+
+The mistake was not the execution, it was the **decision at minute one**: code
+geometry cannot make an organic thing look real, so no number of reworks would have
+saved it.
+
+Rules now in `docs/AUTOPILOT.md`:
+1. **Organic things are never code-built.** Source a real CC0 model, or leave the
+   object out of the game entirely.
+2. **Hard-surface man-made things** (walls, boards, carts, machinery) may be code-built.
+3. **Two strikes**: an asset reworked twice and still unconvincing gets removed, not
+   reworked a third time. Check the git log before reworking anything.
+4. **No self-approval**: before committing, name the specific thing she would reject.
+   If you cannot name one, you have not looked.
+
+My own failure here: I was watching the loop and reporting commit counts as progress
+without opening the images. Commits are not progress. Next time, look at the proof
+shots myself and call a bad asset bad before she has to.
+
+## 25 Oct 2026 — place prompts written without reading `Places V1/README.md`
+
+Claude chat wrote the first Gurukul prompts from memory: bulleted sections, a "no X,
+no Y" list, a stylised-art opener and six one-view-per-message images. All four break
+the recipe already proven on 13 Sep (photoreal Blender opener, one flowing paragraph,
+constraints phrased positively, exactly two sheets: views + orthos, the SCALE block,
+bilingual signboard). Rule: before writing ANY place prompt, read
+`Places V1/README.md`, `Places V1/SCALE.md` and the blue house
+(`Places V1/house/MAIN_house_courtyard_cutaway.png`) first.
+
+## 25 Oct 2026 — her rules after the first Gurukul render
+- **One prompt per message.** Never hand over several prompts at once. Finish one place
+  completely before starting the next.
+- **First image of every place = front view + isometric only.** Other views only after
+  she approves that image and asks.
+- **Nothing outside the building/compound walls in any reference** — no grass blocks,
+  field strips or ground patches. Claude Code builds exactly what it sees, so an odd
+  landscape shape becomes an odd built shape. Setting (fields, roads) belongs in
+  LAYOUT.md text, never in the image.
+- Dimension lines must span the full extent they label; a cropped view must not carry
+  a full-width number.
+- 25 Oct: gave a "fix this in the same chat" Gemini prompt. Breaks the 19 Sep rule:
+  ONE complete prompt from a FRESH chat, never chained corrective edits (Gemini reuses
+  the old image, here it returned the wrong top view unchanged). Also: listen to all her
+  feedback first, write the single prompt only when she says go.
+- 25 Oct: asked her questions with obvious answers (keep measurements? keep labels?).
+  Decide, don't ask: measurements always included (in game scale, as drawing notes that
+  are never built); Gemini never adds ANY names or lettering, Claude Code adds them.
+- 25 Oct, her workflow rule: images she sends while iterating are low-quality WIP. Only
+  the full-size download she sends at finalisation goes into the place folder (as the
+  MAIN_ file); WIP copies are removed from the folder then.
+- 25 Oct: Gemini failed the 5-view Gurukul sheet 4 times (asymmetric top view, wrong
+  back, labels back, grass outside). Fix: generate the TOP VIEW alone first as the layout
+  authority, then elevations from it. Fewer views per image = accurate views.
+- 25 Oct: she pays for Gemini Pro credits; 4 Gurukul sheets were wasted on my prompts.
+  Before sending any image prompt: one view per image when layout matters, every
+  count/size/symmetry stated in numbers, fresh chat, no labels asked for, nothing outside
+  the walls. If unsure Gemini can do it in one go, split it, never "try and see".
+- 25 Oct, her rule: continue in the SAME Gemini chat; start a new chat only when truly
+  needed. Group views in natural pairs (front+back, left+right, top+isometric or
+  front+isometric), not one credit per view. Plan the fewest images that still work.

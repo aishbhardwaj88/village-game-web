@@ -33,6 +33,8 @@ The loop is done when ALL FIVE of these are true. Nothing else counts.
    Items 4, 5, 6 and 7 have never been marked at all. They get marked this run, from
    what is actually in the game. If you have no proof shot, write `no proof shot`.
    Do not reword her items. Do not build anything to improve a marker.
+   **Item 7 specifically: the pond lotus is NOT DONE.** She looked at it on 25 Oct
+   and said it reads as cut paper. Mark it `NOT DONE`. Do not rework it tonight.
 3. `docs/FINISH_LINE.md` is updated: tick only what you can prove, leave the rest.
 4. **`docs/PLAYTEST_READY.md` exists**, written for her, headers plus short bullets,
    no long prose, no em dashes, and contains exactly these four sections:
@@ -60,6 +62,49 @@ required step, not optional.** Do not start another item after it.
 - **Real wood texture on houses, school and bazaar: NO, not now.** Do not spend the
   draw call, do not hunt for savings. It waits until after her feedback. Close that
   NEEDS_YOU line as deferred.
+
+## STANDING RULE, 25 Oct 2026: judge BEFORE you build, never after
+
+She looked at the pond lotus and said it reads as cut paper craftwork. She is right,
+and the record proves the deeper problem:
+
+**The lotus was rebuilt 5 times** (ada603d 22 Oct, ac33011 and e5adb25 and e22fd82
+24 Oct, d8ebf58 25 Oct). Every single time it was **hand-built in code** with grid
+petals and a 128 px canvas-drawn texture. Every time the run approved its own work and
+moved on. Hours went into one flower that still fails.
+
+Code-built geometry cannot make an organic thing look real. Grid petals read as
+folded paper. No amount of reworking changes that. The decision was wrong at minute
+one, not at the end.
+
+### The gate, before you write any geometry code
+
+Ask: **is this thing organic or hard-surface?**
+
+- **Organic** (flowers, plants, leaves, crops, fruit, animals, people, food, cloth
+  folds, anything grown or living): **you may NOT build it in code.** Source a real
+  CC0 model (Poly Haven, ambientCG, Poly Pizza, Sketchfab CC0, Quaternius, Kenney,
+  OpenGameArt, Free3D, BlenderKit free). **If no good free model exists, do not put
+  the object in the game at all** and write one line in `docs/NEEDS_YOU.md`.
+  Her standing rule already says this: an unconvincing plant is worse than no plant.
+- **Hard-surface and man-made** (walls, boards, shutters, boxes, carts, machinery,
+  weighbridge, tin roofs, pumps, posts): code-built or Blender is fine. These are the
+  flat-faced things code is good at.
+
+### Two strikes, then stop
+
+- If an asset has already been reworked **twice** and still does not convince you,
+  **remove it from the game**, write one line in `docs/NEEDS_YOU.md` saying what and
+  why, and move on. Never attempt a third rework.
+- Check the git log before reworking anything. If the subject appears twice already,
+  the rule above applies immediately.
+
+### You are not allowed to be your own judge
+
+- Before committing an asset, name the specific thing that would make her reject it.
+  If you cannot name one, you have not looked.
+- "Proof shots taken" is not approval. A shot in an isolated test scene is not proof.
+- If you would not show it to her, it does not go in and it does not get a tick.
 
 ## After the loop ends (not now, do not start it during the close-out)
 
@@ -145,39 +190,42 @@ Anything else only when the current task needs it.
 
 In this order, unless `docs/FEEDBACK.md` says otherwise:
 
-### The 20-hour plan (art director, 2026-10-23 night). Work in THIS order.
+### The plan from 25 Oct. Work in THIS order.
 
-**Rule above all others: the art director's feedback generalises.** She reviewed about
-7 of the 42 places. Every verdict in `docs/ART_REVIEW.md` applies to ALL 42 places and
-every object in them, without waiting for a per-place review. Do not ask, do not
-narrow the scope to the place that was screenshotted.
+**Read `docs/ART_REVIEW.md`'s 25 Oct "NEW DIRECTION" entry first. It supersedes the
+23 Oct plan.** Summary:
 
-1. **A0 collision.** People, animals and vehicles must stop passing through walls,
-   buildings and trees; buildings entered only through doors. Verify across a
-   multi-minute continuous run, not one screenshot.
-2. **The water bug**, then the greenery-scatter audit (plants in drains, canal, pond,
-   johad, troughs, tanks, rooftops). Report every bad placement found.
-3. **A-2 "Visit place" menu**, then **A-2b Tasks list and corner minimap**. These
-   unblock the art director's daily review, so they pay for themselves immediately.
-4. **A-2c navigation**: ungate the notebook map to all 42 places, build the diegetic
-   signage, make the lanes lead somewhere, and deliver the findability audit list.
-5. **A-1 movable units** audit and the handoff note. The art director rearranges the
-   layout tomorrow and needs to know which places have coordinates baked in. This
-   must be written before she starts.
-6. **A1a2 asset sourcing, trees and plants first.** This is the biggest visual lever
-   in the game. Real CC0 tree and plant models where they exist; alpha-cutout photo
-   textures where they do not; never solid-colour leaf geometry. Then the generic
-   props: hand pump, pots, stools, chairs, carts, vessels, crates, baskets.
-7. **A1b/A1b0/A1b1 interiors and props across ALL 42 places**, per CLAUDE.md section
-   5b. Shops, houses, ration shop, dak ghar, atta chakki, school, temple, everything.
-8. **A1c farmland** variety and density; **A1d** code-primitive structures converted
-   to Blender, doors and windows everywhere; **A1e** street lamps; **A1f** layout
-   fixes and the new house row; **A1g** carrom; **A1h** laundry.
-9. Then the rest of section A as listed.
+- **Plants and organics are OFF the list.** The art director builds those herself.
+  Leave what exists alone. No foliage, crops, flowers, grass or greenery work.
+- **Main places are being redesigned by the art director.** Keep anything you build
+  generic and cheap. Do not polish a building that will be replaced.
+- **She has no time for input.** Only do work that needs no decision from her.
+  Anything needing a decision goes to NEEDS_YOU.md and you move on.
 
-Finish an item properly before starting the next. A half-done item helps nobody.
-If an item blocks, mark it `- [!]`, write the plain-language line in
-`docs/NEEDS_YOU.md`, and move to the next. Never idle.
+Order:
+0. **COLLISION. NOTHING ELSE UNTIL IT PASSES.** It was reported fixed on 25 Oct and
+   is NOT: the art director walked through trees, the tractor, the khel maidan string
+   boundary and some buildings. Build `tools/collision-test.js` per the 25 Oct
+   ART_REVIEW entry (drive the real movement resolver at every solid object from 4
+   directions at walk and run speed; assert no pass-through; report objects tested /
+   passed / failed with each failure named; wire into `npm run build`). Do not report
+   collision fixed again without that test's output in the commit message.
+0b. **Signboards: apply the 25 Oct FINAL rule** (Hindi bold and larger on top,
+   English not bold and smaller but comfortably legible, never below 55% cap height)
+   to every board in the village. CLAUDE.md section 7 carries it.
+1. **Tier 1, the drop-in pipeline.** Building asset slots for every significant
+   place, published target dimensions (w x h x d, front facing, door position) in
+   docs/asset-slots.md, and the PLACES anchor table. This is what lets her models
+   land without a rebuild, so it comes before everything else.
+2. **Tier 2, systems.** Finish collision; Tasks list and minimap; map click-to-travel;
+   wayfinding and the findability audit; missions and side jobs complete and
+   playable end to end; mobile, load time and performance; audio; save and menus.
+3. **Tier 3, generic props only.** CC0 furniture and objects that survive a building
+   swap. No bespoke interiors for places being redesigned.
+
+Everything still obeys CLAUDE.md section 5b: realism without hurting load time, no
+solid-colour geometry, source CC0 before building, report the number rather than
+silently thinning detail or blowing the budget.
 
 ## Never
 

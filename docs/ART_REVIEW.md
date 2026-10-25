@@ -840,3 +840,145 @@ verdicts yet; treat them as the working verdict until she overrules them.
 3. Halwai smoke, steam and flame rework.
 4. Signboard audit across all 42 places.
 5. Far-LOD background buildings: they are flat blocks in hero shots.
+
+---
+
+## 2026-10-25 (art director) - NEW DIRECTION. Re-prioritise everything.
+
+**What changed:**
+1. **Plants and organics are OFF your list.** The art director will build trees,
+   plants, crops and flowers herself. Leave what is in the game as it stands. Do not
+   spend another cycle on foliage, lotus, crops, grass or greenery. Do not remove
+   what is there.
+2. **She is drawing isometric and technical references in Gemini for the main
+   places** (gurukul, post office and others) which will REPLACE what is in the game.
+   So: any place you build or touch stays **generic and cheap**. Do not polish a
+   building that is going to be replaced.
+3. She has no time to give input. **Only work that needs no decision from her.**
+
+**The consequence, and this is the important part:** effort now goes into work that
+SURVIVES her replacements. A detailed wall on a building she is redesigning is wasted.
+A working mission, a collision fix, or a clean drop-in slot is not.
+
+### Tier 1 - the pipeline for her incoming models. Highest value, do this first.
+Her drawings become models that must drop into the game without a rebuild. Make that
+a one-file operation, the way `docs/asset-slots.md` already works for vehicles.
+- [ ] **Add a building slot for every significant place**, same mechanism as the
+      existing asset slots: drop `gurukul.glb` into `public/assets/models/` and it
+      replaces the placeholder, auto-scaled, grounded and positioned, with the
+      placeholder hidden but kept as fallback.
+- [ ] **Publish the target dimensions** for every building slot in
+      `docs/asset-slots.md`: width x height x depth in metres, plus which way the
+      front faces and where the door opening sits. She is drawing to these numbers,
+      so they must be correct and complete before she finishes drawing.
+- [ ] **Build the PLACES anchor table** recommended in the 25 Oct audit: one
+      `id -> x, z, rotation` source consumed by main.js, wayfinding, milestones,
+      minimap and keep-outs. Coordinates are currently baked across up to 10 files
+      per place (temple is in 10), which makes both moving and swapping expensive.
+- [ ] Keep each place's props, colliders, interaction points and NPC anchors attached
+      to its unit so a swapped model does not orphan them.
+
+### Tier 2 - systems that survive any redesign
+- [ ] Finish A0 collision: remaining unticked items, including build-time waypoint
+      validation and extending devCheckPenetration to NPCs and animals. Verify over a
+      multi-minute run.
+- [ ] A-2b Tasks list and corner minimap; map click-to-travel with the 44px hit areas.
+- [ ] A-2c wayfinding: direction signs, notice board, milestones, lane continuity,
+      and deliver the findability audit list.
+- [ ] Missions and side jobs: complete everything in docs/MISSIONS_PLAN.md, make all
+      8 missions and every side job playable start to finish without a dead end.
+- [ ] Mobile and performance: real phone check, load time, streaming, draw calls,
+      title screen before assets finish loading.
+- [ ] Audio pass: ambience per zone, interaction sounds, mix.
+- [ ] Save, continue, pause, accessibility, controls on touch.
+
+### Tier 3 - generic props only
+Furniture and objects survive a building being replaced, so these are still worth
+sourcing: CC0 models for stools, chairs, vessels, crates, sacks, baskets, tools, TV,
+radio, fan, scale, stove, tanki, antenna. Place them generically. **Do not hand-craft
+bespoke interiors for places being redesigned.**
+
+### Do NOT do
+- Any tree, plant, crop, flower, grass or greenery work.
+- Detailed exterior or interior polish on places the art director is redesigning.
+- Anything that needs her decision. Park it in NEEDS_YOU.md and move on.
+
+---
+
+## 2026-10-25 (art director) - COLLISION STILL BROKEN. STOP EVERYTHING ELSE.
+
+**docs/PLAYTEST_READY.md claims "Collision: you now stop at trees, walls, cows,
+buildings, the pond and the johad." That claim is FALSE.** In live play the art
+director walked through:
+- trees
+- the tractor
+- the khel maidan string boundary
+- some buildings
+
+**This is the self-grading failure again.** The fix was reported done without a test
+that could have detected it failing. Do not report collision fixed again until the
+automated test below passes and its output is in the commit message.
+
+### Nothing else gets worked on until this passes
+Not the slots, not the minimap, not props. Collision first, alone.
+
+### Build a real automated collision test: `tools/collision-test.js`
+A screenshot cannot prove this. Build a test that drives the real movement resolver
+and fails the build on any pass-through.
+
+1. **Enumerate every solid object in the world** from the live scene: every tree,
+   building, wall, vehicle, parked vehicle, animal, pole, lamp, hand pump, charpai,
+   cart, trough, tank, boundary rope or string, fence and prop.
+2. **For each one, drive the player at it** from at least 4 directions using the real
+   movement code, at normal walking speed and at running speed, over enough frames to
+   push well past its far side.
+3. **Assert the player never ends up inside or beyond it.** Any object the player
+   passes through is a FAILURE, listed by name and position in the test output.
+4. **Repeat the same test for every vehicle** (tractor, trolley, cart, bike) and for
+   every NPC and animal routine.
+5. **Report the count**: objects tested, objects passed, objects failed, each failure
+   named. Put that line in the commit message.
+6. Wire it into `npm run build` so a regression cannot ship silently.
+
+### Likely causes to check, do not assume
+- Objects with no collider at all. The string or rope boundary at the khel maidan
+  almost certainly has none, and thin or non-box shapes are the usual gap.
+- Colliders attached to a placeholder that was hidden when a real model loaded, or
+  lost when geometry was merged, instanced or zone-streamed in.
+- Streamed objects whose collider is registered only when the zone is built, leaving
+  a window where geometry is visible but not solid.
+- Fast movement tunnelling through thin colliders between frames.
+- The tractor being a mountable vehicle may bypass solid handling when not mounted.
+
+**Pass test:** `node tools/collision-test.js` reports zero failures across every
+solid object, every vehicle and every NPC, and the art director can walk the village
+without passing through anything.
+
+---
+
+## 2026-10-25 (art director) - SIGNBOARD LANGUAGE: FINAL DECISION, REVERSES 23 OCT.
+
+**This supersedes the 23 Oct signboard rule. It is the final word. Do not flip it
+back, and do not apply the 23 Oct version anywhere.**
+
+**Reasoning the art director gave:** the Devanagari is what makes the place read as
+UP. A Japanese game writes everything in Japanese first, with English second, and
+that is what tells you where you are. The Hindi carries the identity. But most
+players cannot read Hindi, so English must still be comfortably legible.
+
+**The rule, on every signboard in the world:**
+- **Line 1: Hindi (Devanagari), BOLD, the larger and dominant line.**
+- **Line 2: English, not bold, smaller than the Hindi, but still clearly legible at
+  normal walking distance. It must NOT be shrunk to a token.** A player who cannot
+  read Devanagari must still be able to read the English without walking closer.
+- Both lines in the same dark paint colour. No pale grey English on a pale board.
+- Suggested starting point, then judge it by eye in a screenshot: English cap height
+  around 60 to 70 percent of the Hindi, never below 55 percent.
+
+**Pass test:** a screenshot at normal walking distance where the Devanagari clearly
+dominates and the English below it is still read without effort. If the English
+cannot be read at that distance, it is too small and the board has failed.
+
+**Apply to every board in the village**, including the 20 recently added. UI text
+elsewhere in the game keeps the English-first rule in CLAUDE.md; this change is for
+painted world signage only.

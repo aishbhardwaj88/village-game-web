@@ -27,6 +27,11 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
+**25 OCT: PLANTS AND ORGANICS ARE OFF THIS LIST.** The art director builds trees,
+plants, crops and flowers herself. Leave what exists alone. Skip every plant item
+below. Main places are being redesigned by her, so keep anything you build generic
+and cheap. See docs/ART_REVIEW.md "NEW DIRECTION" (25 Oct) for the current order.
+
 **THE FEEDBACK GENERALISES.** The art director reviewed about 7 of the 42 places on
 23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
 in them. Do not limit a fix to the place that was screenshotted.
@@ -75,6 +80,38 @@ Do not extend this item. No travel animation, no route preview, no fog of war, n
 unlock rules, no arbitrary-point travel. If you think of one, write it in BACKLOG
 section B and move on.
 
+### A-2b0. Pond lotus, done properly with a real model (Aishwarya, 25 Oct 2026)
+Her words: the lotus looks like craft paperwork. It has been code-built and reworked
+5 times and still fails. **Do not write geometry code for it a sixth time.**
+
+- [ ] Search for a free CC0 lotus / water lily model: Poly Haven, Poly Pizza,
+      Sketchfab CC0 filter, Quaternius, Kenney, OpenGameArt, Free3D, BlenderKit free.
+      Name in the report what you searched and what you found.
+- [ ] If a good one exists: use it, scaled to the pond, within the asset budget.
+- [ ] **If none exists: delete the lotus flowers from the game.** Keep the pads if
+      they read well on their own. Write one line in `docs/NEEDS_YOU.md` saying no
+      free lotus model exists and asking whether she wants it hand-sculpted later.
+      An empty pond is better than paper flowers.
+- [ ] **The crops fail the same way and she named them on 25 Oct: brinjal, sugarcane,
+      mustard khet.** All code-built. Worse, **brinjal and okra are flat alpha cards**
+      (`src/field.js` line 464, "procedural vegetable-plant card"), which is the exact
+      2D-cutout look she already rejected on 24 Oct for the carrom-side plant. Card
+      plants were removed near the houses and left standing in the khet.
+      Each of these is sourced as a real CC0 model or removed: **brinjal, okra,
+      sugarcane, sarson/mustard, wheat**.
+- [ ] Mustard matters most: **sarson in flower is the signature image** and it must
+      read as yellow flowering fields from a distance. If no free model exists, say so
+      and propose the alternative rather than shipping cards.
+- [ ] The whole game currently has only **3 real plant models**
+      (`public/assets/plants3d/`: gazania, one shrub, one grass clump). Everything else
+      organic is code. List every code-built organic thing in `docs/handoff.md`:
+      flowers, crops, fruit, trees, animals, food on shop counters. Each one is
+      sourced, or removed.
+
+DONE-WHEN: the pond has either a real lotus model or no flowers at all, one proof
+shot at player eye height in the real game (not a test scene), the organic-asset list
+is in handoff.md, and build plus regression are green.
+
 ### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
 - [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [x] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
@@ -115,6 +152,17 @@ section B and move on.
 - [ ] Waypoints and NPC routes reference units rather than raw world coordinates where possible
 - [ ] AUDIT before tomorrow: write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)
   - PROGRESS 2026-10-23 (not ticked, audit done by reading main.js/freeRoam.js registrations): note written at top of docs/handoff.md. Architecture items above are not built.
+
+### A0a. COLLISION TEST (art director FAIL 2026-10-25) - nothing else until this passes
+- [ ] Build tools/collision-test.js: enumerate every solid object from the live scene (trees, buildings, walls, vehicles, animals, poles, lamps, hand pumps, charpais, carts, troughs, tanks, rope/string boundaries, fences, props)
+- [ ] Drive the player at each from 4 directions at walk and run speed using the real movement resolver; assert no pass-through; name every failure with its position
+- [ ] Repeat for every vehicle and every NPC/animal routine
+- [ ] Output objects tested / passed / failed; put that line in the commit message; wire into npm run build
+- [ ] Known failures to fix: trees, the tractor, the khel maidan string boundary, some buildings
+- [ ] Check likely causes: missing colliders on thin/rope shapes, colliders lost on merge/instance/zone-stream, colliders registered late during streaming, fast-movement tunnelling, mountable vehicles bypassing solid handling when unmounted
+
+### A0b. Signboards, 25 Oct FINAL rule (reverses 23 Oct)
+- [ ] Every board in the village: Hindi bold and larger on top, English not bold and smaller below but comfortably legible at walking distance, never below 55% of the Hindi cap height, both lines the same dark paint colour
 
 ### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
 - [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check
