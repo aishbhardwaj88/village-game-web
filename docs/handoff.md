@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n19, A-2b minimap research):** NO game change (written honestly). One web search on minimap off-window marker conventions; thin but consistent with the shipped minimap.js (edge clamp, metre label). Shot docs/shots/minimap-2026-10-25/minimap_far_objective.png renders fine, 164 calls / 520k tris in that view. Boxes stay unticked. Remaining work is all art-director calls (triangle cuts, draw-call ceiling) or large builds (road to the east cluster, lamp posters need draw calls the hero zone lacks).
+NEXT: A-2c routes legibility or whatever the art director rules on budget.
+
+---
+
 **2026-10-25 (cycle 39z99n18, A-2b Tasks list):** Game change: later story missions in the Tasks list are now tappable "Skip ahead" rows. Tapping lands the quest on the hub step just before that mission (Maa/Pitaji "talk to" state), resets sack/money/mango counters and sister-following, clears the pin (main.js onSetMission, freeRoam.js MISSIONS hub). Monkey mission has no hub (auto-starts from the kurta) so stays locked; blocked mid-chase. Build ALL PASSED. No proof shot (menu logic; not shot), A-2b boxes stay unticked. Backward replay not built.
 NEXT: minimap shot for research box; triangle cuts remain the art director's call.
 
