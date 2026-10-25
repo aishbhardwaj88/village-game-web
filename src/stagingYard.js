@@ -4,6 +4,7 @@ import { getGLTFLoader } from './loaders.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { ANCHORS, pt } from './anchors.js';
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
+import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
 
 /**
  * The STAGING YARD (art director, 25 Oct 2026): she is going to rearrange the map herself, so every newly built place
@@ -40,26 +41,45 @@ function sharedSetMaterial(set, repeat, src) {
   return m;
 }
 
+function swapShared(o) {
+  const ud = o.material && o.material.userData;
+  if (ud && ud.dopahar_set) {
+    const keepName = o.material.name;
+    o.material = sharedSetMaterial(ud.dopahar_set, ud.dopahar_repeat || 1, o.material);
+    o.material.name = keepName;
+  }
+}
+
 function createStagedPlace(def) {
   const a = ANCHORS[def.id];
   const group = new THREE.Group();
   group.name = def.zone;
   group.position.set(a.x, 0, a.z);
   if (def.boards.length) group.add(placeBoardsMesh(def.boards, def.zone + '_boards'));
+  if (def.custom === 'houseKit') {
+    // the 8 house types, instanced: row 1 = each type once (wall to wall), row 2 across a 12 m lane facing back with different widths + tints
+    loadKitModels().then((models) => {
+      for (const m of Object.values(models)) m.traverse((o) => { if (o.isMesh) swapShared(o); });
+      const types = Object.keys(KIT_TYPES);
+      const row = (z, ry, order, widths, tints) => {
+        let total = 0;
+        const items = order.map((t, i) => { const w = KIT_TYPES[t].hw * 2 * widths[i]; total += w + 0.5; return { t, w, i }; });
+        let x = -total / 2;
+        return items.map(({ t, w, i }) => { x += w / 2; const p = { type: t, x: ry ? -x : x, z, ry, sx: widths[i], tint: tints[i] }; x += w / 2 + 0.5; return p; });
+      };
+      const P = [0xf4c7c3, 0xf2c9a0, 0xc7e6d2, 0xf1e6b8, 0xf6e7a0, 0xc4d5ea, 0xf4c7c3, 0xf2c9a0];
+      const placements = [
+        ...row(-12, 0, types, [1, 1, 1, 1, 1, 1, 1, 1], P),
+        ...row(12, Math.PI, ['c', 'd', 'b', 'e', 'a', 'f', 'd'], [1.1, 0.92, 1.12, 0.9, 1.15, 0.95, 1.05], [P[3], P[2], P[0], P[5], P[1], P[4], P[6]]),
+      ];
+      placeKitHouses(group, models, placements);
+    }).catch((err) => console.warn('house kit did not load', err));
+    return group;
+  }
   getGLTFLoader().loadAsync(`assets/models/${def.model}.glb`).then((gltf) => {
     const m = gltf.scene;
     m.name = def.zone + '_model';
-    m.traverse((o) => {
-      if (!o.isMesh) return;
-      o.castShadow = true;
-      o.receiveShadow = true;
-      const ud = o.material && o.material.userData;
-      if (ud && ud.dopahar_set) {
-        const keepName = o.material.name;
-        o.material = sharedSetMaterial(ud.dopahar_set, ud.dopahar_repeat || 1, o.material);
-        o.material.name = keepName;
-      }
-    });
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; swapShared(o); } });
     group.add(m);
   }).catch((err) => console.warn(`${def.model}.glb did not load`, err));
   return group;

@@ -34,6 +34,7 @@ export const STAGED_PLACES = [
   { id: 'yard_khalihan', zone: 'khalihan_v2', model: 'khalihan_v2', en: 'Yard 18: Khalihan', hi: 'यार्ड 18: खलिहान', kind: 'field', radius: 20, build: 50, front: 15, boards: [] },
   { id: 'yard_dharam_kanta', zone: 'dharam_kanta_v2', model: 'dharam_kanta_v2', en: 'Yard 19: Dharam kanta', hi: 'यार्ड 19: धर्म कांटा', kind: 'bazaar', radius: 16, build: 45, front: 5, boards: [] },
   { id: 'yard_akhada', zone: 'akhada_v2', model: 'akhada_v2', en: 'Yard 20: Akhada', hi: 'यार्ड 20: अखाड़ा', kind: 'field', radius: 16, build: 45, front: 10, boards: [] },
+  { id: 'yard_houses', zone: 'houses_kit_v2', custom: 'houseKit', model: '', en: 'Yard 21: Village houses kit (A-H)', hi: 'यार्ड 21: गाँव के घर (A-H)', kind: 'house', radius: 40, build: 80, front: 20, boards: [] },
 ];
 
 const STEP = 80, X0 = 320, Z0 = -160, COLS = 6;
