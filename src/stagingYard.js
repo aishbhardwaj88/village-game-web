@@ -37,8 +37,52 @@ function sharedSetMaterial(set, repeat, src) {
   const mk = (kind) => { const t = setTexture(set, kind).clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); t.anisotropy = 8; return t; };
   m = new THREE.MeshStandardMaterial({ map: mk('color'), normalMap: mk('normal'), roughnessMap: mk('roughness'), roughness: 1, metalness: set === 'metal' ? 0.6 : 0, vertexColors: true });
   m.name = src.name;
+  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch') addWeathering(m, set);
   sharedMats.set(key, m);
   return m;
+}
+
+/**
+ * Flat paint reads as CG: break it up in WORLD space (so every wall of every place differs from its neighbour, no extra textures,
+ * no extra draw calls). Low-frequency mottling (about +-14% value, a little hue drift), a damp/dust band over the bottom 0.7 m
+ * and faint rain-streak columns under the eaves. Brick gets the mottling only so single bricks keep reading.
+ */
+function addWeathering(m, set) {
+  const mottle = set === 'brick' ? 0.10 : set === 'thatch' ? 0.12 : 0.16;
+  const grime = set === 'brick' ? 0.15 : 0.32;
+  const streak = set === 'plaster' ? 0.10 : 0.0;
+  const boost = set === 'plaster' ? 1.4 : set === 'thatch' ? 1.0 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
+  m.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWxyz;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec4 wp_ = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          wp_ = instanceMatrix * wp_;
+        #endif
+        vWxyz = (modelMatrix * wp_).xyz;`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec3 vWxyz;
+        float wh_(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+        float wn_(vec3 p) {
+          vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(mix(wh_(i), wh_(i + vec3(1,0,0)), f.x), mix(wh_(i + vec3(0,1,0)), wh_(i + vec3(1,1,0)), f.x), f.y),
+                     mix(mix(wh_(i + vec3(0,0,1)), wh_(i + vec3(1,0,1)), f.x), mix(wh_(i + vec3(0,1,1)), wh_(i + vec3(1,1,1)), f.x), f.y), f.z);
+        }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        {
+          diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.6, 3.5, 1.6)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
+          float n1 = wn_(vWxyz * 0.55) * 0.6 + wn_(vWxyz * 2.1) * 0.4;
+          diffuseColor.rgb *= 1.0 + (n1 - 0.5) * ${(mottle * 4).toFixed(3)};
+          diffuseColor.r *= 1.0 + (wn_(vWxyz * 0.3 + 7.0) - 0.5) * 0.06;
+          float low = 1.0 - smoothstep(0.0, 0.7, vWxyz.y);
+          diffuseColor.rgb *= 1.0 - low * ${grime.toFixed(3)} * (0.5 + 0.5 * wn_(vWxyz * 1.7 + 3.0));
+          float col = wn_(vec3(vWxyz.x * 6.0 + vWxyz.z * 6.0, 0.0, 1.0)) * smoothstep(0.0, 2.5, vWxyz.y);
+          diffuseColor.rgb *= 1.0 - ${streak.toFixed(3)} * col * col * wn_(vec3(vWxyz.x + vWxyz.z, vWxyz.y * 0.4, 5.0));
+        }`);
+  };
+  m.customProgramCacheKey = () => 'weather_' + set;
 }
 
 function swapShared(o) {
