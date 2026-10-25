@@ -237,6 +237,20 @@ def atta_chakki():
     for i in range(10):
         a_ = i / 10 * math.tau
         kit.add('metal', cyl('bolt', sx + 0.43 * math.cos(a_), sz + 0.43 * math.sin(a_), 0.9, 0.95, 0.025, 0.025, 6), 0x2A2A28)
+    # cast-iron housing detail so the drum is not one painted can: base flange, split-line seam, dark worn foot band,
+    # six triangular gusset ribs, a rating plate and a hand-wheel for the stone-gap adjuster
+    kit.add('metal', cyl('drum_flange', sx, sz, 0.2, 0.27, 0.52, 0.52, 40), 0x3E5C49)
+    kit.add('metal', cyl('drum_foot', sx, sz, 0.27, 0.36, 0.475, 0.475, 40), 0x3B3A34)
+    kit.add('metal', cyl('drum_seam', sx, sz, 0.5, 0.55, 0.48, 0.48, 40), 0x35503F)
+    for i in range(6):
+        a_ = i / 6 * math.tau + 0.3
+        ca, sa = math.cos(a_), math.sin(a_)
+        kit.add('metal', limb('gusset', (sx + 0.5 * ca, sz + 0.5 * sa, 0.27), (sx + 0.47 * ca, sz + 0.47 * sa, 0.8), 0.045, 0.02), 0x3E5C49)
+    kit.add('metal', wb('plate', sx - 0.1, sx + 0.1, sz + 0.455, sz + 0.485, 0.62, 0.74, 0.004), 0xC9B27A)
+    kit.add('metal', ring('handwheel', sx - 0.46, sz + 0.1, 0.62, 0.11, 0.015, axis='x'), 0x2A2A28)
+    kit.add('metal', limb('hw_spoke_a', (sx - 0.46, sz + 0.1 - 0.11, 0.62), (sx - 0.46, sz + 0.1 + 0.11, 0.62), 0.01, 0.01), 0x2A2A28)
+    kit.add('metal', limb('hw_spoke_b', (sx - 0.46, sz + 0.1, 0.51), (sx - 0.46, sz + 0.1, 0.73), 0.01, 0.01), 0x2A2A28)
+    kit.add('metal', cyl('hw_hub', sx - 0.5, sz + 0.1, 0.6, 0.64, 0.03, 0.03, 12), 0x2A2A28)
     kit.add('metal', cyl('hopper_neck', sx, sz, 0.95, 1.12, 0.14, 0.14, 24), BLUE)
     kit.add('metal', cyl('hopper_cone', sx, sz, 1.12, 1.6, 0.14, 0.5, 32), BLUE)
     kit.add('metal', cyl('hopper_rim', sx, sz, 1.6, 1.65, 0.52, 0.52, 32, cap=False), 0x2F5278)
