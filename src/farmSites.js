@@ -1680,15 +1680,18 @@ export function createGaushala(position) {
       [0, -HZ, 2 * HX, T],              // back wall
       [-HX, 0, T, 2 * HZ],              // west wall
       [HX, 0, T, 2 * HZ],               // east wall
-      [-12, HZ, 12, T],                 // front wall, left of the gate
-      [12, HZ, 12, T],                  // front wall, right of the gate
-      [-3.1, HZ, 0.6, 0.6],             // gate pier, left
-      [3.1, HZ, 0.6, 0.6],              // gate pier, right
-      [12.2, 9.2, 7.2, 6.8],            // office block
-      [-14.4, -2.9, 7.3, 24.2],         // cattle shed + feed trough
-      [10.5, -10.4, 15.3, 7.2],         // hay store
-      [1.6, 2.2, 2.0, 8.4],             // water trough
-      [-3.4, 0.4, 4.6, 4.6],            // tree planter ring
+      [-10.3, HZ, 15.4, T],             // front wall + railing, left of the gate
+      [10.3, HZ, 15.4, T],              // front wall + railing, right of the gate
+      [-2.3, HZ, 0.6, 0.6],             // gate pillar, left (gate stands open, 4 m clear)
+      [2.3, HZ, 0.6, 0.6],              // gate pillar, right
+      [16, 5, 3.2, 4.2],                // office 3 x 4 m (LAYOUT: 4 x 3)
+      [-15.3, -2.8, 4.8, 21.7],         // ONE long cattle shed, 4 m deep, + feed trough
+      [14.65, -11.15, 6.2, 5.2],        // straw store 6 x 5 m
+      [1.1, 5.25, 1.3, 5.6],            // water trough
+      [1.8, -2.0, 4.7, 4.7],            // round neem platform
+      [-10.8, 10.9, 4.8, 3.4],          // compost pit
+      [-15.6, 10.9, 3.3, 3.3],          // biogas dome
+      [14.6, -5.0, 2.2, 1.2],           // chaff cutter
     ],
     boards: [{ id: 'gaushala', x: 0, y: 3.55, z: HZ, w: 6.4 }],
   });
