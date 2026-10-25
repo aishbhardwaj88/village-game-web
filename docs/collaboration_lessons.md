@@ -141,3 +141,11 @@ bilingual signboard). Rule: before writing ANY place prompt, read
 - 25 Oct, her rule: continue in the SAME Gemini chat; start a new chat only when truly
   needed. Group views in natural pairs (front+back, left+right, top+isometric or
   front+isometric), not one credit per view. Plan the fewest images that still work.
+- 25 Oct: jumped to the next place while the classroom back wall was still unshown.
+  Rule: a place is complete only when every wall/face (inside rooms too) has a view;
+  then ASK her "Are we ready to start the next place?" before giving its prompt.
+- 25 Oct: attaching an earlier image to "fix layout" makes Gemini copy the old layout.
+  For layout changes: no attachment, describe positions by zone (left/middle/right,
+  front/back). Road signs face oncoming traffic (perpendicular to the road).
+- 25 Oct: health sub-centre dropped after 3 tries; it kept reading as a house. Small
+  single-storey public buildings need a strong signal beyond props (scale, signage). Parked.

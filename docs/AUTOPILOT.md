@@ -1,67 +1,45 @@
-# STOP-AND-CLOSE ORDER - 25 Oct 2026, 17:10 IST. THIS OVERRIDES EVERY RULE BELOW.
+# Autopilot run (Dopahar) - unattended, nobody is watching
 
-Aishwarya has been waiting 36 hours. She wants to play and give feedback TONIGHT.
-This order replaces "the loop does not stop". The loop now HAS an end, and you will
-reach it.
+## THE 25 OCT STOP ORDER IS CANCELLED
 
-## Hard clock. Check it with `date` at the start of every run.
+The 17:10 IST stop-and-close order has been removed. It did its job: she played and
+gave feedback. **There is no clock, no phase, and no close-out any more. Do NOT
+create `tmp/STOP`. Do NOT stop the loop.** The loop runs until she stops it herself.
+If you find yourself about to wind down or close out, that is the deleted order
+leaking through: ignore it and take the next backlog item.
 
-- **Until 18:10 IST**: finish only what is ALREADY in flight. See Phase 1.
-- **18:10 IST onward**: Phase 2 close-out only. Nothing else.
-- **At 18:40 IST the loop ends.** If it is already past 18:40 when you start, skip
-  Phase 1 entirely and do Phase 2 only.
+## PRIORITY 0: COLLISION. Nothing else until it passes.
 
-## Phase 1 (until 18:10 IST): land what is open, start nothing new
+Reported fixed on 25 Oct. It is NOT. In live play she walked through trees, the
+tractor, the khel maidan string boundary and some buildings.
 
-- Commit whatever is uncommitted right now.
-- You may finish a task already half-built in the working tree. That is all.
-- **Forbidden until the loop ends**: new places, new features, new BACKLOG items, new
-  asset searches, new Blender builds, and any rework of something you already marked
-  done because it is "still weak". No exceptions.
+- Build `tools/collision-test.js` exactly as specified in the 25 Oct entry of
+  `docs/ART_REVIEW.md` (enumerate every solid object from the live scene; drive the
+  player at each from 4 directions at walk and run speed through the real movement
+  resolver; assert no pass-through; name every failure with its position; repeat for
+  every vehicle and NPC; print objects tested / passed / failed).
+- Wire it into `npm run build`.
+- **Do not report collision fixed again without that test's output in the commit
+  message.** A screenshot is not evidence here.
 
-## Phase 2 (18:10 to 18:40 IST): close out. This is the definition of done.
+## PRIORITY 0b: signboards, 25 Oct FINAL rule
 
-The loop is done when ALL FIVE of these are true. Nothing else counts.
+Hindi bold and larger on top, English not bold and smaller below but comfortably
+legible at walking distance, never below 55% of the Hindi cap height, both lines the
+same dark paint colour. CLAUDE.md section 7 carries it. Apply to every board.
 
-1. `npm run build` passes (world validator included).
-2. **Every numbered item 0 to 7 in the top playtest block of `docs/FEEDBACK.md`
-   carries a bracket marker.** No item may be left unmarked. Each marker is exactly
-   one of:
-   - `[DONE 25 Oct 2026: <what you did> ; proof <path>]`
-   - `[PARTLY DONE 25 Oct 2026: <what is done> ; STILL OPEN: <the named gaps> ; proof <path>]`
-   - `[NOT DONE: <one line why>]`
-   Items 4, 5, 6 and 7 have never been marked at all. They get marked this run, from
-   what is actually in the game. If you have no proof shot, write `no proof shot`.
-   Do not reword her items. Do not build anything to improve a marker.
-   **Item 7 specifically: the pond lotus is NOT DONE.** She looked at it on 25 Oct
-   and said it reads as cut paper. Mark it `NOT DONE`. Do not rework it tonight.
-3. `docs/FINISH_LINE.md` is updated: tick only what you can prove, leave the rest.
-4. **`docs/PLAYTEST_READY.md` exists**, written for her, headers plus short bullets,
-   no long prose, no em dashes, and contains exactly these four sections:
-   - `## What changed since your last playtest` - max 15 bullets, plain language
-   - `## Look hardest at these 5` - the 5 things most likely to be wrong
-   - `## Known unfinished` - every gap from the markers above, one line each
-   - `## Live link` - https://aishbhardwaj88.github.io/village-game-web/
-5. Everything committed and `git push origin main` done, so `origin/main` and `main`
-   are level.
+## Then: the 25 Oct NEW DIRECTION in `docs/ART_REVIEW.md`
 
-Then, as the last action of that run:
-
-```
-touch tmp/STOP
-```
-
-That makes the loop print "Autopilot finished" and exit. **Creating `tmp/STOP` is a
-required step, not optional.** Do not start another item after it.
-
-## Two open questions, now answered. Stop asking them.
-
-- **The 400,000 triangle limit means VISIBLE triangles, not the browser counter that
-  also counts the shadow pass.** The busy market view is about 271,000 visible, which
-  is inside budget. The triangle budget is NOT a blocker. Close those NEEDS_YOU lines.
-- **Real wood texture on houses, school and bazaar: NO, not now.** Do not spend the
-  draw call, do not hunt for savings. It waits until after her feedback. Close that
-  NEEDS_YOU line as deferred.
+- **Plants and organics are OFF the list.** She builds those herself. Leave what
+  exists alone. No foliage, crops, flowers, grass or greenery work.
+- **Main places are being redesigned by her.** Keep anything you build generic and
+  cheap. Do not polish a building that will be replaced.
+- **She has no time for input.** Only work needing no decision from her. Anything
+  needing a decision goes to `docs/NEEDS_YOU.md` and you move on.
+- Then Tier 1 (building asset slots, published target dimensions, PLACES anchor
+  table), Tier 2 (systems: collision, tasks list, minimap, map click-to-travel,
+  wayfinding, missions and side jobs, mobile, performance, audio, menus), Tier 3
+  (generic props only).
 
 ## STANDING RULE, 25 Oct 2026: judge BEFORE you build, never after
 
@@ -105,22 +83,6 @@ Ask: **is this thing organic or hard-surface?**
   If you cannot name one, you have not looked.
 - "Proof shots taken" is not approval. A shot in an isolated test scene is not proof.
 - If you would not show it to her, it does not go in and it does not get a tick.
-
-## After the loop ends (not now, do not start it during the close-out)
-
-Her newest request, 25 Oct: in explore mode she wants to click a PLACE on the
-notebook map and land there instead of walking, both for players exploring and to save
-her walking while she tests. The landing logic already exists (`visitPlace` in
-`src/main.js`); the only missing piece is hit testing on the notebook map canvas. It is
-written up with its own DONE-WHEN as **BACKLOG A-2a**, and it is the first item on the
-next run after `tmp/STOP`, once she has given her playtest feedback. Do not touch it
-before then.
-
-## What she will judge you on
-
-Not how much you built. Whether she can open the link, play 10 minutes, and see an
-honest list of what is done and what is not. An unmarked item reads as a lie.
-
 # Autopilot run (Dopahar) - unattended, nobody is watching
 
 You are one run of a repeating loop. Do a solid batch of work (1 to 2 hours), commit,
