@@ -154,7 +154,7 @@ flowers - and it is still not there.
 - [DONE 25 Oct 2026, verified: far-LOD rows carry the shared PBR plaster set (colour+normal+roughness), window/door surrounds, grilles, sills, bands, parapets; proof docs/shots/farlod-2026-10-25/far_b.png] Far-LOD background buildings are flat untextured blocks visible in hero shots. Give
   the far LOD painted openings and a plaster tone.
 
-### 7. [PARTLY DONE 25 Oct 2026: highway patched and worn; pond and johad have depth tint, wet-mud ring, rebuilt lotus with pads, johad glare tamed, reeds rebuilt; road ends at kanta and mandi fray into dirt ruts ; STILL OPEN: canal water untouched, lotus pink a little saturated, hauz water flat, water not reviewed by her ; proof docs/shots/water-2026-10-25/johad.png and docs/shots/lotus-2026-10-25/a.png]
+### 7. [PARTLY DONE 25 Oct 2026: highway patched and worn; pond and johad have depth tint, wet-mud ring, johad glare tamed, reeds rebuilt; road ends at kanta and mandi fray into dirt ruts ; STILL OPEN: POND LOTUS IS NOT DONE (she saw it 25 Oct, reads as cut paper; rebuilt 5 times in code, removal or CC0 model needed, no third rework); canal water untouched, hauz water flat, water not reviewed by her ; proof docs/shots/water-2026-10-25/johad.png and docs/shots/lotus-2026-10-25/a.png]
 - **Water texture throughout the game needs improving.** Pond, johad, canal, tubewell
   hauz. Real water: depth tint, movement, reflection, a soft shore line.
 - **The pond lotus is pink cones.** Find or build a real lotus with pads and flowers.

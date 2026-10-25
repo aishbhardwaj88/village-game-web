@@ -12,13 +12,13 @@
 - Post office has a postmaster, notices and a red post box
 - Petrol pump, dharam kanta and school flagpole with games are built
 - Atta chakki mill drum rebuilt with ribs, plate and hand-wheel
-- Water: johad glare tamed, reeds rebuilt, pond lotus rebuilt with pads, wet-mud ring
+- Water: johad glare tamed, reeds rebuilt, wet-mud ring
 - Highway patched and worn, no crisp kerb; far buildings now have windows and plaster
 - Tasks list: finished story missions can be replayed
 
 ## Look hardest at these 5
 - Atta chakki: walls are still flat colour and the machine may still read as odd shapes
-- Pond lotus and water: pink may be too strong, canal and tubewell tank water barely changed
+- Pond lotus: NOT DONE, reads as cut paper; canal and tubewell tank water barely changed
 - Bazaar shop insides: small boxy props behind counters (tailor, sabzi, puncture, barber)
 - Houses with wood: cottage wood and thatch only fixed on the kachcha homestead
 - Lanes: walking by lane is possible to 41 places, but the school wall and temple lane still dead-end
@@ -32,7 +32,7 @@
 - Item 5: cricket outfield grass is uniform olive
 - Item 6: abadi and compound cottages not checked for wood quality
 - Item 6: real wood on houses, school and bazaar deferred until after your feedback
-- Item 7: canal water untouched, lotus pink slightly strong, tubewell tank water flat
+- Item 7: pond lotus NOT DONE (reads as cut paper); canal water untouched, tubewell tank water flat
 - Item 2: tulsi and banana have no real model so are not drawn
 - Item 1: gurudwara is a plain box; hero lane crosses the school compound wall
 - Characters are still capsules (parked until 29 Oct)
