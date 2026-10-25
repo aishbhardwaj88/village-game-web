@@ -1,3 +1,6 @@
+**2026-10-26 (A0a causes audit, no game change):** Re-ran the full build: collision-test 4834 static solids + 6 vehicle boxes + 3 vehicles + 66 NPC legs tested, 0 failed (4917 colliders, 152 zones forced). Mapped the A0a 'likely causes' item to what the test already covers (BACKLOG progress line); one cause is untested: late-registering colliders at a live zone edge. No look or game change this cycle.
+NEXT: test late zone-edge collider registration, then on-foot findability walk (A-2c).
+
 **2026-10-26 (Tasks list proof, no look change):** Game change: none; the Tasks list switching (skip-ahead via hub steps, replay, locked side jobs refused, pin/unpin of the waypoint) was already built but never tested through the UI. New tools/tasks-switch-test.mjs taps real rows: 19 rows, skip to missions 2,3,4,5,7,8 each updates step + objective and resets money/sacks/mangoes, mission 1 replays, locked side job gives a plain note, zero console errors. Proof docs/shots/tasks-switch-2026-10-26/ (m8_after_switch.png, 9_locked_side_job_note.png, both looked at). Backlog A-2b Tasks + Guard items ticked. Not tested: side-job rows in free roam (visit path shared with map click). Mission 6 has no hub so it is entered by playing 5.
 NEXT: on-foot findability walk (A-2c), audio polish.
 
