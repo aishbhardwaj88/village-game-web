@@ -1,3 +1,8 @@
+**2026-10-25 (cycle 39z99n11, playtest block item 1, banta/chaat check):** NO game change (written honestly). The "Banta shop and Chaat thela are not built" note in FEEDBACK item 1 is stale: createBantaShop (-63,22.5) and createChaatThela (-63,50.5) are registered in src/main.js and render (soda bottles on the counter, chaat cart with steam). Proof docs/shots/banta-chaat-2026-10-25/{banta,chaat}.png (normal mode, player capsule in frame so not tickable). Banta view reads 155 calls / 546k tris in this camera (shadow pass counted, validator metric is lower). Everything left in the playtest block is still an art-director call (triangle cuts 513k vs 400k, draw-call ceiling, plain crate needs Blender).
+NEXT: art-director call on triangles/draw calls, then cottage wood on house_compound; otherwise BACKLOG section A.
+
+---
+
 **2026-10-25 (cycle 39z99n10, playtest block item 3, halwai fire mouth):** Game change: halwaiFire.js gained 7 flame particles per bhatti flickering out of the brick fire mouth (same Points draw call, no new calls). Proof docs/shots/halwai-fire-2026-10-25/mouth.png (faint glowing flecks at the arch; modest, headless). Build ALL PASSED. Not ticked (item 3 stays PARTLY DONE; flame is subtle).
 NEXT: Banta shop / chaat thela not built; triangle cuts and cottage wood remain art-director calls.
 
