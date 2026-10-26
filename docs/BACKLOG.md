@@ -174,12 +174,12 @@ is in handoff.md, and build plus regression are green.
 ### A0-WEATHER. Materials too new (art director FAIL 2026-10-26) - before any more places
 - [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
 - [ ] Plaster: stains, patchiness, dirt at the base, sun fading near the top; it is factory clean
-- [ ] Rebuild the bus adda maroon stripe as a proper faded dado band ~0.8 m tall
-- [ ] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey
+- [x] Rebuild the bus adda maroon stripe as a proper faded dado band ~0.8 m tall (proof docs/shots/places-2026-10-26/bus3/front.png)
+- [x] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey (proof docs/shots/places-2026-10-26/bus3/front.png)
 - [ ] Wall posters: real faded picture textures, varied and overlapping, no lettering; currently flat colour rectangles
-- [ ] Bus adda ground: packed earth with a broken brick paving strip along the road edge, not a concrete slab
+- [x] Bus adda ground: packed earth with a broken brick paving strip along the road edge, not a concrete slab (proof docs/shots/places-2026-10-26/bus3/iso.png)
 - [ ] STANDING RULE: weathering IS the look. Never ship a surface at full saturation. Base dirt, edge stains and colour variation before any place is called done. A clean new-looking build fails even with correct geometry
-- [ ] Re-check bus adda against LAYOUT.md item by item: tapri left, peepal+chabutra+charpai far right-back, pyaau far right, green double-sided board perpendicular at front-left, milestone front-right
+- [x] Re-check bus adda against LAYOUT.md item by item: tapri left, peepal+chabutra+charpai far right-back, pyaau far right, green double-sided board perpendicular at front-left, milestone front-right (proof docs/shots/places-2026-10-26/bus3/front.png, iso.png)
 
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
