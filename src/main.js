@@ -1455,7 +1455,7 @@ async function main() {
       });
     }
     // Solar LEDs along the abadi galis (east, west, south), in chunks of at most 36 m so each streams only when the player is near that stretch.
-    for (const [id, a, b, width] of [['e1', { x: -37, z: 76 }, { x: 36, z: 76 }, 4], ['e2', { x: -6, z: 76 }, { x: -6, z: 130 }, 3.5], ['w1', { x: -84, z: 21 }, { x: -84, z: 104 }, 4], ['s1', { x: -100, z: 140 }, { x: -38, z: 140 }, 4]]) {
+    for (const [id, a, b, width] of [['e1', { x: -37, z: 76 }, { x: 36, z: 76 }, 4], ['e2', { x: -6, z: 76 }, { x: -6, z: 130 }, 3.5], ['w1', { x: -84, z: 21 }, { x: -84, z: 104 }, 4], ['s1', { x: -100, z: 140 }, { x: -38, z: 140 }, 4], ['h1', { x: -45, z: 50 }, { x: -45, z: 93 }, 9]]) {
       const n = Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 36);
       for (let i = 0; i < n; i++) {
         const from = { x: a.x + (b.x - a.x) * (i / n), z: a.z + (b.z - a.z) * (i / n) };
