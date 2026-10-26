@@ -39,7 +39,7 @@ function sharedSetMaterial(set, repeat, src) {
   const mk = (kind) => { const t = setTexture(set, kind).clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); t.anisotropy = 8; return t; };
   m = new THREE.MeshStandardMaterial({ map: mk('color'), normalMap: mk('normal'), roughnessMap: mk('roughness'), roughness: 1, metalness: set === 'metal' ? 0.6 : 0, vertexColors: true });
   m.name = src.name;
-  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin') addWeathering(m, set);
+  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin' || set === 'terracotta') addWeathering(m, set);
   sharedMats.set(key, m);
   return m;
 }
@@ -74,7 +74,7 @@ function addWeathering(m, set) {
         }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
-          diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.6, 3.5, 1.6)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
+          diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.0, 3.4, 2.5)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
           ${set === 'brick' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.8);   // her brick is paler and patchier than the scan tint' : ''}
           ${set === 'brick' ? `
           {   // per-brick variation: the scan is one even red. 14 courses and ~4.8 bricks per course per tile; cells are only roughly brick-aligned (lengths vary), which reads as patchy fired clay
@@ -107,6 +107,7 @@ function addWeathering(m, set) {
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.84, 0.74), 0.55 * pe_ * (1.0 - 0.8 * flat_));
           float hi_ = smoothstep(2.2, 4.0, vWxyz.y);   // sun-bleached near the top
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * 1.08, 0.25 * hi_);` : ''}
+          ${set === 'terracotta' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(1.1, 0.95, 0.82), diffuseColor.rgb, 0.45);   // her fired clay is muted and dusty, the scan is a saturated orange' : ''}
           ${set === 'tin' ? `
           diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.333))), diffuseColor.rgb, 0.5);   // pale weathered whitish-grey
           float ru_ = smoothstep(0.6, 0.85, wn_(vWxyz * vec3(1.3, 1.3, 1.3) + 5.0));
