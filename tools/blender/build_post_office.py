@@ -113,13 +113,13 @@ sack(kit, -3.3, Z1 + 1.2, 0.3, 0.3, 0xA88A58, w=0.55, d=0.4, hh=0.6)
 sack(kit, -2.7, Z1 + 1.35, 0.3, -0.3, 0xB89A64, w=0.55, d=0.4, hh=0.55)
 for i in range(2):
     add('paint', wb('mail_tag', -3.3 + i * 0.6, -3.2 + i * 0.6, Z1 + 1.4, Z1 + 1.45, 0.65, 0.75, 0.0), 0xB3231C)
-bicycle(kit, -1.4, Z1 + 3.0, 0x2E5E8B)
+bicycle(kit, -1.4, Z1 + 3.0, 0x1E1F22)
 # red cylindrical pillar post box on a cement plinth, front-right corner
 bx, bz = 5.0, Z1 + 1.6
 add('trim', wb('box_plinth', bx - 0.4, bx + 0.4, bz - 0.4, bz + 0.4, 0, 0.2, 0.01), 0xA9A69F)
-add('metal', lathe('post_box', bx, bz, [(0.0, 0.2), (0.28, 0.2), (0.3, 0.26), (0.3, 1.3), (0.33, 1.34), (0.33, 1.42), (0.2, 1.52), (0.0, 1.56)], seg=18), 0xB3201C)
+add('metal', lathe('post_box', bx, bz, [(0.0, 0.2), (0.28, 0.2), (0.3, 0.26), (0.3, 1.3), (0.33, 1.34), (0.33, 1.42), (0.2, 1.52), (0.0, 1.56)], seg=18), 0xD2301F)
 add('metal', wb('box_slot', bx - 0.12, bx + 0.12, bz + 0.27, bz + 0.34, 1.0, 1.07, 0.0), 0x1B1B1D)
-add('metal', wb('box_door', bx - 0.14, bx + 0.14, bz + 0.29, bz + 0.31, 0.35, 0.85, 0.0), 0x9A1A16)
+add('metal', wb('box_door', bx - 0.14, bx + 0.14, bz + 0.29, bz + 0.31, 0.35, 0.85, 0.0), 0xBE2A1E)
 # side windows: barred with dark open shutters; back door + window
 for sx, sg in ((X0, -1), (X1, 1)):
     for k in range(1, 9):
