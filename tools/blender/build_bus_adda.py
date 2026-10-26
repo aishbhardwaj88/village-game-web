@@ -140,8 +140,8 @@ def pot_at(x, z, h0, sc):
 
 
 def build_ground():
-    add('paint', wb('patch', -10, 10, -5, 5, -0.08, 0.04, 0.0), 0xB69568)
-    add('paint', wb('patch_worn', -9, 9, 0.5, 4.0, 0.04, 0.046, 0.0), 0xA38358)      # packed where the buses stop
+    add('paint', wb('patch', -10, 10, -5, 5, -0.08, 0.04, 0.0), 0xD0A06E)
+    add('paint', wb('patch_worn', -9, 9, 0.5, 4.0, 0.04, 0.046, 0.0), 0xC29360)      # packed where the buses stop
     # strip of broken brick paving along the road edge: random half-bricks, uneven
     for row, (zc, step) in enumerate(((4.38, 0.19), (4.58, 0.2))):
         for i in range(104):
