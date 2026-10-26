@@ -131,5 +131,63 @@ add('wood', wb('back_door', -2.45, -1.55, Z0 - 0.02, Z0 + 0.06, 0, 2.18, 0.004),
 for k in range(1, 8):
     add('metal', wb('bwbar', 1.3 + k * 0.15, 1.3 + k * 0.15 + 0.024, Z0 - 0.03, Z0 + 0.02, 1.2, 2.4, 0.0), IRON)
 
+# interior: clerk's counter with stamp, ink pad, letter scale, ledger; pigeonhole letter rack; sorting table; postbags; cupboard; stool; bulb
+WOOD = 0x6A4A32
+# clerk's desk behind the counter window (front-right), with drawer fronts
+add('wood', wb('desk_top', 0.8, 3.3, -2.0, -1.1, 0.76, 0.82, 0.004), WOOD)
+for lx in (0.85, 3.2):
+    add('wood', wb('desk_leg', lx, lx + 0.08, -1.95, -1.87, 0, 0.76, 0.0), WOOD)
+    add('wood', wb('desk_leg', lx, lx + 0.08, -1.18, -1.1, 0, 0.76, 0.0), WOOD)
+add('wood', wb('desk_drawers', 2.4, 3.25, -1.95, -1.15, 0.3, 0.76, 0.004), 0x5A3E2A)
+for k in range(3):
+    add('metal', wb('drawer_pull', 2.7, 2.95, -1.16, -1.13, 0.4 + k * 0.12, 0.43 + k * 0.12, 0.0), BRASS)
+add('paint', wb('ledger', 1.0, 1.5, -1.8, -1.35, 0.82, 0.86, 0.006), 0x3C2F2A)
+add('paint', wb('ledger_pages', 1.02, 1.48, -1.78, -1.37, 0.86, 0.88, 0.0), 0xE6DFC8)
+add('metal', wb('ink_pad', 1.8, 2.0, -1.7, -1.5, 0.82, 0.845, 0.0), 0x2A2D4A)
+for k, (sx, sz) in enumerate(((1.7, -1.8), (2.1, -1.8))):
+    add('wood', cyl('stamp', sx, sz, 0.82, 0.92, 0.025, 0.025, 8), 0x3A2A22)
+    add('wood', cyl('stamp_head', sx, sz, 0.92, 0.96, 0.045, 0.045, 8), 0x3A2A22)
+# letter scale (small pan balance)
+add('metal', wb('scale_base', 2.2, 2.4, -1.4, -1.2, 0.82, 0.85, 0.0), IRON)
+add('metal', wb('scale_post', 2.28, 2.32, -1.34, -1.3, 0.85, 1.05, 0.0), IRON)
+add('metal', cyl('scale_pan', 2.2, -1.32, 1.0, 1.02, 0.09, 0.09, 12), STEEL)
+# clerk's chair
+add('wood', wb('chair_seat', 1.5, 2.0, -2.9, -2.4, 0.44, 0.48, 0.004), WOOD)
+add('wood', wb('chair_back', 1.5, 2.0, -2.95, -2.9, 0.48, 0.95, 0.004), WOOD)
+for lx, lz in ((1.52, -2.88), (1.95, -2.88), (1.52, -2.45), (1.95, -2.45)):
+    add('wood', wb('chair_leg', lx, lx + 0.04, lz, lz + 0.04, 0, 0.44, 0.0), WOOD)
+# pigeonhole letter rack on the left wall: 4 x 6 cells, a few letters sticking out
+rx0 = X0 + T
+add('wood', wb('rack_back', rx0, rx0 + 0.04, -5.2, -3.4, 0.9, 2.1, 0.0), 0x5A3E2A)
+for k in range(5):
+    add('wood', wb('rack_shelf', rx0, rx0 + 0.3, -5.2, -3.4, 0.9 + k * 0.3, 0.93 + k * 0.3, 0.0), WOOD)
+for k in range(7):
+    add('wood', wb('rack_div', rx0, rx0 + 0.3, -5.2 + k * 0.3, -5.17 + k * 0.3, 0.9, 2.1, 0.0), WOOD)
+for r in range(4):
+    for c in range(6):
+        if rnd.random() < 0.7:
+            add('paint', wb('letter', rx0 + 0.04, rx0 + 0.04 + rnd.uniform(0.12, 0.22), -5.15 + c * 0.3 + 0.03, -5.15 + c * 0.3 + 0.25, 0.93 + r * 0.3, 0.93 + r * 0.3 + rnd.uniform(0.1, 0.17), 0.0), (0xEDE6CF, 0xD9C9A0, 0xB9D0DA, 0xEFE3C0)[rnd.randrange(4)])
+# sorting table in the middle with parcels and a few letters
+add('wood', wb('sort_top', -1.2, 0.3, -4.6, -3.5, 0.78, 0.84, 0.004), WOOD)
+for lx, lz in ((-1.15, -4.55), (0.2, -4.55), (-1.15, -3.6), (0.2, -3.6)):
+    add('wood', wb('sort_leg', lx, lx + 0.07, lz, lz + 0.07, 0, 0.78, 0.0), WOOD)
+for k in range(5):
+    add('paint', wb('sort_letter', -1.0 + k * 0.25, -0.8 + k * 0.25, -4.4 + (k % 2) * 0.3, -4.25 + (k % 2) * 0.3, 0.84, 0.855, 0.0), (0xEDE6CF, 0xD9C9A0, 0xB9D0DA)[k % 3])
+add('paint', wb('parcel', -0.3, 0.15, -4.3, -3.8, 0.84, 1.0, 0.012), 0xB59A6A)
+add('metal', wb('parcel_tie', -0.3, 0.15, -4.1, -4.07, 0.84, 1.0, 0.0), 0x8A6A3A)
+# bags and a cupboard at the back
+sack(kit, -2.9, -6.1, 0.3, 0.2, 0xA88A58, w=0.7, d=0.5, hh=0.8)
+sack(kit, -2.3, -6.2, 0.3, -0.3, 0xB89A64, w=0.7, d=0.5, hh=0.7)
+sack(kit, -2.6, -5.7, 0.3, 0.1, 0xA58552, w=0.6, d=0.45, hh=0.55)
+add('wood', wb('cupboard', 0.6, 1.4, -6.7, -6.2, 0, 1.9, 0.004), 0x4E3A2C)
+add('wood', wb('cupboard_door', 0.65, 1.35, -6.22, -6.18, 0.1, 1.8, 0.0), 0x5A4636)
+add('metal', wb('cupboard_latch', 0.95, 1.05, -6.2, -6.15, 0.9, 1.0, 0.0), BRASS)
+# framed notice and calendar on the back wall
+add('wood', wb('frame', -0.6, 0.2, Z0 + T, Z0 + T + 0.03, 1.5, 2.2, 0.0), DARK)
+add('paint', wb('frame_art', -0.55, 0.15, Z0 + T + 0.03, Z0 + T + 0.04, 1.55, 2.15, 0.0), 0xD8CBA0)
+# bare bulb on a flex
+add('metal', cyl('flex', 0.0, -3.0, 2.85, H, 0.01, 0.01, 6), 0x1B1B1D)
+add('paint', sphere('bulb', 0.0, -3.0, 2.78, 0.06, 0.06, 0.08, 1), 0xF5E7B8)
+
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.04})
