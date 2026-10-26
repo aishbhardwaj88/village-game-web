@@ -34,9 +34,9 @@ def net_px(u, v):
 nmat = decal_material('hb_net', (512, 64), net_px)
 
 add('paint', wb('patch', -12, 12, -7.5, 7.5, -0.08, 0.04, 0.0), 0xA98B62)
-add('paint', wb('patch_worn1', -7, 7, -3.5, 3.5, 0.04, 0.046, 0.0), 0x9A7C55)
+add('paint', wb('patch_worn1', -7, 7, -3.5, 3.5, 0.04, 0.046, 0.0), 0xA3865E)
 for (x, z, r) in ((-5, 1, 2.2), (4, -2, 1.8), (6, 3, 1.4)):
-    add('paint', cyl('scuff', x, z, 0.04, 0.05, r, r, 12), 0xB39A74)
+    add('paint', cyl('scuff', x, z, 0.04, 0.05, r, r, 12), 0xAF946B)
 
 
 def lime(x0, z0, x1, z1):
@@ -48,7 +48,7 @@ def lime(x0, z0, x1, z1):
         t = i / n
         x = x0 + (x1 - x0) * t + (rnd.uniform(-0.03, 0.03) if i < n else 0)
         z = z0 + (z1 - z0) * t + (rnd.uniform(-0.03, 0.03) if i < n else 0)
-        add('paint', limb('lime', (px, pz, 0.045), (x, z, 0.045), rnd.uniform(0.05, 0.09), 0.012), 0xE9E7DE if rnd.random() > 0.15 else 0xCFCCBF)
+        add('paint', limb('lime', (px, pz, 0.045), (x, z, 0.045), rnd.uniform(0.09, 0.14), 0.012), 0xF0EEE6 if rnd.random() > 0.15 else 0xCFCCBF)
         px, pz = x, z
 
 
