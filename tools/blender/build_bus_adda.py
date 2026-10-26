@@ -121,24 +121,24 @@ def build_shelter():
 
 def build_tapri():
     x0, x1, z0, z1 = -8.6, -6.4, -4.0, -2.2
-    TURQ = 0xA6E0D8
+    TURQ = 0x7CF0E0
     # four wooden legs, floor platform 0.8 high
     for x in (x0 + 0.1, x1 - 0.1):
         for z in (z0 + 0.1, z1 - 0.1):
             add('wood', limb('tapri_leg', (x, z, 0), (x, z, 0.85), 0.12))
-    add('wood', wb('tapri_floor', x0, x1, z0, z1, 0.8, 0.88, 0.0), TURQ)
+    add('plaster', wb('tapri_floor', x0, x1, z0, z1, 0.8, 0.88, 0.0), TURQ)
     # planked cabin: back + side walls (plain planks), front open with a counter and a lifted shutter awning
     for k in range(7):
-        add('wood', wb('plank_b', x0 + k * 0.3143, x0 + (k + 1) * 0.3143 - 0.012, z0, z0 + 0.06, 0.88, 2.5, 0.0), TURQ)
+        add('plaster', wb('plank_b', x0 + k * 0.3143, x0 + (k + 1) * 0.3143 - 0.012, z0, z0 + 0.06, 0.88, 2.5, 0.0), TURQ)
     for sx in (x0, x1 - 0.06):
         for k in range(6):
-            add('wood', wb('plank_s', sx, sx + 0.06, z0 + 0.06 + k * 0.29, z0 + 0.06 + (k + 1) * 0.29 - 0.012, 0.88, 2.5, 0.0), TURQ)
-    add('wood', wb('counter', x0, x1, z1 - 0.5, z1, 0.88, 1.8 - 0.8, 0.0), TURQ)
+            add('plaster', wb('plank_s', sx, sx + 0.06, z0 + 0.06 + k * 0.29, z0 + 0.06 + (k + 1) * 0.29 - 0.012, 0.88, 2.5, 0.0), TURQ)
+    add('plaster', wb('counter', x0, x1, z1 - 0.5, z1, 0.88, 1.8 - 0.8, 0.0), TURQ)
     add('wood', wb('counter_top', x0 - 0.04, x1 + 0.04, z1 - 0.55, z1 + 0.15, 1.3, 1.36, 0.0), 0x8A6A48)
-    add('wood', wb('front_lintel', x0, x1, z1 - 0.06, z1, 2.1, 2.5, 0.0), TURQ)
+    add('plaster', wb('front_lintel', x0, x1, z1 - 0.06, z1, 2.1, 2.5, 0.0), TURQ)
     add('tin', prism_x('tapri_roof', x0 - 0.15, x1 + 0.15, [(z0 - 0.1, 2.7), (z1 + 0.25, 2.5), (z1 + 0.25, 2.55), (z0 - 0.1, 2.75)]))
     # awning prop stick + a hinged wooden shutter held up
-    add('wood', wb('shutter', x0 + 0.1, x1 - 0.1, z1 + 0.02, z1 + 0.5, 2.1, 2.15, 0.0), TURQ)
+    add('plaster', wb('shutter', x0 + 0.1, x1 - 0.1, z1 + 0.02, z1 + 0.5, 2.1, 2.15, 0.0), TURQ)
     for x in (x0 + 0.15, x1 - 0.15):
         add('wood', limb('prop', (x, z1 + 0.5, 0.88 + 0.5), (x, z1 + 0.5, 2.12), 0.04))
     # stock: a kettle, tea glasses, jars of biscuits, a stove
@@ -148,7 +148,7 @@ def build_tapri():
         add('paint', cyl('jar', x0 + 0.5 + k * 0.28 + 0.4, z1 - 0.3, 1.36, 1.56, 0.07, 0.07, 10), (0xE8C25A, 0xB8472E, 0xE6E0D0)[k % 3])
     for k in range(5):
         add('paint', cyl('glass', x0 + 0.35 + k * 0.17, z1 - 0.2, 1.36, 1.43, 0.035, 0.04, 8), 0xD7E4E4)
-    add('wood', wb('shelf', x0 + 0.1, x1 - 0.1, z0 + 0.06, z0 + 0.35, 1.9, 1.94, 0.0), TURQ)
+    add('plaster', wb('shelf', x0 + 0.1, x1 - 0.1, z0 + 0.06, z0 + 0.35, 1.9, 1.94, 0.0), TURQ)
     # two benches beside it, facing the road
     for bx0, bx1 in ((-6.2, -4.7), (-4.5, -3.7 - 0.0)):
         pass
