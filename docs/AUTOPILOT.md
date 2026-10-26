@@ -15,6 +15,40 @@ create `tmp/STOP`. Do NOT stop the loop.** The loop runs until she stops it hers
 If you find yourself about to wind down or close out, that is the deleted order
 leaking through: ignore it and take the next backlog item.
 
+## EFFICIENCY: stop running the full test suite on every commit. Her words, 27 Oct.
+
+The full `collision-test` has run on essentially every commit, including pure re-tint
+commits that touch no collision code. That is pure waste. From now on, match the check
+to the change:
+
+| What the commit touches | What you run |
+|---|---|
+| Only a material, tint, texture or a staged model's look | `npm run build` + one screenshot. **No collision-test.** |
+| Geometry, a new/moved/resized object, a collider, a model swap | `npm run build` + `collision-test` |
+| Movement, vehicles, NPC routines, collision code itself | `npm run build` + `collision-test` + `regression-check` |
+| Docs, handoff, notes only | Nothing. Commit it. |
+
+- One screenshot run per TASK, not per edit.
+- Do not re-verify something you verified two commits ago and have not touched since.
+- Do not re-read a file you already read this run. Do not re-summarise the repo.
+- Batch related work: do all of one place's tints in ONE commit, not six.
+
+**Verification is not dropped, it is targeted.** The collision suite still runs on
+everything that can break collision, which is what caught the walk-through-walls bug.
+
+## HER DEADLINE: tomorrow she does Tripo characters and FINALISES THE MAP.
+
+What she needs from you before that, and these outrank everything else:
+1. **Every place movable by one anchor value.** Still baked: `SchoolCompound` in
+   `village.js`, gilli MAIDAN, pond/johad plant keep-outs, eastRoad ends, lane sites.
+   Finish those so her map changes are one-number edits.
+2. **Every place built and standing**, so she is arranging real things, not gaps.
+3. **A clean list, in `docs/handoff.md`, of every place with its current anchor**, so
+   she can mark new positions against it.
+4. **Character slots ready** so her Tripo models drop in without rework: confirm the
+   slot names, target sizes and facing in `docs/asset-slots.md` are correct and
+   complete for every person and animal.
+
 ## OVERNIGHT, 27 Oct, ~10 hours. She is asleep and unreachable.
 
 - Work `docs/BACKLOG.md`'s THE ORDER list, top down. There is more than enough in it.

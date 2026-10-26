@@ -33,6 +33,12 @@ Sections below carry no priority of their own. Ignore any "do this first" wordin
 left inside them. Work this list top down; when an entry is fully done, tick every
 one of its items and move to the next entry.
 
+0. **TOMORROW'S BLOCKERS** (she finalises the map and starts Tripo characters):
+   finish the remaining baked anchors (SchoolCompound in village.js, gilli MAIDAN,
+   pond/johad keep-outs, eastRoad ends, lane sites); make sure every place is built
+   and standing; write a clean place-and-anchor table into `docs/handoff.md` for her
+   to mark new positions against; confirm `docs/asset-slots.md` has correct slot
+   names, sizes and facing for every person and animal so her Tripo models drop in.
 1. **A0-MAT** - material library + the art-reviewer gate. NOT STARTED as of 27 Oct
    02:00. You are still re-tinting place by place, which is the exact waste this was
    written to stop. Build `tools/blender/build_material_board.py`, review the BOARD
