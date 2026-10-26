@@ -1,3 +1,6 @@
+**2026-10-27 (character slots dadi + monkey):** Game change: `dadi` and `monkey` now have asset slots (src/main.js, beside the maa/halwai loop, per-entry box sizes; dadi 0.62x1.5x0.62, monkey 0.35x0.6x0.35), so dadi.glb / monkey.glb dropped in public/assets/models/ replace the capsule/shape. docs/asset-slots.md moved both rows to Wired. Still NOT wired: doodhwala/kulfiwala/chaatwala/bantawala/shopkeeper, villager_aunty, kid_a-d, cow, buffalo, dog (instanced; need herd-code change). Not tested with a real glb. Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
+NEXT: slots for side-job men, aunty, kids (CHARACTER_BUILDERS), then animals.
+
 **2026-10-27 (school interior check, no game change):** Tried to verify the staged primary school's slates and bags by eye (docs/shots/school-interior-2026-10-27/d.png, f.png, 5 framings, no console errors). Result: desks, a board and shelves read dimly through the open doors, but slates and bags are NOT discernible; the camera cannot get inside the grilled windows. Slates/bags stay unverified; do not claim them as seen. No build or collision-test (docs only).
 NEXT: temple interior has no Places V1 spec so skip; take THE ORDER item 4 (A0a / A0b signboard final-rule audit) or A-2 task list.
 

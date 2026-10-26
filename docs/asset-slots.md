@@ -180,19 +180,19 @@ uniform fit-scale into the box, never stretched; keep the rig simple, walk/idle 
 | `player.glb` | Player | 0.7 x 2.0 x 0.7 |
 | `maa.glb` `halwai.glb` `dada.glb` `postman.glb` `teacher.glb` `sister.glb` `pitaji.glb` | Named cast | 0.66 x 1.8 x 0.66 (Maa 1.65 tall by the character bible; the slot fits the box) |
 | `bullock.glb` | One bullock, used twice by the cart | 0.6 x 1.6 x 2.2 |
+| `dadi.glb` | Dadi (npc_dadi, house; wired 27 Oct) | 0.62 x 1.5 x 0.62 |
+| `monkey.glb` | The M6 monkey (wired 27 Oct) | 0.35 x 0.6 x 0.35 |
 
 **NOT wired yet (no slot exists; the code-built figure stays until a slot is added in `src/main.js` beside the loop at the `['maa', maaNpc]` list, one `assetSlots.register` per row). Names and sizes below are the plan so the Tripo files can be named now:**
 
 | Slot (planned) | Who | Box w x h x d (m) |
 |---|---|---|
-| `dadi.glb` | Dadi (npc_dadi, house) | 0.62 x 1.5 x 0.62 |
 | `doodhwala.glb` `kulfiwala.glb` `chaatwala.glb` `bantawala.glb` `shopkeeper.glb` | Side-job and bazaar men (CHARACTER_BUILDERS in src/characters.js) | 0.66 x 1.7 x 0.66 |
 | `villager_aunty.glb` | Ambient women | 0.62 x 1.58 x 0.62 |
 | `kid_a.glb` `kid_b.glb` `kid_c.glb` `kid_d.glb` | Children (scale 0.72 / 0.68 / 0.75 / 0.64 of an adult) | 0.5 x 1.25 x 0.5 (kid_d 0.45 x 1.15 x 0.45) |
 | `cow.glb` | Cow (instanced herd, src/animals.js createCattleHerd; buffalo is the same mesh scaled 1.12 x 1.12 x 1.22 and darker) | 0.8 x 1.4 x 1.9 |
 | `buffalo.glb` | Buffalo (needs its own slot if hers differs from the cow) | 0.9 x 1.5 x 2.3 |
 | `dog.glb` | Street dog (createDogPack) | 0.35 x 0.55 x 0.9 |
-| `monkey.glb` | The M6 monkey (createMonkeyNPC) | 0.35 x 0.6 x 0.35 |
 
 Animals are instanced (one draw call per herd): a swapped-in cow/dog model must be a single mesh with one material, or the
 herd code needs a small change. Say which when the files arrive.

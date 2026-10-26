@@ -964,7 +964,7 @@ async function main() {
     hide: [player.children[0]], // the capsule mesh — keep the group itself (camera rig target, position driver)
     placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
   });
-  for (const [name, npc] of [
+  for (const [name, npc, dims] of [
     ['maa', maaNpc],
     ['halwai', halwaiNpc],
     ['dada', dadaNpc],
@@ -972,9 +972,11 @@ async function main() {
     ['teacher', teacherNpc],
     ['sister', sisterNpc],
     ['pitaji', pitajiNpc],
+    ['dadi', dadiNpc, { w: 0.62, h: 1.5, d: 0.62 }],
+    ['monkey', monkeyNpc, { w: 0.35, h: 0.6, d: 0.35 }],
   ]) {
     assetSlots.register(name, {
-      dimensions: PERSON_DIMENSIONS,
+      dimensions: dims || PERSON_DIMENSIONS,
       hide: [npc.userData.mesh],
       placements: [{ container: npc, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
