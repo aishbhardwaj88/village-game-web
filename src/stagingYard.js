@@ -90,6 +90,12 @@ function addWeathering(m, set) {
           diffuseColor.r *= 1.0 + (wn_(vWxyz * 0.3 + 7.0) - 0.5) * 0.06;
           float low = 1.0 - smoothstep(0.0, 0.7, vWxyz.y);
           diffuseColor.rgb *= 1.0 - low * ${grime.toFixed(3)} * (0.5 + 0.5 * wn_(vWxyz * 1.7 + 3.0));
+          {   // splashed-up dust: ragged top edge (0.25-1.1 m), brown-grey, desaturates and dulls fresh plinth paint
+            float edge_ = 0.25 + 0.85 * wn_(vec3(vWxyz.x * 1.6 + vWxyz.z * 1.6, 0.0, 9.0));
+            float dust_ = (1.0 - smoothstep(edge_ * 0.55, edge_, vWxyz.y)) * ${set === 'brick' ? '0.35' : '0.62'};
+            vec3 dc_ = vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(0.86, 0.72, 0.55);
+            diffuseColor.rgb = mix(diffuseColor.rgb, dc_, dust_);
+          }
           float col = wn_(vec3(vWxyz.x * 6.0 + vWxyz.z * 6.0, 0.0, 1.0)) * smoothstep(0.0, 2.5, vWxyz.y);
           diffuseColor.rgb *= 1.0 - ${streak.toFixed(3)} * col * col * wn_(vec3(vWxyz.x + vWxyz.z, vWxyz.y * 0.4, 5.0));
           ${set === 'plaster' ? `
