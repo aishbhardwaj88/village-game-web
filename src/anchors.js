@@ -50,6 +50,7 @@ export const ANCHORS = {
   haveli: { x: 150, z: -30, ry: 0 },
   gurukul: { x: 160, z: 85, ry: 0 },
   maidan: { x: 165, z: 135, ry: 0 },
+  gilli: { x: 46, z: 104, ry: 0 }, // the gilli-danda patch (side job), not a mapped place
   highway: { x: 205, z: 40, ry: 0 },
   mandi: { x: 226, z: 60, ry: 0 },
   // STAGING YARD (src/stagedPlaces.js): new places wait here, grid origin (320,-160), 80 m, until she lays out the map.

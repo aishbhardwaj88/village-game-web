@@ -8,7 +8,7 @@ import { pt } from '../anchors.js';
  * rival kids in turn, each with a longer score than the last. The best distance is kept (notebook records). Discovered by the
  * peepal poster or by hearing the kids shout (sound radar).
  */
-const MAIDAN = { x: 46, z: 104 };
+const MAIDAN = pt('gilli');
 const KHEL_MAIDAN = pt('maidan'); // createKhelMaidan in main.js
 const RIVALS = [
   { role: 'kid_a', name: 'Bittu', score: 22 },
