@@ -681,10 +681,11 @@ async function main() {
   // too: registered once at setup with a placeholder start, created for real on the snatch.
   function monkeyChaseWaypoints(startX, startZ) {
     const roofY = BAZAAR_UNITS[3].wallHeight + 0.12;
+    const roofY5 = BAZAAR_UNITS[5].wallHeight + 0.12; // unit 5's own slab is 0.35 m lower; the old shared height left the monkey hovering
     return [
       { x: startX, z: startZ, y: 0 },
       { x: bazaarUnitCx(3), z: BAZAAR_ROW_CZ, y: roofY }, // up onto the darzi's own roof
-      { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY }, // across the rooftops, east
+      { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY5 }, // across the rooftops, east
       { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 3, y: 0 }, // back down to the lane (3 m out: the shopfront props stand 1-2 m from the front)
       { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
     ];
