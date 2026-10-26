@@ -1440,6 +1440,7 @@ async function main() {
     // segment (the hero zone sits at the 150 draw-call ceiling, so lamps only
     // exist once the player is within ~8 m of that stretch of lane).
     for (const [name, from, to, width, lampType] of [
+      ['lamps_bazaar_a', BAZAAR_LANE_BEND, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 'solar'], // the x=-58 leg south of the bend; drawn bend->south so the lamp lands on the west verge, not inside the house compound
       ['lamps_bazaar_b', BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 'solar'], // newer panchayat solar LEDs
       ['lamps_temple_a', TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, 'rcc'],
       ['lamps_temple_b', TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, 'rcc'],
