@@ -1,3 +1,6 @@
+**2026-10-27 (minimap zoom eyeballed):** No game change. Looked at the corner minimap on foot vs when the player is moved fast (headless, position stepped by script, not a real vehicle): docs/shots/minimap-zoom-2026-10-27/{on_foot,at_speed}.png. The window widens as intended (more lanes and landmarks, glyphs smaller), the player arrow and objective star stay readable, it eases back (back_on_foot.png). Not tested in a real driven tractor; A-2b research box stays open. No code touched, so no build or collision-test run this entry.
+NEXT: pick a Tier 2 item that changes the game (far eastern road, hero-lane kerbs/drains), audio mix by ear is hers.
+
 **2026-10-27 (collision-test rooftop legs):** No visible game change. collision-test part [4] no longer silently skips elevated NPC legs (the monkey rooftop chase): it counts them and fails if a ground-level end sits inside a solid. Honest limit: colliders are 2D with no box heights, so the climb itself (monkey walks over the bazaar front while rising) is NOT verified; the A0a box stays open. Also noted: the handoff NEXT of "re-tint chaupal" was stale, chaupal was re-tinted on 26 Oct. Run: collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: eyeball minimap zoom in a vehicle, audio mix by ear is hers.
 
