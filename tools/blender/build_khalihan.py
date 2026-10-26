@@ -16,13 +16,13 @@ OUT = os.path.join(ROOT, 'tmp', 'khalihan_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(71)
-RED = 0xC4492B
-add('paint', wb('block', -12, 12, -15, 15, -0.5, 0.04, 0.0), 0xBFA27A)
+RED = 0xB8522F
+add('paint', wb('block', -12, 12, -15, 15, -0.5, 0.04, 0.0), 0xC8AE8A)
 add('paint', wb('floor_ring', -0.1, 0.1, -0.1, 0.1, 0.04, 0.041, 0.0), 0xBFA27A)
-add('paint', cyl('gobar_floor', -2.0, 0.0, 0.04, 0.09, 7.0, 7.0, 40), 0x9A7F5C)
+add('paint', cyl('gobar_floor', -2.0, 0.0, 0.04, 0.09, 7.0, 7.0, 40), 0xAA9170)
 for k in range(8):
     a = rnd.uniform(0, math.tau)
-    add('paint', cyl('floor_wear', -2.0 + 4 * math.cos(a), 4 * math.sin(a), 0.09, 0.095, rnd.uniform(0.8, 1.6), 1.0, 10), 0xA78C68)
+    add('paint', cyl('floor_wear', -2.0 + 4 * math.cos(a), 4 * math.sin(a), 0.09, 0.095, rnd.uniform(0.8, 1.6), 1.0, 10), 0xB09878)
 # thresher: red drum on a frame with two wheels, feed tray, tall curved chute, belt to a small motor
 tx, tz = -5.0, -10.5
 add('metal', wb('chassis', tx - 1.6, tx + 1.6, tz - 0.8, tz + 0.8, 0.6, 0.72, 0.01), 0x3A3C3E)
