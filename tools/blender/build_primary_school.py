@@ -857,10 +857,10 @@ def bed(name, x0, x1, z0, z1, h=0.3, soil=0x4A3524):
 
 
 def build_ground():
-    add('paint', wb('ground', -HX, HX, -HZ, HZ, -0.06, 0.03, 0), 0xB89A6E)
-    add('paint', wb('ground_swept', -22.0, 22.0, -15.0, 22.0, 0.03, 0.036, 0), 0xC2A67C)    # swept assembly ground, a paler tone
-    add('paint', wb('ground_worn', -4.0, 4.0, 16.0, HZ - 0.3, 0.03, 0.04, 0), 0xA88A60)      # worn gate-to-flag path
-    add('paint', wb('ground_worn2', -3.0, 3.0, 4.0, 16.0, 0.03, 0.04, 0), 0xA88A60)
+    add('paint', wb('ground', -HX, HX, -HZ, HZ, -0.06, 0.03, 0), 0xD2A573)
+    add('paint', wb('ground_swept', -22.0, 22.0, -15.0, 22.0, 0.03, 0.036, 0), 0xDDB482)    # swept assembly ground, a paler tone
+    add('paint', wb('ground_worn', -4.0, 4.0, 16.0, HZ - 0.3, 0.03, 0.04, 0), 0xBE9462)      # worn gate-to-flag path
+    add('paint', wb('ground_worn2', -3.0, 3.0, 4.0, 16.0, 0.03, 0.04, 0), 0xBE9462)
     ground_decal(-15.0, 15.0, -5.5, 12.5, 0.045, (0.0, 0.0, 1.0, 0.5))   # the track lines (atlas region v 0..0.5)
     # the flag-cloth atlas strip is used on the cloth quad below; paths from the gate to the verandah steps
     add('trim', wb('path_steps', -2.6, 2.6, -15.45, -14.3, 0, 0.05, 0.01), 0xB2AFA7)
