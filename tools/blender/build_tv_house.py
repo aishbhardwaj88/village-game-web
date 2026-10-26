@@ -17,7 +17,7 @@ OUT = os.path.join(ROOT, 'tmp', 'tv_house_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(53)
-CREAM = 0xE6D7A3
+CREAM = 0xE4CC8E
 MAROON = 0x7A2A2E
 GOLD = 0xC9A23A
 DARK = 0x4A2E22
