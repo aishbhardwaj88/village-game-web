@@ -15,7 +15,7 @@ from arch import Kit, ring, bicycle, lathe, STEEL
 OUT = os.path.join(ROOT, 'tmp', 'puncture_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 rnd = random.Random(9)
-RUST = (0xB06A4E, 0x9A5F48, 0xA9B4B8, 0x8793A0, 0xC07A58, 0x9AA6AE)
+RUST = (0xD07A52, 0xBE6A44, 0xB4C0C6, 0x94A2B0, 0xDC8A5C, 0xA8B6BE)
 
 
 def add(k, o, c=None):
