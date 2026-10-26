@@ -15,7 +15,13 @@ create `tmp/STOP`. Do NOT stop the loop.** The loop runs until she stops it hers
 If you find yourself about to wind down or close out, that is the deleted order
 leaking through: ignore it and take the next backlog item.
 
-## PRIORITY 0: COLLISION. Nothing else until it passes.
+## WHAT TO WORK ON: `docs/BACKLOG.md`'s "THE ORDER" list. Nothing else decides it.
+
+Section headings and older notes carry stale "do this first" wording. Ignore all of
+it. The ordered list at the top of BACKLOG section A is the single source of
+priority, and entry 1 is the material library + art-reviewer gate.
+
+## (historical) PRIORITY 0: COLLISION - now tracked as entry 4 in THE ORDER.
 
 Reported fixed on 25 Oct. It is NOT. In live play she walked through trees, the
 tractor, the khel maidan string boundary and some buildings.

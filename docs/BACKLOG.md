@@ -27,6 +27,29 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
+## THE ORDER. This list decides what you work on. Nothing else does.
+
+Sections below carry no priority of their own. Ignore any "do this first" wording
+left inside them. Work this list top down; when an entry is fully done, tick every
+one of its items and move to the next entry.
+
+1. **A0-MAT** - material library + the art-reviewer gate. NOT STARTED as of 27 Oct
+   02:00. You are still re-tinting place by place, which is the exact waste this was
+   written to stop. Build `tools/blender/build_material_board.py`, review the BOARD
+   with the `art-reviewer` subagent, freeze it, then re-render places against it.
+   **Stop per-place re-tinting until the board is frozen.**
+2. **A0-WEATHER** - remaining items only.
+3. **A0-TEX** - remaining items only.
+4. **A0a / A0b / A0** - collision leftovers and the signboard final rule.
+5. **A-2a, A-2, A-2b, A-2c, A-1** - map click travel, visit menu, task list and
+   minimap, navigation, movable units.
+6. **A0-LOAD** - deferred by her 26 Oct. Do not work it.
+7. Everything else in section A, in file order.
+
+**Every place render goes through the `art-reviewer` subagent before it is called
+done.** It has been used twice in ~80 runs. That is the gate, not a suggestion.
+
+
 **25 OCT: PLANTS AND ORGANICS ARE OFF THIS LIST.** The art director builds trees,
 plants, crops and flowers herself. Leave what exists alone. Skip every plant item
 below. Main places are being redesigned by her, so keep anything you build generic
@@ -36,7 +59,7 @@ and cheap. See docs/ART_REVIEW.md "NEW DIRECTION" (25 Oct) for the current order
 23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
 in them. Do not limit a fix to the place that was screenshotted.
 
-### A-2a. Click a place ON THE MAP to travel there (Aishwarya, 25 Oct 2026) - FIRST ITEM AFTER THE CLOSE-OUT
+### A-2a. Click a place ON THE MAP to travel there (Aishwarya, 25 Oct 2026)
 Her words: on the map she wants to click on a place and go there. Two reasons she
 gave: it helps players who are just exploring the village, and it saves her walking
 while she tests.
@@ -121,7 +144,7 @@ DONE-WHEN: the pond has either a real lotus model or no flowers at all, one proo
 shot at player eye height in the real game (not a test scene), the organic-asset list
 is in handoff.md, and build plus regression are green.
 
-### A-2. "Visit place" review menu (art director 2026-10-23) - DO THIS FIRST, it is small
+### A-2. "Visit place" review menu (art director 2026-10-23)
 - [x] Add a "Visit place" list to the pause menu: no URL params, no console; open pause, pick a place, land there - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [x] Generate the list FROM the placement data so new places appear automatically and nothing goes stale after tomorrow's rearrangement - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
 - [x] List every MAP.md place by plain bilingual name: school, house, halwai, tea stall, general store, bazaar row, chowk, temple, post office, ration shop, atta chakki, tubewell, canal/bridge, mango baagh, khet, pond, johad, haveli, gaushala, khel maidan, mela ground, highway cluster, mandi - proof docs/shots/visit-place-2026-10-23/Village_mandir.png (also Primary_school.png, Mandi.png; real pause-menu click path, 41/41 places land cleanly, zero console errors)
@@ -142,7 +165,7 @@ is in handoff.md, and build plus regression are green.
 - [x] Check at phone width with the on-screen joystick visible; must not crowd the screen or sit under the thumb - proof docs/shots/minimap-2026-10-23/phone_play.png (96 px top-right, below pause button, clear of joystick and dialogue)
 - [x] Let the player hide the minimap from the pause menu - proof docs/shots/minimap-2026-10-23/pause_toggle_off.png (persisted in localStorage)
 
-### A-2c. Navigation (art director FAIL 2026-10-23) - high priority
+### A-2c. Navigation (art director FAIL 2026-10-23)
 - [x] Remove discovery gating: show all 42 places on the notebook map from first load; keep an optional subtle "visited" mark, hide nothing - proof docs/shots/tasks-2026-10-23/map_all_places.png (all places inked on a fresh game, green tick on visited; some labels skipped where they would overprint, icon only)
 - [ ] Build diegetic wayfinding: painted direction signs with arrows at lane junctions and the chowk, a village notice board listing key places, milestone markers on the approach road and highway
   - PROGRESS 2026-10-23 (not ticked): 5 direction signposts (house gate, temple fork, east gali, school lane, west gali) + chowk notice board, src/wayfinding.js; labels, arrows and distances computed from PLACES. Proof docs/shots/wayfinding-2026-10-23/. Still missing: milestone markers on the approach road and highway. Costs 2 draw calls (one merged mesh incl. shadow pass); hero view now 149 of 150.
@@ -174,7 +197,7 @@ is in handoff.md, and build plus regression are green.
 - [!] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge BLOCKED: no KTX2 encoder (toktx/basisu) is installed on this Mac and GPU-compressed textures need her before/after judgement.
 - [ ] Do not drop the HDRI further, do not drop prop textures to 512, do not simplify hero buildings
 
-### A0-MAT. Material library + review gate (art director 2026-10-26) - DO THIS FIRST
+### A0-MAT. Material library + review gate (art director 2026-10-26)
 - [ ] Build tools/blender/build_material_board.py: one 2x2 m panel per material (brick, lime plaster, cement plaster, painted wood, tin, terracotta, concrete, thatch, mud-and-dung, jute, rusted steel, packed earth), each with base dirt, edge stains, per-unit variation, sun fading, chipping
 - [ ] Render every panel at 2 m into docs/shots/material-board/
 - [ ] Have the art-reviewer subagent judge the board against crops of her Places V1 references; iterate the BOARD until it returns PASS, not the places
@@ -182,7 +205,7 @@ is in handoff.md, and build plus regression are green.
 - [ ] Re-render the already-built places against the frozen library
 - [ ] GATE FROM NOW ON: run the art-reviewer on every place render against its reference + LAYOUT.md before committing it done. A place is not done until it returns PASS. Never grade your own work
 
-### A0-WEATHER. Materials too new (art director FAIL 2026-10-26) - before any more places
+### A0-WEATHER. Materials too new (art director FAIL 2026-10-26)
 - [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
   - PROGRESS 2026-10-26 (not ticked): staged brick now has per-brick light/dark/overburnt variation in the shader (src/stagingYard.js), proof docs/shots/places-2026-10-26/brickvar/bus_front2.png. Cells are only roughly brick-aligned; no chipping yet.
 - [x] Plaster: stains, patchiness, dirt at the base, sun fading near the top; it is factory clean (proof docs/shots/places-2026-10-26/weather1/school.png stains+fading, docs/shots/places-2026-10-26/dust/school_close.png base dust and dulled plinth)
@@ -196,7 +219,7 @@ is in handoff.md, and build plus regression are green.
 - [ ] STANDING RULE: weathering IS the look. Never ship a surface at full saturation. Base dirt, edge stains and colour variation before any place is called done. A clean new-looking build fails even with correct geometry
 - [x] Re-check bus adda against LAYOUT.md item by item: tapri left, peepal+chabutra+charpai far right-back, pyaau far right, green double-sided board perpendicular at front-left, milestone front-right (proof docs/shots/places-2026-10-26/bus3/front.png, iso.png)
 
-### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
+### A0-TEX. Staged places FAIL (art director 2026-10-26)
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
   - PROGRESS 2026-10-26 (not ticked, read from the shipped GLBs with node tools): UVs survive and are ~1 unit per metre once the meshopt node scale is applied (bus adda, gurukul); every material but the decal carries dopahar_set so swapShared covers it; vertex colours carry real tint (plaster 0.01-0.96) but brick colours are nearly flat (0.20-0.45), so per-brick variation had to come from the shader. Not checked: swapShared at runtime on every mesh, only by data.
 - [x] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing (26 Oct: brick docs/shots/staged-closeup-2026-10-26/bus_brick_2m.png, plaster school_wall.png/post_wall.png; tin roof only seen at distance in the same frame)
@@ -204,7 +227,7 @@ is in handoff.md, and build plus regression are green.
 - [ ] Add the greenery her drawings show (grass, bushes, creepers, potted plants, trees) using real CC0 plant models only, never hand-built foliage; still skip khets and field crops
 - [ ] Only after the above: resume building the remaining places
 
-### A0a. COLLISION TEST (art director FAIL 2026-10-25) - nothing else until this passes
+### A0a. COLLISION TEST (art director FAIL 2026-10-25)
 - [x] Build tools/collision-test.js: enumerate every solid object from the live scene (trees, buildings, walls, vehicles, animals, poles, lamps, hand pumps, charpais, carts, troughs, tanks, rope/string boundaries, fences, props)
 - [x] Drive the player at each from 4 directions at walk and run speed using the real movement resolver; assert no pass-through; name every failure with its position
 - [x] Repeat for every vehicle and every NPC/animal routine
@@ -217,7 +240,7 @@ is in handoff.md, and build plus regression are green.
 ### A0b. Signboards, 25 Oct FINAL rule (reverses 23 Oct)
 - [x] Every board in the village: Hindi bold and larger on top, English not bold and smaller below but comfortably legible at walking distance, never below 55% of the Hindi cap height, both lines the same dark paint colour (proof: docs/shots/signboards-final-2026-10-25/sign_notice.png, commit 2ae1123)
 
-### A0. Collision (art director FAIL 2026-10-23) - highest priority after the water bug
+### A0. Collision (art director FAIL 2026-10-23)
 - [ ] Route every NPC and animal through the same collision resolver the player uses; no routine sets position directly without a collision check
   - PROGRESS 2026-10-26 (not ticked, code audit only): grep of src/npc.js, bazaarLife.js, animals.js, sideJobs.js, jobs/*.js, rooftops.js, ambient.js, npcRoutines.js. Every moving NPC leg (waypoint run, follow, bazaarLife loops) goes through resolveMove (npcRoutines.js lines 50, 120, 184). Only direct writes: npcRoutines.js 117-118 (deliberate rooftop-chase leg when y > 0.5, 2D walls would block a roof walk) and one-time placement via position.set. Animals have no routines (stationary). Left open: the rooftop leg is unchecked by collision-test, and I did not run a live trace.
 - [ ] Give colliders to trees, poles, lamp posts, hand pumps, charpais, carts and every solid prop; audit and LIST any solid object with no collider
