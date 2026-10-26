@@ -19,8 +19,8 @@ add = kit.add
 CEM = pk.CEMENT
 IRON = 0x6E7378
 
-add('paint', wb('patch', -6, 6, -5, 5, -0.08, 0.04, 0.0), 0xB09068)
-add('paint', wb('worn', -2.5, 6, -1, 4.8, 0.04, 0.046, 0.0), 0x9C7E56)
+add('paint', wb('patch', -6, 6, -5, 5, -0.08, 0.04, 0.0), 0x8A7058)
+add('paint', wb('worn', -2.5, 6, -1, 4.8, 0.04, 0.046, 0.0), 0x6E5842)
 # kothri
 x0, x1, z0, z1 = -5.5, -2.0, -4.5, -1.5
 T = 0.3
@@ -101,5 +101,5 @@ for k, (sx, sz, a) in enumerate(((2.4, 0.4, 0.3), (2.6, 0.6, 0.5))):
 pk.brick_ring(kit, 4.3, -0.8, 0.9, 0, 0.18, 0.2, 16)
 add('paint', cyl('root_soil', 4.3, -0.8, 0.0, 0.15, 0.82, 0.82, 16), 0x4A3524)
 
-TINTS = {'hb_plaster': '#FFF2D0', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_brick': '#AE6C54', 'hb_metal': '#FFFFFF'}
+TINTS = {'hb_plaster': '#FFF2D0', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_brick': '#A8705C', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_brick': 0.1})
