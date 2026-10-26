@@ -1,3 +1,6 @@
+**2026-10-27 (halwai soot, parked, no game change):** Tried soot stains on the back wall above the two kadhais as box geometry, twice; both read as hard rectangles, reverted (model and build script unchanged). Fire mouth and bhatti soot were already in. Needs a soft decal texture. Shots docs/shots/halwai-soot-2026-10-27/. Nothing built beyond that, no collision-test needed.
+NEXT: A1b1 ration shop interior props (shelves, cans, ration card board, queue rail).
+
 **2026-10-27 (audit, no game change):** Walked THE ORDER 0-4 to find unblocked work. 0 done. 1 (material board) parked after reviewer round 1, needs her textures. A0-WEATHER posters: all three places whose LAYOUT.md shows posters (bus adda, chaupal, primary school) already have them; adding posters elsewhere would invent details her drawings lack, so left unticked. A0a rooftop leg: collision-test already end-checks every rooftop leg, collision has no box heights, so the leg cannot be walked in 2D; left unticked. Halwai flame/steam exists (src/halwaiFire.js), missing only a fire mouth in build_halwai.py and heat shimmer. No build or collision-test run.
 NEXT: halwai fire mouth + soot (build_halwai.py), or A1b1 ration shop interior props.
 

@@ -301,6 +301,7 @@ Characters are parked until 26 Oct. Build everything that is not a character.
 - [ ] Hand-build sweets and snacks (samosa, jalebi, laddoo, barfi, gulab jamun) with real surface texture: fried golden-brown with darker edges, syrup sheen, sugar grain; vary size/rotation/shape across a tray; heap them, never a neat grid
 - [ ] Add visible flame and heat shimmer at the chulha, soot on the kadhai base and the wall behind, steam/smoke rising; the halwai currently looks switched off
   - PROGRESS 2026-10-23 (cycle 38ce, not ticked): live effect over both kadhais (src/halwaiFire.js, one Points draw call, shown within 30 m): wood-smoke column, oil steam, flame flecks. Proof docs/shots/halwai-fire-2026-10-23/close.png. Flame reads as sparks only (bhatti is a solid brick block with no fire mouth); needs a mouth cut in tools/blender/build_halwai.py. Still missing: soot on kadhai/wall, heat shimmer.
+  - 2026-10-27: fire mouth + soot on the bhatti already exist (f41f1f7). Tried a wall/ceiling soot stain twice (hard black rectangles, then stepped rectangles): both read as banners or holes, reverted, PARKED. Needs a soft-edged decal texture, not box geometry. Heat shimmer still missing. Proof of the failed tries: docs/shots/halwai-soot-2026-10-27/.
 
 ### A1b1. Every remaining interior and place (art director 2026-10-23)
 Apply CLAUDE.md section 5b to all of these without waiting for a per-place review note:
