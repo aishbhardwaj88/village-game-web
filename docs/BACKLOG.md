@@ -173,6 +173,7 @@ is in handoff.md, and build plus regression are green.
 
 ### A0-WEATHER. Materials too new (art director FAIL 2026-10-26) - before any more places
 - [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
+  - PROGRESS 2026-10-26 (not ticked): staged brick now has per-brick light/dark/overburnt variation in the shader (src/stagingYard.js), proof docs/shots/places-2026-10-26/brickvar/bus_front2.png. Cells are only roughly brick-aligned; no chipping yet.
 - [ ] Plaster: stains, patchiness, dirt at the base, sun fading near the top; it is factory clean
 - [x] Rebuild the bus adda maroon stripe as a proper faded dado band ~0.8 m tall (proof docs/shots/places-2026-10-26/bus3/front.png)
 - [x] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey (proof docs/shots/places-2026-10-26/bus3/front.png)
@@ -185,6 +186,7 @@ is in handoff.md, and build plus regression are green.
 
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
+  - PROGRESS 2026-10-26 (not ticked, read from the shipped GLBs with node tools): UVs survive and are ~1 unit per metre once the meshopt node scale is applied (bus adda, gurukul); every material but the decal carries dopahar_set so swapShared covers it; vertex colours carry real tint (plaster 0.01-0.96) but brick colours are nearly flat (0.20-0.45), so per-brick variation had to come from the shader. Not checked: swapShared at runtime on every mesh, only by data.
 - [x] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing (26 Oct: brick docs/shots/staged-closeup-2026-10-26/bus_brick_2m.png, plaster school_wall.png/post_wall.png; tin roof only seen at distance in the same frame)
 - [ ] Re-tint every staged place from colours SAMPLED out of her Places V1/<place>/MAIN_*.png, not picked by eye or reused from village defaults
 - [ ] Add the greenery her drawings show (grass, bushes, creepers, potted plants, trees) using real CC0 plant models only, never hand-built foliage; still skip khets and field crops

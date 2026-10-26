@@ -75,6 +75,16 @@ function addWeathering(m, set) {
         {
           diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.6, 3.5, 1.6)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
           ${set === 'brick' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.8);   // her brick is paler and patchier than the scan tint' : ''}
+          ${set === 'brick' ? `
+          {   // per-brick variation: the scan is one even red. 14 courses and ~4.8 bricks per course per tile; cells are only roughly brick-aligned (lengths vary), which reads as patchy fired clay
+            vec2 bt_ = vMapUv * vec2(4.8, 14.0);
+            float row_ = floor(bt_.y);
+            vec2 cell_ = vec2(floor(bt_.x + wh_(vec3(row_, 3.0, 1.0)) * 4.8), row_);
+            float r1_ = wh_(vec3(cell_, 7.0)), r2_ = wh_(vec3(cell_, 13.0));
+            diffuseColor.rgb *= 0.80 + 0.36 * r1_;                                   // lighter / darker bricks
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), step(0.93, r2_) * 0.8);   // the odd overburnt dark brick
+            diffuseColor.rgb *= vec3(1.0 + (r2_ - 0.5) * 0.14, 1.0, 1.0 - (r2_ - 0.5) * 0.12);   // hue drift orange to brown
+          }` : ''}
           float n1 = wn_(vWxyz * 0.55) * 0.6 + wn_(vWxyz * 2.1) * 0.4;
           diffuseColor.rgb *= 1.0 + (n1 - 0.5) * ${(mottle * 4).toFixed(3)};
           diffuseColor.r *= 1.0 + (wn_(vWxyz * 0.3 + 7.0) - 0.5) * 0.06;
