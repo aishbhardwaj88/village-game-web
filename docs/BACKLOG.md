@@ -171,6 +171,16 @@ is in handoff.md, and build plus regression are green.
 - [!] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge BLOCKED: no KTX2 encoder (toktx/basisu) is installed on this Mac and GPU-compressed textures need her before/after judgement.
 - [ ] Do not drop the HDRI further, do not drop prop textures to 512, do not simplify hero buildings
 
+### A0-WEATHER. Materials too new (art director FAIL 2026-10-26) - before any more places
+- [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
+- [ ] Plaster: stains, patchiness, dirt at the base, sun fading near the top; it is factory clean
+- [ ] Rebuild the bus adda maroon stripe as a proper faded dado band ~0.8 m tall
+- [ ] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey
+- [ ] Wall posters: real faded picture textures, varied and overlapping, no lettering; currently flat colour rectangles
+- [ ] Bus adda ground: packed earth with a broken brick paving strip along the road edge, not a concrete slab
+- [ ] STANDING RULE: weathering IS the look. Never ship a surface at full saturation. Base dirt, edge stains and colour variation before any place is called done. A clean new-looking build fails even with correct geometry
+- [ ] Re-check bus adda against LAYOUT.md item by item: tapri left, peepal+chabutra+charpai far right-back, pyaau far right, green double-sided board perpendicular at front-left, milestone front-right
+
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
 - [x] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing (26 Oct: brick docs/shots/staged-closeup-2026-10-26/bus_brick_2m.png, plaster school_wall.png/post_wall.png; tin roof only seen at distance in the same frame)

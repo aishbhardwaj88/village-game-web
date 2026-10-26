@@ -1136,3 +1136,43 @@ have rearranged the map."
    missions and side jobs, audio, menus, mobile.
 
 Do not stop. Do not wait for her. She is away for at least an hour.
+
+---
+
+## 2026-10-26 (art director) - BUS ADDA: FAIL. Everything is too new, too clean, too saturated.
+
+She compared `docs/shots/staged-closeup-2026-10-26/bus_brick_2m.png` against
+`Places V1/bus_adda/MAIN_bus_adda_front_isometric.png` and the colour and texture are
+wrong. The textures now TILE correctly (that part is fixed, keep it), but the material
+character is nothing like her drawing.
+
+**The single sentence version: her village is OLD, WEATHERED and SUN-BLEACHED. The
+build looks brand new and factory fresh.**
+
+Specific, measured against her image:
+
+| Element | Her reference | The build | Fix |
+|---|---|---|---|
+| Brick | muted brown-red, heavy grey/buff variation brick to brick, old and irregular, some darker and chipped | one uniform saturated bright red, perfectly regular, reads as wallpaper | desaturate, lighten, and add strong per-brick colour variation. No two bricks the same |
+| Cream wall | dirty, water-stained, patchy, sun-faded | flat clean cream | add stains, patchiness, dirt at the base, fading near the top |
+| Maroon band | a DEEP DADO BAND about 0.8 m tall at the wall base, faded | a thin decorative stripe | rebuild as a proper faded dado band |
+| Tin roof | pale whitish-grey, weathered, dull | dark grey, clean | lighten considerably, weather it |
+| Posters | real faded printed pictures, overlapping, different sizes | flat orange and grey rectangles | use actual faded picture textures, varied and overlapping. No lettering |
+| Ground | packed earth, with a strip of BROKEN BRICK PAVING along the road edge | plain concrete slab | packed earth + the broken brick paving strip |
+
+### Standing rule from this, applies to EVERY place
+**Weathering is not optional detail, it is the look.** Her whole reference set is
+aged: sun-bleached paint, dirt at wall bases, water stains under edges, chipped
+plaster showing brick beneath, uneven colour. A clean new-looking build is a FAIL
+even when the geometry and the tiling are correct.
+
+- Never ship a surface at full saturation. Her palette is muted throughout.
+- Always add base dirt, edge stains and colour variation before calling a place done.
+- Sample the colours from her image and then check: does the render read as OLD?
+
+### Also check against LAYOUT.md before re-rendering
+`Places V1/bus_adda/LAYOUT.md` lists the chai tapri at the left, peepal on a round
+brick chabutra with a charpai at the far right-back, pyaau with 4 clay pots under a
+thatch roof at the far right, the green double-sided bus board perpendicular to the
+road at the front-left, and the milestone at the front-right. Confirm each is built
+and placed per her 25 Oct overrides, and say so item by item in the report.
