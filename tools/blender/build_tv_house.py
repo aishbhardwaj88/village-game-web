@@ -17,7 +17,7 @@ OUT = os.path.join(ROOT, 'tmp', 'tv_house_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(53)
-CREAM = 0xE4CC8E
+CREAM = 0xE8D8A6
 MAROON = 0x7A2A2E
 GOLD = 0xC9A23A
 DARK = 0x4A2E22
@@ -137,12 +137,12 @@ for xx0, xx1, y0, y1 in ((dx0, dx0 + 0.12, 0, 2.7), (dx1 - 0.12, dx1, 0, 2.7), (
     add('wood', wb('df', xx0, xx1, Z1 - T - 0.02, Z1 + 0.05, y0, y1, 0.0), DARK)
 for sg in (-1, 1):
     xa, xb = (dx0 - 0.9, dx0) if sg < 0 else (dx1, dx1 + 0.9)
-    add('wood', wb('door_leaf', xa, xb, Z1 + 0.05, Z1 + 0.1, 0.05, 2.6, 0.004), 0x6A4A2E)
+    add('wood', wb('door_leaf', xa, xb, Z1 + 0.05, Z1 + 0.1, 0.05, 2.6, 0.004), 0x8A5A34)
     for r in range(3):
         add('wood', wb('door_carve', xa + 0.1, xb - 0.1, Z1 + 0.1, Z1 + 0.13, 0.25 + r * 0.8, 0.85 + r * 0.8, 0.0), 0x4F351F)
 for k in range(3):
     add('trim', wb('tile_step', -1.8, 1.8, Z1 + 0.05 + (2 - k) * 0.3, Z1 + 0.05 + (3 - k) * 0.3, 0, 0.15 * (k + 1), 0.006), 0xC9B79B)
-add('wood', wb('cabinet', -1.4, 0.0, -9.6, -8.6, 0.1, 0.85, 0.01), 0x6A4A2E)
+add('wood', wb('cabinet', -1.4, 0.0, -9.6, -8.6, 0.1, 0.85, 0.01), 0x8A5A34)
 add('paint', wb('lace', -1.45, 0.05, -9.65, -8.55, 0.85, 0.88, 0.0), 0xF2EEDF)
 add('paint', wb('tv_body', -1.0, -0.3, -9.4, -8.9, 0.88, 1.5, 0.02), 0x2B2D30)
 add('paint', wb('tv_screen', -0.95, -0.35, -8.9, -8.87, 0.95, 1.43, 0.0), 0x14161A)
@@ -152,7 +152,7 @@ for sx in (-2.6, 1.2):
     add('wood', wb('sofa_arm', sx, sx + 0.2, -6.7, -5.7, 0.1, 0.7, 0.02), 0x8A4A3A)
 for k in range(3):
     add('paint', wb('crochet', -2.4 + k * 1.3, -1.8 + k * 1.3, -6.0, -5.7, 0.5, 0.56, 0.0), 0xF2EEDF)
-add('wood', wb('showcase', 1.8, 3.2, -9.7, -9.1, 0.1, 2.0, 0.01), 0x6A4A2E)
+add('wood', wb('showcase', 1.8, 3.2, -9.7, -9.1, 0.1, 2.0, 0.01), 0x8A5A34)
 add('paint', wb('showcase_glass', 1.85, 3.15, -9.1, -9.08, 0.5, 1.9, 0.0), 0xBFD7DC)
 for h in (0.9, 1.4):
     add('wood', wb('showcase_shelf', 1.85, 3.15, -9.65, -9.1, h, h + 0.03, 0.0), 0x5A3C28)
