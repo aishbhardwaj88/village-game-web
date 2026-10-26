@@ -291,7 +291,7 @@ function inPage(cfg) {
   tick('part 3');
   // ---------- 4. NPC routes through the real resolver ----------
   const npcFails = [];
-  let npcLegs = 0;
+  let npcLegs = 0, roofLegs = 0;
   for (const route of d.npcRoutes) {
     const wps = route.waypoints;
     if (!wps || wps.length < 2) continue;
@@ -300,7 +300,15 @@ function inPage(cfg) {
     for (let i = 0; i < n; i++) {
       const a = wps[i], b = wps[(i + 1) % wps.length];
       if (a == null || b == null) continue;
-      if ((a.y ?? 0) > 0.5 || (b.y ?? 0) > 0.5) continue; // rooftop legs: the NPC walks over the walls on purpose (see createWaypointRun)
+      if ((a.y ?? 0) > 0.5 || (b.y ?? 0) > 0.5) { // rooftop legs: the NPC walks over the walls on purpose (see createWaypointRun)
+        roofLegs++; // collision is 2D with no box heights, so the legs can't be walked; but each ground-level end must not sit inside a solid
+        for (const e of [a, b]) {
+          if ((e.y ?? 0) > 0.5) continue;
+          const bad = near(e.x, e.z, 4, null).find((o) => boxDist(e.x, e.z, o) < radiusFor(o, route.radius) - SLACK);
+          if (bad) npcFails.push({ route: route.name, leg: i, from: [a.x, a.z], to: [b.x, b.z], insideSolid: (bad.src || 'hand-tagged') + ' (rooftop-leg ground end)' });
+        }
+        continue;
+      }
       pos.set(a.x, 0, a.z);
       npcLegs++;
       const nbx = near((a.x + b.x) / 2, (a.z + b.z) / 2, Math.hypot(b.x - a.x, b.z - a.z) / 2 + 6, null);
@@ -384,7 +392,7 @@ function inPage(cfg) {
     stat: { boxes: stat.boxes, tested: stat.tested, skipped: stat.skipped, boxesWithTests: stat.boxesWithTests, fails: staticFails.map((f) => ({ ...f, text: label(f.box) })), enclosed: enclosed.length },
     dyn: { boxes: dynBoxes.length, tested: dynTested, fails: dynFails, vehicleCover },
     veh: { tested: vehTested, kinds: vehicleKinds, objects: bigBoxes.length, fails: vehFails.map((f) => ({ ...f, text: label(f.box) })) },
-    npc: { routes: d.npcRoutes.length, legs: npcLegs, fails: npcFails },
+    npc: { routes: d.npcRoutes.length, legs: npcLegs, roofLegs, fails: npcFails },
     cover: { cells: cells.size, uncovered },
   };
 }
@@ -476,7 +484,7 @@ async function main() {
     for (const f of r.veh.fails) console.log(`  FAIL ${f.kind} (${f.mname}) into ${f.text}: dir(${f.dir}) ended at (${f2(f.at)}), ${(f.pen * 100).toFixed(0)} cm overlap`);
     failures += r.veh.fails.length;
 
-    console.log(`[4] NPCS ${r.npc.routes} routes, ${r.npc.legs} legs walked through the real resolver`);
+    console.log(`[4] NPCS ${r.npc.routes} routes, ${r.npc.legs} legs walked through the real resolver, ${r.npc.roofLegs} rooftop legs only end-checked (collision has no box heights)`);
     for (const f of r.npc.fails) console.log(`  FAIL route ${f.route} leg ${f.leg} (${f2(f.from)})->(${f2(f.to)}): ${f.insideSolid ? 'waypoint inside ' + f.insideSolid + '; ' : ''}stopped ${f.stoppedShort} m short${f.blockedBy ? ' at ' + f.blockedBy : ''}, ${f.maxOffPath} m off the path`);
     failures += r.npc.fails.length;
 
