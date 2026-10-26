@@ -18,7 +18,7 @@ OUT = os.path.join(ROOT, 'tmp', 'ration_shop_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 rnd = random.Random(41)
 add = kit.add
-MUST = 0xA88A52
+MUST = 0xA68C48
 BROWN = 0x5A4535
 IRON = 0x3A3C3E
 T = 0.25

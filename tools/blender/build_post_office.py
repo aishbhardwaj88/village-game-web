@@ -17,7 +17,7 @@ OUT = os.path.join(ROOT, 'tmp', 'post_office_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(43)
-YEL = 0xF0DFA2
+YEL = 0xEAE0B4
 RED = 0x7A2A26
 IRON = 0x3A3C3E
 DARK = 0x3A2A22
