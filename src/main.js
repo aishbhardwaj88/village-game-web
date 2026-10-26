@@ -1472,7 +1472,7 @@ async function main() {
             const g = new THREE.Group();
             g.name = `gali_${id}_${i}_zone`;
             g.add(createStreetLamps([{ from, to, width }], { type: 'solar', everyMetres: 18 }));
-            if (id !== 'h1') g.add(createGaliEdging(from, to, width, `gali_edge_${id}_${i}`)); // kerbs + open drain (A-2c); the 9 m hero lane has its own frontage
+            g.add(createGaliEdging(from, to, width, `gali_edge_${id}_${i}`)); // kerbs + open drain (A-2c), hero lane included
             return g;
           },
         });
