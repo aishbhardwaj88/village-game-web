@@ -15,17 +15,17 @@ OUT = os.path.join(ROOT, 'tmp', 'akhada_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal', 'tin'), wood_slot='props')
 add = kit.add
 rnd = random.Random(73)
-add('paint', wb('patch_l', -11, -6, -10, 10, -0.08, 0.03, 0.0), 0xB59468)
-add('paint', wb('patch_r', 6, 11, -10, 10, -0.08, 0.03, 0.0), 0xB59468)
-add('paint', wb('patch_b', -6, 6, -10, -6, -0.08, 0.03, 0.0), 0xB59468)
-add('paint', wb('patch_f', -6, 6, 6, 10, -0.08, 0.03, 0.0), 0xB59468)
+add('paint', wb('patch_l', -11, -6, -10, 10, -0.08, 0.03, 0.0), 0xD4AA78)
+add('paint', wb('patch_r', 6, 11, -10, 10, -0.08, 0.03, 0.0), 0xD4AA78)
+add('paint', wb('patch_b', -6, 6, -10, -6, -0.08, 0.03, 0.0), 0xD4AA78)
+add('paint', wb('patch_f', -6, 6, 6, 10, -0.08, 0.03, 0.0), 0xD4AA78)
 # the pit: the world ground cannot be dug, so the pit is read as sunk by a 0.3 m mud bank round a reddish-brown soil floor laid on the ground (floor 0.3 m below the bank top)
-add('paint', wb('pit_floor', -6, 6, -6, 6, 0.0, 0.06, 0.0), 0x8A4B34)
+add('paint', wb('pit_floor', -6, 6, -6, 6, 0.0, 0.06, 0.0), 0xC25C34)
 for (a, b, c, d) in ((-6.8, 6.8, -6.8, -6.0), (-6.8, 6.8, 6.0, 6.8), (-6.8, -6.0, -6.0, 6.0), (6.0, 6.8, -6.0, 6.0)):
-    add('paint', wb('bank', a, b, c, d, 0.0, 0.33, 0.1), 0xA06E4C)
+    add('paint', wb('bank', a, b, c, d, 0.0, 0.33, 0.1), 0xC8925E)
 for k in range(10):
     a = rnd.uniform(0, math.tau)
-    add('paint', cyl('soil_mound', rnd.uniform(-4.5, 4.5), rnd.uniform(-4.5, 4.5), 0.06, 0.12, rnd.uniform(0.5, 1.1), rnd.uniform(0.3, 0.8), 10), 0x8F5238)
+    add('paint', cyl('soil_mound', rnd.uniform(-4.5, 4.5), rnd.uniform(-4.5, 4.5), 0.06, 0.12, rnd.uniform(0.5, 1.1), rnd.uniform(0.3, 0.8), 10), 0xC8683E)
 # back-left: neem platform (empty) + climbing rope on a bamboo frame beside it
 pk.brick_ring(kit, -8.0, -7.6, 1.5, 0, 0.35, 0.34, 20)
 add('paint', cyl('neem_soil', -8.0, -7.6, 0.0, 0.3, 1.3, 1.3, 20), 0x4A3524)
@@ -52,9 +52,9 @@ for (x, z, h) in ((sx0, sz0, 2.4), (sx1, sz0, 2.4), (sx0, sz1, 1.9), (sx1, sz1, 
     add('wood', limb('bamboo', (x, z, 0), (x + 0.03, z, h), 0.08, 0.07))
 for k in range(3):
     xa = sx0 - 0.3 + k * 1.2
-    add('tin', prism_x('shed_sheet', xa, xa + 1.18, [(sz0 - 0.3, 2.5), (sz1 + 0.4, 2.0), (sz1 + 0.4, 2.05), (sz0 - 0.3, 2.55)]), (0x8C5A44, 0x7A4F3C, 0xA0654A)[k])
+    add('tin', prism_x('shed_sheet', xa, xa + 1.18, [(sz0 - 0.3, 2.5), (sz1 + 0.4, 2.0), (sz1 + 0.4, 2.05), (sz0 - 0.3, 2.55)]), (0xBE6A48, 0xA85A3C, 0xC87650)[k])
 for k in range(5):
-    add('tin', wb('back_sheet', sx0 + k * 0.6, sx0 + (k + 1) * 0.6 - 0.01, sz0 - 0.05, sz0, 0, 2.3, 0.0), (0x8C5A44, 0x9A9EA0, 0x7A4F3C, 0xA0654A, 0x6E7478)[k])
+    add('tin', wb('back_sheet', sx0 + k * 0.6, sx0 + (k + 1) * 0.6 - 0.01, sz0 - 0.05, sz0, 0, 2.3, 0.0), (0xBE6A48, 0xB4B8BA, 0xA85A3C, 0xC87650, 0x8E9498)[k])
 add('paint', limb('dry_line', (sx0, sz1 + 0.2, 1.7), (sx1, sz1 + 0.2, 1.7), 0.02), 0xB89A64)
 for k in range(2):
     add('paint', wb('cloth', sx0 + 0.5 + k * 1.2, sx0 + 1.0 + k * 1.2, sz1 + 0.18, sz1 + 0.22, 0.9, 1.7, 0.0), (0xC9D4D8, 0xD8B8A0)[k])
