@@ -36,7 +36,7 @@ LOW_H, RAIL_H = 0.5, 1.5
 IRON = 0x3A3D42
 COPING = 0xB9B6AE
 CEMENT = 0xA9A69F
-DIRT = 0xA48B69
+DIRT = 0xC09A68
 GATE_HALF = 2.0   # clear half-opening between the pillars
 PIER = 0.6
 
@@ -56,8 +56,8 @@ def iron(o, c=IRON):
 def build_ground():
     kit.add('paint', wb('ground', -HX, HX, -HZ, HZ, -0.05, 0.04, 0), DIRT)
     # worn, darker packed earth along the cattle line and gate approach, swept paler elsewhere
-    kit.add('paint', wb('ground_trodden', -13.0, -9.5, -13.0, 8.0, 0.04, 0.045, 0), 0x8E7757)
-    kit.add('paint', wb('ground_gate', -3.2, 3.2, 8.0, HZ - 0.3, 0.04, 0.046, 0), 0x95805F)
+    kit.add('paint', wb('ground_trodden', -13.0, -9.5, -13.0, 8.0, 0.04, 0.045, 0), 0xA98660)
+    kit.add('paint', wb('ground_gate', -3.2, 3.2, 8.0, HZ - 0.3, 0.04, 0.046, 0), 0xB68F5E)
     # cement apron under the gate
     trim(wb('gate_apron', -GATE_HALF - PIER, GATE_HALF + PIER, HZ - 0.45, HZ + 0.9, 0, 0.05, 0.01), 0xB2AFA7)
 
