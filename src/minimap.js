@@ -8,7 +8,8 @@
 import { PLACES } from './freeRoam.js';
 
 const HIDE_KEY = 'dopahar.minimapHidden';
-const SPAN = 110; // metres across the window
+const SPAN = 110; // metres across the window on foot
+const SPAN_FAST = 220; // widened window while moving at vehicle speed, so the road ahead shows
 const INK = '#2b3a67';
 
 /** Small solid glyph per place kind - readable at ~6 px, unlike the full map's line icons. */
@@ -59,7 +60,10 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
   const S = 168; // backing-store size; CSS scales it down on phones
   canvas.width = S;
   canvas.height = S;
-  const k = S / SPAN;
+  let span = SPAN; // eases between SPAN and SPAN_FAST with the player's speed
+  let k = S / span;
+  let last = null; // previous drawn position, for speed
+  let lastT = 0;
 
   let hidden = false;
   try { hidden = localStorage.getItem(HIDE_KEY) === '1'; } catch { /* private mode */ }
@@ -87,6 +91,15 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
 
   function draw() {
     const p = getPlayerPos();
+    const now = performance.now();
+    if (last && now > lastT) {
+      const v = Math.hypot(p.x - last.x, p.z - last.z) / ((now - lastT) / 1000);
+      const want = v > 7 ? SPAN_FAST : SPAN; // running is ~5 m/s, vehicles faster
+      span += (want - span) * 0.12;
+      k = S / span;
+    }
+    last = { x: p.x, z: p.z };
+    lastT = now;
     const wx = (x) => S / 2 + (x - p.x) * k;
     const wy = (z) => S / 2 + (z - p.z) * k;
     ctx.clearRect(0, 0, S, S);

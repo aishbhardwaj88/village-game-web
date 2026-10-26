@@ -1,3 +1,6 @@
+**2026-10-26 (minimap speed zoom):** Game change: corner minimap (src/minimap.js) now eases from a 110 m window on foot to 220 m when moving faster than 7 m/s (vehicles), so the road ahead shows; returns when slowed. No screenshot taken, not eyeballed in play, unjudged. Research box A-2b stays open. Build passed, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: eyeball minimap zoom in a vehicle, then further A-2b/Tier 2 items.
+
 **2026-10-26 (audio: per-place ambience):** Game change: src/audio.js has a place bed (band-passed noise with slow swell) whose tone and level follow the nearest PLACES kind the player is inside: low crowd murmur in bazaar/mandi/highway, brighter chatter at schools, light murmur at shops, extra wind over fields, silent elsewhere (main.js feeds it each frame). Audio only, no screenshot possible, not listened to by a human, unjudged by ear. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: BACKLOG A-2b minimap research item, or audio mix check by ear (hers).
 
