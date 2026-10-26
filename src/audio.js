@@ -513,32 +513,6 @@ export class AudioEngine {
     osc.start(t);
     osc.stop(t + 0.18);
 
-    // Canal water: band-passed noise with a slow swell, silent until the player is near
-    // the channel (setListenerDistanceToWater, called each frame from main.js).
-    const water = this.ctx.createBufferSource();
-    water.buffer = createNoiseBuffer(this.ctx, 4);
-    water.loop = true;
-    const waterFilter = this.ctx.createBiquadFilter();
-    waterFilter.type = 'bandpass';
-    waterFilter.frequency.value = 900;
-    waterFilter.Q.value = 0.7;
-    const waterSwell = this.ctx.createOscillator();
-    waterSwell.frequency.value = 0.35;
-    const waterSwellGain = this.ctx.createGain();
-    waterSwellGain.gain.value = 0.25;
-    const waterBase = this.ctx.createConstantSource();
-    waterBase.offset.value = 0.75;
-    const waterAmp = this.ctx.createGain();
-    waterAmp.gain.value = 0;
-    waterSwell.connect(waterSwellGain).connect(waterAmp.gain);
-    waterBase.connect(waterAmp.gain);
-    this._waterGain = this.ctx.createGain();
-    this._waterGain.gain.value = 0;
-    water.connect(waterFilter).connect(waterAmp).connect(this._waterGain).connect(this.master);
-    water.start();
-    waterSwell.start();
-    waterBase.start();
-
     setTimeout(() => this._playBirdChirp(), 4000 + Math.random() * 8000);
   }
 
@@ -603,5 +577,31 @@ export class AudioEngine {
     radio.start();
     radioWobble.start();
     radioWobbleBase.start();
+
+    // Canal water: band-passed noise with a slow swell, silent until the player is near
+    // the channel (setListenerDistanceToWater, called each frame from main.js).
+    const water = this.ctx.createBufferSource();
+    water.buffer = createNoiseBuffer(this.ctx, 4);
+    water.loop = true;
+    const waterFilter = this.ctx.createBiquadFilter();
+    waterFilter.type = 'bandpass';
+    waterFilter.frequency.value = 900;
+    waterFilter.Q.value = 0.7;
+    const waterSwell = this.ctx.createOscillator();
+    waterSwell.frequency.value = 0.35;
+    const waterSwellGain = this.ctx.createGain();
+    waterSwellGain.gain.value = 0.25;
+    const waterBase = this.ctx.createConstantSource();
+    waterBase.offset.value = 0.75;
+    const waterAmp = this.ctx.createGain();
+    waterAmp.gain.value = 0;
+    waterSwell.connect(waterSwellGain).connect(waterAmp.gain);
+    waterBase.connect(waterAmp.gain);
+    this._waterGain = this.ctx.createGain();
+    this._waterGain.gain.value = 0;
+    water.connect(waterFilter).connect(waterAmp).connect(this._waterGain).connect(this.master);
+    water.start();
+    waterSwell.start();
+    waterBase.start();
   }
 }

@@ -1,3 +1,6 @@
+**2026-10-26 (audio bug fix, canal water loop leak):** Game change (audio only, invisible): the canal water murmur from the earlier water-ambience commit was built inside `_playBirdChirp`, which re-runs every 4-12 s, so it stacked a new endless noise source each time (growing hiss, old ones stuck at their last gain). Moved into `_startAmbience` so it is built once (src/audio.js). Not heard by ear; no screenshot applies. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: audio polish; far-east road is her call.
+
 **2026-10-26 (part-6 flake, second guard):** Game change (invisible): src/zoneManager.js now does a second collider rebuild 1.5 s after any model load, besides the 250 ms one, so a slow .glb swap-in cannot stay walk-through. Two consecutive full builds passed (collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed). Two passes do not prove the flake gone; watch later builds. No screenshot applies.
 NEXT: audio polish; far-east road is her call.
 
