@@ -79,6 +79,17 @@ no biogas dome, because LAYOUT.md was never opened.)
   gives UVs in metres, so a larger repeat tiles to sub-pixel and averages to flat
   colour. Colour comes from `finalize`'s tints, sampled from her reference image.
 
+## 5a2. MATERIALS ARE A SHARED LIBRARY. REVIEW IS A SUBAGENT.
+
+- **A place build may never define its own material values.** Materials live in one
+  approved library and are used by name. Re-deciding brick per place is what caused
+  two full texture FAIL rounds on 25-26 Oct, discovered only after 20 places existed.
+  If a place needs a material the library lacks, add it to the library, re-review the
+  material board, then use it.
+- **`.claude/agents/art-reviewer.md` judges every render before it is called done.**
+  It is read-only and never built the thing, which is the point. A place is not done
+  until it returns PASS; its FAIL list is the rework list. Never grade your own work.
+
 ## 5b. THE STANDING GOAL (art director, 2026-10-23) - applies to every place, always
 
 **Maximum realism, without hurting load time or framerate.** Both halves are the

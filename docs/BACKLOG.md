@@ -171,6 +171,14 @@ is in handoff.md, and build plus regression are green.
 - [!] ONLY if still over 10 s: KTX2 on ground/walls/roofs/soil/props only, NEVER on signboards or any readable text, with a before/after comparison for her to judge BLOCKED: no KTX2 encoder (toktx/basisu) is installed on this Mac and GPU-compressed textures need her before/after judgement.
 - [ ] Do not drop the HDRI further, do not drop prop textures to 512, do not simplify hero buildings
 
+### A0-MAT. Material library + review gate (art director 2026-10-26) - DO THIS FIRST
+- [ ] Build tools/blender/build_material_board.py: one 2x2 m panel per material (brick, lime plaster, cement plaster, painted wood, tin, terracotta, concrete, thatch, mud-and-dung, jute, rusted steel, packed earth), each with base dirt, edge stains, per-unit variation, sun fading, chipping
+- [ ] Render every panel at 2 m into docs/shots/material-board/
+- [ ] Have the art-reviewer subagent judge the board against crops of her Places V1 references; iterate the BOARD until it returns PASS, not the places
+- [ ] Freeze the approved values as the shared library; place builds may NOT define their own material values, they use the library by name
+- [ ] Re-render the already-built places against the frozen library
+- [ ] GATE FROM NOW ON: run the art-reviewer on every place render against its reference + LAYOUT.md before committing it done. A place is not done until it returns PASS. Never grade your own work
+
 ### A0-WEATHER. Materials too new (art director FAIL 2026-10-26) - before any more places
 - [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
   - PROGRESS 2026-10-26 (not ticked): staged brick now has per-brick light/dark/overburnt variation in the shader (src/stagingYard.js), proof docs/shots/places-2026-10-26/brickvar/bus_front2.png. Cells are only roughly brick-aligned; no chipping yet.

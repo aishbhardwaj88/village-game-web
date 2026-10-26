@@ -1176,3 +1176,50 @@ brick chabutra with a charpai at the far right-back, pyaau with 4 clay pots unde
 thatch roof at the far right, the green double-sided bus board perpendicular to the
 road at the front-left, and the milestone at the front-right. Confirm each is built
 and placed per her 25 Oct overrides, and say so item by item in the report.
+
+---
+
+## 2026-10-26 (art director) - STOP RE-DECIDING MATERIALS PER PLACE. Build a locked library.
+
+**Her words: "why does it even do bad texture and then do a good texture... you can
+just tell it it's a bad texture and not let it waste its time continuing."** She is
+right, and the root cause is structural.
+
+**The problem:** materials are being chosen and tuned inside each place's build script.
+So brick is re-decided for the bus adda, again for the school, again for the gaushala.
+Each one can fail independently, and a material fault is only discovered after 20
+places are already built. Two full FAIL rounds on texture have cost about a day.
+
+### The fix: one material library, approved once, reused everywhere
+
+1. **Build `tools/blender/build_material_board.py`**: a single small scene, one panel
+   per material, each about 2 x 2 m, side by side on a plain ground:
+   brick, lime plaster, cement plaster, painted wood, tin roof, terracotta tile,
+   concrete, thatch, mud-and-dung, jute, rusted steel, packed earth.
+   Each panel carries the full treatment: base dirt, edge stains, per-unit colour
+   variation, sun fading, chipped areas.
+2. **Render it at 2 m per panel** into `docs/shots/material-board/`.
+3. **Have the `art-reviewer` subagent judge it** against crops of her reference images
+   (`Places V1/*/MAIN_*.png`). Iterate the board, not the places, until it PASSES.
+4. **Freeze the result as the shared library** in `src/materials.js` / `arch.py`.
+   Every place from then on uses those materials by name. **A place build may NOT
+   define its own material values.** If a place needs something the library lacks, add
+   it to the library and re-review the board.
+5. **Re-render the already-built places against the frozen library** and move on.
+
+### The review gate, from now on, every time
+
+**`.claude/agents/art-reviewer.md` exists. Use it. It is read-only and did not build
+the thing, which is the whole point.**
+
+- After any material change: review the material board before touching a place.
+- After any place build: review that place's render against her reference and its
+  LAYOUT.md, BEFORE committing it as done.
+- **A place is not done until the reviewer returns PASS.** Its FAIL list is the rework
+  list. Do not argue with it, do not grade your own work.
+- The reviewer must name a concrete difference even on a PASS. "Looks good" is not a
+  review.
+
+### Why this saves her time and tokens
+A material fault is caught on ONE sample panel instead of after 20 places. A place
+fault is caught by a fresh reviewer in the same run instead of a day later by her.
