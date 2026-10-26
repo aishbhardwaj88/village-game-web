@@ -53,7 +53,7 @@ function addWeathering(m, set) {
   const mottle = set === 'brick' ? 0.10 : set === 'thatch' ? 0.12 : 0.16;
   const grime = set === 'brick' ? 0.15 : 0.32;
   const streak = set === 'plaster' ? 0.10 : 0.0;
-  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : set === 'tin' ? 1.9 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
+  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : set === 'tin' ? 1.9 : set === 'wood' ? 2.6 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWxyz;')
