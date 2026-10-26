@@ -1092,3 +1092,47 @@ KTX2/Basis compression, applied carefully. **She will not compromise on quality*
 - Do not apply heavier mesh simplification to the hero buildings.
 
 **Quality is not the lever. Payload is.**
+
+---
+
+## 2026-10-26, 10:30 IST - three decisions from the art director. All DEFERRED.
+
+**1. Load time: deferred.** "We will figure it out once the game has been done."
+- Stop spending cycles on it. Do NOT try KTX2, do NOT trim textures or meshes for
+  size, do NOT re-run the load-time test every cycle.
+- Keep staying inside the 40 MB asset ceiling as normal, that rule is unchanged.
+- Note for later: my earlier claim that dropping the staging yard would save ~10 MB
+  was WRONG, the yard was never in the Play payload. The 12.5 MB is the core village.
+
+**2. Canal and pond: paused.** "Once we have built everything, we will first see if
+it's needed and also what will be the location."
+- Do NOT make a terrain decision, do NOT build raised-bank workarounds, do NOT dig.
+- Leave both as they are. Close the question in NEEDS_YOU as deferred.
+
+**3. Lanes to the four stranded places: leave it.** "We will build the lanes once we
+have rearranged the map."
+- Family field, gaushala, mango baagh, mandi keep their signposts and no new lanes.
+- Close that question in NEEDS_YOU as deferred.
+
+**Close all three in `docs/NEEDS_YOU.md` as deferred so they stop being re-raised.**
+
+## What to work on instead, in this order
+
+1. **Finish A0-TEX.** It is still the open FAIL.
+   - Re-tint EVERY staged place from colours sampled out of her
+     `Places V1/<place>/MAIN_*.png`. Only the ration shop and puncture shop are done.
+     The other 20 are not.
+   - Add the greenery each drawing shows, with real CC0 plant models. Potted plants
+     were reverted for reading as dead twigs: find better models rather than dropping
+     the item, and if no good free model exists for one plant, say so in NEEDS_YOU
+     and move on.
+   - Produce the 2 m close-up proof (brick wall, plaster wall, tin roof) beside a crop
+     of her reference. That proof has not been delivered yet.
+2. **`houses_kit`**: the 8 types are built and instanced in the yard but have no
+   `houses_kit*` model wired the way the other places are. Finish that wiring.
+3. **`vehicles`**: `Places V1/vehicles/` has a LAYOUT.md and no corresponding build.
+   Read it and build what it specifies.
+4. Then back to `docs/BACKLOG.md` section A in order: collision leftovers, signboards,
+   missions and side jobs, audio, menus, mobile.
+
+Do not stop. Do not wait for her. She is away for at least an hour.
