@@ -123,6 +123,23 @@ add('paint', sphere('bulb', 0.0, -2.0, 2.9, 0.07, 0.07, 0.09, 1), 0xF4E9B0)
 add('metal', limb('bulb_cord', (0.0, -2.0, 3.55), (0.0, -2.0, 2.97), 0.012), 0x1B1B1D)
 for k in range(2):
     sack_fn(kit, -1.0 + k * 0.5, -3.7, 0, 0.4 * k, 0xD9CDAF, w=0.4, d=0.28, hh=0.35)
+# wall shelves with tins (left wall), ration card board with pinned cards (right wall), measuring cans on the counter
+for hh in (1.3, 1.8, 2.3):
+    add('wood', wb('shelf', X0 + T, X0 + T + 0.3, -4.7, -3.3, hh, hh + 0.04, 0.004))
+for sz in (-4.7, -3.34):
+    add('wood', wb('shelf_side', X0 + T, X0 + T + 0.3, sz, sz + 0.04, 1.3, 2.34, 0.0))
+for si, hh in enumerate((1.34, 1.84, 2.34)):
+    for k in range(5 + si % 2):
+        r = 0.05 + rnd.random() * 0.025
+        add('metal', cyl('tin', X0 + T + 0.15 + rnd.uniform(-0.04, 0.04), -4.62 + k * (1.25 / (4 + si % 2)), hh, hh + 0.1 + rnd.random() * 0.1, r, r, 10),
+            (0x9A9DA0, 0xB08A50, 0x8A5A3A, 0xC4C0B4)[(k + si) % 4])
+add('wood', wb('card_board', X1 - T - 0.05, X1 - T, -4.6, -3.3, 1.4, 2.3, 0.004), 0x6A4A32)
+for k in range(10):
+    cz = -4.5 + (k % 5) * 0.25
+    ch = 1.55 + (k // 5) * 0.4
+    add('paint', wb('ration_card', X1 - T - 0.075, X1 - T - 0.05, cz, cz + 0.18, ch, ch + 0.25, 0.0), (0xE8DCB8, 0xC8D4C0, 0xEBCFA0, 0xD9B8A8)[k % 4])
+for k, (r, hgt) in enumerate(((0.07, 0.14), (0.06, 0.12), (0.05, 0.1), (0.04, 0.08))):
+    add('metal', cyl('measure', -2.0 + k * 0.26, -0.4, 1.02, 1.02 + hgt, r, r, 10), (0xA67C3C, STEEL)[k % 2])
 # barred windows with open dark shutters on each side wall
 def side_window(x, z0, z1, sg):
     for k in range(1, 9):
