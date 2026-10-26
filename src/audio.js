@@ -171,9 +171,11 @@ export class AudioEngine {
     const profile =
       surface === 'cement'
         ? { freq: 650, q: 1.4, gain: 0.16, decay: 0.06 }
-        : surface === 'soil'
-          ? { freq: 140, q: 0.6, gain: 0.16, decay: 0.13 }
-          : { freq: 220, q: 0.9, gain: 0.18, decay: 0.09 };
+        : surface === 'tarmac'
+          ? { freq: 520, q: 1.1, gain: 0.15, decay: 0.07 }
+          : surface === 'soil'
+            ? { freq: 140, q: 0.6, gain: 0.16, decay: 0.13 }
+            : { freq: 220, q: 0.9, gain: 0.18, decay: 0.09 };
 
     const noise = this.ctx.createBufferSource();
     noise.buffer = createNoiseBuffer(this.ctx, 0.16);

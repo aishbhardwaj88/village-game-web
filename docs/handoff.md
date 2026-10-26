@@ -1,3 +1,6 @@
+**2026-10-26 (tarmac footsteps):** Game change (audio only): walking on the highway tarmac strip (x 198-212, z -35 to 115) now plays a harder, drier footstep than lane dirt (src/surfaces.js `TARMAC`, src/audio.js `_playFootstep`). Not heard by ear, no screenshot applies; selected by the same `surfaceAt` path the other surfaces use. Build ALL PASSED on rerun, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed. WATCH: the first build run failed part 6 once (zone gurukul_v2, 1750 colliders `hb_brick` not registered until a manual rebuild); the rerun passed with the same code. That is the second intermittent part-6 failure on staged places, so late registration there is probably not fully fixed.
+NEXT: chase the intermittent part-6 staged-place failure (gurukul_v2 / staging_track), then more audio polish.
+
 **2026-10-26 (A-2c on-foot findability audit, no game change):** 39 of 39 village places reached on foot under real keyboard input from the house gate; walk 9 to 74 s; 12 places sit 69 to 183 m off any drawn lane (open-ground walks). Report docs/findability-onfoot-2026-10-26.md, shots docs/shots/onfoot-walk-2026-10-25/. Ticked the AUDIT box.
 NEXT: audio polish, then far-east cluster road decision (art director's call).
 

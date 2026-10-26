@@ -11,7 +11,10 @@ import { FIELD_CENTER, FIELD_SIZE } from './field.js';
 const HOUSE_COURTYARD = { halfX: 9, halfZ: 7 };
 const SCHOOL_YARD = { halfX: 15, halfZ: 12 };
 
-export const SURFACE = { CEMENT: 'cement', SOIL: 'soil', DIRT: 'dirt' };
+// Highway tarmac strip: 14 x 150 m centred on the highway anchor (205, 40), src/farmSites.js roadGeos.
+const TARMAC = { x: 205, z: 40, halfX: 7, halfZ: 75 };
+
+export const SURFACE = { CEMENT: 'cement', SOIL: 'soil', DIRT: 'dirt', TARMAC: 'tarmac' };
 
 export function surfaceAt(x, z) {
   if (Math.abs(x - HOUSE_CENTER.x) < HOUSE_COURTYARD.halfX && Math.abs(z - HOUSE_CENTER.z) < HOUSE_COURTYARD.halfZ) {
@@ -22,6 +25,9 @@ export function surfaceAt(x, z) {
   }
   if (Math.abs(x - FIELD_CENTER.x) < FIELD_SIZE.x / 2 && Math.abs(z - FIELD_CENTER.z) < FIELD_SIZE.z / 2) {
     return SURFACE.SOIL;
+  }
+  if (Math.abs(x - TARMAC.x) < TARMAC.halfX && Math.abs(z - TARMAC.z) < TARMAC.halfZ) {
+    return SURFACE.TARMAC;
   }
   return SURFACE.DIRT;
 }
