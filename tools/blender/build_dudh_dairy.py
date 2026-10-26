@@ -148,15 +148,19 @@ def build_shop():
     add('plinth', wb('band_r', SH_X1 - 0.03, SH_X1 + 0.03, SH_Z0, SH_Z1, 0, 0.8, 0.0), BLUE)
     # roof slab with overhang, a pale-blue edge line, parapet with a blue cap
     sl = SH_H
-    add('trim', wb('slab', SH_X0 - 0.25, SH_X1 + 0.25, SH_Z0 - 0.25, SH_Z1 + 0.25, sl, sl + 0.2, 0.01), WHITE)
-    add('plinth', wb('slab_line', SH_X0 - 0.27, SH_X1 + 0.27, SH_Z0 - 0.27, SH_Z1 + 0.27, sl + 0.14, sl + 0.2, 0.0), BLUE)
+    add('trim', wb('slab', SH_X0 - 0.25, SH_X1 + 0.25, SH_Z0 - 0.25, SH_Z1 + 0.25, sl, sl + 0.2, 0.01), 0xB4B1A9)   # grey concrete deck, blue only as edge stripes
+    ex0, ex1, ez0, ez1, es = SH_X0 - 0.27, SH_X1 + 0.27, SH_Z0 - 0.27, SH_Z1 + 0.27, 0.07
+    for nm, a, b, c, d in (('n', ex0, ex1, ez0, ez0 + es), ('s', ex0, ex1, ez1 - es, ez1), ('w', ex0, ex0 + es, ez0, ez1), ('e', ex1 - es, ex1, ez0, ez1)):
+        add('plinth', wb('slab_line_' + nm, a, b, c, d, sl + 0.02, sl + 0.2, 0.0), BLUE)
     pt = 0.18
     ph = 0.35
     add('plaster', wb('par_b', SH_X0, SH_X1, SH_Z0, SH_Z0 + pt, sl + 0.2, sl + 0.2 + ph, 0.0), WHITE)
     add('plaster', wb('par_f', SH_X0, SH_X1, SH_Z1 - pt, SH_Z1, sl + 0.2, sl + 0.2 + ph, 0.0), WHITE)
     add('plaster', wb('par_l', SH_X0, SH_X0 + pt, SH_Z0 + pt, SH_Z1 - pt, sl + 0.2, sl + 0.2 + ph, 0.0), WHITE)
     add('plaster', wb('par_r', SH_X1 - pt, SH_X1, SH_Z0 + pt, SH_Z1 - pt, sl + 0.2, sl + 0.2 + ph, 0.0), WHITE)
-    add('plinth', wb('cap', SH_X0 - 0.04, SH_X1 + 0.04, SH_Z0 - 0.04, SH_Z1 + 0.04, sl + 0.2 + ph, sl + 0.2 + ph + 0.05, 0.0), BLUE)
+    ct = sl + 0.2 + ph
+    for nm, a, b, c, d in (('n', SH_X0 - 0.04, SH_X1 + 0.04, SH_Z0 - 0.04, SH_Z0 + pt + 0.04), ('s', SH_X0 - 0.04, SH_X1 + 0.04, SH_Z1 - pt - 0.04, SH_Z1 + 0.04), ('w', SH_X0 - 0.04, SH_X0 + pt + 0.04, SH_Z0 + pt, SH_Z1 - pt), ('e', SH_X1 - pt - 0.04, SH_X1 + 0.04, SH_Z0 + pt, SH_Z1 - pt)):
+        add('plinth', wb('cap_' + nm, a, b, c, d, ct, ct + 0.05, 0.0), BLUE)
     # black plastic tank on a pad (roof, back-left)
     tx, tz = SH_X0 + 1.4, SH_Z0 + 1.3
     b0 = sl + 0.2
