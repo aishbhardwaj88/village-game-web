@@ -1,3 +1,6 @@
+**2026-10-26 (A-2c on-foot findability audit, no game change):** 39 of 39 village places reached on foot under real keyboard input from the house gate; walk 9 to 74 s; 12 places sit 69 to 183 m off any drawn lane (open-ground walks). Report docs/findability-onfoot-2026-10-26.md, shots docs/shots/onfoot-walk-2026-10-25/. Ticked the AUDIT box.
+NEXT: audio polish, then far-east cluster road decision (art director's call).
+
 **2026-10-26 (hero lane lamps):** Game change: solar street lamps now line the hero lane south of the house (x=-45, z 50 to 93, every 18 m, streamed `lamps_gali_h1_*` in src/main.js). Proof docs/shots/hero-lane-lamps-2026-10-26/lane_a.png and lane_b.png (both looked at: poles stand on the verge east of the lane, zero console errors). Honest differences: lamps sit about 4 m off the lane centre, wider than the galis, because at the gali offset (2 m) the npc_child route (-44,55)->(-50,96) walked into a pole (collision-test failed 1 leg, caught and fixed by moving the lamps out). Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: on-foot findability walk (A-2c), audio polish.
 
