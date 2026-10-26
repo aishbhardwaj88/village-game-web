@@ -117,7 +117,7 @@ import {
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
-import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -1468,7 +1468,13 @@ async function main() {
           z: (from.z + to.z) / 2,
           buildRadius: 8 + half,
           teardownRadius: 9 + half,
-          build: () => createStreetLamps([{ from, to, width }], { type: 'solar', everyMetres: 18 }),
+          build: () => {
+            const g = new THREE.Group();
+            g.name = `gali_${id}_${i}_zone`;
+            g.add(createStreetLamps([{ from, to, width }], { type: 'solar', everyMetres: 18 }));
+            if (id !== 'h1') g.add(createGaliEdging(from, to, width, `gali_edge_${id}_${i}`)); // kerbs + open drain (A-2c); the 9 m hero lane has its own frontage
+            return g;
+          },
         });
       }
     }

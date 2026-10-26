@@ -1946,6 +1946,41 @@ export function createEastRoadLeg(leg) {
 }
 
 /**
+ * Gali edging: a low brick-and-cement kerb on both sides of an abadi lane chunk and a narrow open drain just outside the
+ * kerb on one side, with a slab bridge near the middle. Built along local +x, turned to the chunk's heading. Visual only.
+ */
+export function createGaliEdging(a, b, width, id) {
+  const len = Math.hypot(b.x - a.x, b.z - a.z);
+  const geos = [];
+  let seed = 17 + Math.floor(Math.abs(a.x * 3 + a.z * 7)) % 997;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const L = len + 0.4;
+  for (const side of [-1, 1]) {
+    let x = -L / 2;
+    while (x < L / 2 - 0.3) {
+      const seg = 0.9 + rnd() * 0.5;
+      const h = 0.1 + rnd() * 0.05;
+      geos.push(bake(new THREE.BoxGeometry(seg, h, 0.15), at(x + seg / 2, h / 2, side * (width / 2 + 0.07), (rnd() - 0.5) * 0.04), [0xb9ae98, 0xa89d86, 0xc4b9a3, 0x9e9480][Math.floor(rnd() * 4)]));
+      x += seg + 0.02;
+    }
+  }
+  const dz = width / 2 + 0.5; // the drain runs on the +z (right-hand) side of the heading
+  geos.push(bake(new THREE.BoxGeometry(L, 0.02, 0.34), at(0, 0.01, dz), 0x4a4034));
+  for (const lz of [dz - 0.22, dz + 0.22]) {
+    let x = -L / 2;
+    while (x < L / 2 - 0.3) {
+      const seg = 0.9 + rnd() * 0.5;
+      geos.push(bake(new THREE.BoxGeometry(seg, 0.1 + rnd() * 0.04, 0.1), at(x + seg / 2, 0.06, lz), [0xa09885, 0xb0a894, 0x948c7a][Math.floor(rnd() * 3)]));
+      x += seg + 0.02;
+    }
+  }
+  geos.push(bake(new THREE.BoxGeometry(1.4, 0.08, 0.9), at(rnd() * len * 0.3, 0.12, dz), 0xaaa290));
+  const g = finishSite(id, geos, { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, { earth: true });
+  g.rotation.y = Math.atan2(-(b.z - a.z), b.x - a.x);
+  return g;
+}
+
+/**
  * Village boundary wall (MAP.md organic edge): a low, cared-for compound wall of lime-washed plaster on a
  * brick-red plinth with cement coping, pilasters every 4 m and a gap for each lane that leaves the abadi.
  * `runs` are world-space {a:{x,z}, b:{x,z}} segments; `gaps` are world-space {x,z,w} openings. Visual only, no colliders.
