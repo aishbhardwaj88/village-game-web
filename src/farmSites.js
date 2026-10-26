@@ -273,15 +273,14 @@ export function createPond(position) {
   water.receiveShadow = true;
   group.add(water);
 
-  // Lotus: pads (notched, veined, cupped) and flowers (two petal rings + seed head), clustered not uniform.
-  const geos = [], flowerGeos = [];
+  // Lotus pads only: the code-built flowers read as paper craft (reworked 5x), removed 26 Oct until a real CC0 model exists.
+  const geos = [];
   for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
     const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
     for (let i = 0; i < 16; i++) {
       const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
       const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6;
       geos.push(lotusPadGeo(x, z, size, rnd() * 6.28, i % 3 ? 0x4a6e30 : 0x5d8238, (i % 5) * 0.012));
-      if (i % 4 === 0) flowerGeos.push(...lotusFlowerGeos(x + 0.5, z + 0.3, 1.5 + rnd() * 0.5, rnd() * 6.28));
     }
   }
   const lotus = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), vcMat({ roughness: 0.8 }));
@@ -289,12 +288,6 @@ export function createPond(position) {
   lotus.castShadow = false;
   lotus.receiveShadow = true;
   group.add(lotus);
-  const flowers = new THREE.Mesh(
-    mergeGeometries(flowerGeos.map((g) => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'uv') n.deleteAttribute(k); return n; })),
-    new THREE.MeshStandardMaterial({ name: 'lotus_petals', map: lotusPetalTexture(), roughness: 0.62, metalness: 0, side: THREE.DoubleSide }));
-  flowers.castShadow = false;
-  flowers.receiveShadow = true;
-  group.add(flowers);
   group.position.set(position.x, 0, position.z);
   return group;
 }

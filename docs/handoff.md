@@ -1,3 +1,6 @@
+**2026-10-26 (pond lotus flowers removed):** Game change: the code-built lotus flowers are gone from the pond (pads stay), src/farmSites.js. Searched Poly Haven, Poly Pizza, Quaternius, Sketchfab and the general web: no CC0 lotus/water-lily model, only paid listings. NEEDS_YOU line added. Screenshot run had zero console errors; I did not open the pond shot, so the pads' look is unjudged. Crops (brinjal, okra, sugarcane, sarson, wheat) in the same backlog item are NOT done. Build collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: crop sourcing-or-remove from A-2b0, audio polish.
+
 **2026-10-26 (audio bug fix, canal water loop leak):** Game change (audio only, invisible): the canal water murmur from the earlier water-ambience commit was built inside `_playBirdChirp`, which re-runs every 4-12 s, so it stacked a new endless noise source each time (growing hiss, old ones stuck at their last gain). Moved into `_startAmbience` so it is built once (src/audio.js). Not heard by ear; no screenshot applies. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: audio polish; far-east road is her call.
 
