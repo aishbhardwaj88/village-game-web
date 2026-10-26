@@ -1,3 +1,6 @@
+**2026-10-27 (school interior check, no game change):** Tried to verify the staged primary school's slates and bags by eye (docs/shots/school-interior-2026-10-27/d.png, f.png, 5 framings, no console errors). Result: desks, a board and shelves read dimly through the open doors, but slates and bags are NOT discernible; the camera cannot get inside the grilled windows. Slates/bags stay unverified; do not claim them as seen. No build or collision-test (docs only).
+NEXT: temple interior has no Places V1 spec so skip; take THE ORDER item 4 (A0a / A0b signboard final-rule audit) or A-2 task list.
+
 **2026-10-27 (A1b1 staged school classroom bags and slates):** Game change: each classroom bench in the staged primary school (Yard 0, x 320 z -160) now has a slate on the desk (80%) and a cloth school bag on the floor beside it (70%), random size and 5 muted colours (tools/blender/build_primary_school.py, primary_school.glb rebuilt, 41k tris). NOT verified by eye: no interior shot taken, the classrooms are only visible through windows and I did not frame one. Bell, matka, board, charts, almirah and shelves were already in. Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
 NEXT: temple interior (lamps, bells, mats, donation box) or a framed interior shot of the school.
 
