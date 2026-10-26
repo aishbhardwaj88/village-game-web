@@ -28,8 +28,8 @@ def conc(o, c=CONC):
     return add('trim', o, c)
 
 
-add('paint', wb('patch', -10, 10, -10, 10, -0.08, 0.04, 0.0), 0xA89068)
-add('paint', wb('patch_worn', -2, 2, 2, 10, 0.04, 0.046, 0.0), 0x95795A)
+add('paint', wb('patch', -10, 10, -10, 10, -0.08, 0.04, 0.0), 0x7C6244)
+add('paint', wb('patch_worn', -2, 2, 2, 10, 0.04, 0.046, 0.0), 0x66503A)
 # boundary 1.3 m brick, iron gate 2.4 m at the centre front
 for (a, b, z, along_x) in ((-10, -1.2, 10, True), (1.2, 10, 10, True), (-10, 10, -10, True)):
     pk.brick_wall_run(kit, a, z, b, z, 1.3, 0.35)
@@ -58,7 +58,7 @@ for hh in (5.3, 10.6, 15.6):
 G0 = H_COL
 conc(cyl('gallery', 0, 0, G0, G0 + 0.7, 5.0, 5.0, 32), 0xACB2B2)
 conc(cyl('gallery_under', 0, 0, G0 - 0.5, G0, 4.5, 4.9, 32), CONC_D)
-conc(lathe('tank', 0, 0, [(3.5, G0 + 0.7), (3.5, G0 + 6.7), (3.6, G0 + 6.75), (3.6, G0 + 6.9), (0.0, G0 + 6.9)], seg=40), 0xB5BDBD)
+conc(lathe('tank', 0, 0, [(3.5, G0 + 0.7), (3.5, G0 + 0.85), (3.5, G0 + 1.5), (3.5, G0 + 2.5), (3.5, G0 + 3.5), (3.5, G0 + 4.5), (3.5, G0 + 5.5), (3.5, G0 + 6.4), (3.5, G0 + 6.7), (3.6, G0 + 6.75), (3.6, G0 + 6.9), (0.0, G0 + 6.9)], seg=40), 0xB5BDBD)
 conc(lathe('dome', 0, 0, [(3.6, G0 + 6.9), (3.0, G0 + 7.45), (1.8, G0 + 7.85), (0.9, G0 + 8.0), (0.0, G0 + 8.0)], seg=40), 0xA8AEAE)
 # hatch + rail on the dome, lightning rod
 conc(cyl('hatch', 0, 0, G0 + 8.0, G0 + 8.45, 0.7, 0.7, 14), CONC)
