@@ -413,16 +413,29 @@ async function main() {
       const keyOf = (b) => [b.minX, b.maxX, b.minZ, b.maxZ].map((n) => n.toFixed(2)).join(',');
       const stops = [...d.zoneManager.zones.values()].filter((_, i) => i % 4 === 0).map((z) => ({ name: z.name, x: z.x, z: z.z }));
       const fails = []; let checked = 0;
+      // latency: time from a model's meshes appearing in the scene to the collider list being rebuilt. A player standing at a
+      // zone edge can walk into the new geometry during this window, so it is bounded (game: 250 ms debounce, 1.5 s safety pass)
+      let maxLatency = 0, worstZone = '', pendingSince = 0, curMeshes = -1, curBuilds = -1, frames = 0;
+      // measured in rendered frames, not ms: the player only moves between frames, and headless software GL renders ~1 frame/s
+      const tick = () => { frames++; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
       for (const s of stops) {
         d.teleportPlayer(s.x + 3, s.z + 3);
         // zones build nearest-first within a frame budget and .glb swaps arrive async: wait until no collider rebuild has
         // happened for 2.5 s (cap 20 s), which in the game means the streaming around this spot has finished
         let lastBuilds = -1, lastMeshes = -1, quietSince = Date.now();
         for (const t0 = Date.now(); Date.now() - t0 < 20000 && Date.now() - quietSince < 2500;) {
-          await new Promise((r) => setTimeout(r, 400));
+          await new Promise((r) => setTimeout(r, 100));
           // a model that finished loading adds meshes now and its collider rebuild follows ~250 ms later, so a changing mesh
           // count also counts as "still streaming" (otherwise a slow .glb landing at the 2.5 s boundary is checked mid-debounce)
-          let meshes = 0; d.scene.traverse((o) => { if (o.isMesh) meshes++; });
+          let meshes = 0; // only geometry the collider builder can see: skip zone groups built early but not drawn yet
+          (function cnt(o) { if (o.userData.zoneHidden || o.visible === false) return; if (o.isMesh) meshes++; for (const c of o.children) cnt(c); })(d.scene);
+          const now = frames;
+          if (curMeshes >= 0 && meshes !== curMeshes && !pendingSince) pendingSince = now;
+          if (d.colliderStats.builds !== curBuilds && pendingSince) {
+            if (now - pendingSince > maxLatency) { maxLatency = now - pendingSince; worstZone = s.name; }
+            pendingSince = 0;
+          }
+          curMeshes = meshes; curBuilds = d.colliderStats.builds;
           if (d.colliderStats.builds !== lastBuilds || meshes !== lastMeshes) { lastBuilds = d.colliderStats.builds; lastMeshes = meshes; quietSince = Date.now(); }
         }
         const before = new Set(d.getStaticColliders().map(keyOf));
@@ -431,9 +444,10 @@ async function main() {
         checked++;
         if (missing.length) fails.push({ zone: s.name, at: [s.x, s.z], missing: missing.length, sample: keyOf(missing[0]) + ' src=' + missing[0].src + ' auto=' + missing[0].auto });
       }
-      return { checked, fails };
+      return { checked, fails, maxLatency, worstZone };
     });
-    console.log(`[6] LIVE STREAM ${live.checked} zone stops walked with the zone manager running, live collider list vs fresh rebuild`);
+    console.log(`[6] LIVE STREAM ${live.checked} zone stops walked with the zone manager running, live collider list vs fresh rebuild; worst mesh-appears-to-collider latency ${live.maxLatency} rendered frames (${live.worstZone || 'none seen'}, limit 30)`);
+    if (live.maxLatency > 30) { console.log(`  FAIL collider rebuild lagged ${live.maxLatency} frames behind new geometry in ${live.worstZone}`); failures++; }
     for (const f of live.fails) console.log(`  FAIL zone ${f.zone} at (${f.at.map((n) => n.toFixed(0))}): ${f.missing} colliders not registered until a manual rebuild, e.g. ${f.sample}`);
     failures += live.fails.length;
     await page.evaluate(forceZones);

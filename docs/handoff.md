@@ -1,3 +1,6 @@
+**2026-10-26 (late-collider latency test):** No visible game change. collision-test part [6] now measures how long after a model's meshes appear the collider list is rebuilt, in rendered frames (wall ms is meaningless on headless GL at ~1 fps): worst 5 frames over 40 zone stops, fails above 30. Staged place .glb landings and the house kit now call requestColliderRebuild (src/stagingYard.js). No screenshot, nothing to look at. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: rooftop ground-to-roof leg check, audio polish.
+
 **2026-10-26 (rooftop-leg check, validator only):** Added world-validator check 9b: every elevated monkey-chase waypoint and every roof-to-roof leg must have walls within 8 m on all four sides (shops are hollow shells, so "inside a collider" was the wrong test and failed first). Passes: 1 roof-to-roof leg, all over a building. No game change, no screenshot. Build ALL PASSED 17/17, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed. Still not covered: the ground-to-roof and roof-to-ground legs (height is eased, 2D walls skipped on purpose).
 NEXT: audio polish; far-east road, KTX2, canal/pond terrain and houses-kit wiring are her calls.
 

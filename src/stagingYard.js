@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
+import { requestColliderRebuild } from './collision.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { ANCHORS, pt } from './anchors.js';
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
@@ -146,6 +147,7 @@ function createStagedPlace(def) {
         ...row(12, Math.PI, ['c', 'd', 'b', 'e', 'a', 'f', 'd'], [1.1, 0.92, 1.12, 0.9, 1.15, 0.95, 1.05], [P[3], P[2], P[0], P[5], P[1], P[4], P[6]]),
       ];
       placeKitHouses(group, models, placements);
+      requestColliderRebuild();
     }).catch((err) => console.warn('house kit did not load', err));
     return group;
   }
@@ -155,6 +157,7 @@ function createStagedPlace(def) {
     m.name = def.zone + '_model';
     m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; swapShared(o); } });
     group.add(m);
+    requestColliderRebuild(); // the model lands after its load was counted: have the zone manager rebuild colliders now, not at the next load
   }).catch((err) => console.warn(`${def.model}.glb did not load`, err));
   return group;
 }
