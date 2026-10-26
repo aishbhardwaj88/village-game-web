@@ -278,6 +278,13 @@ export class AudioEngine {
 
   /** "camera settles, ambience rises" while sitting (item 5) — a slow, smooth swell
    * of the wind bed rather than a new sound, so it stays subtle. */
+  /** Dusk crickets: a high pulsing noise bed that fades in as the day progresses (0..1). */
+  setDayProgress(p) {
+    if (!this.started || !this._cricketGain) return;
+    const g = Math.max(0, Math.min(1, (p - 0.6) / 0.4)) * 0.022;
+    this._cricketGain.gain.setTargetAtTime(g, this.ctx.currentTime, 1.5);
+  }
+
   setSitting(sitting) {
     if (!this.started || !this._windGain) return;
     this._windGain.gain.setTargetAtTime(sitting ? 0.065 : 0.035, this.ctx.currentTime, 0.6);
@@ -599,6 +606,28 @@ export class AudioEngine {
     creak.start();
 
     setTimeout(() => this._playBirdChirp(), 2000 + Math.random() * 5000);
+
+    // Crickets: band-passed noise gated by a ~14 Hz square LFO; silent until dusk.
+    const cr = this.ctx.createBufferSource();
+    cr.buffer = createNoiseBuffer(this.ctx, 3);
+    cr.loop = true;
+    const crFilter = this.ctx.createBiquadFilter();
+    crFilter.type = 'bandpass';
+    crFilter.frequency.value = 4600;
+    crFilter.Q.value = 14;
+    const crPulse = this.ctx.createGain();
+    crPulse.gain.value = 0.5;
+    const lfo = this.ctx.createOscillator();
+    lfo.type = 'square';
+    lfo.frequency.value = 14;
+    const lfoDepth = this.ctx.createGain();
+    lfoDepth.gain.value = 0.5;
+    lfo.connect(lfoDepth).connect(crPulse.gain);
+    this._cricketGain = this.ctx.createGain();
+    this._cricketGain.gain.value = 0;
+    cr.connect(crFilter).connect(crPulse).connect(this._cricketGain).connect(this.master);
+    cr.start();
+    lfo.start();
 
     // Faint distant radio near the halwai (item 7): narrow-band noise (a muffled,
     // AM-ish tone) with a slow amplitude wobble so it reads as indistinct chatter/

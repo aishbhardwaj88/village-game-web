@@ -1,3 +1,6 @@
+**2026-10-26 (audio: dusk crickets):** Game change: src/audio.js has a cricket bed (band-passed noise gated by a 14 Hz pulse) that fades in as dayline progress passes 0.6, silent in the afternoon; main.js feeds it the same progress as the sky. Audio only, no screenshot possible, not listened to by a human, unjudged by ear. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: per-place ambience, then BACKLOG A-2b minimap items.
+
 **2026-10-26 (audio: bird variety):** Game change: the ambient bird bed (src/audio.js) now varies its call: sparrow chirp, double chirp, koel rising two-note whistle, distant crow caw (was one identical chirp). Audio only, no screenshot possible; not listened to by a human, so unjudged by ear. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: more audio (crickets at dusk, per-place ambience), then BACKLOG A-2b minimap items.
 
