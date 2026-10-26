@@ -35,10 +35,10 @@ add('brick', wb('kiln_foot', KX0 + R, KX1 - R, KZ0 - 0.4, KZ1 + 0.4, 0, 0.6, 0.0
 for sg in (-1, 1):
     cx = (KX0 + R) if sg < 0 else (KX1 - R)
     add('brick', cyl('kiln_end_foot', cx, KZc, 0, 0.6, R + 0.4, R + 0.3, 32))
-add('paint', wb('ash_mid', KX0 + R, KX1 - R, KZ0 + 0.5, KZ1 - 0.5, 2.0, 2.12, 0.0), 0x9C9A94)
+add('paint', wb('ash_mid', KX0 + R, KX1 - R, KZ0 + 0.5, KZ1 - 0.5, 2.0, 2.12, 0.0), 0x86847F)
 for sg in (-1, 1):
     cx = (KX0 + R) if sg < 0 else (KX1 - R)
-    add('paint', cyl('ash_end', cx, KZc, 2.0, 2.12, R - 0.9, R - 1.0, 32), 0x9C9A94)
+    add('paint', cyl('ash_end', cx, KZc, 2.0, 2.12, R - 0.9, R - 1.0, 32), 0x86847F)
 for k in range(13):
     for row in (-1, 1):
         x = KX0 + R + 1.0 + k * 2.6 if False else -23.0 + k * 3.6
@@ -53,10 +53,10 @@ CX, CZ = -12.0, -19.5
 add('brick', wb('chim_plinth', CX - 2.4, CX + 2.4, CZ - 2.4, CZ + 2.4, 0, 3.2, 0.02))
 add('trim', wb('chim_plinth_cap', CX - 2.55, CX + 2.55, CZ - 2.55, CZ + 2.55, 3.2, 3.4, 0.01), 0x8C8478)
 prof = [(1.55, 3.4), (1.4, 12.0), (1.28, 22.0), (0.95, 30.0)]
-add('brick', lathe('chimney', CX, CZ, [(r, h) for r, h in prof], seg=16), 0xB4705A)
-add('brick', lathe('chim_band1', CX, CZ, [(1.43, 11.6), (1.43, 12.4)], seg=16), 0x6E4030)
-add('brick', lathe('chim_band2', CX, CZ, [(1.32, 19.6), (1.32, 20.4)], seg=16), 0x6E4030)
-add('brick', lathe('chim_band3', CX, CZ, [(1.18, 25.6), (1.18, 26.2)], seg=16), 0x6E4030)
+add('brick', lathe('chimney', CX, CZ, [(r, h) for r, h in prof], seg=16), 0xD08068)
+add('brick', lathe('chim_band1', CX, CZ, [(1.43, 11.6), (1.43, 12.4)], seg=16), 0x8A4A38)
+add('brick', lathe('chim_band2', CX, CZ, [(1.32, 19.6), (1.32, 20.4)], seg=16), 0x8A4A38)
+add('brick', lathe('chim_band3', CX, CZ, [(1.18, 25.6), (1.18, 26.2)], seg=16), 0x8A4A38)
 add('paint', lathe('chim_soot', CX, CZ, [(0.97, 28.4), (0.97, 30.0), (0.92, 30.1)], seg=16), 0x2A2420)
 add('paint', lathe('chim_rim', CX, CZ, [(1.1, 29.85), (1.1, 30.1), (0.85, 30.1)], seg=16), 0x3A332E)
 add('metal', limb('chim_ladder_l', (CX + 1.45, CZ + 0.2, 3.4), (CX + 1.05, CZ + 0.2, 28.0), 0.04), 0x3A3C3E)
@@ -79,8 +79,8 @@ while zz < z1 - 0.5:
 # ---- finished red brick cubes 3 x 1.5 x 1.5, front-right; courses staggered a little
 for (cx, cz) in ((10.0, 8.0), (14.5, 8.0), (10.0, 13.5), (14.5, 13.5)):
     # one real-brick block per cube (3 x 1.5 x 1.5): the brick texture carries the courses and joints at true scale
-    add('brick', wb('cube', cx - 1.5, cx + 1.5, cz - 0.75, cz + 0.75, 0.03, 1.53, 0.02), 0xE08A60)
-    add('brick', wb('cube_top_course', cx - 1.4, cx + 1.4, cz - 0.7, cz + 0.7, 1.53, 1.6, 0.0), 0xD87A55)
+    add('brick', wb('cube', cx - 1.5, cx + 1.5, cz - 0.75, cz + 0.75, 0.03, 1.53, 0.02), 0xFF9C6E)
+    add('brick', wb('cube_top_course', cx - 1.4, cx + 1.4, cz - 0.7, cz + 0.7, 1.53, 1.6, 0.0), 0xF58A5C)
 # ---- left edge: clay pit, moulding bench with moulds, water drum, buckets, sand heaps
 add('brick', wb('pit_rim_n', -39.0, -33.0, 0.0, 0.4, 0, 0.3, 0.0), 0x7A5A44)
 add('brick', wb('pit_rim_s', -39.0, -33.0, 3.4, 3.8, 0, 0.3, 0.0), 0x7A5A44)
