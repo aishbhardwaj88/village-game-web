@@ -107,6 +107,19 @@ export class AudioEngine {
     this._waterGain.gain.setTargetAtTime(t * t * 0.07, this.ctx.currentTime, 0.6);
   }
 
+  /** Per-place ambience: a single noise bed whose tone and level follow the kind of
+   * place the listener is inside (`closeness` 0 at the rim of its radius, 1 at the
+   * centre). Bazaar kinds get a low crowd murmur, schools a brighter chatter, fields a
+   * touch more wind; anything else fades to silence. Harmless before start(). */
+  setPlaceAmbience(kind, closeness) {
+    if (!this.started || !this._placeGain) return;
+    const profile = { bazaar: [520, 0.045], shop: [650, 0.02], school: [1500, 0.04], field: [330, 0.03] }[kind];
+    const c = Math.max(0, Math.min(1, closeness));
+    const t = this.ctx.currentTime;
+    if (profile) this._placeFilter.frequency.setTargetAtTime(profile[0], t, 0.8);
+    this._placeGain.gain.setTargetAtTime(profile ? profile[1] * Math.sqrt(c) : 0, t, 0.8);
+  }
+
   setVehicle(kind, speedRatio) {
     this.vehicleKind = kind;
     this.vehicleSpeedRatio = kind ? Math.abs(speedRatio) : 0;
@@ -658,6 +671,31 @@ export class AudioEngine {
     radio.start();
     radioWobble.start();
     radioWobbleBase.start();
+
+    // Place bed: tone and level set by setPlaceAmbience(); a slow swell keeps it from
+    // reading as steady hiss.
+    const place = this.ctx.createBufferSource();
+    place.buffer = createNoiseBuffer(this.ctx, 5);
+    place.loop = true;
+    this._placeFilter = this.ctx.createBiquadFilter();
+    this._placeFilter.type = 'bandpass';
+    this._placeFilter.Q.value = 0.9;
+    const placeSwell = this.ctx.createOscillator();
+    placeSwell.frequency.value = 0.21;
+    const placeSwellGain = this.ctx.createGain();
+    placeSwellGain.gain.value = 0.3;
+    const placeBase = this.ctx.createConstantSource();
+    placeBase.offset.value = 0.7;
+    const placeAmp = this.ctx.createGain();
+    placeAmp.gain.value = 0;
+    placeSwell.connect(placeSwellGain).connect(placeAmp.gain);
+    placeBase.connect(placeAmp.gain);
+    this._placeGain = this.ctx.createGain();
+    this._placeGain.gain.value = 0;
+    place.connect(this._placeFilter).connect(placeAmp).connect(this._placeGain).connect(this.master);
+    place.start();
+    placeSwell.start();
+    placeBase.start();
 
     // Canal water: band-passed noise with a slow swell, silent until the player is near
     // the channel (setListenerDistanceToWater, called each frame from main.js).

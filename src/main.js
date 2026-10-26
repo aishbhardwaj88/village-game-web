@@ -2777,6 +2777,14 @@ async function main() {
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
       audio.setListenerDistanceToWater(distanceToCanalWater(listenerPos.x, listenerPos.z));
+      {
+        let bestKind = null, bestC = 0;
+        for (const pl of PLACES) {
+          const c = 1 - Math.hypot(listenerPos.x - pl.x, listenerPos.z - pl.z) / pl.radius;
+          if (c > bestC) { bestC = c; bestKind = pl.kind; }
+        }
+        audio.setPlaceAmbience(bestKind, bestC);
+      }
       zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)

@@ -1,3 +1,6 @@
+**2026-10-26 (audio: per-place ambience):** Game change: src/audio.js has a place bed (band-passed noise with slow swell) whose tone and level follow the nearest PLACES kind the player is inside: low crowd murmur in bazaar/mandi/highway, brighter chatter at schools, light murmur at shops, extra wind over fields, silent elsewhere (main.js feeds it each frame). Audio only, no screenshot possible, not listened to by a human, unjudged by ear. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: BACKLOG A-2b minimap research item, or audio mix check by ear (hers).
+
 **2026-10-26 (audio: dusk crickets):** Game change: src/audio.js has a cricket bed (band-passed noise gated by a 14 Hz pulse) that fades in as dayline progress passes 0.6, silent in the afternoon; main.js feeds it the same progress as the sky. Audio only, no screenshot possible, not listened to by a human, unjudged by ear. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: per-place ambience, then BACKLOG A-2b minimap items.
 
