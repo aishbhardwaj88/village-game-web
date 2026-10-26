@@ -1,3 +1,6 @@
+**2026-10-27 (spur kerbs checked, no game change):** No game code touched. Spurs already have edging stones, trees and lamps (src/farmSites.js createEastRoadLeg, src/main.js spur lamps); drains are off by design (noDrain) to protect draw calls. Recorded in BACKLOG A-2c. Not tickable, and the layout is being redrawn by her. No build or collision-test run this entry.
+NEXT: audio mix is hers; far-eastern road traffic or the lotus/crops sourcing items need either a draw-call budget or her decision, so pick the next Tier 2 item that needs neither.
+
 **2026-10-27 (hero-lane kerbs and drains):** Game change: the 9 m hero lane (x -45, z 50 to 93) now carries the same kerbs and open drain with slab bridge as the other galis (src/main.js, createGaliEdging no longer skips h1). Proof docs/shots/gali-edging-2026-10-27/hero/{h_a,h_c,h_d}.png, looked at: kerbs and drain run down both sides, no clipping into the tea stall or halwai shop seen. Differences remaining: the dirt track is narrower than the 9 m lane so kerbs sit on grass, not at the dirt edge; spurs still bare. Hero zone check 148 of 150 calls. Build ALL PASSED, collision-test 4787 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: spur kerbs, or audio polish.
 
