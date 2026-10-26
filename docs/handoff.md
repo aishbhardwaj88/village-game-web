@@ -1,3 +1,6 @@
+**2026-10-26 (rooftop-leg check, validator only):** Added world-validator check 9b: every elevated monkey-chase waypoint and every roof-to-roof leg must have walls within 8 m on all four sides (shops are hollow shells, so "inside a collider" was the wrong test and failed first). Passes: 1 roof-to-roof leg, all over a building. No game change, no screenshot. Build ALL PASSED 17/17, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed. Still not covered: the ground-to-roof and roof-to-ground legs (height is eased, 2D walls skipped on purpose).
+NEXT: audio polish; far-east road, KTX2, canal/pond terrain and houses-kit wiring are her calls.
+
 **2026-10-26 (A0 vehicles-collide audit, no game change):** Re-ran tools/collision-test.js: 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed; part [3] drove bike/tractor/cart into 1976 solids (8370 drives). Ticked the BACKLOG A0 'Vehicles collide' box on that evidence. No screenshot, nothing changed in the game this cycle. Not covered still: a collider registering late while the player stands at a zone edge; rooftop-chase leg.
 NEXT: rooftop-leg collision check, then audio polish.
 

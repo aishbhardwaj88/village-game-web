@@ -1052,6 +1052,42 @@ async function main() {
       record('check 9 - every NPC waypoint leg is clear of colliders', out.bad.length === 0, out.bad.length === 0 ? `${out.routes} routes, ${out.legs} legs, all clear` : JSON.stringify(out.bad));
     }
 
+    // CHECK 9b - rooftop legs are deliberately walked without collision (2D walls would block a roof walk),
+    // so instead every elevated waypoint must sit over a real building (walls on all four sides), and every
+    // sampled point of an elevated leg must too, so the monkey never walks on air between roofs.
+    {
+      const out = await page.evaluate(() => {
+        const d = window.__dopahar;
+        const bad = [];
+        let legs = 0;
+        // Shops are hollow shells (colliders are the walls), so "over a building" = walls found within 8 m in all four directions.
+        const enclosed = (x, z) => [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dz]) => {
+          for (let m = 0; m <= 8; m += 0.25) if (d.minDistanceToColliders({ x: x + dx * m, z: z + dz * m }, 0) < 0.13) return true; // 0.13 > half the step, so a thin wall cannot slip between samples
+          return false;
+        });
+        for (const r of d.npcRoutes) {
+          const w = r.waypoints;
+          for (let i = 0; i < w.length - 1; i++) {
+            const a = w[i], b = w[i + 1];
+            if ((a.y || 0) <= 0.5 || (b.y || 0) <= 0.5) continue; // only legs that stay on the roof end to end
+            legs++;
+            const len = Math.hypot(b.x - a.x, b.z - a.z);
+            const steps = Math.max(1, Math.ceil(len / 0.5));
+            for (let s = 0; s <= steps; s++) {
+              const t = s / steps;
+              const x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+              if (!enclosed(x, z)) { bad.push({ route: r.name, leg: i, at: [+x.toFixed(1), +z.toFixed(1)] }); break; }
+            }
+          }
+          for (let i = 0; i < w.length; i++) {
+            if ((w[i].y || 0) > 0.5 && !enclosed(w[i].x, w[i].z)) bad.push({ route: r.name, waypoint: i, at: [w[i].x, w[i].z] });
+          }
+        }
+        return { legs, bad };
+      });
+      record('check 9b - rooftop waypoints and legs lie over a building', out.bad.length === 0, out.bad.length === 0 ? `${out.legs} roof-to-roof legs, all over a building` : JSON.stringify(out.bad));
+    }
+
     record('no console errors across the whole run', pageErrors.length === 0, pageErrors.length ? pageErrors.slice(0, 5).join(' | ') : '');
 
     await browser.close();
