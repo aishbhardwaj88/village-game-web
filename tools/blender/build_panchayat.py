@@ -26,8 +26,8 @@ H = 3.4
 T = 0.3
 IRON = 0x3A3C3E
 
-add('paint', wb('ground', -9, 9, -11.5, 13, -0.08, 0.03, 0.0), 0xB69568)
-add('paint', wb('ground_worn', -6.5, 6.5, 0.5, 11.5, 0.03, 0.036, 0.0), 0xA98A5E)
+add('paint', wb('ground', -9, 9, -11.5, 13, -0.08, 0.03, 0.0), 0xCBB088)
+add('paint', wb('ground_worn', -6.5, 6.5, 0.5, 11.5, 0.03, 0.036, 0.0), 0xBE9F72)
 add('trim', wb('plinth', X0 - 0.3, X1 + 0.3, Z0 - 0.3, Z1 + 0.3, 0, PL, 0.01), 0xA9A69F)
 add('plinth', wb('plinth_band', X0 - 0.32, X1 + 0.32, Z1 + 0.28, Z1 + 0.33, 0, PL, 0.0), TERRA)
 # steps: wide, 5 m, 3 risers
@@ -69,7 +69,7 @@ for x in (-5.5, -1.9, 1.9, 5.5):
 add('plaster', wb('beam', X0, X1, -0.8, -0.15, PL + H - 0.4, PL + H, 0.01), WHITE)
 # roof slab, red roof line, parapet 1.0 with blank board centre, tank, flag
 RB = PL + H
-add('trim', wb('slab', X0 - 0.25, X1 + 0.25, Z0 - 0.25, Z1 + 0.25, RB, RB + 0.2, 0.01), 0xB4B1A9)
+add('trim', wb('slab', X0 - 0.25, X1 + 0.25, Z0 - 0.25, Z1 + 0.25, RB, RB + 0.2, 0.01), 0x8E8D88)
 add('plinth', wb('roof_line', X0 - 0.27, X1 + 0.27, Z0 - 0.27, Z1 + 0.27, RB + 0.05, RB + 0.14, 0.0), TERRA)
 for (a, b, c, d) in ((X0, X1, Z0, Z0 + 0.2), (X0, X1, Z1 - 0.2, Z1), (X0, X0 + 0.2, Z0 + 0.2, Z1 - 0.2), (X1 - 0.2, X1, Z0 + 0.2, Z1 - 0.2)):
     add('plaster', wb('par', a, b, c, d, RB + 0.2, RB + 0.85, 0.0), WHITE)
@@ -127,7 +127,7 @@ for x in (-6.4, -4.4, -0.9, 0.9, 3.6, 6.2):
 # the open meeting ground: round brick chabutra ~7 m out, left of centre (neem is hers, empty), 2 chairs facing the building
 cx, cz, R = -3.4, 7.0, 1.5
 pk.brick_ring(kit, cx, cz, R - 0.18, 0, 0.5, 0.36, 24)
-add('trim', cyl('chab_cap', cx, cz, 0.5, 0.55, R + 0.1, R + 0.1, 24), 0xA9A69F)
+add('plinth', cyl('chab_cap', cx, cz, 0.5, 0.55, R + 0.1, R + 0.1, 24), 0xA85A40)
 add('paint', cyl('chab_soil', cx, cz, 0.0, 0.5, R - 0.35, R - 0.35, 24), 0x4A3524)
 plastic_chair(kit, -1.8, 8.6, 3.14 + 3.14, 0xD9D4C6)       # facing the building (north, -z)
 plastic_chair(kit, -0.9, 8.9, 3.14 + 3.14, 0x6A4A32)
