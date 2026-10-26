@@ -44,7 +44,7 @@ for (x, z) in ((CX0 + 1.0, CZ0 + 1.0), (CX1 - 1.0, CZ0 + 1.0), (CX0 + 1.0, CZ1 -
     add('plinth', wb('col_band', x - 0.43, x + 0.43, z - 0.43, z + 0.43, 2.35, 2.5, 0.0), ORANGE)
 # white underside, orange fascia with a navy stripe, flat roof deck
 add('plaster', wb('canopy_under', CX0, CX1, CZ0, CZ1, H_CL, H_CL + 0.15, 0.01), WHITE)
-add('trim', wb('canopy_deck', CX0, CX1, CZ0, CZ1, H_CL + 0.15, H_TOP - 0.2, 0.01), 0xB4B1A9)
+add('plaster', wb('canopy_deck', CX0, CX1, CZ0, CZ1, H_CL + 0.15, H_TOP - 0.2, 0.01), WHITE)
 for (a, b, c, d) in ((CX0 - 0.1, CX1 + 0.1, CZ1 - 0.05, CZ1 + 0.1), (CX0 - 0.1, CX1 + 0.1, CZ0 - 0.1, CZ0 + 0.05), (CX0 - 0.1, CX0 + 0.05, CZ0, CZ1), (CX1 - 0.05, CX1 + 0.1, CZ0, CZ1)):
     add('plinth', wb('fascia', a, b, c, d, H_CL - 0.05, H_TOP, 0.01), ORANGE)
     add('plinth', wb('fascia_stripe', a - 0.005, b + 0.005, c - 0.005, d + 0.005, H_CL + 0.45, H_CL + 0.7, 0.0), NAVY)
