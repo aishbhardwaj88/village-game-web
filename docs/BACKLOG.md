@@ -173,7 +173,7 @@ is in handoff.md, and build plus regression are green.
 
 ### A0-TEX. Staged places FAIL (art director 2026-10-26) - fix before building more places
 - [ ] Diagnose the staged texture pipeline (arch.py extras -> strip-textures.mjs -> stagingYard.js sharedSetMaterial): check UVs survive the strip, that swapShared fires on every mesh, the effective tiles-per-metre, and whether vertexColors is flattening the map
-- [ ] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing
+- [x] PROOF: close-up renders from ~2 m of one brick wall, one plaster wall, one tin roof, beside a crop of her reference. Individual bricks must be visible or it is still failing (26 Oct: brick docs/shots/staged-closeup-2026-10-26/bus_brick_2m.png, plaster school_wall.png/post_wall.png; tin roof only seen at distance in the same frame)
 - [ ] Re-tint every staged place from colours SAMPLED out of her Places V1/<place>/MAIN_*.png, not picked by eye or reused from village defaults
 - [ ] Add the greenery her drawings show (grass, bushes, creepers, potted plants, trees) using real CC0 plant models only, never hand-built foliage; still skip khets and field crops
 - [ ] Only after the above: resume building the remaining places
