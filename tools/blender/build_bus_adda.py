@@ -75,14 +75,15 @@ def build_ground():
     add('paint', wb('patch', -10, 10, -5, 5, -0.08, 0.04, 0.0), 0xB69568)
     add('paint', wb('patch_worn', -9, 9, 0.5, 4.0, 0.04, 0.046, 0.0), 0xA38358)      # packed where the buses stop
     # strip of broken brick paving along the road edge: random half-bricks, uneven
-    for i in range(70):
-        x = -9.6 + i * 0.275 + rnd.uniform(-0.05, 0.05)
-        z = 4.45 + rnd.uniform(-0.18, 0.18)
-        if rnd.random() < 0.18:
-            continue
-        a = rnd.uniform(-0.5, 0.5)
-        w, d = rnd.uniform(0.12, 0.23), rnd.uniform(0.08, 0.11)
-        add('brick', limb('paver', (x - w / 2 * math.cos(a), z - w / 2 * math.sin(a), 0.045 + rnd.uniform(0, 0.02)), (x + w / 2 * math.cos(a), z + w / 2 * math.sin(a), 0.045 + rnd.uniform(0, 0.02)), d, 0.05))
+    for row, (zc, step) in enumerate(((4.38, 0.19), (4.58, 0.2))):
+        for i in range(104):
+            x = -9.7 + i * step + rnd.uniform(-0.03, 0.03) + 0.1 * row
+            z = zc + rnd.uniform(-0.07, 0.07)
+            if rnd.random() < 0.1:
+                continue
+            a = rnd.uniform(-0.35, 0.35)
+            w, d = rnd.uniform(0.15, 0.23), rnd.uniform(0.09, 0.12)
+            add('brick', limb('paver', (x - w / 2 * math.cos(a), z - w / 2 * math.sin(a), 0.045 + rnd.uniform(0, 0.02)), (x + w / 2 * math.cos(a), z + w / 2 * math.sin(a), 0.045 + rnd.uniform(0, 0.02)), d, 0.05))
 
 
 def build_shelter():
@@ -113,8 +114,9 @@ def build_shelter():
             add('trim', wb('bench_leg', lx - 0.1, lx + 0.1, z0 + 0.5, z0 + 0.9, 0.1, 0.4, 0.008), 0xAEAAA0)
     # posters (picture only, faded) + a blank plaque
     zf = z0 + 0.25 + 0.012
-    for i, (a, b) in enumerate(((-2.6, -1.9), (-1.7, -1.0), (-0.6, 0.1), (0.3, 1.0))):
-        wall_decal_S(zf, a, b, 1.45, 2.3, i)
+    for k, (a, b, h0, h1, i) in enumerate(((-2.7, -2.0, 1.45, 2.3, 0), (-2.2, -1.6, 1.2, 1.9, 2), (-1.7, -1.0, 1.5, 2.35, 1), (-0.6, 0.1, 1.4, 2.2, 3),
+                                           (-0.2, 0.45, 1.65, 2.4, 0), (0.3, 1.0, 1.35, 2.25, 2), (0.75, 1.3, 1.55, 2.2, 1))):
+        wall_decal_S(zf + 0.002 * k, a, b, h0, h1, i)
     add('paint', wb('plaque', 1.7, 2.6, z0 + 0.25, z0 + 0.29, 1.7, 2.2, 0.004), 0x7A7D7F)
     add('paint', wb('plaque_in', 1.76, 2.54, z0 + 0.29, z0 + 0.3, 1.76, 2.14, 0.0), 0x93979A)
 
@@ -127,6 +129,11 @@ def build_tapri():
         for z in (z0 + 0.1, z1 - 0.1):
             add('wood', limb('tapri_leg', (x, z, 0), (x, z, 0.85), 0.12))
     add('plaster', wb('tapri_floor', x0, x1, z0, z1, 0.8, 0.88, 0.0), TURQ)
+    # solid painted skirt under the cabin (her drawing: a boxed body, not bare stilts)
+    add('plaster', wb('skirt_f', x0, x1, z1 - 0.06, z1, 0.0, 0.8, 0.0), TURQ)
+    add('plaster', wb('skirt_b', x0, x1, z0, z0 + 0.06, 0.0, 0.8, 0.0), TURQ)
+    for sx in (x0, x1 - 0.06):
+        add('plaster', wb('skirt_s', sx, sx + 0.06, z0 + 0.06, z1 - 0.06, 0.0, 0.8, 0.0), TURQ)
     # planked cabin: back + side walls (plain planks), front open with a counter and a lifted shutter awning
     for k in range(7):
         add('plaster', wb('plank_b', x0 + k * 0.3143, x0 + (k + 1) * 0.3143 - 0.012, z0, z0 + 0.06, 0.88, 2.5, 0.0), TURQ)
