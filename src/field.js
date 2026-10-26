@@ -542,7 +542,7 @@ export function buildField(scene) {
   group.add(crops);
   if (crops.userData.caneSpots.length) group.add(buildCaneClumps(crops.userData.caneSpots));
   if (crops.userData.sarsonSpots.length) group.add(buildSarsonBloom(crops.userData.sarsonSpots));
-  for (const kind of ['brinjal', 'okra']) if (crops.userData.vegSpots[kind].length) group.add(buildVegBushes(kind, crops.userData.vegSpots[kind]));
+  // Brinjal/okra were flat alpha cards (organic, code-built, no CC0 model exists): off until a real model is sourced. buildVegBushes kept for reference.
   group.add(buildTrack());
   const verge = buildTrackVerge();
   if (verge) group.add(verge);

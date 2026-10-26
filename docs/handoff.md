@@ -1,3 +1,6 @@
+**2026-10-26 (brinjal/okra cards removed):** Game change: the flat alpha-card brinjal and okra bushes are gone from the sabzi beds (src/field.js buildField; no CC0 model exists, web search found only paid listings). NEEDS_YOU line added. No screenshot taken or looked at. Sugarcane, sarson, wheat not done. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: decide sugarcane/sarson/wheat sourcing-or-remove, audio polish.
+
 **2026-10-26 (pond lotus flowers removed):** Game change: the code-built lotus flowers are gone from the pond (pads stay), src/farmSites.js. Searched Poly Haven, Poly Pizza, Quaternius, Sketchfab and the general web: no CC0 lotus/water-lily model, only paid listings. NEEDS_YOU line added. Screenshot run had zero console errors; I did not open the pond shot, so the pads' look is unjudged. Crops (brinjal, okra, sugarcane, sarson, wheat) in the same backlog item are NOT done. Build collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: crop sourcing-or-remove from A-2b0, audio polish.
 
