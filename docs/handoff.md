@@ -1,3 +1,6 @@
+**2026-10-26 (A0 NPC resolver audit, no game change):** Read-only code audit: all ground-level NPC movement already goes through resolveMove; only exception is the rooftop-chase leg (npcRoutines.js 117-118). Animals are stationary. BACKLOG progress line added, box left unticked. No build run, no screenshot. This cycle changed nothing in the game; the remaining open items are the art director's calls (far-east road, KTX2, canal/pond terrain, houses kit wiring) or plant work she took off the list.
+NEXT: audio polish, rooftop-leg collision check.
+
 **2026-10-26 (brinjal/okra cards removed):** Game change: the flat alpha-card brinjal and okra bushes are gone from the sabzi beds (src/field.js buildField; no CC0 model exists, web search found only paid listings). NEEDS_YOU line added. No screenshot taken or looked at. Sugarcane, sarson, wheat not done. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: decide sugarcane/sarson/wheat sourcing-or-remove, audio polish.
 
