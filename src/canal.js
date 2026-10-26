@@ -39,6 +39,13 @@ const BANK_WIDTH = 1.2; // raised kachcha bank on each side of the water
 const CANAL_MIN_X = -28;
 const CANAL_MAX_X = 0;
 
+/** Distance (m) from a point to the water channel rectangle; 0 above the water. */
+export function distanceToCanalWater(x, z) {
+  const dx = Math.max(CANAL_MIN_X - x, 0, x - CANAL_MAX_X);
+  const dz = Math.max(CANAL_Z - CANAL_HALF_WIDTH - z, 0, z - (CANAL_Z + CANAL_HALF_WIDTH));
+  return Math.hypot(dx, dz);
+}
+
 export const BRIDGE_X = -15; // right at the baagh (src/baagh.js BAAGH_CENTER x=-15)
 const BRIDGE_HALF_WIDTH = 4;
 export const PULIA_X = -3; // narrow foot crossing (MAP.md patli pulia); a 1.6 m gap in the bank colliders, walkable but too narrow for any vehicle

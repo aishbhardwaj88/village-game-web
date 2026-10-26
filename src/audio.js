@@ -99,6 +99,14 @@ export class AudioEngine {
     this._radioGain.gain.setTargetAtTime(t * 0.05, this.ctx.currentTime, 0.8);
   }
 
+  /** Distance (metres) from the player to the canal channel — drives a soft water
+   * murmur that is audible within ~14 m and gone by ~30 m. Harmless before start(). */
+  setListenerDistanceToWater(distanceMetres) {
+    if (!this.started || !this._waterGain) return;
+    const t = 1 - Math.min(1, Math.max(0, (distanceMetres - 4) / 26));
+    this._waterGain.gain.setTargetAtTime(t * t * 0.07, this.ctx.currentTime, 0.6);
+  }
+
   setVehicle(kind, speedRatio) {
     this.vehicleKind = kind;
     this.vehicleSpeedRatio = kind ? Math.abs(speedRatio) : 0;
@@ -504,6 +512,32 @@ export class AudioEngine {
     osc.connect(gain).connect(this.master);
     osc.start(t);
     osc.stop(t + 0.18);
+
+    // Canal water: band-passed noise with a slow swell, silent until the player is near
+    // the channel (setListenerDistanceToWater, called each frame from main.js).
+    const water = this.ctx.createBufferSource();
+    water.buffer = createNoiseBuffer(this.ctx, 4);
+    water.loop = true;
+    const waterFilter = this.ctx.createBiquadFilter();
+    waterFilter.type = 'bandpass';
+    waterFilter.frequency.value = 900;
+    waterFilter.Q.value = 0.7;
+    const waterSwell = this.ctx.createOscillator();
+    waterSwell.frequency.value = 0.35;
+    const waterSwellGain = this.ctx.createGain();
+    waterSwellGain.gain.value = 0.25;
+    const waterBase = this.ctx.createConstantSource();
+    waterBase.offset.value = 0.75;
+    const waterAmp = this.ctx.createGain();
+    waterAmp.gain.value = 0;
+    waterSwell.connect(waterSwellGain).connect(waterAmp.gain);
+    waterBase.connect(waterAmp.gain);
+    this._waterGain = this.ctx.createGain();
+    this._waterGain.gain.value = 0;
+    water.connect(waterFilter).connect(waterAmp).connect(this._waterGain).connect(this.master);
+    water.start();
+    waterSwell.start();
+    waterBase.start();
 
     setTimeout(() => this._playBirdChirp(), 4000 + Math.random() * 8000);
   }

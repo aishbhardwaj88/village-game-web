@@ -18,7 +18,7 @@ import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
-import { buildCanal } from './canal.js';
+import { buildCanal, distanceToCanalWater } from './canal.js';
 import { buildVegetation, lanesideClusters, buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { buildTrees } from './trees.js';
 import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './baagh.js';
@@ -2774,6 +2774,7 @@ async function main() {
       // doesn't fade with a wide third-person zoom.
       const listenerPos = mountedVehicle ? mountedVehicle.group.position : player.position;
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
+      audio.setListenerDistanceToWater(distanceToCanalWater(listenerPos.x, listenerPos.z));
       zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)
