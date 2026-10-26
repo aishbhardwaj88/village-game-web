@@ -32,27 +32,95 @@ def add(kind, o, c=None):
     return o
 
 
-# faded picture-only posters on the back wall: one atlas, 4 cells
+# faded picture-only posters on the back wall: one atlas, 4 cells (512x256), torn edges, gradients, grain, creases, sun-fade
+import math
+
+
+def _h(ix, iy, sd):
+    n = (ix * 374761393 + iy * 668265263 + sd * 2147483647) & 0xFFFFFFFF
+    n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+
+def _vn(x, y, sd):
+    ix, iy = int(math.floor(x)), int(math.floor(y))
+    fx, fy = x - ix, y - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    a, b = _h(ix, iy, sd), _h(ix + 1, iy, sd)
+    c, d = _h(ix, iy + 1, sd), _h(ix + 1, iy + 1, sd)
+    return (a + (b - a) * fx) + ((c + (d - c) * fx) - (a + (b - a) * fx)) * fy
+
+
+def _rgb(h):
+    return ((h >> 16) & 255) / 255.0, ((h >> 8) & 255) / 255.0, (h & 255) / 255.0
+
+
 def poster_px(u, v):
     i = min(3, int(u * 4))
     x, y = u * 4 - i, v
-    if x < 0.05 or x > 0.95 or y < 0.04 or y > 0.96:
+    # torn / ragged edge: noise pushes the margin in and out
+    e = 0.05 + 0.05 * _vn(x * 14 + i * 9, y * 14, 3)
+    if x < e or x > 1 - e or y < e * 0.8 or y > 1 - e * 0.8:
         return None
-    def L(h, a=0.75):
-        return tuple(((c / 255.0) ** 2.2) for c in ((h >> 16) & 255, (h >> 8) & 255, h & 255)) + (a,)
-    bgs = (0xD9A441, 0xC9D6DD, 0xD97A8C, 0xE8E0C8)
-    if i == 0 and (x - 0.5) ** 2 + (y - 0.6) ** 2 < 0.06:
-        return L(0xB3231C)
-    if i == 1 and abs(x - 0.5) < 0.12 and 0.2 < y < 0.8:
-        return L(0x2E5E8B)
-    if i == 2 and (x - 0.5) ** 2 / 0.09 + (y - 0.5) ** 2 / 0.12 < 1:
-        return L(0xF2D04A)
-    if i == 3 and 0.25 < y < 0.75 and 0.2 < x < 0.8 and int(y * 20) % 2 == 0:
-        return L(0x7A6A55)
-    return L(bgs[i], 0.8)
+    # missing torn corner chunks
+    if (x > 0.72 and y > 0.78 and _vn(x * 9, y * 9, 8) > 0.45) or (x < 0.2 and y < 0.18 and i % 2 == 0):
+        return None
+    bgs = (0xD9A441, 0xA9C4D0, 0xD98A98, 0xD8D0B2)
+    r, g, b = _rgb(bgs[i])
+    # gradient backdrop (sky / studio light) with a dusty horizon band
+    t = y
+    r, g, b = r * (0.82 + 0.3 * t), g * (0.82 + 0.3 * t), b * (0.82 + 0.3 * t)
+    if y < 0.34:
+        r, g, b = r * 0.8 + 0.18, g * 0.8 + 0.16, b * 0.8 + 0.1
+    ink = None
+    cx, cy = x - 0.5, y - 0.5
+    if i == 0:   # film-hero style: big head + shoulders
+        if cx * cx / 0.05 + (cy + 0.1) ** 2 / 0.045 < 1:
+            ink = 0xC48A62
+        elif y < 0.62 and abs(cx) < 0.3 + (0.62 - y) * 0.3:
+            ink = 0x7A2A22
+        if abs(cx) < 0.3 and 0.62 > y > 0.5 and ink == 0x7A2A22 and abs(cx) > 0.2:
+            ink = 0x3A2A30
+    elif i == 1:  # cricket-ish: figure with bat on a green strip
+        if y > 0.7:
+            ink = 0x6E8B52
+        elif abs(cx + 0.05) < 0.07 and 0.18 < y < 0.7:
+            ink = 0x2E4E7B
+        elif (cx + 0.05) ** 2 + (y - 0.2) ** 2 < 0.008:
+            ink = 0xB78560
+        elif abs(cx - 0.12 + (y - 0.45) * 0.4) < 0.025 and 0.3 < y < 0.72:
+            ink = 0xC8A872
+    elif i == 2:  # temple / festival style: arch and diya
+        if abs(cx) < 0.28 and y > 0.3 and cy * cy / 0.2 + cx * cx / 0.08 < 1.0 and y < 0.85:
+            ink = 0xE8C050 if cy < 0.05 else 0xB8503C
+        if (cx) ** 2 / 0.01 + (y - 0.2) ** 2 / 0.006 < 1:
+            ink = 0xF4E4A0
+    else:         # printed notice-like pictorial: stripes / map blocks
+        if 0.18 < y < 0.82 and 0.15 < x < 0.85:
+            ink = 0x7A6A55 if int(y * 18) % 3 else 0xB9A27A
+            if int(x * 6 + y * 4) % 5 == 0:
+                ink = 0x8E5A44
+    if ink is not None:
+        ir, ig, ib = _rgb(ink)
+        r, g, b = r * 0.25 + ir * 0.75, g * 0.25 + ig * 0.75, b * 0.25 + ib * 0.75
+    # sun-fade toward grey-cream, stronger near the top; paper grain; fold creases; water stains
+    fade = 0.30 + 0.35 * (1 - y)
+    lum = 0.6 * r + 0.3 * g + 0.1 * b
+    r, g, b = r + (lum * 0.9 + 0.22 - r) * fade, g + (lum * 0.9 + 0.2 - g) * fade, b + (lum * 0.9 + 0.15 - b) * fade
+    grain = 0.9 + 0.2 * _vn(x * 90 + i * 5, y * 90, 5)
+    crease = 0.0
+    if abs(x - 0.5) < 0.008 or abs(y - 0.5) < 0.008:
+        crease = 0.18
+    stain = max(0.0, _vn(x * 4 + i * 3, y * 4, 11) - 0.55) * 0.9
+    k = grain * (1 - crease) * (1 - stain * 0.5)
+    r, g, b = r * k, g * k, b * k
+    pw = lambda c: max(0.0, min(1.0, c)) ** 2.2
+    # patchy transparency lets the wall show through the thinnest paper
+    a = 0.9 - 0.25 * max(0.0, _vn(x * 6, y * 6, 21) - 0.5) * 2
+    return (pw(r), pw(g), pw(b), a)
 
 
-pmat = decal_material('hb_decal', (256, 128), poster_px)
+pmat = decal_material('hb_decal', (512, 256), poster_px)
 
 
 def wall_decal_S(z, x0, x1, h0, h1, i):
