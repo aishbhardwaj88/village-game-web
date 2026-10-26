@@ -74,7 +74,7 @@ export function createZoneManager(scene) {
   const projView = new THREE.Matrix4();
   const sphere = new THREE.Sphere();
   let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
-  let seenLoads = 0, rebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
+  let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
   /** Call once per frame with the player's x/z and (optionally) the camera. */
   function update(playerX, playerZ, dt = 0, camera = null) {
@@ -145,8 +145,10 @@ export function createZoneManager(scene) {
       }
     }
     const loadSig = modelLoads.count + colliderRequests.n;
-    if (loadSig !== seenLoads) { seenLoads = loadSig; rebuildAt = performance.now() + 250; } // wall clock: dt is clamped on slow frames, so age runs slow
+    if (loadSig !== seenLoads) { seenLoads = loadSig; rebuildAt = performance.now() + 250; lateRebuildAt = performance.now() + 1500; } // wall clock: dt is clamped on slow frames, so age runs slow
     if (rebuildAt >= 0 && performance.now() >= rebuildAt) { rebuildAt = -1; changed = true; }
+    // second pass for a slow swap-in (texture decode, chained loads) that lands after the 250 ms one
+    if (lateRebuildAt >= 0 && performance.now() >= lateRebuildAt) { lateRebuildAt = -1; changed = true; }
     if (changed) initStaticColliders(scene); // cheap full-scene rebuild, see doc comment above
   }
 
