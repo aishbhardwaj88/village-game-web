@@ -86,8 +86,9 @@ function addWeathering(m, set) {
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), step(0.93, r2_) * 0.8);   // the odd overburnt dark brick
             diffuseColor.rgb *= vec3(1.0 + (r2_ - 0.5) * 0.14, 1.0, 1.0 - (r2_ - 0.5) * 0.12);   // hue drift orange to brown
           }` : ''}
+          float flat_ = ${set === 'plaster' ? 'smoothstep(0.7, 0.95, abs(normalize(cross(dFdx(vWxyz), dFdy(vWxyz))).y))' : '0.0'};   // upward faces (slabs, forecourts, flat roofs): pale clean concrete in her drawings, so damp/mottle patches are mostly suppressed
           float n1 = wn_(vWxyz * 0.55) * 0.6 + wn_(vWxyz * 2.1) * 0.4;
-          diffuseColor.rgb *= 1.0 + (n1 - 0.5) * ${(mottle * 4).toFixed(3)};
+          diffuseColor.rgb *= 1.0 + (n1 - 0.5) * ${(mottle * 4).toFixed(3)} * (1.0 - 0.7 * flat_);
           diffuseColor.r *= 1.0 + (wn_(vWxyz * 0.3 + 7.0) - 0.5) * 0.06;
           float low = 1.0 - smoothstep(0.0, 0.7, vWxyz.y);
           diffuseColor.rgb *= 1.0 - low * ${grime.toFixed(3)} * (0.5 + 0.5 * wn_(vWxyz * 1.7 + 3.0));
@@ -101,9 +102,9 @@ function addWeathering(m, set) {
           diffuseColor.rgb *= 1.0 - ${streak.toFixed(3)} * col * col * wn_(vec3(vWxyz.x + vWxyz.z, vWxyz.y * 0.4, 5.0));
           ${set === 'plaster' ? `
           float st_ = smoothstep(0.58, 0.8, wn_(vWxyz * vec3(0.9, 0.5, 0.9) + 11.0));   // damp/soot stain patches
-          diffuseColor.rgb *= 1.0 - 0.30 * st_;
+          diffuseColor.rgb *= 1.0 - 0.30 * st_ * (1.0 - 0.8 * flat_);
           float pe_ = smoothstep(0.66, 0.85, wn_(vWxyz * vec3(2.4, 2.4, 2.4) + 23.0));  // paint worn through to a duller patch
-          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.84, 0.74), 0.55 * pe_);
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.84, 0.74), 0.55 * pe_ * (1.0 - 0.8 * flat_));
           float hi_ = smoothstep(2.2, 4.0, vWxyz.y);   // sun-bleached near the top
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * 1.08, 0.25 * hi_);` : ''}
           ${set === 'tin' ? `
