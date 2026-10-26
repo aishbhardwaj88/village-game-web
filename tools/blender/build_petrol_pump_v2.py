@@ -33,7 +33,7 @@ for x in (-10, -5, 0, 5, 10):
 for z in (-5, 0, 5):
     add('paint', wb('joint', -15, 15, z - 0.015, z + 0.015, 0.1, 0.104, 0.0), 0x6E6B64)
 for (x, z, r) in ((-6, 3, 1.4), (6, 2, 1.1), (0, 5.5, 1.8)):
-    add('paint', cyl('stain', x, z, 0.1, 0.105, r, r * 0.8, 12), 0x6E6860)
+    add('paint', cyl('stain', x, z, 0.1, 0.105, r, r * 0.8, 12), 0x9E9B93)
 # canopy: front edge 2 m in from the slab front -> z[0,8]?? 10 deep: z from -2 to 8
 CX0, CX1, CZ0, CZ1 = -9, 9, -2, 8
 H_CL, H_TOP = 5.5, 6.5
