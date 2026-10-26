@@ -87,12 +87,22 @@ import { CHARACTER_BUILDERS, createHumanoidAnimator } from './characters.js';
 // `npcGroup.position`/`.rotation.y`, never caring what's inside. The returned
 // `animate(dt, isMoving)` is new — call it once per frame (main.js's render
 // loop below) to drive the character's own idle-breathing/walk-cycle rock.
+// Tripo drop-in sizes for the side-job men, aunty and kids (docs/asset-slots.md). Each spawned instance gets its own
+// slot (`doodhwala#2`) that loads the shared `doodhwala.glb`; set once assetSlots exists.
+const CHARACTER_SLOT_DIMS = {
+  doodhwala: { w: 0.66, h: 1.7, d: 0.66 }, kulfiwala: { w: 0.66, h: 1.7, d: 0.66 }, chaatwala: { w: 0.66, h: 1.7, d: 0.66 },
+  bantawala: { w: 0.66, h: 1.7, d: 0.66 }, shopkeeper: { w: 0.66, h: 1.7, d: 0.66 },
+  villager_aunty: { w: 0.62, h: 1.58, d: 0.62 },
+  kid_a: { w: 0.5, h: 1.25, d: 0.5 }, kid_b: { w: 0.5, h: 1.25, d: 0.5 }, kid_c: { w: 0.5, h: 1.25, d: 0.5 }, kid_d: { w: 0.45, h: 1.15, d: 0.45 },
+};
+let registerCharacterSlot = null;
 function buildCharacterNpc(key, position, rotationY, name) {
   const { root, bodyPivot } = CHARACTER_BUILDERS[key]();
   root.name = name;
   root.position.set(position.x, 0, position.z);
   root.rotation.y = rotationY;
   root.userData.mesh = bodyPivot.children[0]; // the one merged draw call
+  if (key in CHARACTER_SLOT_DIMS) registerCharacterSlot?.(key, root);
   return { root, animate: createHumanoidAnimator(bodyPivot) };
 }
 import {
@@ -980,6 +990,19 @@ async function main() {
       hide: [npc.userData.mesh],
       placements: [{ container: npc, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
+  }
+  {
+    let n = 0;
+    registerCharacterSlot = (key, root) => {
+      const name = `${key}#${++n}`;
+      assetSlots.register(name, {
+        file: key,
+        dimensions: CHARACTER_SLOT_DIMS[key],
+        hide: [root.userData.mesh],
+        placements: [{ container: root, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
+      });
+      assetSlots.resolveOne(name).catch(() => {});
+    };
   }
   // charpai/hand_pump (queue item 3 builds these — see src/village.js
   // buildHouseInteriorProps, which keeps each in its own small Group for exactly

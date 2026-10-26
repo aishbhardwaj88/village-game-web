@@ -1,3 +1,6 @@
+**2026-10-27 (character slots: side-job men, aunty, kids):** Game change: none visible until files exist. doodhwala/kulfiwala/chaatwala/bantawala/shopkeeper/villager_aunty/kid_a-d now each register an asset slot when spawned (src/main.js buildCharacterNpc; assetSlots.register gained a `file` option so `kid_a#3` loads kid_a.glb). Sizes as in docs/asset-slots.md. Not tested with a real glb. Still unwired: cow, buffalo, dog (instanced herds). Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
+NEXT: animal slots (needs herd-code change), or THE ORDER item 4 signboard audit.
+
 **2026-10-27 (character slots dadi + monkey):** Game change: `dadi` and `monkey` now have asset slots (src/main.js, beside the maa/halwai loop, per-entry box sizes; dadi 0.62x1.5x0.62, monkey 0.35x0.6x0.35), so dadi.glb / monkey.glb dropped in public/assets/models/ replace the capsule/shape. docs/asset-slots.md moved both rows to Wired. Still NOT wired: doodhwala/kulfiwala/chaatwala/bantawala/shopkeeper, villager_aunty, kid_a-d, cow, buffalo, dog (instanced; need herd-code change). Not tested with a real glb. Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
 NEXT: slots for side-job men, aunty, kids (CHARACTER_BUILDERS), then animals.
 

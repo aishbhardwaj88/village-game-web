@@ -92,12 +92,12 @@ export function createAssetSlotRegistry() {
    * placement; a few (e.g. `bullock`, one model shared by both animals) have more.
    * `hide` — every placeholder Object3D to hide once the model has loaded.
    */
-  function register(name, { dimensions, placements, hide, exact = false, maskMaterials = [], noShadowMaterials = [] }) {
-    slots.set(name, { name, dimensions, placements, hide: hide || [], exact, maskMaterials, noShadowMaterials });
+  function register(name, { dimensions, placements, hide, exact = false, maskMaterials = [], noShadowMaterials = [], file = name }) {
+    slots.set(name, { name, file, dimensions, placements, hide: hide || [], exact, maskMaterials, noShadowMaterials });
   }
 
   async function resolveSlot(slot) {
-    const url = `${MODEL_BASE}${slot.name}.glb`;
+    const url = `${MODEL_BASE}${slot.file || slot.name}.glb`;
     if (!(await urlExists(url))) return { name: slot.name, replaced: false };
 
     let gltf;
