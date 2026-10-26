@@ -16,7 +16,7 @@ from arch import Kit, plastic_chair, lathe, clay_pot, STEEL, BRASS
 OUT = os.path.join(ROOT, 'tmp', 'chaupal_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 rnd = random.Random(3)
-CEMENT = 0xA9A69F
+CEMENT = 0x8E8C86
 CREAM = 0xE8DFC0
 
 
@@ -113,5 +113,5 @@ add('metal', limb('meter_box', (lx + 0.14, lz, 1.7), (lx + 0.14, lz, 2.3), 0.12,
 add('wood', limb('broom_handle', (-4.6, 3.4, 0.0), (-4.2, 3.0, 1.0), 0.03))
 add('paint', limb('broom_head', (-4.7, 3.5, 0.0), (-4.55, 3.35, 0.4), 0.22, 0.06), 0x9A8A58)
 
-TINTS = {'hb_plaster': '#FFF2D0', 'hb_plinth': '#E8DFC0', 'hb_trim': '#C9C6BE', 'hb_apron': '#A8845A', 'hb_wood': '#8A6A48', 'hb_brick': '#AE6C54', 'hb_metal': '#FFFFFF'}
+TINTS = {'hb_plaster': '#FFF2D0', 'hb_plinth': '#E8DFC0', 'hb_trim': '#C9C6BE', 'hb_apron': '#A8845A', 'hb_wood': '#8A6A48', 'hb_brick': '#A06A58', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_brick': 0.1})
