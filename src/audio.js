@@ -499,9 +499,23 @@ export class AudioEngine {
   _playBirdChirp() {
     if (!this.started) return;
     const t = this.ctx.currentTime;
+    // Mostly sparrow chirps, now and then a koel's rising two-note whistle or a distant
+    // crow's caw, so the afternoon bed does not repeat one identical call.
+    const r = Math.random();
+    if (r < 0.6) this._playChirpNote(t, 2200 + Math.random() * 800);
+    else if (r < 0.8) {
+      const f = 2300 + Math.random() * 500;
+      this._playChirpNote(t, f);
+      this._playChirpNote(t + 0.2, f * 1.08); // quick answering second chirp
+    } else if (r < 0.92) this._playKoel(t);
+    else this._playCaw(t);
+
+    setTimeout(() => this._playBirdChirp(), 4000 + Math.random() * 8000);
+  }
+
+  _playChirpNote(t, startFreq) {
     const osc = this.ctx.createOscillator();
     osc.type = 'sine';
-    const startFreq = 2200 + Math.random() * 800;
     osc.frequency.setValueAtTime(startFreq, t);
     osc.frequency.exponentialRampToValueAtTime(startFreq * 1.4, t + 0.06);
     osc.frequency.exponentialRampToValueAtTime(startFreq * 0.9, t + 0.14);
@@ -512,8 +526,46 @@ export class AudioEngine {
     osc.connect(gain).connect(this.master);
     osc.start(t);
     osc.stop(t + 0.18);
+  }
 
-    setTimeout(() => this._playBirdChirp(), 4000 + Math.random() * 8000);
+  /** Koel: "ku-OO", a low soft note then a longer higher one gliding up. */
+  _playKoel(t) {
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, t);
+    osc.frequency.setValueAtTime(900, t + 0.22);
+    osc.frequency.exponentialRampToValueAtTime(1500, t + 0.62);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.035, t + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.012, t + 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.04, t + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+    osc.connect(gain).connect(this.master);
+    osc.start(t);
+    osc.stop(t + 0.75);
+  }
+
+  /** Far crow: two short nasal caws, band-passed sawtooth. */
+  _playCaw(t) {
+    for (let i = 0; i < 2; i++) {
+      const s = t + i * 0.32;
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(420, s);
+      osc.frequency.exponentialRampToValueAtTime(300, s + 0.2);
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1100;
+      filter.Q.value = 1.2;
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, s);
+      gain.gain.exponentialRampToValueAtTime(0.03, s + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, s + 0.22);
+      osc.connect(filter).connect(gain).connect(this.master);
+      osc.start(s);
+      osc.stop(s + 0.25);
+    }
   }
 
   // --- ambience --------------------------------------------------------------
