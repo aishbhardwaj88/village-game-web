@@ -57,15 +57,21 @@ for ix in (-3.0, 3.0):
         for sx in (-0.7, 0.7):
             add('paint', wb('kerb_s', ix + sx - 0.03, ix + sx + 0.03, z0, z1, 0.1, 0.35, 0.0), YEL if (z0 == 0.8) else BLK)
     dz = 3.8
-    add('plaster', wb('disp', ix - 0.35, ix + 0.35, dz - 0.25, dz + 0.25, 0.35, 1.9, 0.02), WHITE)
-    add('plinth', wb('disp_panel_f', ix - 0.3, ix + 0.3, dz + 0.25, dz + 0.27, 0.9, 1.5, 0.0), NAVY)
-    add('plinth', wb('disp_panel_b', ix - 0.3, ix + 0.3, dz - 0.27, dz - 0.25, 0.9, 1.5, 0.0), NAVY)
-    add('paint', wb('disp_screen_f', ix - 0.2, ix + 0.2, dz + 0.27, dz + 0.28, 1.2, 1.42, 0.0), 0x1B1D22)
-    add('paint', wb('disp_screen_b', ix - 0.2, ix + 0.2, dz - 0.28, dz - 0.27, 1.2, 1.42, 0.0), 0x1B1D22)
-    add('plinth', wb('disp_top', ix - 0.38, ix + 0.38, dz - 0.28, dz + 0.28, 1.9, 2.05, 0.01), NAVY)
+    GRN = 0x2E8B3A
+    add('plinth', wb('disp_base', ix - 0.46, ix + 0.46, dz - 0.32, dz + 0.32, 0.35, 0.7, 0.01), NAVY)
+    add('plinth', wb('disp_band', ix - 0.47, ix + 0.47, dz - 0.33, dz + 0.33, 0.7, 0.8, 0.0), ORANGE)
+    add('plaster', wb('disp', ix - 0.45, ix + 0.45, dz - 0.31, dz + 0.31, 0.8, 1.75, 0.02), WHITE)
+    add('plaster', wb('disp_head', ix - 0.42, ix + 0.42, dz - 0.29, dz + 0.29, 1.75, 2.3, 0.02), WHITE)
+    add('plinth', wb('disp_top', ix - 0.46, ix + 0.46, dz - 0.33, dz + 0.33, 2.3, 2.42, 0.01), NAVY)
     for sgn in (-1, 1):
-        add('metal', limb('hose', (ix + sgn * 0.37, dz, 1.4), (ix + sgn * 0.5, dz + 0.1, 0.9), 0.05), 0x1B1B1D)
-        add('metal', limb('nozzle_holster', (ix + sgn * 0.36, dz - 0.1, 1.1), (ix + sgn * 0.36, dz + 0.1, 1.1), 0.05), 0x4A4D52)
+        add('plinth', wb('disp_panel', ix - 0.4, ix + 0.4, dz + sgn * 0.31 - 0.015 + (0.015 if sgn > 0 else -0.015), dz + sgn * 0.31 + 0.015 + (0.015 if sgn > 0 else -0.015), 1.0, 1.65, 0.0), NAVY)
+        add('paint', wb('disp_screen', ix - 0.3, ix + 0.3, dz + sgn * 0.335 - 0.01, dz + sgn * 0.335 + 0.01, 1.3, 1.55, 0.0), 0x1B1D22)
+        add('plinth', wb('disp_orange', ix - 0.42, ix + 0.42, dz + sgn * 0.3 - 0.012 + (0.012 if sgn > 0 else -0.012), dz + sgn * 0.3 + 0.012 + (0.012 if sgn > 0 else -0.012), 2.0, 2.1, 0.0), ORANGE)
+    for sgn in (-1, 1):
+        add('metal', limb('hose', (ix + sgn * 0.45, dz + 0.05, 1.3), (ix + sgn * 0.62, dz + 0.25, 0.7), 0.04), 0x1B1B1D)
+        add('metal', limb('hose2', (ix + sgn * 0.62, dz + 0.25, 0.7), (ix + sgn * 0.55, dz + 0.3, 0.45), 0.04), 0x1B1B1D)
+        add('metal', limb('nozzle_holster', (ix + sgn * 0.5, dz + 0.1, 1.15), (ix + sgn * 0.5, dz + 0.34, 1.15), 0.06), 0x4A4D52)
+        add('metal', limb('nozzle', (ix + sgn * 0.5, dz + 0.34, 1.15), (ix + sgn * 0.5, dz + 0.34, 0.92), 0.05), GRN)
 # sales office at the back: 8 x 5 m, white, navy base band, orange roof line, glass door + window, tank
 OX0, OX1, OZ0, OZ1 = -4, 4, -10, -5
 OH = 3.6
@@ -123,14 +129,18 @@ add('trim', wb('air_base', -6.8, -6.2, -7.3, -6.7, 0.1, 0.18, 0.01), SLAB)
 add('metal', wb('cooler', 5.3, 5.9, -9.7, -9.2, 0.1, 1.15, 0.02), 0xCFD6DA)
 add('metal', cyl('cooler_tap', 5.6, -9.15, 0.95, 1.05, 0.04, 0.04, 8), BRASS)
 add('metal', wb('cooler_top', 5.25, 5.95, -9.75, -9.15, 1.15, 1.2, 0.0), 0x9AA3A8)
+for sx in (6.2, 7.6):
+    add('metal', limb('rack_post', (sx, -9.5, 0.1), (sx, -9.5, 2.0), 0.05), NAVY)
+add('metal', limb('rack_bar', (6.2, -9.5, 1.95), (7.6, -9.5, 1.95), 0.04), NAVY)
 for k in range(3):
-    add('metal', cyl('fire_bucket', 6.4 + k * 0.45, -9.5, 0.1, 0.4, 0.15, 0.2, 12), 0xB3231C)
-    add('paint', cyl('sand', 6.4 + k * 0.45, -9.5, 0.36, 0.4, 0.17, 0.17, 12), 0xC9B484)
+    bx = 6.45 + k * 0.4
+    add('metal', limb('bucket_hook', (bx, -9.5, 1.95), (bx, -9.5, 1.7), 0.015), 0x3A3C3E)
+    add('metal', cyl('fire_bucket', bx, -9.5, 1.35, 1.7, 0.12, 0.17, 12), 0xB3231C)
 for k in range(2):
-    add('metal', cyl('extinguisher', 7.6 + k * 0.35, -9.6, 0.1, 0.7, 0.07, 0.07, 10), 0xC62828)
-    add('metal', cyl('ext_neck', 7.6 + k * 0.35, -9.6, 0.7, 0.78, 0.03, 0.03, 8), 0x1B1B1D)
-    add('metal', cyl('ext_cap', 7.6 + k * 0.35, -9.6, 0.78, 0.82, 0.05, 0.05, 8), 0x1B1B1D)
-add('trim', wb('rack', 5.1, 8.4, -9.9, -9.7, 0.1, 0.12, 0.0), SLAB)
+    add('metal', cyl('extinguisher', 8.1 + k * 0.35, -9.6, 0.1, 0.7, 0.07, 0.07, 10), 0xC62828)
+    add('metal', cyl('ext_neck', 8.1 + k * 0.35, -9.6, 0.7, 0.78, 0.03, 0.03, 8), 0x1B1B1D)
+    add('metal', cyl('ext_cap', 8.1 + k * 0.35, -9.6, 0.78, 0.82, 0.05, 0.05, 8), 0x1B1B1D)
+add('trim', wb('rack', 5.1, 8.8, -9.9, -9.7, 0.1, 0.12, 0.0), SLAB)
 # pole sign 6 m tall, front-left corner: navy pole, blank orange panels (no marks)
 px, pz = -13.0, 8.5
 add('metal', limb('sign_pole', (px, pz, 0.1), (px, pz, 6.0), 0.3, 0.25), NAVY)
