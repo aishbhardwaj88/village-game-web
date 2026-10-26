@@ -24,10 +24,10 @@ for x in (-6.7, -3.3, 0, 3.3, 6.7):
     add('paint', wb('joint', x - 0.015, x + 0.015, -5, 5, 0.12, 0.124, 0.0), 0x6E6B64)
 # steel platform: deck with chequer plate, side girders, striped kerbs, ramps
 PX0, PX1, PZ0, PZ1 = -6.0, 6.0, 0.8, 4.3
-add('metal', wb('deck', PX0, PX1, PZ0, PZ1, 0.12, 0.3, 0.01), 0x6C7074)
-add('metal', wb('deck_plate', PX0 + 0.05, PX1 - 0.05, PZ0 + 0.1, PZ1 - 0.1, 0.3, 0.32, 0.0), 0x808589)
+add('metal', wb('deck', PX0, PX1, PZ0, PZ1, 0.12, 0.3, 0.01), 0x9A9FA4)
+add('metal', wb('deck_plate', PX0 + 0.05, PX1 - 0.05, PZ0 + 0.1, PZ1 - 0.1, 0.3, 0.32, 0.0), 0xB2B7BB)
 for k in range(1, 12):
-    add('metal', wb('chequer', PX0 + k - 0.03, PX0 + k + 0.03, PZ0 + 0.1, PZ1 - 0.1, 0.32, 0.325, 0.0), 0x5C6064)
+    add('metal', wb('chequer', PX0 + k - 0.03, PX0 + k + 0.03, PZ0 + 0.1, PZ1 - 0.1, 0.32, 0.325, 0.0), 0x8C9094)
 add('metal', wb('mid_seam', -0.03, 0.03, PZ0 + 0.1, PZ1 - 0.1, 0.32, 0.326, 0.0), 0x4A4D52)
 for z0, z1 in ((PZ0 - 0.15, PZ0 + 0.1), (PZ1 - 0.1, PZ1 + 0.15)):
     for k in range(24):
