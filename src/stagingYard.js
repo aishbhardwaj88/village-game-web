@@ -52,7 +52,7 @@ function addWeathering(m, set) {
   const mottle = set === 'brick' ? 0.10 : set === 'thatch' ? 0.12 : 0.16;
   const grime = set === 'brick' ? 0.15 : 0.32;
   const streak = set === 'plaster' ? 0.10 : 0.0;
-  const boost = set === 'plaster' ? 1.4 : set === 'thatch' ? 1.0 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
+  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWxyz;')
@@ -74,6 +74,7 @@ function addWeathering(m, set) {
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.6, 3.5, 1.6)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
+          ${set === 'brick' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.8);   // her brick is paler and patchier than the scan tint' : ''}
           float n1 = wn_(vWxyz * 0.55) * 0.6 + wn_(vWxyz * 2.1) * 0.4;
           diffuseColor.rgb *= 1.0 + (n1 - 0.5) * ${(mottle * 4).toFixed(3)};
           diffuseColor.r *= 1.0 + (wn_(vWxyz * 0.3 + 7.0) - 0.5) * 0.06;
