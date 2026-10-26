@@ -1,3 +1,6 @@
+**2026-10-26 (chaupal event posters):** Game change: the staged chaupal notice board now has two torn, faded, creased picture-only event posters (a striped circus tent, a cricket pitch with stumps, bat and ball) pinned over the blank sheets, as LAYOUT.md asks (tools/blender/build_chaupal.py, chaupal_v2.glb rebuilt). Proof docs/shots/places-2026-10-26/posters/chaupal_board.png, looked at: both read on the board, no lettering; the cricket one is abstract and the circus tent is crude, neither compared against a reference (none exists, LAYOUT.md only names the subjects). Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
+NEXT: posters/clutter for other staged places, then audio polish.
+
 **2026-10-26 (A0-WEATHER bus adda posters):** Game change: bus adda wall posters are now torn-edge, sun-faded, creased, stained picture panels on a 512x256 atlas instead of flat colour shapes (tools/blender/build_bus_adda.py, bus_adda_v2.glb rebuilt). Proof docs/shots/places-2026-10-26/posters/poster_close.png, looked at: overlapping, varied, no lettering; a little soft because each is under 1 m wide. Not compared to her image this cycle. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: posters for other staged places, then audio polish.
 

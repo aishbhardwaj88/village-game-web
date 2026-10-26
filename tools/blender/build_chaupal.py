@@ -3,15 +3,15 @@ Peepal chaupal - arch.py Kit, to Places V1/chaupal/LAYOUT.md + MAIN_chaupal_fron
 Run:  tools/blender/make.sh chaupal chaupal_v2
 Frame: site-local metres, +z south = front. Bare earth patch 20 x 20 m (x,z in [-10,10]); four lanes meet at the middles of its sides (outside).
 Round brick platform 8 m across (R 4) with cement top, cream edge, brick steps front + both sides; the tree pit is left EMPTY (the huge peepal is hers).
-3 charpais + 1 takht + 2 plastic chairs (red, green) round the platform; notice board 2 m on 2 wooden posts at the left (blank paper sheets: event
-posters are added in-game); hand pump + matka on a cement slab front-right; concrete electric pole with one street lamp at the right; a broom.
+3 charpais + 1 takht + 2 plastic chairs (red, green) round the platform; notice board 2 m on 2 wooden posts at the left (blank paper sheets plus two
+picture-only event posters, a circus and a cricket match, no lettering); hand pump + matka on a cement slab front-right; concrete electric pole with one street lamp at the right; a broom.
 No threads or lamps on the tree, no hookah (game rules).
 """
 import sys, os, math, random
 sys.path.insert(0, os.path.dirname(__file__))
 import bpy
-from common import wb, limb, cyl, sphere, join_objects, ROOT
-from arch import Kit, plastic_chair, lathe, clay_pot, STEEL, BRASS
+from common import wb, limb, cyl, sphere, quad, join_objects, ROOT
+from arch import Kit, plastic_chair, lathe, clay_pot, decal_material, STEEL, BRASS
 
 OUT = os.path.join(ROOT, 'tmp', 'chaupal_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
@@ -90,6 +90,80 @@ for k in range(11):
     sz = bz - 0.85 + rnd.uniform(0, 1.5)
     sh = 1.2 + rnd.uniform(0, 0.75)
     add('paint', wb('nb_sheet', bx + 0.09, bx + 0.1, sz, sz + rnd.uniform(0.22, 0.4), sh, sh + rnd.uniform(0.25, 0.4), 0.0), rnd.choice((0xF2EFE6, 0xE9E4D4, 0xF6F3EC)))
+# two picture-only event posters (circus, cricket match) pinned over the sheets: 512x256 atlas, 2 cells, torn, faded, creased
+def _h(ix, iy, sd):
+    n = (ix * 374761393 + iy * 668265263 + sd * 2147483647) & 0xFFFFFFFF
+    n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+
+def _vn(x, y, sd):
+    ix, iy = int(math.floor(x)), int(math.floor(y))
+    fx, fy = x - ix, y - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    a, b = _h(ix, iy, sd), _h(ix + 1, iy, sd)
+    c, d = _h(ix, iy + 1, sd), _h(ix + 1, iy + 1, sd)
+    return (a + (b - a) * fx) + ((c + (d - c) * fx) - (a + (b - a) * fx)) * fy
+
+
+def _rgb(h):
+    return ((h >> 16) & 255) / 255.0, ((h >> 8) & 255) / 255.0, (h & 255) / 255.0
+
+
+def event_px(u, v):
+    i = min(1, int(u * 2))
+    x, y = u * 2 - i, v
+    e = 0.04 + 0.04 * _vn(x * 14 + i * 9, y * 14, 3)
+    if x < e or x > 1 - e or y < e * 0.6 or y > 1 - e * 0.6:
+        return None
+    if x > 0.78 and y > 0.84 and _vn(x * 9, y * 9, 8) > 0.45:
+        return None
+    cx, cy = x - 0.5, y - 0.5
+    if i == 0:   # circus: striped big top on a dusk-yellow ground, a pennant, a ring of lights
+        r, g, b = _rgb(0xE8C45A)
+        ink = None
+        if y > 0.62:
+            ink = 0x7A5A3A
+        elif y > 0.3 and abs(cx) < 0.36 * (y - 0.12) / 0.5 + 0.05:
+            ink = 0xB8342C if int((x + 1) * 7) % 2 else 0xF1E6C8
+        elif y > 0.12 and abs(cx) < 0.36 * (y - 0.12) / 0.5 + 0.05:
+            ink = 0xB8342C if int((x + 1) * 7) % 2 else 0xF1E6C8
+        if 0.04 < y < 0.14 and abs(cx - 0.02) < 0.1 * (0.14 - y) / 0.1 + 0.01:
+            ink = 0x2E6A8A
+        if (cx ** 2 + (y - 0.82) ** 2) < 0.012 and cx ** 2 + (y - 0.82) ** 2 > 0.005:
+            ink = 0x3A2E80
+    else:        # cricket match: green pitch, three stumps, bat and ball under a blue sky
+        r, g, b = _rgb(0x9DC3DC)
+        ink = None
+        if y > 0.55:
+            ink = 0x6E9A4E
+        if 0.2 < y < 0.8 and any(abs(cx - d) < 0.018 for d in (-0.07, 0.0, 0.07)) and y < 0.8 and y > 0.45:
+            ink = 0xE6D6A8
+        if abs(cx - 0.24 + (y - 0.6) * 0.5) < 0.04 and 0.4 < y < 0.88:
+            ink = 0xC8A66A
+        if (cx + 0.2) ** 2 + (y - 0.3) ** 2 < 0.008:
+            ink = 0xB02A22
+    if ink is not None:
+        ir, ig, ib = _rgb(ink)
+        r, g, b = r * 0.2 + ir * 0.8, g * 0.2 + ig * 0.8, b * 0.2 + ib * 0.8
+    fade = 0.28 + 0.3 * (1 - y)
+    lum = 0.6 * r + 0.3 * g + 0.1 * b
+    r, g, b = r + (lum * 0.9 + 0.22 - r) * fade, g + (lum * 0.9 + 0.2 - g) * fade, b + (lum * 0.9 + 0.15 - b) * fade
+    k = (0.9 + 0.2 * _vn(x * 90 + i * 5, y * 90, 5)) * (1 - (0.18 if abs(x - 0.5) < 0.01 or abs(y - 0.5) < 0.01 else 0.0))
+    k *= 1 - max(0.0, _vn(x * 4 + i * 3, y * 4, 11) - 0.55) * 0.45
+    pw = lambda c: max(0.0, min(1.0, c * k)) ** 2.2
+    return (pw(r), pw(g), pw(b), 0.92)
+
+
+emat = decal_material('hb_decal', (512, 256), event_px)
+for i, (dz, w, hgt, h0) in enumerate(((-0.45, 0.78, 0.98, 1.12), (0.42, 0.66, 0.88, 1.2))):
+    xx = bx + 0.112
+    o = quad('event_poster', [(xx, bz + dz - w / 2, h0), (xx, bz + dz + w / 2, h0), (xx, bz + dz + w / 2, h0 + hgt), (xx, bz + dz - w / 2, h0 + hgt)])
+    uvl = o.data.uv_layers.new(name='UVMap')
+    for loop, uv in zip(o.data.loops, [(i / 2, 0), ((i + 1) / 2, 0), ((i + 1) / 2, 1), (i / 2, 1)]):
+        uvl.data[loop.index].uv = uv
+    o.data.materials.append(emat)
+    kit.extra.append(o)
 # hand pump + matka on a cement slab (front-right)
 px, pz = 6.8, 7.0
 add('trim', wb('pump_slab', px - 1.0, px + 1.0, pz - 0.9, pz + 0.9, 0, 0.12, 0.01), CEMENT)

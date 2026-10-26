@@ -178,6 +178,7 @@ is in handoff.md, and build plus regression are green.
 - [x] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey (proof docs/shots/places-2026-10-26/bus3/front.png)
 - [ ] Wall posters: real faded picture textures, varied and overlapping, no lettering; currently flat colour rectangles
   - PROGRESS 2026-10-26 (not ticked): bus adda posters now torn-edge, sun-faded, creased, stained picture panels (512x256 atlas, tools/blender/build_bus_adda.py), proof docs/shots/places-2026-10-26/posters/poster_close.png. Other staged places have no posters yet.
+  - PROGRESS 2026-10-26 (not ticked): staged chaupal notice board now carries two picture-only event posters (circus, cricket match), proof docs/shots/places-2026-10-26/posters/chaupal_board.png. Primary school already has hygiene posters.
 - [x] Bus adda ground: packed earth with a broken brick paving strip along the road edge, not a concrete slab (proof docs/shots/places-2026-10-26/bus3/iso.png)
 - [ ] STANDING RULE: weathering IS the look. Never ship a surface at full saturation. Base dirt, edge stains and colour variation before any place is called done. A clean new-looking build fails even with correct geometry
 - [x] Re-check bus adda against LAYOUT.md item by item: tapri left, peepal+chabutra+charpai far right-back, pyaau far right, green double-sided board perpendicular at front-left, milestone front-right (proof docs/shots/places-2026-10-26/bus3/front.png, iso.png)
