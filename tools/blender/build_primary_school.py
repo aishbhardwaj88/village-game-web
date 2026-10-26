@@ -228,7 +228,7 @@ def mural(u, v):
 POSTER_BG = (0xF4E7B5, 0xBFE0EC, 0xF2D9D2, 0xD7ECC8, 0xCFE2F2)
 
 
-def poster(u, v):
+def poster_flat(u, v):
     """Five picture-only hygiene posters, each 1 x 1.2 m card: hand washing, brushing teeth, cutting nails, dustbin, clean water."""
     i = min(4, int(u * 5))
     x = (u * 5 - i)           # 0..1 across the card
@@ -290,6 +290,44 @@ def poster(u, v):
         if inside_box(x, y, 0.47, 0.53, 0.84, 0.92):
             return water
     return bg
+
+
+def _h(ix, iy, sd):
+    n = (ix * 374761393 + iy * 668265263 + sd * 2147483647) & 0xFFFFFFFF
+    n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+
+def _vn(x, y, sd):
+    ix, iy = int(math.floor(x)), int(math.floor(y))
+    fx, fy = x - ix, y - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    a, b = _h(ix, iy, sd), _h(ix + 1, iy, sd)
+    c, d = _h(ix, iy + 1, sd), _h(ix + 1, iy + 1, sd)
+    return (a + (b - a) * fx) + ((c + (d - c) * fx) - (a + (b - a) * fx)) * fy
+
+
+def poster(u, v):
+    """The flat hygiene cards, weathered: sun-faded toward cream, paper grain, a fold crease, water stains, ragged edges, a torn corner on some cards."""
+    c = poster_flat(u, v)
+    i = min(4, int(u * 5))
+    x, y = u * 5 - i, v
+    e = 0.012 + 0.03 * _vn(x * 12 + i * 7, y * 12, 3)
+    if x < e or x > 1 - e or y < e * 0.8 or y > 1 - e * 0.8:
+        return None
+    if i % 2 == 1 and x > 0.78 and y > 0.84 and _vn(x * 9, y * 9, 8) > 0.4:
+        return None   # torn-off corner
+    if i % 2 == 0 and x < 0.16 and y < 0.12 and _vn(x * 9, y * 9, 9) > 0.45:
+        return None
+    r, g, b = c[0], c[1], c[2]
+    fade = 0.28 + 0.3 * y
+    lum = 0.6 * r + 0.3 * g + 0.1 * b
+    r, g, b = r + (lum * 0.8 + 0.3 - r) * fade, g + (lum * 0.8 + 0.28 - g) * fade, b + (lum * 0.8 + 0.2 - b) * fade
+    grain = 0.9 + 0.2 * _vn(x * 70 + i * 5, y * 70, 5)
+    crease = 0.16 if (abs(x - 0.5) < 0.012 or abs(y - 0.5) < 0.01) else 0.0
+    stain = max(0.0, _vn(x * 4 + i * 3, y * 4, 11) - 0.55) * 0.9
+    k = grain * (1 - crease) * (1 - stain * 0.5)
+    return (r * k, g * k, b * k, 1.0)
 
 
 def flag_px(u, v):
