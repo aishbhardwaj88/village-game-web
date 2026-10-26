@@ -1,3 +1,6 @@
+**2026-10-26 (A0 vehicles-collide audit, no game change):** Re-ran tools/collision-test.js: 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed; part [3] drove bike/tractor/cart into 1976 solids (8370 drives). Ticked the BACKLOG A0 'Vehicles collide' box on that evidence. No screenshot, nothing changed in the game this cycle. Not covered still: a collider registering late while the player stands at a zone edge; rooftop-chase leg.
+NEXT: rooftop-leg collision check, then audio polish.
+
 **2026-10-26 (school posters weathered):** Game change: staged primary school hygiene posters are now sun-faded, creased, water-stained, ragged-edged cards with torn corners instead of clean flat colour (tools/blender/build_primary_school.py, primary_school.glb rebuilt). Proof docs/shots/places-2026-10-26/schoolposters/posters_a.png and posters_b.png, looked at: weathering reads; the pictures themselves are crude (nails card reads as bars and an X) and cards do not overlap. Not compared to a drawing. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed.
 NEXT: audio polish, or redraw the school poster pictures.
 
