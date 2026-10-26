@@ -1,3 +1,6 @@
+**2026-10-26 (part-6 flake, second guard):** Game change (invisible): src/zoneManager.js now does a second collider rebuild 1.5 s after any model load, besides the 250 ms one, so a slow .glb swap-in cannot stay walk-through. Two consecutive full builds passed (collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed). Two passes do not prove the flake gone; watch later builds. No screenshot applies.
+NEXT: audio polish; far-east road is her call.
+
 **2026-10-26 (canal water ambience):** Game change (audio only): a soft water murmur (band-passed noise with slow swell) fades in within ~30 m of the canal channel and is loudest at the banks/bridge (src/audio.js `setListenerDistanceToWater`, src/canal.js `distanceToCanalWater`, called each frame in main.js). Not heard by ear; no screenshot applies. Screenshot run: zero console errors. Build ALL PASSED, collision-test 4785 static solids + 6 vehicle boxes + 3 vehicles + 118 NPC legs tested, 0 failed (part 6 passed on both full builds this cycle).
 NEXT: far-east cluster road (her call), more audio polish.
 
