@@ -417,10 +417,13 @@ async function main() {
         d.teleportPlayer(s.x + 3, s.z + 3);
         // zones build nearest-first within a frame budget and .glb swaps arrive async: wait until no collider rebuild has
         // happened for 2.5 s (cap 20 s), which in the game means the streaming around this spot has finished
-        let lastBuilds = -1, quietSince = Date.now();
+        let lastBuilds = -1, lastMeshes = -1, quietSince = Date.now();
         for (const t0 = Date.now(); Date.now() - t0 < 20000 && Date.now() - quietSince < 2500;) {
           await new Promise((r) => setTimeout(r, 400));
-          if (d.colliderStats.builds !== lastBuilds) { lastBuilds = d.colliderStats.builds; quietSince = Date.now(); }
+          // a model that finished loading adds meshes now and its collider rebuild follows ~250 ms later, so a changing mesh
+          // count also counts as "still streaming" (otherwise a slow .glb landing at the 2.5 s boundary is checked mid-debounce)
+          let meshes = 0; d.scene.traverse((o) => { if (o.isMesh) meshes++; });
+          if (d.colliderStats.builds !== lastBuilds || meshes !== lastMeshes) { lastBuilds = d.colliderStats.builds; lastMeshes = meshes; quietSince = Date.now(); }
         }
         const before = new Set(d.getStaticColliders().map(keyOf));
         d.rebuildColliders();
