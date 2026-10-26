@@ -1471,6 +1471,19 @@ async function main() {
         });
       }
     }
+    // Solar LEDs along the longer east-road spurs (the short ones, under 28 m, are one lamp's reach from the road). Same per-leg streaming as the galis.
+    for (const leg of spurLegs()) {
+      if (leg.len < 28) continue;
+      const half = leg.len / 2;
+      zoneManager.register(`lamps_${leg.id}`, {
+        detail: true,
+        x: (leg.a.x + leg.b.x) / 2,
+        z: (leg.a.z + leg.b.z) / 2,
+        buildRadius: 8 + half,
+        teardownRadius: 9 + half,
+        build: () => createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w }], { type: 'solar', everyMetres: 24 }),
+      });
+    }
     // MAP.md landmarks: paani ki tanki + bijli transformer (tallest structure; radius capped at 90 m because the hero zone sits at exactly 150 draw calls and the
     // validator camera camera at (-48,30) is 96 m away; widen once hero-zone calls drop). MAP.md gives no coordinate: open ground just north-east of the school yard. Streamed
     // because the hero zone sits at the draw-call ceiling.
