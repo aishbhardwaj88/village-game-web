@@ -49,6 +49,15 @@ one of its items and move to the next entry.
 **Every place render goes through the `art-reviewer` subagent before it is called
 done.** It has been used twice in ~80 runs. That is the gate, not a suggestion.
 
+### Do not loop. Ever.
+- If the art-reviewer FAILs the same thing **three times**, stop reworking it. Write
+  one plain line in `docs/NEEDS_YOU.md` saying what it is and what the reviewer keeps
+  objecting to, mark the item `- [!]`, and **move to the next entry in THE ORDER.**
+- The same applies to any single item: two failed attempts, then park it and move on.
+  Never spend a whole night on one surface.
+- A reviewer FAIL is information, not a command to keep grinding. The art director
+  would rather have 20 items advanced and 1 parked than 1 item perfected.
+
 
 **25 OCT: PLANTS AND ORGANICS ARE OFF THIS LIST.** The art director builds trees,
 plants, crops and flowers herself. Leave what exists alone. Skip every plant item

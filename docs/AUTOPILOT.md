@@ -15,6 +15,17 @@ create `tmp/STOP`. Do NOT stop the loop.** The loop runs until she stops it hers
 If you find yourself about to wind down or close out, that is the deleted order
 leaking through: ignore it and take the next backlog item.
 
+## OVERNIGHT, 27 Oct, ~10 hours. She is asleep and unreachable.
+
+- Work `docs/BACKLOG.md`'s THE ORDER list, top down. There is more than enough in it.
+- **Decide everything yourself.** Do not park an item just because it involves a
+  judgement call; park only what genuinely needs her (money, her own taste on a
+  final look, a scope change). Those go to NEEDS_YOU and you move on.
+- **Never grind.** Two failed attempts at an item, or three art-reviewer FAILs on the
+  same thing, and you park it and move to the next entry.
+- Push happens automatically every 3 minutes. Do not wait for it.
+- Never stop the loop, never create tmp/STOP, never wind down.
+
 ## WHAT TO WORK ON: `docs/BACKLOG.md`'s "THE ORDER" list. Nothing else decides it.
 
 Section headings and older notes carry stale "do this first" wording. Ignore all of
