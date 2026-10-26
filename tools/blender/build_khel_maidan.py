@@ -26,14 +26,14 @@ def net_px(u, v):
 
 
 nmat = decal_material('hb_net', (512, 64), net_px)
-add('paint', wb('ground', -35, 35, -25, 25, -0.08, 0.03, 0.0), 0xB59A6E)
-for (x, z, w, d, c) in ((-10, 5, 22, 16, 0xA88C60), (20, -10, 18, 10, 0xBCA37A), (8, 15, 26, 8, 0xAE9467), (-24, -14, 14, 10, 0xA38760), (26, 12, 14, 12, 0xB59A6E)):
+add('paint', wb('ground', -35, 35, -25, 25, -0.08, 0.03, 0.0), 0xCDB283)
+for (x, z, w, d, c) in ((-10, 5, 22, 16, 0xC4A878), (20, -10, 18, 10, 0xD2B88C), (8, 15, 26, 8, 0xC8AC7C), (-24, -14, 14, 10, 0xC1A476), (26, 12, 14, 12, 0xCDB283)):
     add('paint', wb('tone', x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.03, 0.036, 0.0), c)
 for (x, z, r) in ((-5, -8, 1.8), (12, 6, 2.0), (-28, 4, 1.4)):
-    add('paint', cyl('dung_patch', x, z, 0.036, 0.04, r, r * 0.8, 10), 0x7A6444)
+    add('paint', cyl('dung_patch', x, z, 0.036, 0.04, r, r * 0.8, 10), 0x8E7352)
 # cricket pitch left: 20 x 3 bare lighter strip along z, creases, stumps (3 at each end, one set pulled out), bat + ball
 px, pz0, pz1 = -26.0, -10.0, 10.0
-add('paint', wb('pitch', px - 1.5, px + 1.5, pz0, pz1, 0.036, 0.044, 0.0), 0xCDB78E)
+add('paint', wb('pitch', px - 1.5, px + 1.5, pz0, pz1, 0.036, 0.044, 0.0), 0xDCC79F)
 for z in (pz0 + 1.2, pz1 - 1.2):
     pk.lime_line(kit, px - 1.4, z, px + 1.4, z, rnd, h=0.05)          # popping creases
 for z in (pz0 + 0.1, pz1 - 0.1):
