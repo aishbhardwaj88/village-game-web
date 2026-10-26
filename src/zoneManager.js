@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { initStaticColliders } from './collision.js';
+import { initStaticColliders, colliderRequests } from './collision.js';
+import { modelLoads } from './loaders.js';
 
 // Anti-pop-in (FEEDBACK 24 Oct item 0b): a zone must exist BEFORE it enters the line of
 // sight, not when the player is on top of it. Fog hides things beyond ~250 m, so:
@@ -73,6 +74,7 @@ export function createZoneManager(scene) {
   const projView = new THREE.Matrix4();
   const sphere = new THREE.Sphere();
   let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
+  let seenLoads = 0, rebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
   /** Call once per frame with the player's x/z and (optionally) the camera. */
   function update(playerX, playerZ, dt = 0, camera = null) {
@@ -142,6 +144,9 @@ export function createZoneManager(scene) {
         if (performance.now() - t0 > budget) break; // the rest build on the next frames, nearest first
       }
     }
+    const loadSig = modelLoads.count + colliderRequests.n;
+    if (loadSig !== seenLoads) { seenLoads = loadSig; rebuildAt = performance.now() + 250; } // wall clock: dt is clamped on slow frames, so age runs slow
+    if (rebuildAt >= 0 && performance.now() >= rebuildAt) { rebuildAt = -1; changed = true; }
     if (changed) initStaticColliders(scene); // cheap full-scene rebuild, see doc comment above
   }
 

@@ -45,7 +45,7 @@ import {
   TEMPLE_LANE_ARRIVE,
   TEMPLE_LANE_WIDTH,
 } from './temple.js';
-import { vehicleFootprintBox, vehicleSolidBoxes, orientedFootprintBox, orientedBoxClearance, orientedBoxWorstClearance, initStaticColliders, setStaticColliders, AUTO_BODY_RADIUS, lastCarves, colliderStats, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
+import { vehicleFootprintBox, vehicleSolidBoxes, orientedFootprintBox, orientedBoxClearance, orientedBoxWorstClearance, initStaticColliders, requestColliderRebuild, setStaticColliders, AUTO_BODY_RADIUS, lastCarves, colliderStats, minSignedDistanceToColliders, STATIC_COLLIDERS, orientedBoxOverlapsAnyBox, resolveOrientedCollisions } from './collision.js';
 import {
   buildBazaarRow,
   buildBazaarCountersAndShutters,
@@ -2775,7 +2775,7 @@ async function main() {
       halwaiFire.points.visible = Math.abs(listenerPos.x - HALWAI_CENTER.x) < 30 && Math.abs(listenerPos.z - HALWAI_CENTER.z) < 30;
       if (halwaiFire.points.visible) halwaiFire.update(dt);
       updateWater(performance.now() / 1000);
-      for (const m of distGated) { const g = m.userData.distGate; m.visible = Math.hypot(camera.position.x - g.x, camera.position.z - g.z) < g.r + g.range; }
+      for (const m of distGated) { const g = m.userData.distGate; const v = Math.hypot(camera.position.x - g.x, camera.position.z - g.z) < g.r + g.range; if (v !== m.visible) { m.visible = v; requestColliderRebuild(); } } // stock cells carry derived colliders only while drawn
 
       camera.updateMatrixWorld(); // fresh matrixWorldInverse for this frame's projection below
       updateWaypoint({

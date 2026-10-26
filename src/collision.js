@@ -200,8 +200,16 @@ export function staticBoxesNear(x, z, r) {
 /** Cumulative cost of building the collider list (dev/test readout: the derivation must stay cheap at load). */
 export const colliderStats = { builds: 0, ms: 0, worstMs: 0 };
 
+/** Anything that makes solid meshes appear, vanish or move after a zone was built (LOD visibility flips, instance re-sorts)
+ * calls this; src/zoneManager.js rebuilds the collider list shortly after the counter changes. */
+export const colliderRequests = { n: 0 };
+export function requestColliderRebuild() { colliderRequests.n++; }
+
 export function initStaticColliders(scene) {
   const t0 = performance.now();
+  // Zones added this frame have never been rendered, so their matrixWorld is still identity: boxes would register at
+  // local coordinates until some later rebuild. Bring every world matrix up to date first.
+  scene.updateMatrixWorld(true);
   STATIC_COLLIDERS = buildCollidersFromScene(scene);
   rebuildStaticGrid();
   const dt = performance.now() - t0;

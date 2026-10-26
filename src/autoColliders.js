@@ -19,7 +19,8 @@ const INSET = 0.04; // pull each merged rect in a little so a doorway is never c
 const OFFSET = 20000;
 const keyOf = (cx, cz) => (cx + OFFSET) * 40000 + (cz + OFFSET);
 
-const cache = new WeakMap(); // mesh -> { boxes } (only meshes whose geometry is final)
+const cache = new WeakMap(); // mesh -> { sig, boxes }; the signature changes when instances are re-sorted or the mesh moves
+const meshSig = (mesh) => `${mesh.isInstancedMesh ? mesh.count + ':' + mesh.instanceMatrix.version : ''}|${mesh.matrixWorld.elements[12].toFixed(2)},${mesh.matrixWorld.elements[13].toFixed(2)},${mesh.matrixWorld.elements[14].toFixed(2)},${mesh.matrixWorld.elements[0].toFixed(3)},${mesh.matrixWorld.elements[2].toFixed(3)}`;
 
 const _m = new THREE.Matrix4();
 const _m2 = new THREE.Matrix4();
@@ -145,8 +146,9 @@ export function isAutoSolidMesh(mesh, top) {
 
 /** Merged rectangles for one mesh (all instances), minus cells already covered by `isCovered(x, z)`. */
 export function deriveMeshBoxes(mesh, isCovered, top = '') {
+  const sig = meshSig(mesh);
   const hit = cache.get(mesh);
-  if (hit) return hit;
+  if (hit && hit.sig === sig) return hit.boxes;
   const g = mesh.geometry;
   const pos = g.attributes.position;
   const idx = g.index;
@@ -174,6 +176,6 @@ export function deriveMeshBoxes(mesh, isCovered, top = '') {
     if (isCovered((cx + 0.5) * CELL, (cz + 0.5) * CELL)) cells.delete(k);
   }
   const result = cells.size ? mergeCells(cells, `${top}/${mesh.name || '?'}`) : [];
-  cache.set(mesh, result);
+  cache.set(mesh, { sig, boxes: result });
   return result;
 }

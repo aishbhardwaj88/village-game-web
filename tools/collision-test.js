@@ -405,6 +405,34 @@ async function main() {
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(2000);
+    // [6] LIVE STREAM: before any zone is forced, walk the real frame loop (zone manager running) to every zone and
+    // after each stop (plus a wait for .glb swaps) compare the live collider list with a fresh full rebuild. Any
+    // difference is a collider that registered late or never (the A0a "registered late during streaming" cause).
+    const live = await page.evaluate(async () => {
+      const d = window.__dopahar;
+      const keyOf = (b) => [b.minX, b.maxX, b.minZ, b.maxZ].map((n) => n.toFixed(2)).join(',');
+      const stops = [...d.zoneManager.zones.values()].filter((_, i) => i % 4 === 0).map((z) => ({ name: z.name, x: z.x, z: z.z }));
+      const fails = []; let checked = 0;
+      for (const s of stops) {
+        d.teleportPlayer(s.x + 3, s.z + 3);
+        // zones build nearest-first within a frame budget and .glb swaps arrive async: wait until no collider rebuild has
+        // happened for 2.5 s (cap 20 s), which in the game means the streaming around this spot has finished
+        let lastBuilds = -1, quietSince = Date.now();
+        for (const t0 = Date.now(); Date.now() - t0 < 20000 && Date.now() - quietSince < 2500;) {
+          await new Promise((r) => setTimeout(r, 400));
+          if (d.colliderStats.builds !== lastBuilds) { lastBuilds = d.colliderStats.builds; quietSince = Date.now(); }
+        }
+        const before = new Set(d.getStaticColliders().map(keyOf));
+        d.rebuildColliders();
+        const missing = d.getStaticColliders().filter((b) => !before.has(keyOf(b)));
+        checked++;
+        if (missing.length) fails.push({ zone: s.name, at: [s.x, s.z], missing: missing.length, sample: keyOf(missing[0]) + ' src=' + missing[0].src + ' auto=' + missing[0].auto });
+      }
+      return { checked, fails };
+    });
+    console.log(`[6] LIVE STREAM ${live.checked} zone stops walked with the zone manager running, live collider list vs fresh rebuild`);
+    for (const f of live.fails) console.log(`  FAIL zone ${f.zone} at (${f.at.map((n) => n.toFixed(0))}): ${f.missing} colliders not registered until a manual rebuild, e.g. ${f.sample}`);
+    failures += live.fails.length;
     await page.evaluate(forceZones);
     await page.waitForTimeout(6000); // let zone-streamed .glb models arrive
     const t0 = Date.now();

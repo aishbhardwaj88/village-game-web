@@ -182,7 +182,7 @@ is in handoff.md, and build plus regression are green.
 - [x] Repeat for every vehicle and every NPC/animal routine
 - [x] Output objects tested / passed / failed; put that line in the commit message; wire into npm run build (proof: npm run build 2026-10-26: 4824 static + 6 vehicle boxes + 3 vehicles + 66 NPC legs, 0 failed)
 - [x] Known failures to fix: trees, the tractor, the khel maidan string boundary, some buildings
-- [ ] Check likely causes: missing colliders on thin/rope shapes, colliders lost on merge/instance/zone-stream, colliders registered late during streaming, fast-movement tunnelling, mountable vehicles bypassing solid handling when unmounted
+- [x] Check likely causes (26 Oct: late registration found and fixed, collision-test part [6] 0 failed): missing colliders on thin/rope shapes, colliders lost on merge/instance/zone-stream, colliders registered late during streaming, fast-movement tunnelling, mountable vehicles bypassing solid handling when unmounted
   - PROGRESS 2026-10-26 (not ticked): covered by collision-test 26 Oct run: [5] coverage of 40241 cells of visible geometry (missing/thin colliders), all 152 zones forced then colliders rebuilt (lost on stream), lag-spike 0.2 s frames (tunnelling), [3] bike/tractor/cart into 1984 solids (vehicles). NOT covered: a collider that registers late while the player is already standing at a streaming zone edge. Box stays open for that.
 
 ### A0b. Signboards, 25 Oct FINAL rule (reverses 23 Oct)

@@ -3,6 +3,7 @@ import { texturedThickBox, texturedWallBox } from './materials.js';
 import { PALETTE, WALL_TINT_STRENGTH } from './village.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getGLTFLoader } from './loaders.js';
+import { requestColliderRebuild } from './collision.js';
 import { createCattleHerd } from './animals.js';
 
 // The abadi (docs/bg-houses-checklist.md, ART_REVIEW review 3): dense continuous ROWS of attached houses along a lane
@@ -248,6 +249,7 @@ export function buildBackgroundHouses(scene, kit) {
   let lastX = null, lastZ = null, refreshedX = 1e9, refreshedZ = 1e9;
   function refresh() {
     if (lastX === null) return;
+    requestColliderRebuild(); // the near set of instanced houses changes below, and their derived colliders follow it
     for (const set of sets) {
       const list = set.variantPlacements.filter((p) => {
         const d = Math.hypot(p.x - lastX, p.z - lastZ);
@@ -329,10 +331,12 @@ export function buildBackgroundHouses(scene, kit) {
     lastX = px;
     lastZ = pz;
     const nearKachcha = Math.hypot(px - KACHCHA.x, pz - KACHCHA.z) < FAR_DIST;
+    if (kachcha && kachcha.visible !== nearKachcha) requestColliderRebuild();
     if (kachcha) kachcha.visible = nearKachcha;
     shedHerd.mesh.visible = nearKachcha;
     // 80 m, not FAR_DIST: the far homestead is hazy fog-distance scenery, and drawing it from the hero zone cost a draw call at the 150 ceiling.
     const near2 = Math.hypot(px - KACHCHA2.x, pz - KACHCHA2.z) < 60; // was 80: the homestead's real-wood material is a third call per copy, and the bazaar view sits 65 m off
+    if (kachcha2 && kachcha2.visible !== near2) requestColliderRebuild();
     if (kachcha2) kachcha2.visible = near2;
     shedHerd2.mesh.visible = near2;
     if (Math.hypot(px - refreshedX, pz - refreshedZ) > 4) refresh();
