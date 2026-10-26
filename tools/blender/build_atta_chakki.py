@@ -17,8 +17,8 @@ OUT = os.path.join(ROOT, 'tmp', 'atta_chakki_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal', 'tin'), wood_slot='props')
 add = kit.add
 rnd = random.Random(47)
-WHITE = 0xEDEAE0
-GREEN = 0x5E8A62
+WHITE = 0xCFCDC2
+GREEN = 0x7DA586
 IRON = 0x4A4D52
 X0, X1, Z0, Z1 = -3.0, 3.0, -5.0, 0.0
 EAVES = 3.4
@@ -64,7 +64,7 @@ for sg in (-1, 1):
 # tin gable roof: ridge along x (rust red), rafters, a ridge cap, short steel exhaust pipe through the back slope
 RIDGE = EAVES + 1.25
 slope = prism_x('roof_slab_n', X0 - 0.45, X1 + 0.45, [(Z0 - 0.5, EAVES - 0.1), ((Z0 + Z1) / 2, RIDGE + 0.03), ((Z0 + Z1) / 2, RIDGE + 0.1), (Z0 - 0.5, EAVES - 0.03)])
-add('tin', slope, 0xB5503A)
+add('tin', slope, 0xA65A4C)
 add('tin', prism_x('roof_slab_s', X0 - 0.45, X1 + 0.45, [((Z0 + Z1) / 2, RIDGE + 0.03), (Z1 + 0.6, EAVES - 0.1), (Z1 + 0.6, EAVES - 0.03), ((Z0 + Z1) / 2, RIDGE + 0.1)]), 0xA94836)
 add('metal', limb('ridge_cap', (X0 - 0.45, (Z0 + Z1) / 2, RIDGE + 0.12), (X1 + 0.45, (Z0 + Z1) / 2, RIDGE + 0.12), 0.25, 0.08), 0x8A4A3A)
 for k in range(7):
@@ -128,5 +128,5 @@ pk.bucket(kit, 2.5, 1.0)
 add('wood', limb('broom', (3.3, 0.7, 0.12), (3.45, 0.55, 1.15), 0.03), 0x8A6A48)
 add('paint', limb('broom_head', (3.25, 0.75, 0.12), (3.3, 0.7, 0.45), 0.2, 0.06), 0x9A8A58)
 
-TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_tin': '#FFFFFF', 'hb_metal': '#FFFFFF'}
+TINTS = {'hb_plaster': '#D6D8DA', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#C9C4B8', 'hb_tin': '#FFFFFF', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.05})
