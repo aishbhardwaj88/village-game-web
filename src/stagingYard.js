@@ -38,7 +38,7 @@ function sharedSetMaterial(set, repeat, src) {
   const mk = (kind) => { const t = setTexture(set, kind).clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); t.anisotropy = 8; return t; };
   m = new THREE.MeshStandardMaterial({ map: mk('color'), normalMap: mk('normal'), roughnessMap: mk('roughness'), roughness: 1, metalness: set === 'metal' ? 0.6 : 0, vertexColors: true });
   m.name = src.name;
-  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch') addWeathering(m, set);
+  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin') addWeathering(m, set);
   sharedMats.set(key, m);
   return m;
 }
@@ -52,7 +52,7 @@ function addWeathering(m, set) {
   const mottle = set === 'brick' ? 0.10 : set === 'thatch' ? 0.12 : 0.16;
   const grime = set === 'brick' ? 0.15 : 0.32;
   const streak = set === 'plaster' ? 0.10 : 0.0;
-  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
+  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : set === 'tin' ? 1.9 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWxyz;')
@@ -82,6 +82,17 @@ function addWeathering(m, set) {
           diffuseColor.rgb *= 1.0 - low * ${grime.toFixed(3)} * (0.5 + 0.5 * wn_(vWxyz * 1.7 + 3.0));
           float col = wn_(vec3(vWxyz.x * 6.0 + vWxyz.z * 6.0, 0.0, 1.0)) * smoothstep(0.0, 2.5, vWxyz.y);
           diffuseColor.rgb *= 1.0 - ${streak.toFixed(3)} * col * col * wn_(vec3(vWxyz.x + vWxyz.z, vWxyz.y * 0.4, 5.0));
+          ${set === 'plaster' ? `
+          float st_ = smoothstep(0.58, 0.8, wn_(vWxyz * vec3(0.9, 0.5, 0.9) + 11.0));   // damp/soot stain patches
+          diffuseColor.rgb *= 1.0 - 0.30 * st_;
+          float pe_ = smoothstep(0.66, 0.85, wn_(vWxyz * vec3(2.4, 2.4, 2.4) + 23.0));  // paint worn through to a duller patch
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.84, 0.74), 0.55 * pe_);
+          float hi_ = smoothstep(2.2, 4.0, vWxyz.y);   // sun-bleached near the top
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * 1.08, 0.25 * hi_);` : ''}
+          ${set === 'tin' ? `
+          diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.333))), diffuseColor.rgb, 0.5);   // pale weathered whitish-grey
+          float ru_ = smoothstep(0.6, 0.85, wn_(vWxyz * vec3(1.3, 1.3, 1.3) + 5.0));
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.0, 0.8, 0.62), 0.5 * ru_);   // rust bleed` : ''}
         }`);
   };
   m.customProgramCacheKey = () => 'weather_' + set;
