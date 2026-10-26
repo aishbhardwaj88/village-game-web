@@ -483,7 +483,17 @@ def classroom(kind, u0, u1, with_back_windows=True):
     for r in range(5):
         v = 1.0 + r * 0.76
         for c in (-1, 1):
-            desk_bench(lm, uc + c * (wid * 0.22) + (0.0), v)
+            bu = uc + c * (wid * 0.22)
+            desk_bench(lm, bu, v)
+            # scattered slate on the desk and a cloth bag on the floor beside the bench, never two alike
+            if rnd.random() < 0.8:
+                su = bu + rnd.uniform(-0.4, 0.2)
+                B('wood', lm, su, su + 0.2, v - 0.1, v + 0.12, 0.76, 0.775, name='slate')
+            if rnd.random() < 0.7:
+                gu = bu + rnd.choice((-1, 1)) * rnd.uniform(0.5, 0.62)
+                bw, bh = rnd.uniform(0.2, 0.28), rnd.uniform(0.26, 0.36)
+                B('paint', lm, gu, gu + bw, v - 0.32, v - 0.1, 0.0, bh, 0.03,
+                  color=rnd.choice((0x3E5E7A, 0x8A3B2E, 0x5E6B3A, 0x7A6A3E, 0x4A4A5E)), name='school_bag')
     almirah(lm, u0 + 0.7, ROOM_D - T - 0.23)
     tidy_shelf(lm, u1 - 0.8, ROOM_D - T, 1.0)
     fan_light(lm, uc, 3.0)
