@@ -7,6 +7,7 @@ import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
 import { buildClothesline } from './laundry.js';
 import { getGLTFLoader } from './loaders.js';
+import { addPots } from './pots.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -1412,21 +1413,24 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   // matkas: clay pots, two stacked on a wooden stand, one beside, plus two steel ghadas
   geos.push(bake(new THREE.BoxGeometry(0.9, 0.05, 0.45), R(-1.5, 0.3, -0.2), 0x6b4a2c));
   for (const lx of [-0.3, 0.3]) geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 5), R(-1.5 + lx, 0.15, -0.2), 0x5a3f27));
-  // One lathed pot profile (belly, narrowed neck, flared rolled rim) for clay matkas and steel ghadas, scaled per pot.
-  const potGeo = (r, h, flare) => new THREE.LatheGeometry([[0.0, 0], [0.55, 0], [0.82, 0.12], [1.0, 0.42], [0.92, 0.7], [0.58, 0.88], [0.5, 0.96], [0.5 * flare, 1.04], [0.58 * flare, 1.08], [0.5 * flare, 1.09]].map(([x, y]) => new THREE.Vector2(x * r, y * h)), 18);
-  for (const [x, z, s, ry] of [[-1.75, -0.2, 1.0, 0], [-1.3, -0.2, 0.92, 1.1]]) geos.push(bake(potGeo(0.23 * s, 0.5 * s, 1.15), R(x, 0.32, z, ry), s > 0.95 ? 0xa8552f : 0x9b4a28)); // clay matkas on the stand
-  geos.push(bake(potGeo(0.21, 0.46, 1.1), R(-1.0, 0.0, 0.7), 0x9b4a28));
-  const steel = [];
-  for (const [x, z, s] of [[1.25, 0.4, 1.0], [1.6, 0.9, 0.86]]) { // steel ghadas in the metal PBR set (a flat grey tint blew out to white)
-    steel.push(bake(potGeo(0.22 * s, 0.48 * s, 1.0), R(x, 0.0, z, x * 3), 0x8d9296));
-    steel.push(bake(new THREE.TorusGeometry(0.13 * s, 0.012, 5, 14), R(x, 0.5 * s, z).multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2)), 0x8d9296)); // neck ring
-  }
+  // The pots are the Blender models (src/pots.js): matkas on the stand and beside it, two steel ghadas, a surahi and a kulhad on the platform.
+  const pots = [
+    { type: 'matka', x: -1.75, y: 0.325, z: -0.2, ry: 0.4, s: 1.0, lean: 0.01, tint: 0xffffff },
+    { type: 'matka', x: -1.3, y: 0.325, z: -0.2, ry: 2.9, s: 0.9, lean: 0.015, tint: 0xe8d8cc },
+    { type: 'matka', x: -1.0, y: 0.0, z: 0.7, ry: 1.6, s: 0.85, lean: 0.01, tint: 0xf0e2d6 },
+    { type: 'ghada', x: 1.25, y: 0.0, z: 0.4, ry: 0.9, s: 1.0, lean: 0.02, tint: 0xffffff },
+    { type: 'ghada', x: 1.6, y: 0.0, z: 0.9, ry: 4.1, s: 0.86, lean: 0.03, tint: 0xd8d8d8 },
+    { type: 'surahi', x: 0.55, y: 0.18, z: -0.55, ry: 2.2, s: 1.0, lean: 0.01, tint: 0xf4e6da },
+    { type: 'kulhad', x: 0.3, y: 0.18, z: 0.35, ry: 0.0, s: 1.0, lean: 0.12, tint: 0xffffff },
+    { type: 'kulhad', x: 0.42, y: 0.18, z: 0.5, ry: 1.0, s: 1.0, lean: 0.4, tint: 0xe9dccc },
+  ];
   // flat washing stone with a bar of soap
   geos.push(bake(new THREE.BoxGeometry(0.8, 0.12, 0.5), R(1.5, 0.06, -0.5, 0.2), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.55, 0.14, -0.5, 0.2), 0xd8c25a));
-  const g = finishSite(name, geos, position, { sets: { metal: steel } });
+  const g = finishSite(name, geos, position);
   g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45]]); // matka stand
   g.rotation.y = ry;
+  addPots(g, pots, name + '_pots');
   return g;
 }
 
