@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { getGLTFLoader } from './loaders.js';
 
 // docs/FINISH_LINE.md Animals line: "the M6 monkey as a recognisable monkey" — it was
 // a scaled-down generic humanoid capsule (src/npc.js's createNPC, tinted brown), not a
@@ -353,6 +354,67 @@ const _herdEuler = new THREE.Euler();
 /** Every herd/pack mesh created, with its footprint radius, so the dev-mode penetration guard
  * (devCheckPenetration in src/main.js) can test animals against the real colliders. Streamed zones
  * detach their meshes, so the guard only checks meshes still in the scene (mesh.parent). */
+
+// Drop-in animal models: public/assets/models/cow.glb and dog.glb (docs/asset-slots.md). One shared
+// geometry per file, loaded once on the first herd that asks, then swapped into every InstancedMesh of
+// that kind. A missing or unparseable file leaves the code-built animal exactly as it was. The file must
+// be one mesh (or meshes merged here) with a single material; the model faces +Z, base at y=0 after fitting.
+const ANIMAL_MODEL_BOX = { cow: { w: 0.8, h: 1.4, d: 1.9 }, dog: { w: 0.35, h: 0.55, d: 0.9 } };
+const animalModelCache = {};
+function loadAnimalModel(kind) {
+  if (animalModelCache[kind]) return animalModelCache[kind];
+  const url = `assets/models/${kind}.glb`;
+  animalModelCache[kind] = (async () => {
+    try {
+      const head = await fetch(url, { method: 'HEAD' });
+      if (!head.ok || (head.headers.get('content-type') || '').includes('text/html')) return null;
+      const gltf = await getGLTFLoader().loadAsync(url);
+      gltf.scene.updateMatrixWorld(true);
+      const geoms = [];
+      let material = null;
+      gltf.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
+        for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
+        if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+        if (!g.attributes.normal) g.computeVertexNormals();
+        geoms.push(g.index ? g.toNonIndexed() : g);
+        material = material || (Array.isArray(o.material) ? o.material[0] : o.material);
+      });
+      if (!geoms.length) return null;
+      const geometry = mergeGeometries(geoms);
+      geometry.computeBoundingBox();
+      const size = geometry.boundingBox.getSize(new THREE.Vector3());
+      const box = ANIMAL_MODEL_BOX[kind];
+      const k = Math.min(box.w / size.x, box.h / size.y, box.d / size.z); // uniform, never stretched
+      const c = geometry.boundingBox.getCenter(new THREE.Vector3());
+      geometry.translate(-c.x, -geometry.boundingBox.min.y, -c.z);
+      geometry.scale(k, k, k);
+      geometry.computeBoundingSphere();
+      const m = material.clone();
+      m.roughness = Math.max(m.roughness ?? 1, 0.8);
+      m.metalness = 0;
+      return { geometry, material: m };
+    } catch (err) {
+      console.error(`Animal model ${url} failed to load, keeping the code-built one`, err);
+      return null;
+    }
+  })();
+  return animalModelCache[kind];
+}
+function swapInAnimalModel(mesh, kind) {
+  loadAnimalModel(kind).then((model) => {
+    if (!model) return;
+    mesh.geometry = model.geometry;
+    mesh.material = model.material;
+    if (mesh.instanceColor) { // keep the per-animal tint subtle on a real textured model
+      const white = new THREE.Color(0xffffff);
+      for (let i = 0; i < mesh.count; i++) { const t = new THREE.Color(); mesh.getColorAt(i, t); mesh.setColorAt(i, t.lerp(white, 0.75)); }
+      mesh.instanceColor.needsUpdate = true;
+    }
+  });
+}
+
 export const ANIMAL_MESHES = [];
 const COW_FOOTPRINT_RADIUS = 0.9;
 const DOG_FOOTPRINT_RADIUS = 0.4;
@@ -395,6 +457,7 @@ export function createCattleHerd(placements) {
   instances.forEach((inst, i) => applyInstance(i, inst, 0));
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  swapInAnimalModel(mesh, 'cow');
   function update(dt) {
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];
@@ -434,6 +497,7 @@ export function createDogPack(placements) {
   instances.forEach((inst, i) => applyInstance(i, inst, 0));
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  swapInAnimalModel(mesh, 'dog');
   function update(dt) {
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];

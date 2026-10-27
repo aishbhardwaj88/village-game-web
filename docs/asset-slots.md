@@ -183,7 +183,7 @@ uniform fit-scale into the box, never stretched; keep the rig simple, walk/idle 
 | `dadi.glb` | Dadi (npc_dadi, house; wired 27 Oct) | 0.62 x 1.5 x 0.62 |
 | `monkey.glb` | The M6 monkey (wired 27 Oct) | 0.35 x 0.6 x 0.35 |
 
-**Wired 27 Oct (per-instance slots `doodhwala#1` etc. that load the shared file; the rows below):** doodhwala, kulfiwala, chaatwala, bantawala, shopkeeper, villager_aunty, kid_a-d. Still NOT wired: cow, buffalo, dog (instanced herds).
+**Wired 27 Oct (per-instance slots `doodhwala#1` etc. that load the shared file; the rows below):** doodhwala, kulfiwala, chaatwala, bantawala, shopkeeper, villager_aunty, kid_a-d. Animals wired 27 Oct: `cow.glb` and `dog.glb` swap into every herd/pack (src/animals.js swapInAnimalModel); buffalo reuses `cow.glb` at its existing 1.12 x 1.12 x 1.22 scale, so there is no separate `buffalo.glb`.
 
 **(historical text) NOT wired yet (no slot exists; the code-built figure stays until a slot is added in `src/main.js` beside the loop at the `['maa', maaNpc]` list, one `assetSlots.register` per row). Names and sizes below are the plan so the Tripo files can be named now:**
 

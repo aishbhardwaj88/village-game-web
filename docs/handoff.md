@@ -1,3 +1,6 @@
+**2026-10-27 (animal slots cow + dog):** Game change: none visible until files exist. `cow.glb` and `dog.glb` dropped in public/assets/models/ now swap into every instanced herd and dog pack (src/animals.js swapInAnimalModel, loaded once, uniform-fit to 0.8x1.4x1.9 / 0.35x0.55x0.9, faces +Z, single material). Buffalo reuses cow.glb at its existing scale; no separate buffalo.glb (docs/asset-slots.md updated). Not tested with a real glb; missing files leave the code-built animals untouched. Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
+NEXT: THE ORDER item 4 signboard final-rule audit, or A-2 task list.
+
 **2026-10-27 (character slots: side-job men, aunty, kids):** Game change: none visible until files exist. doodhwala/kulfiwala/chaatwala/bantawala/shopkeeper/villager_aunty/kid_a-d now each register an asset slot when spawned (src/main.js buildCharacterNpc; assetSlots.register gained a `file` option so `kid_a#3` loads kid_a.glb). Sizes as in docs/asset-slots.md. Not tested with a real glb. Still unwired: cow, buffalo, dog (instanced herds). Build ALL PASSED, collision-test 4856 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
 NEXT: animal slots (needs herd-code change), or THE ORDER item 4 signboard audit.
 
