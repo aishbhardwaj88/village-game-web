@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane 13 traced, no game change):** Re-ran tools/lane-clearance-audit.mjs. Lane 13 (bazaar lane, centre x -58): the shop fronts stand at x -57.1 and a 0.6 m unlabelled box (no src) sits at x -58.8..-58.2, z 32.2..32.8, leaving 1.7 m for a 2.2 m tractor. That lane is a walking bazaar lane by design, so I left it and asked in NEEDS_YOU; A1f box stays unticked. Docs only, no build or test.
+NEXT: A-2c far-eastern road report, or the A0-WEATHER leftovers once the material board is frozen.
+
 **2026-10-27 (A1f lane drive 22/23, tool only):** No game change. tools/lane-drive-test.mjs steered at the far vertex and parked the cart on lane 14, so lanes 12 and 14 failed as test artefacts; it now follows a point ahead on the segment, allows a stop at the lane end, and parks bike and cart clear. Tractor drives 22/23. Lane 13 (bazaar lane, x -58) is a real block at (-59,34.6): shop fronts at x -57 and thin unlabelled props at (-58.5,32.5), (-61,35). Not moved (layout call). Not looked at in a screenshot; no build or test needed (tool and docs only).
 NEXT: label those bazaar props to find their source, or A-2c leftovers.
 
