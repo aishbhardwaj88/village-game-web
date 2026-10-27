@@ -771,6 +771,11 @@ def build_bands():
     pz = -19.0 + T + 0.015
     for i, x in enumerate((-14.25, -5.75, 1.75, 8.25, 15.25)):
         wall_decal('S', pz, x - 0.5, x + 0.5, 1.15, 2.35, (i / 5.0, 0.625, (i + 1) / 5.0, 0.875))
+    # smaller second card pasted over a corner of three of them, a different picture, so the wall reads as layered over time
+    for i, x, side in ((0, -14.25, 1), (2, 1.75, -1), (4, 15.25, 1)):
+        j = (i + 2) % 5
+        cx = x + side * 0.42
+        wall_decal('S', pz + 0.012, cx - 0.3, cx + 0.3, 1.2 + 0.1 * side, 2.0 + 0.1 * side, (j / 5.0, 0.625, (j + 1) / 5.0, 0.875))
     # wing walls face the yard (+x for the left wing at x=-24-T... outer face x=-23.75, -x for the right wing at 23.75)
     for i, z in enumerate((-10.2, -3.6, 2.0)):
         pass
