@@ -26,7 +26,7 @@ function loadPots() {
 }
 
 /** A Float32 copy of a (possibly meshopt-quantised) geometry, so applyMatrix4 and tinting cannot clip normalised int attributes. */
-function floatGeometry(src) {
+export function floatGeometry(src) {
   const g = new THREE.BufferGeometry();
   for (const name of Object.keys(src.attributes)) {
     const a = src.attributes[name];

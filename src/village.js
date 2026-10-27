@@ -7,6 +7,7 @@ import { buildStripSegment, buildKerbSegments } from './paths.js';
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { registerWalkable } from './walkable.js';
 import { drawBilingual } from './signPaint.js';
+import { addHandPumps } from './handPumps.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -258,6 +259,9 @@ function buildHouseInteriorProps(houseGroup) {
   pumpSpout.rotation.x = 0.5;
   handPumpGroup.add(pumpSpout);
   mergeGroupByMaterial(handPumpGroup);
+  // The visible pump is the Blender Mark II (src/handPumps.js); the code-built boxes stay as the hidden slot placeholder and carry the collider.
+  handPumpGroup.children.slice().forEach((m) => { m.visible = false; });
+  addHandPumps(handPumpGroup, [{ type: 'mark2', x: pumpX, y: 0, z: pumpZ, ry: Math.PI / 2, s: 1, tint: 0xffffff }], 'house_pump');
   houseGroup.add(handPumpGroup);
 
   // Everything else — merged once into `misc`, not individually referenceable.

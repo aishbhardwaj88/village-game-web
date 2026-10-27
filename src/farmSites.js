@@ -8,6 +8,7 @@ import { getTiledMaterial } from './materials.js';
 import { buildClothesline } from './laundry.js';
 import { getGLTFLoader } from './loaders.js';
 import { addPots } from './pots.js';
+import { addHandPumps } from './handPumps.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -1397,7 +1398,7 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   return g;
 }
 
-/** Lane water corner: a cement platform with a drain apron, a stack of clay matkas, two steel ghadas and a washing slab. No hand pump (removed on the art director's instruction, 24 Oct). Visual only. */
+/** Lane water corner: a cement platform with a drain apron, a stack of clay matkas, two steel ghadas, a washing slab and a Blender hand pump (re-added 27 Oct on her playthrough note; the 24 Oct removal is superseded). Visual only. */
 export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   const geos = [];
   const R = (x, y, z, r = 0) => at(x, y, z, r);
@@ -1409,7 +1410,6 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
     const a = i * 0.7 + 0.3;
     geos.push(bake(new THREE.SphereGeometry(0.06 + (i % 3) * 0.015, 5, 4), R(0.1 + Math.cos(a) * 0.72, 0.03, 2.05 + Math.sin(a) * 0.62), i % 2 ? 0x8a867c : 0x6f6b62));
   }
-  // (the lane hand pump was removed 2026-10-24 on the art director's instruction: no hand pumps in the house streets)
   // matkas: clay pots, two stacked on a wooden stand, one beside, plus two steel ghadas
   geos.push(bake(new THREE.BoxGeometry(0.9, 0.05, 0.45), R(-1.5, 0.3, -0.2), 0x6b4a2c));
   for (const lx of [-0.3, 0.3]) geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 5), R(-1.5 + lx, 0.15, -0.2), 0x5a3f27));
@@ -1428,9 +1428,13 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   geos.push(bake(new THREE.BoxGeometry(0.8, 0.12, 0.5), R(1.5, 0.06, -0.5, 0.2), 0x8d8a82));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.55, 0.14, -0.5, 0.2), 0xd8c25a));
   const g = finishSite(name, geos, position);
-  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45]]); // matka stand
+  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45], [-0.3, -0.3, 0.4, 0.4]]); // matka stand + pump
   g.rotation.y = ry;
   addPots(g, pots, name + '_pots');
+  // hand pump on the platform (Blender, src/handPumps.js): the variety follows the site name so neighbouring corners differ; the drain faces the lane
+  let h = 0;
+  for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  addHandPumps(g, [{ type: ['mark2', 'old', 'cracked'][h % 3], x: -0.3, y: 0.18, z: -0.3, ry: 0.3 * ((h >> 3) % 5), s: 0.85 + 0.03 * ((h >> 5) % 5), tint: 0xffffff }], name + '_pump');
   return g;
 }
 
