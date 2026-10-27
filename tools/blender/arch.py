@@ -33,6 +33,127 @@ OWN_TEXTURE_KINDS = {'brick': ('brick', 1.2), 'tin': ('tin', 0.8), 'terracotta':
 OPT_IN_KINDS = ('thatch', 'wood', 'metal', 'jute')  # own real PBR set only when the script asks (Kit(own=(...))): each is one extra draw call per building
 
 
+def corrugate(obj, base_hex, seed=0):
+    """Tin as GEOMETRY (27 Oct, her verdict 'not tin'): subdivide the upward faces of a roof slab and push real ribs out of
+    them. Rib pitch and depth wander along the sheet, sheets lap with a raised step every ~0.85 m, a few dents/buckles, fixing
+    washers on the crowns, and a per-corner 'Base' colour with rust blooming up from the bottom edge and around the washers."""
+    import bmesh
+    from mathutils import Vector
+    rnd = random.Random(seed * 7919 + len(obj.data.vertices))
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    tops = [f for f in bm.faces if f.normal.z > 0.2 and f.calc_area() > 0.4]
+    if not tops:
+        bm.free()
+        return False
+    tdir = {}
+    for f in tops:
+        n = f.normal
+        dd = Vector((-n.x, -n.y))
+        dd = dd.normalized() if dd.length > 0.05 else Vector((0.0, -1.0))
+        tdir[f.index] = (Vector((-dd.y, dd.x)), dd)
+    et, ed = {}, {}
+    for f in tops:
+        t, dd = tdir[f.index]
+        for e in f.edges:
+            v = (e.verts[1].co - e.verts[0].co).to_2d()
+            if v.length < 1e-4:
+                continue
+            (et if abs(v.normalized().dot(t)) > 0.9 else ed)[e.index] = e
+    bm.edges.ensure_lookup_table()
+    cuts_t = max(2, int(max(e.calc_length() for e in et.values()) / 0.036)) if et else 0
+    if et:
+        bmesh.ops.subdivide_edges(bm, edges=list(et.values()), cuts=cuts_t, use_grid_fill=True)
+    bm.edges.ensure_lookup_table()
+    ed_edges = [e for e in bm.edges if e.index in ed and e.is_valid]
+    if ed_edges:
+        L = max(e.calc_length() for e in ed_edges)
+        bmesh.ops.subdivide_edges(bm, edges=ed_edges, cuts=max(1, int(L / 0.6)), use_grid_fill=True)
+    # displace + colour
+    bm.faces.ensure_lookup_table()
+    top_ids = set(f.index for f in tops)
+    # faces were rebuilt by the subdivides; re-find upward faces from geometry
+    up = [f for f in bm.faces if f.normal.z > 0.2]
+    ref = None
+    for f in tops:
+        ref = tdir[f.index]
+        break
+    t, dd = ref
+    ph0, ph1, ph2 = rnd.uniform(0, 6.28), rnd.uniform(0, 6.28), rnd.uniform(0, 6.28)
+    dents = [(rnd.uniform(-1, 1), rnd.uniform(0, 1), rnd.uniform(0.25, 0.6), rnd.uniform(0.02, 0.05)) for _ in range(4)]
+    # sheet extents along t and d
+    allv = {v for f in up for v in f.verts}
+    ss = [v.co.x * t.x + v.co.y * t.y for v in allv]
+    dsv = [v.co.x * dd.x + v.co.y * dd.y for v in allv]
+    s0, s1, d0, d1 = min(ss), max(ss), min(dsv), max(dsv)
+    sheet_w = 0.82
+    shift = {}
+    for v in allv:
+        s = v.co.x * t.x + v.co.y * t.y
+        d = v.co.x * dd.x + v.co.y * dd.y
+        u = (s - s0)
+        dn = (d - d0) / max(d1 - d0, 1e-3)     # 0 at the top (ridge) .. 1 at the lower edge
+        warp = 0.55 * math.sin(u * 0.37 + ph0) + 0.3 * math.sin(u * 1.13 + ph1)
+        pitch = 0.108 * (1.0 + 0.06 * math.sin(u * 0.21 + ph2))
+        phase = (u + warp * 0.05) / pitch
+        sheet = int(u // sheet_w)
+        sr = random.Random(sheet * 131 + seed)
+        sheet_dy = sr.uniform(0.0, 0.016)                       # each sheet sits a touch higher: the lap line
+        sheet_ph = sr.uniform(-0.12, 0.12)
+        amp = 0.021 * (1.0 + 0.22 * math.sin(u * 0.9 + ph1) + 0.12 * math.sin(d * 0.8 + u * 0.3))
+        prof = math.sin((phase + sheet_ph) * 6.2832)
+        prof = max(-1.0, min(1.0, prof * 1.35))                 # flat-ish crowns and valleys
+        h = amp * (0.5 + 0.5 * prof) + sheet_dy
+        lap = (u % sheet_w)
+        if lap < 0.05:                                           # overlap seam: a raised flange along the sheet edge
+            h += 0.012 * (1.0 - lap / 0.05)
+        crown = 0.5 + 0.5 * prof
+        # dents and buckles: flatten the ribs, push the sheet in
+        for (du, dv, r, depth) in dents:
+            cx = s0 + (du * 0.5 + 0.5) * (s1 - s0)
+            cd = dv * (d1 - d0)
+            q = math.exp(-(((s - cx) ** 2 + (d - d0 - cd) ** 2) / (r * r)))
+            h = h * (1.0 - 0.7 * q) - depth * q
+        # fixing washers: bumps on every other crown, two rows per sheet (near top and bottom of each span)
+        dd_ = d - d0
+        for row in (0.12, (d1 - d0) - 0.12):
+            if abs(dd_ - row) < 0.03 and crown > 0.85 and (sheet * 3 + int(phase)) % 2 == 0:
+                h += 0.010
+        shift[v] = h
+    cols = {}
+    for v in allv:
+        s = v.co.x * t.x + v.co.y * t.y
+        d = v.co.x * dd.x + v.co.y * dd.y
+        dn = (d - d0) / max(d1 - d0, 1e-3)
+        fromedge = (d1 - d)                                      # metres up from the lower edge
+        rust = max(0.0, 1.0 - fromedge / (0.35 + 0.45 * (0.5 + 0.5 * math.sin(s * 2.3 + ph0) * math.sin(s * 0.7 + ph1))))
+        rust = rust * rust * 0.9
+        rust += 0.25 * max(0.0, math.sin(s * 5.3 + ph2) * math.sin(d * 1.1 + s * 0.4)) ** 3   # blotches/streaks
+        rust = min(rust, 0.95)
+        cols[v] = rust
+    for v, h in shift.items():
+        n = Vector((0, 0, 1))
+        v.co += n * h
+    for f in bm.faces:
+        f.smooth = True
+    # per-corner colour: base tint, rusted toward a brown-orange, crowns catch a lighter sheen, valleys dull
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    for f in bm.faces:
+        for lp in f.loops:
+            v = lp.vert
+            ru = cols.get(v, 0.0)
+            hh = shift.get(v, 0.0)
+            sh = 0.88 + 0.28 * min(1.0, hh / 0.04)
+            k = (1.0 - ru)
+            lp[layer] = ((r0 * k + 0.30 * ru) * sh, (g0 * k + 0.15 * ru) * sh, (b0 * k + 0.07 * ru) * sh, 1.0)
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -65,7 +186,8 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            colorize(obj, color, attr='Base')
+            if not (kind == 'tin' and corrugate(obj, color, seed=len(self.records))):
+                colorize(obj, color, attr='Base')
             groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
         for g, objs in groups.items():

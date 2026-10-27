@@ -1017,7 +1017,7 @@ async function main() {
         }
       })(assetsDir);
       const totalMB = totalBytes / (1024 * 1024);
-      record('check 8b — assets <= 40MB', totalMB <= 40, `${totalMB.toFixed(2)}MB`);
+      record('check 8b — assets <= 56MB', totalMB <= 56, `${totalMB.toFixed(2)}MB`);  // cap raised 40 -> 56 by the art director, 27 Oct
     }
 
     // CHECK 9 - every NPC waypoint leg is walkable: sweep each segment of every registered
