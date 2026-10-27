@@ -1381,6 +1381,24 @@ Recommended approach, cheapest first:
 - Only if still over: raise the ceiling and measure the real framerate on a phone
   profile, then tell her the trade honestly rather than silently thinning detail.
 
+### 12. DRYING CLOTHES: built and APPROVED-PENDING. Wire it in, do not rebuild it.
+`public/assets/models/laundry_line.glb` + `tools/blender/build_laundry.py` are done,
+built to her 27 Oct notes. **2,192 triangles for a full line** (was 10,572).
+- Cloth is thrown OVER the rope: full-length front panel, shorter back panel, rope
+  visible between them, pins clamping both layers. That was her main correction.
+- 6 garments with different silhouettes: sari, shirt with sleeves, bedsheet, t-shirt
+  with sleeves, dhoti, towel.
+- Strong village colours (magenta, teal, mustard, cream, green), sun-softened.
+- Authored at rest. **The game adds the sway**: vertex shader, bottom edge moving
+  more than the top, each garment phase-offset. Not baked into the mesh.
+- Per-instance re-tint via the `Col` vertex layer: ONE mesh set, every line in the
+  village a different colour. **Instance it: all laundry in the village should be one
+  draw call.**
+- Known weak points for a later pass, not now: sleeves read softly, off-white tones
+  are flat, hems could vary more.
+
+**Replace every existing clothesline in the game with this.** Supersedes A1h.
+
 ### Order
 1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
 assets reused village-wide). Then 2 and 7.
