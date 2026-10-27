@@ -46,6 +46,7 @@ anything from the LATER list below.**
 - [ ] Drinking taps: build 2-3 varieties (wall tap over a cement trough, standpipe tap on a plinth, small pyaau-style tap stand), instanced village-wide, same weathering treatment
 - [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
 - [ ] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them
+- [ ] Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
 - [ ] Primary school: reduce to 60-65% of current size, shrinking the open common verandah
 - [ ] Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
 - [ ] Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes

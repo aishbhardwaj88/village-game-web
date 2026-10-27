@@ -1325,6 +1325,13 @@ and instance them. Same for drinking water taps.
 - **More cycles in the stand, and a mix of adult and small sizes**, since small kids
   cycle too.
 
+### 8. GAUSHALA: reduce to 75% of current size
+Her note, 27 Oct. 36 x 28 m becomes roughly **27 x 21 m**. Scale the compound, not the
+contents: sheds, office, straw store, troughs and props keep their real-world sizes
+and relationship, the yard gets tighter. Update `Places V1/gaushala/LAYOUT.md` with
+the new figures in the same commit so the spec and the build do not drift, and update
+the collider boxes to match.
+
 ### Order
 1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
 assets reused village-wide). Then 2 and 7.
