@@ -154,6 +154,113 @@ def corrugate(obj, base_hex, seed=0):
     return True
 
 
+def tile_roof(obj, base_hex, seed=0):
+    """Terracotta as GEOMETRY (27 Oct, her verdict 'plastic wrap'): subdivide each upward roof face and model Mangalore tiles:
+    rows 0.26 m down the slope, each tile 0.24 m wide with a raised centre roll and channels at the sides, every tile rising
+    toward its lower lip and dropping off to the row below (the overlap), per-tile height/lateral jitter, a few cracked (dark,
+    sunk) and a few paler replacement tiles, moss/dirt in the channels and under each lip. Per-corner colour in 'Base'."""
+    import bmesh
+    from mathutils import Vector
+    rnd = random.Random(seed * 104729 + len(obj.data.vertices))
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    tops = [f for f in bm.faces if f.normal.z > 0.2 and f.calc_area() > 0.4]
+    if not tops:
+        bm.free()
+        return False
+    def frame(n):
+        dd = Vector((-n.x, -n.y))
+        dd = dd.normalized() if dd.length > 0.05 else Vector((0.0, -1.0))
+        return Vector((-dd.y, dd.x)), dd
+    et, ed = {}, {}
+    for f in tops:
+        t, dd = frame(f.normal)
+        for e in f.edges:
+            v = (e.verts[1].co - e.verts[0].co).to_2d()
+            if v.length < 1e-4:
+                continue
+            (et if abs(v.normalized().dot(t)) > 0.9 else ed)[e.index] = e
+    ST, SD, TW, RP = 0.08, 0.0867, 0.24, 0.26
+    if et:
+        bmesh.ops.subdivide_edges(bm, edges=list(et.values()), cuts=max(2, int(max(e.calc_length() for e in et.values()) / ST)), use_grid_fill=True)
+    bm.edges.ensure_lookup_table()
+    ed_edges = [e for e in bm.edges if e.index in ed and e.is_valid]
+    if ed_edges:
+        bmesh.ops.subdivide_edges(bm, edges=ed_edges, cuts=max(1, int(max(e.calc_length() for e in ed_edges) / SD)), use_grid_fill=True)
+    bm.faces.ensure_lookup_table()
+    up = [f for f in bm.faces if f.normal.z > 0.2]
+    vframe = {}
+    for f in up:
+        fr = frame(f.normal)
+        for v in f.verts:
+            vframe.setdefault(v, (round(fr[1].x, 1), round(fr[1].y, 1), fr))
+    ext = {}
+    for v, (kx, ky, fr) in vframe.items():
+        t, dd = fr
+        s = v.co.x * t.x + v.co.y * t.y
+        d = v.co.x * dd.x + v.co.y * dd.y
+        e = ext.setdefault((kx, ky), [s, s, d, d])
+        e[0], e[1], e[2], e[3] = min(e[0], s), max(e[1], s), min(e[2], d), max(e[3], d)
+    tile_fx = {}
+    def tile(ci, ri):
+        key = (ci, ri)
+        if key not in tile_fx:
+            r = random.Random(ci * 7919 + ri * 104729 + seed)
+            roll = r.random()
+            tile_fx[key] = (r.uniform(-0.004, 0.006), r.uniform(-0.03, 0.03), r.uniform(0.9, 1.1), 'crack' if roll < 0.04 else ('pale' if roll < 0.08 else ''), r.random())
+        return tile_fx[key]
+    info = {}
+    for v, (kx, ky, fr) in vframe.items():
+        t, dd = fr
+        s0, s1, d0, d1 = ext[(kx, ky)]
+        s = v.co.x * t.x + v.co.y * t.y - s0
+        d = v.co.x * dd.x + v.co.y * dd.y - d0
+        ri = int(d // RP + 1e-6)
+        fr_d = (d - ri * RP) / RP                  # 0 at a tile's upper end .. 1 at its lower lip
+        if fr_d > 0.995 and d < (d1 - d0) - 0.01:  # a vertex on the lip belongs to the tile BELOW's start only visually: keep as lip
+            fr_d = 1.0
+        jy, jx, hs, special, rv = tile(int((s + 0.0) // TW), ri)
+        # lateral jitter per row shifts the column grid a little
+        s2 = s - (tile(0, ri)[1])
+        ci = int((s2 + 1e-6) // TW)
+        jy, jx, hs, special, rv = tile(ci, ri)
+        fx = (s2 - ci * TW) / TW                   # 0..1 across the tile
+        roll = 0.5 - 0.5 * math.cos(fx * 6.2832)  # raised centre roll
+        rise = 0.034 * (fr_d ** 0.9) * hs          # tile surface climbs toward its lower lip
+        h = rise + 0.009 * roll + jy
+        chan = (1.0 - roll) * (1.0 - 0.6 * fr_d)    # how deep in a side channel / high on the tile
+        if special == 'crack':
+            h -= 0.012 * (1.0 - abs(fx - 0.5) * 1.5)
+        info[v] = (h, special, rv, fr_d, chan, ri)
+        v.co.z += h
+    for f in bm.faces:
+        f.smooth = False
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    for f in bm.faces:
+        for lp in f.loops:
+            v = lp.vert
+            if v not in info:
+                lp[layer] = (r0, g0, b0, 1.0)
+                continue
+            h, special, rv, fr_d, chan, ri = info[v]
+            k = 0.86 + 0.3 * rv                                  # per-tile tint
+            c = [r0 * k, g0 * k, b0 * k]
+            if special == 'pale':
+                c = [r0 * 1.25, g0 * 1.18, b0 * 1.05]
+            elif special == 'crack':
+                c = [r0 * 0.6, g0 * 0.55, b0 * 0.55]
+            grime = max(0.0, chan - 0.55) * 1.2 + (0.35 * (1.0 - fr_d) if fr_d < 0.35 else 0.0) * (0.4 + rv)   # channels and under the lip above
+            m = min(0.6, grime * (0.35 + 0.65 * ((rv * 7.0) % 1.0)))
+            c = [c[0] * (1 - m) + 0.07 * m, c[1] * (1 - m) + 0.10 * m, c[2] * (1 - m) + 0.04 * m]   # moss-dark dirt
+            lp[layer] = (c[0], c[1], c[2], 1.0)
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -186,7 +293,7 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            if not (kind == 'tin' and corrugate(obj, color, seed=len(self.records))):
+            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records)))):
                 colorize(obj, color, attr='Base')
             groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
