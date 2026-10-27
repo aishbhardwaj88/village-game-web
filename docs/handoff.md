@@ -1,3 +1,6 @@
+**2026-10-27 (A1e pole posters):** Game change: RCC lamp poles on the temple lanes (src/props.js createStreetLamps) now carry faded pasted bills (some with a torn second bill), a painted number plate and an occasional faded sticker, merged into the existing pole mesh (no new draw call). Proof docs/shots/pole-posters-2026-10-27/g2.png (pole intact, no errors; patches are only 6 to 24 cm so they are barely discernible at that range, I could not frame a clean close-up in 6 tries, so NOT judged good and the A1e box stays unticked). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: frame a close pole shot near (-24.5, 48) and enlarge the patches if they do not read; then A1e concrete stains.
+
 **2026-10-27 (rooftop-leg check scoped, docs only):** No game change. The only NPC rooftop route is the monkey chase (src/main.js monkeyChaseWaypoints, bazaar units 3 to 5 along the roofline). A mid-roof check needs collider heights, and collision boxes carry none, so it cannot be done without adding heights to every collider, which is out of proportion for a 3-unit scripted run. Left A0 rooftop box unticked. Everything else open is parked under the two-strike rule or needs her (map layout, Tripo, material textures).
 NEXT: whatever she changes on the map; A-1 baked-site leftovers if any remain.
 

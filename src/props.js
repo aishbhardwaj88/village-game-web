@@ -309,6 +309,17 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
         const band = r(8);
         if (band > 0.35) addTo(solid, new THREE.CylinderGeometry(0.121, 0.127, 0.22, 8), [0, 1.15, 0], band > 0.7 ? tint(0xe8e2d0, 1) : tint(0x1c1c1a, 1)); // painted band / number
         addTo(solid, new THREE.BoxGeometry(0.3, 0.36, 0.14), [0, 1.7, 0.16], tint(0x6a7468, wear)); // switch box
+        // Pasted bills and a painted pole-number plate, faded (merged into the pole mesh, no extra call).
+        // Poles taper 0.15 -> 0.075 over h, so radius at height y is used to sit each patch on the surface.
+        const radAt = (y) => 0.15 - 0.075 * (y / h);
+        if (r(9) > 0.4) {
+          const py = 2.5 + r(10) * 0.5;
+          const pc = [0xc9b79a, 0xb9c4bd, 0xd2c3a0, 0xc4a9a0][Math.floor(r(11) * 4) % 4];
+          addTo(solid, new THREE.BoxGeometry(0.17, 0.24, 0.012), [0, py, -radAt(py) - 0.004], tint(pc, 0.8 + r(12) * 0.15));
+          if (r(13) > 0.5) addTo(solid, new THREE.BoxGeometry(0.1, 0.13, 0.012), [0.04, py - 0.19, -radAt(py - 0.19) - 0.004], tint(0xb98f86, 0.8)); // torn second bill
+        }
+        if (r(14) > 0.5) addTo(solid, new THREE.BoxGeometry(0.12, 0.07, 0.012), [0, 0.9, radAt(0.9) + 0.004], tint(0xd8d2bd, 0.85)); // number plate
+        if (r(15) > 0.75) addTo(solid, new THREE.BoxGeometry(0.06, 0.06, 0.012), [0.05, 1.45, -radAt(1.45) - 0.004], tint(0x9a3c34, 0.85)); // faded sticker
         addTo(over, new THREE.BoxGeometry(0.06, 0.06, 1.3), [0, h - 0.15, 0.6], tint(0x4a463e, wear)); // bracket arm
         addTo(over, new THREE.BoxGeometry(0.1, 0.09, 1.2), [0, h - 0.24, 0.85], tint(0xe0ddd0, 0.85)); // tube-light fixture
         const cable = new THREE.CylinderGeometry(0.014, 0.014, h - 1.9, 5);
