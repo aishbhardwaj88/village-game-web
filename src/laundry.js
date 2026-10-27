@@ -97,15 +97,11 @@ function makeAtlas() {
   return { map, normalMap };
 }
 
-let CLOTH_MATERIAL = null;
-export function clothMaterial() {
-  if (CLOTH_MATERIAL) return CLOTH_MATERIAL;
-  const { map, normalMap } = makeAtlas();
-  CLOTH_MATERIAL = new THREE.MeshStandardMaterial({ map, normalMap, normalScale: new THREE.Vector2(0.6, 0.6), roughness: 0.93, metalness: 0, vertexColors: true, side: THREE.DoubleSide });
-  CLOTH_MATERIAL.name = 'laundry_cloth';
+/** Vertex-shader breeze for any cloth material whose geometry carries aSway (x = metres below the rope, y = per-garment phase). */
+export function addBreeze(material) {
   const uTime = { value: 0 };
-  CLOTH_MATERIAL.onBeforeRender = () => { uTime.value = performance.now() / 1000; };
-  CLOTH_MATERIAL.onBeforeCompile = (shader) => {
+  material.onBeforeRender = () => { uTime.value = performance.now() / 1000; };
+  material.onBeforeCompile = (shader) => {
     shader.uniforms.uBreezeTime = uTime;
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nuniform float uBreezeTime;\nattribute vec2 aSway;')
@@ -121,6 +117,15 @@ export function clothMaterial() {
           transformed.y += abs(sw) * amt * 0.4;
         }`);
   };
+}
+
+let CLOTH_MATERIAL = null;
+export function clothMaterial() {
+  if (CLOTH_MATERIAL) return CLOTH_MATERIAL;
+  const { map, normalMap } = makeAtlas();
+  CLOTH_MATERIAL = new THREE.MeshStandardMaterial({ map, normalMap, normalScale: new THREE.Vector2(0.6, 0.6), roughness: 0.93, metalness: 0, vertexColors: true, side: THREE.DoubleSide });
+  CLOTH_MATERIAL.name = 'laundry_cloth';
+  addBreeze(CLOTH_MATERIAL);
   return CLOTH_MATERIAL;
 }
 

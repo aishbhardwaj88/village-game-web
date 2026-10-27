@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
-import { buildClothesline } from './laundry.js';
+import { addLaundryLine, LAUNDRY_HALF_SPAN } from './laundryLine.js';
 import { getGLTFLoader } from './loaders.js';
 import { addPots } from './pots.js';
 import { addHandPumps } from './handPumps.js';
@@ -1377,19 +1377,11 @@ export function createLaneLaundry(position, name = 'lane_laundry', ry = 0) {
   // steel washing tub and a bar of soap
   geos.push(bake(new THREE.CylinderGeometry(0.34, 0.27, 0.2, 14), R(1.9, 0.1, 0.6), 0xb8bcc0));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.04, 0.06), R(1.5, 0.02, 0.9), 0x7a9a3a));
-  // clothesline: two poles, a taut cord, hanging cloth
-  const h = 2.1, span = 4.4, z0 = -1.4;
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.05, h, 6), R(sx * span / 2, h / 2, z0), 0x5a3f27));
-  // sagging rope in short segments, real garments over it (src/laundry.js), pegs on the cloth
-  const line = buildClothesline({ span, ropeY: h - 0.1, z0, seed: 1 + Math.abs(Math.round(position.x * 3 + position.z * 7)) % 997 });
-  for (const s of line.rope) {
-    const len = Math.hypot(s.x1 - s.x0, s.y1 - s.y0);
-    geos.push(bake(new THREE.CylinderGeometry(0.007, 0.007, len, 4), new THREE.Matrix4().makeRotationZ(Math.atan2(s.y1 - s.y0, s.x1 - s.x0) - Math.PI / 2).setPosition((s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2, z0), 0x4a4036));
-  }
-  for (const pg of line.pegs) geos.push(bake(new THREE.BoxGeometry(0.028, 0.085, 0.03), new THREE.Matrix4().makeRotationZ(pg.r).setPosition(pg.x, pg.y, pg.z), pg.c));
+  // clothesline: the Blender laundry line (src/laundryLine.js): two posts, rope, pegs and six garments thrown over it
+  const z0 = -1.4;
   const g = finishSite(name, geos, position);
-  g.add(line.cloth);
-  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 1.9, 1.0], [-2.2, -1.4, 0.15, 0.15], [2.2, -1.4, 0.15, 0.15]]); // charpai + the two clothesline poles
+  addLaundryLine(g, { x: 0, z: z0, seed: 1 + Math.abs(Math.round(position.x * 3 + position.z * 7)) % 997, name: name + '_line' });
+  g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[0, 0, 1.9, 1.0], [-LAUNDRY_HALF_SPAN, z0, 0.15, 0.15], [LAUNDRY_HALF_SPAN, z0, 0.15, 0.15]]); // charpai + the two clothesline poles
   g.rotation.y = ry;
   return g;
 }
