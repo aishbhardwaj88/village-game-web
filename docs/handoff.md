@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane drive 22/23, tool only):** No game change. tools/lane-drive-test.mjs steered at the far vertex and parked the cart on lane 14, so lanes 12 and 14 failed as test artefacts; it now follows a point ahead on the segment, allows a stop at the lane end, and parks bike and cart clear. Tractor drives 22/23. Lane 13 (bazaar lane, x -58) is a real block at (-59,34.6): shop fronts at x -57 and thin unlabelled props at (-58.5,32.5), (-61,35). Not moved (layout call). Not looked at in a screenshot; no build or test needed (tool and docs only).
+NEXT: label those bazaar props to find their source, or A-2c leftovers.
+
 **2026-10-27 (A1f lane 18 freed):** Game change: the west-gali spur drawn on the notebook map (src/freeRoam.js LANES) ended at (-61,21), inside the banta stall; it now ends at (-68,21) at the stall front, so the tractor drives 21/23 lanes. Map pencil line only, not looked at in a screenshot. Lanes 12, 13 still stop after the first corner (turn overshoot, colliders 2.7 m+ away, likely test artefact). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: A-2 leftovers (task list, minimap), or look at lanes 12/13 turn radius.
 
