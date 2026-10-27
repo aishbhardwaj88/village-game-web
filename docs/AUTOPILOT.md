@@ -49,6 +49,11 @@ What she needs from you before that, and these outrank everything else:
    slot names, target sizes and facing in `docs/asset-slots.md` are correct and
    complete for every person and animal.
 
+## READ docs/NOW.md FIRST. It outranks every other file until 23:05 IST 27 Oct.
+
+She plays at 23:05. Only three materials matter in that window: tin, terracotta,
+painted wood. Everything else is explicitly dropped. Ship each as it is done.
+
 ## OVERNIGHT, 27 Oct, ~10 hours. She is asleep and unreachable.
 
 - Work `docs/BACKLOG.md`'s THE ORDER list, top down. There is more than enough in it.
