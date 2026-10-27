@@ -480,6 +480,95 @@ def thatch_straw(obj, base_hex, seed=0):
     return True
 
 
+def earth_ground(obj, base_hex, seed=0):
+    """Packed earth / mud-and-dung as GEOMETRY: the top face is subdivided into a fine grid and displaced with low swells, a network of
+    dried cracks (narrow sunk lines with dark floors), cart-rut and hoof dimples, and darker damp/dung patches; paler dust on the ridges.
+    Only wide, mostly-upward slabs take it; small pieces just take the colour."""
+    import bmesh
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    big = [f for f in bm.faces if f.calc_area() > 0.6 and f.normal.z > 0.9]
+    if not big:
+        bm.free()
+        return False
+    bmesh.ops.subdivide_edges(bm, edges=list({e for f in big for e in f.edges}), cuts=39, use_grid_fill=True)
+    bm.normal_update()
+    rnd = random.Random(seed * 53 + 7)
+    ph = [rnd.uniform(0, 6.28) for _ in range(6)]
+    dimples = [(rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(0.05, 0.11)) for _ in range(14)]
+    cx = sum(v.co.x for v in bm.verts) / len(bm.verts)
+    cy = sum(v.co.y for v in bm.verts) / len(bm.verts)
+    info = {}
+    for v in bm.verts:
+        x, y = v.co.x - cx, v.co.y - cy
+        swell = 0.012 * math.sin(x * 2.1 + ph[0]) * math.cos(y * 1.7 + ph[1]) + 0.006 * math.sin(x * 5.3 + y * 4.1 + ph[2])
+        a = math.sin(x * 3.1 + 1.3 * math.sin(y * 1.9 + ph[3]) + ph[4])
+        b = math.sin(y * 3.7 + 1.1 * math.sin(x * 2.3 + ph[5]))
+        crack = max(0.0, 1.0 - min(abs(a), abs(b)) * 14.0)   # thin sunk lines where a or b crosses zero
+        dim = 0.0
+        for dx, dy, r in dimples:
+            d2 = ((x - dx) ** 2 + (y - dy) ** 2) / (r * r)
+            if d2 < 1.0:
+                dim = max(dim, 1.0 - d2)
+        patch = 0.5 + 0.5 * math.sin(x * 1.1 + ph[1]) * math.sin(y * 0.9 + ph[2])
+        info[v] = (swell, crack, dim, patch)
+        if not v.is_boundary and v.normal.z > 0.5:
+            v.co.z += swell - 0.016 * crack - 0.02 * dim
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    for f in bm.faces:
+        for lp in f.loops:
+            swell, crack, dim, patch = info[lp.vert]
+            k = 0.82 + 0.3 * patch + 12.0 * swell
+            k *= 1.0 - 0.55 * crack - 0.25 * dim
+            lp[layer] = (min(1.0, r0 * k), min(1.0, g0 * k), min(1.0, b0 * k), 1.0)
+    for f in bm.faces:
+        f.smooth = True
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
+def jute_weave(obj, base_hex, seed=0):
+    """Jute as GEOMETRY: faces over ~0.15 m^2 are subdivided to a ~1.7 cm grid and displaced as an over-under weave (warp and weft threads
+    alternate), with slubs, a frayed darker seam stripe, and per-thread tone. Small faces only take the colour."""
+    import bmesh
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    big = [f for f in bm.faces if f.calc_area() > 0.15 and len(f.verts) == 4]
+    if not big or len(bm.faces) > 400:
+        bm.free()
+        return False
+    bmesh.ops.subdivide_edges(bm, edges=list({e for f in big for e in f.edges}), cuts=23, use_grid_fill=True)
+    bm.normal_update()
+    rnd = random.Random(seed * 31 + 5)
+    ph = rnd.uniform(0, 6.28)
+    info = {}
+    for v in bm.verts:
+        x, y, z = v.co.x, v.co.y, v.co.z
+        warp = math.sin((x + y) * 190.0 + ph)
+        weft = math.sin(z * 190.0)
+        weave = warp * weft                                  # over-under checker
+        slub = max(0.0, math.sin(x * 13 + z * 7 + ph) * math.sin(y * 11 - z * 5)) ** 3
+        info[v] = (weave, slub)
+        if not v.is_boundary:
+            v.co += v.normal * (0.0022 * weave + 0.004 * slub)
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    for f in bm.faces:
+        for lp in f.loops:
+            weave, slub = info[lp.vert]
+            k = 0.88 + 0.12 * weave + 0.2 * slub
+            lp[layer] = (min(1.0, r0 * k), min(1.0, g0 * k), min(1.0, b0 * k), 1.0)
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -512,9 +601,9 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records))) or (kind == 'metal' and rust_steel(obj, color, seed=len(self.records))) or (kind == 'thatch' and thatch_straw(obj, color, seed=len(self.records)))):
+            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records))) or (kind == 'metal' and rust_steel(obj, color, seed=len(self.records))) or (kind == 'thatch' and thatch_straw(obj, color, seed=len(self.records))) or (kind == 'earth' and earth_ground(obj, color, seed=len(self.records))) or (kind == 'jute' and jute_weave(obj, color, seed=len(self.records)))):
                 colorize(obj, color, attr='Base')
-            groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
+            groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind in ('paint', 'earth') and self.split_props) else 'main')].append(obj)
         mats = {}
         for g, objs in groups.items():
             if not objs:

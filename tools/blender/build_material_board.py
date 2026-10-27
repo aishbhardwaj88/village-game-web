@@ -32,10 +32,10 @@ COLOURS = {
     'terracotta':  ('terracotta', 0xD8B492, 0xA08068),
     'concrete':    ('trim', 0xB4B6B6, 0xA8AAAC),
     'thatch':      ('thatch', 0xC8C0A8, 0xC9AD62),
-    'mud_dung':    ('paint', 0x7E7058, 0x6A5C48),
+    'mud_dung':    ('earth', 0x7E7058, 0x6A5C48),
     'jute':        ('jute', 0xD8CDB2, 0xB5A57E),
     'rusted_steel': ('metal', 0x907868, 0x5A4234),
-    'packed_earth': ('paint', 0xC4B496, 0xB0A07E),
+    'packed_earth': ('earth', 0xC4B496, 0xB0A07E),
 }
 LAYOUT = [
     ('brick', -4.2, -8), ('lime_plaster', -1.4, -8), ('cement_plaster', 1.4, -8), ('concrete', 4.2, -8),
