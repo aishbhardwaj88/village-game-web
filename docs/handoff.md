@@ -1,3 +1,6 @@
+**2026-10-27 (state check, docs only):** No game change. Re-read the deadline list: anchors, place table and character slots (player, 7 cast, dadi, monkey, side-job men, aunty, kids, cow/buffalo, dog) are all wired and listed in docs/asset-slots.md. Fresh `npm run build` ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs, 0 failed. What is left is parked under the two-strike rule (material board textures, poster pictures) or needs her (map layout, Tripo).
+NEXT: A-2 leftovers or whatever she changes on the map.
+
 **2026-10-27 (A-1 move test passes collision):** No game change (anchor moved and reverted). With jalebi at z -10 the full `npm run build` passed: collision-test 4850 static solids, 3 vehicles, 122 NPC legs, 0 failed; coverage check [5] found no uncollided geometry, so the stall's colliders followed the one edit. Ticked the 'one-number change' box in A-1.
 NEXT: A-2 leftovers (task list, minimap).
 
