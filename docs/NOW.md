@@ -39,6 +39,11 @@ Rusted steel, thatch, mud and dung, jute, packed earth, milestones, street lamps
 lanterns, pots, hand pumps, taps, haystacks, gobar cakes, night view, the gaushala
 resize, the school resize, bus adda clutter. All of it waits.
 
+## Her standing instruction, 27 Oct: NEVER WAIT
+Picking the top three is Claude's call, not hers. If anything here is blocked, make the
+call, note it in one line, and keep building. Never report "waiting for approval" as
+the reason nothing happened.
+
 ## Rules for this window
 - **Commit and push each material the moment it is done.** She may look early.
 - Build + one screenshot per material. **No collision-test** (material-only changes).

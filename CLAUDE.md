@@ -79,6 +79,26 @@ no biogas dome, because LAYOUT.md was never opened.)
   gives UVs in metres, so a larger repeat tiles to sub-pixel and averages to flat
   colour. Colour comes from `finalize`'s tints, sampled from her reference image.
 
+## 5a0. NEVER WAIT. HER STANDING INSTRUCTION, 27 Oct.
+
+Her words: "you are not allowed to wait on me... I usually type you these messages and
+I run away. I don't wait for your reply. So you have to always keep on working. Also,
+this one decision can't stop you. You have 1,000 other things to do."
+
+**Absolute rules:**
+- **Never stop work to wait for an answer.** Write the question in `docs/NEEDS_YOU.md`
+  and immediately take the next item.
+- **Never say "waiting for your approval" as a reason nothing happened.** That is not
+  an acceptable report. If something was blocked, you should have been building
+  something else.
+- **When a decision is yours to make, make it**, record it in one line, and move on.
+  Picking the top three of anything is your call, not hers.
+- **A single blocked item never blocks the loop.** There are always other items.
+- Only ever park what genuinely needs her: money, a final taste verdict, a scope
+  change. Everything else you decide.
+- **When she sends a short instruction, she has already left.** She is not reading a
+  reply. Start the work in the same breath.
+
 ## 5a1. WHO DECIDES WHAT. The single most expensive mistake on this project.
 
 **Taste is the art director's, and ONLY hers.** Not Claude's, not a subagent's.
