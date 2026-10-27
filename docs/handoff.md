@@ -1,3 +1,6 @@
+**2026-10-27 (J0 primary school):** Game change: staged school (Yard 1) now 65% in plan (39 x 32.5 m, heights real), all classroom doors shut except the middle back-block one, plus a 2nd slide, stapu court, 4 dustbins, 7 more cycles (3 adult, 4 child). Board/greenery data scaled in src/stagedPlaces.js, stagedGreenery.js. Proof docs/shots/school-65-2026-10-27/ (looked at iso + verandah: no console errors). Build ALL PASSED, collision-test 4654 static solids, 0 failed. Caveat: wall UVs squeezed 0.65 on plan axes; doors 0.72 m wide (player 0.7).
+NEXT: remaining J0 (milestones, lamps, pots, pumps, taps, night view).
+
 **2026-10-27 (J0 flag texture):** Game change: flagpole flag texture (src/props.js flagTexture) redrawn at 1024x684 (was 384x256) with thicker ring and 24 spokes. Proof docs/shots/flag-2026-10-27/flag_a.png, flag_b.png (looked at: chakra and spokes crisp, no console errors). Build ALL PASSED, collision-test 4842 static solids, 0 failed.
 NEXT: J0 school items.
 

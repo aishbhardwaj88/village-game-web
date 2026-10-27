@@ -98,7 +98,7 @@ def window(lm, u0, u1, h0, h1, v0, v1, bars=True):
         B('paint', lm, u0 + ft, u1 - ft, vm - 0.015, vm + 0.015, (h0 + h1) / 2 - 0.015, (h0 + h1) / 2 + 0.015, color=IRON, name='bar_h')
 
 
-def door(lm, u0, u1, h1, v0, v1, swing_dir=1):
+def door(lm, u0, u1, h1, v0, v1, swing_dir=1, closed=False):
     """A real doorway: frame, lintel board, threshold, brass handle, and the dark panelled leaf swung open into the room."""
     ft = 0.09
     for vv in (v0, v1 - 0.04):
@@ -106,6 +106,16 @@ def door(lm, u0, u1, h1, v0, v1, swing_dir=1):
         B('wood', lm, u1 - ft, u1, vv, vv + 0.04, 0, h1, name='df')
         B('wood', lm, u0, u1, vv, vv + 0.04, h1 - ft, h1, name='df')
     B('trim', lm, u0, u1, v0 - 0.12, v1, 0, 0.05, 0.004, name='thresh')
+    if closed:
+        # shut leaf filling the opening, two panels, a brass handle and a hasp latch (27 Oct: only one classroom stays open)
+        vm = (v0 + v1) / 2 - 0.025
+        B('wood', lm, u0 + ft, u1 - ft, vm, vm + 0.05, 0.05, h1 - ft, name='leaf_shut')
+        for k in range(2):
+            z0 = 0.2 + k * 1.0
+            B('wood', lm, u0 + ft + 0.1, u1 - ft - 0.1, vm - 0.012, vm + 0.062, z0, z0 + 0.8, name='leaf_panel')
+        B('paint', lm, u1 - ft - 0.22, u1 - ft - 0.1, vm - 0.04, vm + 0.09, 1.0, 1.12, color=BRASS, name='handle')
+        B('paint', lm, u1 - ft - 0.3, u1 - ft - 0.04, vm - 0.03, vm + 0.08, 1.45, 1.5, color=IRON, name='hasp')
+        return
     # leaf, open ~90 degrees, hinged on the u0 jamb, standing inside the room
     hu = u0 + ft + 0.02
     B('wood', lm, hu, hu + 0.045, v1, v1 + (u1 - u0 - 2 * ft), 0.05, h1 - ft - 0.02, name='leaf')
@@ -580,7 +590,7 @@ def room_walls(kind, rooms, u_lo, u_hi, doors_pos):
             door(lm, cd, cd + 1.1, 2.3, -T, 0.0)
             continue
         d0 = a + 0.5
-        door(lm, d0, d0 + 1.1, 2.3, -T, 0.0)
+        door(lm, d0, d0 + 1.1, 2.3, -T, 0.0, closed=(t == 'class' and not (kind == 'main' and a == -3)))
     for (a0, a1, h0, h1) in ops:
         if h0 > 0:
             window(lm, a0, a1, h0, h1, -T, 0.0)
@@ -953,6 +963,25 @@ def build_playground():
     add('wood', limb('seesaw_plank', (px, pz - 1.4, 0.3), (px, pz + 1.4, 0.7), 0.24, 0.045))
     for (zz, hh) in ((pz - 1.2, 0.34), (pz + 1.2, 0.74)):
         add('metal', limb('seesaw_handle', (px - 0.12, zz, hh + 0.12), (px + 0.12, zz, hh + 0.12), 0.03), 0x2B2B2D)
+    # 27 Oct: a second, shorter slide, a painted stapu (hopscotch) court, more dustbins
+    s2x, s2z = -26.2, 14.0
+    for dx in (-0.35, 0.35):
+        add('metal', limb('slide2_leg', (s2x + dx, s2z - 0.5, 0), (s2x + dx, s2z - 0.5, 1.5), 0.06), 0x2E5E8B)
+        add('metal', limb('slide2_leg2', (s2x + dx, s2z + 0.2, 0), (s2x + dx, s2z + 0.2, 1.5), 0.06), 0x2E5E8B)
+    add('metal', wb('slide2_deck', s2x - 0.45, s2x + 0.45, s2z - 0.65, s2z + 0.3, 1.45, 1.52, 0.01), 0xC0392B)
+    for k in range(6):
+        add('metal', limb('ladder2_rung', (s2x - 0.35, s2z - 0.7, 0.2 + k * 0.22), (s2x + 0.35, s2z - 0.7, 0.2 + k * 0.22), 0.035), 0x2E5E8B)
+    add('metal', limb('slide2_chute', (s2x, s2z + 0.25, 1.45), (s2x, s2z + 2.1, 0.12), 0.5, 0.04), 0xB9BDC2)
+    # stapu court: chalk-white painted squares on the swept ground, 1 / 2-3 / 4 / 5-6 / 7 / 8 pattern
+    cells = [(0, 0), (-0.5, 1), (0.5, 1), (0, 2), (-0.5, 3), (0.5, 3), (0, 4)]
+    for k, (cx, cy) in enumerate(cells):
+        x0, z0 = 8.0 + cx * 0.6 - 0.28, 8.0 + cy * 0.6
+        add('paint', wb('stapu_%d' % k, x0, x0 + 0.56, z0, z0 + 0.56, 0.036, 0.042, 0), 0xEDE6D0)
+        add('paint', wb('stapu_in_%d' % k, x0 + 0.05, x0 + 0.51, z0 + 0.05, z0 + 0.51, 0.04, 0.046, 0), 0xD2A573)
+    # dustbins: one by each wing verandah, one at the kitchen, one by the playground
+    for k, (dx_, dz_) in enumerate(((-22.0, -3.0), (22.0, -3.0), (-14.0, 21.0), (13.0, 20.0))):
+        add('paint', cyl('dustbin_x%d' % k, dx_, dz_, 0.0, 0.62, 0.22, 0.26, 12), (0x2C8A4A, 0x2E6FA8, 0x2C8A4A, 0x2E6FA8)[k])
+        add('paint', cyl('dustbin_xrim%d' % k, dx_, dz_, 0.62, 0.66, 0.28, 0.28, 12), 0x24703C)
     # a long wooden bench by the playground
     add('wood', wb('pg_bench', -19.8, -18.0, 23.3, 23.7, 0.4, 0.45, 0.008))
     for x in (-19.7, -18.1):
@@ -1078,6 +1107,21 @@ def build_pump_and_misc():
     # three bicycles just inside the gate, leaning along the wall, mixed colours + facing
     for k, (bx, bz, col) in enumerate(((4.4, 23.4, 0xC0392B), (4.2, 22.6, 0x2E86C1), (4.5, 21.8, 0x3A7A4A), (6.2, 23.4, 0x5C4A8B))):
         bicycle(kit, bx, bz, col)
+    # 27 Oct: more cycles in a mix of adult and child sizes (child ones are the same bicycle scaled to 0.68 about their own foot)
+    def child_cycle(bx, bz, col, k):
+        before = set(bpy.context.scene.objects)
+        bicycle(kit, bx, bz, col)
+        for o in set(bpy.context.scene.objects) - before:
+            if o.type == 'MESH':
+                for v in o.data.vertices:
+                    v.co.x = bx + (v.co.x - bx) * k
+                    v.co.y = -bz + (v.co.y + bz) * k
+                    v.co.z *= k
+                o.data.update()
+    for (bx, bz, col) in ((8.2, 23.4, 0x8E3B2F), (8.0, 22.5, 0x2B6E8B), (10.4, 23.3, 0xB07A2A)):
+        bicycle(kit, bx, bz, col)
+    for k_, (bx, bz, col) in enumerate(((5.0, 20.9, 0xD1495B), (7.3, 20.9, 0x3D9970), (9.6, 21.2, 0xE0A030), (11.6, 22.6, 0x6A4C93))):
+        child_cycle(bx, bz, col, 0.62 + 0.05 * (k_ % 2))
     # a bench + a dustbin by the verandah steps
     add('wood', wb('ver_bench', -12.4, -10.0, -15.2, -14.8, 0.4, 0.45, 0.008))
     for x in (-12.2, -10.2):
@@ -1117,6 +1161,18 @@ build_playground()
 build_toilets()
 build_kitchen_dining()
 build_pump_and_misc()
+
+
+# 27 Oct: her note - school at 65% of its size. Squeeze plan (x, z) only; heights stay real so doors, rooms and kit keep human scale.
+PLAN_SCALE = 0.65
+for _o in bpy.context.scene.objects:
+    if _o.type == 'MESH':
+        for _v in _o.data.vertices:
+            _v.co.x *= PLAN_SCALE
+            _v.co.y *= PLAN_SCALE
+        _o.data.update()
+    _o.location.x *= PLAN_SCALE
+    _o.location.y *= PLAN_SCALE
 
 TINTS = {'hb_plaster': '#FFF1CF', 'hb_plinth': '#E39A3C', 'hb_trim': '#F6E6BC', 'hb_apron': '#A8845A',
          'hb_wood': '#7A5A3E', 'hb_brick': '#C26A44', 'hb_tin': '#C5CDD2', 'hb_metal': '#FFFFFF'}

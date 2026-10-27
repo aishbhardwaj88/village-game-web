@@ -4,8 +4,8 @@
  * registration all derive from this table. `boards` are in the place's own metres (front = +z).
  */
 export const STAGED_PLACES = [
-  { id: 'yard_school', zone: 'primary_school_v2', model: 'primary_school', en: 'Yard 1: Primary school', hi: 'यार्ड 1: प्राथमिक पाठशाला', kind: 'school', radius: 40, build: 80, front: 25,
-    boards: [{ id: 'school_v2', x: 0, y: 3.52, z: 24.97, w: 4.9 }, { id: 'school_donation', x: 9.0, y: 1.1, z: 25.19, w: 3.4 }] },
+  { id: 'yard_school', zone: 'primary_school_v2', model: 'primary_school', en: 'Yard 1: Primary school', hi: 'यार्ड 1: प्राथमिक पाठशाला', kind: 'school', radius: 28, build: 80, front: 16.25,
+    boards: [{ id: 'school_v2', x: 0, y: 3.52, z: 16.23, w: 4.9 }, { id: 'school_donation', x: 5.85, y: 1.1, z: 16.37, w: 3.4 }] },
   { id: 'yard_gurukul', zone: 'gurukul_v2', model: 'gurukul_v2', en: 'Yard 2: Gurukul', hi: 'यार्ड 2: गुरुकुल', kind: 'school', radius: 40, build: 80, front: 22.5,
     boards: [{ id: 'gurukul_v2', x: 0, y: 4.93, z: 22.66, w: 4.8 }] },
   { id: 'yard_dairy', zone: 'dudh_dairy_v2', model: 'dudh_dairy_v2', en: 'Yard 3: Dudh dairy', hi: 'यार्ड 3: दूध डेयरी', kind: 'shop', radius: 20, build: 50, front: 6,

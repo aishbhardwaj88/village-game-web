@@ -9,7 +9,7 @@ import { addPlantInstances } from './realPlants.js';
 import { buildTrees } from './trees.js';
 
 const GREEN = {
-  yard_school: { half: [34, 24], trees: [{ kind: 'neem', x: -24, z: 16, scale: 0.9 }, { kind: 'peepal', x: 26, z: 14, scale: 0.9 }] },
+  yard_school: { half: [22, 16], trees: [{ kind: 'neem', x: -15.6, z: 10.4, scale: 0.9 }, { kind: 'peepal', x: 17, z: 9.1, scale: 0.9 }] },
   yard_gurukul: { half: [30, 22], trees: [{ kind: 'neem', x: 0, z: 2, scale: 1 }, { kind: 'neem', x: -16, z: 14, scale: 0.7 }, { kind: 'neem', x: 16, z: 14, scale: 0.7 }] },
   yard_dairy: { half: [12, 10], trees: [] },
   yard_bus_adda: { half: [11, 9], trees: [{ kind: 'peepal', x: 7.5, z: -5.5, scale: 0.55 }] },

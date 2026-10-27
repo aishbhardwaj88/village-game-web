@@ -53,10 +53,10 @@ anything from the LATER list below.**
 - [ ] Draw-call ceiling is at 149/150: instance every repeated shared asset to ONE call per family, zone-stream harder, and only then consider raising the ceiling with a measured phone framerate and an honest report of the trade
 - [x] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated (27 Oct: src/props.js flagTexture now 1024x684, proof docs/shots/flag-2026-10-27/flag_a.png, flag_b.png; the school's Blender flag in build_primary_school.py was not touched)
 - [x] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them (27 Oct: all four removed, no hand pump added; proof docs/shots/bus-adda-2026-10-27/iso.png, right.png)
-- [ ] Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
-- [ ] Primary school: reduce to 60-65% of current size, shrinking the open common verandah
-- [ ] Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
-- [ ] Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes
+- [x] (27 Oct: done in commit 2c12665 and earlier build) Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
+- [x] (27 Oct: plan squeezed to 65% in tools/blender/build_primary_school.py, heights real; compound 39 x 32.5 m; proof docs/shots/school-65-2026-10-27/iso.png) Primary school: reduce to 60-65% of current size, shrinking the open common verandah
+- [x] (27 Oct: all classroom doors shut except the middle back-block one; proof docs/shots/school-65-2026-10-27/verandah.png) Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
+- [x] (27 Oct: 2nd slide, stapu court, 4 more dustbins, 3 adult + 4 child cycles; proof docs/shots/school-65-2026-10-27/iso.png, stapu and cycles small, not close-judged) Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes
 
 ### J1. Material quality, applied once, everywhere
 - [ ] Finish `tools/blender/build_material_board.py` and render every panel at 2 m.
