@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane audit re-run, no game change):** Re-ran tools/lane-clearance-audit.mjs: still 44 intrusions, all but 4 are lane ends/junctions. The 4 mid-lane thin boxes (-3,76), (-84,40.9), (-66,22), (1.9,47-50.7) are 0.2-0.4 m wide and sit ~1.1 m off the centre-line; I could not trace which source file owns them (no label on STATIC_COLLIDERS), so nothing moved. Needs the collider list to carry a source name before they can be fixed safely. No build/test (docs only).
+NEXT: add a source label to static colliders, then fix those 4; or A0 NPC rooftop leg.
+
 **2026-10-27 (A1f lane clearance audit, no game change):** Added tools/lane-clearance-audit.mjs (report only). 23 lanes vs 1147 colliders, 1.1 m half-width: 44 intrusions, mostly lane ends/junctions; mid-lane thin posts listed in BACKLOG A1f. Nothing moved, no vehicle drive, so the box stays unticked. No build/test (tool and docs only).
 NEXT: A0 NPC resolver rooftop leg or A-1 movable-unit leftovers.
 
