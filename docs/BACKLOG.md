@@ -81,7 +81,7 @@ anything from the LATER list below.**
 - [x] (27 Oct: 8 types instanced via src/houseKit.js, Yard 21 in stagedPlaces.js, shot docs/shots/places-final/21_houses.png; not yet placed in the real abadi, that waits on her map) `houses_kit`: finish wiring the 8 types the way other places are wired.
 
 ### J4. Hand it over
-- [ ] Place-and-anchor table in `docs/handoff.md`, current and complete.
+- [x] (27 Oct: table at top of docs/handoff.md, generated from src/anchors.js) Place-and-anchor table in `docs/handoff.md`, current and complete.
 - [ ] `docs/asset-slots.md` correct for every person and animal, for her Tripo day.
 - [x] One screenshot per place in `docs/shots/places-final/` (23 shots, 22 yard places + gaushala, 27 Oct, no console errors; framing is a generic 3/4 view, not judged).
 - [ ] Report: every place, PASS or PARKED with the reason. Then STOP.

@@ -1,3 +1,74 @@
+**2026-10-27 (J4 anchor table, docs only):** No game change. Every place with its current anchor, generated from src/anchors.js (x, z in metres, ry in radians; edit the one line in that file to move a place). `yard_*` rows are the staging yard (grid origin 320,-160, 80 m apart) where new places wait for her map. `gilli` is a side-job patch, `highway` and `mandi` are the east edge.
+
+| place | x | z | ry |
+|---|---|---|---|
+| house | -48 | 39 | 0 |
+| school | -50 | 106 | 0 |
+| halwai | -40 | 62 | 0 |
+| teastall | -52 | 78 | 0 |
+| store | -52 | 20 | 0 |
+| bazaar | -82 | 15 | 0 |
+| chowk | -54 | 13 | 0 |
+| post | -68 | 26 | 0 |
+| ration | -68 | 31 | 0 |
+| chakki | -68 | 36 | 0 |
+| temple | 8 | 52 | 0 |
+| baagh | -15 | 10 | 0 |
+| canal | -15 | 33 | 0 |
+| field | 20 | -20 | 0 |
+| banta | -63 | 22.5 | 0 |
+| chaat | -63 | 50.5 | 0 |
+| eastgali | -5 | 90 | 0 |
+| westgali | -84 | 72 | 0 |
+| jalebi | -104 | 4 | 0 |
+| dairy | -112 | 18 | 0 |
+| khalihan | -78 | -5 | 0 |
+| tubewell | -40 | -8 | 0 |
+| gaushala | -125 | -35 | 0 |
+| pond | -132 | 70 | 0 |
+| anganwadi | -104 | 106 | 0 |
+| mela | -135 | 150 | 0 |
+| gurudwara | -60 | 175 | 0 |
+| cane | 20 | 150 | 0 |
+| tvhouse | 70 | 12 | 0 |
+| health | 96 | 30 | 0 |
+| chemist | 96 | 60 | 0 |
+| manihari | 90 | 78 | 0 |
+| sabzi | 88 | 92 | 0 |
+| johad | 78 | 105 | 0 |
+| masjid | 100 | 135 | 0 |
+| jain | 130 | 160 | 0 |
+| haveli | 150 | -30 | 0 |
+| gurukul | 160 | 85 | 0 |
+| maidan | 165 | 135 | 0 |
+| gilli | 46 | 104 | 0 |
+| highway | 205 | 40 | 0 |
+| mandi | 226 | 60 | 0 |
+| yard_school | 320 | -160 | 0 |
+| yard_gurukul | 400 | -160 | 0 |
+| yard_dairy | 480 | -160 | 0 |
+| yard_bus_adda | 560 | -160 | 0 |
+| yard_chaupal | 640 | -160 | 0 |
+| yard_volleyball | 720 | -160 | 0 |
+| yard_puncture | 320 | -80 | 0 |
+| yard_tubewell | 400 | -80 | 0 |
+| yard_paani_tanki | 480 | -80 | 0 |
+| yard_ration | 560 | -80 | 0 |
+| yard_post | 640 | -80 | 0 |
+| yard_chakki | 720 | -80 | 0 |
+| yard_petrol | 320 | 0 | 0 |
+| yard_panchayat | 400 | 0 | 0 |
+| yard_tvhouse | 480 | 0 | 0 |
+| yard_bhatta | 560 | 0 | 0 |
+| yard_khel | 640 | 0 | 0 |
+| yard_khalihan | 720 | 0 | 0 |
+| yard_dharam_kanta | 320 | 80 | 0 |
+| yard_akhada | 400 | 80 | 0 |
+| yard_houses | 480 | 80 | 0 |
+| yard_matboard | 560 | 80 | 0 |
+
+NEXT: J2 per-place LAYOUT.md checks, or whatever she changes on the map.
+
 **2026-10-27 (J0 materials-plastic, part 3):** Game change: code-built surfaces (getTiledMaterial sets plaster, concrete, wood, terracotta, jute, tarpaulin, brick) now get the same matte hook as the imported buildings (src/materials.js applyMatteVariation): roughness 0.78-1.0 patchy, normal strength 0.55-1.25, 3-9 m colour mottling, no pure white, 8% desaturation. Shader only, no geometry, draw call or texture cost; metal, tin and ground sets untouched. Proof docs/shots/2026-10-27T15-10-13-972Z/high_overview.png (looked at: coping and walls matte, no breakage; effect is subtle). Build ALL PASSED (collision-test 4697 solids, 0 failed). Not done: baked AO in crevices; J0 box stays open.
 NEXT: J0 remaining (window glow, lanterns blocked by 40 MB budget), then J2 per-place checks.
 
