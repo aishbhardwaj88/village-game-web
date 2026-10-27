@@ -1,4 +1,13 @@
-# 90-MINUTE ORDER - 27 Oct, 21:35 IST. SHE PLAYS AT 23:05 IST.
+# WINDOW CLOSED 23:05 IST. She played. No new feedback yet, by her choice.
+
+**Next: work `docs/ART_REVIEW.md`'s 27 Oct 23:10 entry (THE MAP IS BEING UPROOTED).**
+Finish terracotta, wood and rusted steel, then the shared assets, the resizes, night
+view and systems. Nothing layout-related. Tell her when the list is done; she wants
+one batch of feedback tomorrow, not interruptions.
+
+---
+
+# (closed) 90-MINUTE ORDER - 27 Oct, 21:35 IST.
 
 **This file outranks everything. Work ONLY what is here. Stop reading other backlogs.**
 

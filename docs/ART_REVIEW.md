@@ -1422,3 +1422,47 @@ So: raised to 56 MB. `tools/check-budget.js`, `docs/budgets.md` and CLAUDE.md up
   decision.
 - If 56 MB is reached, report the number and the options rather than silently thinning
   detail. Do not raise it again without telling her.
+
+---
+
+## 2026-10-27, 23:10 IST - HER STANDING CONTEXT: THE MAP IS BEING UPROOTED.
+
+Her words: "I'm not happy with the map that we have right now. Almost everything is
+going to be uprooted and replaced. You have to keep that in mind. Don't forget."
+
+**This governs every decision until she hands over the new map.** It is not a task,
+it is context that changes what is worth doing.
+
+### Therefore: DO NOT spend a single cycle on
+- Lanes, roads, kerbs, drains, paths, or any connection between places.
+- Where anything sits. Positions, spacing, neighbours, overlaps, what faces what.
+- Wayfinding, signposts, milestones placed along routes, findability audits.
+- Terrain shaped around current positions (canal cuts, pond hollows, embankments).
+- Any "this place is too close to that one" fix.
+- Zone-streaming boundaries tuned to current layout.
+Every one of these gets thrown away. Noting an overlap in handoff.md is fine; fixing
+it is waste.
+
+### Therefore: DO spend every cycle on things that SURVIVE a layout change
+1. **Shared assets reused everywhere**: milestones, street lamps (both types),
+   lanterns, earthen pots, hand pumps, drinking taps, haystacks, gobar cakes,
+   laundry lines. Build each once, properly, instanced. These are the highest-value
+   work in the project right now.
+2. **Materials**: the four approved are frozen; finish tin (done), terracotta, wood,
+   rusted steel, then thatch, mud, jute, packed earth.
+3. **Per-place quality against its own LAYOUT.md**: contents, sizes, detail, missing
+   items. A place's internals survive being moved.
+4. **The resizes she asked for**: gaushala to 75%, primary school to 60-65% with the
+   slides, stapu court, dustbins, more cycles in mixed sizes, classroom doors closed
+   except the front one.
+5. **Bus adda clutter removal** (tyre, loose bricks, khatiya, pyaau pots).
+6. **Night view**: sky state, warm window glow, emissive lamps and lanterns, night
+   ambience. Independent of layout.
+7. **Systems**: collision, missions, side jobs, audio, menus, save, mobile.
+8. **Anchors**: finish any remaining baked coordinates. This directly reduces the
+   cost of her map change, so it is worth doing.
+
+### Report to her when THE JOB is done
+She asked to be told tomorrow when the work is finished, so she can give feedback in
+one batch. When the list above is complete, write the summary and say so. Do not
+interrupt her before then.

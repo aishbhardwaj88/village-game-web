@@ -79,6 +79,19 @@ no biogas dome, because LAYOUT.md was never opened.)
   gives UVs in metres, so a larger repeat tiles to sub-pixel and averages to flat
   colour. Colour comes from `finalize`'s tints, sampled from her reference image.
 
+## 5a-MAP. THE MAP IS BEING UPROOTED. Standing context, 27 Oct.
+
+She is replacing almost the whole layout. **Never spend a cycle on anything that a
+layout change destroys**: lanes, roads, kerbs, drains, paths, positions, spacing,
+overlaps, wayfinding along routes, terrain shaped to current positions, zone
+boundaries tuned to it. Note an overlap in handoff.md, never fix it.
+
+**Spend every cycle on what survives being moved**: shared instanced assets (lamps,
+lanterns, pots, pumps, taps, milestones, haystacks, gobar, laundry), materials,
+per-place internals against LAYOUT.md, the resizes she asked for, night view, and
+systems (collision, missions, audio, menus, mobile). Finishing the anchors table also
+counts, because it makes her map change cheap.
+
 ## 5a0. NEVER WAIT. HER STANDING INSTRUCTION, 27 Oct.
 
 Her words: "you are not allowed to wait on me... I usually type you these messages and
