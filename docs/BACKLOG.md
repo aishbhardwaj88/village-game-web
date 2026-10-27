@@ -216,7 +216,7 @@ is in handoff.md, and build plus regression are green.
 ### A0-MAT. Material library + review gate (art director 2026-10-26)
 - [x] Build tools/blender/build_material_board.py (27 Oct, Yard 22; proof docs/shots/material-board/v4_rowB.png): one 2x2 m panel per material (brick, lime plaster, cement plaster, painted wood, tin, terracotta, concrete, thatch, mud-and-dung, jute, rusted steel, packed earth), each with base dirt, edge stains, per-unit variation, sun fading, chipping
 - [x] Render every panel at 2 m into docs/shots/material-board/ (v1-v4)
-- [!] BLOCKED: round 1 FAIL 11 of 12, remaining fails need new CC0 textures (NEEDS_YOU). Have the art-reviewer subagent judge the board against crops of her Places V1 references; iterate the BOARD until it returns PASS, not the places
+- [!] PROGRESS 27 Oct: rust (Rust007), dry earth (Ground054) and burlap (Fabric030) CC0 sets added, board-only via Kit tex_override; rust and earth now read (docs/shots/material-board/v5_rowB.png, v7_rowC.png), jute weave still flat at 5 m after 2 tries (parked). Round-1 FAIL 11 of 12; board not re-reviewed yet. Have the art-reviewer subagent judge the board against crops of her Places V1 references; iterate the BOARD until it returns PASS, not the places
 - [ ] Freeze the approved values as the shared library; place builds may NOT define their own material values, they use the library by name
 - [ ] Re-render the already-built places against the frozen library
 - [ ] GATE FROM NOW ON: run the art-reviewer on every place render against its reference + LAYOUT.md before committing it done. A place is not done until it returns PASS. Never grade your own work

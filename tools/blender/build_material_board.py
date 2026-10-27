@@ -12,7 +12,7 @@ from common import wb, ROOT
 from arch import Kit
 
 OUT = os.path.join(ROOT, 'tmp', 'material_board_v2_raw.glb')
-kit = Kit(split_props=True, own=('thatch', 'metal', 'jute', 'wood'))
+kit = Kit(split_props=True, own=('thatch', 'metal', 'jute', 'wood'), tex_override={'metal': ('rust', 1.0), 'jute': ('burlap', 0.9), 'props': ('dryearth', 1.0)})  # board-only: rust scan on steel, burlap weave on jute, dry-earth scan on mud/packed earth
 rnd = random.Random(11)
 
 

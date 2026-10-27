@@ -1,3 +1,6 @@
+**2026-10-27 (A0-MAT textures added):** Game change: staged Material board (Yard 22) rusted steel now uses a real CC0 rust scan and mud/packed earth a dry-earth scan (before: flat brown); jute switched to a burlap set but the weave is still invisible at 5 m (2 tries, parked). Textures from ambientCG, 512 px, 0.36 MB; budget 39.44 of 40 MB. Proof docs/shots/material-board/v5_rowB.png, v7_rowC.png (looked at). Board not yet re-reviewed by art-reviewer; library not frozen. Build ALL PASSED, collision-test 0 failed.
+NEXT: art-reviewer on the board, then freeze library; or A0-WEATHER brick chipping.
+
 **2026-10-27 (A1f mid-lane boxes traced, no game change):** tools/lane-clearance-audit.mjs now prints each collider's src. Of the 4 mid-lane boxes, two are wayfinding signposts at the lane edge (intended), one is the bazaar-lane/west-wall junction, one is a 0.2 m wall at the temple-lane end. Nothing moved; vehicle drive of the lanes still not done so the box stays unticked. Docs and tool only, no build.
 NEXT: A0 NPC resolver rooftop leg, or vehicle drive of lanes.
 
