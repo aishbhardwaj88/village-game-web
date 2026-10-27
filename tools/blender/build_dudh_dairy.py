@@ -312,9 +312,14 @@ def build_yard():
             add('wood', wb('bench_leg', x - 0.04, x + 0.04, 1.75, 2.05, 0, 0.44, 0.003))
         add('wood', wb('bench_rail', bx0 + 0.2, bx1 - 0.2, 1.74, 1.78, 0.2, 0.26, 0.0))
     # farmers' milk cans along the front of the counter
+    # varied heights, widths, spacing and metal tint (cans differ in age and size)
+    cx = -2.4
     for k in range(6):
-        cx = -2.4 + k * 0.42 + (0.05 if k % 2 else 0)
-        steel(lathe('farm_can', cx, 0.9, [(0.0, 0.0), (0.19, 0.0), (0.2, 0.04), (0.2, 0.62), (0.15, 0.7), (0.11, 0.74), (0.11, 0.82), (0.16, 0.84), (0.16, 0.88), (0.0, 0.88)], seg=14), STEEL)
+        sh = (1.0, 0.88, 1.08, 0.94, 1.0, 0.82)[k]
+        sw = (1.0, 1.1, 0.92, 1.0, 1.08, 0.95)[k]
+        cx += (0.42, 0.47, 0.40, 0.45, 0.43, 0.41)[k]
+        prof = [(0.0, 0.0), (0.19 * sw, 0.0), (0.2 * sw, 0.04 * sh), (0.2 * sw, 0.62 * sh), (0.15 * sw, 0.7 * sh), (0.11 * sw, 0.74 * sh), (0.11 * sw, 0.82 * sh), (0.16 * sw, 0.84 * sh), (0.16 * sw, 0.88 * sh), (0.0, 0.88 * sh)]
+        steel(lathe('farm_can', cx, 0.9 + (0.06 if k % 2 else -0.04) + 0.02 * k % 3 * 0.5, prof, seg=14), (0xB9BDC2, 0xA9ADB2, 0xC4C7CB, 0x9DA2A8, 0xB2B5B9, 0xA3A6A0)[k])
     # chaff cutter: cast frame, big spoked flywheel on a crank, feed trough and blade box
     cx, cz = 3.6, 1.0
     for dz in (-0.35, 0.35):
@@ -346,8 +351,10 @@ def build_yard():
     add('plaster', wb('dung_wall', 0.0, 4.6, 5.0, 5.3, 0, 0.35, 0.0), 0xA88A60)
     for k in range(14):
         x = 0.25 + k * 0.32
-        add('paint', cyl('dung_cake', x, 5.15, 0.35, 0.4, 0.15, 0.15, 8), 0x6A5238)
-        add('paint', cyl('dung_cake2', x + 0.05, 4.7 + (k % 2) * 0.05, 0.04, 0.09, 0.14, 0.14, 8), 0x7A6044)
+        j = ((k * 37) % 11) / 11.0   # deterministic per-cake jitter: size, offset, thickness, tone
+        rr = 0.12 + 0.05 * j
+        add('paint', cyl('dung_cake', x + 0.04 * (j - 0.5), 5.15 + 0.05 * (0.5 - j), 0.35, 0.39 + 0.03 * ((k * 5) % 3), rr, rr, 8), (0x6A5238, 0x5C4630, 0x75593D, 0x634B34)[k % 4])
+        add('paint', cyl('dung_cake2', x + 0.05 + 0.05 * j, 4.7 + (k % 2) * 0.05 + 0.04 * j, 0.04, 0.08 + 0.02 * ((k * 3) % 3), 0.11 + 0.05 * (1 - j), 0.11 + 0.05 * (1 - j), 8), (0x7A6044, 0x6E553B, 0x846848)[k % 3])
     # charpai (rope cot) at the right, with woven rope top, a bucket and a clay pot
     cx0, cx1, cz0, cz1 = 5.6, 7.7, 1.2, 2.3
     for x in (cx0 + 0.1, cx1 - 0.1):
