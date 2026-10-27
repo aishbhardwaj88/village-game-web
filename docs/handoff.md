@@ -1,3 +1,6 @@
+**2026-10-27 (A0-TEX swap runtime check, docs only):** No game change. Live check of staged-model material swap: 17 models, 27 meshes, all have colour+normal+roughness maps and vertex colours, 0 unswapped (tmp/swap-check.mjs). Noted in BACKLOG A0-TEX; box left unticked (no screenshot). Build not rerun (no source change).
+NEXT: whatever she changes on the map; remaining items parked or need her.
+
 **2026-10-27 (A1e pole proof parked, docs only):** No game change. Two more close pole shots (docs/shots/pole-weather-2026-10-27/) are backlit and too high to read bills or streaks; parked under the two-strike rule, noted in BACKLOG A1e.
 NEXT: whatever she changes on the map; A1g/A1h leftovers.
 
