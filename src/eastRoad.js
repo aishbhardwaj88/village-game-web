@@ -39,7 +39,7 @@ export const SPURS = [
   { id: 'pond', bare: true, pts: [[-84, 32], [-104, 32], [-114, 50], [A_pond.x + 18, A_pond.z - 8]] },
   { id: 'mela', pts: [[-100, 140], [A_mela.x + 24, A_mela.z - 5]] },
   { id: 'cane', bare: true, pts: [[-6, 130], [A_cane.x - 26, A_cane.z - 4]] },
-  { id: 'gurudwara', pts: [[-60, 140], [A_gurudwara.x + 0, A_gurudwara.z - 17]] },
+  { id: 'gurudwara', pts: [[-33, 140], [-33, 158], [A_gurudwara.x + 0, A_gurudwara.z - 17]] }, // leaves the south gali east of the walled house plots (x -79..-39)
 ];
 export const SPUR_WIDTH = 3.5;
 
