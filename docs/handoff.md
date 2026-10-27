@@ -1,3 +1,6 @@
+**2026-10-27 (A0-WEATHER brick chip close-up, no game change):** Looked at the staged gurukul gate wall from ~5 m (docs/shots/places-2026-10-26/brickchip/gurukul_gate_close.png). Bricks read as varied courses with darker mottled patches and no artefacts; the 1-in-5 chips are NOT clearly discernible as chipped bricks even here (only faint mottling), so the box stays unticked and I am not reworking the shader a third time. Bus adda has no brick wall (tapri is teal plaster, looks over-saturated in the shot; noted, not touched). Docs only, no build/test.
+NEXT: A0 NPC rooftop leg, or A-2 task list.
+
 **2026-10-27 (A0-WEATHER brick chipping, shader):** Game change: staged brick (src/stagingYard.js) now has chipped bricks, about 1 in 5 with a ragged pale dusty bite along its edge. Proof docs/shots/places-2026-10-26/brickchip/chip_rowA.png (looked at, Material board brick panel at 6 m): the panel still reads as varied brick with no artefacts, but the chips are NOT discernible at this distance, so the box stays unticked; not checked close up or on a place wall. Not sent to art-reviewer. Build ALL PASSED (material-only, no collision-test per the efficiency table).
 NEXT: close-up check of chips on a place wall, or A0 NPC rooftop leg.
 
