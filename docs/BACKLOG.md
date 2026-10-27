@@ -223,7 +223,7 @@ is in handoff.md, and build plus regression are green.
 
 ### A0-WEATHER. Materials too new (art director FAIL 2026-10-26)
 - [ ] Brick: desaturate and lighten, strong per-brick colour variation, some darker/chipped; it currently reads as uniform wallpaper
-  - PROGRESS 2026-10-26 (not ticked): staged brick now has per-brick light/dark/overburnt variation in the shader (src/stagingYard.js), proof docs/shots/places-2026-10-26/brickvar/bus_front2.png. Cells are only roughly brick-aligned; no chipping yet.
+  - PROGRESS 2026-10-26 (not ticked): staged brick now has per-brick light/dark/overburnt variation in the shader (src/stagingYard.js), proof docs/shots/places-2026-10-26/brickvar/bus_front2.png. Cells are only roughly brick-aligned. 27 Oct: chipped-brick shader added (1 in 5 bricks), not discernible at 6 m (docs/shots/places-2026-10-26/brickchip/chip_rowA.png), close-up unchecked.
 - [x] Plaster: stains, patchiness, dirt at the base, sun fading near the top; it is factory clean (proof docs/shots/places-2026-10-26/weather1/school.png stains+fading, docs/shots/places-2026-10-26/dust/school_close.png base dust and dulled plinth)
 - [x] Rebuild the bus adda maroon stripe as a proper faded dado band ~0.8 m tall (proof docs/shots/places-2026-10-26/bus3/front.png)
 - [x] Tin roofs: lighten to pale weathered whitish-grey, not dark clean grey (proof docs/shots/places-2026-10-26/bus3/front.png)

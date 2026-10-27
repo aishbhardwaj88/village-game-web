@@ -85,6 +85,13 @@ function addWeathering(m, set) {
             diffuseColor.rgb *= 0.80 + 0.36 * r1_;                                   // lighter / darker bricks
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), step(0.93, r2_) * 0.8);   // the odd overburnt dark brick
             diffuseColor.rgb *= vec3(1.0 + (r2_ - 0.5) * 0.14, 1.0, 1.0 - (r2_ - 0.5) * 0.12);   // hue drift orange to brown
+            // chipped bricks: about one in five has a ragged-edged pale, dusty bite out of its edge (broken face shows the lighter core)
+            vec2 bf_ = vec2(fract(bt_.x + wh_(vec3(row_, 3.0, 1.0)) * 4.8), fract(bt_.y));
+            float ed_ = min(min(bf_.x, 1.0 - bf_.x) * 0.5, min(bf_.y, 1.0 - bf_.y));   // distance to nearest brick edge, roughly isotropic
+            float r3_ = wh_(vec3(cell_, 29.0));
+            float rag_ = wn_(vec3(vMapUv * 60.0, 4.0));
+            float chip_ = step(0.8, r3_) * (1.0 - smoothstep(0.05, 0.16, ed_ + (rag_ - 0.5) * 0.12));
+            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(1.18, 1.0, 0.86), chip_ * 0.7);
           }` : ''}
           float flat_ = ${set === 'plaster' ? 'smoothstep(0.7, 0.95, abs(normalize(cross(dFdx(vWxyz), dFdy(vWxyz))).y))' : '0.0'};   // upward faces (slabs, forecourts, flat roofs): pale clean concrete in her drawings, so damp/mottle patches are mostly suppressed
           float n1 = wn_(vWxyz * 0.55) * 0.6 + wn_(vWxyz * 2.1) * 0.4;
