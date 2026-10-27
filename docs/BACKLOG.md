@@ -342,6 +342,7 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 - [x] Add the down-cable on each pole, a junction/switch box, and sagging overhead wire runs between poles (this matters more than the lamp head) - proof docs/shots/lamps-2026-10-23/t2.png (also t4.png, b2.png)
 - [ ] Real concrete and rusted-steel textures with stains and wear; no flat grey fill
 - [ ] Per-instance lean, rotation and wear variation; posters/stickers/painted numbers on some poles; instanced
+  - PARKED 2026-10-27 (not ticked): bills, plate, sticker and rain streaks are in src/props.js, but no proof shot reads them. Three attempts failed (canopy block; then pole at (-28,52.7) and (-50.2,60.8) shot from 3.4 m looking up, backlit and near black, docs/shots/pole-weather-2026-10-27/). Needs a low-sun-behind-camera framing at ~1.6 m height or her eye in play. Two-strike rule: not reattempting.
   - PROGRESS 2026-10-23 (not ticked): lean, height, tint, base grime and painted bands done; no posters/stickers; merged per lane segment, not GPU-instanced. Concrete/tin PBR textures used, no stains beyond base grime.
 
 ### A1f. Layout fixes (art director 2026-10-23)

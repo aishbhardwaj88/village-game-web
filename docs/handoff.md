@@ -1,3 +1,6 @@
+**2026-10-27 (A1e pole proof parked, docs only):** No game change. Two more close pole shots (docs/shots/pole-weather-2026-10-27/) are backlit and too high to read bills or streaks; parked under the two-strike rule, noted in BACKLOG A1e.
+NEXT: whatever she changes on the map; A1g/A1h leftovers.
+
 **2026-10-27 (A1e pole rain streaks):** Game change: RCC lamp poles (src/props.js createStreetLamps) now carry 2-4 thin low-contrast damp and rust-water streaks running down from the bracket (merged into the pole mesh, no new draw call). NOT seen up close (no clean pole framing after three earlier tries, generic shots docs/shots/2026-10-27T08-10-41-306Z show no console errors), so the A1e concrete/stains box stays unticked and unjudged. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: whatever she changes on the map; remaining items are parked or need her.
 
