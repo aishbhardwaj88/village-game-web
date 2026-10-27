@@ -1,3 +1,6 @@
+**2026-10-27 (THE JOB, J3/J4 progress, docs and shots only):** No game change. J1 stays parked (3 reviewer rounds used, library not frozen). J3: vehicles and houses_kit confirmed already built and wired, ticked with the reason. J4: 23 place screenshots in docs/shots/places-final/ (looked at school, bhatta, houses: all stand and read, no console errors). J2 (per-place LAYOUT.md check with art-reviewer) is NOT done for most places; J4 report PARKED list: J1 material library (needs her textures), J2 remaining places. Anchor table and asset-slots already current (see entries below).
+NEXT: J2, one place per commit.
+
 **2026-10-27 (A1d tubewell scatter of use):** Game change: tubewell (src/farmSites.js) gains a washing stone with soap, a steel bucket, coiled rope, a lota and a pair of chappals by the hauz, all soft and merged into the existing mesh (no new draw call). Proof docs/shots/tubewell-2026-10-27b/use_a.png, use_b.png (looked at: props read at walking distance, no console errors; the tilted stone slab sits a bit like a loose board). Build ALL PASSED, collision-test 4851 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: whatever she changes on the map; remaining items are parked or need her.
 

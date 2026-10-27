@@ -1332,6 +1332,32 @@ and relationship, the yard gets tighter. Update `Places V1/gaushala/LAYOUT.md` w
 the new figures in the same commit so the spec and the build do not drift, and update
 the collider boxes to match.
 
+### 9. HAYSTACKS, GOBAR CAKES, DRYING CLOTHES: shared village-wide assets
+All three repeat across the village, so build each ONCE properly and instance it.
+
+**Haystacks (bhoosa):** currently plastic and unnatural.
+- Not a smooth dome. A real bhoosa heap is a rough conical/rounded stack of loose
+  straw, slightly lopsided, with a shaggy silhouette and loose wisps at the edges.
+- Build the core shape in Blender, then break the silhouette with alpha-cutout straw
+  cards around the outside so the outline is never a clean curve.
+- Straw texture with strong per-stack colour variation, from pale gold to grey-brown.
+- 3 variants: tall conical, low wide heap, one half-used with a cut face and a ladder
+  or a stick leaning on it.
+
+**Gobar cakes (uple):** the dung cakes people pat out and stack.
+- Build both forms: flat discs stuck on a wall in rows with visible hand prints, and
+  the conical stacked bitauda with a straw cap.
+- Rough matte surface, near roughness 1.0, with straw fibres visible in the texture.
+- Hand prints are the recognisable detail. Do not skip them.
+
+**Drying clothes:** build one set, re-tint per instance.
+- One set of garment meshes (sari, dhoti, kurta, salwar, dupatta, shirt, towel,
+  bedsheet, gamcha), draped with folds and sag, cloth pins, line sagging between
+  supports, gentle out-of-phase sway.
+- Then **re-colour per instance** so every line in the village looks different from
+  one mesh set: different fabric tints, prints and fade.
+- This supersedes the earlier A1h laundry item: build once, reuse everywhere.
+
 ### Order
 1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
 assets reused village-wide). Then 2 and 7.

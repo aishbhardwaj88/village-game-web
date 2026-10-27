@@ -44,6 +44,9 @@ anything from the LATER list below.**
 - [ ] Earthen pots: rebuild matka, ghada, surahi, kulhad in Blender, instanced village-wide. Clay grain, wet rings, chipped rims, size and tilt variation
 - [ ] Hand pumps: build 2-3 varieties in Blender (India Mark II on a plinth with soak drain, older short cast-iron, one with cracked plinth and puddle), instanced village-wide; cast-iron pitting, rust at joints, worn handle paint, damp patch and algae at the base, lime scale at the spout
 - [ ] Drinking taps: build 2-3 varieties (wall tap over a cement trough, standpipe tap on a plinth, small pyaau-style tap stand), instanced village-wide, same weathering treatment
+- [ ] Haystacks: rebuild in Blender, 3 variants (tall conical, low wide heap, half-used with cut face), rough shaggy silhouette broken with alpha-cutout straw cards, strong per-stack colour variation; instanced village-wide
+- [ ] Gobar cakes: build flat wall-stuck discs with visible hand prints AND the conical stacked bitauda with straw cap; matte near roughness 1.0, straw fibres in the texture; instanced
+- [ ] Drying clothes: build ONE garment mesh set (sari, dhoti, kurta, salwar, dupatta, shirt, towel, bedsheet, gamcha) with folds, sag, cloth pins, sagging line and out-of-phase sway, then re-colour per instance so every line looks different. Supersedes A1h
 - [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
 - [ ] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them
 - [ ] Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
@@ -67,14 +70,14 @@ anything from the LATER list below.**
       it is ticked. Max 2 rework rounds per place, then park it and move on.
 
 ### J3. Build what is still missing
-- [ ] Any `Places V1/` folder with a LAYOUT.md and no model: build it. (`vehicles`
+- [x] (27 Oct: vehicles already kitbashed in code to LAYOUT.md dims, src/vehicles.js T/TR tables; every other folder has a model. Not re-judged by art-reviewer.) Any `Places V1/` folder with a LAYOUT.md and no model: build it. (`vehicles`
       is the known one. canal and pond are deferred by her.)
-- [ ] `houses_kit`: finish wiring the 8 types the way other places are wired.
+- [x] (27 Oct: 8 types instanced via src/houseKit.js, Yard 21 in stagedPlaces.js, shot docs/shots/places-final/21_houses.png; not yet placed in the real abadi, that waits on her map) `houses_kit`: finish wiring the 8 types the way other places are wired.
 
 ### J4. Hand it over
 - [ ] Place-and-anchor table in `docs/handoff.md`, current and complete.
 - [ ] `docs/asset-slots.md` correct for every person and animal, for her Tripo day.
-- [ ] One screenshot per place in `docs/shots/places-final/`.
+- [x] One screenshot per place in `docs/shots/places-final/` (23 shots, 22 yard places + gaushala, 27 Oct, no console errors; framing is a generic 3/4 view, not judged).
 - [ ] Report: every place, PASS or PARKED with the reason. Then STOP.
 
 ---
