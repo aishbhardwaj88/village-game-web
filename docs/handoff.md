@@ -1,3 +1,6 @@
+**2026-10-27 (minimap research, no game change):** Web research on minimap conventions done (north-up + rotating arrow, rim-clamped off-window objective, optional speed-zoom); src/minimap.js already conforms, so the research box in BACKLOG A-2b is ticked. No build/test (docs only).
+NEXT: A0 NPC resolver leg or A-1 movable units leftovers.
+
 **2026-10-27 (A0 collider audit, no game change):** Re-ran tools/collider-audit.js against the current build: every visual plaster-wall footprint cell overlaps a STATIC_COLLIDERS box, 0 missing (list of solids with no collider is empty for walls; collision-test part [5] already covers the other visible geometry). Box A0 'give colliders to every solid prop' left unticked because the audit measures plaster walls only. No build/test (docs only).
 NEXT: A-2 minimap research box, or A0 NPC resolver rooftop leg.
 
