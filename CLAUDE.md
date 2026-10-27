@@ -79,6 +79,25 @@ no biogas dome, because LAYOUT.md was never opened.)
   gives UVs in metres, so a larger repeat tiles to sub-pixel and averages to flat
   colour. Colour comes from `finalize`'s tints, sampled from her reference image.
 
+## 5a1. WHO DECIDES WHAT. The single most expensive mistake on this project.
+
+**Taste is the art director's, and ONLY hers.** Not Claude's, not a subagent's.
+On 25-27 Oct, ~2.5 days were lost because Claude judged "this looks wrong" and sent
+work back twice, then a subagent failed a material board 10 times. Neither could
+converge, because neither can certify taste. **Nobody in the loop could say yes.**
+
+The rule, from now on:
+- **Anything about how something LOOKS goes to her, early, small, once.** A 2 m sample
+  panel she approves in a minute beats ten internal rounds that settle nothing.
+- **Never iterate a look more than once before showing her.** If the first attempt is
+  uncertain, send it and ask. Asking costs one message. Guessing costs a day.
+- **Claude does not reject work on taste.** If Claude thinks something looks wrong,
+  that is a question for her, not a rework instruction.
+- **Subagents check only measurable things**: spec conformance, missing items, sizes,
+  budgets, hard rules. They never judge beauty. `.claude/agents/art-reviewer.md`
+  is scoped to exactly that.
+- **Once she approves something, it is frozen and reused by name**, never re-decided.
+
 ## 5a2. MATERIALS ARE A SHARED LIBRARY. REVIEW IS A SUBAGENT.
 
 - **A place build may never define its own material values.** Materials live in one

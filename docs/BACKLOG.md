@@ -60,7 +60,15 @@ anything from the LATER list below.**
 - [x] (27 Oct: all classroom doors shut except the middle back-block one; proof docs/shots/school-65-2026-10-27/verandah.png) Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
 - [x] (27 Oct: 2nd slide, stapu court, 4 more dustbins, 3 adult + 4 child cycles; proof docs/shots/school-65-2026-10-27/iso.png, stapu and cycles small, not close-judged) Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes
 
-### J1. Material quality, applied once, everywhere
+### J1. Material quality - BLOCKED ON HER APPROVAL, do not iterate further
+The board was iterated 10 times on 27 Oct and failed every internal review. **Stop.**
+- [ ] Render the board once more at 2 m per panel and send it to the art director.
+- [ ] Wait for her per-material verdict. Change ONLY what she rejects.
+- [ ] Record each approval in `docs/material-library.md` and FREEZE it.
+- [ ] Apply the frozen library by name everywhere. No build defines its own values.
+- [ ] **Never iterate a material more than once without her eye on it.**
+
+### J1-OLD. Material quality, applied once, everywhere
 - [ ] Finish `tools/blender/build_material_board.py` and render every panel at 2 m.
 - [ ] `art-reviewer` subagent judges the BOARD against crops of her `Places V1/*/MAIN_*.png`.
       Iterate the board until it PASSES. Max 3 rounds, then park and move on.
