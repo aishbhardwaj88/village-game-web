@@ -11,6 +11,7 @@ import { addPots } from './pots.js';
 import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
 import { addHaystacks, hayPlacements } from './haystacks.js';
+import { addGobar } from './gobar.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -403,7 +404,7 @@ export function createTubewell(position) {
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.name = 'tubewell';
   // Kothri, hauz, motor and the charpai in its shade are solid (A0).
-  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 2.9, 2.5], [3.9, 0.4, 3.5, 3.5], [-2.1, 0.4, 0.6, 0.6], [-0.5, 2.7, 1.9, 1.0, 0.15], ...[[-7.5, -5.5, 0.62], [-9.8, -2.6, 0.5], [-5.2, -7.6, 0.38]].map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k])]);
+  mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 2.9, 2.5], [3.9, 0.4, 3.5, 3.5], [-2.1, 0.4, 0.6, 0.6], [-0.5, 2.7, 1.9, 1.0, 0.15], ...[[-7.5, -5.5, 0.62], [-9.8, -2.6, 0.5], [-5.2, -7.6, 0.38]].map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k]), [-3.4, -6.2, 1.3, 1.3], [-2.2, -7.1, 1.0, 1.0]]);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   const group = new THREE.Group();
@@ -411,6 +412,7 @@ export function createTubewell(position) {
   group.add(mesh, water);
   group.position.set(position.x, 0, position.z);
   addHaystacks(group, hayPlacements(hay), 'tubewell_haystacks'); // Blender stacks (src/haystacks.js), same footprint as the colliders above
+  addGobar(group, [{ type: 'stack', x: -3.4, z: -6.2, ry: 0.4, s: 1, tint: 0xd8cfc0 }, { type: 'stack', x: -2.2, z: -7.1, ry: 2.1, s: 0.8, tint: 0xc8bfae }], 'tubewell_gobar'); // dung cakes drying beside the fodder
   return group;
 }
 
