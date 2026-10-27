@@ -130,6 +130,7 @@ import { registerStagingYard } from './stagingYard.js';
 import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
+import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards, RATION_SHOP } from './newShops.js';
@@ -216,7 +217,8 @@ async function main() {
   // Needed because scene.environmentIntensity is kept low (see scene.js) to tame the
   // HDRI's very hot sun disk in specular reflections — that also dims the HDRI's own
   // diffuse IBL fill, so this hemisphere light replaces it explicitly.
-  scene.add(new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9));
+  const hemiLight = new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9);
+  scene.add(hemiLight);
   // Art review 1 (bazaar row): the sun sits on the +x/+z side, so every -z-facing front (the whole bazaar row, shop
   // counters under the awning) was in flat shadow and read as a dark grey block. A weak warm bounce from the -z side, no
   // shadows, no draw call, lifts those faces without touching the sun's shadows.
@@ -231,6 +233,9 @@ async function main() {
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.
   const updateDayline = createDaylineController(sun, sky, scene);
+  const night = createNightController({ sun, sky, scene, hemi: hemiLight, bounceFill, audio: null });
+  if (new URLSearchParams(window.location.search).has('night')) night.set(true);
+  window.__night = night; // proof shots / console
 
   // Load order (queue item 6): the hero zone (house/school/halwai/lane) and the
   // vehicles the player starts next to load eagerly — everything the loading screen
@@ -2536,6 +2541,7 @@ async function main() {
     onShowTasks: () => freeRoam.openTasks(),
   });
   window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyT' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) night.toggle();
     if (e.code !== 'KeyN' || !started || e.repeat) return;
     if (freeRoam.isOpen()) freeRoam.closeNotebook();
     else {
@@ -2802,6 +2808,8 @@ async function main() {
         { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },
       ]);
       updateDayline(dayProgressForQuestStep(quest.step), dt);
+      night.update(dt);
+      audio.setNight(night.mix);
       audio.setDayProgress(dayProgressForQuestStep(quest.step));
       // Distant radio fade (item 7) — uses whatever the player is actually "at"
       // (on foot, or the vehicle they're driving/sitting on), not the camera, so it

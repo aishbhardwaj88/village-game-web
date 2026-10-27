@@ -294,8 +294,15 @@ export class AudioEngine {
   /** Dusk crickets: a high pulsing noise bed that fades in as the day progresses (0..1). */
   setDayProgress(p) {
     if (!this.started || !this._cricketGain) return;
-    const g = Math.max(0, Math.min(1, (p - 0.6) / 0.4)) * 0.022;
+    const g = Math.max(Math.max(0, Math.min(1, (p - 0.6) / 0.4)) * 0.022, (this._night || 0) * 0.045);
     this._cricketGain.gain.setTargetAtTime(g, this.ctx.currentTime, 1.5);
+  }
+
+  /** Night bed (0..1): crickets come right up, wind drops. Read by setDayProgress each frame. */
+  setNight(m) {
+    this._night = m;
+    if (!this.started || !this._windGain) return;
+    this._windGain.gain.setTargetAtTime(0.035 * (1 - 0.5 * m), this.ctx.currentTime, 0.8);
   }
 
   setSitting(sitting) {

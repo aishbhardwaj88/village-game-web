@@ -26,6 +26,7 @@ const FRAGMENT_SHADER = /* glsl */ `
   uniform vec3 dustColor;
   uniform float dustStrength;
   uniform float time;
+  uniform float nightMix;
   varying vec3 vWorldPosition;
 
   // Cheap screen-space hash for dithering — breaks up the 8-bit banding a smooth
@@ -83,6 +84,17 @@ const FRAGMENT_SHADER = /* glsl */ `
     float sunGlow = pow(sunDot, 24.0) * 0.3;
     sky += sunColor * (sunDisc + sunGlow);
 
+    // Night: stars on a direction-space grid (twinkle with time), faded near the horizon haze.
+    if (nightMix > 0.01) {
+      vec3 sd = dir * 140.0;
+      vec3 cell = floor(sd);
+      float h = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+      vec3 local = fract(sd) - 0.5;
+      float star = step(0.985, h) * smoothstep(0.32, 0.0, length(local));
+      star *= 0.6 + 0.4 * sin(time * 2.0 + h * 80.0);
+      sky += vec3(0.85, 0.9, 1.0) * star * smoothstep(0.06, 0.4, dir.y) * nightMix;
+    }
+
     float dither = (hash(gl_FragCoord.xy) - 0.5) * (1.5 / 255.0);
     sky += dither;
 
@@ -104,6 +116,7 @@ export function createSky(sunDirection, preset) {
       dustColor: { value: preset.dustColor.clone() },
       dustStrength: { value: preset.dustStrength },
       time: { value: 0 },
+      nightMix: { value: 0 },
     },
     side: THREE.BackSide,
     depthWrite: false,
