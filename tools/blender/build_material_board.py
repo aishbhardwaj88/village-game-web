@@ -24,18 +24,18 @@ def mul(c, f, warm=0.0):
 
 # name: (kind, base colour, chip colour beneath, position)  -- kind folds into the shared set via arch.py's table
 COLOURS = {
-    'brick':       ('brick', 0xD8A088, 0x8A5040),
-    'lime_plaster': ('plaster', 0xF2E4B8, 0xB89078),
+    'brick':       ('brick', 0xBE9C8C, 0x8A5040),
+    'lime_plaster': ('plaster', 0xEDE6D2, 0xB06A50),
     'cement_plaster': ('plaster', 0xBDBCB6, 0xA6A39C),
-    'painted_wood': ('wood', 0x6FA8A0, 0x9A9488),
-    'tin':         ('tin', 0x8C9296, 0x9A6A50),
-    'terracotta':  ('terracotta', 0xBFA088, 0xA08068),
-    'concrete':    ('trim', 0xC4C8CA, 0xA8AAAC),
+    'painted_wood': ('wood', 0x9CC0B6, 0x9A9488),
+    'tin':         ('tin', 0xB4B6B4, 0x9A6A50),
+    'terracotta':  ('terracotta', 0xD8B492, 0xA08068),
+    'concrete':    ('trim', 0xB4B6B6, 0xA8AAAC),
     'thatch':      ('thatch', 0xC8C0A8, 0xC9AD62),
-    'mud_dung':    ('paint', 0xB89C74, 0xA08460),
-    'jute':        ('jute', 0xF2E6C2, 0xB5A57E),
-    'rusted_steel': ('metal', 0xA88A78, 0x7A5A48),
-    'packed_earth': ('paint', 0xD6B07A, 0xC09C68),
+    'mud_dung':    ('paint', 0x7E7058, 0x6A5C48),
+    'jute':        ('jute', 0xD8CDB2, 0xB5A57E),
+    'rusted_steel': ('metal', 0x907868, 0x5A4234),
+    'packed_earth': ('paint', 0xC4B496, 0xB0A07E),
 }
 LAYOUT = [
     ('brick', -4.2, -8), ('lime_plaster', -1.4, -8), ('cement_plaster', 1.4, -8), ('concrete', 4.2, -8),
@@ -51,10 +51,10 @@ for name, cx, cz in LAYOUT:
         continue
     kit.add(kind, wb(name + '_slab', cx - 1, cx + 1, cz - 0.06, cz + 0.06, 0.0, 2.0, 0.012), col)
     if kind in ('plaster', 'trim', 'paint'):   # chipped plaster: small ragged nicks near corners and the foot, the layer beneath showing
-        for i in range(9):
+        for i in range(7):
             nx = (cx + 0.45 + rnd.random() * 0.45) if i < 5 else (cx - 0.9 + rnd.random() * 0.4)
             nz0 = (1.55 + rnd.random() * 0.4) if i < 5 else (0.35 + rnd.random() * 0.5)
-            kit.add(kind, wb(name + '_nick', nx, nx + 0.03 + rnd.random() * 0.08, cz + 0.06, cz + 0.068, nz0, nz0 + 0.03 + rnd.random() * 0.07, 0.0), under)
+            kit.add(kind, wb(name + '_nick', nx, nx + 0.10 + rnd.random() * 0.14, cz + 0.06, cz + 0.068, nz0, nz0 + 0.08 + rnd.random() * 0.14, 0.0), under)
 
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#FFFFFF', 'hb_wood': '#FFFFFF', 'hb_metal': '#FFFFFF', 'hb_brick': '#FFFFFF',
          'hb_tin': '#FFFFFF', 'hb_terracotta': '#FFFFFF', 'hb_thatch': '#FFFFFF', 'hb_jute': '#FFFFFF'}
