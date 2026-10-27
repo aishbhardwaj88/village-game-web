@@ -82,7 +82,7 @@ anything from the LATER list below.**
 
 ### J4. Hand it over
 - [x] (27 Oct: table at top of docs/handoff.md, generated from src/anchors.js) Place-and-anchor table in `docs/handoff.md`, current and complete.
-- [ ] `docs/asset-slots.md` correct for every person and animal, for her Tripo day.
+- [x] (27 Oct: full slot list checked against src/main.js and src/characters.js, docs/asset-slots.md line 171) `docs/asset-slots.md` correct for every person and animal, for her Tripo day.
 - [x] One screenshot per place in `docs/shots/places-final/` (23 shots, 22 yard places + gaushala, 27 Oct, no console errors; framing is a generic 3/4 view, not judged).
 - [ ] Report: every place, PASS or PARKED with the reason. Then STOP.
 
