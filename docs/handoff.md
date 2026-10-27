@@ -1,3 +1,5 @@
+**2026-10-27 (J1-NOW check, docs only):** The four approved materials (brick, lime plaster, cement plaster, concrete) are already applied by name to every Blender place: all 22 staged places build through tools/blender/arch.py's one texture table (brick 1.2, plaster 0.5), only build_laundry.py bypasses arch.py. Nothing to re-apply, nothing re-tuned. Not ticked (no new screenshot). Rebuilding tin, terracotta, wood and rusted steel as geometry adds bytes and the 40 MB cap has 0 free, so it waits on her call (NEEDS_YOU). No game change this run.
+
 **2026-10-27 (J report, docs only):** THE JOB status, place by place. No game change this run.
 - PASS: none yet. No place has returned PASS from art-reviewer.
 - FAIL, parked (reworks blocked by the 40 MB asset cap, 0 bytes free): dairy, chaupal, tubewell (reasons in the J2 entry below).
