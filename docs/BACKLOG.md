@@ -362,11 +362,11 @@ Apply CLAUDE.md section 5b to all of these without waiting for a per-place revie
 
 ### A1g. Carrom scene (art director 2026-10-23)
   - PROGRESS 2026-10-23 (cycle 38bx, not ticked as a whole): the five lane carrom+ludo mats are REMOVED from all lanes; ONE carrom scene (createCarromScene, src/farmSites.js) now stands at the chowk (-46, 5.5) in front of the bazaar, east of the tea stall: CC0 Poly Haven round table + 2 stools + 2 chairs, a textured printed carrom board (ring, baselines, arrows, pockets) with coins/queen/striker mid-game, 4 seated capsule-placeholder men, tea glasses, folded gamcha, powder tin, katori of pocketed coins, slippers. Proof docs/shots/carrom-2026-10-23/carrom_close.png, carrom_b.png, carrom_wide.png. Ludo removed (not rebuilt). Scene builds within 22 m only (hero-zone draw calls sit at 150/150).
-- [ ] Move carrom out of all lanes; place ONE carrom scene in the common area near the shops (chowk/bazaar frontage), not in a vehicle route
-- [ ] Build it as a table in the centre with the board on top, four older men seated around it on stools/chairs (placeholder people for now)
-- [ ] Board detail: wooden frame, printed circle and arrow lines, four pockets, coins and striker scattered mid-game; tea glasses, pocketed coins, cloth, slippers beside the stools
-- [ ] Source table, stools and chairs as CC0 models per the standing rule; textured wood, no flat fills
-- [ ] Ludo: build properly as a printed cloth board with real pieces in a different spot, or remove it
+- [x] Move carrom out of all lanes; place ONE carrom scene in the common area near the shops (chowk/bazaar frontage), not in a vehicle route (proof: docs/shots/carrom-2026-10-23/carrom_wide.png)
+- [x] Build it as a table in the centre with the board on top, four older men seated around it on stools/chairs (placeholder people for now) (proof: docs/shots/carrom-2026-10-23/carrom_close.png)
+- [x] Board detail: wooden frame, printed circle and arrow lines, four pockets, coins and striker scattered mid-game; tea glasses, pocketed coins, cloth, slippers beside the stools (proof: docs/shots/carrom-2026-10-23/carrom_close.png)
+- [x] Source table, stools and chairs as CC0 models per the standing rule; textured wood, no flat fills (proof: docs/shots/carrom-2026-10-23/carrom_b.png)
+- [x] Ludo: build properly as a printed cloth board with real pieces in a different spot, or remove it (ludo removed, 2026-10-23)
 
 ### A1h. Laundry lines (art director FAIL 2026-10-23)
   - PROGRESS 2026-10-23 (cycle 38bw, not ticked): all 5 lane laundry lines now carry real garments (src/laundry.js): sari, dhoti, kurta, salwar, dupatta, shirt, trousers, child's frock, towel, bedsheet, gamcha; folded over a sagging rope with a shorter back layer, wrinkles, uneven hems, hem borders, checks/stripes/floral/block prints, 2-3 pegs each; breeze sway in the vertex shader (hem moves more, each garment out of phase, gusts), one extra draw call per line, no shadow cast. Proof docs/shots/laundry-2026-10-23/s1_a.png, w1_a.png, e1_back.png; sway proof sway_t0.png vs sway_t1.png. Fabric is canvas-generated (weave normal map), NOT CC0 photo textures; hero-zone house clothesline (src/village.js) still old boxes (zone at 146/150 draw calls). Breeze consistency report not written.
