@@ -113,6 +113,25 @@ def porch():
     kit.add('paint', sphere('bell_clapper', bx, 0.0, H0 + SH - 0.64, 0.03, 0.03, 0.03, 1), BRASS)
 
 
+def porch_fittings():
+    # donation box (steel-banded wooden box on a stone stand, slot in the lid), two worn jute prayer mats, a row of brass diyas on the shrine ledge
+    dx, dz = -0.55, -1.75
+    kit.add('plinth', wb('dbox_stand', dx - 0.22, dx + 0.22, dz - 0.22, dz + 0.22, H0, H0 + 0.7, 0.008))
+    kit.add('wood', wb('dbox_body', dx - 0.26, dx + 0.26, dz - 0.26, dz + 0.26, H0 + 0.7, H0 + 1.15, 0.01))
+    kit.add('wood', wb('dbox_lid', dx - 0.29, dx + 0.29, dz - 0.29, dz + 0.29, H0 + 1.15, H0 + 1.2, 0.008))
+    kit.add('metal', wb('dbox_band_a', dx - 0.275, dx + 0.275, dz - 0.275, dz + 0.275, H0 + 0.78, H0 + 0.84, 0.004))
+    kit.add('metal', wb('dbox_band_b', dx - 0.275, dx + 0.275, dz - 0.275, dz + 0.275, H0 + 1.02, H0 + 1.08, 0.004))
+    kit.add('paint', wb('dbox_slot', dx - 0.1, dx + 0.1, dz - 0.015, dz + 0.015, H0 + 1.2, H0 + 1.215, 0.002), 0x1A1410)
+    kit.add('metal', wb('dbox_hasp', dx + 0.2, dx + 0.3, dz - 0.04, dz + 0.04, H0 + 0.93, H0 + 1.1, 0.004))
+    for i, (mx, mz, w, d) in enumerate(((-2.3, 0.35, 0.55, 1.1), (-1.5, -0.1, 0.5, 1.05))):
+        kit.add('jute', wb('mat%d' % i, mx - w / 2, mx + w / 2, mz - d / 2, mz + d / 2, H0, H0 + 0.015, 0.003))
+    x0 = SX - 1.3
+    for sg in (-1, 1):
+        kit.add('plinth', wb('diya_ledge', x0 - 0.14, x0, min(sg * 0.72, sg * 1.25), max(sg * 0.72, sg * 1.25), H0 + 0.9, H0 + 0.95, 0.006))
+        for k in range(3):
+            kit.add('paint', cyl('diya', x0 - 0.07, sg * (0.85 + k * 0.17), H0 + 0.95, H0 + 0.99, 0.045, 0.03, 10), BRASS)
+
+
 def chabutra():
     # round brick tree platform with a deck, beside the temple (the peepal on it is a code stand-in)
     cx, cz, R = 8.5, 0.0, 1.4
@@ -138,6 +157,7 @@ boundary()
 plinth_and_steps()
 shrine()
 porch()
+porch_fittings()
 chabutra()
 forecourt()
 TINTS = {'hb_plaster': '#F4EAD0', 'hb_plinth': '#B5683F', 'hb_trim': '#D8D0BC', 'hb_apron': '#A8A294', 'hb_floor': '#B8B3A3',
