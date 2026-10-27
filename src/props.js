@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getTiledMaterial } from './materials.js';
+import { getGLTFLoader } from './loaders.js';
 
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
@@ -226,6 +227,8 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
   const tinMat = getTiledMaterial('tin', { vertexColors: true });
   const hash = (k) => { const s = Math.sin(k * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
   const TILE = 1.2;
+  const H0 = type === 'solar' ? 4.8 : 6.4; // model pole height (tools/blender/build_street_lamp.py)
+  const TOP = type === 'solar' ? 0 : H0 + 0.15; // overhead-wire anchor (porcelain insulator tip); solar poles carry no wire
   // Box-projected world-scale UVs so any primitive carries the texture at real size.
   const tex = (g, color) => {
     g.computeVertexNormals();
@@ -242,9 +245,9 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
     }
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     g.setAttribute('uv2', new THREE.BufferAttribute(uv.slice(), 2));
-    return bakeColor(g, color);
+    if (color) return bakeColor(g, color);
+    return g;
   };
-  const tint = (hex, k) => new THREE.Color(hex).multiplyScalar(k);
   const wireBetween = (a, b, w, color, out) => {
     const mid = a.clone().add(b).multiplyScalar(0.5);
     const len = a.distanceTo(b);
@@ -254,13 +257,14 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
     g.applyMatrix4(m);
     out.push(tex(g, color));
   };
+  // Placement pass (synchronous): one record per lamp, colliders, and the sagging overhead wires between poles.
+  const runs = [];
+  const colliders = [];
   let n = 0;
-  let prevTop = null; // previous pole's wire anchor (same segment)
   for (const { from, to, width } of segments) {
-    const solid = []; // concrete mesh
-    const over = []; // tin mesh
-    const lampBoxes = [];
-    prevTop = null;
+    const lamps = [];
+    const wires = [];
+    let prevTop = null;
     const dx = to.x - from.x;
     const dz = to.z - from.z;
     const len = Math.hypot(dx, dz);
@@ -280,64 +284,13 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
       const z = from.z + uz * t + nz * off * side;
       const rotY = Math.atan2(-nx * side, -nz * side);
       const lean = new THREE.Euler((r(2) - 0.5) * 0.05, rotY, (r(3) - 0.5) * 0.05, 'YXZ');
-      const m = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(lean), new THREE.Vector3(1, 1, 1));
-      const wear = 0.78 + r(4) * 0.22;
-      const addTo = (list, g, local, color) => {
-        g.applyMatrix4(new THREE.Matrix4().setPosition(local[0], local[1], local[2]));
-        g.applyMatrix4(m);
-        list.push(tex(g, color));
-      };
-      const top = new THREE.Vector3();
-      if (type === 'solar') {
-        const h = 4.6 + r(5) * 0.5;
-        lampBoxes.push({ minX: x - 0.2, maxX: x + 0.2, minZ: z - 0.2, maxZ: z + 0.2 });
-        addTo(solid, new THREE.BoxGeometry(0.4, 0.3, 0.4), [0, 0.15, 0], tint(0xb4b1a8, wear));
-        addTo(solid, new THREE.BoxGeometry(0.32, 0.4, 0.2), [0, 2.9, 0.14], tint(0x6f7a72, wear)); // battery box
-        addTo(over, new THREE.CylinderGeometry(0.045, 0.06, h, 8), [0, h / 2 + 0.2, 0], tint(r(6) > 0.5 ? 0x4f6a5a : 0x59606c, wear));
-        addTo(over, new THREE.BoxGeometry(0.06, 0.06, 0.9), [0, h - 0.15, 0.4], tint(0x59606c, wear));
-        addTo(over, new THREE.BoxGeometry(0.22, 0.06, 0.55), [0, h - 0.22, 0.8], tint(0xe6e2d2, 0.9)); // LED head
-        const panel = new THREE.BoxGeometry(1.0, 0.04, 0.62);
-        panel.applyMatrix4(new THREE.Matrix4().makeRotationX(-0.38));
-        addTo(over, panel, [0, h + 0.3, -0.05], tint(0x2a3a5c, 0.7 + r(7) * 0.4));
-        addTo(over, new THREE.BoxGeometry(0.06, 0.3, 0.06), [0, h + 0.1, -0.05], tint(0x59606c, wear));
-      } else {
-        const h = 6.2 + r(5) * 0.6;
-        lampBoxes.push({ minX: x - 0.17, maxX: x + 0.17, minZ: z - 0.17, maxZ: z + 0.17 });
-        const body = tint(0xa4a8a9, wear);
-        addTo(solid, new THREE.CylinderGeometry(0.075, 0.15, h, 8), [0, h / 2, 0], body);
-        addTo(solid, new THREE.CylinderGeometry(0.17, 0.17, 0.5, 8), [0, 0.25, 0], tint(0x5f625f, wear)); // damp/grime at base
-        const band = r(8);
-        if (band > 0.35) addTo(solid, new THREE.CylinderGeometry(0.121, 0.127, 0.22, 8), [0, 1.15, 0], band > 0.7 ? tint(0xe8e2d0, 1) : tint(0x1c1c1a, 1)); // painted band / number
-        addTo(solid, new THREE.BoxGeometry(0.3, 0.36, 0.14), [0, 1.7, 0.16], tint(0x6a7468, wear)); // switch box
-        // Pasted bills and a painted pole-number plate, faded (merged into the pole mesh, no extra call).
-        // Poles taper 0.15 -> 0.075 over h, so radius at height y is used to sit each patch on the surface.
-        const radAt = (y) => 0.15 - 0.075 * (y / h);
-        if (r(9) > 0.4) {
-          const py = 2.5 + r(10) * 0.5;
-          const pc = [0xc9b79a, 0xb9c4bd, 0xd2c3a0, 0xc4a9a0][Math.floor(r(11) * 4) % 4];
-          addTo(solid, new THREE.BoxGeometry(0.26, 0.36, 0.012), [0, py, -radAt(py) - 0.004], tint(pc, 0.8 + r(12) * 0.15));
-          if (r(13) > 0.5) addTo(solid, new THREE.BoxGeometry(0.16, 0.2, 0.012), [0.05, py - 0.3, -radAt(py - 0.3) - 0.004], tint(0xb98f86, 0.8)); // torn second bill
-        }
-        if (r(14) > 0.5) addTo(solid, new THREE.BoxGeometry(0.2, 0.1, 0.012), [0, 0.9, radAt(0.9) + 0.004], tint(0xd8d2bd, 0.85)); // number plate
-        if (r(15) > 0.75) addTo(solid, new THREE.BoxGeometry(0.09, 0.09, 0.012), [0.05, 1.45, -radAt(1.45) - 0.004], tint(0x9a3c34, 0.85)); // faded sticker
-        // Rain streaks: thin, low-contrast vertical runs of damp and rust-water under the bracket and the box
-        // (kept close to the body tone so they read as staining, not as painted stripes).
-        const streaks = 2 + Math.floor(r(16) * 3);
-        for (let s = 0; s < streaks; s++) {
-          const sy = h - 0.6 - r(17 + s) * 0.5;
-          const sl = 0.7 + r(21 + s) * 1.6;
-          const ang = r(25 + s) * Math.PI * 2;
-          const rr = radAt(sy - sl / 2) + 0.003;
-          const rust = r(29 + s) > 0.6;
-          const sg = new THREE.BoxGeometry(0.025 + r(33 + s) * 0.03, sl, 0.01);
-          sg.applyMatrix4(new THREE.Matrix4().makeRotationY(ang));
-          addTo(solid, sg, [Math.sin(ang) * rr, sy - sl / 2, Math.cos(ang) * rr], rust ? tint(0x8c6a52, wear) : tint(0x7f8584, wear));
-        }
-        addTo(over, new THREE.BoxGeometry(0.06, 0.06, 1.3), [0, h - 0.15, 0.6], tint(0x4a463e, wear)); // bracket arm
-        addTo(over, new THREE.BoxGeometry(0.1, 0.09, 1.2), [0, h - 0.24, 0.85], tint(0xe0ddd0, 0.85)); // tube-light fixture
-        const cable = new THREE.CylinderGeometry(0.014, 0.014, h - 1.9, 5);
-        addTo(over, cable, [0, 1.9 + (h - 1.9) / 2, 0.095], tint(0x151515, 1)); // down-cable
-        top.set(0, h + 0.02, 0).applyMatrix4(m);
+      const sc = type === 'solar' ? 0.96 + r(5) * 0.1 : 0.96 + r(5) * 0.1;
+      const m = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(lean), new THREE.Vector3(sc, sc, sc));
+      const c = type === 'solar' ? 0.2 : 0.17;
+      colliders.push({ minX: x - c, maxX: x + c, minZ: z - c, maxZ: z + c });
+      lamps.push({ m, wear: 0.78 + r(4) * 0.22 });
+      if (type !== 'solar') {
+        const top = new THREE.Vector3(0, TOP, 0).applyMatrix4(m);
         // Sagging overhead wire to the previous pole in this run (two parallel cores).
         if (prevTop) {
           const span = prevTop.distanceTo(top);
@@ -348,24 +301,70 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
               const u = s / 8;
               const b = prevTop.clone().lerp(top, u);
               b.y += dy - sag * 4 * u * (1 - u);
-              wireBetween(a, b, 0.02, 0x141414, over);
+              wireBetween(a, b, 0.02, 0x141414, wires);
               a = b;
             }
           }
         }
-        prevTop = top.clone();
+        prevTop = top;
       }
     }
-    for (const [list, mat, boxes] of [[solid, concreteMat, lampBoxes], [over, tinMat, null]]) {
-      if (!list.length) continue;
-      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
-      if (boxes) mesh.userData.colliderBoxes = boxes; // pole bases are solid (A0)
-      mesh.castShadow = false; // thin poles: shadow pass would cost an extra call per mesh (hero zone sits at the 150 ceiling)
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    runs.push({ lamps, wires });
   }
+  group.userData.colliderBoxes = colliders; // pole bases are solid (A0)
+  // Model pass (async): one Blender model per type, cloned per lamp with its lean, size and wear tint, merged per run (two draw calls).
+  loadLampModel(type).then((model) => {
+    for (const { lamps, wires } of runs) {
+      for (const [key, mat] of [['main', concreteMat], ['tin', tinMat]]) {
+        const lift = key === 'tin' ? 1.4 : 1; // the tin set is darker than concrete; lift so painted iron reads green-grey, not black
+        const list = lamps.map(({ m, wear: w0 }) => {
+          const wear = w0 * lift;
+          const g = model[key].clone().applyMatrix4(m);
+          const col = g.attributes.color;
+          for (let i = 0; i < col.count; i++) col.setXYZ(i, Math.min(1, col.getX(i) * wear), Math.min(1, col.getY(i) * wear), Math.min(1, col.getZ(i) * wear));
+          return tex(g, null);
+        });
+        if (key === 'tin') list.push(...wires);
+        if (!list.length) continue;
+        const mesh = new THREE.Mesh(mergeGeometries(list), mat);
+        mesh.name = key === 'main' ? 'street_lamp_poles' : 'street_lamp_fittings';
+        mesh.castShadow = false; // thin poles: shadow pass would cost an extra call per mesh (hero zone sits at the 150 ceiling)
+        mesh.receiveShadow = true;
+        group.add(mesh);
+      }
+    }
+  }).catch((err) => console.warn('street lamp model did not load', err));
   return group;
+}
+
+// One Blender model per lamp type (tools/blender/build_street_lamp.py): hb_main = concrete bodies, hb_tin = iron fittings and cables.
+// Geometry only (the game's own concrete / tin sets are applied); a Float32 copy so per-lamp matrices cannot clip quantised attributes.
+const lampModels = {};
+function loadLampModel(type) {
+  if (!lampModels[type]) {
+    lampModels[type] = getGLTFLoader().loadAsync(`assets/models/lamp_${type}_v2.glb`).then((gltf) => {
+      gltf.scene.updateWorldMatrix(true, true);
+      const out = {};
+      gltf.scene.traverse((o) => {
+        if (!o.isMesh) return;
+        const src = o.geometry;
+        const g = new THREE.BufferGeometry();
+        for (const name of ['position', 'normal', 'color']) {
+          const a = src.attributes[name];
+          if (!a) continue;
+          const itemSize = name === 'color' ? 3 : a.itemSize;
+          const f = new Float32Array(a.count * itemSize);
+          for (let i = 0; i < a.count; i++) { f[i * itemSize] = a.getX(i); f[i * itemSize + 1] = a.getY(i); f[i * itemSize + 2] = a.getZ(i); }
+          g.setAttribute(name, new THREE.BufferAttribute(f, itemSize));
+        }
+        if (src.index) g.setIndex(src.index.clone());
+        g.applyMatrix4(o.matrixWorld);
+        out[o.name.includes('tin') ? 'tin' : 'main'] = g;
+      });
+      return out;
+    });
+  }
+  return lampModels[type];
 }
 
 /**
