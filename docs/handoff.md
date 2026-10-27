@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane 17 freed):** Game change: west gali signpost (src/wayfinding.js west_gali) moved 1 m east to x -81.5, off the lane edge it was blocking; the tractor now drives 20/23 lanes. Not looked at in a screenshot. Lanes 12, 13 (turn overshoot) and 18 (unlabelled boxes near (-66,22)) still blocked. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: trace lane 18, or A-2 leftovers.
+
 **2026-10-27 (A1f lane 11 freed):** Game change: the gurudwara spur (src/eastRoad.js) used to start at (-60,140) and run into a 1.3 m gap between two walled south-row house plots; it now leaves the south gali at x -33 (east of the plots, which span x -79..-39), runs south to z 158, then west to the gurudwara. Tractor drives 19/23 lanes. Proof docs/shots/places-2026-10-27/gurudwara_spur/spur_start.png, spur_mid.png (looked at: earth track beside the plot wall, no gaps, no console errors). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed. Lanes 12, 13 (turn overshoot), 17, 18 still blocked.
 NEXT: trace lanes 17/18 (west gali, edge_wall_n0 and (-68,22) boxes), or A-2 leftovers.
 
