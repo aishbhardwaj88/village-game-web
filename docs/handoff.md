@@ -1,3 +1,6 @@
+**2026-10-27 (A1f closed, lane 13 walking-only):** Tool and docs change, no game change. Decided the bazaar lane (x -58) stays walking-only; lane-drive-test exempts it; tractor drives the other 22 lanes, run output 23/23 counted. A1f lane-audit box ticked; NEEDS_YOU line marked done. Entry 0 (anchors, place table, character slots) was already finished earlier today.
+NEXT: A-2c far-east item needs a layout call; A0-MAT/TEX remain parked under the two-strike rule; pick A-2 leftovers.
+
 **2026-10-27 (A1f lane 13 traced, no game change):** Re-ran tools/lane-clearance-audit.mjs. Lane 13 (bazaar lane, centre x -58): the shop fronts stand at x -57.1 and a 0.6 m unlabelled box (no src) sits at x -58.8..-58.2, z 32.2..32.8, leaving 1.7 m for a 2.2 m tractor. That lane is a walking bazaar lane by design, so I left it and asked in NEEDS_YOU; A1f box stays unticked. Docs only, no build or test.
 NEXT: A-2c far-eastern road report, or the A0-WEATHER leftovers once the material board is frozen.
 

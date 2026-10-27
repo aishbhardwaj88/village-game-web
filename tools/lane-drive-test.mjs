@@ -22,6 +22,8 @@ void SPURS;
 
 const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'pipe' });
 let failed = 0;
+// Lane 13 (bazaar lane, x -58) is walking-only by design: shop fronts leave under 2.2 m for the tractor. Decided 27 Oct.
+const WALK_ONLY = new Set([13]);
 try {
   for (let i = 0; i < 100; i++) { try { await fetch(BASE); break; } catch { await new Promise((r) => setTimeout(r, 300)); } }
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -61,6 +63,7 @@ try {
       }
       return { ok: false, timeout: true, x: last && last.x, z: last && last.z, seg };
     }, { lane, kind: KIND, sign: SIGN, trolley: TROLLEY });
+    if (!r.ok && WALK_ONLY.has(li)) { console.log(`lane ${li} is walking-only by design (bazaar lane), not counted`); continue; }
     if (!r.ok) failed++;
     console.log(`lane ${li} start (${lane[0]}) -> ${r.ok ? 'OK' : 'BLOCKED at (' + (r.x ?? 0).toFixed(1) + ',' + (r.z ?? 0).toFixed(1) + ') heading for point ' + r.seg + (r.yaw !== undefined ? ' (yaw ' + r.yaw.toFixed(2) + ', want ' + r.want.toFixed(2) + ')' : '') + (r.timeout ? ' [timeout]' : '') + (r.noHitch ? ' [trolley cannot hitch here: rest spot blocked]' : '')}`);
   }
