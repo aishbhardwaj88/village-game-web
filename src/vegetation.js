@@ -134,13 +134,14 @@ function buildTuftGeometry() { return buildCardGeometry(0.55, 0.48); }
 function buildScrubGeometry() { return buildCardGeometry(0.95, 0.8); }
 
 /** Water and tank footprints no plant may stand in (hauz, pond, johad, canal channel). Circles {x,z,r} or canal-style z-bands {zMin,zMax,xMin,xMax}. */
+const TW = pt('tubewell'), CN = pt('canal'), SC = pt('school'); // offsets below are from the anchors, so moving a place carries its keep-out
 export const VEG_KEEP_OUT = [
-  { x: -36.1, z: -7.6, r: 3.0 }, // tubewell hauz + its outlet naali start
-  { x: -34.2, z: -3.8, r: 2.6 }, // tubewell outlet channel
+  { x: TW.x + 3.9, z: TW.z + 0.4, r: 3.0 }, // tubewell hauz + its outlet naali start
+  { x: TW.x + 5.8, z: TW.z + 4.2, r: 2.6 }, // tubewell outlet channel
   { ...pt('pond'), r: 11 }, // pond
   { ...pt('johad'), r: 8 }, // johad
-  { zMin: 29.5, zMax: 36.5, xMin: -28, xMax: 0 }, // canal water + banks
-  { zMin: 96.5, zMax: 115.5, xMin: -65.5, xMax: -58.5 }, // school classroom (SCHOOL_ROOM in village.js): grass was sprouting through its floor
+  { zMin: CN.z - 3.5, zMax: CN.z + 3.5, xMin: CN.x - 13, xMax: CN.x + 15 }, // canal water + banks
+  { zMin: SC.z - 9.5, zMax: SC.z + 9.5, xMin: SC.x - 15.5, xMax: SC.x - 8.5 }, // school classroom (SCHOOL_ROOM in village.js): grass was sprouting through its floor
 ];
 /** Every lane stretch passed to lanesideClusters: its kerb + open drain band (half width + 0.8 m) is also a keep-out, so no tuft grows in a nali or on a kerb. */
 const LANE_BANDS = [];
