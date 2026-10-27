@@ -1358,7 +1358,11 @@ All three repeat across the village, so build each ONCE properly and instance it
   one mesh set: different fabric tints, prints and fade.
 - This supersedes the earlier A1h laundry item: build once, reuse everywhere.
 
-### 10. NIGHT VIEW + LIT LANTERNS (confirmed by her, 27 Oct)
+### 10. NIGHT VIEW: DEFERRED TO VERSION 2 (her call, 27 Oct 23:30). DO NOT BUILD IT.
+Lanterns are still built as PROPS (they belong in the village by day). No night sky
+state, no emissive lamp glow, no window glow, no night ambience. All of that is v2.
+
+### 10-OLD (superseded). NIGHT VIEW + LIT LANTERNS
 **The game will have a night.** Dopahar currently runs one afternoon drifting to
 evening with no night state and no lamp that lights anything. This is a real feature,
 not a lamp detail:
@@ -1456,8 +1460,7 @@ it is waste.
    slides, stapu court, dustbins, more cycles in mixed sizes, classroom doors closed
    except the front one.
 5. **Bus adda clutter removal** (tyre, loose bricks, khatiya, pyaau pots).
-6. **Night view**: sky state, warm window glow, emissive lamps and lanterns, night
-   ambience. Independent of layout.
+6. **Night view: DEFERRED TO V2.** Do not build. Lanterns stay day props.
 7. **Systems**: collision, missions, side jobs, audio, menus, save, mobile.
 8. **Anchors**: finish any remaining baked coordinates. This directly reduces the
    cost of her map change, so it is worth doing.
