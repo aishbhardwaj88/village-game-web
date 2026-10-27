@@ -9,6 +9,7 @@ import { buildClothesline } from './laundry.js';
 import { getGLTFLoader } from './loaders.js';
 import { addPots } from './pots.js';
 import { addHandPumps } from './handPumps.js';
+import { addTaps } from './taps.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -1435,6 +1436,8 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   let h = 0;
   for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   addHandPumps(g, [{ type: ['mark2', 'old', 'cracked'][h % 3], x: -0.3, y: 0.18, z: -0.3, ry: 0.3 * ((h >> 3) % 5), s: 0.85 + 0.03 * ((h >> 5) % 5), tint: 0xffffff }], name + '_pump');
+  // drinking tap just off the platform edge, facing the pump; the variety is offset from the pump's so a corner never repeats itself
+  addTaps(g, [{ type: ['wall', 'stand', 'pyaau'][(h + 1 + ((h >> 7) % 2)) % 3], x: 0.25 + 0.1 * ((h >> 9) % 4), y: 0, z: -1.5, ry: 0.08 * ((h >> 11) % 5) - 0.16, s: 0.95 + 0.04 * ((h >> 13) % 3), tint: 0xffffff }], name + '_tap');
   return g;
 }
 
