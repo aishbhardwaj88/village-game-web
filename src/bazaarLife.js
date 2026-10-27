@@ -41,17 +41,17 @@ const IDLE_BY_TRADE = {
 const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
 
 const VILLAGER_LOOPS = [
-  [{ x: BAZAAR_WEST_X + 4, z: 9 }, { x: BAZAAR_WEST_X + 16, z: 9 }],
-  [{ x: BAZAAR_WEST_X + 20, z: 9 }, { x: BAZAAR_WEST_X + 32, z: 9 }],
-  [{ x: BAZAAR_EAST_X - 4, z: 9 }, { x: BAZAAR_EAST_X - 16, z: 9 }],
+  [{ x: BAZAAR_WEST_X + 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 16, z: BAZAAR_FRONT_Z - 3.5 }],
+  [{ x: BAZAAR_WEST_X + 20, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 32, z: BAZAAR_FRONT_Z - 3.5 }],
+  [{ x: BAZAAR_EAST_X - 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_EAST_X - 16, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: CHOWK_TEA_POS.x + 4, z: 7.5 }, { x: CHOWK_TEA_POS.x + 2, z: 16 }],
   // village lane between the house and the school: neighbours out on errands
   [{ x: -45.5, z: 71 }, { x: -45.5, z: 81 }],
   [{ x: -46.5, z: 86 }, { x: -46.5, z: 91 }],
   [{ x: -47, z: 51 }, { x: -45, z: 57 }],
   // a few more walkers so the bazaar frontage and lane are not empty
-  [{ x: BAZAAR_WEST_X + 10, z: 10 }, { x: BAZAAR_WEST_X + 26, z: 10 }], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
-  [{ x: BAZAAR_EAST_X - 10, z: 10 }, { x: BAZAAR_EAST_X - 26, z: 10 }],
+  [{ x: BAZAAR_WEST_X + 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_WEST_X + 26, z: BAZAAR_FRONT_Z - 2.5 }], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
+  [{ x: BAZAAR_EAST_X - 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_EAST_X - 26, z: BAZAAR_FRONT_Z - 2.5 }],
   [{ x: -46, z: 62 }, { x: -46.5, z: 69 }],
   [{ x: -48, z: 99 }, { x: -48, z: 106 }], // west of the fence strip at x -47..-45
 ];
