@@ -85,8 +85,54 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
     // docs/look-standard.md); terrain (ground/lane/field/crop) keeps full strength.
     mat.color = new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength);
   }
+  if (MATTE_SETS.has(name)) applyMatteVariation(mat);
   materialCache.set(key, mat);
   return mat;
+}
+
+const MATTE_SETS = new Set(['plaster', 'concrete', 'wood', 'terracotta', 'jute', 'tarpaulin', 'brick']);
+
+/**
+ * Matte, uneven, never-plastic response for code-built surfaces (shader only, no
+ * texture, geometry or draw-call cost): roughness 0.78-1.0 with patches, normal
+ * strength varying 0.55-1.25, 3-9 m colour mottling, no pure white, 8% desaturation.
+ * Same values as the imported-building hook (applyWallBaseGrime) minus the wall-base
+ * dirt, which code walls already bake into vertex colours.
+ */
+function applyMatteVariation(material) {
+  const prev = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer) => {
+    if (prev) prev(shader, renderer);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWorldPos_mv;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWorldPos_mv = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec3 vWorldPos_mv;
+        float mvHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+        float mvNoise(vec2 p) {
+          vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(mvHash(i), mvHash(i + vec2(1, 0)), f.x), mix(mvHash(i + vec2(0, 1)), mvHash(i + vec2(1, 1)), f.x), f.y);
+        }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        {
+          float mvMot = mvNoise(vWorldPos_mv.xz * 0.33 + vWorldPos_mv.y * 0.21) * 0.65 + mvNoise(vWorldPos_mv.xz * 1.1 - vWorldPos_mv.y * 0.7) * 0.35;
+          diffuseColor.rgb *= 0.88 + 0.22 * mvMot;
+          float mvL = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+          diffuseColor.rgb = min(mix(vec3(mvL), diffuseColor.rgb, 0.92), vec3(0.9));
+        }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        {
+          float mvNs = 0.55 + 0.7 * mvNoise(vWorldPos_mv.xz * 0.9 + vWorldPos_mv.y * 0.6);
+          normal = normalize(mix(nonPerturbedNormal, normal, mvNs));
+        }`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        {
+          float mvR = mvNoise(vWorldPos_mv.xz * 2.7 + vWorldPos_mv.y * 1.9);
+          roughnessFactor = clamp(max(roughnessFactor, 0.78) + (mvR - 0.5) * 0.18, 0.78, 1.0);
+        }`);
+  };
+  material.needsUpdate = true;
 }
 
 /**
