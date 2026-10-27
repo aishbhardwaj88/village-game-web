@@ -234,7 +234,7 @@ def build_tapri():
 
 
 def build_right():
-    # round brick chabutra (peepal is hers: empty) with a charpai on it
+    # round brick chabutra (peepal is hers: empty)
     cx, cz, R = 6.6, -2.9, 1.7
     n = 24
     for i in range(n):
@@ -242,35 +242,10 @@ def build_right():
         add('brick', limb('chab_seg', (cx + R * math.cos(a0), cz + R * math.sin(a0), 0.25), (cx + R * math.cos(a1), cz + R * math.sin(a1), 0.25), 0.32, 0.5))
     add('trim', cyl('chab_top', cx, cz, 0.5, 0.56, R + 0.14, R + 0.14, 24), CEMENT)
     add('paint', cyl('chab_soil', cx, cz, 0.0, 0.52, R - 0.2, R - 0.2, 24), 0x4A3524) if False else None
-    # charpai (rope cot) on the platform, near the edge, clear of the tree's trunk spot
-    px0, px1, pz0, pz1 = cx + 0.1, cx + 1.4, cz + 0.2, cz + 0.95
-    for x in (px0 + 0.07, px1 - 0.07):
-        for z in (pz0 + 0.07, pz1 - 0.07):
-            add('wood', limb('cot_leg', (x, z, 0.56), (x, z, 0.92), 0.06))
-    for (a, b, c, d) in ((px0, px1, pz0, pz0 + 0.06), (px0, px1, pz1 - 0.06, pz1), (px0, px0 + 0.06, pz0, pz1), (px1 - 0.06, px1, pz0, pz1)):
-        add('wood', wb('cot_frame', a, b, c, d, 0.9, 0.95, 0.0))
-    for k in range(7):
-        add('paint', wb('cot_rope', px0 + 0.06, px1 - 0.06, pz0 + 0.08 + k * 0.095, pz0 + 0.1 + k * 0.095, 0.93, 0.955, 0.0), 0xB89A64)
-    for k in range(9):
-        add('paint', wb('cot_rope2', px0 + 0.1 + k * 0.14, px0 + 0.12 + k * 0.14, pz0 + 0.06, pz1 - 0.06, 0.955, 0.975, 0.0), 0xA88A58)
-    # pyaau: four clay pots on a brick platform under a thatch roof on bamboo posts
-    qx0, qx1, qz0, qz1 = 8.4, 9.7, -3.8, -2.1
-    add('brick', wb('pyaau_base', qx0, qx1, qz0, qz1, 0, 0.8, 0.008))
-    add('trim', wb('pyaau_top', qx0 - 0.04, qx1 + 0.04, qz0 - 0.04, qz1 + 0.04, 0.8, 0.86, 0.006), CEMENT)
-    for k, (mx, mz) in enumerate(((qx0 + 0.35, qz0 + 0.4), (qx0 + 0.95, qz0 + 0.4), (qx0 + 0.35, qz0 + 1.2), (qx0 + 0.95, qz0 + 1.2))):
-        pot_at(mx, mz, 0.86, 1.0 + 0.05 * k)
-    # lift the pots onto the platform: clay_pot builds on the ground, so place them separately at platform height instead
-    for x, z in ((qx0 - 0.1, qz0 - 0.1), (qx1 + 0.1, qz0 - 0.1), (qx0 - 0.1, qz1 + 0.1), (qx1 + 0.1, qz1 + 0.1)):
-        add('wood', limb('bamboo', (x, z, 0), (x + 0.02, z, 2.2), 0.07, 0.07))
-    th = 0.22
-    add('thatch', prism_x('pyaau_roof', qx0 - 0.4, qx1 + 0.4, [(qz0 - 0.4, 2.55), (0.0 + (qz0 + qz1) / 2, 2.85), (qz1 + 0.4, 2.55), (qz1 + 0.4, 2.55 - th), (0.0 + (qz0 + qz1) / 2, 2.85 - th), (qz0 - 0.4, 2.55 - th)]))
-    # dustbin, loose bricks, a cycle tyre
+    # 27 Oct (art director): charpai, pyaau, loose bricks and tyre removed
+    # dustbin
     add('metal', cyl('dustbin', 3.9, -1.9, 0, 0.75, 0.24, 0.28, 12), 0x8D9094)
     add('metal', cyl('dustbin_rim', 3.9, -1.9, 0.75, 0.8, 0.3, 0.3, 12), 0x75787C)
-    for k, (x, z) in enumerate(((4.4, -1.4), (4.6, -1.25), (4.25, -1.2))):
-        a = rnd.uniform(-0.6, 0.6)
-        add('brick', limb('loose_brick', (x - 0.11 * math.cos(a), z - 0.11 * math.sin(a), 0.05), (x + 0.11 * math.cos(a), z + 0.11 * math.sin(a), 0.05 + 0.04 * k), 0.11, 0.07))
-    add('paint', ring('tyre', 5.2, -0.6, 0.04, 0.3, 0.035, axis='y'), 0x1B1B1D)
 
 
 def build_signs():

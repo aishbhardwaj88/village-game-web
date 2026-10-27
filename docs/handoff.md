@@ -1,3 +1,6 @@
+**2026-10-27 (J0 bus adda cleanup):** Game change: staged bus adda (Yard 3, x 560 z -160, tools/blender/build_bus_adda.py, bus_adda_v2.glb rebuilt) no longer has the loose tyre, loose bricks, the charpai on the chabutra or the pyaau; chabutra, dustbin, shelter, tapri and boards stay. LAYOUT.md noted. Proof docs/shots/bus-adda-2026-10-27/iso.png and right.png (looked at: all four gone, no console errors). Build ALL PASSED, collision-test 4842 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: J0 school items (close doors, shrink, more play kit), then flag texture.
+
 **2026-10-27 (THE JOB, J3/J4 progress, docs and shots only):** No game change. J1 stays parked (3 reviewer rounds used, library not frozen). J3: vehicles and houses_kit confirmed already built and wired, ticked with the reason. J4: 23 place screenshots in docs/shots/places-final/ (looked at school, bhatta, houses: all stand and read, no console errors). J2 (per-place LAYOUT.md check with art-reviewer) is NOT done for most places; J4 report PARKED list: J1 material library (needs her textures), J2 remaining places. Anchor table and asset-slots already current (see entries below).
 NEXT: J2, one place per commit.
 
