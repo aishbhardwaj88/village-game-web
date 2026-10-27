@@ -30,7 +30,7 @@ const PAPER = '#efe4c8';
 const SIGNPOSTS = [
   { id: 'house_gate', x: -54.5, z: 49.5, ry: Math.PI, to: ['school', 'bazaar', 'temple', 'teastall'] },
   { id: 'temple_fork', x: -12, z: 58.5, ry: -Math.PI / 2, to: ['temple', 'canal', 'house', 'baagh', 'field'] },
-  { id: 'east_gali', x: -2.6, z: 76.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
+  { id: 'east_gali', x: -2.6, z: 78.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
   { id: 'east_far_a', x: 35, z: 73.5, ry: -Math.PI / 2, to: ['tvhouse', 'chemist', 'manihari', 'sabzi', 'johad'] },
   { id: 'east_far_b', x: 75, z: 73.5, ry: -Math.PI / 2, to: ['masjid', 'jain', 'maidan', 'highway'] },
   { id: 'school_lane', x: -41.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela', 'cane'] },

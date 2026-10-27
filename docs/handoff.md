@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane 15 freed):** Game change: east gali signpost (src/wayfinding.js east_gali) moved 2 m to z 78.7, off the lane edge it was blocking; the tractor now drives 18/23 lanes (lane 15 was blocked by it). Lanes 12 and 13 are turn-radius overshoot (colliders 2.7 m+ away), 11, 17, 18 untraced. Not looked at in a screenshot. Build ALL PASSED, collision-test 4862 static solids + 6 vehicle boxes + 3 vehicles + 114 NPC legs tested, 0 failed.
+NEXT: trace lanes 11/17/18, or A-2 leftovers.
+
 **2026-10-27 (A1f lane vehicle drive, no game change):** Added tools/lane-drive-test.mjs (report only): tractor alone drives 17/23 lane centre-lines; blocked ones listed in BACKLOG A1f (hero lane near (-42,57), bazaar lane (-62,37), east gali (-4.5,76), west gali (-84,39), (-68,22), last spur start). Box stays unticked. Build ALL PASSED.
 NEXT: trace the blockers with a collider src print at those points, or A-2 leftovers.
 
