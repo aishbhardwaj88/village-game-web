@@ -12,6 +12,7 @@ import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
 import { addHaystacks, hayPlacements } from './haystacks.js';
 import { addGobar } from './gobar.js';
+import { addLanterns } from './lanterns.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -1421,6 +1422,7 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45], [-0.3, -0.3, 0.4, 0.4]]); // matka stand + pump
   g.rotation.y = ry;
   addPots(g, pots, name + '_pots');
+  addLanterns(g, [{ type: ['hurricane', 'tin'][(name.length + 1) % 2], x: 0.9, y: 0.18, z: -0.6, ry: 2.6, s: 1, tint: 0xffffff }], name + '_lantern'); // day prop on the platform edge
   // hand pump on the platform (Blender, src/handPumps.js): the variety follows the site name so neighbouring corners differ; the drain faces the lane
   let h = 0;
   for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
