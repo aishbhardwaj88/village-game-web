@@ -1296,6 +1296,19 @@ re-tint the petrol pump on its own.**
 - Terracotta with real clay grain, wet rings, chipped rims, variation in size and tilt.
 - Current quality is bad and they repeat all over the village, so this is high value.
 
+### 5b. HAND PUMPS AND DRINKING TAPS: shared village-wide assets, same as pots
+Her note, 27 Oct: hand pumps appear all over the village, so build **2 to 3 varieties**
+and instance them. Same for drinking water taps.
+- Blender, one script per family, instanced. No per-place versions.
+- **Hand pump varieties**: (a) the standard India Mark II on a concrete plinth with a
+  soak drain, (b) an older shorter cast-iron one, (c) one with a cracked plinth and
+  a puddle, so a row of them never reads as copies.
+- **Drinking tap varieties**: a wall tap over a cement trough, a standpipe tap on a
+  plinth, and a small pyaau-style tap stand.
+- Every one gets: cast-iron pitting and rust at the joints, worn paint on the handle,
+  a damp patch and algae at the base, lime scale around the spout.
+- Vary scale, rotation, lean and wear per instance.
+
 ### 6. FLAG IS PIXELATED
 - The chakra has no resolution. Redraw the flag texture at 1024, with the 24 spokes
   drawn as crisp vector or real geometry, then baked.

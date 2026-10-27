@@ -42,6 +42,8 @@ anything from the LATER list below.**
 - [ ] Milestones: rebuild in Blender, one instanced model, yellow rounded top, white body, faded and weathered, no lettering. Current ones are bad everywhere
 - [ ] Street lamps: rebuild two types (RCC concrete with tube light for abadi lanes, panchayat solar with panel + battery box + LED for chowk). Down-cable on every pole and sagging wires between poles matter more than the head. Weathered, instanced, report draw-call cost
 - [ ] Earthen pots: rebuild matka, ghada, surahi, kulhad in Blender, instanced village-wide. Clay grain, wet rings, chipped rims, size and tilt variation
+- [ ] Hand pumps: build 2-3 varieties in Blender (India Mark II on a plinth with soak drain, older short cast-iron, one with cracked plinth and puddle), instanced village-wide; cast-iron pitting, rust at joints, worn handle paint, damp patch and algae at the base, lime scale at the spout
+- [ ] Drinking taps: build 2-3 varieties (wall tap over a cement trough, standpipe tap on a plinth, small pyaau-style tap stand), instanced village-wide, same weathering treatment
 - [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
 - [ ] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them
 - [ ] Primary school: reduce to 60-65% of current size, shrinking the open common verandah
