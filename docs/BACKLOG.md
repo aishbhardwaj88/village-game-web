@@ -60,7 +60,13 @@ anything from the LATER list below.**
 - [x] (27 Oct: all classroom doors shut except the middle back-block one; proof docs/shots/school-65-2026-10-27/verandah.png) Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
 - [x] (27 Oct: 2nd slide, stapu court, 4 more dustbins, 3 adult + 4 child cycles; proof docs/shots/school-65-2026-10-27/iso.png, stapu and cycles small, not close-judged) Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes
 
-### J1. Material quality - BLOCKED ON HER APPROVAL, do not iterate further
+### J1-NOW. Her verdict is in, 27 Oct. See docs/material-library.md.
+- [ ] APPROVED and FROZEN: brick, lime plaster, cement plaster, concrete. Apply all four by name to the 22 staged places IMMEDIATELY. Do not re-tune or re-review them. This is unblocked and does not wait for the rest
+- [ ] FAILED: tin, terracotta, painted wood, rusted steel. All four are a flat texture on a flat box. **Rebuild the structure as GEOMETRY**: tin gets varying rib pitch + dents + rust from the bottom edge + fixing washers + lap joints; terracotta gets real overlapping Mangalore tiles with height/rotation jitter, moss in the channels, a few cracked ones; wood gets real plank separation with gaps and shadow lines, grain along the plank, paint worn through at edges; rusted steel gets pitting, flaking scale with raised edges, downward streaks, bare metal at handled spots
+- [ ] Build the 4 not yet shown: thatch, mud and dung, jute, packed earth
+- [ ] Render the 8 remaining panels ONCE at 2 m and send to her. Never iterate a material twice without her eye on it
+
+### J1-OLD2. Material quality - BLOCKED ON HER APPROVAL, do not iterate further
 The board was iterated 10 times on 27 Oct and failed every internal review. **Stop.**
 - [ ] Render the board once more at 2 m per panel and send it to the art director.
 - [ ] Wait for her per-material verdict. Change ONLY what she rejects.
