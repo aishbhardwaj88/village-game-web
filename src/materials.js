@@ -652,6 +652,16 @@ export function applyWallBaseGrime(material) {
           float wgL2 = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
           diffuseColor.rgb = mix(vec3(wgL2), diffuseColor.rgb, 0.92);
           diffuseColor.rgb = min(diffuseColor.rgb, vec3(0.9));
+          // Chipped plinth wear: speckled paler patches (exposed under-coat) below ~0.7 m, strongest near the foot
+          float wgChip = wgNoise(vWorldPos_wg.xz * 14.0 + vWorldPos_wg.y * 11.0) * 0.6 + wgNoise(vWorldPos_wg.xz * 31.0 - vWorldPos_wg.y * 23.0) * 0.4;
+          float wgChipM = smoothstep(0.64, 0.8, wgChip) * (1.0 - smoothstep(0.15, 0.7, vWorldPos_wg.y));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(wgL2) * 1.12 + 0.05, wgChipM * 0.45);
+        }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        {
+          // Normal-map strength varies 0.55-1.25 across the wall (fresh vs eroded plaster)
+          float wgNs = 0.55 + 0.7 * wgNoise(vWorldPos_wg.xz * 0.9 + vWorldPos_wg.y * 0.6);
+          normal = normalize(mix(nonPerturbedNormal, normal, wgNs));
         }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         {
