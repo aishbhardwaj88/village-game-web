@@ -261,6 +261,120 @@ def tile_roof(obj, base_hex, seed=0):
     return True
 
 
+def plank_wood(obj, base_hex, seed=0):
+    """Painted wood as GEOMETRY (27 Oct, her verdict 'plastic wrap'): every large flat face of a wood piece is cut into
+    planks ~0.14 m wide with a real V-gap between them (so AO and light give the shadow line), per-plank height and
+    colour variation, and paint worn through to bare wood near the face edges and along the gaps."""
+    import bmesh
+    from mathutils import Vector
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    big = [f for f in bm.faces if f.calc_area() > 0.15 and len(f.verts) == 4]
+    if not big:
+        bm.free()
+        return False
+    PW, SS = 0.14, 0.035
+    sdir = {}
+    for f in big:
+        n = f.normal
+        if abs(n.z) < 0.6:
+            s_ = Vector((-n.y, n.x)).normalized()
+        else:
+            es = [(e.verts[1].co - e.verts[0].co).to_2d() for e in f.edges]
+            lg = max(es, key=lambda v: v.length)
+            s_ = Vector((-lg.y, lg.x)).normalized()    # planks run along the long edge; s is across them
+        sdir[f.index] = s_
+    cut = {}
+    for f in big:
+        s_ = sdir[f.index]
+        for e in f.edges:
+            v = (e.verts[1].co - e.verts[0].co).to_2d()
+            if v.length > 1e-4 and abs(v.normalized().dot(s_)) > 0.9 and e.calc_length() > 0.2:
+                cut[e.index] = e
+    if not cut:
+        bm.free()
+        return False
+    # vertical faces also need an in-plane s (the horizontal tangent); handled by projecting onto the 2D direction above
+    groups = {}
+    for e in cut.values():
+        groups.setdefault(max(2, min(60, int(e.calc_length() / SS))), []).append(e)   # per-length cut counts: opposite edges of a face match
+    for n_cuts, es in groups.items():
+        bmesh.ops.subdivide_edges(bm, edges=[e for e in es if e.is_valid], cuts=n_cuts, use_grid_fill=True)
+    bm.faces.ensure_lookup_table()
+    # re-find big flat faces after the cut (area now small): classify by normal and membership in the original plane via vertex sets
+    big_pos = [(f.normal.copy(), f.calc_center_median()) for f in big if f.is_valid]
+    info = {}
+    for f in bm.faces:
+        n = f.normal
+        c = f.calc_center_median()
+        if abs(n.z) < 0.6:
+            s_ = Vector((-n.y, n.x)).normalized()
+        else:
+            continue
+        for v in f.verts:
+            info.setdefault(v, (n.copy(), s_))
+    # horizontal faces: reuse the stored plank directions via nearest original face
+    for f in bm.faces:
+        if abs(f.normal.z) >= 0.6:
+            for bn, bc in big_pos:
+                if bn.dot(f.normal) > 0.99 and abs((f.calc_center_median() - bc).dot(bn)) < 1e-3:
+                    es = [(e.verts[1].co - e.verts[0].co).to_2d() for e in f.edges]
+                    ex = max(es, key=lambda v: v.length)
+                    # long edge of a split strip is the plank direction
+                    s_ = Vector((-ex.y, ex.x)).normalized()
+                    for v in f.verts:
+                        info.setdefault(v, (f.normal.copy(), s_))
+                    break
+    ext = {}
+    for v, (n, s_) in info.items():
+        k = (round(n.x, 1), round(n.y, 1), round(n.z, 1))
+        sv = v.co.x * s_.x + v.co.y * s_.y
+        e = ext.setdefault(k, [sv, sv])
+        e[0], e[1] = min(e[0], sv), max(e[1], sv)
+    pl = {}
+    for v, (n, s_) in info.items():
+        k = (round(n.x, 1), round(n.y, 1), round(n.z, 1))
+        s0, s1 = ext[k]
+        sv = v.co.x * s_.x + v.co.y * s_.y - s0
+        pi = int((sv / PW) + 0.5 + 1e-6)         # plank index (gaps fall at half-plank offsets: face edges are never gaps)
+        fp = ((sv / PW) + 0.5) % 1.0
+        fmin = min(fp, 1.0 - fp)
+        r = random.Random(pi * 7919 + seed + int(abs(n.z) * 5))
+        gap = max(0.0, 1.0 - fmin / 0.27) if (sv > 1e-3 and sv < (s1 - s0) - 1e-3) else 0.0
+        pl[v] = (n, -0.013 * gap + r.uniform(-0.002, 0.003), r.random(), gap, pi)
+    for v, (n, d, rv, gap, pi) in pl.items():
+        v.co += n * d
+    # nothing else moves (side faces of the slab keep their positions); colour per corner
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    # distance to the object's bounding box edge for paint wear
+    xs = [v.co for v in bm.verts]
+    mn = Vector((min(c.x for c in xs), min(c.y for c in xs), min(c.z for c in xs)))
+    mx = Vector((max(c.x for c in xs), max(c.y for c in xs), max(c.z for c in xs)))
+    for f in bm.faces:
+        for lp in f.loops:
+            v = lp.vert
+            if v not in pl:
+                lp[layer] = (r0, g0, b0, 1.0)
+                continue
+            n, d, rv, gap, pi = pl[v]
+            k = 0.82 + 0.34 * rv                          # per-plank paint tone
+            c = [r0 * k * (0.96 + 0.08 * ((rv * 13) % 1.0)), g0 * k, b0 * k * (1.04 - 0.08 * ((rv * 29) % 1.0))]
+            ed = min(min(v.co.x - mn.x, mx.x - v.co.x), min(v.co.y - mn.y, mx.y - v.co.y), min(v.co.z - mn.z, mx.z - v.co.z))
+            wear = max(0.0, 1.0 - ed / 0.1) * 0.65 + gap * 0.5 * (0.3 + rv)
+            wear = min(0.8, wear * (0.5 + 0.5 * ((rv * 5.7) % 1.0)))
+            bare = (0.34, 0.20, 0.09)                      # bare timber (linear)
+            c = [c[i] * (1 - wear) + bare[i] * wear for i in range(3)]
+            lp[layer] = (c[0], c[1], c[2], 1.0)
+    for f in bm.faces:
+        f.smooth = False
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -293,7 +407,7 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records)))):
+            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records)))):
                 colorize(obj, color, attr='Base')
             groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
