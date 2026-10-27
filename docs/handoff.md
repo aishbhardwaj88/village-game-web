@@ -1,3 +1,6 @@
+**2026-10-27 (A0 collider audit, no game change):** Re-ran tools/collider-audit.js against the current build: every visual plaster-wall footprint cell overlaps a STATIC_COLLIDERS box, 0 missing (list of solids with no collider is empty for walls; collision-test part [5] already covers the other visible geometry). Box A0 'give colliders to every solid prop' left unticked because the audit measures plaster walls only. No build/test (docs only).
+NEXT: A-2 minimap research box, or A0 NPC resolver rooftop leg.
+
 **2026-10-27 (THE ORDER 4 signboard audit, no game change):** Audited every painted-text path: placeBoards.js atlas (35 boards incl. all staged places), signboards.js, signPaint.js drawBilingual, wayfinding signposts and village notice board all use Hindi bold larger on top, English regular smaller below, one ink. Only a stale comment in placeBoards.js said the opposite; corrected (comment only). One exception left as drawn: bus_adda is white lettering on a green board (not dark paint); kept because it is a painted-on-colour board, flagged in case she wants it dark. No build/test (comment/docs only).
 NEXT: A-2 task list / minimap, or A0 NPC resolver leg.
 
