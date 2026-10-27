@@ -183,6 +183,34 @@ for dx in (-0.6, 0, 0.6):
 add('metal', limb('lamp_arm', (lx, lz, 7.6), (lx - 1.3, lz, 7.9), 0.06), 0x4A4C50)
 add('paint', cyl('lamp_head', lx - 1.4, lz, 7.78, 7.95, 0.2, 0.12, 10), 0xCFCFC8)
 add('metal', limb('meter_box', (lx + 0.14, lz, 1.7), (lx + 0.14, lz, 2.3), 0.12, 0.3), 0x7A7D80)
+# overhead wires: three lines from the insulators sag toward the lane ends (north and south), plus a service drop to the meter
+for dx in (-0.6, 0, 0.6):
+    for sgn, zend in ((1, 10.0), (-1, -10.0)):
+        n = 8
+        for k in range(n):
+            t0, t1 = k / n, (k + 1) / n
+            z0, z1 = lz + (zend - lz) * t0, lz + (zend - lz) * t1
+            h = lambda t: 8.7 - 1.1 * t * t
+            add('metal', limb('wire', (lx + dx, z0, h(t0)), (lx + dx, z1, h(t1)), 0.018, 0.018), 0x2A2A2A)
+# sweep marks: fine curved broom arcs in the earth around the platform, and fallen peepal leaves
+for ring in range(5):
+    r0 = R + 1.2 + ring * 0.55
+    a_start = rnd.uniform(0, math.tau)
+    span = rnd.uniform(1.4, 2.4)
+    n = 14
+    for k in range(n):
+        a0 = a_start + span * k / n
+        a1 = a_start + span * (k + 1) / n
+        add('paint', limb('sweep', (r0 * math.cos(a0), r0 * math.sin(a0), 0.05), (r0 * math.cos(a1), r0 * math.sin(a1), 0.05), 0.07, 0.012), 0x9C7C52)
+for k in range(46):
+    a = rnd.uniform(0, math.tau)
+    d = rnd.uniform(R + 0.3, 8.8)
+    x0, z0 = d * math.cos(a), d * math.sin(a)
+    if abs(x0) > 9.5 or abs(z0) > 9.5:
+        continue
+    ang = rnd.uniform(0, math.pi)
+    L = rnd.uniform(0.07, 0.11)
+    add('paint', limb('leaf', (x0, z0, 0.052), (x0 + L * math.cos(ang), z0 + L * math.sin(ang), 0.052), 0.07, 0.006), rnd.choice((0x6E7A3A, 0x8A8A3E, 0x9A8440, 0x7A6A30)))
 # a twig broom leaning on the platform
 add('wood', limb('broom_handle', (-4.6, 3.4, 0.0), (-4.2, 3.0, 1.0), 0.03))
 add('paint', limb('broom_head', (-4.7, 3.5, 0.0), (-4.55, 3.35, 0.4), 0.22, 0.06), 0x9A8A58)
