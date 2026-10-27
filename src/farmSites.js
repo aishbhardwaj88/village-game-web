@@ -10,6 +10,7 @@ import { getGLTFLoader } from './loaders.js';
 import { addPots } from './pots.js';
 import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
+import { addHaystacks, hayPlacements } from './haystacks.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 
 /**
@@ -399,8 +400,6 @@ export function createTubewell(position) {
   for (const [sx, sz, sr] of [[1.2, 3.5, 0.7], [1.4, 3.65, 0.5]]) geos.push(bake(new THREE.BoxGeometry(0.09, 0.03, 0.26), at(sx, 0.015, sz, sr), CHAPPAL));
   // Two bhoosa haystacks behind the kothri (fodder kept next to the pump), a smaller one leaning beside them.
   const hay = [[-7.5, -5.5, 0.62, 1, 0xb4a276], [-9.8, -2.6, 0.5, 2, 0xc0ad80], [-5.2, -7.6, 0.38, 0, 0xa59468]];
-  const hayGeos = [];
-  for (const [x, z, k, n, tone] of hay) hayGeos.push(...haystackGeos(x, z, k, n, tone));
   const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat());
   mesh.name = 'tubewell';
   // Kothri, hauz, motor and the charpai in its shade are solid (A0).
@@ -409,29 +408,25 @@ export function createTubewell(position) {
   mesh.receiveShadow = true;
   const group = new THREE.Group();
   group.name = 'tubewell_prop';
-  const hayMesh = new THREE.Mesh(mergeGeometries(hayGeos), strawMaterial());
-  hayMesh.name = 'tubewell_haystacks';
-  hayMesh.castShadow = true;
-  hayMesh.receiveShadow = true;
-  group.add(mesh, water, hayMesh);
+  group.add(mesh, water);
   group.position.set(position.x, 0, position.z);
+  addHaystacks(group, hayPlacements(hay), 'tubewell_haystacks'); // Blender stacks (src/haystacks.js), same footprint as the colliders above
   return group;
 }
 
 /** Two bhoosa haystacks stacked behind the Yadav tea stall (fodder for the dairy cattle); reuses the shared straw material. */
 export function createTeaStallHaystacks(position) {
   const hay = [[0, 0, 0.6, 1, 0xb4a276], [-2.6, 2.4, 0.42, 2, 0xc0ad80]];
-  const geos = [];
-  for (const [x, z, k, n, tone] of hay) geos.push(...haystackGeos(x, z, k, n, tone));
-  const mesh = new THREE.Mesh(mergeGeometries(geos), strawMaterial());
-  mesh.name = 'tea_stall_haystacks';
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  mesh.userData.colliderBoxes = orientedSolids(position, 0, hay.map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k]));
+  // the Blender stacks arrive async (src/haystacks.js); an invisible carrier mesh holds the colliders so they exist at build time
+  const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+  carrier.name = 'tea_stall_haystacks';
+  carrier.visible = false;
+  carrier.userData.colliderBoxes = orientedSolids(position, 0, hay.map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k]));
   const group = new THREE.Group();
   group.name = 'tea_stall_haystacks_prop';
-  group.add(mesh);
+  group.add(carrier);
   group.position.set(position.x, 0, position.z);
+  addHaystacks(group, hayPlacements(hay), 'tea_stall_haystacks_mesh');
   return group;
 }
 
@@ -635,8 +630,7 @@ export function createKhalihan(position) {
   // Bhoosa stacks: tall domed haystacks with a wound rope band, around the floor's rim.
   const stacks = [[-9.5, -3, 0.75, 0], [-10.5, 4.5, 0.9, 1], [9.8, 5.5, 0.65, 2], [11, -2.5, 0.85, 3]];
   const tones = [0xb8a678, 0xa99868, 0xc0ad80, 0xa08f62];
-  for (const [x, z, k, n] of stacks) geos.push(...haystackGeos(x, z, k, n, tones[n]));
-  const mesh = new THREE.Mesh(mergeGeometries(geos), strawMaterial()); // threshing floor + stacks share the straw material: one draw call
+  const mesh = new THREE.Mesh(mergeGeometries(geos), strawMaterial()); // threshing floor, one draw call; the stacks are Blender models (src/haystacks.js) added below
   mesh.name = 'khalihan';
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -645,6 +639,7 @@ export function createKhalihan(position) {
   mesh.userData.colliderBoxes = orientedSolids(position, 0, [[0, 0, 0.3, 0.3], ...stacks.map(([x, z, k]) => [x, z, 3.2 * k, 3.2 * k])]); // threshing post + bhoosa stacks
   group.add(mesh);
   group.position.set(position.x, 0, position.z);
+  addHaystacks(group, hayPlacements(stacks.map(([x, z, k, n]) => [x, z, k, n, tones[n]])), 'khalihan_stacks');
   return group;
 }
 

@@ -1,3 +1,6 @@
+**2026-10-27 (J0 haystacks):** Game change: three Blender haystacks (tools/blender/build_haystack.py via make_haystacks.sh: tall cone, low heap, half-used with cut face; geometry straw tufts, rope bands) loaded by new src/haystacks.js and swapped in at the tubewell, tea stall and khalihan (old code-built haystackGeos left unused). Shadow casting off (bazaar view is at 150/150 calls), models trimmed so assets are 39.97 MB of 40. Proof docs/shots/haystacks-2026-10-27/b.png, c.png (looked at: cone and heap stand, read dark and tufts sparse, half variant unseen in game, no console errors). Build ALL PASSED 17/17, collision-test 4697 static solids, 6 vehicle boxes, 3 vehicles, 122 NPC legs, 0 failed.
+NEXT: J0 gobar cakes. Budget headroom is now only 0.03 MB and 0 draw calls in two views.
+
 **2026-10-27 (J0 drinking taps):** Game change: three Blender taps (tools/blender/build_tap.py via make_taps.sh: wall tap over a trough, standpipe on a plinth, pyaau stand) loaded by new src/taps.js, merged per material, one placed at each of the 5 lane water corners (src/farmSites.js). Proof docs/shots/taps-2026-10-27/a.png, c.png (looked at: standpipe reads beside the pump, no console errors; wall and pyaau types not yet seen in game). Build ALL PASSED, collision-test 4670 static solids, 6 vehicle boxes, 3 vehicles, 122 NPC legs, 0 failed.
 NEXT: J0 haystacks.
 
