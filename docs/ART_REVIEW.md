@@ -1260,6 +1260,12 @@ board, then re-apply the frozen library:
 extra geometry, no extra draw calls, no bigger textures.** If any change does add
 cost, report the number rather than skipping it.
 
+**Confirmed again on the petrol pump, 27 Oct:** "I like the petrol pump, but I am not
+very sure about the textures. It looks like a plastic toy that you have tried to make
+look like concrete." Same verdict, different place. **This is not a per-place problem,
+it is the shared shading. Fixing the material library fixes all of them. Do not
+re-tint the petrol pump on its own.**
+
 ### 2. BUS ADDA: remove the clutter
 - Remove the random tyre and the loose bricks on the ground. Noise, not detail.
 - Remove the khatiya (charpai) sitting on the round chabutra.
