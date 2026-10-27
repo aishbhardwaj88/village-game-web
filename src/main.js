@@ -128,6 +128,7 @@ import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, 
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
 import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
 import { createNightController } from './night.js';
@@ -2810,6 +2811,7 @@ async function main() {
       updateDayline(dayProgressForQuestStep(quest.step), dt);
       night.update(dt);
       lampNight.value = night.mix;
+      updateLampPools(player.position.x, player.position.z, night.mix);
       audio.setNight(night.mix);
       audio.setDayProgress(dayProgressForQuestStep(quest.step));
       // Distant radio fade (item 7) — uses whatever the player is actually "at"

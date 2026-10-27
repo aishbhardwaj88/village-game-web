@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getTiledMaterial } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
+import { registerLampSites } from './lampPools.js';
 
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
@@ -328,6 +329,7 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
     }
     runs.push({ lamps, wires });
   }
+  registerLampSites(group, colliders.map((c) => ({ x: (c.minX + c.maxX) / 2, z: (c.minZ + c.maxZ) / 2 })));
   group.userData.colliderBoxes = colliders; // pole bases are solid (A0)
   // Model pass (async): one Blender model per type, cloned per lamp with its lean, size and wear tint, merged per run (two draw calls).
   loadLampModel(type).then((model) => {

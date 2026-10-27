@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { lampPoolUniform, lampPoolMix, POOL_N, POOL_RADIUS } from './lampPools.js';
 
 const textureLoader = new THREE.TextureLoader();
 const rawTextureCache = new Map(); // url -> Texture, shared Source, one real network fetch each
@@ -172,6 +173,8 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
     shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
     shader.uniforms.uPatchContrast = { value: patchContrast };
+    shader.uniforms.uLampPool = lampPoolUniform;
+    shader.uniforms.uLampPoolMix = lampPoolMix;
     shader.uniforms.uFurrow = { value: new THREE.Vector3(furrows ? furrows.spacing : 0, furrows ? furrows.originZ : 0, furrows ? furrows.depth : 0) };
 
     shader.vertexShader = shader.vertexShader
@@ -202,6 +205,8 @@ export function applyGroundNoiseDetail(
         uniform vec3 uDampTint1;
         uniform float uPatchContrast;
         uniform vec3 uFurrow;
+        uniform vec3 uLampPool[12];
+        uniform float uLampPoolMix;
 
         float groundHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
         float groundValueNoise(vec2 p) {
@@ -271,6 +276,17 @@ export function applyGroundNoiseDetail(
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint0, damp0);
           float damp1 = 1.0 - smoothstep(0.0, max(uDampRadius1, 0.001), distance(vWorldPos_g.xz, uDampPos1));
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uDampTint1, damp1);
+        }`
+      )
+      .replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>
+        if (uLampPoolMix > 0.001) {
+          float pool = 0.0;
+          for (int i = 0; i < ${POOL_N}; i++) {
+            if (uLampPool[i].z > 0.5) pool += 1.0 - smoothstep(0.6, ${POOL_RADIUS.toFixed(1)}, distance(vWorldPos_g.xz, uLampPool[i].xy));
+          }
+          totalEmissiveRadiance += diffuseColor.rgb * vec3(1.0, 0.72, 0.4) * min(pool, 1.0) * uLampPoolMix * 1.1;
         }`
       )
       .replace(
