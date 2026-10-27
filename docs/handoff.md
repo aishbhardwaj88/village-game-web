@@ -1,3 +1,6 @@
+**2026-10-27 (A1f mid-lane boxes traced, no game change):** tools/lane-clearance-audit.mjs now prints each collider's src. Of the 4 mid-lane boxes, two are wayfinding signposts at the lane edge (intended), one is the bazaar-lane/west-wall junction, one is a 0.2 m wall at the temple-lane end. Nothing moved; vehicle drive of the lanes still not done so the box stays unticked. Docs and tool only, no build.
+NEXT: A0 NPC resolver rooftop leg, or vehicle drive of lanes.
+
 **2026-10-27 (A1f lane audit re-run, no game change):** Re-ran tools/lane-clearance-audit.mjs: still 44 intrusions, all but 4 are lane ends/junctions. The 4 mid-lane thin boxes (-3,76), (-84,40.9), (-66,22), (1.9,47-50.7) are 0.2-0.4 m wide and sit ~1.1 m off the centre-line; I could not trace which source file owns them (no label on STATIC_COLLIDERS), so nothing moved. Needs the collider list to carry a source name before they can be fixed safely. No build/test (docs only).
 NEXT: add a source label to static colliders, then fix those 4; or A0 NPC rooftop leg.
 

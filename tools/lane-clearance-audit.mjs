@@ -30,7 +30,7 @@ try {
   await page.waitForTimeout(1500);
   await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
   await page.waitForTimeout(1500);
-  const boxes = await page.evaluate(() => window.__dopahar.getStaticColliders().map((b) => [b.minX, b.maxX, b.minZ, b.maxZ]));
+  const boxes = await page.evaluate(() => window.__dopahar.getStaticColliders().map((b) => [b.minX, b.maxX, b.minZ, b.maxZ, b.src || (b.auto ? 'auto' : '?')]));
   await browser.close();
   const hits = new Map();
   LANES.forEach((lane, li) => {
@@ -42,12 +42,12 @@ try {
         boxes.forEach((b, bi) => {
           if (x > b[0] - HALF && x < b[1] + HALF && z > b[2] - HALF && z < b[3] + HALF) {
             const k = `${li}:${bi}`;
-            if (!hits.has(k)) hits.set(k, { lane: li, box: b.map((v) => +v.toFixed(1)), at: [+x.toFixed(1), +z.toFixed(1)] });
+            if (!hits.has(k)) hits.set(k, { lane: li, box: b.slice(0, 4).map((v) => +v.toFixed(1)), src: b[4], at: [+x.toFixed(1), +z.toFixed(1)] });
           }
         });
       }
     }
   });
   console.log(`lanes ${LANES.length}, boxes ${boxes.length}, intrusions into ${HALF} m corridor: ${hits.size}`);
-  for (const h of hits.values()) console.log(`lane ${h.lane} first at (${h.at}) box x ${h.box[0]}..${h.box[1]} z ${h.box[2]}..${h.box[3]}`);
+  for (const h of hits.values()) console.log(`lane ${h.lane} first at (${h.at}) box x ${h.box[0]}..${h.box[1]} z ${h.box[2]}..${h.box[3]} src=${h.src}`);
 } finally { server.kill(); }
