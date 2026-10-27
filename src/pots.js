@@ -9,6 +9,25 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
 
+/**
+ * Turn a Map(material -> geometries) into merged meshes on `group`, or, when `sink` (another such Map) is given, hand the geometries over
+ * so several prop families on one site (pots, pump, tap, lantern) merge together: one call per material for the whole site.
+ */
+export function flushMerged(group, byMat, name, cast, sink) {
+  if (sink) {
+    for (const [mat, list] of byMat) sink.set(mat, (sink.get(mat) || []).concat(list));
+    return;
+  }
+  let n = 0;
+  for (const [mat, list] of byMat) {
+    const mesh = new THREE.Mesh(mergeGeometries(list), mat);
+    mesh.name = `${name}_${n++}`;
+    mesh.castShadow = cast;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+}
+
 export const POT_TYPES = ['matka', 'ghada', 'surahi', 'kulhad'];
 
 let modelsPromise = null;
@@ -42,7 +61,7 @@ export function floatGeometry(src) {
  * Add pots to `group` (its local frame). Each placement: { type, x, y, z, ry, s, lean, tint } - y is the surface the pot stands on.
  * Placements are baked, merged per material and added once the models arrive; returns the Promise.
  */
-export function addPots(group, placements, name = 'pots') {
+export function addPots(group, placements, name = 'pots', sink = null) {
   return loadPots().then((models) => {
     const byMat = new Map();
     placements.forEach((p, i) => {
@@ -62,13 +81,6 @@ export function addPots(group, placements, name = 'pots') {
       if (!byMat.has(m.mat)) byMat.set(m.mat, []);
       byMat.get(m.mat).push(g);
     });
-    let n = 0;
-    for (const [mat, list] of byMat) {
-      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
-      mesh.name = `${name}_${n++}`;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    flushMerged(group, byMat, name, true, sink);
   }).catch((err) => console.warn('pots did not load', err));
 }

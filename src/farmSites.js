@@ -7,7 +7,7 @@ import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
 import { addLaundryLine, LAUNDRY_HALF_SPAN } from './laundryLine.js';
 import { getGLTFLoader } from './loaders.js';
-import { addPots } from './pots.js';
+import { addPots, flushMerged } from './pots.js';
 import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
 import { addHaystacks, hayPlacements } from './haystacks.js';
@@ -1421,14 +1421,16 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
   const g = finishSite(name, geos, position);
   g.children[0].userData.colliderBoxes = orientedSolids(position, ry, [[-1.5, -0.2, 0.9, 0.45], [-0.3, -0.3, 0.4, 0.4]]); // matka stand + pump
   g.rotation.y = ry;
-  addPots(g, pots, name + '_pots');
-  addLanterns(g, [{ type: ['hurricane', 'tin'][(name.length + 1) % 2], x: 0.9, y: 0.18, z: -0.6, ry: 2.6, s: 1, tint: 0xffffff }], name + '_lantern'); // day prop on the platform edge
+  const sink = new Map(); // pots, lantern, pump and tap geometry merge together per material: one call per material for the whole corner
+  const loads = [addPots(g, pots, name, sink)];
+  loads.push(addLanterns(g, [{ type: ['hurricane', 'tin'][(name.length + 1) % 2], x: 0.9, y: 0.18, z: -0.6, ry: 2.6, s: 1, tint: 0xffffff }], name, sink)); // day prop on the platform edge
   // hand pump on the platform (Blender, src/handPumps.js): the variety follows the site name so neighbouring corners differ; the drain faces the lane
   let h = 0;
   for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  addHandPumps(g, [{ type: ['mark2', 'old', 'cracked'][h % 3], x: -0.3, y: 0.18, z: -0.3, ry: 0.3 * ((h >> 3) % 5), s: 0.85 + 0.03 * ((h >> 5) % 5), tint: 0xffffff }], name + '_pump');
+  loads.push(addHandPumps(g, [{ type: ['mark2', 'old', 'cracked'][h % 3], x: -0.3, y: 0.18, z: -0.3, ry: 0.3 * ((h >> 3) % 5), s: 0.85 + 0.03 * ((h >> 5) % 5), tint: 0xffffff }], name, sink));
   // drinking tap just off the platform edge, facing the pump; the variety is offset from the pump's so a corner never repeats itself
-  addTaps(g, [{ type: ['wall', 'stand', 'pyaau'][(h + 1 + ((h >> 7) % 2)) % 3], x: 0.25 + 0.1 * ((h >> 9) % 4), y: 0, z: -1.5, ry: 0.08 * ((h >> 11) % 5) - 0.16, s: 0.95 + 0.04 * ((h >> 13) % 3), tint: 0xffffff }], name + '_tap');
+  loads.push(addTaps(g, [{ type: ['wall', 'stand', 'pyaau'][(h + 1 + ((h >> 7) % 2)) % 3], x: 0.25 + 0.1 * ((h >> 9) % 4), y: 0, z: -1.5, ry: 0.08 * ((h >> 11) % 5) - 0.16, s: 0.95 + 0.04 * ((h >> 13) % 3), tint: 0xffffff }], name, sink));
+  Promise.all(loads).then(() => flushMerged(g, sink, name + '_props', false));
   return g;
 }
 

@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
-import { floatGeometry } from './pots.js';
+import { floatGeometry, flushMerged } from './pots.js';
 
 export const PUMP_TYPES = ['mark2', 'old', 'cracked'];
 
@@ -33,7 +33,7 @@ function loadPumps() {
  * Add pumps to `group` (its local frame). Each placement: { type, x, y, z, ry, s, tint } - y is the ground the plinth stands on.
  * Baked, merged per material and added once the models arrive; returns the Promise.
  */
-export function addHandPumps(group, placements, name = 'hand_pumps') {
+export function addHandPumps(group, placements, name = 'hand_pumps', sink = null) {
   return loadPumps().then((models) => {
     const byMat = new Map();
     placements.forEach((p) => {
@@ -52,13 +52,6 @@ export function addHandPumps(group, placements, name = 'hand_pumps') {
         byMat.get(part.mat).push(g);
       }
     });
-    let n = 0;
-    for (const [mat, list] of byMat) {
-      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
-      mesh.name = `${name}_${n++}`;
-      mesh.castShadow = false; // tiny prop: a cast mesh costs a second draw call and the busy views sit at the ceiling
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    flushMerged(group, byMat, name, false, sink);
   }).catch((err) => console.warn('hand pumps did not load', err));
 }

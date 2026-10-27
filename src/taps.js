@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
-import { floatGeometry } from './pots.js';
+import { floatGeometry, flushMerged } from './pots.js';
 
 export const TAP_TYPES = ['wall', 'stand', 'pyaau'];
 
@@ -32,7 +32,7 @@ function loadTaps() {
  * Add pumps to `group` (its local frame). Each placement: { type, x, y, z, ry, s, tint } - y is the ground the plinth stands on.
  * Baked, merged per material and added once the models arrive; returns the Promise.
  */
-export function addTaps(group, placements, name = 'taps') {
+export function addTaps(group, placements, name = 'taps', sink = null) {
   return loadTaps().then((models) => {
     const byMat = new Map();
     placements.forEach((p) => {
@@ -51,13 +51,6 @@ export function addTaps(group, placements, name = 'taps') {
         byMat.get(part.mat).push(g);
       }
     });
-    let n = 0;
-    for (const [mat, list] of byMat) {
-      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
-      mesh.name = `${name}_${n++}`;
-      mesh.castShadow = false; // tiny prop: a cast mesh costs a second draw call and the busy views sit at the ceiling
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    flushMerged(group, byMat, name, false, sink);
   }).catch((err) => console.warn('taps did not load', err));
 }

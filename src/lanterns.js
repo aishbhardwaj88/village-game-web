@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
-import { floatGeometry } from './pots.js';
+import { floatGeometry, flushMerged } from './pots.js';
 
 export const LANTERN_TYPES = ['hurricane', 'tin', 'hanging'];
 
@@ -33,7 +33,7 @@ function loadLanterns() {
  * Add haystacks to `group` (its local frame). Each placement: { type, x, y, z, ry, s, tint }.
  * Baked, merged per material and added once the models arrive; returns the Promise.
  */
-export function addLanterns(group, placements, name = 'lanterns') {
+export function addLanterns(group, placements, name = 'lanterns', sink = null) {
   return loadLanterns().then((models) => {
     const byMat = new Map();
     placements.forEach((p) => {
@@ -52,13 +52,6 @@ export function addLanterns(group, placements, name = 'lanterns') {
         byMat.get(part.mat).push(g);
       }
     });
-    let n = 0;
-    for (const [mat, list] of byMat) {
-      const mesh = new THREE.Mesh(mergeGeometries(list), mat);
-      mesh.name = `${name}_${n++}`;
-      mesh.castShadow = false; // a cast mesh costs a second draw call and the bazaar view sits at the ceiling
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    }
+    flushMerged(group, byMat, name, false, sink);
   }).catch((err) => console.warn('lanterns did not load', err));
 }
