@@ -72,6 +72,8 @@ function addWeathering(m, set) {
           return mix(mix(mix(wh_(i), wh_(i + vec3(1,0,0)), f.x), mix(wh_(i + vec3(0,1,0)), wh_(i + vec3(1,1,0)), f.x), f.y),
                      mix(mix(wh_(i + vec3(0,0,1)), wh_(i + vec3(1,0,1)), f.x), mix(wh_(i + vec3(0,1,1)), wh_(i + vec3(1,1,1)), f.x), f.y), f.z);
         }`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        ${set === 'tin' ? 'roughnessFactor = max(roughnessFactor, 0.62);   // weathered galvanised sheet is dull, not mirror-bright' : ''}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.0, 3.4, 2.5)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
@@ -114,7 +116,8 @@ function addWeathering(m, set) {
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.84, 0.74), 0.55 * pe_ * (1.0 - 0.8 * flat_));
           float hi_ = smoothstep(2.2, 4.0, vWxyz.y);   // sun-bleached near the top
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * 1.08, 0.25 * hi_);` : ''}
-          ${set === 'terracotta' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(1.1, 0.95, 0.82), diffuseColor.rgb, 0.45);   // her fired clay is muted and dusty, the scan is a saturated orange' : ''}
+          ${set === 'terracotta' ? 'diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(1.1, 0.95, 0.82), diffuseColor.rgb, 0.45); diffuseColor.rgb *= 1.35;   // her fired clay is muted and dusty, the scan is a saturated orange' : ''}
+          ${set === 'wood' ? 'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(diffuseColor.r * 1.0, diffuseColor.g * 0.86, diffuseColor.b * 0.72), 0.6);   // pull the green cast toward warm brown' : ''}
           ${set === 'tin' ? `
           diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.333))), diffuseColor.rgb, 0.5);   // pale weathered whitish-grey
           float ru_ = smoothstep(0.6, 0.85, wn_(vWxyz * vec3(1.3, 1.3, 1.3) + 5.0));
