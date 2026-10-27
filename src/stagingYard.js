@@ -127,7 +127,7 @@ function addWeathering(m, set) {
   m.customProgramCacheKey = () => 'weather_' + set;
 }
 
-function swapShared(o) {
+export function swapShared(o) {
   const ud = o.material && o.material.userData;
   if (ud && ud.dopahar_set) {
     const keepName = o.material.name;
