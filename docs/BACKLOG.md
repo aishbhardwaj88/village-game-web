@@ -51,7 +51,7 @@ anything from the LATER list below.**
 - [ ] Lit lamps and lanterns at night via emissive materials + a cheap ground light-pool decal, NEVER per-lamp dynamic lights
 - [ ] Lanterns: build as props placed at shop fronts, verandahs, the chowk and charpais; they light up at night
 - [ ] Draw-call ceiling is at 149/150: instance every repeated shared asset to ONE call per family, zone-stream harder, and only then consider raising the ceiling with a measured phone framerate and an honest report of the trade
-- [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
+- [x] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated (27 Oct: src/props.js flagTexture now 1024x684, proof docs/shots/flag-2026-10-27/flag_a.png, flag_b.png; the school's Blender flag in build_primary_school.py was not touched)
 - [x] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them (27 Oct: all four removed, no hand pump added; proof docs/shots/bus-adda-2026-10-27/iso.png, right.png)
 - [ ] Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
 - [ ] Primary school: reduce to 60-65% of current size, shrinking the open common verandah

@@ -54,20 +54,20 @@ const CHAKRA_NAVY = 0x16215c;
 let FLAG_TEX = null;
 function flagTexture() {
   if (FLAG_TEX) return FLAG_TEX;
-  const W = 384, H = 256, STRIP = 16, c = document.createElement('canvas'); c.width = W + STRIP; c.height = H;
+  const W = 1024, H = 684, STRIP = 42, c = document.createElement('canvas'); c.width = W + STRIP; c.height = H;
   const x = c.getContext('2d');
   x.fillStyle = '#e8821e'; x.fillRect(0, 0, W, H / 3);
   x.fillStyle = '#f4f2ea'; x.fillRect(0, H / 3, W, H / 3);
   x.fillStyle = '#0b7a3e'; x.fillRect(0, (2 * H) / 3, W, H / 3);
-  const cx = W / 2, cy = H / 2, R = H / 6 - 2;
-  x.strokeStyle = '#16215c'; x.fillStyle = '#16215c'; x.lineWidth = 3;
+  const cx = W / 2, cy = H / 2, R = H / 6 - 5;
+  x.strokeStyle = '#16215c'; x.fillStyle = '#16215c'; x.lineWidth = 7;
   x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
-  x.beginPath(); x.arc(cx, cy, 4, 0, 7); x.fill();
-  x.lineWidth = 1.2;
+  x.beginPath(); x.arc(cx, cy, 11, 0, 7); x.fill();
+  x.lineWidth = 2.6;
   for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); x.stroke(); }
   // woven-cloth grain
-  for (let i = 0; i < H; i += 2) { x.fillStyle = `rgba(0,0,0,${0.03 + (i % 4) * 0.01})`; x.fillRect(0, i, W, 1); }
-  for (let i = 0; i < W; i += 2) { x.fillStyle = 'rgba(255,255,255,0.03)'; x.fillRect(i, 0, 1, H); }
+  for (let i = 0; i < H; i += 3) { x.fillStyle = `rgba(0,0,0,${0.03 + (i % 4) * 0.01})`; x.fillRect(0, i, W, 1); }
+  for (let i = 0; i < W; i += 3) { x.fillStyle = 'rgba(255,255,255,0.03)'; x.fillRect(i, 0, 1, H); }
   x.fillStyle = '#b9b8b0'; x.fillRect(W, 0, STRIP, H); // pole + halyard sample this strip so pole and flag share one mesh
   FLAG_TEX = new THREE.CanvasTexture(c);
   FLAG_TEX.colorSpace = THREE.SRGBColorSpace;
@@ -100,7 +100,7 @@ export function createFlagpoleProp(position) {
   }
   flagGeo.computeVertexNormals();
   const fuv = flagGeo.attributes.uv;
-  for (let i = 0; i < fuv.count; i++) fuv.setX(i, fuv.getX(i) * (384 / 400));
+  for (let i = 0; i < fuv.count; i++) fuv.setX(i, fuv.getX(i) * (1024 / 1066));
   flagGeo.translate(0.04 + flagW / 2, flagTop - flagH / 2, 0);
   // Halyard rope and a pulley block at the top, a pair of toggles on the pole.
   geos.push(part(new THREE.CylinderGeometry(0.008, 0.008, poleHeight - 0.4, 4), new THREE.Matrix4().setPosition(0.06, (poleHeight - 0.4) / 2 + 0.3, 0.03), 0x8a7a5a));
