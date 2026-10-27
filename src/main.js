@@ -325,7 +325,7 @@ async function main() {
   // overlapping unit 8's shopkeeper. First fix moved it to x=-70 — but that
   // was STILL within the bazaar row's own x-span (BAZAAR_WEST_X=-100 to
   // BAZAAR_EAST_X=-64) and every one of the row's 8 shopkeepers stands at
-  // the SAME z (BAZAAR_FRONT_Z+SHOPKEEPER_DEPTH=14.5, src/bazaarLife.js),
+  // the SAME z (BAZAAR_FRONT_Z+SHOPKEEPER_DEPTH=15.5, src/bazaarLife.js),
   // spaced only 4.5m apart in x (bazaarUnitCx) — a 3m-wide wall collider
   // anywhere in that x-range clips some unit's shopkeeper, just not
   // necessarily the same one (confirmed: x=-70's ration_shop collider,
@@ -1536,7 +1536,7 @@ async function main() {
         const group = new THREE.Group();
         group.name = 'zone_pond_buffalo';
         const herd = createCattleHerd([
-          { x: pt('pond').x + 11.2, z: pt('pond').z + 2.5, rotationY: 1.2, buffalo: true },
+          { x: pt('pond').x + 11.2, z: pt('pond').z + 4.2, rotationY: 1.2, buffalo: true },
           { x: pt('pond').x + 9.6, z: pt('pond').z + 7.0, rotationY: 2.3, buffalo: true },
         ]);
         group.add(herd.mesh);
@@ -1645,7 +1645,7 @@ async function main() {
       zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
-    const LANE_SITE_CENTRES = [[-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 78.55], [-86.55, 74], [-58, 142.55], [-3.5, 104], [-72, 18.5], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
+    const LANE_SITE_CENTRES = [[-63, 22.5], /* banta stall: streamed in its own zone, so its colliders don't exist yet when the animals pick a spot */ [-12, 75.7], [-82.8, 58], [-74, 141.2], [-4.9, 90], [-79, 22.6], [3, 78.55], [-86.55, 74], [-58, 142.55], [-3.5, 104], [-72, 18.5], [16, 78.6], [-86.6, 90], [-44, 142.6], [-3.6, 122], [-65.5, 18.6]];
     for (const [id, x, z, ry] of [['lane_cattle_e1', -12, 84, 1.5], ['lane_cattle_w1', -82.8, 70, 0.3], ['lane_cattle_s1', -62, 141.2, 1.7], ['lane_cattle_e2', -4.9, 113, 0.3], ['lane_cattle_w2', -58, 24, 0.2]]) {
       zoneManager.register(id, {
         detail: true, x, z, buildRadius: 32, teardownRadius: 44,
@@ -2311,20 +2311,21 @@ async function main() {
     }
     // Animals are stationary herds/packs (no routines), so a placement inside a wall or trunk is the
     // only way one can penetrate. Only meshes still attached to the scene (zone built) are checked.
+    const offender = (x, z, r, list) => { const b = list.find((c) => x > c.minX - r && x < c.maxX + r && z > c.minZ - r && z < c.maxZ + r); return b ? ` box=X[${b.minX.toFixed(2)},${b.maxX.toFixed(2)}] Z[${b.minZ.toFixed(2)},${b.maxZ.toFixed(2)}]` : ''; };
     const nonAnimalColliders = STATIC_COLLIDERS.filter((b) => !b.animalBox); // an animal's own box is not a wall
     for (const a of ANIMAL_MESHES) {
       if (!a.mesh.parent) continue;
       a.placements.forEach((pl, i) => {
         const clearance = minSignedDistanceToColliders({ x: pl.x, z: pl.z }, a.radius, nonAnimalColliders);
-        if (clearance < 0) console.warn(`[collision guard] ${a.mesh.name}[${i}] overlaps a wall: pos=(${pl.x.toFixed(2)},${pl.z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
+        if (clearance < 0) console.warn(`[collision guard] ${a.mesh.name}[${i}] overlaps a wall: pos=(${pl.x.toFixed(2)},${pl.z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(pl.x, pl.z, a.radius, nonAnimalColliders)}`);
       });
     }
     const _m = new THREE.Matrix4();
-    for (let i = 0; i < bazaarLife.mesh.count; i++) {
+    for (let i = 0; i < bazaarLife.mesh.count - 1; i++) { // last instance sits on the tea-stall bench: overlapping it is intended
       bazaarLife.mesh.getMatrixAt(i, _m);
       const x = _m.elements[12], z = _m.elements[14];
       const clearance = minSignedDistanceToColliders({ x, z }, 0.32, STATIC_COLLIDERS);
-      if (clearance < 0) console.warn(`[collision guard] bazaar_life[${i}] overlaps a wall: pos=(${x.toFixed(2)},${z.toFixed(2)}) clearance=${clearance.toFixed(2)}`);
+      if (clearance < 0) console.warn(`[collision guard] bazaar_life[${i}] overlaps a wall: pos=(${x.toFixed(2)},${z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(x, z, 0.32, STATIC_COLLIDERS)}`);
     }
   }
 

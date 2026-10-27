@@ -38,7 +38,7 @@ const IDLE_BY_TRADE = {
   sweet: { rate: 1.6, amount: 0.13 }, // stirring/ladling
 };
 
-const SHOPKEEPER_DEPTH = 2.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
+const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
 
 const VILLAGER_LOOPS = [
   [{ x: BAZAAR_WEST_X + 4, z: 9 }, { x: BAZAAR_WEST_X + 16, z: 9 }],
