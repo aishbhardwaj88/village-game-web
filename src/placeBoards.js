@@ -4,8 +4,8 @@ import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 
 /**
  * Bilingual signboards for every shop / place that has no Blender board of its own (FEEDBACK 24 Oct
- * item 1, signage audit of all 42 places). Same rule as every board: Hindi top line, small and light;
- * English second line, bigger and bolder; one dark paint colour. One shared atlas + one material for
+ * item 1, signage audit of all 42 places). Same rule as every board (25 Oct FINAL): Hindi top line, bold and larger;
+ * English second line, not bold and smaller (cap height 55-70% of the Hindi); one dark paint colour. One shared atlas + one material for
  * all of them (so a site's boards merge into a single mesh), painted as soon as fonts load.
  * Faith buildings carry no commercial board (docs LAYOUT rule); they are named by the milestone and
  * direction signs instead.
