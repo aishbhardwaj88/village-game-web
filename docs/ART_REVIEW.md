@@ -1223,3 +1223,89 @@ the thing, which is the whole point.**
 ### Why this saves her time and tokens
 A material fault is caught on ONE sample panel instead of after 20 places. A place
 fault is caught by a fresh reviewer in the same run instead of a day later by her.
+
+---
+
+## 2026-10-27 (art director) - REVIEW NOTES FROM HER PLAYTHROUGH. All FAIL unless stated.
+
+### 1. MATERIALS LOOK PLASTIC (the most important one)
+"I like the variety. Only problem is that nothing is looking realistic. Everything is
+looking plasticky, as if I have taken a plastic object and just added texture to it.
+Is there a way to make it look more realistic without increasing game heaviness? If
+yes, then you have to do that."
+
+**Yes, there is, and none of it costs meaningful performance.** Plastic look is a
+SHADING problem, not a texture-resolution problem. Work these in order on the material
+board, then re-apply the frozen library:
+- **Roughness is the main culprit.** A single flat roughness value reads as plastic.
+  Every material needs a real roughness MAP with variation across the surface, and
+  most village materials sit high (0.85 to 1.0). Lime plaster, mud, thatch, jute,
+  packed earth should be near 1.0. Only wet stone, glazed pots and glass go below 0.6.
+- **Specular/metalness**: confirm metalness is 0 for everything except real metal.
+  A non-zero metalness on plaster or brick is an instant plastic read.
+- **Normal map strength**: currently likely too uniform. Vary it; brick mortar should
+  recess visibly, plaster should have fine tooth, tin should have real corrugation
+  depth.
+- **Baked AO in the crevices.** `bake_dirty_vertex_colors` already exists in
+  `arch.py`. Contact darkening where surfaces meet is what separates a real object
+  from a textured box. Free at runtime, it is vertex colour.
+- **Break the flat colour field**: large-scale colour mottling over the top of the
+  tiling texture, so a wall is not one uniform tone. Free, it is one extra low-frequency
+  multiply.
+- **Edge wear**: lighten and chip the edges of plinths, steps, copings, door frames.
+  Vertex colour again, free.
+- **No pure blacks or pure whites** anywhere, and nothing at full saturation.
+
+**Cost check: all of the above is vertex colour, roughness maps and shader values. No
+extra geometry, no extra draw calls, no bigger textures.** If any change does add
+cost, report the number rather than skipping it.
+
+### 2. BUS ADDA: remove the clutter
+- Remove the random tyre and the loose bricks on the ground. Noise, not detail.
+- Remove the khatiya (charpai) sitting on the round chabutra.
+- **Remove the pyaau pots.** "Bus addas don't have pots like these."
+- **Put a hand pump there instead**, if anything.
+- Her LAYOUT.md lists the pyaau; this note supersedes it.
+
+### 3. MILESTONES: bad everywhere in the game. Rebuild.
+- Current: flat slab top, too clean, over-saturated yellow, no edge detail.
+- Build in Blender, one model, instanced at every roadside position.
+- Yellow rounded top, white body, faded and weathered, no lettering.
+- She was asked whether she wants a painted distance band; build the plain version if
+  she has not answered.
+
+### 4. STREET LAMPS: rebuild, two types
+- **RCC concrete pole** with a tube-light fitting for the older abadi lanes.
+- **Panchayat solar pole**: steel, small tilted panel, battery box, LED head, for the
+  chowk and newer areas.
+- **The down-cable on the pole and the sagging wires between poles matter more than
+  the lamp head.** Current poles have neither.
+- Weathering: concrete stains, rust at joints, slight lean, a pasted bill or painted
+  number on some.
+- Instance both. Measure the draw-call cost and report it; the bazaar already hit
+  151 against the 150 ceiling.
+
+### 5. EARTHEN POTS: rebuild, used village-wide
+- Matka, ghada, surahi, kulhad. Blender, one script, instanced everywhere.
+- Terracotta with real clay grain, wet rings, chipped rims, variation in size and tilt.
+- Current quality is bad and they repeat all over the village, so this is high value.
+
+### 6. FLAG IS PIXELATED
+- The chakra has no resolution. Redraw the flag texture at 1024, with the 24 spokes
+  drawn as crisp vector or real geometry, then baked.
+
+### 7. PRIMARY SCHOOL
+- **Too big. Reduce to 60-65% of current size.** The open common verandah is what to
+  shrink.
+- **Close every classroom door except the front one.** Only the one real classroom
+  from her Gemini drawing stays open and furnished. This cuts work as well as reading
+  more truthfully.
+- Add more slides.
+- Add a **stapu (hopscotch) court** painted on the ground.
+- Add dustbins.
+- **More cycles in the stand, and a mix of adult and small sizes**, since small kids
+  cycle too.
+
+### Order
+1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
+assets reused village-wide). Then 2 and 7.

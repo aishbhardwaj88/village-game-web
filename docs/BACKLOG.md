@@ -37,6 +37,17 @@ were sitting in the same list with equal priority. **They are no longer in scope
 **Work ONLY these, in order. When they are all done, STOP and report. Do not start
 anything from the LATER list below.**
 
+### J0. Her 27 Oct playthrough notes (see docs/ART_REVIEW.md for the detail)
+- [ ] MATERIALS READ AS PLASTIC: real roughness maps with variation (most village materials 0.85-1.0), metalness 0 except real metal, varied normal strength, baked AO in crevices, large-scale colour mottling, edge wear on plinths/steps/copings, no pure black or white, nothing at full saturation. All vertex colour and shader values: no extra geometry, draw calls or texture size. Report the number if anything does add cost
+- [ ] Milestones: rebuild in Blender, one instanced model, yellow rounded top, white body, faded and weathered, no lettering. Current ones are bad everywhere
+- [ ] Street lamps: rebuild two types (RCC concrete with tube light for abadi lanes, panchayat solar with panel + battery box + LED for chowk). Down-cable on every pole and sagging wires between poles matter more than the head. Weathered, instanced, report draw-call cost
+- [ ] Earthen pots: rebuild matka, ghada, surahi, kulhad in Blender, instanced village-wide. Clay grain, wet rings, chipped rims, size and tilt variation
+- [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
+- [ ] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them
+- [ ] Primary school: reduce to 60-65% of current size, shrinking the open common verandah
+- [ ] Primary school: close every classroom door except the front one; only that one classroom stays open and furnished
+- [ ] Primary school: add more slides, a painted stapu court, dustbins, and more cycles in a mix of adult and child sizes
+
 ### J1. Material quality, applied once, everywhere
 - [ ] Finish `tools/blender/build_material_board.py` and render every panel at 2 m.
 - [ ] `art-reviewer` subagent judges the BOARD against crops of her `Places V1/*/MAIN_*.png`.
