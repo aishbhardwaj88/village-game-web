@@ -646,6 +646,18 @@ export function applyWallBaseGrime(material) {
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(wgLum) * 1.06 + 0.02, wgFade * 0.22);
           float wgStreak = smoothstep(0.62, 0.95, wgNoise(vec2((vWorldPos_wg.x + vWorldPos_wg.z) * 4.0, vWorldPos_wg.y * 0.35)));
           diffuseColor.rgb *= 1.0 - wgStreak * 0.10 * smoothstep(0.2, 1.5, vWorldPos_wg.y);
+          // Large-scale colour mottling (patchy wash/stain, 3-9 m), then no pure white or full saturation
+          float wgMot = wgNoise(vWorldPos_wg.xz * 0.33 + vWorldPos_wg.y * 0.21) * 0.65 + wgNoise(vWorldPos_wg.xz * 1.1 - vWorldPos_wg.y * 0.7) * 0.35;
+          diffuseColor.rgb *= 0.88 + 0.22 * wgMot;
+          float wgL2 = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+          diffuseColor.rgb = mix(vec3(wgL2), diffuseColor.rgb, 0.92);
+          diffuseColor.rgb = min(diffuseColor.rgb, vec3(0.9));
+        }`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        {
+          // Non-metal surfaces are matte and uneven: push roughness to 0.8-1.0 with patchy variation
+          float wgR = wgNoise(vWorldPos_wg.xz * 2.7 + vWorldPos_wg.y * 1.9);
+          roughnessFactor = clamp(max(roughnessFactor, 0.78) + (wgR - 0.5) * 0.18, 0.78, 1.0);
         }`);
   };
   material.needsUpdate = true;
