@@ -26,7 +26,15 @@ x0, x1, z0, z1 = -5.5, -2.0, -4.5, -1.5
 T = 0.3
 H = 3.0
 # walls: back, left, right solid; front with a 1.1 m door gap
-add('brick', wb('k_back', x0, x1, z0, z0 + T, 0, H, 0.0))
+vx0, vx1 = x0 + 1.4, x0 + 2.1
+add('brick', wb('k_back_l', x0, vx0, z0, z0 + T, 0, H, 0.0))
+add('brick', wb('k_back_r', vx1, x1, z0, z0 + T, 0, H, 0.0))
+add('brick', wb('k_back_lo', vx0, vx1, z0, z0 + T, 0, 2.0, 0.0))
+add('brick', wb('k_back_hi', vx0, vx1, z0, z0 + T, 2.6, H, 0.0))
+# vent opening high on the back wall: iron bars + sill, so daylight reaches the motor
+add('trim', wb('vent_sill', vx0 - 0.05, vx1 + 0.05, z0 - 0.04, z0 + T + 0.02, 1.96, 2.0, 0.0), 0xB4B1A9)
+for k in range(5):
+    add('metal', wb('vent_bar', vx0 + 0.08 + k * 0.14, vx0 + 0.11 + k * 0.14, z0 + 0.1, z0 + 0.13, 2.0, 2.6, 0.0), 0x3A3C40)
 add('brick', wb('k_left', x0, x0 + T, z0 + T, z1 - T, 0, H, 0.0))
 add('brick', wb('k_right', x1 - T, x1, z0 + T, z1 - T, 0, H, 0.0))
 dx0, dx1 = x0 + 0.7, x0 + 1.85
@@ -80,7 +88,9 @@ add('trim', wb('hauz_floor', hx0, hx1, hz0, hz1, 0, 0.1, 0.0), 0x8E8B83)
 add('paint', wb('hauz_water', hx0 + t, hx1 - t, hz0 + t, hz1 - t, 0.1, 0.62, 0.0), 0x5E8A86)
 add('metal', limb('gush_pipe_a', (dx0 + 0.55, z1 - T, 0.9), (dx0 + 0.55, hz0 + 0.5, 0.9), 0.2), IRON)
 add('metal', limb('gush_pipe_b', (dx0 + 0.55, hz0 + 0.5, 0.9), (dx0 + 0.55, hz0 + 0.55, 0.62), 0.2), IRON)
-add('paint', limb('gush', (dx0 + 0.55, hz0 + 0.56, 0.9), (dx0 + 0.55, hz0 + 0.6, 0.62), 0.16, 0.05), 0xCFE3E4)
+add('paint', limb('gush', (dx0 + 0.55, hz0 + 0.56, 0.9), (dx0 + 0.55, hz0 + 0.62, 0.6), 0.2, 0.12), 0xCFE3E4)
+add('paint', limb('gush_core', (dx0 + 0.55, hz0 + 0.56, 0.85), (dx0 + 0.55, hz0 + 0.6, 0.62), 0.11, 0.08), 0xEEF6F6)
+add('paint', cyl('splash', dx0 + 0.55, hz0 + 0.66, 0.6, 0.66, 0.32, 0.26, 12), 0xDDEBEB)
 # ONE brick channel 0.5 m wide from the hauz to the front edge, centred on the hauz
 cx = (hx0 + hx1) / 2
 add('brick', wb('chan_l', cx - 0.4, cx - 0.25, hz1, 5.0, 0, 0.18, 0.0))
@@ -93,10 +103,10 @@ pk.pot(kit, 2.0, 2.6, 0.0, 0.9)
 add('metal', cyl('lota', 2.5, 2.7, 0, 0.14, 0.06, 0.08, 10), BRASS)
 add('metal', limb('spade_shaft', (4.6, 3.4, 0.0), (4.9, 3.0, 1.1), 0.04), 0x8A6A48)
 add('metal', wb('spade_blade', 4.55, 4.7, 3.4, 3.6, 0.0, 0.3, 0.004), 0x7C8084)
-add('metal', limb('sickle_h', (4.2, 3.7, 0.04), (4.35, 3.75, 0.04), 0.04, 0.03), 0x6A4A2E)
-add('metal', limb('sickle_b', (4.0, 3.65, 0.03), (4.2, 3.7, 0.03), 0.03, 0.012), STEEL)
+add('metal', limb('sickle_h', (4.2, 3.7, 0.04), (4.4, 3.76, 0.04), 0.05, 0.04), 0x6A4A2E)
+add('metal', limb('sickle_b', (3.75, 3.6, 0.03), (4.2, 3.7, 0.03), 0.04, 0.015), STEEL)
 for k, (sx, sz, a) in enumerate(((2.4, 0.4, 0.3), (2.6, 0.6, 0.5))):
-    add('paint', limb('slipper', (sx - 0.1, sz, 0.02), (sx + 0.1, sz + 0.03, 0.02), 0.07, 0.025), 0x2E5E8B if k == 0 else 0xC9A83A)
+    add('paint', limb('slipper', (sx - 0.13, sz, 0.03), (sx + 0.13, sz + 0.04, 0.03), 0.09, 0.04), 0x2E5E8B if k == 0 else 0xC9A83A)
 # the tree's root platform: a low mud ring where the shisham stands (tree is hers)
 pk.brick_ring(kit, 4.3, -0.8, 0.9, 0, 0.18, 0.2, 16)
 add('paint', cyl('root_soil', 4.3, -0.8, 0.0, 0.15, 0.82, 0.82, 16), 0x4A3524)
