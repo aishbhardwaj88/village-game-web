@@ -427,6 +427,59 @@ def rust_steel(obj, base_hex, seed=0):
     return True
 
 
+def thatch_straw(obj, base_hex, seed=0):
+    """Thatch as GEOMETRY: big faces are subdivided so straw bundles are real ridges running down the slope (wandering
+    width and phase), with a ragged shaggy lower edge, darker weathered straw low down and in the valleys, fresh pale
+    straw on the bundle crowns, and a few dark patched-over bundles. Small pieces only take the colour."""
+    import bmesh
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    big = [f for f in bm.faces if f.calc_area() > 0.15 and len(f.verts) == 4]
+    if big and len(bm.faces) < 400:
+        bmesh.ops.subdivide_edges(bm, edges=list({e for f in big for e in f.edges}), cuts=5, use_grid_fill=True)
+    bm.normal_update()
+    rnd = random.Random(seed * 97 + 11)
+    ph = [rnd.uniform(0, 6.28) for _ in range(4)]
+    zs = [v.co.z for v in bm.verts]
+    z0, z1 = min(zs), max(zs)
+    rel = {}
+    for v in bm.verts:
+        x, y, z = v.co.x, v.co.y, v.co.z
+        u = x * 0.9 + y * 0.9   # across the slope: bundle index
+        wob = 0.25 * math.sin(z * 2.3 + ph[0])
+        bundle = abs(math.sin(u * 5.5 + wob + ph[1] + 0.6 * math.sin(u * 1.7 + ph[2])))   # 0 in the valley, 1 on the crown
+        shag = max(0.0, math.sin(x * 37 + y * 31 + ph[3]) * math.sin(z * 13 + ph[0]))
+        rel[v] = (bundle, shag)
+        if v.is_boundary or (z1 - z0) < 0.05 or abs(v.normal.z) < 0.15:
+            continue
+        low = 1.0 - (z - z0) / max(z1 - z0, 0.05)
+        v.co += v.normal * (0.035 * bundle + 0.02 * shag * (0.4 + low))
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    pale = (0.62, 0.50, 0.24)
+    dark = (0.10, 0.075, 0.04)
+    patched = {i for i in range(8) if rnd.random() < 0.5}
+    for f in bm.faces:
+        for lp in f.loops:
+            v = lp.vert
+            bundle, shag = rel[v]
+            h = (v.co.z - z0) / max(z1 - z0, 0.05)
+            weather = min(0.85, 0.15 + 0.5 * (1.0 - h) + 0.35 * (1.0 - bundle))
+            c = [r0 * (1 - weather) + dark[0] * weather, g0 * (1 - weather) + dark[1] * weather, b0 * (1 - weather) + dark[2] * weather]
+            fresh = max(0.0, bundle - 0.6) * 1.4 * (0.3 + h)
+            c = [c[i] * (1 - fresh) + pale[i] * fresh for i in range(3)]
+            if int((v.co.x + v.co.y) * 0.9 / 0.57 + 3.1) % 8 in patched and shag > 0.3:
+                c = [c[i] * 0.55 for i in range(3)]
+            lp[layer] = (c[0], c[1], c[2], 1.0)
+    for f in bm.faces:
+        f.smooth = False
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -459,7 +512,7 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records))) or (kind == 'metal' and rust_steel(obj, color, seed=len(self.records)))):
+            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records))) or (kind == 'metal' and rust_steel(obj, color, seed=len(self.records))) or (kind == 'thatch' and thatch_straw(obj, color, seed=len(self.records)))):
                 colorize(obj, color, attr='Base')
             groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
