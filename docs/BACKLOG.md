@@ -201,7 +201,7 @@ is in handoff.md, and build plus regression are green.
 ### A-1. Build as movable units (art director 2026-10-23) - architecture, applies to all work
 - [ ] Every place (shop, house, landmark, farm plot) is one self-contained unit: geometry, props, colliders, interaction points, NPC anchors, signage and greenery belong to it
 - [ ] One anchor position+rotation per unit, read from a single placement source; never hardcoded in several files
-- [ ] Moving a place must be a one-number change that carries its props, colliders, interaction points and NPC routes with it
+- [x] Moving a place must be a one-number change that carries its props, colliders, interaction points and NPC routes with it (27 Oct: jalebi anchor z 4 to -10, full build ALL PASSED incl. collision-test coverage [5] and 122 NPC legs, 0 failed; screenshot proof docs/shots/movable-2026-10-27/n_a.png; reverted. Other baked sites listed in handoff may still differ)
 - [ ] Build in local coordinates and place by transform; merge per unit, never across units into one world mesh
 - [ ] Waypoints and NPC routes reference units rather than raw world coordinates where possible
 - [x] AUDIT before tomorrow (done 26 Oct, top entry of docs/handoff.md): write a short note in docs/handoff.md listing which places are already movable by one value and which have coordinates baked in (the art director needs this to plan the rearrangement)

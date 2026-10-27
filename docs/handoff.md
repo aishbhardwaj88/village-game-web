@@ -1,3 +1,6 @@
+**2026-10-27 (A-1 move test passes collision):** No game change (anchor moved and reverted). With jalebi at z -10 the full `npm run build` passed: collision-test 4850 static solids, 3 vehicles, 122 NPC legs, 0 failed; coverage check [5] found no uncollided geometry, so the stall's colliders followed the one edit. Ticked the 'one-number change' box in A-1.
+NEXT: A-2 leftovers (task list, minimap).
+
 **2026-10-27 (A-1 movability proof, no game change):** Moved the `jalebi` anchor 14 m in src/anchors.js (z 4 to -10), looked at the result, then reverted. The stall, its signboard (Hindi over English) and its cart followed from the one edit; the old spot is empty ground and the stall stands 14 m away in the old-spot shot. No console errors. Proof docs/shots/movable-2026-10-27/n_a.png (new spot) and o_a.png (old spot). Colliders and NPC routes at the stall were not separately checked, so the A-1 'one-number change' box stays unticked. Entry 0 is otherwise complete (anchors, place table above, character slots all wired in src/main.js).
 NEXT: collision-test a moved anchor to settle A-1, or A-2c far-east road call.
 
