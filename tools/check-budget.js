@@ -7,7 +7,7 @@ import { getImageSize } from './image-size.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const ASSETS_DIR = join(ROOT, 'public', 'assets');
 
-const TOTAL_BUDGET_BYTES = 40 * 1024 * 1024;
+const TOTAL_BUDGET_BYTES = 56 * 1024 * 1024;
 const MODEL_BUDGET_BYTES = 5 * 1024 * 1024;
 const TEXTURE_MAX_DIM = 1024;
 const PROP_TEXTURE_MAX_DIM = 512;

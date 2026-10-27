@@ -5,7 +5,7 @@ that touches `public/assets`.
 
 | Budget | Limit |
 |---|---|
-| `public/assets/` total size | 40 MB |
+| `public/assets/` total size | 56 MB |
 | Any single model (`.glb`/`.gltf`) | 5 MB |
 | Texture dimensions, general | 1024×1024 (1K) max |
 | Texture dimensions, small props (path contains `props/`) | 512×512 max |

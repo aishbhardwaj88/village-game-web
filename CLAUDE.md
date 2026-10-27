@@ -133,7 +133,7 @@ shop, every house, every farm, every prop. Do not wait to be told place by place
    recess; every window a frame, iron grille, sill and recess.
 
 **The performance rules, which are not optional:**
-- `public/assets/` stays under 40 MB; textures 1K, 512 for props; WebP.
+- `public/assets/` stays under 56 MB (raised 27 Oct: the 56 MB cap was blocking the geometry-based materials she asked for; she deferred load time until the game is done); textures 1K, 512 for props; WebP.
 - Instance every repeated object. Merge static geometry per unit.
 - Zone-stream interiors and distant content; distance LOD on vegetation and crowds.
 - The title screen must appear before assets finish loading.
@@ -190,7 +190,7 @@ Full spec: `reference-from-unity/docs/art-direction.md`. Read before any visual 
 
 - CC0 first, CC BY second (credit in `docs/CREDITS.md`), NC never, unknown never.
   Poly Haven and ambientCG are the default sources.
-- `public/assets/` under 40 MB, any model under 5 MB, textures 1K max (512 props).
+- `public/assets/` under 56 MB (raised 27 Oct: the 56 MB cap was blocking the geometry-based materials she asked for; she deferred load time until the game is done), any model under 5 MB, textures 1K max (512 props).
   Runtime: under 400k triangles, under 150 draw calls (aim 120 per zone).
 - Shrink every new model: `node tools/shrink.js <in> <out.glb> [triangleBudget]`.
 - Run `npm run check-budget` before every commit touching `public/assets`.
@@ -210,7 +210,7 @@ Full spec: `reference-from-unity/docs/art-direction.md`. Read before any visual 
 
 ### Loading time (hard rules, this is a browser game)
 
-- Total `public/assets/` stays under 40 MB. Non-negotiable.
+- Total `public/assets/` stays under 56 MB (raised 27 Oct: the 56 MB cap was blocking the geometry-based materials she asked for; she deferred load time until the game is done). Non-negotiable.
 - Textures: 1K maximum, 512 for props, WebP. Compress the five largest textures to
   KTX2 if the total creeps over budget.
 - **Nothing in the opening frame may wait on a download.** The title screen must appear

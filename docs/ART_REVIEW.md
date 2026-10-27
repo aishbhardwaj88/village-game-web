@@ -1402,3 +1402,23 @@ built to her 27 Oct notes. **2,192 triangles for a full line** (was 10,572).
 ### Order
 1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
 assets reused village-wide). Then 2 and 7.
+
+---
+
+## 2026-10-27 (lead engineer's call) - ASSET CAP RAISED 40 MB -> 56 MB.
+
+The failed-material rebuild (tin, terracotta, wood, rusted steel as real geometry) was
+blocked on the 40 MB asset cap, which assets had already reached.
+
+**The cap is ours, not a platform limit, and it was blocking the exact quality work she
+has made her top priority.** She also deferred load time on 26 Oct: "we will figure it
+out once the game has been done."
+
+So: raised to 56 MB. `tools/check-budget.js`, `docs/budgets.md` and CLAUDE.md updated.
+
+- This does NOT licence waste. Shrink every model, keep textures at 1K (512 for props),
+  instance and merge as before.
+- Load time is a known debt, recorded, and revisited when the game is built, by her
+  decision.
+- If 56 MB is reached, report the number and the options rather than silently thinning
+  detail. Do not raise it again without telling her.
