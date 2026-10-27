@@ -128,5 +128,10 @@ pk.bucket(kit, 2.5, 1.0)
 add('wood', limb('broom', (3.3, 0.7, 0.12), (3.45, 0.55, 1.15), 0.03), 0x8A6A48)
 add('paint', limb('broom_head', (3.25, 0.75, 0.12), (3.3, 0.7, 0.45), 0.2, 0.06), 0x9A8A58)
 
+# flour scoops: steel cup with a short wooden handle, one on a forecourt tin lid, one leant at the sacks
+for sx, sy, sz, ang in ((-2.7 + 2 * 0.52, 2.2, 0.74, 0.0), (-1.5, -3.55, 0.82, 0.5)):
+    add('metal', lathe('scoop_cup', sx, sy, [(0.0, sz), (0.07, sz + 0.01), (0.1, sz + 0.07), (0.085, sz + 0.07), (0.0, sz + 0.02)], seg=10), 0x9AA0A6)
+    add('wood', limb('scoop_handle', (sx + 0.08, sy, sz + 0.06), (sx + 0.08 + 0.22 * math.cos(ang), sy + 0.22 * math.sin(ang), sz + 0.1), 0.014), 0x7A5A3A)
+
 TINTS = {'hb_plaster': '#D6D8DA', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#C9C4B8', 'hb_tin': '#FFFFFF', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.05})
