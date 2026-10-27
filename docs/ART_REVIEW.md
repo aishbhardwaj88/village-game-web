@@ -1358,6 +1358,29 @@ All three repeat across the village, so build each ONCE properly and instance it
   one mesh set: different fabric tints, prints and fade.
 - This supersedes the earlier A1h laundry item: build once, reuse everywhere.
 
+### 10. NIGHT VIEW + LIT LANTERNS (confirmed by her, 27 Oct)
+**The game will have a night.** Dopahar currently runs one afternoon drifting to
+evening with no night state and no lamp that lights anything. This is a real feature,
+not a lamp detail:
+- A night state for sky, sun/moon, fog and colour grade.
+- Street lamps and lanterns that actually read as lit: emissive materials plus a
+  cheap light pool decal on the ground, NOT real dynamic lights per lamp.
+- Warm window glow on houses.
+- Night ambience bed (crickets, dogs, quiet).
+- **Lanterns are props that light up at night**, placed where a village would have
+  them: shop fronts, verandahs, the chowk, charpais.
+
+### 11. DRAW-CALL CEILING: her call, "you decide what to cut"
+Currently 149/150. Everything queued adds to it. **Decide and report the numbers.**
+Recommended approach, cheapest first:
+- Merge and instance aggressively before cutting anything visible. Most of the new
+  shared assets (pots, pumps, taps, lamps, milestones, haystacks, gobar) are repeats
+  and should cost ONE draw call per family, not one per object.
+- Emissive + decal for night lighting, never per-lamp dynamic lights.
+- Zone-stream harder: build only what is near the player.
+- Only if still over: raise the ceiling and measure the real framerate on a phone
+  profile, then tell her the trade honestly rather than silently thinning detail.
+
 ### Order
 1 (materials) first, since it fixes every place at once. Then 3, 4, 5, 6 (the shared
 assets reused village-wide). Then 2 and 7.

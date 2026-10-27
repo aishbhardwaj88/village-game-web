@@ -47,6 +47,10 @@ anything from the LATER list below.**
 - [ ] Haystacks: rebuild in Blender, 3 variants (tall conical, low wide heap, half-used with cut face), rough shaggy silhouette broken with alpha-cutout straw cards, strong per-stack colour variation; instanced village-wide
 - [ ] Gobar cakes: build flat wall-stuck discs with visible hand prints AND the conical stacked bitauda with straw cap; matte near roughness 1.0, straw fibres in the texture; instanced
 - [ ] Drying clothes: build ONE garment mesh set (sari, dhoti, kurta, salwar, dupatta, shirt, towel, bedsheet, gamcha) with folds, sag, cloth pins, sagging line and out-of-phase sway, then re-colour per instance so every line looks different. Supersedes A1h
+- [ ] NIGHT VIEW (new feature, confirmed 27 Oct): night state for sky/sun/moon/fog/grade, warm window glow, night ambience bed (crickets, dogs, quiet)
+- [ ] Lit lamps and lanterns at night via emissive materials + a cheap ground light-pool decal, NEVER per-lamp dynamic lights
+- [ ] Lanterns: build as props placed at shop fronts, verandahs, the chowk and charpais; they light up at night
+- [ ] Draw-call ceiling is at 149/150: instance every repeated shared asset to ONE call per family, zone-stream harder, and only then consider raising the ceiling with a measured phone framerate and an honest report of the trade
 - [ ] Flag: redraw the texture at 1024 with crisp 24-spoke chakra; currently pixelated
 - [ ] Bus adda: remove the loose tyre, loose bricks, the khatiya on the chabutra, and the pyaau pots (supersedes its LAYOUT.md); a hand pump may replace them
 - [ ] Gaushala: reduce to 75% of current size (36x28 m -> ~27x21 m). Scale the compound, not the contents: sheds, office, straw store, troughs keep real-world sizes, the yard gets tighter. Update Places V1/gaushala/LAYOUT.md and the collider boxes in the same commit
