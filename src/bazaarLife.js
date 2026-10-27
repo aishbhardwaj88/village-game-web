@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
 import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS } from './bazaar.js';
@@ -40,20 +41,21 @@ const IDLE_BY_TRADE = {
 
 const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
 
+const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
 const VILLAGER_LOOPS = [
   [{ x: BAZAAR_WEST_X + 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 16, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: BAZAAR_WEST_X + 20, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 32, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: BAZAAR_EAST_X - 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_EAST_X - 16, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: CHOWK_TEA_POS.x + 4, z: 7.5 }, { x: CHOWK_TEA_POS.x + 2, z: 16 }],
   // village lane between the house and the school: neighbours out on errands
-  [{ x: -45.5, z: 71 }, { x: -45.5, z: 81 }],
-  [{ x: -46.5, z: 86 }, { x: -46.5, z: 91 }],
-  [{ x: -47, z: 51 }, { x: -45, z: 57 }],
+  [{ x: LH.x - 5.5, z: LH.z + 9 }, { x: LH.x - 5.5, z: LH.z + 19 }],
+  [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
+  [{ x: LH.x - 7, z: LH.z - 11 }, { x: LH.x - 5, z: LH.z - 5 }],
   // a few more walkers so the bazaar frontage and lane are not empty
   [{ x: BAZAAR_WEST_X + 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_WEST_X + 26, z: BAZAAR_FRONT_Z - 2.5 }], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
   [{ x: BAZAAR_EAST_X - 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_EAST_X - 26, z: BAZAAR_FRONT_Z - 2.5 }],
-  [{ x: -46, z: 62 }, { x: -46.5, z: 69 }],
-  [{ x: -48, z: 99 }, { x: -48, z: 106 }], // west of the fence strip at x -47..-45
+  [{ x: LH.x - 6, z: LH.z }, { x: LH.x - 6.5, z: LH.z + 7 }],
+  [{ x: LH.x - 8, z: LH.z + 37 }, { x: LH.x - 8, z: LH.z + 44 }], // west of the fence strip at x -47..-45
 ];
 
 const SPEED = 1.1;

@@ -1,3 +1,6 @@
+**2026-10-27 (A-1 hero-lane villager loops to halwai anchor):** Code change, no visible change. The 5 hero-lane villager loops in src/bazaarLife.js (were raw x -45..-48, z 51..106) are now offsets from ANCHORS.halwai, same values at today's position, so moving the halwai carries them. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed. Not screenshotted (values unchanged). The chowk-tea loop was already tied to CHOWK_TEA_POS.
+NEXT: whatever she changes on the map; remaining items parked or need her.
+
 **2026-10-27 (A-1 bazaar NPC loops tied to the row):** Code change, no visible change. The 5 bazaar-frontage villager loops in src/bazaarLife.js used raw z 9 / 10; they are now BAZAAR_FRONT_Z - 3.5 / - 2.5 (same values, 12.5 front), so they follow the row if BAZAAR_ROW_CZ moves. The 6 village-lane loops (x -45..-48) and the chowk-tea loop are still raw coordinates. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed. Not screenshotted (values unchanged).
 NEXT: lane-loop villagers to anchors, or whatever she changes on the map.
 
