@@ -66,7 +66,7 @@ export const LANES = [
   [[-48, 46], [-58, 47], [-58, 8]], // bazaar lane
   [[-44, 50.5], [-12, 55], [2, 51]], // temple lane
   [[-37, 76], [36, 76]], [[-6, 76], [-6, 130]], // east gali
-  [[-84, 21], [-84, 104]], [[-84, 21], [-61, 21]], // west gali
+  [[-84, 21], [-84, 104]], [[-84, 21], [-68, 21]], // west gali (ends at the banta stall front)
   [[-100, 140], [-38, 140]], // south gali
   [[-45, 76], [-37, 76]], // closes the gap between the hero lane and the east gali (src/scenery.js E0)
   [[-38, 140], [-6, 140]], // joins the south gali to the east gali's south end (src/scenery.js S2)

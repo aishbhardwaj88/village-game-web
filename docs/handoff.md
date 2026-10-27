@@ -1,3 +1,6 @@
+**2026-10-27 (A1f lane 18 freed):** Game change: the west-gali spur drawn on the notebook map (src/freeRoam.js LANES) ended at (-61,21), inside the banta stall; it now ends at (-68,21) at the stall front, so the tractor drives 21/23 lanes. Map pencil line only, not looked at in a screenshot. Lanes 12, 13 still stop after the first corner (turn overshoot, colliders 2.7 m+ away, likely test artefact). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: A-2 leftovers (task list, minimap), or look at lanes 12/13 turn radius.
+
 **2026-10-27 (A1f lane 17 freed):** Game change: west gali signpost (src/wayfinding.js west_gali) moved 1 m east to x -81.5, off the lane edge it was blocking; the tractor now drives 20/23 lanes. Not looked at in a screenshot. Lanes 12, 13 (turn overshoot) and 18 (unlabelled boxes near (-66,22)) still blocked. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: trace lane 18, or A-2 leftovers.
 
