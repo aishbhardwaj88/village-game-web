@@ -220,6 +220,23 @@ export async function createDonationBoard(position, rotationY = 0) {
  * out of the 'solid' material families because they overhang the lane).
  * `segments`: [{ from, to, width }]. Placed alternately either side, just off the lane.
  */
+/** Shared 0..1 uniform the night controller drives: lamp lenses and tube diffusers glow warm when it rises. */
+export const lampNight = { value: 0 };
+let _lampTinMat = null;
+function lampTinMaterial(base) {
+  if (_lampTinMat) return _lampTinMat;
+  const m = base.clone();
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uLampNight = lampNight;
+    sh.fragmentShader = 'uniform float uLampNight;\n' + sh.fragmentShader.replace(
+      '#include <emissivemap_fragment>',
+      '#include <emissivemap_fragment>\n#ifdef USE_COLOR\n totalEmissiveRadiance += vec3(1.0, 0.78, 0.45) * uLampNight * smoothstep(1.25, 1.5, vColor.r) * 2.2;\n#endif');
+  };
+  m.customProgramCacheKey = () => 'lampTinGlow';
+  _lampTinMat = m;
+  return m;
+}
+
 export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } = {}) {
   const group = new THREE.Group();
   group.name = 'street_lamps';
@@ -315,13 +332,19 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
   // Model pass (async): one Blender model per type, cloned per lamp with its lean, size and wear tint, merged per run (two draw calls).
   loadLampModel(type).then((model) => {
     for (const { lamps, wires } of runs) {
-      for (const [key, mat] of [['main', concreteMat], ['tin', tinMat]]) {
+      for (const [key, mat] of [['main', concreteMat], ['tin', lampTinMaterial(tinMat)]]) {
         const lift = key === 'tin' ? 1.4 : 1; // the tin set is darker than concrete; lift so painted iron reads green-grey, not black
         const list = lamps.map(({ m, wear: w0 }) => {
           const wear = w0 * lift;
           const g = model[key].clone().applyMatrix4(m);
           const col = g.attributes.color;
-          for (let i = 0; i < col.count; i++) col.setXYZ(i, Math.min(1, col.getX(i) * wear), Math.min(1, col.getY(i) * wear), Math.min(1, col.getZ(i) * wear));
+          const src = model[key].attributes.color;
+          for (let i = 0; i < col.count; i++) {
+            // lens / diffuser (near-white paint, linear red > 0.85) keep a >1 colour so the shader can find them and glow them at night
+            const k = key === 'tin' && src.getX(i) > 0.85 ? 1.6 : 0;
+            if (k) col.setXYZ(i, src.getX(i) * k, src.getY(i) * k, src.getZ(i) * k);
+            else col.setXYZ(i, Math.min(1, col.getX(i) * wear), Math.min(1, col.getY(i) * wear), Math.min(1, col.getZ(i) * wear));
+          }
           return tex(g, null);
         });
         if (key === 'tin') list.push(...wires);
