@@ -315,11 +315,11 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
         if (r(9) > 0.4) {
           const py = 2.5 + r(10) * 0.5;
           const pc = [0xc9b79a, 0xb9c4bd, 0xd2c3a0, 0xc4a9a0][Math.floor(r(11) * 4) % 4];
-          addTo(solid, new THREE.BoxGeometry(0.17, 0.24, 0.012), [0, py, -radAt(py) - 0.004], tint(pc, 0.8 + r(12) * 0.15));
-          if (r(13) > 0.5) addTo(solid, new THREE.BoxGeometry(0.1, 0.13, 0.012), [0.04, py - 0.19, -radAt(py - 0.19) - 0.004], tint(0xb98f86, 0.8)); // torn second bill
+          addTo(solid, new THREE.BoxGeometry(0.26, 0.36, 0.012), [0, py, -radAt(py) - 0.004], tint(pc, 0.8 + r(12) * 0.15));
+          if (r(13) > 0.5) addTo(solid, new THREE.BoxGeometry(0.16, 0.2, 0.012), [0.05, py - 0.3, -radAt(py - 0.3) - 0.004], tint(0xb98f86, 0.8)); // torn second bill
         }
-        if (r(14) > 0.5) addTo(solid, new THREE.BoxGeometry(0.12, 0.07, 0.012), [0, 0.9, radAt(0.9) + 0.004], tint(0xd8d2bd, 0.85)); // number plate
-        if (r(15) > 0.75) addTo(solid, new THREE.BoxGeometry(0.06, 0.06, 0.012), [0.05, 1.45, -radAt(1.45) - 0.004], tint(0x9a3c34, 0.85)); // faded sticker
+        if (r(14) > 0.5) addTo(solid, new THREE.BoxGeometry(0.2, 0.1, 0.012), [0, 0.9, radAt(0.9) + 0.004], tint(0xd8d2bd, 0.85)); // number plate
+        if (r(15) > 0.75) addTo(solid, new THREE.BoxGeometry(0.09, 0.09, 0.012), [0.05, 1.45, -radAt(1.45) - 0.004], tint(0x9a3c34, 0.85)); // faded sticker
         addTo(over, new THREE.BoxGeometry(0.06, 0.06, 1.3), [0, h - 0.15, 0.6], tint(0x4a463e, wear)); // bracket arm
         addTo(over, new THREE.BoxGeometry(0.1, 0.09, 1.2), [0, h - 0.24, 0.85], tint(0xe0ddd0, 0.85)); // tube-light fixture
         const cable = new THREE.CylinderGeometry(0.014, 0.014, h - 1.9, 5);
