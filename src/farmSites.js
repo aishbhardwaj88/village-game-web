@@ -347,6 +347,19 @@ export function createTubewell(position) {
   geos.push(bake(new THREE.BoxGeometry(0.35, 0.5, 0.2), at(-1.55, 1.4, 1.25), 0x6b7378));
   geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 1.1, 8), at(-2.1, 1.25, 0.4), IRON));
   geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 3.0, 8), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(-0.7, 1.8, 0.4), IRON));
+  // Bore head: concrete pad round the motor, pipe flanges and a gate valve, a clamp on the wall, and the cable
+  // dropping from the starter box (conduit down the wall, slack loop to the motor, a second run to a pole stub).
+  const CABLE = 0x1d1c1b, VALVE = 0x7a2f26;
+  geos.push(bake(new THREE.BoxGeometry(1.1, 0.08, 1.0), at(-2.1, 0.04, 0.4), SLAB));
+  for (const fy of [0.8, 1.7]) geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 0.04, 10), at(-2.1, fy, 0.4), IRON));
+  geos.push(bake(new THREE.CylinderGeometry(0.1, 0.1, 0.04, 10), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(-1.6, 1.8, 0.4), IRON));
+  geos.push(bake(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 6), at(-1.0, 2.0, 0.4), VALVE));
+  geos.push(bake(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 8), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(-1.0, 2.15, 0.4), VALVE));
+  geos.push(bake(new THREE.BoxGeometry(0.06, 0.12, 0.1), at(-1.4, 1.05, 1.15), IRON));
+  geos.push(bake(new THREE.CylinderGeometry(0.015, 0.015, 1.15, 5), at(-1.65, 0.8, 1.21), CABLE));
+  geos.push(bake(new THREE.CylinderGeometry(0.015, 0.015, 1.2, 5), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(-1.95, 0.22, 0.95), CABLE));
+  geos.push(bake(new THREE.CylinderGeometry(0.015, 0.015, 0.9, 5), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(-2.4, 0.22, 0.55), CABLE));
+  geos.push(bake(new THREE.CylinderGeometry(0.015, 0.015, 1.0, 5), new THREE.Matrix4().makeRotationZ(Math.PI / 2).setPosition(-1.1, 2.25, 1.22), CABLE));
   // Cistern (hauz): low cement tank with rim, water inside, outlet channel into the field.
   const cx = 3.9, cz = 0.4;
   geos.push(bake(new THREE.BoxGeometry(3.4, 0.7, 0.18), at(cx, 0.35, cz - 1.6), SLAB));
@@ -357,6 +370,9 @@ export function createTubewell(position) {
   for (const [w, d, ox, oz] of [[3.0, 0.02, 0, -1.5], [3.0, 0.02, 0, 1.5], [0.02, 3.0, -1.5, 0], [0.02, 3.0, 1.5, 0]]) geos.push(bake(new THREE.BoxGeometry(w, 0.1, d), at(cx + ox, 0.5, cz + oz), STAIN));
   geos.push(bake(new THREE.BoxGeometry(2.0, 0.015, 1.4), at(cx + 1.9, 0.02, cz + 2.0), WET));
   geos.push(bake(new THREE.BoxGeometry(0.4, 0.12, 4.5), at(cx + 1.9, 0.05, cz + 3.8), SLAB));
+  // Kachcha naali: the cement outlet gives way to a hand-dug earth channel with low mud banks and a damp bed.
+  for (const [sx, k] of [[-0.3, 0], [0.3, 1]]) geos.push(bake(new THREE.BoxGeometry(0.22, 0.14, 5.0 - k * 0.8), at(cx + 1.9 + sx, 0.07, cz + 8.9 + k * 0.4), WET));
+  geos.push(bake(new THREE.BoxGeometry(0.34, 0.012, 5.0), at(cx + 1.9, 0.01, cz + 8.9), STAIN));
   const water = new THREE.Mesh(mergeGeometries([
     new THREE.BoxGeometry(3.0, 0.04, 3.0).translate(cx, 0.5, cz),
     new THREE.BoxGeometry(0.22, 0.03, 4.3).translate(cx + 1.9, 0.12, cz + 3.8),

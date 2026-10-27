@@ -1,3 +1,6 @@
+**2026-10-27 (A1d tubewell bore head):** Game change: tubewell (src/farmSites.js) gains a concrete pad round the motor, pipe flanges, a gate valve, a wall clamp, cable runs from the starter box and an earth kachcha naali past the cement outlet, all merged into the existing mesh (no new draw call, no new colliders). Proof docs/shots/tubewell-2026-10-27/d.png (looked at: pad, flanged pipe and green door read, no console errors; the valve is too small to see at that range). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: A1d scatter of use at the tubewell, or whatever she changes on the map.
+
 **2026-10-27 (A-1 hero-lane villager loops to halwai anchor):** Code change, no visible change. The 5 hero-lane villager loops in src/bazaarLife.js (were raw x -45..-48, z 51..106) are now offsets from ANCHORS.halwai, same values at today's position, so moving the halwai carries them. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed. Not screenshotted (values unchanged). The chowk-tea loop was already tied to CHOWK_TEA_POS.
 NEXT: whatever she changes on the map; remaining items parked or need her.
 
