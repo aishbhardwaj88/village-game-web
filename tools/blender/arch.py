@@ -375,6 +375,58 @@ def plank_wood(obj, base_hex, seed=0):
     return True
 
 
+def rust_steel(obj, base_hex, seed=0):
+    """Rusted steel as GEOMETRY (27 Oct, her verdict 'flat texture on a flat box'): big faces are subdivided so pitting
+    and raised flake edges are real relief, with downward rust streaks, darker scale low down and bare bright metal on
+    the high edges that hands touch. Small pieces (bolts, chains) skip the relief and only take the colour."""
+    import bmesh
+    obj.data.transform(obj.matrix_world)
+    obj.matrix_world.identity()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    big = [f for f in bm.faces if f.calc_area() > 0.04 and len(f.verts) == 4]
+    if big and len(bm.faces) < 400:
+        bmesh.ops.subdivide_edges(bm, edges=list({e for f in big for e in f.edges}), cuts=3, use_grid_fill=True)
+    bm.normal_update()
+    rnd = random.Random(seed * 131 + 7)
+    ph = [rnd.uniform(0, 6.28) for _ in range(4)]
+    zs = [v.co.z for v in bm.verts]
+    z0, z1 = min(zs), max(zs)
+    rel = {}
+    for v in bm.verts:
+        x, y, z = v.co.x, v.co.y, v.co.z
+        pit = math.sin(x * 23 + ph[0]) * math.sin(y * 19 + z * 17 + ph[1]) * math.sin(z * 29 + x * 11 + ph[2])
+        flake = max(0.0, math.sin(x * 7 + z * 5 + ph[3]) * math.sin(y * 6 - z * 8 + ph[0])) ** 2
+        rel[v] = (pit, flake)
+        if v.is_boundary or (z1 - z0) < 0.02:
+            continue
+        v.co += v.normal * (-0.004 * max(0.0, pit) + 0.005 * flake)
+    layer = bm.loops.layers.color.new('Base')
+    r0, g0, b0 = hex_to_linear_rgb(base_hex)
+    rust_c = (0.30, 0.095, 0.035)
+    scale_c = (0.11, 0.05, 0.03)
+    bare_c = (0.42, 0.43, 0.44)
+    for f in bm.faces:
+        for lp in f.loops:
+            v = lp.vert
+            pit, flake = rel[v]
+            h = (v.co.z - z0) / max(z1 - z0, 0.05)
+            streak = max(0.0, math.sin(v.co.x * 31 + v.co.y * 27 + ph[1])) ** 3 * (0.4 + 0.6 * h)   # runs down from high points
+            rust = min(0.95, 0.25 + 0.5 * (1.0 - h) + 0.45 * streak + 0.3 * max(0.0, pit) + 0.2 * rnd.random() * 0 )
+            c = [r0 * (1 - rust) + rust_c[0] * rust, g0 * (1 - rust) + rust_c[1] * rust, b0 * (1 - rust) + rust_c[2] * rust]
+            sc = min(0.8, flake * 1.4 * (1.2 - h))
+            c = [c[i] * (1 - sc) + scale_c[i] * sc for i in range(3)]
+            hi = max(0.0, flake - 0.65) * 2.0 * (0.3 + h) * (1.0 if abs(v.normal.z) < 0.7 else 0.4)
+            hi = min(0.6, hi)
+            c = [c[i] * (1 - hi) + bare_c[i] * hi for i in range(3)]
+            lp[layer] = (c[0], c[1], c[2], 1.0)
+    for f in bm.faces:
+        f.smooth = False
+    bm.to_mesh(obj.data)
+    bm.free()
+    return True
+
+
 class Kit:
     def __init__(self, split_props=True, own=(), tex_override=None, route=None, wood_slot=None):
         clear_scene()
@@ -407,7 +459,7 @@ class Kit:
         for kind, obj, color in self.records:
             if color is None:
                 color = int(tints.get('hb_' + kind, '#ffffff').lstrip('#'), 16)
-            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records)))):
+            if not ((kind == 'tin' and corrugate(obj, color, seed=len(self.records))) or (kind == 'terracotta' and tile_roof(obj, color, seed=len(self.records))) or (kind == 'wood' and plank_wood(obj, color, seed=len(self.records))) or (kind == 'metal' and rust_steel(obj, color, seed=len(self.records)))):
                 colorize(obj, color, attr='Base')
             groups[self.route.get(kind) or kind if kind in ('brick', 'tin', 'terracotta') or kind in self.own or kind in self.route else ('props' if (kind == 'paint' and self.split_props) else 'main')].append(obj)
         mats = {}
