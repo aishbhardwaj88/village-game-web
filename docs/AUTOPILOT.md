@@ -60,7 +60,15 @@ What she needs from you before that, and these outrank everything else:
 - Push happens automatically every 3 minutes. Do not wait for it.
 - Never stop the loop, never create tmp/STOP, never wind down.
 
-## WHAT TO WORK ON: `docs/BACKLOG.md`'s "THE ORDER" list. Nothing else decides it.
+## WHAT TO WORK ON: `docs/BACKLOG.md`'s "THE JOB" section. Nothing else.
+
+THE JOB is J1 to J4: get material quality right once, make every Places V1 place match
+its own LAYOUT.md, build what is missing, hand it over. **Everything under "LATER" is
+out of scope** until she says otherwise, however urgent its old wording sounds.
+
+When J1 to J4 are done, STOP and report. Do not roll on into LATER.
+
+## (superseded) WHAT TO WORK ON: THE ORDER list.
 
 Section headings and older notes carry stale "do this first" wording. Ignore all of
 it. The ordered list at the top of BACKLOG section A is the single source of

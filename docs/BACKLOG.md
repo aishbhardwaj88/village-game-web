@@ -27,52 +27,49 @@ dashboard can parse it. Append new tasks to the end of their section, never renu
 
 ## A. Three-week push (Oct 23 - Nov 13) - work this section first
 
-## THE ORDER. This list decides what you work on. Nothing else does.
+## THE JOB. This is the whole assignment. Nothing else is in scope.
 
-Sections below carry no priority of their own. Ignore any "do this first" wording
-left inside them. Work this list top down; when an entry is fully done, tick every
-one of its items and move to the next entry.
+Her assignment, 25 Oct: **build every place in `Places V1/` in 3D, at the quality of
+her reference drawings, standing in the game.** She expected it in 1 to 2 days. It has
+taken more than that because 62 unrelated items from her 23 Oct screenshot feedback
+were sitting in the same list with equal priority. **They are no longer in scope.**
 
-0. **TOMORROW'S BLOCKERS** (she finalises the map and starts Tripo characters):
-   finish the remaining baked anchors (SchoolCompound in village.js, gilli MAIDAN,
-   pond/johad keep-outs, eastRoad ends, lane sites); make sure every place is built
-   and standing; write a clean place-and-anchor table into `docs/handoff.md` for her
-   to mark new positions against; confirm `docs/asset-slots.md` has correct slot
-   names, sizes and facing for every person and animal so her Tripo models drop in.
-1. **A0-MAT** - material library + the art-reviewer gate. NOT STARTED as of 27 Oct
-   02:00. You are still re-tinting place by place, which is the exact waste this was
-   written to stop. Build `tools/blender/build_material_board.py`, review the BOARD
-   with the `art-reviewer` subagent, freeze it, then re-render places against it.
-   **Stop per-place re-tinting until the board is frozen.**
-2. **A0-WEATHER** - remaining items only.
-3. **A0-TEX** - remaining items only.
-4. **A0a / A0b / A0** - collision leftovers and the signboard final rule.
-5. **A-2a, A-2, A-2b, A-2c, A-1** - map click travel, visit menu, task list and
-   minimap, navigation, movable units.
-6. **A0-LOAD** - deferred by her 26 Oct. Do not work it.
-7. Everything else in section A, in file order.
+**Work ONLY these, in order. When they are all done, STOP and report. Do not start
+anything from the LATER list below.**
 
-**Every place render goes through the `art-reviewer` subagent before it is called
-done.** It has been used twice in ~80 runs. That is the gate, not a suggestion.
+### J1. Material quality, applied once, everywhere
+- [ ] Finish `tools/blender/build_material_board.py` and render every panel at 2 m.
+- [ ] `art-reviewer` subagent judges the BOARD against crops of her `Places V1/*/MAIN_*.png`.
+      Iterate the board until it PASSES. Max 3 rounds, then park and move on.
+- [ ] Freeze the approved values as the shared library. Place builds use it by name
+      and may not define their own material values.
+- [ ] Re-render all 22 staged places against the frozen library.
 
-### Do not loop. Ever.
-- If the art-reviewer FAILs the same thing **three times**, stop reworking it. Write
-  one plain line in `docs/NEEDS_YOU.md` saying what it is and what the reviewer keeps
-  objecting to, mark the item `- [!]`, and **move to the next entry in THE ORDER.**
-- The same applies to any single item: two failed attempts, then park it and move on.
-  Never spend a whole night on one surface.
-- A reviewer FAIL is information, not a command to keep grinding. The art director
-  would rather have 20 items advanced and 1 parked than 1 item perfected.
+### J2. Every place correct against its own spec
+- [ ] For each place in `Places V1/` with a LAYOUT.md (skip khets, fields and organics):
+      read LAYOUT.md, compare against the built model, and fix anything missing,
+      mis-sized or mis-placed. One commit per place.
+- [ ] `art-reviewer` judges each place render against her reference + LAYOUT.md before
+      it is ticked. Max 2 rework rounds per place, then park it and move on.
 
+### J3. Build what is still missing
+- [ ] Any `Places V1/` folder with a LAYOUT.md and no model: build it. (`vehicles`
+      is the known one. canal and pond are deferred by her.)
+- [ ] `houses_kit`: finish wiring the 8 types the way other places are wired.
 
-**25 OCT: PLANTS AND ORGANICS ARE OFF THIS LIST.** The art director builds trees,
-plants, crops and flowers herself. Leave what exists alone. Skip every plant item
-below. Main places are being redesigned by her, so keep anything you build generic
-and cheap. See docs/ART_REVIEW.md "NEW DIRECTION" (25 Oct) for the current order.
+### J4. Hand it over
+- [ ] Place-and-anchor table in `docs/handoff.md`, current and complete.
+- [ ] `docs/asset-slots.md` correct for every person and animal, for her Tripo day.
+- [ ] One screenshot per place in `docs/shots/places-final/`.
+- [ ] Report: every place, PASS or PARKED with the reason. Then STOP.
 
-**THE FEEDBACK GENERALISES.** The art director reviewed about 7 of the 42 places on
-23 Oct. Every verdict in docs/ART_REVIEW.md applies to ALL 42 places and every object
-in them. Do not limit a fix to the place that was screenshotted.
+---
+
+## LATER. Out of scope until she says otherwise.
+
+Everything below this line came from her 23 Oct screenshot feedback or from general
+polish. **Do not work any of it during THE JOB**, however urgent the old wording
+inside a section sounds. She will re-prioritise it after she sees the places.
 
 ### A-2a. Click a place ON THE MAP to travel there (Aishwarya, 25 Oct 2026)
 Her words: on the map she wants to click on a place and go there. Two reasons she
