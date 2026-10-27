@@ -1,3 +1,5 @@
+**2026-10-27 (thatch geometry):** arch.py thatch_straw gives roof faces straw-bundle ridges, a ragged low edge, dark weathered straw low and pale on crowns. The dairy is the only arch.py thatch user, so it is the only place rebuilt. Build + collision-test 0 failed (4729 static solids). Proof docs/shots/thatch-2026-10-27/dairy_c.png: the roof reads dark brown and the ridges are faint, left for her verdict. Mud, jute and packed earth not started. Lanterns-as-props still open.
+
 **2026-10-27 (J1-NOW check, docs only):** The four approved materials (brick, lime plaster, cement plaster, concrete) are already applied by name to every Blender place: all 22 staged places build through tools/blender/arch.py's one texture table (brick 1.2, plaster 0.5), only build_laundry.py bypasses arch.py. Nothing to re-apply, nothing re-tuned. Not ticked (no new screenshot). Rebuilding tin, terracotta, wood and rusted steel as geometry adds bytes and the 40 MB cap has 0 free, so it waits on her call (NEEDS_YOU). No game change this run.
 
 **2026-10-27 (J report, docs only):** THE JOB status, place by place. No game change this run.
