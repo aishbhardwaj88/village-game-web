@@ -49,6 +49,12 @@ What she needs from you before that, and these outrank everything else:
    slot names, target sizes and facing in `docs/asset-slots.md` are correct and
    complete for every person and animal.
 
+## RUN BUILDERS IN PARALLEL. See `docs/PARALLEL.md`. This is the priority.
+
+Serial building does not fit her deadline. Spawn 3-4 `asset-builder` subagents at a
+time, each owning one asset family and its own files. You do all git. Keep every slot
+busy; refill a slot the moment a builder returns.
+
 ## READ docs/NOW.md FIRST. It outranks every other file until 23:05 IST 27 Oct.
 
 She plays at 23:05. Only three materials matter in that window: tin, terracotta,
