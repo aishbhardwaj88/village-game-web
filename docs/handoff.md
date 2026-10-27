@@ -1,3 +1,6 @@
+**2026-10-27 (rooftop-leg check scoped, docs only):** No game change. The only NPC rooftop route is the monkey chase (src/main.js monkeyChaseWaypoints, bazaar units 3 to 5 along the roofline). A mid-roof check needs collider heights, and collision boxes carry none, so it cannot be done without adding heights to every collider, which is out of proportion for a 3-unit scripted run. Left A0 rooftop box unticked. Everything else open is parked under the two-strike rule or needs her (map layout, Tripo, material textures).
+NEXT: whatever she changes on the map; A-1 baked-site leftovers if any remain.
+
 **2026-10-27 (state check, docs only):** No game change. Re-read the deadline list: anchors, place table and character slots (player, 7 cast, dadi, monkey, side-job men, aunty, kids, cow/buffalo, dog) are all wired and listed in docs/asset-slots.md. Fresh `npm run build` ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs, 0 failed. What is left is parked under the two-strike rule (material board textures, poster pictures) or needs her (map layout, Tripo).
 NEXT: A-2 leftovers or whatever she changes on the map.
 
