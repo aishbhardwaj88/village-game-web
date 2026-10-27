@@ -320,6 +320,19 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
         }
         if (r(14) > 0.5) addTo(solid, new THREE.BoxGeometry(0.2, 0.1, 0.012), [0, 0.9, radAt(0.9) + 0.004], tint(0xd8d2bd, 0.85)); // number plate
         if (r(15) > 0.75) addTo(solid, new THREE.BoxGeometry(0.09, 0.09, 0.012), [0.05, 1.45, -radAt(1.45) - 0.004], tint(0x9a3c34, 0.85)); // faded sticker
+        // Rain streaks: thin, low-contrast vertical runs of damp and rust-water under the bracket and the box
+        // (kept close to the body tone so they read as staining, not as painted stripes).
+        const streaks = 2 + Math.floor(r(16) * 3);
+        for (let s = 0; s < streaks; s++) {
+          const sy = h - 0.6 - r(17 + s) * 0.5;
+          const sl = 0.7 + r(21 + s) * 1.6;
+          const ang = r(25 + s) * Math.PI * 2;
+          const rr = radAt(sy - sl / 2) + 0.003;
+          const rust = r(29 + s) > 0.6;
+          const sg = new THREE.BoxGeometry(0.025 + r(33 + s) * 0.03, sl, 0.01);
+          sg.applyMatrix4(new THREE.Matrix4().makeRotationY(ang));
+          addTo(solid, sg, [Math.sin(ang) * rr, sy - sl / 2, Math.cos(ang) * rr], rust ? tint(0x8c6a52, wear) : tint(0x7f8584, wear));
+        }
         addTo(over, new THREE.BoxGeometry(0.06, 0.06, 1.3), [0, h - 0.15, 0.6], tint(0x4a463e, wear)); // bracket arm
         addTo(over, new THREE.BoxGeometry(0.1, 0.09, 1.2), [0, h - 0.24, 0.85], tint(0xe0ddd0, 0.85)); // tube-light fixture
         const cable = new THREE.CylinderGeometry(0.014, 0.014, h - 1.9, 5);

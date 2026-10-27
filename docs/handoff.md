@@ -1,3 +1,6 @@
+**2026-10-27 (A1e pole rain streaks):** Game change: RCC lamp poles (src/props.js createStreetLamps) now carry 2-4 thin low-contrast damp and rust-water streaks running down from the bracket (merged into the pole mesh, no new draw call). NOT seen up close (no clean pole framing after three earlier tries, generic shots docs/shots/2026-10-27T08-10-41-306Z show no console errors), so the A1e concrete/stains box stays unticked and unjudged. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: whatever she changes on the map; remaining items are parked or need her.
+
 **2026-10-27 (A1e pole posters enlarged):** Game change: pole bills now 26x36 cm (was 17x24), number plate 20x10, sticker 9x9, merged into the same pole mesh (src/props.js). Proof attempt docs/shots/pole-posters-2026-10-27b/ (p1, p2): a tree canopy blocks every close angle of the temple-lane pole at (-36.5, 55.4), so the patches were NOT seen up close; box stays unticked, not judged good. Third framing failure, so parked under the two-strike rule. Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: A1e concrete stains, or whatever she changes on the map.
 
