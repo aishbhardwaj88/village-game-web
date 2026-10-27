@@ -54,7 +54,9 @@ for name, cx, cz in LAYOUT:
         for i in range(7):
             nx = (cx + 0.45 + rnd.random() * 0.45) if i < 5 else (cx - 0.9 + rnd.random() * 0.4)
             nz0 = (1.55 + rnd.random() * 0.4) if i < 5 else (0.35 + rnd.random() * 0.5)
-            kit.add(kind, wb(name + '_nick', nx, nx + 0.10 + rnd.random() * 0.14, cz + 0.06, cz + 0.068, nz0, nz0 + 0.08 + rnd.random() * 0.14, 0.0), under)
+            nw = 0.10 + rnd.random() * 0.14; nh = 0.08 + rnd.random() * 0.14   # keep every nick inside the 2 x 2 m panel outline
+            nx = min(nx, cx + 0.97 - nw); nz0 = min(nz0, 1.97 - nh)
+            kit.add(kind, wb(name + '_nick', nx, nx + nw, cz + 0.06, cz + 0.068, nz0, nz0 + nh, 0.0), under)
 
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#FFFFFF', 'hb_wood': '#FFFFFF', 'hb_metal': '#FFFFFF', 'hb_brick': '#FFFFFF',
          'hb_tin': '#FFFFFF', 'hb_terracotta': '#FFFFFF', 'hb_thatch': '#FFFFFF', 'hb_jute': '#FFFFFF'}
