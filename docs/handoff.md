@@ -1,3 +1,6 @@
+**2026-10-27 (A1d tubewell scatter of use):** Game change: tubewell (src/farmSites.js) gains a washing stone with soap, a steel bucket, coiled rope, a lota and a pair of chappals by the hauz, all soft and merged into the existing mesh (no new draw call). Proof docs/shots/tubewell-2026-10-27b/use_a.png, use_b.png (looked at: props read at walking distance, no console errors; the tilted stone slab sits a bit like a loose board). Build ALL PASSED, collision-test 4851 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
+NEXT: whatever she changes on the map; remaining items are parked or need her.
+
 **2026-10-27 (A1d tubewell bore head):** Game change: tubewell (src/farmSites.js) gains a concrete pad round the motor, pipe flanges, a gate valve, a wall clamp, cable runs from the starter box and an earth kachcha naali past the cement outlet, all merged into the existing mesh (no new draw call, no new colliders). Proof docs/shots/tubewell-2026-10-27/d.png (looked at: pad, flanged pipe and green door read, no console errors; the valve is too small to see at that range). Build ALL PASSED, collision-test 4850 static solids + 6 vehicle boxes + 3 vehicles + 122 NPC legs tested, 0 failed.
 NEXT: A1d scatter of use at the tubewell, or whatever she changes on the map.
 

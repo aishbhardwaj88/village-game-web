@@ -380,6 +380,20 @@ export function createTubewell(position) {
   water.name = 'tubewell_water';
   // Woven charpai in the kothri's shade.
   charpaiGeos(geos, -0.5, 2.7, 0.15);
+  // Signs of use by the hauz: a worn washing stone with a soap end, a dented steel bucket with its rope, a coiled
+  // rope, a lota and a pair of left-off chappals. All soft (no colliders), tiny, merged into the same mesh.
+  const STONE = 0x8a867c, STEEL = 0x8d9296, ROPE = 0x9a8456, CHAPPAL = 0x2b4f8a;
+  geos.push(bake(new THREE.BoxGeometry(0.7, 0.1, 0.45), at(2.1, 0.05, 2.7, 0.3), STONE));
+  geos.push(bake(new THREE.BoxGeometry(0.7, 0.08, 0.1), at(2.12, 0.14, 2.52, 0.3).multiply(new THREE.Matrix4().makeRotationX(-0.45)), STONE));
+  geos.push(bake(new THREE.BoxGeometry(0.1, 0.03, 0.06), at(2.3, 0.115, 2.75, 0.3), 0xd9c27a));
+  geos.push(bake(new THREE.CylinderGeometry(0.17, 0.13, 0.28, 12, 1, true), at(3.1, 0.14, 2.7), STEEL));
+  geos.push(bake(new THREE.CylinderGeometry(0.13, 0.13, 0.015, 12), at(3.1, 0.01, 2.7), STEEL));
+  geos.push(bake(new THREE.TorusGeometry(0.17, 0.012, 5, 14, Math.PI), new THREE.Matrix4().makeRotationY(0.6).setPosition(3.1, 0.28, 2.7), STEEL));
+  geos.push(bake(new THREE.TorusGeometry(0.2, 0.025, 5, 12), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(3.65, 0.03, 2.9), ROPE));
+  geos.push(bake(new THREE.TorusGeometry(0.13, 0.025, 5, 12), new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(3.65, 0.08, 2.9), ROPE));
+  geos.push(bake(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 5), at(3.4, 0.015, 2.85).multiply(new THREE.Matrix4().makeRotationZ(Math.PI / 2)), ROPE));
+  geos.push(bake(new THREE.CylinderGeometry(0.06, 0.08, 0.14, 10), at(1.6, 0.07, 3.2), 0xb08a3c));
+  for (const [sx, sz, sr] of [[1.2, 3.5, 0.7], [1.4, 3.65, 0.5]]) geos.push(bake(new THREE.BoxGeometry(0.09, 0.03, 0.26), at(sx, 0.015, sz, sr), CHAPPAL));
   // Two bhoosa haystacks behind the kothri (fodder kept next to the pump), a smaller one leaning beside them.
   const hay = [[-7.5, -5.5, 0.62, 1, 0xb4a276], [-9.8, -2.6, 0.5, 2, 0xc0ad80], [-5.2, -7.6, 0.38, 0, 0xa59468]];
   const hayGeos = [];
