@@ -62,6 +62,7 @@ while true; do
   find .git -maxdepth 2 -name '*.lock' -mmin +5 -delete 2>/dev/null
   start=$(date +%s)
   echo "=== Run $i started $(date)" | tee -a tmp/autopilot.log
+  ./tools/watchdog.sh 2>/dev/null
   claude -p "$(cat docs/AUTOPILOT.md)" --dangerously-skip-permissions >> tmp/autopilot.log 2>&1
   took=$(( $(date +%s) - start ))
   echo "=== Run $i finished after $((took/60)) min" | tee -a tmp/autopilot.log

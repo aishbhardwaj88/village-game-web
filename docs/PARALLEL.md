@@ -1,3 +1,26 @@
+# HER EVENING IS BOOKED FOR THIS. 28 Oct, ~21:30 IST. Have it ready.
+
+She cleared tonight to evaluate the game. A 21-hour stall already cost her today. The
+target below is small on purpose, because something she can actually judge at 21:30
+beats a long list that is half finished.
+
+## Ready by 21:30 IST tonight, in this order
+
+1. **A material board she can actually judge.** The v11 shot is unusable: dusk light,
+   camera far back, panels in shadow. Rebuild the shot, not the materials: all 8 panels
+   (tin, terracotta, painted wood, rusted steel, thatch, mud and dung, packed earth,
+   jute) flat-lit, square to camera, close enough to fill the frame, on one image, each
+   labelled. Put it at `docs/shots/material-board/FOR-HER/board.png` and write ONE line
+   in `docs/NEEDS_YOU.md`. Then keep going; do not wait for her answer.
+2. **Four asset families placed in the village**, instanced, where she will walk past
+   them: pots, hand pumps, taps, street lamps. Built models already exist or are close.
+   Placing them is what makes them judgeable.
+3. **Everything else in the waves below**, without stopping.
+
+Tell her at 21:30 what is ready. That message is the only one she wants tonight.
+
+---
+
 # PARALLEL BUILD ORDER - 28 Oct. Run builders CONCURRENTLY, not one at a time.
 
 29-32 hours of serial work does not fit before her evening deadline. These items are
