@@ -68,3 +68,19 @@ corrugation, weave), that structure is MODELLED, not painted on a flat face.**
 **Never iterate a material more than once without sending it to her.** Ten internal
 rounds happened on 27 Oct and none of them could converge, because no one in the loop
 could certify taste. One round plus her eye settles it.
+
+
+## Her verdict on the 28 Oct board (FOR-HER/board.png)
+
+| material | verdict | date | her words |
+|---|---|---|---|
+| terracotta tile | APPROVED | 28 Oct 2026 | agreed with the read, not in her reject list |
+| painted wood | APPROVED | 28 Oct 2026 | agreed with the read, not in her reject list |
+| rusted steel | APPROVED | 28 Oct 2026 | agreed with the read, not in her reject list |
+| packed earth | APPROVED | 28 Oct 2026 | not in her reject list |
+| tin | FAILED (2nd time) | 28 Oct 2026 | "Tin is still flat." |
+| thatch | FAILED | 28 Oct 2026 | "Thatch is not at all clear." |
+| mud and dung | FAILED | 28 Oct 2026 | "too smooth and too uniform" |
+| jute | FAILED | 28 Oct 2026 | "no weave" |
+
+The four approved materials are FROZEN. Do not touch them again.

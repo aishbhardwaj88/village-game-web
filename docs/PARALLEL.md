@@ -1,3 +1,42 @@
+# HER VERDICT IS IN, 28 Oct. FOUR MATERIALS REWORKED, NOTHING ELSE FIRST.
+
+APPROVED AND FROZEN, never touch again: terracotta, painted wood, rusted steel, packed earth.
+
+REJECTED, rework these four. **The cause is the same every time: the structure that makes
+a material read as itself is being PAINTED instead of MODELLED.** A flat box with a
+picture of ridges on it is why tin has now failed twice. Fix the geometry, not the texture.
+
+### 1. TIN - failed twice. Highest priority, it is on every roof she walks past.
+Her words: "Tin is still flat."
+- Build REAL corrugation: a sine profile across the sheet, roughly 76mm pitch and 18mm
+  depth, as actual vertices. The silhouette at the eave must be wavy, not a straight line.
+- Sheets overlap by one and a half corrugations, with a visible shadow line at the lap.
+- Fixing screws sit on the RIDGE crowns, never the valleys, each with a small washer and
+  a rust tear running down from it.
+- Slight per-sheet bend and lift at one corner. Nothing perfectly flat or perfectly aligned.
+
+### 2. THATCH - "not at all clear"
+- It is far too dark, nearly black. Real thatch is pale straw gold, sun-bleached on top,
+  darker and greyer underneath and where it stays damp.
+- The silhouette must be shaggy. Break the edge with alpha-cutout straw cards at the eave
+  and ridge, so it never reads as a smooth solid shell.
+- Visible courses, with the binding rope line across them.
+
+### 3. MUD AND DUNG - "too smooth and too uniform"
+- Hand-applied, so it must carry hand-smear arcs and finger drag, not a flat plane.
+- Displace the surface itself. Straw and husk flecks standing proud of the surface.
+- Colour must drift across the wall. A darker damp band at the base.
+
+### 4. JUTE - "no weave"
+- Build the weave as geometry or a real normal map with depth, so warp and weft cross
+  over and under and catch light differently.
+- Frayed edge, loose threads, a repaired patch, slack where it hangs.
+
+Rebuild the board at `docs/shots/material-board/FOR-HER/board.png` when all four are done
+and write ONE line in docs/NEEDS_YOU.md. Do not wait for her. Keep going.
+
+---
+
 # HER EVENING IS BOOKED FOR THIS. 28 Oct, ~21:30 IST. Have it ready.
 
 She cleared tonight to evaluate the game. A 21-hour stall already cost her today. The
