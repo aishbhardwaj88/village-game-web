@@ -977,14 +977,14 @@ async function main() {
   const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
   // ?play=didi — character review: walk around the village AS Parlour Didi (Tripo Smart Mesh v2,
   // not rigged yet, so she glides in her A-pose). Her A-pose arms make her wide, so the fit box is
-  // widened; height 1.70 m (5'7", CHARACTER_BIBLE). Tripo models face +Z, the player faces -Z: turn 180.
+  // widened; height 1.70 m (5'7", CHARACTER_BIBLE). Checked live: no turn needed, she already faces the walking direction.
   const PLAY_AS = new URLSearchParams(window.location.search).get('play');
   if (PLAY_AS === 'didi') {
     assetSlots.register('player', {
       file: 'parlour_didi',
       dimensions: { w: 1.2, h: 1.7, d: 1.2 },
       hide: [player.children[0]],
-      placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: Math.PI }],
+      placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
   } else {
   assetSlots.register('player', {
