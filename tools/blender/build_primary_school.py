@@ -45,6 +45,32 @@ def add(kind, o, c=None):
     return o
 
 
+# 28 Oct: the 65% plan squeeze (bottom of file) shrinks the LAYOUT, not the things people use. Doorways are cut wider in
+# pre-squeeze metres so they land at ~1 m; anything built inside real_size() keeps its true shape and is only moved.
+PLAN_SCALE = 0.65
+DW = 1.5                      # classroom door opening, pre-squeeze (lands at 0.98 m)
+REAL = []                     # [(objects, (anchor_x, anchor_z))] in pre-squeeze game metres
+
+
+class real_size:
+    """with real_size(x, z): ...  -> everything created inside is moved with the layout but not squeezed about (x, z)."""
+    def __init__(self, x, z):
+        self.a = (x, z)
+
+    def __enter__(self):
+        self.before = set(bpy.context.scene.objects)
+        return self
+
+    def __exit__(self, *exc):
+        REAL.append((set(bpy.context.scene.objects) - self.before, self.a))
+        return False
+
+
+def F(v):
+    """A final (post-squeeze) metre position written in the pre-squeeze frame the build uses."""
+    return v / PLAN_SCALE
+
+
 # ------------------------------------------------------------------------------------------------ local frames
 def make_lm(kind, p):
     """Room-local (u along the front wall, v depth into the room from the verandah line) -> world (x, z)."""
@@ -571,9 +597,9 @@ def room_walls(kind, rooms, u_lo, u_hi, doors_pos):
     for (a, b, t) in rooms:
         if t == 'corner':
             cd = -23.5 if a < 0 else 22.4
-            ops.append((cd, cd + 1.1, 0, 2.3))
+            ops.append((cd, cd + DW, 0, 2.3))
             continue
-        dw = 1.1
+        dw = DW
         d0 = a + 0.5
         ops.append((d0, d0 + dw, 0, 2.3))
         span = b - a
@@ -587,10 +613,10 @@ def room_walls(kind, rooms, u_lo, u_hi, doors_pos):
     for (a, b, t) in rooms:
         if t == 'corner':
             cd = -23.5 if a < 0 else 22.4
-            door(lm, cd, cd + 1.1, 2.3, -T, 0.0)
+            door(lm, cd, cd + DW, 2.3, -T, 0.0)
             continue
         d0 = a + 0.5
-        door(lm, d0, d0 + 1.1, 2.3, -T, 0.0, closed=(t == 'class' and not (kind == 'main' and a == -3)))
+        door(lm, d0, d0 + DW, 2.3, -T, 0.0, closed=(t == 'class' and not (kind == 'main' and a == -3)))
     for (a0, a1, h0, h1) in ops:
         if h0 > 0:
             window(lm, a0, a1, h0, h1, -T, 0.0)
@@ -751,7 +777,7 @@ def build_bands():
     """Ochre plinth bands, cream-and-ochre outside faces, and the hygiene posters on verandah walls."""
     lm = LM['main']
     door_gaps = []
-    for (a, b) in ((-17.5, -16.4), (-13.5, -12.4), (-9.5, -8.4), (-2.5, -1.4), (4.5, 5.6), (11.5, 12.6)):
+    for (a, b) in ((d, d + DW) for d in (-17.5, -13.5, -9.5, -2.5, 4.5, 11.5)):
         door_gaps.append((a - 0.1, b + 0.1))
     plinth_band(lm, -21.0, 21.0, -T, 0.04, 0.9, gaps=door_gaps)
     # outer faces: back wall z=-25 (v=6) and the outer sides x=-30 / 30 get the band too
@@ -765,7 +791,7 @@ def build_bands():
         gaps = []
         zr = [-19.0 + k * (20.0 / 3.0) for k in range(4)]
         for k in range(3):
-            gaps.append((zr[k] + 0.4, zr[k] + 1.7))
+            gaps.append((zr[k] + 0.4, zr[k] + 0.6 + DW))
         plinth_band(lmw, -19.0, 1.0, -T, 0.04, 0.9, gaps=gaps)
     # hygiene posters on verandah walls: 5 pictures, 1 x 1.2 m cards, three groups; atlas strip v 0.625..0.875
     uvr = (0.0, 0.625, 1.0, 0.875)
@@ -928,64 +954,89 @@ def build_flag():
 
 
 def build_playground():
-    # slide
+    """Front-left playground. Positions are layout (squeezed with the school); the equipment itself is built at real size."""
+    # slide, red frame, yellow deck, steel chute
     sx, sz = -22.5, 17.0
-    for dx in (-0.4, 0.4):
-        add('metal', limb('slide_leg', (sx + dx, sz - 0.7, 0), (sx + dx, sz - 0.7, 2.1), 0.07), 0xC0392B)
-        add('metal', limb('slide_leg2', (sx + dx, sz + 0.2, 0), (sx + dx, sz + 0.2, 2.1), 0.07), 0xC0392B)
-    add('metal', wb('slide_deck', sx - 0.5, sx + 0.5, sz - 0.85, sz + 0.35, 2.05, 2.12, 0.01), 0xE8B923)
-    for k in range(8):
-        add('metal', limb('ladder_rung', (sx - 0.4, sz - 0.9 - k * 0.0 + 0.0, 0.25 + k * 0.23), (sx + 0.4, sz - 0.9, 0.25 + k * 0.23), 0.04), 0xC0392B)
-    add('metal', limb('ladder_side_a', (sx - 0.4, sz - 0.95, 0), (sx - 0.4, sz - 0.85, 2.1), 0.05), 0xC0392B)
-    add('metal', limb('ladder_side_b', (sx + 0.4, sz - 0.95, 0), (sx + 0.4, sz - 0.85, 2.1), 0.05), 0xC0392B)
-    add('metal', limb('slide_chute', (sx, sz + 0.3, 2.05), (sx, sz + 2.7, 0.15), 0.6, 0.04), 0xB9BDC2)
-    for dx in (-0.32, 0.32):
-        add('metal', limb('slide_rail', (sx + dx, sz + 0.3, 2.2), (sx + dx, sz + 2.7, 0.3), 0.04, 0.12), 0xC0392B)
-    for dx in (-0.5, 0.5):
-        add('metal', limb('deck_rail', (sx + dx, sz - 0.85, 2.15), (sx + dx, sz + 0.3, 2.15), 0.04), 0xC0392B)
+    with real_size(sx, sz):
+        for dx in (-0.4, 0.4):
+            add('metal', limb('slide_leg', (sx + dx, sz - 0.7, 0), (sx + dx, sz - 0.7, 2.1), 0.07), 0xC0392B)
+            add('metal', limb('slide_leg2', (sx + dx, sz + 0.2, 0), (sx + dx, sz + 0.2, 2.1), 0.07), 0xC0392B)
+        add('metal', wb('slide_deck', sx - 0.5, sx + 0.5, sz - 0.85, sz + 0.35, 2.05, 2.12, 0.01), 0xE8B923)
+        for k in range(8):
+            add('metal', limb('ladder_rung', (sx - 0.4, sz - 0.9, 0.25 + k * 0.23), (sx + 0.4, sz - 0.9, 0.25 + k * 0.23), 0.04), 0xC0392B)
+        add('metal', limb('ladder_side_a', (sx - 0.4, sz - 0.95, 0), (sx - 0.4, sz - 0.85, 2.1), 0.05), 0xC0392B)
+        add('metal', limb('ladder_side_b', (sx + 0.4, sz - 0.95, 0), (sx + 0.4, sz - 0.85, 2.1), 0.05), 0xC0392B)
+        add('metal', limb('slide_chute', (sx, sz + 0.3, 2.05), (sx, sz + 2.7, 0.15), 0.6, 0.04), 0xB9BDC2)
+        for dx in (-0.32, 0.32):
+            add('metal', limb('slide_rail', (sx + dx, sz + 0.3, 2.2), (sx + dx, sz + 2.7, 0.3), 0.04, 0.12), 0xC0392B)
+        for dx in (-0.5, 0.5):
+            add('metal', limb('deck_rail', (sx + dx, sz - 0.85, 2.15), (sx + dx, sz + 0.3, 2.15), 0.04), 0xC0392B)
     # swing set: A-frames and a top bar, two seats on chains
-    wx, wz = -17.0, 20.5
-    for dz in (-0.9, 0.9):
-        add('metal', limb('swing_leg_a', (wx - 1.6, wz + dz, 0), (wx, wz, 2.6), 0.07, 0.07), 0x2E5E8B)
-        add('metal', limb('swing_leg_b', (wx + 1.6, wz + dz, 0), (wx, wz, 2.6), 0.07, 0.07), 0x2E5E8B)
-    add('metal', limb('swing_bar', (wx - 0.1, wz, 2.6), (wx + 0.1, wz, 2.6), 0.1), 0x2E5E8B)
-    for sxk in (-0.0,):
-        pass
-    add('metal', limb('swing_bar_real', (wx - 1.2, wz, 2.6), (wx + 1.2, wz, 2.6), 0.09), 0x2E5E8B)
-    for dx in (-0.5, 0.5):
-        for ddz in (-0.2, 0.2):
-            add('metal', limb('swing_chain', (wx + dx, wz + ddz, 2.55), (wx + dx, wz + ddz, 0.55), 0.015), 0x6D7378)
-        add('wood', wb('swing_seat', wx + dx - 0.22, wx + dx + 0.22, wz - 0.22, wz + 0.22, 0.48, 0.54, 0.01))
-    # see-saw
-    px, pz = -23.0, 22.2
-    add('metal', wb('seesaw_base', px - 0.15, px + 0.15, pz - 0.35, pz + 0.35, 0, 0.1, 0.01), 0x2B2B2D)
-    add('metal', wb('seesaw_post', px - 0.08, px + 0.08, pz - 0.08, pz + 0.08, 0.1, 0.5, 0.01), 0x2B2B2D)
-    add('wood', limb('seesaw_plank', (px, pz - 1.4, 0.3), (px, pz + 1.4, 0.7), 0.24, 0.045))
-    for (zz, hh) in ((pz - 1.2, 0.34), (pz + 1.2, 0.74)):
-        add('metal', limb('seesaw_handle', (px - 0.12, zz, hh + 0.12), (px + 0.12, zz, hh + 0.12), 0.03), 0x2B2B2D)
-    # 27 Oct: a second, shorter slide, a painted stapu (hopscotch) court, more dustbins
-    s2x, s2z = -26.2, 14.0
-    for dx in (-0.35, 0.35):
-        add('metal', limb('slide2_leg', (s2x + dx, s2z - 0.5, 0), (s2x + dx, s2z - 0.5, 1.5), 0.06), 0x2E5E8B)
-        add('metal', limb('slide2_leg2', (s2x + dx, s2z + 0.2, 0), (s2x + dx, s2z + 0.2, 1.5), 0.06), 0x2E5E8B)
-    add('metal', wb('slide2_deck', s2x - 0.45, s2x + 0.45, s2z - 0.65, s2z + 0.3, 1.45, 1.52, 0.01), 0xC0392B)
-    for k in range(6):
-        add('metal', limb('ladder2_rung', (s2x - 0.35, s2z - 0.7, 0.2 + k * 0.22), (s2x + 0.35, s2z - 0.7, 0.2 + k * 0.22), 0.035), 0x2E5E8B)
-    add('metal', limb('slide2_chute', (s2x, s2z + 0.25, 1.45), (s2x, s2z + 2.1, 0.12), 0.5, 0.04), 0xB9BDC2)
-    # stapu court: chalk-white painted squares on the swept ground, 1 / 2-3 / 4 / 5-6 / 7 / 8 pattern
-    cells = [(0, 0), (-0.5, 1), (0.5, 1), (0, 2), (-0.5, 3), (0.5, 3), (0, 4)]
-    for k, (cx, cy) in enumerate(cells):
-        x0, z0 = 8.0 + cx * 0.6 - 0.28, 8.0 + cy * 0.6
-        add('paint', wb('stapu_%d' % k, x0, x0 + 0.56, z0, z0 + 0.56, 0.036, 0.042, 0), 0xEDE6D0)
-        add('paint', wb('stapu_in_%d' % k, x0 + 0.05, x0 + 0.51, z0 + 0.05, z0 + 0.51, 0.04, 0.046, 0), 0xD2A573)
-    # dustbins: one by each wing verandah, one at the kitchen, one by the playground
-    for k, (dx_, dz_) in enumerate(((-22.0, -3.0), (22.0, -3.0), (-14.0, 21.0), (13.0, 20.0))):
-        add('paint', cyl('dustbin_x%d' % k, dx_, dz_, 0.0, 0.62, 0.22, 0.26, 12), (0x2C8A4A, 0x2E6FA8, 0x2C8A4A, 0x2E6FA8)[k])
-        add('paint', cyl('dustbin_xrim%d' % k, dx_, dz_, 0.62, 0.66, 0.28, 0.28, 12), 0x24703C)
+    wx, wz = F(-11.05), F(12.9)
+    with real_size(wx, wz):
+        for dz in (-0.9, 0.9):
+            add('metal', limb('swing_leg_a', (wx - 1.6, wz + dz, 0), (wx - 1.25, wz, 2.6), 0.07, 0.07), 0x2E5E8B)
+            add('metal', limb('swing_leg_b', (wx + 1.6, wz + dz, 0), (wx + 1.25, wz, 2.6), 0.07, 0.07), 0x2E5E8B)
+        add('metal', limb('swing_bar_real', (wx - 1.3, wz, 2.6), (wx + 1.3, wz, 2.6), 0.09), 0x2E5E8B)
+        for dx, seat_h in ((-0.5, 0.48), (0.5, 0.5)):
+            for ddz in (-0.2, 0.2):
+                add('metal', limb('swing_chain', (wx + dx, wz + ddz, 2.55), (wx + dx, wz + ddz, seat_h + 0.06), 0.015), 0x6D7378)
+            add('wood', wb('swing_seat', wx + dx - 0.22, wx + dx + 0.22, wz - 0.22, wz + 0.22, seat_h, seat_h + 0.06, 0.01))
+    # see-saw, by the toilet block wall, clear of the slide
+    px, pz = F(-16.2), F(14.3)
+    with real_size(px, pz):
+        add('metal', wb('seesaw_base', px - 0.15, px + 0.15, pz - 0.35, pz + 0.35, 0, 0.1, 0.01), 0x2B2B2D)
+        add('metal', wb('seesaw_post', px - 0.08, px + 0.08, pz - 0.08, pz + 0.08, 0.1, 0.5, 0.01), 0x2B2B2D)
+        add('wood', limb('seesaw_plank', (px, pz - 1.4, 0.3), (px, pz + 1.4, 0.7), 0.24, 0.045))
+        for (zz, hh) in ((pz - 1.2, 0.34), (pz + 1.2, 0.74)):
+            add('metal', limb('seesaw_handle', (px - 0.12, zz, hh + 0.12), (px + 0.12, zz, hh + 0.12), 0.03), 0x2B2B2D)
+    # 27 Oct: a second, shorter slide in blue (the little ones' slide), between the big slide and the swings
+    s2x, s2z = F(-11.5), F(8.6)
+    with real_size(s2x, s2z):
+        for dx in (-0.35, 0.35):
+            add('metal', limb('slide2_leg', (s2x + dx, s2z - 0.5, 0), (s2x + dx, s2z - 0.5, 1.5), 0.06), 0x2E5E8B)
+            add('metal', limb('slide2_leg2', (s2x + dx, s2z + 0.2, 0), (s2x + dx, s2z + 0.2, 1.5), 0.06), 0x2E5E8B)
+        add('metal', wb('slide2_deck', s2x - 0.45, s2x + 0.45, s2z - 0.65, s2z + 0.3, 1.45, 1.52, 0.01), 0xC0392B)
+        for k in range(6):
+            add('metal', limb('ladder2_rung', (s2x - 0.35, s2z - 0.7, 0.2 + k * 0.22), (s2x + 0.35, s2z - 0.7, 0.2 + k * 0.22), 0.035), 0x2E5E8B)
+        add('metal', limb('ladder2_side_a', (s2x - 0.35, s2z - 0.74, 0), (s2x - 0.35, s2z - 0.66, 1.5), 0.045), 0x2E5E8B)
+        add('metal', limb('ladder2_side_b', (s2x + 0.35, s2z - 0.74, 0), (s2x + 0.35, s2z - 0.66, 1.5), 0.045), 0x2E5E8B)
+        add('metal', limb('slide2_chute', (s2x, s2z + 0.25, 1.45), (s2x, s2z + 2.1, 0.12), 0.5, 0.04), 0xB9BDC2)
+        for dx in (-0.27, 0.27):
+            add('metal', limb('slide2_rail', (s2x + dx, s2z + 0.25, 1.58), (s2x + dx, s2z + 2.1, 0.25), 0.035, 0.1), 0x2E5E8B)
+    # stapu (hopscotch) court, chalk-white lines on the swept ground, real 0.56 m squares: 1 / 2-3 / 4 / 5-6 / 7 / 8,
+    # clear of the running track, in the open strip in front of the right wing. A worn smudge where kids land.
+    stx, stz = F(11.0), F(5.0)
+    with real_size(stx, stz):
+        cells = [(0, 0), (-0.5, 1), (0.5, 1), (0, 2), (-0.5, 3), (0.5, 3), (0, 4)]
+        for k, (cx, cy) in enumerate(cells):
+            x0, z0 = stx + cx * 0.6 - 0.28, stz + cy * 0.6
+            add('paint', wb('stapu_%d' % k, x0, x0 + 0.56, z0, z0 + 0.56, 0.036, 0.042, 0), 0xE4DCC6)
+            add('paint', wb('stapu_in_%d' % k, x0 + 0.045, x0 + 0.515, z0 + 0.045, z0 + 0.515, 0.04, 0.046, 0), 0xD2A573 if k % 3 else 0xC99C6A)
+        # the half-moon "aasmaan" at the top, as three short chords
+        for k in range(5):
+            a0, a1 = math.pi * k / 5, math.pi * (k + 1) / 5
+            add('paint', limb('stapu_arc', (stx + 0.55 * math.cos(a0), stz + 3.0 + 0.55 * math.sin(a0), 0.04),
+                              (stx + 0.55 * math.cos(a1), stz + 3.0 + 0.55 * math.sin(a1), 0.04), 0.05, 0.008), 0xE4DCC6)
+        add('paint', limb('stapu_pebble', (stx + 0.1, stz + 1.3, 0.05), (stx + 0.14, stz + 1.32, 0.05), 0.05, 0.03), 0x7A7470)
+    # dustbins: one by each wing verandah, one by the playground, one at the kitchen; each a little different (lid on/off, lean)
+    for k, (fx, fz) in enumerate(((-12.8, -1.9), (12.8, -1.6), (-9.0, 13.6), (10.7, 13.4), (12.0, -9.4))):
+        bx, bz = F(fx), F(fz)
+        body = (0x2C8A4A, 0x2E6FA8, 0x2E6FA8, 0x2C8A4A, 0x2E6FA8)[k]
+        rim = (0x24703C, 0x24578F, 0x24578F, 0x24703C, 0x24578F)[k]
+        hgt = (0.62, 0.66, 0.6, 0.62, 0.64)[k]
+        with real_size(bx, bz):
+            add('paint', cyl('dustbin_x%d' % k, bx, bz, 0.0, hgt, 0.21, 0.26, 12), body)
+            add('paint', cyl('dustbin_xrim%d' % k, bx, bz, hgt, hgt + 0.04, 0.275, 0.275, 12), rim)
+            if k % 2 == 0:
+                add('paint', cyl('dustbin_lid%d' % k, bx, bz, hgt + 0.04, hgt + 0.08, 0.27, 0.22, 12), rim)
+            add('paint', wb('dustbin_band%d' % k, bx - 0.24, bx + 0.24, bz - 0.25, bz - 0.23, 0.35, 0.42, 0), 0xE4DCC6)
     # a long wooden bench by the playground
-    add('wood', wb('pg_bench', -19.8, -18.0, 23.3, 23.7, 0.4, 0.45, 0.008))
-    for x in (-19.7, -18.1):
-        add('wood', wb('pg_bench_leg', x - 0.04, x + 0.04, 23.35, 23.65, 0, 0.4, 0.004))
+    with real_size(F(-12.3), F(15.25)):
+        b0, b1, bz = F(-12.3) - 0.9, F(-12.3) + 0.9, F(15.25)
+        add('wood', wb('pg_bench', b0, b1, bz - 0.2, bz + 0.2, 0.4, 0.45, 0.008))
+        for x in (b0 + 0.1, b1 - 0.1):
+            add('wood', wb('pg_bench_leg', x - 0.04, x + 0.04, bz - 0.15, bz + 0.15, 0, 0.4, 0.004))
 
 
 def build_toilets():
@@ -1104,10 +1155,8 @@ def build_pump_and_misc():
     add('metal', limb('pump_handle', (px - 0.4, pz, 1.12), (px - 0.88, pz, 1.4), 0.05), 0x2E5E3A)
     add('metal', limb('pump_spout', (px - 0.4, pz, 0.85), (px - 0.05, pz, 0.68), 0.06), 0x2E5E3A)
     add('metal', cyl('pump_bucket', px + 0.55, pz + 0.55, 0.12, 0.42, 0.14, 0.18, 10), 0x2E5E8B)
-    # three bicycles just inside the gate, leaning along the wall, mixed colours + facing
-    for k, (bx, bz, col) in enumerate(((4.4, 23.4, 0xC0392B), (4.2, 22.6, 0x2E86C1), (4.5, 21.8, 0x3A7A4A), (6.2, 23.4, 0x5C4A8B))):
-        bicycle(kit, bx, bz, col)
-    # 27 Oct: more cycles in a mix of adult and child sizes (child ones are the same bicycle scaled to 0.68 about their own foot)
+    # 28 Oct: ten cycles parked just inside the gate, right of the path: six adult roadsters and four children's cycles
+    # (the same roadster at 0.72-0.80 about its own foot). Real size, never squeezed; laid out in final metres via F().
     def child_cycle(bx, bz, col, k):
         before = set(bpy.context.scene.objects)
         bicycle(kit, bx, bz, col)
@@ -1118,24 +1167,32 @@ def build_pump_and_misc():
                     v.co.y = -bz + (v.co.y + bz) * k
                     v.co.z *= k
                 o.data.update()
-    for (bx, bz, col) in ((8.2, 23.4, 0x8E3B2F), (8.0, 22.5, 0x2B6E8B), (10.4, 23.3, 0xB07A2A)):
-        bicycle(kit, bx, bz, col)
-    for k_, (bx, bz, col) in enumerate(((5.0, 20.9, 0xD1495B), (7.3, 20.9, 0x3D9970), (9.6, 21.2, 0xE0A030), (11.6, 22.6, 0x6A4C93))):
-        child_cycle(bx, bz, col, 0.62 + 0.05 * (k_ % 2))
+    adults = ((2.7, 13.7, 0xC0392B), (2.75, 13.05, 0x2E86C1), (2.65, 12.4, 0x3A7A4A), (2.8, 11.75, 0x5C4A8B),
+              (8.4, 13.7, 0x8E3B2F), (8.5, 13.05, 0x2B6E8B))
+    for (fx, fz, col) in adults:
+        bx, bz = F(fx), F(fz)
+        with real_size(bx, bz):
+            bicycle(kit, bx, bz, col)
+    kids = ((7.0, 13.75, 0xD1495B, 0.74), (7.05, 13.2, 0x3D9970, 0.8), (6.95, 12.65, 0xE0A030, 0.72), (7.1, 12.1, 0x6A4C93, 0.78))
+    for (fx, fz, col, k) in kids:
+        bx, bz = F(fx), F(fz)
+        with real_size(bx, bz):
+            child_cycle(bx, bz, col, k)
     # a bench + a dustbin by the verandah steps
     add('wood', wb('ver_bench', -12.4, -10.0, -15.2, -14.8, 0.4, 0.45, 0.008))
     for x in (-12.2, -10.2):
         add('wood', wb('ver_bench_leg', x - 0.04, x + 0.04, -15.15, -14.85, 0, 0.4, 0.004))
-    add('paint', cyl('dustbin', 12.0, -14.4, 0.0, 0.62, 0.22, 0.26, 12), 0x2C8A4A)
-    add('paint', cyl('dustbin_rim', 12.0, -14.4, 0.62, 0.66, 0.28, 0.28, 12), 0x24703C)
     # school bell on a post + hand bell rack, by the verandah
     add('metal', limb('bell_post', (-6.5, -14.8, 0), (-6.5, -14.8, 1.9), 0.1), IRON)
     add('metal', limb('bell_arm', (-6.5, -14.8, 1.85), (-6.1, -14.8, 1.85), 0.06), IRON)
     add('metal', cyl('bell', -6.1, -14.8, 1.45, 1.8, 0.06, 0.17, 10), BRASS)
     # drinking-water matka stand on the verandah
-    add('metal', limb('stand_leg_a', (5.3, -17.2, 0), (5.3, -17.2, 0.6), 0.04), IRON)
-    add('metal', limb('stand_leg_b', (5.9, -17.2, 0), (5.9, -17.2, 0.6), 0.04), IRON)
-    add('paint', sphere('matka', 5.6, -17.2, 0.85, 0.28, 0.28, 0.26, 2), 0xB5693F)
+    # (28 Oct: moved against the wall between two windows, it was standing in a classroom doorway after the resize)
+    mx, mz = 10.6, -18.45
+    with real_size(mx, mz):
+        add('metal', limb('stand_leg_a', (mx - 0.3, mz, 0.22), (mx - 0.3, mz, 0.82), 0.04), IRON)
+        add('metal', limb('stand_leg_b', (mx + 0.3, mz, 0.22), (mx + 0.3, mz, 0.82), 0.04), IRON)
+        add('paint', sphere('matka', mx, mz, 1.07, 0.28, 0.28, 0.26, 2), 0xB5693F)
     # planters / platforms for her trees and beds (left empty)
     plat_ring('neem', -26.5, 11.0, 1.4)
     plat_ring('peepal', 27.0, 11.0, 1.5)
@@ -1163,9 +1220,18 @@ build_kitchen_dining()
 build_pump_and_misc()
 
 
-# 27 Oct: her note - school at 65% of its size. Squeeze plan (x, z) only; heights stay real so doors, rooms and kit keep human scale.
-PLAN_SCALE = 0.65
+# 27 Oct: her note - school at 65% of its size. Squeeze plan (x, z) only; heights stay real. 28 Oct: objects made inside
+# real_size() keep their true shape and only move with the layout (cycles, playground kit, dustbins, stapu court).
+_kept = {}
+for _objs, (_ax, _az) in REAL:
+    for _o in _objs:
+        _kept[_o.name] = (_ax, _az)
 for _o in bpy.context.scene.objects:
+    if _o.name in _kept:
+        _ax, _az = _kept[_o.name]
+        _o.location.x += _ax * (PLAN_SCALE - 1.0)
+        _o.location.y += -_az * (PLAN_SCALE - 1.0)
+        continue
     if _o.type == 'MESH':
         for _v in _o.data.vertices:
             _v.co.x *= PLAN_SCALE

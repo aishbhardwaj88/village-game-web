@@ -4,7 +4,11 @@ MAIN_gaushala_back_top.png (TOP = layout authority) / MAIN_gaushala_front_isomet
 
 Run:  tools/blender/make.sh gaushala gaushala   (Blender -> shrink -> public/assets/models/gaushala.glb)
 
-Frame: site-local metres, +x east, +z south (front, where the gate is). Compound x[-18,18] z[-14,14].
+Frame: site-local metres, +x east, +z south (front, where the gate is). Compound x[-13.5,13.5] z[-10.5,10.5].
+28 Oct 2026: compound scaled to 75% in PLAN (was 36 x 28 m, now 27 x 21 m): walls, gate, cattle shed and straw
+store footprints x0.75. Heights stay at the LAYOUT.md values (1.8 m wall, 1.5 m front, shed eaves) so people and
+cattle still fit. Contents keep their size and are re-seated: troughs, pump, neem platform, compost pit,
+biogas dome, bales, chaff cutter, clutter, and the 4 x 3 m office (a room, so it stays at her size).
   back + side walls   1.8 m brick, cement coping
   FRONT               0.5 m brick base + 1.5 m grey iron bar railing, brick gate pillars, open iron gate, blank board
   LEFT shed           ONE long open cattle shed (4 m deep) down the left wall, tin roof on brick pillars, cement feed trough
@@ -29,7 +33,8 @@ OUT = os.path.join(ROOT, 'tmp', 'gaushala_raw.glb')
 kit = Kit(split_props=False, own=('metal', 'thatch'), wood_slot='props')
 rnd = random.Random(25)
 
-HX, HZ = 18.0, 14.0
+S = 0.75          # plan scale of the compound shell (28 Oct 2026)
+HX, HZ = 18.0 * S, 14.0 * S
 T = 0.35          # brick wall thickness
 WALL_H = 1.8
 LOW_H, RAIL_H = 0.5, 1.5
@@ -37,7 +42,7 @@ IRON = 0x3A3D42
 COPING = 0xB9B6AE
 CEMENT = 0xA9A69F
 DIRT = 0xC09A68
-GATE_HALF = 2.0   # clear half-opening between the pillars
+GATE_HALF = 2.0 * S   # clear half-opening between the pillars (3 m clear)
 PIER = 0.6
 
 
@@ -56,8 +61,8 @@ def iron(o, c=IRON):
 def build_ground():
     kit.add('paint', wb('ground', -HX, HX, -HZ, HZ, -0.05, 0.04, 0), DIRT)
     # worn, darker packed earth along the cattle line and gate approach, swept paler elsewhere
-    kit.add('paint', wb('ground_trodden', -13.0, -9.5, -13.0, 8.0, 0.04, 0.045, 0), 0xA98660)
-    kit.add('paint', wb('ground_gate', -3.2, 3.2, 8.0, HZ - 0.3, 0.04, 0.046, 0), 0xB68F5E)
+    kit.add('paint', wb('ground_trodden', -9.3, -6.8, -9.8, 6.0, 0.04, 0.045, 0), 0xA98660)
+    kit.add('paint', wb('ground_gate', -2.6, 2.6, 7.6, HZ - 0.3, 0.04, 0.046, 0), 0xB68F5E)
     # cement apron under the gate
     trim(wb('gate_apron', -GATE_HALF - PIER, GATE_HALF + PIER, HZ - 0.45, HZ + 0.9, 0, 0.05, 0.01), 0xB2AFA7)
 
@@ -71,9 +76,9 @@ def build_walls():
                                ('east', HX - T - 0.05, HX + 0.05, -HZ + T, HZ - T)):
         trim(wb('cope_' + nm, x0, x1, z0, z1, WALL_H, WALL_H + 0.09, 0.01))
     # wall piers every 6 m: a slightly proud brick buttress, so a 36 m wall is not one flat sheet
-    for x in (-12, -6, 0, 6, 12):
+    for x in (-9, -4.5, 0, 4.5, 9):
         brick(wb('buttress_b', x - 0.22, x + 0.22, -HZ + T, -HZ + T + 0.12, 0, WALL_H, 0.005))
-    for z in (-8, -2, 4, 10):
+    for z in (-6, -1.5, 3, 7.5):
         brick(wb('buttress_e', HX - T - 0.12, HX - T, z - 0.22, z + 0.22, 0, WALL_H, 0.005))
         brick(wb('buttress_w', -HX + T, -HX + T + 0.12, z - 0.22, z + 0.22, 0, WALL_H, 0.005))
 
@@ -105,7 +110,7 @@ def build_front():
     # iron gate, both leaves swung OPEN inward (so the player can walk in): hinged at each pier, running north
     for sg in (-1, 1):
         hx = sg * (GATE_HALF - 0.04)
-        zs, ze = HZ - 0.55, HZ - 2.45          # hinge end -> free end (running toward -z)
+        zs, ze = HZ - 0.55, HZ - 0.55 - 2 * GATE_HALF + 0.1   # hinge end -> free end (running toward -z)
         for h0, h1 in ((0.1, 2.0),):
             iron(limb('gate_hinge_post', (hx, zs, h0), (hx, zs, h1 + 0.05), 0.07))
             iron(limb('gate_free_post', (hx, ze, h0), (hx, ze, h1 + 0.35), 0.06))
@@ -125,15 +130,16 @@ def build_front():
     # blank board above the gate on two iron posts rising from the pillars; the game paints the name on it
     for sg in (-1, 1):
         iron(limb('board_post', (sg * (GATE_HALF + PIER / 2), zm, 2.62), (sg * (GATE_HALF + PIER / 2), zm, 3.95), 0.09))
-    kit.add('plaster', wb('board_back', -3.2, 3.2, zm - 0.07, zm + 0.07, 3.0, 4.1, 0.015), 0xE9DEBC)
-    for nm, x0, x1, h0, h1 in (('t', -3.28, 3.28, 4.1, 4.16), ('b', -3.28, 3.28, 2.94, 3.0), ('l', -3.28, -3.2, 2.94, 4.16), ('r', 3.2, 3.28, 2.94, 4.16)):
+    BW = 2.4    # board half-width (4.8 m board, was 6.4); height kept so the lettering stays legible
+    kit.add('plaster', wb('board_back', -BW, BW, zm - 0.07, zm + 0.07, 3.0, 4.1, 0.015), 0xE9DEBC)
+    for nm, x0, x1, h0, h1 in (('t', -BW - 0.08, BW + 0.08, 4.1, 4.16), ('b', -BW - 0.08, BW + 0.08, 2.94, 3.0), ('l', -BW - 0.08, -BW, 2.94, 4.16), ('r', BW, BW + 0.08, 2.94, 4.16)):
         iron(wb('board_edge_' + nm, x0, x1, zm - 0.09, zm + 0.09, h0, h1, 0.01), 0x2F3236)
 
 
 def build_shed():
     """One long open cattle shed down the LEFT wall, full depth: 4 m deep, tin roof on brick pillars, cement feed trough."""
-    sx0, sx1 = -HX + T, -HX + T + 3.65           # inside the wall to the open edge (4 m with wall)
-    z0, z1 = -HZ + T, 8.0
+    sx0, sx1 = -HX + T, -HX + T + 3.65 * S       # inside the wall to the open edge (3 m with wall, was 4)
+    z0, z1 = -HZ + T, 8.0 * S
     # raise the party wall to roof height over the shed length
     brick(wb('shed_back_wall', -HX, -HX + T, z0, z1, WALL_H, 3.35, 0.01))
     nb = 6
@@ -164,22 +170,23 @@ def build_shed():
 
 
 def build_straw_store():
-    """6 x 5 m open straw store, back-right: brick pillars, tin roof, open to the south. Bales stacked inside."""
-    x0, x1 = HX - T - 6.0, HX - T
-    z0, z1 = -HZ + T, -HZ + T + 5.0
+    """Open straw store, back-right (6 x 5 m in LAYOUT, 4.5 x 3.75 m at the 75% plan scale): brick pillars, tin roof,
+    open to the south. Bales keep full size, so fewer of them fit."""
+    x0, x1 = HX - T - 6.0 * S, HX - T
+    z0, z1 = -HZ + T, -HZ + T + 5.0 * S
     brick(wb('store_back_wall', x0 - 0.02, x1 + T, -HZ, -HZ + T, WALL_H, 3.3, 0.01))
     brick(wb('store_east_wall', HX - T, HX, -HZ + T, z1, WALL_H, 3.3, 0.01))
-    for x in (x0 + 0.2, x0 + 3.0, x1 - 0.2):
+    for x in (x0 + 0.2, x0 + 3.0 * S, x1 - 0.2):
         brick(wb('store_pillar', x - 0.2, x + 0.2, z1 - 0.2, z1 + 0.2, 0, 2.7, 0.012))
-    brick(wb('store_pillar_w', x0 - 0.2, x0 + 0.2, z0 + 2.4 - 0.2, z0 + 2.4 + 0.2, 0, 2.7, 0.012))
+    brick(wb('store_pillar_w', x0 - 0.2, x0 + 0.2, z0 + 1.8 - 0.2, z0 + 1.8 + 0.2, 0, 2.7, 0.012))
     kit.add('wood', limb('store_beam', (x0 - 0.1, z1, 2.74), (x1, z1, 2.74), 0.2, 0.16))
-    for i in range(7):
-        x = x0 + 0.1 + (x1 - x0 - 0.2) * i / 6
+    for i in range(6):
+        x = x0 + 0.1 + (x1 - x0 - 0.2) * i / 5
         kit.add('wood', limb('store_rafter', (x, -HZ - 0.05, 3.28), (x, z1 + 0.5, 2.76), 0.07, 0.09))
     kit.add('tin', prism_x('store_roof', x0 - 0.4, x1 + 0.3, [(-HZ - 0.3, 3.4), (z1 + 0.65, 2.84), (z1 + 0.65, 2.78), (-HZ - 0.3, 3.34)]))
     trim(wb('store_plinth', x0, x1, z1 - 0.05, z1 + 0.12, 0, 0.12, 0.01), 0xA09D95)
     # stacked straw bales (hard blocks: rectangular, strapped), per-bale size/yaw jitter
-    for layer, (n, y0) in enumerate(((5, 0.04), (4, 0.4), (3, 0.76), (2, 1.12))):
+    for layer, (n, y0) in enumerate(((4, 0.04), (3, 0.4), (2, 0.76), (1, 1.12))):
         for i in range(n):
             bx = x0 + 0.5 + i * 0.95 + layer * 0.45 + rnd.uniform(-0.03, 0.03)
             kit.add('thatch', wb('bale', bx, bx + 0.9 + rnd.uniform(-0.04, 0.04), z0 + 0.2, z0 + 1.55 + rnd.uniform(-0.05, 0.05), y0, y0 + 0.36, 0.03),
@@ -189,15 +196,19 @@ def build_straw_store():
         kit.add('thatch', wb('bale2', bx, bx + 0.95, z0 + 1.7, z0 + 3.1, 0.04, 0.4, 0.03), [0xC9AD62, 0xD3B974, 0xC0A458][i % 3])
         if i < 2:
             kit.add('thatch', wb('bale3', bx + 0.3, bx + 1.25, z0 + 1.8, z0 + 3.2, 0.4, 0.76, 0.03), 0xCDB26B)
-    kit.add('thatch', wb('bale_loose', x0 + 4.4, x0 + 5.7, z0 + 2.3, z0 + 3.9, 0.02, 0.2, 0.08), 0xB9A058)
+    kit.add('thatch', wb('bale_loose', x0 + 3.65, x0 + 4.35, z0 + 1.6, z0 + 3.4, 0.02, 0.2, 0.08), 0xB9A058)
 
 
 def build_office():
-    """Cream office 4 x 3 m, front-right. Door on the west face, barred window on the south face, flat roof + parapet."""
-    ox0, ox1, oz0, oz1 = 14.45, 17.45, 3.0, 7.0
+    """Cream office 4 x 3 m (her size, NOT scaled), front-right. Door on the west face, barred window on the south face,
+    flat roof + parapet. Positioned 0.2 m off the east wall, centred where the 75% plan puts it (z = 3.75)."""
+    ox1 = HX - T - 0.2
+    ox0, oz0 = ox1 - 3.0, 1.75
+    oz1 = oz0 + 4.0
     h = 2.9
     b = Bldg('office', ox0, ox1, oz0, oz1, h, t=0.22)
-    cuts = [b.recess('W', 5.1, 6.2, 0.0, 2.05, 0.14), b.recess('S', 15.3, 16.5, 1.05, 2.05, 0.12), b.recess('N', 15.6, 16.4, 1.15, 1.95, 0.1)]
+    cuts = [b.recess('W', oz0 + 2.1, oz0 + 3.2, 0.0, 2.05, 0.14), b.recess('S', ox0 + 0.85, ox0 + 2.05, 1.05, 2.05, 0.12),
+            b.recess('N', ox0 + 1.15, ox0 + 1.95, 1.15, 1.95, 0.1)]
     kit.add('plaster', b.solid(cuts=cuts))
     kit.add('plinth', wb('off_plinth', ox0 - 0.07, ox1 + 0.07, oz0 - 0.07, oz1 + 0.07, 0, 0.42, 0.012), 0xB4A889)
     # flat roof slab with a low parapet and a rain spout; slab is pale cement
@@ -207,22 +218,25 @@ def build_office():
     kit.add('plaster', par)
     trim(wb('off_roof_top', ox0 + 0.03, ox1 - 0.03, oz0 + 0.03, oz1 - 0.03, h + 0.12, h + 0.17, 0), 0xC3C1BA)
     iron(cyl('off_spout', ox0 - 0.05, oz1 - 0.3, h - 0.1, h + 0.25, 0.04, 0.04, 8), 0x55585C)
-    panel_door(kit, b, 'W', 5.15, 6.15, 0.0, 2.05, depth=0.14)
-    barred_window(kit, b, 'S', 15.3, 16.5, 1.05, 2.05)
-    barred_window(kit, b, 'N', 15.6, 16.4, 1.15, 1.95, depth=0.1)
+    panel_door(kit, b, 'W', oz0 + 2.15, oz0 + 3.15, 0.0, 2.05, depth=0.14)
+    barred_window(kit, b, 'S', ox0 + 0.85, ox0 + 2.05, 1.05, 2.05)
+    barred_window(kit, b, 'N', ox0 + 1.15, ox0 + 1.95, 1.15, 1.95, depth=0.1)
     # concrete door step, and a plank bench by the door
-    trim(wb('off_step', ox0 - 0.7, ox0 - 0.05, 5.05, 6.25, 0, 0.12, 0.01), 0xB0AEA6)
-    kit.add('wood', wb('off_bench', ox0 - 0.5, ox0 - 0.05, 3.3, 4.4, 0.4, 0.45, 0.01))
-    for z in (3.4, 4.3):
+    trim(wb('off_step', ox0 - 0.7, ox0 - 0.05, oz0 + 2.05, oz0 + 3.25, 0, 0.12, 0.01), 0xB0AEA6)
+    kit.add('wood', wb('off_bench', ox0 - 0.5, ox0 - 0.05, oz0 + 0.3, oz0 + 1.4, 0.4, 0.45, 0.01))
+    for z in (oz0 + 0.4, oz0 + 1.3):
         kit.add('wood', wb('off_bench_leg', ox0 - 0.46, ox0 - 0.38, z, z + 0.07, 0, 0.4, 0.005))
     # electric meter box and conduit on the south face (wiring)
-    kit.add('paint', wb('meter_box', 14.7, 15.05, oz1 + 0.0, oz1 + 0.12, 1.5, 1.95, 0.01), 0x6E7176)
-    iron(limb('conduit', (14.87, oz1 + 0.05, 1.95), (14.87, oz1 + 0.05, h), 0.03), 0x4A4C50)
+    kit.add('paint', wb('meter_box', ox0 + 0.25, ox0 + 0.6, oz1 + 0.0, oz1 + 0.12, 1.5, 1.95, 0.01), 0x6E7176)
+    iron(limb('conduit', (ox0 + 0.42, oz1 + 0.05, 1.95), (ox0 + 0.42, oz1 + 0.05, h), 0.03), 0x4A4C50)
+    # yard lamp on the office west wall, over the door (wiring)
+    iron(limb('lamp_arm', (ox0 - 0.05, oz0 + 2.6, 2.4), (ox0 - 0.35, oz0 + 2.6, 2.4), 0.04), 0x2E3033)
+    kit.add('paint', cyl('lamp_shade', ox0 - 0.4, oz0 + 2.6, 2.25, 2.4, 0.14, 0.05, 10), 0x2E3033)
 
 
 def build_trough_and_pump():
     """Long cement water trough, middle; hand pump at the north end."""
-    x0, x1, z0, z1 = 0.5, 1.7, 2.5, 8.0
+    x0, x1, z0, z1 = 0.225, 1.425, 1.6, 7.1      # same 1.2 x 5.5 m trough, re-seated in the 75% yard
     tro = wb('water_trough', x0, x1, z0, z1, 0, 0.72, 0.015)
     cut(tro, [wb('water_cut', x0 + 0.13, x1 - 0.13, z0 + 0.13, z1 - 0.13, 0.14, 0.9, 0)])
     trim(tro, CEMENT)
@@ -244,7 +258,7 @@ def build_trough_and_pump():
 
 def build_neem_platform():
     """Round brick platform for the neem (the tree is hers, left out). Brick ring, soil fill, cement lip."""
-    cx, cz = 1.8, -2.0
+    cx, cz = 1.35, -2.4
     ringo = cyl('platform_ring', cx, cz, 0, 0.5, 2.3, 2.3, 28)
     cut(ringo, [cyl('platform_cut', cx, cz, 0.1, 0.7, 1.95, 1.95, 28)])
     brick(ringo)
@@ -258,7 +272,7 @@ def build_neem_platform():
 
 def build_compost_and_biogas():
     """Front-left: compost pit (brick-walled, dark fill) and the round biogas dome with its gas pipe."""
-    x0, x1, z0, z1 = -13.2, -8.4, 9.2, 12.6
+    x0, x1, z0, z1 = -9.2, -4.4, 6.5, 9.9          # same 4.8 x 3.4 m pit, re-seated
     t = 0.3
     brick(wb('pit_n', x0, x1, z0, z0 + t, 0, 0.95, 0.01))
     brick(wb('pit_s', x0, x1, z1 - t, z1, 0, 0.95, 0.01))
@@ -272,23 +286,23 @@ def build_compost_and_biogas():
     for i in range(5):    # crusted heap in the pit
         kit.add('paint', sphere('pit_heap', x0 + 1.0 + i * 0.75, z0 + 1.0 + (i % 2) * 0.5, 0.66, 0.5, 0.42, 0.14, 1), [0x3A2D1E, 0x2A2016, 0x45351F][i % 3])
     # biogas digester dome: low brick drum ring, pale-green rendered dome, inlet chamber + gas pipe
-    cx, cz = -15.6, 10.9
+    cx, cz = -11.3, 8.2                            # same dome, against the west wall clear of the shed roof
     brick(cyl('dome_drum', cx, cz, 0, 0.55, 1.62, 1.62, 24))
     kit.add('plaster', lathe('dome', cx, cz, [(1.55, 0.55), (1.52, 0.75), (1.35, 1.05), (1.05, 1.32), (0.7, 1.5), (0.4, 1.58), (0.0, 1.6)], seg=24), 0xA5AE96)
     trim(cyl('dome_ring', cx, cz, 0.52, 0.62, 1.68, 1.68, 24), 0x9A9890)
     iron(cyl('gas_collar', cx, cz, 1.55, 1.78, 0.2, 0.17, 12), 0x5B5E62)
     trim(cyl('gas_cap', cx, cz, 1.78, 1.86, 0.25, 0.25, 12), 0x8E8D86)
     iron(limb('gas_pipe_up', (cx, cz, 1.8), (cx, cz, 2.3), 0.07), 0x6F7378)
-    iron(limb('gas_pipe_run', (cx, cz, 2.3), (-11.0, cz + 0.4, 2.3), 0.06), 0x6F7378)
-    iron(limb('gas_pipe_down', (-11.0, cz + 0.4, 2.3), (-11.0, cz + 0.4, 1.0), 0.06), 0x6F7378)
+    iron(limb('gas_pipe_run', (cx, cz, 2.3), (x0 + 0.5, cz + 0.4, 2.3), 0.06), 0x6F7378)
+    iron(limb('gas_pipe_down', (x0 + 0.5, cz + 0.4, 2.3), (x0 + 0.5, cz + 0.4, 1.0), 0.06), 0x6F7378)
     # inlet chute from the pit to the dome
-    brick(wb('inlet_wall', x0 - 0.9, x0, 10.2, 11.6, 0, 0.75, 0.01))
-    kit.add('paint', wb('inlet_fill', x0 - 0.8, x0 - 0.05, 10.3, 11.5, 0.0, 0.55, 0), 0x33271B)
+    brick(wb('inlet_wall', x0 - 0.9, x0, z0 + 1.0, z0 + 2.4, 0, 0.75, 0.01))
+    kit.add('paint', wb('inlet_fill', x0 - 0.8, x0 - 0.05, z0 + 1.1, z0 + 2.3, 0.0, 0.55, 0), 0x33271B)
 
 
 def build_chaff_cutter():
     """Electric chaff cutter against the east wall: blue steel body, feed table, big flywheel, motor on a base."""
-    cx, cz = 14.6, -5.0
+    cx, cz = 10.95, -3.75
     base = wb('chaff_base', cx - 1.1, cx + 1.0, cz - 0.55, cz + 0.55, 0, 0.14, 0.01)
     trim(base, 0x7A7C80)
     kit.add('paint', wb('chaff_body', cx - 0.45, cx + 0.45, cz - 0.4, cz + 0.4, 0.14, 0.95, 0.02), 0x3A5E86)
@@ -325,10 +339,10 @@ def wheelbarrow(x, z, ang):
 
 
 def build_clutter():
-    wheelbarrow(-1.6, -11.2, 0.5)
-    wheelbarrow(12.3, 3.9, -1.55)
+    wheelbarrow(-1.2, -8.4, 0.5)
+    wheelbarrow(8.6, 2.9, -1.55)
     # dung-cake heaps: flat round hand-patted cakes in stacked layers
-    for (cx, cz, n) in ((-2.1, -6.8, 3), (9.6, 11.1, 3), (-9.7, 12.7, 2)):
+    for (cx, cz, n) in ((-2.0, -5.8, 3), (7.2, 8.3, 3), (-3.4, 9.3, 2)):
         for layer in range(n):
             for k in range(5 - layer * 2 if n == 3 else 3 - layer):
                 a = k * 1.3 + layer
@@ -337,22 +351,19 @@ def build_clutter():
                                      layer * 0.07, layer * 0.07 + 0.08, 0.15 + rnd.uniform(-0.02, 0.02), 0.14, 9), [0x5C4631, 0x4F3C29, 0x6A5239][(k + layer) % 3])
     # dung cakes drying flat on the east wall (a strip of discs along the base)
     for i in range(7):
-        kit.add('paint', cyl('dung_wall', HX - T - 0.2 - (i % 2) * 0.05, -13.2 + 0.5 * i, 0.9 + 0.0, 0.97, 0.17, 0.16, 9), 0x5A4430)
+        kit.add('paint', cyl('dung_wall', HX - T - 0.2 - (i % 2) * 0.05, -5.9 + 0.43 * i, 0.9 + 0.0, 0.97, 0.17, 0.16, 9), 0x5A4430)
     # buckets: galvanised, tapered, with rim + wire handle
-    for (bx, bz, tilt) in ((14.9, 11.3, 0), (15.7, 10.8, 0), (15.2, 12.1, 0), (3.1, 9.0, 0), (-12.6, 3.0, 0)):
+    for (bx, bz, tilt) in ((11.2, 8.5, 0), (11.8, 8.1, 0), (11.4, 9.1, 0), (2.6, 7.0, 0), (-8.9, 2.25, 0)):
         iron(cyl('bucket', bx, bz, 0, 0.3, 0.14, 0.18, 12), 0x9FA3A7)
         iron(cyl('bucket_rim', bx, bz, 0.29, 0.32, 0.19, 0.19, 12), 0xB0B4B8)
         iron(limb('bucket_handle', (bx - 0.18, bz, 0.31), (bx + 0.18, bz, 0.31), 0.012, 0.012), 0x3A3C3E)
     # a wooden plank bench and a stack of empty feed sacks' worth of timber against the office-side wall
-    kit.add('wood', wb('shed_bench', 9.0, 10.8, 8.6, 9.0, 0.38, 0.44, 0.01))
-    for x in (9.15, 10.5):
-        kit.add('wood', wb('shed_bench_leg', x, x + 0.08, 8.65, 8.95, 0, 0.38, 0.005))
+    kit.add('wood', wb('shed_bench', 6.75, 8.55, 6.45, 6.85, 0.38, 0.44, 0.01))
+    for x in (6.9, 8.25):
+        kit.add('wood', wb('shed_bench_leg', x, x + 0.08, 6.5, 6.8, 0, 0.38, 0.005))
     # fodder cart / charpai-style wooden manger standing in the yard: a rope cot on its side is hers; a hay-rake stays out
     # water drain gutter from the trough across the yard
-    kit.add('paint', wb('drain', 2.0, 2.2, 8.0, 12.0, 0.0, 0.015, 0), 0x6F6A5E)
-    # yard lamp on the office wall (wiring) and a bulb holder over the trough
-    iron(limb('lamp_arm', (ox := 14.4, 5.6, 2.4), (ox - 0.3, 5.6, 2.4), 0.04), 0x2E3033)
-    kit.add('paint', cyl('lamp_shade', ox - 0.35, 5.6, 2.25, 2.4, 0.14, 0.05, 10), 0x2E3033)
+    kit.add('paint', wb('drain', 0.95, 1.15, 7.6, HZ - 0.4, 0.0, 0.015, 0), 0x6F6A5E)
 
 
 build_ground()

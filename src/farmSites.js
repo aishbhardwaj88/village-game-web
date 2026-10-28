@@ -1675,7 +1675,7 @@ export function createOldHaveli(position) {
 }
 
 /** Gaushala (MAP.md, village edge). Rebuilt 25 Oct 2026 from the art director's approved
- * Gemini reference (Places V1/gaushala/): a 36 x 28 m walled compound, built in Blender by
+ * Gemini reference (Places V1/gaushala/): a 36 x 28 m walled compound (27 x 21 m since 28 Oct, 75% plan), built in Blender by
  * tools/blender/build_gaushala.py -> public/assets/models/gaushala.glb.
  * The old code-built shed is still constructed here and kept as an INVISIBLE merged mesh so
  * the collider boxes and the world validator keep working exactly as before; it is hidden the
@@ -1700,27 +1700,28 @@ export function createGaushala(position) {
   }
   geos.push(bake(new THREE.CylinderGeometry(0.7, 0.8, 0.5, 12), at(-L / 2 - 2, 0.25, D / 2 + 2), 0x9a948a));
 
-  // Collider boxes for the NEW 36 x 28 compound: [x, z, w, d] in the site's own frame.
-  const HX = 18, HZ = 14, T = 0.5;
+  // Collider boxes for the compound, scaled to 75% in plan on 28 Oct 2026 (36 x 28 -> 27 x 21 m;
+  // tools/blender/build_gaushala.py). Contents and the 4 x 3 m office keep their size. [x, z, w, d], site frame.
+  const HX = 13.5, HZ = 10.5, T = 0.5;
   const site = finishSite('gaushala', geos, position, {
     solids: [
       [0, -HZ, 2 * HX, T],              // back wall
       [-HX, 0, T, 2 * HZ],              // west wall
       [HX, 0, T, 2 * HZ],               // east wall
-      [-10.3, HZ, 15.4, T],             // front wall + railing, left of the gate
-      [10.3, HZ, 15.4, T],              // front wall + railing, right of the gate
-      [-2.3, HZ, 0.6, 0.6],             // gate pillar, left (gate stands open, 4 m clear)
-      [2.3, HZ, 0.6, 0.6],              // gate pillar, right
-      [16, 5, 3.2, 4.2],                // office 3 x 4 m (LAYOUT: 4 x 3)
-      [-15.3, -2.8, 4.8, 21.7],         // ONE long cattle shed, 4 m deep, + feed trough
-      [14.65, -11.15, 6.2, 5.2],        // straw store 6 x 5 m
-      [1.1, 5.25, 1.3, 5.6],            // water trough
-      [1.8, -2.0, 4.7, 4.7],            // round neem platform
-      [-10.8, 10.9, 4.8, 3.4],          // compost pit
-      [-15.6, 10.9, 3.3, 3.3],          // biogas dome
-      [14.6, -5.0, 2.2, 1.2],           // chaff cutter
+      [-7.8, HZ, 11.4, T],              // front wall + railing, left of the gate
+      [7.8, HZ, 11.4, T],               // front wall + railing, right of the gate
+      [-1.8, HZ, 0.6, 0.6],             // gate pillar, left (gate stands open, 3 m clear)
+      [1.8, HZ, 0.6, 0.6],              // gate pillar, right
+      [11.45, 3.75, 3.2, 4.2],          // office 3 x 4 m (LAYOUT: 4 x 3, not scaled)
+      [-11.45, -2.2, 4.2, 16.7],        // ONE long cattle shed, 3 m deep, + feed trough
+      [11.05, -8.45, 4.9, 4.3],         // straw store 4.5 x 3.75 m
+      [0.825, 4.35, 1.3, 5.6],          // water trough
+      [1.35, -2.4, 4.7, 4.7],           // round neem platform
+      [-6.8, 8.2, 4.8, 3.4],            // compost pit
+      [-11.3, 8.2, 3.3, 3.3],           // biogas dome
+      [10.95, -3.75, 2.2, 1.2],         // chaff cutter
     ],
-    boards: [{ id: 'gaushala', x: 0, y: 3.55, z: HZ, w: 6.4 }],
+    boards: [{ id: 'gaushala', x: 0, y: 3.55, z: HZ, w: 4.8 }],
   });
 
   // Swap in the Blender build. Async: the placeholder above stays visible until it lands,
