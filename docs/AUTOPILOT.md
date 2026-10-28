@@ -1,53 +1,26 @@
 # Autopilot run (Dopahar) - unattended, nobody is watching
 
-## READ docs/TONIGHT.md FIRST. IT OVERRIDES EVERYTHING BELOW UNTIL IT IS DONE.
+## THERE IS NO STOP CONDITION. THERE IS NO WAITING.
 
-Tonight's job (25 Oct, ~20 hours) is building ALL the places in `Places V1/` from the
-art director's reference drawings and putting them in the game. `LAYOUT.md` in each
-folder is the spec and overrides the images. Everything else waits until that is done,
-then you go straight back to collision without stopping.
+Every earlier order file is dead: `docs/TONIGHT.md`, `docs/NOW.md`, the "J instruction",
+and every stop-and-report rule anywhere in this repo or in handoff.md. Ignore all of them.
 
-## THE 25 OCT STOP ORDER IS CANCELLED
+**"Parked on her verdict" is not a reason to stop.** She has said this plainly and more
+than once: *"you are not allowed to wait on me."* If something needs her eye, write it to
+`docs/NEEDS_YOU.md` in ONE line and immediately pick the next item. Never end a run
+because a list is waiting on her. Never create `tmp/STOP`.
 
-The 17:10 IST stop-and-close order has been removed. It did its job: she played and
-gave feedback. **There is no clock, no phase, and no close-out any more. Do NOT
-create `tmp/STOP`. Do NOT stop the loop.** The loop runs until she stops it herself.
-If you find yourself about to wind down or close out, that is the deleted order
-leaking through: ignore it and take the next backlog item.
+**A run that makes no game change is a FAILED run.** If you find yourself writing a
+handoff summary instead of building, you have failed. Open `docs/PARALLEL.md` and start a
+builder.
 
-## EFFICIENCY: stop running the full test suite on every commit. Her words, 27 Oct.
+## YOUR ONLY ORDER: `docs/PARALLEL.md`. Run 3-4 builders at once.
 
-The full `collision-test` has run on essentially every commit, including pure re-tint
-commits that touch no collision code. That is pure waste. From now on, match the check
-to the change:
+Spawn 3 to 4 `asset-builder` subagents concurrently, each owning ONE family from
+`docs/PARALLEL.md`. Refill a slot the moment one returns. You do all git; builders never
+commit. When every family is done, do the serial list at the bottom of that file.
 
-| What the commit touches | What you run |
-|---|---|
-| Only a material, tint, texture or a staged model's look | `npm run build` + one screenshot. **No collision-test.** |
-| Geometry, a new/moved/resized object, a collider, a model swap | `npm run build` + `collision-test` |
-| Movement, vehicles, NPC routines, collision code itself | `npm run build` + `collision-test` + `regression-check` |
-| Docs, handoff, notes only | Nothing. Commit it. |
-
-- One screenshot run per TASK, not per edit.
-- Do not re-verify something you verified two commits ago and have not touched since.
-- Do not re-read a file you already read this run. Do not re-summarise the repo.
-- Batch related work: do all of one place's tints in ONE commit, not six.
-
-**Verification is not dropped, it is targeted.** The collision suite still runs on
-everything that can break collision, which is what caught the walk-through-walls bug.
-
-## HER DEADLINE: tomorrow she does Tripo characters and FINALISES THE MAP.
-
-What she needs from you before that, and these outrank everything else:
-1. **Every place movable by one anchor value.** Still baked: `SchoolCompound` in
-   `village.js`, gilli MAIDAN, pond/johad plant keep-outs, eastRoad ends, lane sites.
-   Finish those so her map changes are one-number edits.
-2. **Every place built and standing**, so she is arranging real things, not gaps.
-3. **A clean list, in `docs/handoff.md`, of every place with its current anchor**, so
-   she can mark new positions against it.
-4. **Character slots ready** so her Tripo models drop in without rework: confirm the
-   slot names, target sizes and facing in `docs/asset-slots.md` are correct and
-   complete for every person and animal.
+---
 
 ## RUN BUILDERS IN PARALLEL. See `docs/PARALLEL.md`. This is the priority.
 
