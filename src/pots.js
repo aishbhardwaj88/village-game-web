@@ -29,16 +29,19 @@ export function flushMerged(group, byMat, name, cast, sink) {
 }
 
 export const POT_TYPES = ['matka', 'ghada', 'surahi', 'kulhad'];
+// Variants b and c exist for every type; the ghada stays steel-only (variant a is the one the lane corners mean), so a row of pots never repeats one shape.
+const POT_VARIANTS = ['', '_b', '_c'];
+const POT_FILES = POT_TYPES.flatMap((t) => (t === 'ghada' ? [['ghada', '']] : POT_VARIANTS.map((v) => [t, v])));
 
 let modelsPromise = null;
 function loadPots() {
   if (!modelsPromise) {
-    modelsPromise = Promise.all(POT_TYPES.map((t) => getGLTFLoader().loadAsync(`assets/models/pot_${t}_v2.glb`).then((gltf) => {
+    modelsPromise = Promise.all(POT_FILES.map(([t, v]) => getGLTFLoader().loadAsync(`assets/models/pot_${t}_v2${v}.glb`).then((gltf) => {
       gltf.scene.updateWorldMatrix(true, true);
       let mesh = null;
       gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
       swapShared(mesh);
-      return [t, { geo: floatGeometry(mesh.geometry).applyMatrix4(mesh.matrixWorld), mat: mesh.material }];
+      return [t + v, { geo: floatGeometry(mesh.geometry).applyMatrix4(mesh.matrixWorld), mat: mesh.material }];
     }))).then((entries) => Object.fromEntries(entries));
   }
   return modelsPromise;
@@ -65,7 +68,8 @@ export function addPots(group, placements, name = 'pots', sink = null) {
   return loadPots().then((models) => {
     const byMat = new Map();
     placements.forEach((p, i) => {
-      const m = models[p.type];
+      const v = p.type === 'ghada' ? '' : POT_VARIANTS[Math.abs(Math.floor(p.x * 7.3 + p.z * 3.1) + i) % 3];
+      const m = models[p.type + v];
       if (!m) return;
       const s = p.s || 1;
       const mat4 = new THREE.Matrix4().compose(

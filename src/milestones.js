@@ -21,9 +21,10 @@ const SIDE = 3.4; // stands this far to the right of the walker, clear of the ca
 const byId = (id) => PLACES.find((p) => p.id === id);
 
 // One Blender model (tools/blender/build_milestone.py): whitewashed body, ochre rounded top, no lettering. Loaded once, one shared material.
-let modelPromise = null;
-function loadModel() {
-  if (!modelPromise) modelPromise = getGLTFLoader().loadAsync('assets/models/milestone_v2.glb').then((gltf) => {
+// Two kilometre-stone variants (upright, and one leaning and more faded); each loaded once.
+const modelPromises = {};
+function loadModel(v = '') {
+  if (!modelPromises[v]) modelPromises[v] = getGLTFLoader().loadAsync(`assets/models/milestone_v2${v}.glb`).then((gltf) => {
     gltf.scene.updateWorldMatrix(true, true);
     let mesh = null;
     gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
@@ -31,7 +32,7 @@ function loadModel() {
     const geo = floatGeometry(mesh.geometry).applyMatrix4(mesh.matrixWorld);
     return { geo, mat: mesh.material };
   });
-  return modelPromise;
+  return modelPromises[v];
 }
 
 /** A Float32 copy of a (possibly meshopt-quantised) geometry, so applyMatrix4 cannot clip normalised int attributes. */
@@ -72,7 +73,7 @@ export function createMilestone(site) {
   let h = 0;
   for (const c of site.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const r = (k) => (((h >>> k) & 255) / 255 - 0.5);
-  loadModel().then(({ geo, mat }) => {
+  loadModel(r(20) > 0 ? '_b' : '').then(({ geo, mat }) => {
     const m = new THREE.Matrix4().compose(
       new THREE.Vector3(site.x, 0, site.z),
       new THREE.Quaternion().setFromEuler(new THREE.Euler(r(0) * 0.04, site.ry + r(8) * 0.12, r(16) * 0.05, 'YXZ')),
