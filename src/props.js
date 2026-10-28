@@ -332,11 +332,12 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
   registerLampSites(group, colliders.map((c) => ({ x: (c.minX + c.maxX) / 2, z: (c.minZ + c.maxZ) / 2 })));
   group.userData.colliderBoxes = colliders; // pole bases are solid (A0)
   // Model pass (async): one Blender model per type, cloned per lamp with its lean, size and wear tint, merged per run (two draw calls).
-  loadLampModel(type).then((model) => {
+  loadLampModel(type).then((models) => {
     for (const { lamps, wires } of runs) {
       for (const [key, mat] of [['main', concreteMat], ['tin', lampTinMaterial(tinMat)]]) {
         const lift = key === 'tin' ? 1.4 : 1; // the tin set is darker than concrete; lift so painted iron reads green-grey, not black
-        const list = lamps.map(({ m, wear: w0 }) => {
+        const list = lamps.map(({ m, wear: w0 }, li) => {
+          const model = models[li % models.length]; // alternate the two built variants along a run
           const wear = w0 * lift;
           const g = model[key].clone().applyMatrix4(m);
           const col = g.attributes.color;
@@ -367,7 +368,7 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
 const lampModels = {};
 function loadLampModel(type) {
   if (!lampModels[type]) {
-    lampModels[type] = getGLTFLoader().loadAsync(`assets/models/lamp_${type}_v2.glb`).then((gltf) => {
+    lampModels[type] = Promise.all(['', '_b'].map((v) => getGLTFLoader().loadAsync(`assets/models/lamp_${type}_v2${v}.glb`).then((gltf) => {
       gltf.scene.updateWorldMatrix(true, true);
       const out = {};
       gltf.scene.traverse((o) => {
@@ -387,7 +388,7 @@ function loadLampModel(type) {
         out[o.name.includes('tin') ? 'tin' : 'main'] = g;
       });
       return out;
-    });
+    }))).catch((err) => { throw err; });
   }
   return lampModels[type];
 }

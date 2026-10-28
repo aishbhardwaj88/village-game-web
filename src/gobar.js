@@ -9,12 +9,12 @@ import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
 import { floatGeometry } from './pots.js';
 
-export const GOBAR_TYPES = ['wall', 'stack'];
+export const GOBAR_TYPES = ['wall', 'wall_b', 'stack', 'stack_b'];
 
 let modelsPromise = null;
 function loadGobar() {
   if (!modelsPromise) {
-    modelsPromise = Promise.all(GOBAR_TYPES.map((t) => getGLTFLoader().loadAsync(`assets/models/gobar_${t}_v2.glb`).then((gltf) => {
+    modelsPromise = Promise.all(GOBAR_TYPES.map((t) => getGLTFLoader().loadAsync(`assets/models/gobar_${t.replace('_b', '')}_v2${t.endsWith('_b') ? '_b' : ''}.glb`).then((gltf) => {
       gltf.scene.updateWorldMatrix(true, true);
       const parts = [];
       gltf.scene.traverse((o) => {

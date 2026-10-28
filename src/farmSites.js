@@ -413,7 +413,7 @@ export function createTubewell(position) {
   group.add(mesh, water);
   group.position.set(position.x, 0, position.z);
   addHaystacks(group, hayPlacements(hay), 'tubewell_haystacks'); // Blender stacks (src/haystacks.js), same footprint as the colliders above
-  addGobar(group, [{ type: 'stack', x: -3.4, z: -6.2, ry: 0.4, s: 1, tint: 0xd8cfc0 }, { type: 'stack', x: -2.2, z: -7.1, ry: 2.1, s: 0.8, tint: 0xc8bfae }], 'tubewell_gobar'); // dung cakes drying beside the fodder
+  addGobar(group, [{ type: 'stack', x: -3.4, z: -6.2, ry: 0.4, s: 1, tint: 0xd8cfc0 }, { type: 'stack_b', x: -2.2, z: -7.1, ry: 2.1, s: 0.8, tint: 0xc8bfae }], 'tubewell_gobar'); // dung cakes drying beside the fodder
   return group;
 }
 
