@@ -1,0 +1,1223 @@
+{
+ "roads": {
+  "highway": {
+   "width_m": 11,
+   "centreline": [
+    [
+     -255.6,
+     -128.3
+    ],
+    [
+     -132.6,
+     -126.3
+    ],
+    [
+     156.7,
+     -122.3
+    ],
+    [
+     275.7,
+     -120.3
+    ]
+   ]
+  },
+  "main_road": {
+   "width_m": 8,
+   "centreline": [
+    [
+     8.7,
+     -123.3
+    ],
+    [
+     -10.1,
+     -71.5
+    ],
+    [
+     0,
+     -6.2
+    ],
+    [
+     10.2,
+     15.5
+    ],
+    [
+     1.5,
+     66.3
+    ],
+    [
+     -5.8,
+     95.3
+    ],
+    [
+     -20.3,
+     142.3
+    ],
+    [
+     -26.1,
+     176.3
+    ],
+    [
+     -29,
+     216.3
+    ]
+   ],
+   "note": "leaves the highway, runs through the block, exits south"
+  },
+  "cross_lane": {
+   "width_m": 7,
+   "centreline": [
+    [
+     -201.6,
+     -13.5
+    ],
+    [
+     -133.6,
+     -4.8
+    ],
+    [
+     0,
+     8.3
+    ],
+    [
+     133.7,
+     19.8
+    ],
+    [
+     201.7,
+     30
+    ]
+   ],
+   "note": "runs through the block and well past both sides"
+  },
+  "block_ring": {
+   "width_m": 6,
+   "centreline": [
+    [
+     -82.6,
+     -75.8
+    ],
+    [
+     76.9,
+     -55.5
+    ],
+    [
+     68.1,
+     51.8
+    ],
+    [
+     -63.8,
+     77.9
+    ],
+    [
+     -82.6,
+     -75.8
+    ]
+   ],
+   "note": "closed four-sided loop, no two sides parallel"
+  }
+ },
+ "fields": [
+  {
+   "name": "Wheat fields",
+   "outline": [
+    [
+     -94.6,
+     -204.3
+    ],
+    [
+     101.7,
+     -202.3
+    ],
+    [
+     103.7,
+     -160.3
+    ],
+    [
+     -95.6,
+     -162.3
+    ]
+   ]
+  },
+  {
+   "name": "Sugarcane fields",
+   "outline": [
+    [
+     -225.6,
+     -106.3
+    ],
+    [
+     -151.6,
+     -104.3
+    ],
+    [
+     -155.6,
+     -55.5
+    ],
+    [
+     -161.6,
+     -3.3
+    ],
+    [
+     -157.6,
+     48.9
+    ],
+    [
+     -163.6,
+     96.3
+    ],
+    [
+     -177.6,
+     120.3
+    ],
+    [
+     -225.6,
+     120.3
+    ]
+   ]
+  },
+  {
+   "name": "Mustard fields",
+   "outline": [
+    [
+     221.7,
+     -100.3
+    ],
+    [
+     149.7,
+     -100.3
+    ],
+    [
+     155.7,
+     -55.5
+    ],
+    [
+     151.7,
+     -3.3
+    ],
+    [
+     155.7,
+     45.9
+    ],
+    [
+     162.7,
+     86.3
+    ],
+    [
+     173.7,
+     108.3
+    ],
+    [
+     221.7,
+     108.3
+    ]
+   ]
+  },
+  {
+   "name": "Paddy fields",
+   "outline": [
+    [
+     -177.6,
+     202.3
+    ],
+    [
+     -125.6,
+     196.3
+    ],
+    [
+     -63.8,
+     192.3
+    ],
+    [
+     8.7,
+     190.3
+    ],
+    [
+     81.2,
+     193.3
+    ],
+    [
+     131.7,
+     195.3
+    ],
+    [
+     171.7,
+     192.3
+    ],
+    [
+     221.7,
+     188.3
+    ],
+    [
+     221.7,
+     242.3
+    ],
+    [
+     -177.6,
+     242.3
+    ]
+   ]
+  }
+ ],
+ "places": [
+  {
+   "map_name": "Bus stop",
+   "centre": [
+    -43.5,
+    -113.3
+   ],
+   "turn_deg": 1,
+   "in_code_today": "yard_bus_adda"
+  },
+  {
+   "map_name": "Tyre repair shop",
+   "centre": [
+    31.9,
+    -113.8
+   ],
+   "turn_deg": 1,
+   "in_code_today": "yard_puncture"
+  },
+  {
+   "map_name": "Truck weighbridge",
+   "centre": [
+    121.7,
+    -108.3
+   ],
+   "turn_deg": 1,
+   "in_code_today": "yard_dharam_kanta"
+  },
+  {
+   "map_name": "Petrol pump",
+   "centre": [
+    -43.5,
+    -146.6
+   ],
+   "turn_deg": 1,
+   "in_code_today": "yard_petrol"
+  },
+  {
+   "map_name": "Wholesale grain market",
+   "centre": [
+    147.7,
+    -160.3
+   ],
+   "turn_deg": 1,
+   "in_code_today": "mandi"
+  },
+  {
+   "map_name": "Brick kiln",
+   "centre": [
+    240.7,
+    -170.3
+   ],
+   "turn_deg": 1,
+   "in_code_today": "yard_bhatta"
+  },
+  {
+   "map_name": "Gathering platform (chaupal)",
+   "centre": [
+    36.3,
+    -91.3
+   ],
+   "turn_deg": 3,
+   "in_code_today": "yard_chaupal"
+  },
+  {
+   "map_name": "Overhead water tank",
+   "centre": [
+    -44.9,
+    -90.3
+   ],
+   "turn_deg": 3,
+   "in_code_today": "yard_paani_tanki"
+  },
+  {
+   "map_name": "Flag pole",
+   "centre": [
+    -21.7,
+    -80.3
+   ],
+   "turn_deg": 0,
+   "in_code_today": "new junction landmark"
+  },
+  {
+   "map_name": "Mosque",
+   "centre": [
+    -98.6,
+    -92.3
+   ],
+   "turn_deg": 5,
+   "in_code_today": "masjid"
+  },
+  {
+   "map_name": "Temple",
+   "centre": [
+    95.7,
+    -78.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "temple"
+  },
+  {
+   "map_name": "Flower stall",
+   "centre": [
+    83.7,
+    -85.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "flower stall (src/temple.js FLOWER_STALL_POS)"
+  },
+  {
+   "map_name": "Village square",
+   "centre": [
+    1.1,
+    13.7
+   ],
+   "turn_deg": 5,
+   "in_code_today": "chowk"
+  },
+  {
+   "map_name": "Bazaar",
+   "centre": [
+    -34.8,
+    -4.8
+   ],
+   "turn_deg": 4.8,
+   "units": [
+    {
+     "centre": [
+      -50.5,
+      -6.1
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -46,
+      -5.7
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -41.5,
+      -5.4
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -37,
+      -5
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -32.5,
+      -4.6
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -28,
+      -4.2
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -23.5,
+      -3.9
+     ],
+     "turn_deg": 4.8
+    },
+    {
+     "centre": [
+      -19,
+      -3.5
+     ],
+     "turn_deg": 4.8
+    }
+   ],
+   "in_code_today": "bazaar (src/bazaar.js BAZAAR_UNITS)"
+  },
+  {
+   "map_name": "Tea stall at the square",
+   "centre": [
+    21.8,
+    -1.9
+   ],
+   "turn_deg": 5,
+   "in_code_today": "chowk tea stall (src/bazaar.js CHOWK_TEA_POS)"
+  },
+  {
+   "map_name": "General store",
+   "centre": [
+    22.5,
+    47.4
+   ],
+   "turn_deg": 4,
+   "in_code_today": "store"
+  },
+  {
+   "map_name": "Sweet shop (halwai)",
+   "centre": [
+    23.2,
+    24.9
+   ],
+   "turn_deg": 4,
+   "in_code_today": "halwai"
+  },
+  {
+   "map_name": "Jalebi stall",
+   "centre": [
+    23.2,
+    32.9
+   ],
+   "turn_deg": 4,
+   "in_code_today": "jalebi"
+  },
+  {
+   "map_name": "Vegetable carts",
+   "centre": [
+    -5.1,
+    15.7
+   ],
+   "turn_deg": 5,
+   "in_code_today": "sabzi"
+  },
+  {
+   "map_name": "Soda drink stall",
+   "centre": [
+    -19.6,
+    14.9
+   ],
+   "turn_deg": 5,
+   "in_code_today": "banta"
+  },
+  {
+   "map_name": "Chaat cart",
+   "centre": [
+    -28.3,
+    15.4
+   ],
+   "turn_deg": 5,
+   "in_code_today": "chaat"
+  },
+  {
+   "map_name": "Old mansion (haveli)",
+   "centre": [
+    44.9,
+    -22.2
+   ],
+   "turn_deg": 6,
+   "in_code_today": "haveli"
+  },
+  {
+   "map_name": "Village council office",
+   "centre": [
+    -50,
+    42.3
+   ],
+   "turn_deg": 5,
+   "in_code_today": "yard_panchayat"
+  },
+  {
+   "map_name": "Tea stall",
+   "centre": [
+    -36.2,
+    15.5
+   ],
+   "turn_deg": 5,
+   "in_code_today": "teastall (map shows it as Chai stall)"
+  },
+  {
+   "map_name": "Post office",
+   "centre": [
+    -52.2,
+    65.4
+   ],
+   "turn_deg": -6,
+   "in_code_today": "post + yard_post (v2)"
+  },
+  {
+   "map_name": "Hand pump",
+   "centre": [
+    -65.2,
+    12.6
+   ],
+   "turn_deg": 0,
+   "in_code_today": "new junction landmark (src/handPumps.js style)"
+  },
+  {
+   "map_name": "Health centre",
+   "centre": [
+    111.7,
+    -3.3
+   ],
+   "turn_deg": 4,
+   "in_code_today": "health"
+  },
+  {
+   "map_name": "Creche and preschool (anganwadi)",
+   "centre": [
+    53.7,
+    35.8
+   ],
+   "turn_deg": 4,
+   "in_code_today": "anganwadi"
+  },
+  {
+   "map_name": "Small shrine",
+   "centre": [
+    83.7,
+    5.4
+   ],
+   "turn_deg": 4,
+   "in_code_today": "new junction landmark"
+  },
+  {
+   "map_name": "Peepal tree",
+   "centre": [
+    17.4,
+    73.5
+   ],
+   "turn_deg": 0,
+   "in_code_today": "new junction landmark (tree)"
+  },
+  {
+   "map_name": "North houses",
+   "centre": [
+    0.8,
+    -62.4
+   ],
+   "turn_deg": 7.3,
+   "house_footprints": [
+    {
+     "centre": [
+      -61.5,
+      -65
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -55.4,
+      -63.1
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -49.3,
+      -63.4
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -43.1,
+      -62.3
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -36.5,
+      -61.5
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -29.3,
+      -60.6
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      8.7,
+      -56.4
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      14.9,
+      -54.8
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      21.6,
+      -53.7
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      28.5,
+      -52.8
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      35.2,
+      -52.1
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      41.6,
+      -51.4
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      48.9,
+      -50.3
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      56.7,
+      -50.2
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      20.4,
+      -71.6
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      26.6,
+      -69.8
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      34,
+      -69.1
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      41.8,
+      -69
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      48.5,
+      -68.2
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -70.6,
+      -82.8
+     ],
+     "turn_deg": 7.3
+    },
+    {
+     "centre": [
+      -64.2,
+      -81.7
+     ],
+     "turn_deg": 7.3
+    }
+   ],
+   "in_code_today": "src/scenery.js abadi rows"
+  },
+  {
+   "map_name": "East houses",
+   "centre": [
+    85.3,
+    -8.2
+   ],
+   "turn_deg": 94.6,
+   "house_footprints": [
+    {
+     "centre": [
+      84.2,
+      -48.6
+     ],
+     "turn_deg": 94.6
+    },
+    {
+     "centre": [
+      84.6,
+      -41.2
+     ],
+     "turn_deg": 94.6
+    },
+    {
+     "centre": [
+      83.2,
+      -33.2
+     ],
+     "turn_deg": 94.6
+    },
+    {
+     "centre": [
+      84.5,
+      -25.7
+     ],
+     "turn_deg": 94.6
+    },
+    {
+     "centre": [
+      87.7,
+      45.2
+     ],
+     "turn_deg": 4.6
+    },
+    {
+     "centre": [
+      87.7,
+      54.1
+     ],
+     "turn_deg": 4.6
+    }
+   ],
+   "in_code_today": "src/scenery.js abadi rows"
+  },
+  {
+   "map_name": "South houses",
+   "centre": [
+    4.9,
+    73
+   ],
+   "turn_deg": 168.8,
+   "house_footprints": [
+    {
+     "centre": [
+      63,
+      62.5
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      56.5,
+      62.6
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      50.4,
+      63.4
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      43.5,
+      65.6
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      35.4,
+      67.1
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -15.1,
+      76.6
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -21.6,
+      77.4
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -28.1,
+      79.6
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -35.8,
+      81.3
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -43.9,
+      83.1
+     ],
+     "turn_deg": 168.8
+    },
+    {
+     "centre": [
+      -50.7,
+      84.2
+     ],
+     "turn_deg": 168.8
+    }
+   ],
+   "in_code_today": "src/scenery.js abadi rows"
+  },
+  {
+   "map_name": "West houses",
+   "centre": [
+    -73.5,
+    6.2
+   ],
+   "turn_deg": 83,
+   "house_footprints": [
+    {
+     "centre": [
+      -72.4,
+      -52.2
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -71.2,
+      -45.4
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -70.1,
+      -38.5
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -69.8,
+      -30.9
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -67.5,
+      -23.9
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -66.9,
+      -17.5
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -79.4,
+      20.4
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -79.2,
+      27.4
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -77.5,
+      34.2
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -76.5,
+      41.7
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -75.8,
+      49
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -75.1,
+      55.2
+     ],
+     "turn_deg": 83
+    },
+    {
+     "centre": [
+      -73.8,
+      61.6
+     ],
+     "turn_deg": 83
+    }
+   ],
+   "in_code_today": "src/scenery.js abadi rows"
+  },
+  {
+   "map_name": "Village TV house",
+   "centre": [
+    91.7,
+    31.5
+   ],
+   "turn_deg": 4.6,
+   "in_code_today": "tvhouse + yard_tvhouse (v2)"
+  },
+  {
+   "map_name": "Player's house",
+   "centre": [
+    93.7,
+    67
+   ],
+   "turn_deg": 4.6,
+   "in_code_today": "house"
+  },
+  {
+   "map_name": "East street corner",
+   "centre": [
+    68.1,
+    51.8
+   ],
+   "turn_deg": 4.6,
+   "in_code_today": "eastgali"
+  },
+  {
+   "map_name": "West street corner",
+   "centre": [
+    -63.8,
+    77.9
+   ],
+   "turn_deg": -11,
+   "in_code_today": "westgali"
+  },
+  {
+   "map_name": "Cow shelter (gaushala)",
+   "centre": [
+    -122.6,
+    -41
+   ],
+   "turn_deg": 3,
+   "in_code_today": "gaushala"
+  },
+  {
+   "map_name": "Milk dairy",
+   "centre": [
+    -95.1,
+    -37.4
+   ],
+   "turn_deg": 6,
+   "in_code_today": "dairy + yard_dairy (v2)"
+  },
+  {
+   "map_name": "Threshing floor (khalihan)",
+   "centre": [
+    -120.6,
+    -86.3
+   ],
+   "turn_deg": 3,
+   "in_code_today": "khalihan + yard_khalihan (v2)"
+  },
+  {
+   "map_name": "Flour mill",
+   "centre": [
+    -103.6,
+    -72.9
+   ],
+   "turn_deg": 5,
+   "in_code_today": "chakki + yard_chakki (v2)"
+  },
+  {
+   "map_name": "Mud house and cattle yard",
+   "centre": [
+    -108.6,
+    20.6
+   ],
+   "turn_deg": 4,
+   "in_code_today": "src/scenery.js KACHCHA"
+  },
+  {
+   "map_name": "Mud house and cattle yard 2",
+   "centre": [
+    -128.6,
+    20.6
+   ],
+   "turn_deg": 4,
+   "in_code_today": "src/scenery.js KACHCHA2"
+  },
+  {
+   "map_name": "Pond",
+   "centre": [
+    -120.6,
+    60.5
+   ],
+   "turn_deg": 0,
+   "in_code_today": "pond"
+  },
+  {
+   "map_name": "Sikh temple",
+   "centre": [
+    -95.6,
+    102.3
+   ],
+   "turn_deg": -6,
+   "in_code_today": "gurudwara"
+  },
+  {
+   "map_name": "Fair ground",
+   "centre": [
+    -125.6,
+    146.3
+   ],
+   "turn_deg": 3,
+   "in_code_today": "mela"
+  },
+  {
+   "map_name": "Rain pond (johad)",
+   "centre": [
+    121.7,
+    43.1
+   ],
+   "turn_deg": 0,
+   "in_code_today": "johad"
+  },
+  {
+   "map_name": "Tubewell and pump room",
+   "centre": [
+    124.7,
+    -46.1
+   ],
+   "turn_deg": 3,
+   "in_code_today": "tubewell + yard_tubewell (v2)"
+  },
+  {
+   "map_name": "Jain temple",
+   "centre": [
+    117.7,
+    96.3
+   ],
+   "turn_deg": 4,
+   "in_code_today": "jain"
+  },
+  {
+   "map_name": "Mango orchard",
+   "centre": [
+    137.7,
+    132.3
+   ],
+   "turn_deg": 0,
+   "in_code_today": "baagh"
+  },
+  {
+   "map_name": "Primary school",
+   "centre": [
+    -43.5,
+    108.6
+   ],
+   "turn_deg": 6,
+   "in_code_today": "school + yard_school (v2)"
+  },
+  {
+   "map_name": "Gurukul school",
+   "centre": [
+    34.8,
+    108.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "gurukul + yard_gurukul (v2)"
+  },
+  {
+   "map_name": "Volleyball court",
+   "centre": [
+    -58,
+    140.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "yard_volleyball"
+  },
+  {
+   "map_name": "Sports ground",
+   "centre": [
+    31.9,
+    154.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "maidan + yard_khel (v2)"
+  },
+  {
+   "map_name": "Wrestling pit (akhada)",
+   "centre": [
+    89.7,
+    146.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "yard_akhada"
+  },
+  {
+   "map_name": "Gilli-danda play spot",
+   "centre": [
+    89.7,
+    169.3
+   ],
+   "turn_deg": 6,
+   "in_code_today": "gilli"
+  },
+  {
+   "map_name": "House types kit",
+   "centre": [
+    -291.4,
+    -175.1
+   ],
+   "turn_deg": 0,
+   "in_code_today": "yard_houses (reference row, not a village place)"
+  }
+ ],
+ "bazaar_units_west_to_east": [
+  "Grocery store (kirana, unit 1)",
+  "Vegetable shop (sabzi, unit 2)",
+  "Medicine shop (medical, unit 3; the chemist merges in here)",
+  "Tailor shop (unit 4)",
+  "Barber shop (unit 5)",
+  "Mobile shop (unit 6)",
+  "Bangle and bindi (bangle, unit 7; manihari merges in here)",
+  "Ration shop (unit 8; was puncture, puncture now lives on the highway as yard_puncture)"
+ ],
+ "frame": "metres, 1 unit = 1 m, +x east, +z south, origin near the village square. Relative positions are the point; the whole layout may be shifted as one piece to sit in the existing world.",
+ "not_on_map": {
+  "yard_matboard": "material board stays in the staging yard",
+  "canal": "removed from the layout; hide it, do not delete code"
+ }
+}
