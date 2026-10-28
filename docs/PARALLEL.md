@@ -1,41 +1,35 @@
-# HER VERDICT IS IN, 28 Oct. FOUR MATERIALS REWORKED, NOTHING ELSE FIRST.
+# STOP WHATEVER ELSE YOU ARE DOING. THREE MATERIALS, NOTHING ELSE.
 
-APPROVED AND FROZEN, never touch again: terracotta, painted wood, rusted steel, packed earth.
+She rejected four materials at 15:47. Since then you built lanterns, which she did not ask
+for. Lanterns, props, characters, places, wiring: ALL OF IT WAITS.
 
-REJECTED, rework these four. **The cause is the same every time: the structure that makes
-a material read as itself is being PAINTED instead of MODELLED.** A flat box with a
-picture of ridges on it is why tin has now failed twice. Fix the geometry, not the texture.
+Claude is fixing TIN on another machine. You do these THREE and nothing else:
+**thatch, mud and dung, jute.** Do not touch tin, you will collide.
 
-### 1. TIN - failed twice. Highest priority, it is on every roof she walks past.
-Her words: "Tin is still flat."
-- Build REAL corrugation: a sine profile across the sheet, roughly 76mm pitch and 18mm
-  depth, as actual vertices. The silhouette at the eave must be wavy, not a straight line.
-- Sheets overlap by one and a half corrugations, with a visible shadow line at the lap.
-- Fixing screws sit on the RIDGE crowns, never the valleys, each with a small washer and
-  a rust tear running down from it.
-- Slight per-sheet bend and lift at one corner. Nothing perfectly flat or perfectly aligned.
+Her words, exactly:
+- Thatch: "Thatch is not at all clear."
+- Mud and dung: "too smooth and too uniform"
+- Jute: "no weave"
 
-### 2. THATCH - "not at all clear"
-- It is far too dark, nearly black. Real thatch is pale straw gold, sun-bleached on top,
-  darker and greyer underneath and where it stays damp.
-- The silhouette must be shaggy. Break the edge with alpha-cutout straw cards at the eave
-  and ridge, so it never reads as a smooth solid shell.
-- Visible courses, with the binding rope line across them.
+**The cause is the same for all three: the structure is PAINTED instead of MODELLED.**
+The board builds every panel as a flat box with a picture on it (see build_material_board.py,
+`kit.add(kind, wb(...slab...))`). A picture of straw is not straw. Fix the geometry.
 
-### 3. MUD AND DUNG - "too smooth and too uniform"
-- Hand-applied, so it must carry hand-smear arcs and finger drag, not a flat plane.
-- Displace the surface itself. Straw and husk flecks standing proud of the surface.
-- Colour must drift across the wall. A darker damp band at the base.
+- THATCH: pale straw gold, not near-black. Sun-bleached on top, greyer underneath and where
+  damp. Break the silhouette with alpha-cutout straw cards at eave and ridge so it is shaggy,
+  never a smooth shell. Visible courses with the binding rope line.
+- MUD AND DUNG: displace the surface. Hand-smear arcs and finger drag. Straw and husk flecks
+  standing proud. Colour drifting across the wall, darker damp band at the base.
+- JUTE: real weave depth, warp and weft crossing over and under so they catch light
+  differently. Frayed edge, loose threads, a repaired patch, slack where it hangs.
 
-### 4. JUTE - "no weave"
-- Build the weave as geometry or a real normal map with depth, so warp and weft cross
-  over and under and catch light differently.
-- Frayed edge, loose threads, a repaired patch, slack where it hangs.
+When all three are done: rebuild `docs/shots/material-board/FOR-HER/board.png` and write ONE
+line in docs/NEEDS_YOU.md. Then go back to the list below. Do not wait for her.
 
-Rebuild the board at `docs/shots/material-board/FOR-HER/board.png` when all four are done
-and write ONE line in docs/NEEDS_YOU.md. Do not wait for her. Keep going.
+APPROVED AND FROZEN, never touch: terracotta, painted wood, rusted steel, packed earth.
 
 ---
+
 
 # HER EVENING IS BOOKED FOR THIS. 28 Oct, ~21:30 IST. Have it ready.
 
