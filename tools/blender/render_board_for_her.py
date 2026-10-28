@@ -25,14 +25,14 @@ RES = 900
 
 # name, label, source glb, object names, region (xmin, xmax, ymin, ymax, zmin, zmax) in Blender coords, hint normal, up hint
 PANELS = [
-    ('tin', 'Tin sheet', 'material_board_v2_raw', ['hb_tin'], (-5.3, -3.1, -1, 1, -1, 3), (0, -1, 0), (0, 0, 1)),
+    ('tin', 'Tin sheet', 'tin_panel_raw', ['*'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
     ('terracotta', 'Terracotta tiles', 'terracotta_panel_raw', ['hb_terracotta'], (-9, 9, -9, 9, -9, 9), (0, 0, 1), (0, 0, 1)),
     ('painted_wood', 'Painted wood', 'painted_wood_panel_raw', ['hb_main', 'hb_wood'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
     ('rusted_steel', 'Rusted steel', 'rusted_steel_panel_raw', ['hb_steel'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
-    ('thatch', 'Thatch', 'rough_surfaces_raw', ['hb_thatch'], (-9, 9, -9, 9, -9, 9), (0, 0, 1), (0, 0, 1)),
-    ('mud_dung', 'Mud and dung', 'rough_surfaces_raw', ['hb_props'], (0.4, 2.6, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
+    ('thatch', 'Thatch', 'thatch_panel_raw', ['*'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
+    ('mud_dung', 'Mud and dung', 'mud_dung_panel_raw', ['*'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
     ('packed_earth', 'Packed earth', 'rough_surfaces_raw', ['hb_props'], (3.4, 5.6, -9, 9, -9, 9), (0, 0, 1), (0, 1, 0)),
-    ('jute', 'Jute', 'rough_surfaces_raw', ['hb_jute'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
+    ('jute', 'Jute', 'jute_panel_raw', ['*'], (-9, 9, -9, 9, -9, 9), (0, -1, 0), (0, 0, 1)),
 ]
 
 
@@ -47,7 +47,7 @@ def render_cells():
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.ops.import_scene.gltf(filepath=os.path.join(TMP, glb + '.glb'))
         sc = bpy.context.scene
-        keep = [o for o in sc.objects if o.type == 'MESH' and o.name in objs]
+        keep = [o for o in sc.objects if o.type == 'MESH' and (o.name in objs or objs == ['*'])]
         for o in list(sc.objects):
             if o.type == 'MESH' and o not in keep:
                 bpy.data.objects.remove(o, do_unlink=True)
