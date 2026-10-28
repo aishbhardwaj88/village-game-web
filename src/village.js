@@ -8,6 +8,7 @@ import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { registerWalkable } from './walkable.js';
 import { drawBilingual } from './signPaint.js';
 import { addHandPumps } from './handPumps.js';
+import { addPots } from './pots.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -682,16 +683,10 @@ function furnishClassroom(group) {
   // North wall beside the board: a framed picture and a hanging clock-ish disc.
   metal(0.36, 0.36, 0.04, rx + 2.0, 2.45, front + 0.05, 0, 0xe8e2d0); // wall clock
 
-  // East wall (door side): water pot on an iron stand with mug, cupboard, bell.
+  // East wall (door side): water matka with mug, cupboard, bell.
   const east = rx + w / 2 - 0.35;
-  for (let i = 0; i < 3; i++) { // iron tripod stand
-    const a = i * 2.094;
-    metal(0.025, 0.55, 0.025, east + Math.cos(a) * 0.2, 0.275, rz + 3.2 + Math.sin(a) * 0.2, 0, 0x2a2a2a);
-  }
-  wood(0.5, 0.42, 0.5, east, 0.8, rz + 3.2, 0.4, 0x8a4a30); // matka body
-  wood(0.36, 0.2, 0.36, east, 1.05, rz + 3.2, 0.9, 0x7a4028); // matka shoulder
-  metal(0.2, 0.03, 0.2, east, 1.1, rz + 3.2, 0, 0x7a3a22); // lid
-  metal(0.08, 0.1, 0.08, east + 0.2, 0.62, rz + 3.5, 0, 0x8a8f94); // steel mug
+  addPots(group, [{ type: 'matka', x: east, y: 0, z: rz + 3.2, ry: 0.4, s: 1.0, lean: 0.01, tint: 0xf0e2d6 }], 'classroom_matka'); // Blender matka standing on the floor
+  metal(0.08, 0.1, 0.08, east + 0.5, 0.05, rz + 3.5, 0, 0x8a8f94); // steel mug
   // Cupboard (almirah): doors, handles, shelf top with a stack of registers.
   const cup = { x: rx + w / 2 - 0.45, z: rz - 6.5 };
   wood(0.5, 1.8, 1.0, cup.x, 0.9, cup.z, 0, 0x3a5a52);
