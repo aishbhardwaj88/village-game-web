@@ -1,34 +1,32 @@
-# STOP WHATEVER ELSE YOU ARE DOING. THREE MATERIALS, NOTHING ELSE.
+# RESUMED 31 Oct. Her four materials are rebuilt and with her. Do NOT rebuild them.
 
-She rejected four materials at 15:47. Since then you built lanterns, which she did not ask
-for. Lanterns, props, characters, places, wiring: ALL OF IT WAITS.
+tin, thatch, mud and dung, jute were rebuilt as modelled geometry on 28 Oct and the new
+board is with her. They are AWAITING HER VERDICT, not awaiting work. Do not touch any
+material until she answers. Frozen and approved: terracotta, painted wood, rusted steel,
+packed earth.
 
-Claude is fixing TIN on another machine. You do these THREE and nothing else:
-**thatch, mud and dung, jute.** Do not touch tin, you will collide.
+## THE MAP IS FROZEN. This is the hard rule for this whole stretch.
+She has drawn a new village plan and is still revising it. Until she hands over the
+final map, do NO work on: lanes, roads, kerbs, drains, positions, spacing, overlap
+fixes, wayfinding, terrain or zone boundaries. Anything you move now gets moved again.
 
-Her words, exactly:
-- Thatch: "Thatch is not at all clear."
-- Mud and dung: "too smooth and too uniform"
-- Jute: "no weave"
+## What to work instead, in this order
+1. Wire the four rebuilt material samples (`samples/materials/*.glb`) into the places
+   that use them, within budget, so she can walk up to them rather than judging a board.
+2. The place-level notes she gave on 27 Oct that are NOT layout:
+   - primary school: slides, a painted stapu court, dustbins, earthen pots, cycles in
+     mixed adult and child sizes, classroom doors closed except the front one
+   - bus adda: remove the stray tyre, the loose bricks, the khatiya on the chabutra and
+     the pyaau pots
+   - flag texture redrawn at 1024 with a crisp 24-spoke chakra
+3. Check each of the 22 places against its own `Places V1/<name>/LAYOUT.md` and fix
+   anything that does not match. Report mismatches, do not move anything.
 
-**The cause is the same for all three: the structure is PAINTED instead of MODELLED.**
-The board builds every panel as a flat box with a picture on it (see build_material_board.py,
-`kit.add(kind, wb(...slab...))`). A picture of straw is not straw. Fix the geometry.
-
-- THATCH: pale straw gold, not near-black. Sun-bleached on top, greyer underneath and where
-  damp. Break the silhouette with alpha-cutout straw cards at eave and ridge so it is shaggy,
-  never a smooth shell. Visible courses with the binding rope line.
-- MUD AND DUNG: displace the surface. Hand-smear arcs and finger drag. Straw and husk flecks
-  standing proud. Colour drifting across the wall, darker damp band at the base.
-- JUTE: real weave depth, warp and weft crossing over and under so they catch light
-  differently. Frayed edge, loose threads, a repaired patch, slack where it hangs.
-
-When all three are done: rebuild `docs/shots/material-board/FOR-HER/board.png` and write ONE
-line in docs/NEEDS_YOU.md. Then go back to the list below. Do not wait for her.
-
-APPROVED AND FROZEN, never touch: terracotta, painted wood, rusted steel, packed earth.
+Never wait on her. If something needs her eye, one line in docs/NEEDS_YOU.md, then carry
+on. A run that makes no game change is a failed run.
 
 ---
+
 
 
 # HER EVENING IS BOOKED FOR THIS. 28 Oct, ~21:30 IST. Have it ready.
