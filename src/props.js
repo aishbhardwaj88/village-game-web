@@ -56,24 +56,47 @@ const CHAKRA_NAVY = 0x16215c;
 let FLAG_TEX = null;
 function flagTexture() {
   if (FLAG_TEX) return FLAG_TEX;
-  const W = 1024, H = 684, STRIP = 42, c = document.createElement('canvas'); c.width = W + STRIP; c.height = H;
-  const x = c.getContext('2d');
+  // Drawn at 2x and downsampled. Her note was "why is the flag pixelated?" - the cause
+  // was not resolution (it was already 1024) but the 24 chakra spokes being ~2.6px wide,
+  // which alias into a stair-stepped mess the moment the flag is seen at an angle or
+  // minified. Supersampling fixes the spokes; max anisotropy fixes the angle.
+  const SS = 2;
+  const W = 1024, H = 684, STRIP = 42;
+  const bc = document.createElement('canvas'); bc.width = (W + STRIP) * SS; bc.height = H * SS;
+  const x = bc.getContext('2d');
+  x.scale(SS, SS);
   x.fillStyle = '#e8821e'; x.fillRect(0, 0, W, H / 3);
   x.fillStyle = '#f4f2ea'; x.fillRect(0, H / 3, W, H / 3);
   x.fillStyle = '#0b7a3e'; x.fillRect(0, (2 * H) / 3, W, H / 3);
   const cx = W / 2, cy = H / 2, R = H / 6 - 5;
+  x.lineCap = 'round';
   x.strokeStyle = '#16215c'; x.fillStyle = '#16215c'; x.lineWidth = 7;
-  x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
-  x.beginPath(); x.arc(cx, cy, 11, 0, 7); x.fill();
-  x.lineWidth = 2.6;
-  for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); x.stroke(); }
+  x.beginPath(); x.arc(cx, cy, R, 0, Math.PI * 2); x.stroke();
+  x.beginPath(); x.arc(cx, cy, 11, 0, Math.PI * 2); x.fill();
+  // 24 spokes, each stopping just short of the rim so the join stays clean
+  x.lineWidth = 3.2;
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    x.beginPath();
+    x.moveTo(cx + Math.cos(a) * 9, cy + Math.sin(a) * 9);
+    x.lineTo(cx + Math.cos(a) * (R - 3.5), cy + Math.sin(a) * (R - 3.5));
+    x.stroke();
+  }
   // woven-cloth grain
   for (let i = 0; i < H; i += 3) { x.fillStyle = `rgba(0,0,0,${0.03 + (i % 4) * 0.01})`; x.fillRect(0, i, W, 1); }
   for (let i = 0; i < W; i += 3) { x.fillStyle = 'rgba(255,255,255,0.03)'; x.fillRect(i, 0, 1, H); }
   x.fillStyle = '#b9b8b0'; x.fillRect(W, 0, STRIP, H); // pole + halyard sample this strip so pole and flag share one mesh
+  // downsample to the real texture size: this is what removes the stair-stepping
+  const c = document.createElement('canvas'); c.width = W + STRIP; c.height = H;
+  const dx = c.getContext('2d');
+  dx.imageSmoothingEnabled = true; dx.imageSmoothingQuality = 'high';
+  dx.drawImage(bc, 0, 0, c.width, c.height);
   FLAG_TEX = new THREE.CanvasTexture(c);
   FLAG_TEX.colorSpace = THREE.SRGBColorSpace;
-  FLAG_TEX.anisotropy = 4;
+  FLAG_TEX.anisotropy = 16;
+  FLAG_TEX.generateMipmaps = true;
+  FLAG_TEX.minFilter = THREE.LinearMipmapLinearFilter;
+  FLAG_TEX.magFilter = THREE.LinearFilter;
   return FLAG_TEX;
 }
 
