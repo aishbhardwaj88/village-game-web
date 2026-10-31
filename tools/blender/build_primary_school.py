@@ -41,7 +41,15 @@ CEMENT = 0xB9B4A8
 RED_FLOOR = 0xA3523C
 
 
+# 1 Nov: slides, swings, see-saw, stapu court and dustbins now come from the instanced school_props.glb (placed by
+# src/stagedPlaces.js `props`), so they are not built into this model any more.
+_EXTERNAL_PROPS = ('slide', 'deck_rail', 'ladder', 'seesaw', 'stapu', 'swing', 'dustbin')
+
+
 def add(kind, o, c=None):
+    if o.name.startswith(_EXTERNAL_PROPS):
+        bpy.data.objects.remove(o, do_unlink=True)
+        return None
     kit.add(kind, o, c)
     return o
 

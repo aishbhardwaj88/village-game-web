@@ -8,6 +8,7 @@ import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
 import { addPlaceGreenery } from './stagedGreenery.js';
 import { createCattleHerd } from './animals.js';
 import { addLanterns } from './lanterns.js';
+import { addSchoolProps } from './schoolProps.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
 
 /**
@@ -173,6 +174,7 @@ function createStagedPlace(def) {
     group.add(m);
     requestColliderRebuild(); // the model lands after its load was counted: have the zone manager rebuild colliders now, not at the next load
   }).catch((err) => console.warn(`${def.model}.glb did not load`, err));
+  if (def.props) addSchoolProps(group, def.props, def.zone + '_props').then(() => requestColliderRebuild());
   if (def.lanterns) addLanterns(group, def.lanterns, def.zone + '_lanterns'); // day props, place-local
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.

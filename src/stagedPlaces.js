@@ -5,6 +5,13 @@
  */
 export const STAGED_PLACES = [
   { id: 'yard_school', zone: 'primary_school_v2', model: 'primary_school', en: 'Yard 1: Primary school', hi: 'यार्ड 1: प्राथमिक पाठशाला', kind: 'school', radius: 28, build: 80, front: 16.25,
+    // yard props from school_props.glb, place-local metres (LAYOUT.md: playground front-left, stapu on the assembly ground, dustbins by the verandahs, pots on their stand)
+    props: [
+      { part: 'slideBig', x: -14.6, z: 11.5 }, { part: 'slideSmall', x: -11.5, z: 8.2 }, { part: 'swings', x: -11.05, z: 13.6 },
+      { part: 'seesaw', x: -17.2, z: 14.8, ry: Math.PI / 2 }, { part: 'stapu', x: 11, z: 5, y: 0.035 },
+      { part: 'binDrum', x: -12.8, z: -1.9 }, { part: 'binMoulded', x: 12.8, z: -1.6 }, { part: 'binConcrete', x: -9, z: 13.6 },
+      { part: 'binDrum', x: 10.7, z: 13.4 }, { part: 'binMoulded', x: 12, z: -9.4 }, { part: 'pots', x: -3.5, z: -12 },
+    ],
     boards: [{ id: 'school_v2', x: 0, y: 3.52, z: 16.23, w: 4.9 }, { id: 'school_donation', x: 5.85, y: 1.1, z: 16.37, w: 3.4 }] },
   { id: 'yard_gurukul', zone: 'gurukul_v2', model: 'gurukul_v2', en: 'Yard 2: Gurukul', hi: 'यार्ड 2: गुरुकुल', kind: 'school', radius: 40, build: 80, front: 22.5,
     boards: [{ id: 'gurukul_v2', x: 0, y: 4.93, z: 22.66, w: 4.8 }] },
