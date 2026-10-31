@@ -5,8 +5,9 @@ MAIN_gaushala_back_top.png (TOP = layout authority) / MAIN_gaushala_front_isomet
 Run:  tools/blender/make.sh gaushala gaushala   (Blender -> shrink -> public/assets/models/gaushala.glb)
 
 Frame: site-local metres, +x east, +z south (front, where the gate is). Compound x[-13.5,13.5] z[-10.5,10.5].
-28 Oct 2026: compound scaled to 75% in PLAN (was 36 x 28 m, now 27 x 21 m): walls, gate, cattle shed and straw
-store footprints x0.75. Heights stay at the LAYOUT.md values (1.8 m wall, 1.5 m front, shed eaves) so people and
+28 Oct 2026: compound scaled to 75% in PLAN (was 36 x 28 m, now 27 x 21 m): walls, gate and the shed's LENGTH x0.75.
+31 Oct: her 27 Oct rule (ART_REVIEW #8) is "scale the compound, not the contents", so the cattle shed is back to
+4 m deep and the straw store to 6 x 5 m. Heights stay at the LAYOUT.md values (1.8 m wall, 1.5 m front, shed eaves) so people and
 cattle still fit. Contents keep their size and are re-seated: troughs, pump, neem platform, compost pit,
 biogas dome, bales, chaff cutter, clutter, and the 4 x 3 m office (a room, so it stays at her size).
   back + side walls   1.8 m brick, cement coping
@@ -61,7 +62,7 @@ def iron(o, c=IRON):
 def build_ground():
     kit.add('paint', wb('ground', -HX, HX, -HZ, HZ, -0.05, 0.04, 0), DIRT)
     # worn, darker packed earth along the cattle line and gate approach, swept paler elsewhere
-    kit.add('paint', wb('ground_trodden', -9.3, -6.8, -9.8, 6.0, 0.04, 0.045, 0), 0xA98660)
+    kit.add('paint', wb('ground_trodden', -8.4, -5.9, -9.8, 6.0, 0.04, 0.045, 0), 0xA98660)
     kit.add('paint', wb('ground_gate', -2.6, 2.6, 7.6, HZ - 0.3, 0.04, 0.046, 0), 0xB68F5E)
     # cement apron under the gate
     trim(wb('gate_apron', -GATE_HALF - PIER, GATE_HALF + PIER, HZ - 0.45, HZ + 0.9, 0, 0.05, 0.01), 0xB2AFA7)
@@ -138,7 +139,7 @@ def build_front():
 
 def build_shed():
     """One long open cattle shed down the LEFT wall, full depth: 4 m deep, tin roof on brick pillars, cement feed trough."""
-    sx0, sx1 = -HX + T, -HX + T + 3.65 * S       # inside the wall to the open edge (3 m with wall, was 4)
+    sx0, sx1 = -HX + T, -HX + T + 3.65           # inside the wall to the open edge: 4 m deep with the wall (her size, never scaled)
     z0, z1 = -HZ + T, 8.0 * S
     # raise the party wall to roof height over the shed length
     brick(wb('shed_back_wall', -HX, -HX + T, z0, z1, WALL_H, 3.35, 0.01))
@@ -170,13 +171,13 @@ def build_shed():
 
 
 def build_straw_store():
-    """Open straw store, back-right (6 x 5 m in LAYOUT, 4.5 x 3.75 m at the 75% plan scale): brick pillars, tin roof,
-    open to the south. Bales keep full size, so fewer of them fit."""
-    x0, x1 = HX - T - 6.0 * S, HX - T
-    z0, z1 = -HZ + T, -HZ + T + 5.0 * S
+    """Open straw store, back-right, 6 x 5 m (her size: the 75% squeeze scales the yard, never the contents):
+    brick pillars, tin roof, open to the south."""
+    x0, x1 = HX - T - 6.0, HX - T
+    z0, z1 = -HZ + T, -HZ + T + 5.0
     brick(wb('store_back_wall', x0 - 0.02, x1 + T, -HZ, -HZ + T, WALL_H, 3.3, 0.01))
     brick(wb('store_east_wall', HX - T, HX, -HZ + T, z1, WALL_H, 3.3, 0.01))
-    for x in (x0 + 0.2, x0 + 3.0 * S, x1 - 0.2):
+    for x in (x0 + 0.2, x0 + 3.0, x1 - 0.2):
         brick(wb('store_pillar', x - 0.2, x + 0.2, z1 - 0.2, z1 + 0.2, 0, 2.7, 0.012))
     brick(wb('store_pillar_w', x0 - 0.2, x0 + 0.2, z0 + 1.8 - 0.2, z0 + 1.8 + 0.2, 0, 2.7, 0.012))
     kit.add('wood', limb('store_beam', (x0 - 0.1, z1, 2.74), (x1, z1, 2.74), 0.2, 0.16))
@@ -353,7 +354,7 @@ def build_clutter():
     for i in range(7):
         kit.add('paint', cyl('dung_wall', HX - T - 0.2 - (i % 2) * 0.05, -5.9 + 0.43 * i, 0.9 + 0.0, 0.97, 0.17, 0.16, 9), 0x5A4430)
     # buckets: galvanised, tapered, with rim + wire handle
-    for (bx, bz, tilt) in ((11.2, 8.5, 0), (11.8, 8.1, 0), (11.4, 9.1, 0), (2.6, 7.0, 0), (-8.9, 2.25, 0)):
+    for (bx, bz, tilt) in ((11.2, 8.5, 0), (11.8, 8.1, 0), (11.4, 9.1, 0), (2.6, 7.0, 0), (-7.8, 2.25, 0)):
         iron(cyl('bucket', bx, bz, 0, 0.3, 0.14, 0.18, 12), 0x9FA3A7)
         iron(cyl('bucket_rim', bx, bz, 0.29, 0.32, 0.19, 0.19, 12), 0xB0B4B8)
         iron(limb('bucket_handle', (bx - 0.18, bz, 0.31), (bx + 0.18, bz, 0.31), 0.012, 0.012), 0x3A3C3E)

@@ -151,8 +151,9 @@ add('plinth', wb('sign_panel_b', px - 1.15, px + 1.15, pz - 0.17, pz - 0.15, 3.7
 add('plinth', wb('sign_stripe_f', px - 1.15, px + 1.15, pz + 0.17, pz + 0.18, 4.55, 4.75, 0.0), NAVY)
 # two flush underground tank lids in the front-right forecourt
 for (lx, lz) in ((10.0, 4.0), (12.2, 6.0)):
-    add('metal', cyl('tank_lid', lx, lz, 0.1, 0.13, 0.45, 0.45, 20), 0x6C7074)
-    add('metal', cyl('tank_lid_in', lx, lz, 0.13, 0.145, 0.3, 0.3, 16), 0x5E6266)
+    # flush (spec): lid sits 5 mm proud of the slab, inner plate 3 mm more
+    add('metal', cyl('tank_lid', lx, lz, 0.09, 0.105, 0.45, 0.45, 20), 0x6C7074)
+    add('metal', cyl('tank_lid_in', lx, lz, 0.105, 0.108, 0.3, 0.3, 16), 0x5E6266)
 
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.03})

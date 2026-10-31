@@ -1713,8 +1713,8 @@ export function createGaushala(position) {
       [-1.8, HZ, 0.6, 0.6],             // gate pillar, left (gate stands open, 3 m clear)
       [1.8, HZ, 0.6, 0.6],              // gate pillar, right
       [11.45, 3.75, 3.2, 4.2],          // office 3 x 4 m (LAYOUT: 4 x 3, not scaled)
-      [-11.45, -2.2, 4.2, 16.7],        // ONE long cattle shed, 3 m deep, + feed trough
-      [11.05, -8.45, 4.9, 4.3],         // straw store 4.5 x 3.75 m
+      [-11.1, -2.2, 5.3, 16.7],         // ONE long cattle shed, 4 m deep, + feed trough
+      [10.225, -7.775, 6.55, 5.65],     // straw store 6 x 5 m
       [0.825, 4.35, 1.3, 5.6],          // water trough
       [1.35, -2.4, 4.7, 4.7],           // round neem platform
       [-6.8, 8.2, 4.8, 3.4],            // compost pit

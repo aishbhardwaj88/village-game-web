@@ -258,10 +258,11 @@ def build_signs():
         add('paint', wb('sign_border_' + nm, sx - 0.036, sx + 0.036, a, b, h0, h1, 0.0), 0xF4F4EE)
     # milestone at front-right: white concrete, rounded yellow top, faces along the road
     mx, mz = 8.8, 4.2
-    add('trim', wb('mile_body', mx - 0.3, mx + 0.3, mz - 0.14, mz + 0.14, 0, 0.75, 0.01), 0xE9E7E0)
+    # 31 Oct spec check: faces look ALONG the road (+-x), so the stone is thin in x and wide in z
+    add('trim', wb('mile_body', mx - 0.14, mx + 0.14, mz - 0.3, mz + 0.3, 0, 0.75, 0.01), 0xE9E7E0)
     add('paint', cyl('mile_top', mx, mz, 0.75, 0.76, 0.0001, 0.0001, 4), 0xE0B71F) if False else None
-    add('paint', sphere('mile_dome', mx, mz, 0.72, 0.3, 0.14, 0.2, 2), 0xE0B71F)
-    add('trim', wb('mile_stripe', mx - 0.305, mx + 0.305, mz - 0.145, mz + 0.145, 0.62, 0.74, 0.0), 0xE0B71F)
+    add('paint', sphere('mile_dome', mx, mz, 0.72, 0.14, 0.3, 0.2, 2), 0xE0B71F)
+    add('trim', wb('mile_stripe', mx - 0.145, mx + 0.145, mz - 0.305, mz + 0.305, 0.62, 0.74, 0.0), 0xE0B71F)
 
 
 build_ground()

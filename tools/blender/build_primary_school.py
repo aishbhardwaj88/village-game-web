@@ -8,7 +8,8 @@ Frame: site-local metres, +x east, +z south. Compound x[-30,30] z[-25,25], gate 
   U of single-storey blocks (roof parapet 4.4 m): back block along z=-25 (36 m centre + two 12 m corner rooms),
   two wings x[-30,-24] / [24,30] running 26 m from the back wall; every room is 6 m deep with a 3 m verandah on
   square pillars facing the yard. Classrooms 7 x 6 (back block) / 6.67 x 6 (wings), 5 rows x 2 desk-benches = 10.
-  Outer walls of the blocks ARE the boundary on the back and sides; 1.8 m wall on the front and the side stretches.
+  31 Oct, LAYOUT.md 25 Oct CORRECTION: the 1.8 m boundary wall runs round ALL FOUR sides; on the back and wing sides it
+  stands hard against the blocks' outer walls, which rise above it (build_boundary). Back ventilators sit above it.
 Organic things (trees, plants, kids) are hers: planters and platforms are built and left EMPTY.
 Drawing notes (metre lines, view labels) are not built. All text is painted in-game on blank boards.
 """
@@ -624,10 +625,10 @@ def room_walls(kind, rooms, u_lo, u_hi, doors_pos):
     bops = []
     for (a, b, t) in rooms:
         if t in ('office', 'staff'):
-            bops.append((a + 1.2, a + 2.4, 1.6, 2.5))
+            bops.append((a + 1.2, a + 2.4, 2.0, 2.8))     # sills above the 1.9 m boundary coping outside
         elif t == 'corner':
             for k in range(3):
-                bops.append((a + 1.5 + k * 3.7, a + 2.9 + k * 3.7, 1.7, 2.6))
+                bops.append((a + 1.5 + k * 3.7, a + 2.9 + k * 3.7, 2.0, 2.8))
         else:
             span = b - a
             bops.append((a + 0.5, a + 1.5, 2.0, 2.8))
@@ -780,11 +781,7 @@ def build_bands():
     for (a, b) in ((d, d + DW) for d in (-17.5, -13.5, -9.5, -2.5, 4.5, 11.5)):
         door_gaps.append((a - 0.1, b + 0.1))
     plinth_band(lm, -21.0, 21.0, -T, 0.04, 0.9, gaps=door_gaps)
-    # outer faces: back wall z=-25 (v=6) and the outer sides x=-30 / 30 get the band too
-    add('plinth', wb('band_back', -30.02, 30.02, -25.04, -25.0, 0, 0.9, 0.0))
-    add('plinth', wb('band_back_cap', -30.03, 30.03, -25.05, -25.0, 0.9, 0.95, 0.0))
-    for sg in (-1, 1):
-        add('plinth', wb('band_out', sg * 30.0 - 0.02 - (0.02 if sg < 0 else 0.0), sg * 30.0 + 0.02 + (0.02 if sg > 0 else 0.0), -25.0, 1.4, 0, 0.9, 0.0))
+    # (31 Oct: the outer back / side faces carry the 1.8 m boundary wall now, built in build_boundary, so no band here)
     # wing verandah-side bands
     for sg in (-1, 1):
         lmw = LM['left' if sg < 0 else 'right']
@@ -851,6 +848,21 @@ def build_boundary():
         add('plaster', wb('side_wall', x0, x1, 1.4, HZ - t, 0, h, 0.01))
         add('plinth', wb('side_band', x0 - 0.03, x1 + 0.03, 1.4, HZ - t, 0, 0.5, 0.008))
         add('trim', wb('side_cope', x0 - 0.05, x1 + 0.05, 1.4, HZ, h, h + 0.1, 0.01))
+    # 31 Oct (LAYOUT 25 Oct correction): the boundary wall continues round the back and the wing sides, standing hard
+    # against the blocks' outer walls (they rise above it). Same cream wall, ochre base band and coping as the front.
+    bt = 0.15
+    for nm, x0, x1, z0, z1, ax in (('back', -HX - bt, HX + bt, -HZ - bt, -HZ, 'z'),
+                                   ('wside', -HX - bt, -HX, -HZ, 1.4, 'x'), ('eside', HX, HX + bt, -HZ, 1.4, 'x')):
+        out = -1 if nm in ('back', 'wside') else 1
+        add('plaster', wb('bwall_' + nm, x0, x1, z0, z1, 0.45, h, 0.0))
+        if ax == 'z':
+            add('plinth', wb('bwall_band_' + nm, x0, x1, z0 - 0.03, z1, 0, 0.45, 0.0))
+            add('plinth', wb('bwall_band2_' + nm, x0, x1, z0 - 0.025, z1, 0.45, 0.5, 0.0))
+            add('trim', wb('bwall_cope_' + nm, x0 - 0.04, x1 + 0.04, z0 - 0.06, z1, h, h + 0.1, 0.0))
+        else:
+            add('plinth', wb('bwall_band_' + nm, min(x0, x0 + out * 0.03), max(x1, x1 + out * 0.03), z0, z1, 0, 0.45, 0.0))
+            add('plinth', wb('bwall_band2_' + nm, min(x0, x0 + out * 0.025), max(x1, x1 + out * 0.025), z0, z1, 0.45, 0.5, 0.0))
+            add('trim', wb('bwall_cope_' + nm, min(x0, x0 + out * 0.06), max(x1, x1 + out * 0.06), z0, z1, h, h + 0.1, 0.0))
     # gate pillars: taller, stepped caps, an iron lantern each, cement apron
     for nm, cx in (('l', -GATE_HALF - PIER / 2), ('r', GATE_HALF + PIER / 2)):
         add('plaster', wb('pier_' + nm, cx - PIER / 2, cx + PIER / 2, HZ - t - 0.1, HZ + 0.1, 0, 2.5, 0.01))
