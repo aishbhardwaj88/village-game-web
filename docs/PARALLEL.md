@@ -64,3 +64,14 @@ Her instruction, 1 Nov. The map freeze is OVER. The 1 Nov plan is FINAL.
 **Done when:** in a real playthrough every built place stands where the map shows it and
 faces its lane, nothing overlaps, the on-foot findability walk reaches every place, and
 there are no new console errors. Then update the docs and commit.
+
+## HER CALL, 1 Nov, before sleeping: THE MOVE SHIPS. DO NOT ROLL BACK.
+
+She said plainly she wants "the village on the new map" when she wakes. So:
+- **Never revert the move.** If something breaks, FIX it. Reverting is not an option.
+- If ONE place cannot be moved cleanly, leave that ONE place where it is, write it in
+  `docs/NEEDS_YOU.md`, and move everything else. Never abandon the whole move for one
+  stubborn item.
+- Keep going until the playthrough is clean. Do not stop and report a broken village.
+- `git tag pre-map-move` marks the pre-move state. It exists only as insurance for HER
+  to use if she asks. You do not use it.
