@@ -25,7 +25,7 @@ T = 0.25
 X0, X1, Z0, Z1 = -4.0, 4.0, -7.0, 0.0
 H = 3.4
 
-add('paint', wb('ground', -5.5, 5.5, -8, 3.5, -0.08, 0.02, 0.0), 0xA38A66)
+add('earth', wb('ground', -5.5, 5.5, -8, 3.5, -0.08, 0.02, 0.0), 0xA38A66)
 # openings: front door left, counter window right; back door + window; side windows
 def run_x(z0, z1, ops):
     cur = X0

@@ -57,7 +57,7 @@ def ground_decal(x0, x1, z0, z1, h):
     kit.extra.append(o)
 
 
-add('paint', wb('ground', -8, 8, -12, 7.5, -0.08, 0.03, 0.0), 0xB69568)
+add('earth', wb('ground', -8, 8, -12, 7.5, -0.08, 0.03, 0.0), 0xB69568)
 # ground floor shell with openings
 def wall_x(z0, z1, h0, h1, ops, c=CREAM):
     cur = X0

@@ -25,7 +25,7 @@ T = 0.25
 X0, X1, Z0, Z1 = -3.0, 3.0, -5.0, 0.0
 H = 3.6
 
-add('paint', wb('ground', -4, 4, -6, 4.2, -0.08, 0.02, 0.0), 0xA38A66)
+add('earth', wb('ground', -4, 4, -6, 4.2, -0.08, 0.02, 0.0), 0xA38A66)
 # platform 6 x 3 m, 0.3 high, with a step
 add('trim', wb('platform', X0, X1, Z1, 3.0, 0, 0.3, 0.01), 0xA9A69F)
 add('trim', wb('step', -1.0, 1.0, 3.0, 3.45, 0, 0.15, 0.01), 0xA3A097)
