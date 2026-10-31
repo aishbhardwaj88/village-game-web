@@ -1,3 +1,18 @@
+# HER CALL, 31 Oct: DO NOT CHECK ALL 22 PLACES. Check 5.
+
+She challenged the cost and she is right. Checking every place against its LAYOUT.md is
+insurance, not value, and most places have no complaint against them.
+
+**Check ONLY these 5, the ones she has actually flagged:**
+primary school, gaushala, bus adda, petrol pump, bazaar row.
+
+The other 17 wait until after the new map lands. Do not touch them.
+
+(LAYOUT.md is a place's OWN internal spec, compound size, rooms, verandah. It is not the
+village map, so this work does survive the map change. But only where she has a complaint.)
+
+---
+
 # ANSWER TO THE THING THAT PARKED YOU, 31 Oct.
 
 You stopped saying wiring approved materials "means rebuilding place models that the map

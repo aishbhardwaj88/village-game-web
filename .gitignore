@@ -21,3 +21,7 @@ inbox/*
 tripo_inputs/
 
 .claude/worktrees/
+
+# local-only: the stop switch and per-machine settings, never shared
+Dopahar autopilot STOP.command
+.claude/settings.local.json
