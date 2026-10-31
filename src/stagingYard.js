@@ -144,6 +144,7 @@ function createStagedPlace(def) {
   const group = new THREE.Group();
   group.name = def.zone;
   group.position.set(a.x, 0, a.z);
+  group.rotation.y = a.ry || 0;
   if (def.boards.length) group.add(placeBoardsMesh(def.boards, def.zone + '_boards'));
   if (def.custom === 'houseKit') {
     // the 8 house types, instanced: row 1 = each type once (wall to wall), row 2 across a 12 m lane facing back with different widths + tints
@@ -178,7 +179,7 @@ function createStagedPlace(def) {
   if (def.lanterns) addLanterns(group, def.lanterns, def.zone + '_lanterns'); // day props, place-local
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.
-    const herd = createCattleHerd(def.cattle.map((c) => ({ ...c, x: a.x + c.x, z: a.z + c.z })));
+    const herd = createCattleHerd(def.cattle.map((c) => { const k = Math.cos(a.ry || 0), n = Math.sin(a.ry || 0); return { ...c, x: a.x + c.x * k + c.z * n, z: a.z - c.x * n + c.z * k, rotationY: (c.rotationY || 0) + (a.ry || 0) }; }));
     const wrap = new THREE.Group();
     wrap.name = def.zone + '_wrap';
     wrap.add(group, herd.mesh);
@@ -207,8 +208,7 @@ function createStagingTrack() {
 
 /** Registers the track and every staged place with the zone manager. */
 export function registerStagingYard(zoneManager, visibleRadius) {
-  const first = pt(STAGED_PLACES[0].id);
-  zoneManager.register('staging_track', { x: first.x + 200, z: first.z + 30, buildRadius: 260, teardownRadius: 300, build: () => { const g = new THREE.Group(); g.name = 'staging_track'; g.add(createStagingTrack()); return g; } });
+  // The old dirt track between the yard's rows is gone: the places now stand on the 1 Nov map (src/mapPlan.js); its roads are not built yet (docs/NEEDS_YOU.md).
   for (const def of STAGED_PLACES) {
     zoneManager.register(def.zone, { visibleRadius, ...pt(def.id), buildRadius: def.build, teardownRadius: def.build * 1.25, build: () => createStagedPlace(def) });
   }

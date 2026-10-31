@@ -50,5 +50,5 @@ export const STAGED_PLACES = [
   { id: 'yard_matboard', zone: 'material_board_v2', model: 'material_board_v2', en: 'Yard 22: Material board', hi: 'यार्ड 22: सामग्री बोर्ड', kind: 'house', radius: 14, build: 45, front: 12, boards: [] },
 ];
 
-const STEP = 80, X0 = 320, Z0 = -160, COLS = 6;
+const STEP = 80, X0 = 320, Z0 = -225, COLS = 6; // unmapped leftovers only (the material board): north edge, clear of the shifted map
 export const stagingPos = (n) => ({ x: X0 + STEP * (n % COLS), z: Z0 + STEP * Math.floor(n / COLS) });

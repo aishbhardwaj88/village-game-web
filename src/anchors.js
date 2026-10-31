@@ -9,6 +9,7 @@
  * no coordinate for the streamed sites, so these are the positions picked on 23-25 Oct.
  */
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
+import { MAP_PLAN, MAP_SHIFT } from './mapPlan.js';
 
 export const ANCHORS = {
   house: { x: -48, z: 39, ry: 0 },
@@ -53,8 +54,11 @@ export const ANCHORS = {
   gilli: { x: 46, z: 104, ry: 0 }, // the gilli-danda patch (side job), not a mapped place
   highway: { x: 205, z: 40, ry: 0 },
   mandi: { x: 226, z: 60, ry: 0 },
-  // STAGING YARD (src/stagedPlaces.js): new places wait here, grid origin (320,-160), 80 m, until she lays out the map.
-  ...Object.fromEntries(STAGED_PLACES.map((p, n) => [p.id, { ...stagingPos(n), ry: 0 }])),
+  // The v2 places stand on the 1 Nov map (src/mapPlan.js, shifted east as one piece); anything the map does not place (the material board) waits in the old staging slot.
+  ...Object.fromEntries(STAGED_PLACES.map((p, n) => {
+    const m = MAP_PLAN[p.id];
+    return [p.id, m ? { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 } : { ...stagingPos(n), ry: 0 }];
+  })),
 };
 
 /** A fresh { x, z } for a place (callers may keep or mutate it). */
