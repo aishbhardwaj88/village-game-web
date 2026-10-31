@@ -153,6 +153,7 @@ import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
+import { ROAD_CHUNKS, createMapRoads } from './mapRoads.js';
 import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -1699,6 +1700,8 @@ async function main() {
     zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, ...pt('gurukul'), buildRadius: 55, teardownRadius: 70, build: () => createGurukul(pt('gurukul')) });
     // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
     registerStagingYard(zoneManager, LANDMARK_VIS);
+    // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
+    for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
     zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, ...pt('maidan'), buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan(pt('maidan')) });
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
