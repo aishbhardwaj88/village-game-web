@@ -3199,6 +3199,7 @@ async function main() {
       colliderStats,
       getWalkableAreas: () => [...lastCarves, ...WALKABLE_RECTS],
       groundHalfExtent: GROUND_HALF_EXTENT,
+      groundHalfX: GROUND_HALF_X,
       isBlockedAt: (x, z, r) => positionBlocked({ x, z }, r, otherVehicleBoxes(null)),
       rebuildColliders: () => initStaticColliders(scene),
       setStaticColliders: (boxes) => setStaticColliders(boxes),

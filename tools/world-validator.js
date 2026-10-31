@@ -746,7 +746,7 @@ async function main() {
         function findPath(sx, sz, gx, gz, gr) {
           const R = d.playerRadius + 0.05, S = 0.2;
           const M = 70, lim = d.groundHalfExtent;
-          const x0 = Math.max(-lim, Math.min(sx, gx) - M), x1 = Math.min(lim, Math.max(sx, gx) + M);
+          const x0 = Math.max(-lim, Math.min(sx, gx) - M), x1 = Math.min(d.groundHalfX, Math.max(sx, gx) + M);
           const z0 = Math.max(-lim, Math.min(sz, gz) - M), z1 = Math.min(lim, Math.max(sz, gz) + M);
           const nx = Math.ceil((x1 - x0) / S), nz = Math.ceil((z1 - z0) / S);
           const free = new Uint8Array(nx * nz); // 0 unknown, 1 free, 2 blocked
