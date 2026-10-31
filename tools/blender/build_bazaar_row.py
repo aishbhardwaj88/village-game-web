@@ -58,10 +58,10 @@ def shell():
         # roof slab for this unit (stepped skyline) + parapet lip
         kit.add('trim', wb('roof', c - UW / 2 - 0.1, c + UW / 2 + 0.1, FRONT - 0.3, BACK + 0.3, h, h + 0.14, 0.012))
         # front parapet lip kept BEHIND the code signboard plane (z = FRONT - 0.05) and low, so the bilingual boards stay legible
-        kit.add(wall_kind, wb('parapet_front', c - UW / 2 + 0.1, c + UW / 2 - 0.1, FRONT + 0.05, FRONT + WT + 0.02, h + 0.14, h + 0.5, 0.01))
-        kit.add(wall_kind, wb('parapet_back', c - UW / 2 + 0.1, c + UW / 2 - 0.1, BACK - WT, BACK + 0.1, h + 0.14, h + 0.6, 0.01))
-        kit.add('trim', wb('parapet_cap_f', c - UW / 2 + 0.06, c + UW / 2 - 0.06, FRONT + 0.03, FRONT + WT + 0.04, h + 0.5, h + 0.56, 0.01))
-        kit.add('trim', wb('parapet_cap_b', c - UW / 2 + 0.06, c + UW / 2 - 0.06, BACK - WT - 0.04, BACK + 0.14, h + 0.6, h + 0.68, 0.01))
+        kit.add(wall_kind, wb('parapet_front', c - UW / 2 + 0.1, c + UW / 2 - 0.1, FRONT + 0.05, FRONT + WT + 0.02, h + 0.14, h + 0.33, 0.01))
+        kit.add(wall_kind, wb('parapet_back', c - UW / 2 + 0.1, c + UW / 2 - 0.1, BACK - WT, BACK + 0.1, h + 0.14, h + 0.43, 0.01))
+        kit.add('trim', wb('parapet_cap_f', c - UW / 2 + 0.06, c + UW / 2 - 0.06, FRONT + 0.03, FRONT + WT + 0.04, h + 0.33, h + 0.39, 0.01))
+        kit.add('trim', wb('parapet_cap_b', c - UW / 2 + 0.06, c + UW / 2 - 0.06, BACK - WT - 0.04, BACK + 0.14, h + 0.43, h + 0.51, 0.01))
         # interior floor, slightly proud, polished-concrete grey
         kit.add('floor', wb('floor', c - UW / 2 + 0.03, c + UW / 2 - 0.03, FRONT, BACK - WT, 0.0, 0.06, 0))
     # nine party walls, full height, with an ochre skirt on the front faces
@@ -156,8 +156,8 @@ def shutters_and_counters():
             kit.add('paint', wb('rail', c + sgn * (ow / 2) - 0.03, c + sgn * (ow / 2) + 0.03, FRONT - 0.04, FRONT + 0.12, 0.06, OPEN_H - 0.38, 0.004), 0x3A3733)
         # counter (0.9 high, 0.5 deep, 3.8 wide): planked front painted in the trade colour, wooden top
         cw = UW - 0.7
-        kit.add('wood', wb('counter_top', c - cw / 2 - 0.04, c + cw / 2 + 0.04, COUNTER_Z0 - 0.04, COUNTER_Z1 + 0.04, 0.88, 0.95, 0.008))
-        kit.add('wood', wb('counter_body', c - cw / 2, c + cw / 2, COUNTER_Z0, COUNTER_Z1, 0.0, 0.88, 0.008), 0xB19468)
+        kit.add('wood', wb('counter_top', c - cw / 2 - 0.04, c + cw / 2 + 0.04, COUNTER_Z0 - 0.04, COUNTER_Z1 + 0.04, 0.83, 0.90, 0.008))
+        kit.add('wood', wb('counter_body', c - cw / 2, c + cw / 2, COUNTER_Z0, COUNTER_Z1, 0.0, 0.83, 0.008), 0xB19468)
         for h in (0.2, 0.42, 0.64):
             kit.add('wood', wb('plank_line', c - cw / 2 + 0.02, c + cw / 2 - 0.02, COUNTER_Z0 - 0.012, COUNTER_Z0, h, h + 0.014, 0), 0x4F3E2E)
         kit.add('paint', wb('counter_trim', c - cw / 2 - 0.02, c + cw / 2 + 0.02, COUNTER_Z0 - 0.02, COUNTER_Z0 + 0.04, 0.0, 0.12, 0.004), col)
