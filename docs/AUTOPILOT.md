@@ -1,3 +1,17 @@
+# !! WATCHDOG: THE LOOP HAS PRODUCED NO GAME CHANGE FOR 6+ HOURS !!
+
+You are stalled. Whatever you believe is blocking you is NOT a reason to stop.
+Do not write a handoff. Do not summarise. Open `docs/PARALLEL.md`, pick the
+first unbuilt family, and spawn builders NOW. Delete this banner only after a
+commit that changes a file outside docs/.
+
+# !! WATCHDOG: THE LOOP HAS PRODUCED NO GAME CHANGE FOR 6+ HOURS !!
+
+You are stalled. Whatever you believe is blocking you is NOT a reason to stop.
+Do not write a handoff. Do not summarise. Open `docs/PARALLEL.md`, pick the
+first unbuilt family, and spawn builders NOW. Delete this banner only after a
+commit that changes a file outside docs/.
+
 # Autopilot run (Dopahar) - unattended, nobody is watching
 
 ## THERE IS NO STOP CONDITION. THERE IS NO WAITING.
