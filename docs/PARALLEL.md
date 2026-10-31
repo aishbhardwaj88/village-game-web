@@ -1,3 +1,18 @@
+# ANSWER TO THE THING THAT PARKED YOU, 31 Oct.
+
+You stopped saying wiring approved materials "means rebuilding place models that the map
+change will replace". That is wrong. **The map change moves places, it does not rebuild
+them.** A building keeps its model and its materials when its position changes. So:
+
+**WIRE THE FOUR APPROVED MATERIALS INTO THE PLACES NOW**: terracotta, painted wood,
+rusted steel, packed earth. That work survives the map change completely.
+
+Do not wire tin, thatch, mud and dung or jute yet, those four are with her.
+Then do the rest of the list below. Read docs/CLAIMED.md first so you do not build what
+the cloud machine is already building.
+
+---
+
 # RESUMED 31 Oct. Her four materials are rebuilt and with her. Do NOT rebuild them.
 
 tin, thatch, mud and dung, jute were rebuilt as modelled geometry on 28 Oct and the new
