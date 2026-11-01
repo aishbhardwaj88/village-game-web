@@ -2,6 +2,7 @@
 // and roughly how long is the walk from the house. Heuristic, no browser. Usage: node tools/findability-audit.mjs [--md]
 import { readFileSync } from 'node:fs';
 import { pt } from '../src/anchors.js';
+import { MAP_SHIFT } from '../src/mapPlan.js';
 import { SPURS } from '../src/eastRoad.js';
 import { STAGED_PLACES } from '../src/stagedPlaces.js'; // PLACES entries spread pt(id), so the eval below needs it in scope
 const src = readFileSync(new URL('../src/freeRoam.js', import.meta.url), 'utf8');
@@ -10,7 +11,11 @@ const lanesSrc = src.match(/export const LANES = (\[[\s\S]*?\n\]);/)[1];
 // the staging yard (x 320+) is a showroom for the new models, not part of the walkable village, so it is audited separately (not at all)
 const STAGED_IDS = new Set(STAGED_PLACES.map((p) => p.id));
 const PLACES = eval(placesSrc.replace(/\/\/.*$/gm, '')).filter((p) => !STAGED_IDS.has(p.id));
-const LANES = eval(lanesSrc.replace(/\/\/.*$/gm, ''));
+const OLD_LANES = eval(lanesSrc.replace(/\/\/.*$/gm, ''));
+// the 1 Nov map's roads and lanes, shifted +MAP_SHIFT exactly as src/mapRoads.js lays them
+const MAPJ = JSON.parse(readFileSync(new URL('../docs/layout/village-plan-positions-2026-11-01.json', import.meta.url), 'utf8'));
+const mapLines = [...Object.values(MAPJ.roads), ...MAPJ.lanes_and_tracks].map((r) => r.centreline.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]));
+const LANES = [...OLD_LANES, ...mapLines];
 const way = readFileSync(new URL('../src/wayfinding.js', import.meta.url), 'utf8');
 const signed = new Set();
 for (const m of way.matchAll(/to: \[([^\]]*)\]/g)) for (const id of m[1].match(/'(\w+)'/g) || []) signed.add(id.replace(/'/g, ''));
