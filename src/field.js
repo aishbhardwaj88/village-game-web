@@ -2,7 +2,6 @@ import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { buildStripSegment } from './paths.js';
-import { HOUSE_CENTER } from './village.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { mergeMeshList } from './mergeUtils.js';
 import { buildGardenPlants, GARDEN_KIND, inKeepOut } from './vegetation.js';
@@ -15,11 +14,11 @@ import { getPlantFocus } from './realPlants.js';
 export const FIELD_CENTER = pt('field');
 export const FIELD_SIZE = { x: 110, z: 80 };
 
-const TRACK_NW = { x: -40, z: 25 };
-const TRACK_NE = { x: 80, z: 25 };
-const TRACK_SE = { x: 80, z: -65 };
-const TRACK_SW = { x: -40, z: -65 };
-const LANE_JOIN = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 }; // house courtyard's south edge
+// Map move (1 Nov): the track loop rides with the field (same offsets from the field centre as when it was built at (20,-20)).
+const TRACK_NW = { x: FIELD_CENTER.x - 60, z: FIELD_CENTER.z + 45 };
+const TRACK_NE = { x: FIELD_CENTER.x + 60, z: FIELD_CENTER.z + 45 };
+const TRACK_SE = { x: FIELD_CENTER.x + 60, z: FIELD_CENTER.z - 45 };
+const TRACK_SW = { x: FIELD_CENTER.x - 60, z: FIELD_CENTER.z - 45 };
 
 // Item 6 (dust motes) reuses the same loop corners, so it drifts along the actual
 // track instead of a re-guessed one.
@@ -75,13 +74,7 @@ function buildTrack() {
   for (let i = 0; i < corners.length - 1; i++) {
     segments.push(buildStripSegment(corners[i], corners[i + 1], TRACK_WIDTH, { seed: 3.0 + i, tint: 0xa88a5e, ruts: true }));
   }
-  // 2026-10-21 (house rebuild): the old straight LANE_JOIN->TRACK_NW diagonal ran straight through
-  // the house compound's courtyard. Drawn instead as two legs outside its walls — east along the
-  // lane (z=47.5, just south of the gate wall), then north along x=-36 up to the track corner:
-  // the same route tools/world-validator.js's BAAGH_CHAIN already walks.
-  const spurZ = LANE_JOIN.z + 1.5;
-  segments.push(buildStripSegment({ x: LANE_JOIN.x, z: spurZ }, { x: -36, z: spurZ }, TRACK_WIDTH, { seed: 9.0, tint: 0xa88a5e, ruts: true }));
-  segments.push(buildStripSegment({ x: -36, z: spurZ }, TRACK_NW, TRACK_WIDTH, { seed: 10.0, tint: 0xa88a5e, ruts: true }));
+  // The old spur from the house courtyard is dropped: the house stands far from the field on the 1 Nov map and the map's roads join the loop.
   return mergeMeshList(segments, 'field_track');
 }
 

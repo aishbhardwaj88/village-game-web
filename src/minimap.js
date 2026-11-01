@@ -6,6 +6,7 @@
  */
 
 import { PLACES } from './freeRoam.js';
+import { CANAL_MIN_X, CANAL_MAX_X, CANAL_Z } from './canal.js';
 
 const HIDE_KEY = 'dopahar.minimapHidden';
 const SPAN = 110; // metres across the window on foot
@@ -119,7 +120,7 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
     }
     ctx.strokeStyle = 'rgba(45,127,141,0.8)'; // canal, north of the village
     ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(wx(-50), wy(33)); ctx.lineTo(wx(34), wy(33)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(wx(CANAL_MIN_X), wy(CANAL_Z)); ctx.lineTo(wx(CANAL_MAX_X), wy(CANAL_Z)); ctx.stroke();
     ctx.font = '700 9px "Segoe Print","Comic Sans MS",cursive,sans-serif';
     ctx.textAlign = 'center';
     for (const pl of PLACES) {

@@ -1699,9 +1699,9 @@ async function main() {
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
-    zoneManager.register('canal_bank_road', { detail: true, x: -8 + OLD_SHIFT.x, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8 + OLD_SHIFT.x, z: 27.6 }) });
+    zoneManager.register('canal_bank_road', { detail: true, x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
-    zoneManager.register('canal_bank_road_n', { detail: true, x: -8 + OLD_SHIFT.x, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8 + OLD_SHIFT.x, z: 38.8 }, 'canal_bank_road_n') });
+    zoneManager.register('canal_bank_road_n', { detail: true, x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z + 5.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z + 5.8 }, 'canal_bank_road_n') });
     // MAP.md organic village edge: low compound walls closing the abadi's west, south and east sides, gaps where lanes leave.
     zoneManager.register('edge_wall_w', { detail: true, x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
     zoneManager.register('edge_wall_s', { detail: true, x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
@@ -1718,9 +1718,9 @@ async function main() {
     zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, ...pt('haveli'), buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli(pt('haveli')) });
     zoneManager.register('gaushala', { ...pt('gaushala'), buildRadius: 40, teardownRadius: 52, build: () => createGaushala(pt('gaushala')) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
-    zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: 20, z: 128, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([
-      { kind: 'mango', x: 12, z: 127, seed: 11, scale: 0.85 },
-      { kind: 'mango', x: 27, z: 129, seed: 12, scale: 0.8, rotationY: 1.2 },
+    zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: ANCHORS.cane.x - 1, z: ANCHORS.cane.z - 24, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([
+      { kind: 'mango', x: ANCHORS.cane.x - 9, z: ANCHORS.cane.z - 25, seed: 11, scale: 0.85 },
+      { kind: 'mango', x: ANCHORS.cane.x + 6, z: ANCHORS.cane.z - 23, seed: 12, scale: 0.8, rotationY: 1.2 },
     ]); mergeGroupByMaterial(g); return g; } });
     // Outskirts shade trees (A3 "reads green"): small streamed clusters by the village-edge sites.
     // Unmerged, so the per-tree distance LOD works. No coordinates in MAP.md; open ground picked.
@@ -1738,26 +1738,26 @@ async function main() {
     { const A = pt('gaushala'); outskirtTrees('trees_gaushala', A.x, A.z, [
       { kind: 'neem', x: A.x + 19, z: A.z + -15, seed: 29 }, { kind: 'peepal', x: A.x + -21, z: A.z + 15, seed: 30, rotationY: 1.4 },
     ]); }
-    zoneManager.register('sugarcane_belt', { visibleRadius: 120, x: 20 + OLD_SHIFT.x, z: 152, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: 0 + OLD_SHIFT.x, z0: 135, width: 42, depth: 34 }) });
+    zoneManager.register('sugarcane_belt', { visibleRadius: 120, x: ANCHORS.cane.x, z: ANCHORS.cane.z, buildRadius: 70, teardownRadius: 85, build: () => createSugarcaneBelt({ x0: ANCHORS.cane.x - 21, z0: ANCHORS.cane.z - 17, width: 42, depth: 34 }) });
     zoneManager.register('field_animals', {
       detail: true,
       x: FIELD_CENTER.x,
-      z: 21,
+      z: FIELD_CENTER.z + 41, // map move: these graze along the field's south track, offsets from the field centre as built at (20,-20)
       buildRadius: 45,
       build: () => {
         const group = new THREE.Group();
         group.name = 'zone_field_animals';
         const cattle = createCattleHerd([
-          { x: -5, z: 20, rotationY: 0.3 },
-          { x: 3, z: 22, rotationY: -0.6 },
-          { x: 12, z: 19.5, rotationY: 1.2, buffalo: true },
-          { x: 20, z: 21.5, rotationY: -1.0 },
-          { x: 28, z: 20, rotationY: 0.5, buffalo: true },
-          { x: 36, z: 22, rotationY: -0.2 },
+          { x: FIELD_CENTER.x + (-25), z: FIELD_CENTER.z + 40, rotationY: 0.3 },
+          { x: FIELD_CENTER.x + (-17), z: FIELD_CENTER.z + 42, rotationY: -0.6 },
+          { x: FIELD_CENTER.x + (-8), z: FIELD_CENTER.z + 39.5, rotationY: 1.2, buffalo: true },
+          { x: FIELD_CENTER.x + (0), z: FIELD_CENTER.z + 41.5, rotationY: -1.0 },
+          { x: FIELD_CENTER.x + (8), z: FIELD_CENTER.z + 40, rotationY: 0.5, buffalo: true },
+          { x: FIELD_CENTER.x + (16), z: FIELD_CENTER.z + 42, rotationY: -0.2 },
         ]);
         const dogs = createDogPack([
-          { x: 8, z: 19, rotationY: 1.8 },
-          { x: 24, z: 22.5, rotationY: -1.4 },
+          { x: FIELD_CENTER.x + (-12), z: FIELD_CENTER.z + 39, rotationY: 1.8 },
+          { x: FIELD_CENTER.x + (4), z: FIELD_CENTER.z + 42.5, rotationY: -1.4 },
         ]);
         group.add(cattle.mesh, dogs.mesh);
         return {

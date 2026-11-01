@@ -30,8 +30,8 @@ export const ANCHORS = {
   chakki: onMap('yard_chakki'),
   temple: { x: 95.7 + MAP_SHIFT.x, z: -78.3 + MAP_SHIFT.z, ry: 0 }, // map turn 1.5 deg not applied (main.js slot is unrotated)
   baagh: { x: 137.7 + MAP_SHIFT.x, z: 132.3 + MAP_SHIFT.z, ry: 0 }, // the map's mango orchard centre
-  canal: { x: -15 + OLD_SHIFT.x, z: 33 + OLD_SHIFT.z, ry: 0 },
-  field: { x: 20 + OLD_SHIFT.x, z: -20 + OLD_SHIFT.z, ry: 0 },
+  canal: { x: 771, z: 33.8, ry: 0 }, // the map's feeder channel centre (172.35, 33.8) + MAP_SHIFT; the bridge stands here (src/canal.js CANAL_DX)
+  field: { x: 3.5 + MAP_SHIFT.x, z: -200 + MAP_SHIFT.z, ry: 0 }, // x = centre of the map's wheat strip (-94.6..101.7); z: the 80 m field is deeper than the 42 m strip, so its south edge sits on the strip's (-160) to stay clear of the petrol pump yard
   banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: 0 },
   chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: 0 },
   eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: 0 },
@@ -45,7 +45,7 @@ export const ANCHORS = {
   anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: 0 },
   mela: { x: 187.5 + MAP_SHIFT.x, z: 146.5 + MAP_SHIFT.z, ry: 0 },
   gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 0 },
-  cane: { x: 20 + OLD_SHIFT.x, z: 150 + OLD_SHIFT.z, ry: 0 },
+  cane: { x: -188 + MAP_SHIFT.x, z: 7 + MAP_SHIFT.z, ry: 0 }, // centre of the map's sugarcane outline (x -225.6..-151.6, z -106..120)
   tvhouse: onMap('yard_tvhouse'), // old code-built copy dropped; the v2 yard stands here
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
   chemist: { x: 96 + OLD_SHIFT.x, z: 60 + OLD_SHIFT.z, ry: 0 },

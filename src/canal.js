@@ -20,7 +20,10 @@ import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
  * below), so the real, game-relevant crossing was moved a bit east of it instead,
  * right where the baagh trip actually needs one.
  */
-export const CANAL_Z = 33;
+// Map move (1 Nov): the canal stands on the map's feeder channel (docs/layout/village-plan-positions-2026-11-01.json water.feeder_channel, centre 172.35,33.8, + MAP_SHIFT).
+// It was built at x -28..0, z 33; CANAL_DX carries the whole build east, nothing else changed (the feeder's 6 deg slope is not applied, the canal stays axis-aligned).
+const CANAL_DX = 786;
+export const CANAL_Z = 33.8;
 const CANAL_HALF_WIDTH = 3; // water channel spans z: [CANAL_Z - 3, CANAL_Z + 3]
 const BANK_WIDTH = 1.2; // raised kachcha bank on each side of the water
 // Deliberately does NOT span the whole map width (MAP.md's "runs east-west across
@@ -36,8 +39,8 @@ const BANK_WIDTH = 1.2; // raised kachcha bank on each side of the water
 // defaulting to castShadow=true, not to this feature's x-position specifically —
 // see the explicit castShadow=false below — so this range is picked purely for
 // what's narratively/functionally sensible, not to dodge any camera.)
-const CANAL_MIN_X = -28;
-const CANAL_MAX_X = 0;
+export const CANAL_MIN_X = -28 + CANAL_DX;
+export const CANAL_MAX_X = 0 + CANAL_DX;
 
 /** Distance (m) from a point to the water channel rectangle; 0 above the water. */
 export function distanceToCanalWater(x, z) {
@@ -46,9 +49,9 @@ export function distanceToCanalWater(x, z) {
   return Math.hypot(dx, dz);
 }
 
-export const BRIDGE_X = -15; // right at the baagh (src/baagh.js BAAGH_CENTER x=-15)
+export const BRIDGE_X = -15 + CANAL_DX; // right at the baagh (src/baagh.js BAAGH_CENTER x=-15)
 const BRIDGE_HALF_WIDTH = 4;
-export const PULIA_X = -3; // narrow foot crossing (MAP.md patli pulia); a 1.6 m gap in the bank colliders, walkable but too narrow for any vehicle
+export const PULIA_X = -3 + CANAL_DX; // narrow foot crossing (MAP.md patli pulia); a 1.6 m gap in the bank colliders, walkable but too narrow for any vehicle
 const PULIA_HALF_WIDTH = 0.8;
 
 // Art review 1 (canal): the water read as flat swimming-pool blue. Now a murky green-brown nahar with fine ripples (procedural normal map).

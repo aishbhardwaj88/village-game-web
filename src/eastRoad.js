@@ -39,7 +39,7 @@ export const SPURS = [
   // West and south spurs (the road does not reach them): off the west gali, the south gali and the gali north end.
   // spur 'pond' dropped: its place stands on the 1 Nov map, whose own roads reach it (src/mapRoads.js)
   // spur 'mela' dropped: its place stands on the 1 Nov map, whose own roads reach it (src/mapRoads.js)
-  { id: 'cane', bare: true, pts: [[-6 + OX, 130], [A_cane.x - 26, A_cane.z - 4]] },
+  // spur 'cane' dropped: the sugarcane belt stands on the 1 Nov map's cane outline, far west of this road
   // spur 'gurudwara' dropped: its place stands on the 1 Nov map, whose own roads reach it (src/mapRoads.js)
 ];
 export const SPUR_WIDTH = 3.5;

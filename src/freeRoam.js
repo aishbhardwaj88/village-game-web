@@ -7,6 +7,7 @@
  */
 
 import { pt, OLD_SHIFT } from './anchors.js';
+import { CANAL_MIN_X, CANAL_MAX_X, CANAL_Z } from './canal.js';
 import { mapRoadLines } from './mapRoads.js';
 import { MAP_PLAN } from './mapPlan.js';
 import { STAGED_PLACES } from './stagedPlaces.js';
@@ -274,7 +275,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     for (const lane of LANES) pencil(ctx, lane.map(([x, z]) => [sx(x), sy(z)]), 'rgba(110,90,70,0.32)', 5);
     // the canal, drawn as a wavy blue line in the north
     const wave = [];
-    for (let x = -50; x <= 34; x += 2) wave.push([sx(x), sy(33) + Math.sin(x * 0.9) * 1.5]);
+    for (let x = CANAL_MIN_X; x <= CANAL_MAX_X; x += 2) wave.push([sx(x), sy(CANAL_Z) + Math.sin(x * 0.9) * 1.5]);
     pencil(ctx, wave, 'rgba(45,127,141,0.8)', 3);
     // discovered places
     const labelled = []; // label anchors already inked; a label that would overprint one of them is skipped (icon only)
