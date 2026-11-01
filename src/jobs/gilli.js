@@ -9,6 +9,8 @@ import { pt } from '../anchors.js';
  * peepal poster or by hearing the kids shout (sound radar).
  */
 const MAIDAN = pt('gilli');
+// the map turns the play spot; local offsets from its centre go through the same rotation as the maidan group
+const at = (dx, dz) => { const c = Math.cos(MAIDAN.ry), s = Math.sin(MAIDAN.ry); return { x: MAIDAN.x + dx * c + dz * s, z: MAIDAN.z - dx * s + dz * c }; };
 const KHEL_MAIDAN = pt('maidan'); // createKhelMaidan in main.js
 const RIVALS = [
   { role: 'kid_a', name: 'Bittu', score: 22 },
@@ -19,9 +21,10 @@ const RIVALS = [
 export function registerGilliJob(api, env) {
   const maidan = buildMaidan();
   maidan.position.set(MAIDAN.x, 0, MAIDAN.z);
+  maidan.rotation.y = MAIDAN.ry;
   api.scene.add(maidan);
-  RIVALS.forEach((r, i) => api.npc(r.role, { x: MAIDAN.x - 4 + i * 3.2, z: MAIDAN.z - 2.5 + (i % 2) * 2.5 }, Math.PI / 2 * (i % 2 ? 1 : -1), `npc_gilli_${i}`));
-  api.npc('kid_d', { x: MAIDAN.x + 6, z: MAIDAN.z + 3 }, -Math.PI / 2, 'npc_gilli_ref');
+  RIVALS.forEach((r, i) => api.npc(r.role, at(-4 + i * 3.2, -2.5 + (i % 2) * 2.5), Math.PI / 2 * (i % 2 ? 1 : -1), `npc_gilli_${i}`));
+  api.npc('kid_d', at(6, 3), -Math.PI / 2, 'npc_gilli_ref');
 
   let shout = 3;
   let farShout = 5;
@@ -92,7 +95,7 @@ export function registerGilliJob(api, env) {
 
   api.addInteraction({
     id: 'job_gilli',
-    position: new THREE.Vector3(MAIDAN.x - 1, 0, MAIDAN.z),
+    position: new THREE.Vector3(at(-1, 0).x, 0, at(-1, 0).z),
     radius: 4.2,
     priority: 1,
     label: { en: 'Play gilli-danda', hi: 'गिल्ली-डंडा खेलो' },

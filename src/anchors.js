@@ -57,7 +57,7 @@ export const ANCHORS = {
   haveli: { x: 44.9 + MAP_SHIFT.x, z: -22.2 + MAP_SHIFT.z, ry: -7.3 * Math.PI / 180 } /* map turn 7.3 deg, applied in src/main.js via turnSiteGroup */,
   gurukul: onMap('yard_gurukul'),
   maidan: onMap('yard_khel'),
-  gilli: { x: 69 + MAP_SHIFT.x, z: 163 + MAP_SHIFT.z, ry: 0 }, // the map's gilli-danda play spot (open ground centre; 6 deg turn not applied)
+  gilli: { x: 69 + MAP_SHIFT.x, z: 163 + MAP_SHIFT.z, ry: -6 * Math.PI / 180 }, // the map's gilli-danda play spot (open ground centre), turned 6 deg in src/jobs/gilli.js
   highway: { x: 205 + OLD_SHIFT.x, z: 40 + OLD_SHIFT.z, ry: 0 },
   mandi: { x: 147.7 + MAP_SHIFT.x, z: -160.3 + MAP_SHIFT.z, ry: -1 * Math.PI / 180 } /* map turn 1 deg, applied in src/main.js via turnSiteGroup */,
   // The v2 places stand on the 1 Nov map (src/mapPlan.js, shifted east as one piece); anything the map does not place (the material board) waits in the old staging slot.

@@ -74,3 +74,4 @@ The primary school now stands at the map's school spot but square to the grid, n
 
 - Primary school turn (-11.2 deg) now applied (2 Nov): the playable school is turned with its bell, teacher, desks and routes. - status: done
 - Anganwadi turn (168.8 deg on the map) now applied; the school children's walking route detours north round it (2 Nov). - status: done
+- Map turn left for you: the hero house (5 deg on the map) is still square; its stairs, rooftop missions, courtyard and family positions are all keyed to the square build, so I left it rather than risk the roof missions. East/west gali are name labels only (no geometry to turn). - status: open
