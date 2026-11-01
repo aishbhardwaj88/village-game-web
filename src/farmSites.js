@@ -433,6 +433,21 @@ export function createTeaStallHaystacks(position) {
   return group;
 }
 
+/** The map's three 6 m haystacks (centre -101.7, 133.5 on the map); offsets are the map's own stack centres, one per cone/heap/half model. */
+export function createMapHaystacks(position) {
+  const hay = [[-2.3, -5.5, 1.9, 1, 0xb4a276], [4.7, 0, 1.8, 2, 0xc0ad80], [-2.3, 5.5, 1.95, 0, 0xa59468]];
+  const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+  carrier.name = 'map_haystacks';
+  carrier.visible = false;
+  carrier.userData.colliderBoxes = orientedSolids(position, 0, hay.map(([x, z, k]) => [x, z, 3.0 * k, 3.0 * k]));
+  const group = new THREE.Group();
+  group.name = 'map_haystacks_prop';
+  group.add(carrier);
+  group.position.set(position.x, 0, position.z);
+  addHaystacks(group, hayPlacements(hay), 'map_haystacks_mesh');
+  return group;
+}
+
 /**
  * Sugarcane belt: rows of 3 m clumps, 4 stalks + arching leaf blades each, one InstancedMesh.
  * Rows run along x with a one-clump-wide gap every few rows so the belt can be crossed (a rough maze).

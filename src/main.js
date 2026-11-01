@@ -134,7 +134,7 @@ import {
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
-import { createPond, createTubewell, createTeaStallHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
@@ -1574,6 +1574,8 @@ async function main() {
         return { group, onFrame: (dt) => herd.update(dt) };
       },
     });
+    const MAP_HAY = { x: -101.7 + 600, z: 133.5 };
+    zoneManager.register('map_haystacks', { ...MAP_HAY, buildRadius: 50, teardownRadius: 65, build: () => createMapHaystacks(MAP_HAY) }); // the map's three 6 m stacks (1 Nov plan)
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
