@@ -46,7 +46,7 @@ export const ANCHORS = {
   mela: { x: 187.5 + MAP_SHIFT.x, z: 146.5 + MAP_SHIFT.z, ry: 0 },
   gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 0 },
   cane: { x: 20 + OLD_SHIFT.x, z: 150 + OLD_SHIFT.z, ry: 0 },
-  tvhouse: { x: 70 + OLD_SHIFT.x, z: 12 + OLD_SHIFT.z, ry: 0 },
+  tvhouse: onMap('yard_tvhouse'), // old code-built copy dropped; the v2 yard stands here
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
   chemist: { x: 96 + OLD_SHIFT.x, z: 60 + OLD_SHIFT.z, ry: 0 },
   manihari: { x: 90 + OLD_SHIFT.x, z: 78 + OLD_SHIFT.z, ry: 0 },
@@ -55,8 +55,8 @@ export const ANCHORS = {
   masjid: { x: -98.6 + MAP_SHIFT.x, z: -92.3 + MAP_SHIFT.z, ry: 0 },
   jain: { x: 117.7 + MAP_SHIFT.x, z: 96.3 + MAP_SHIFT.z, ry: 0 },
   haveli: { x: 44.9 + MAP_SHIFT.x, z: -22.2 + MAP_SHIFT.z, ry: 0 },
-  gurukul: { x: 160 + OLD_SHIFT.x, z: 85 + OLD_SHIFT.z, ry: 0 },
-  maidan: { x: 165 + OLD_SHIFT.x, z: 135 + OLD_SHIFT.z, ry: 0 },
+  gurukul: onMap('yard_gurukul'),
+  maidan: onMap('yard_khel'),
   gilli: { x: 46 + OLD_SHIFT.x, z: 104 + OLD_SHIFT.z, ry: 0 }, // the gilli-danda patch (side job), not a mapped place
   highway: { x: 205 + OLD_SHIFT.x, z: 40 + OLD_SHIFT.z, ry: 0 },
   mandi: { x: 147.7 + MAP_SHIFT.x, z: -160.3 + MAP_SHIFT.z, ry: 0 },

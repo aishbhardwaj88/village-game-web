@@ -1580,7 +1580,7 @@ async function main() {
     zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, ...pt('masjid'), buildRadius: 45, teardownRadius: 58, build: () => createMasjid(pt('masjid')) });
     zoneManager.register('gurudwara', { ...pt('gurudwara'), buildRadius: 45, teardownRadius: 58, build: () => createGurudwara(pt('gurudwara')) });
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
-    zoneManager.register('tv_house', { ...pt('tvhouse'), buildRadius: 40, teardownRadius: 52, build: () => createTvHouse(pt('tvhouse')) });
+    // 'tv_house' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('manihari', { ...pt('manihari'), buildRadius: 35, teardownRadius: 48, build: () => createManihari(pt('manihari')) });
     zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris(pt('sabzi')) });
     zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, ...pt('jain'), buildRadius: 45, teardownRadius: 58, build: () => createJainMandir(pt('jain')) });
@@ -1703,12 +1703,12 @@ async function main() {
     zoneManager.register('banta_shop', { visibleRadius: 14, ...pt('banta'), buildRadius: 30, teardownRadius: 42, build: () => createBantaShop(pt('banta')) });
     zoneManager.register('chaat_thela', { visibleRadius: 14, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => createChaatThela(pt('chaat')) });
     zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => createMelaGround(pt('mela')) });
-    zoneManager.register('gurukul', { visibleRadius: LANDMARK_VIS, ...pt('gurukul'), buildRadius: 55, teardownRadius: 70, build: () => createGurukul(pt('gurukul')) });
+    // 'gurukul' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
     registerStagingYard(zoneManager, LANDMARK_VIS);
     // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
-    zoneManager.register('khel_maidan', { visibleRadius: LANDMARK_VIS, ...pt('maidan'), buildRadius: 55, teardownRadius: 70, build: () => createKhelMaidan(pt('maidan')) });
+    // 'khel_maidan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
