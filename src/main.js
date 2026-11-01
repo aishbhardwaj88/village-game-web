@@ -632,6 +632,8 @@ async function main() {
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
       { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 13 }, // south of the house compound, clear of its walls and north of the map's South houses (z 57+)
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
+      { x: ANCHORS.anganwadi.x + 14, z: SCHOOL_CENTER.z - 26 }, // detour north round the anganwadi, whose turned playground now lies on its north side
+      { x: ANCHORS.anganwadi.x - 14, z: SCHOOL_CENTER.z - 26 },
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 18 },
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 }, // in line with the yard gate, so the legs in and out pass through it
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
@@ -1560,7 +1562,7 @@ async function main() {
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
     // 'khalihan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
-    zoneManager.register('anganwadi', { visibleRadius: 90, ...pt('anganwadi'), buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi(pt('anganwadi')) });
+    zoneManager.register('anganwadi', { visibleRadius: 90, ...pt('anganwadi'), buildRadius: 40, teardownRadius: 52, build: () => turnSiteGroup(createAnganwadi(pt('anganwadi')), ANCHORS.anganwadi.ry) });
     // 'dudh_dairy' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
     zoneManager.register('health_subcentre', { ...pt('health'), buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre(pt('health')) });

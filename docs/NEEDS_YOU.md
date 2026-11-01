@@ -73,4 +73,4 @@ The primary school now stands at the map's school spot but square to the grid, n
 - Map move (1 Nov): gilli-danda spot now on the map's play spot. The mango orchard, canal, wheat field and sugarcane belt stay at +600 old spots: the orchard is tied to the canal bridge, the tractor errand and field crop rows, and the map has no canal or field matching them. - status: open
 
 - Primary school turn (-11.2 deg) not applied: the playable classroom, bell, teacher, blackboard, desks and child route are all built square and keyed to it; turning it cleanly means rebuilding those together or swapping in the turned v2 school. Bazaar (4.8) and temple (1.5) are now turned. Which school do you want the village to keep? - status: open
-- Anganwadi turn (168.8 deg on the map) not applied: turned, it blocks the school children's walking route; the route and the anganwadi need to be moved together. Chaat thela, jalebi stall, sabzi rehris, old haveli and mandi are turned. - status: open
+- Anganwadi turn (168.8 deg on the map) now applied; the school children's walking route detours north round it (2 Nov). - status: done
