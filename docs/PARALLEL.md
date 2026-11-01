@@ -1,3 +1,41 @@
+# 1 Nov, 21:15. THE TURNS ARE TOO SLOW. TWO CHANGES, APPLY BOTH.
+
+34 turns remain and you are doing roughly ONE per run. That is 12 to 18 hours. Not
+acceptable. She is waiting.
+
+## 1. SKIP every turn of 2 degrees or less. Do not apply them at all.
+A 1 degree turn is invisible to a player and costs a whole run.
+Skip: bus stop, tyre repair shop, truck weighbridge, petrol pump, wholesale grain
+market, brick kiln, temple (1.5), overhead water tank (treat <=2 deg as zero
+everywhere, these are just the ones in the file today).
+Write ONE line in docs/NEEDS_YOU.md saying sub-2-degree turns were skipped as invisible.
+
+## 2. BATCH the rest. Stop doing one turn per run.
+`turnSiteGroup` plus an anchor `ry` already works and is proven on bazaar, temple,
+school, anganwadi, banta, tea stall, store, gilli, hero house and mela.
+Applying it to ten more anchors is ONE code change, not ten runs.
+
+**Do them in these three batches, one batch per run, build and test after each batch:**
+
+- **Batch A, the big turns that actually change the village (10):**
+  anganwadi 168.8, south houses 168.8, volleyball court 96, tea stall at the square 95,
+  sweet shop (halwai) 95, jalebi stall 95, vegetable carts 95, soda drink stall 95,
+  east houses 94.6, west houses 83.
+
+- **Batch B, the 11 and 7 degree group (8):**
+  post office 11.2, primary school 11.2, gurukul 11.2, west street corner 11,
+  haveli 7.3, north houses 7.3, khalihan 7.3, milk dairy 7.
+
+- **Batch C, everything else above 2 degrees.**
+
+If one place in a batch will not turn cleanly, leave THAT ONE, note it in
+docs/NEEDS_YOU.md, and ship the rest of the batch. Never drop a whole batch for one item.
+
+After batch C: re-point markers, NPC routes, door routing, minimap, lane graph, anchors,
+then run the findability audit and the regression check.
+
+---
+
 # THE QUEUE. Work it top to bottom. Never skip ahead.
 
 Read `docs/CLAIMED.md` first so you do not build what the cloud machine is building.
