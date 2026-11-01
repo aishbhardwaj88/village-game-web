@@ -29,7 +29,7 @@ export const ANCHORS = {
   ration: onMap('yard_ration'),
   chakki: onMap('yard_chakki'),
   temple: { x: 95.7 + MAP_SHIFT.x, z: -78.3 + MAP_SHIFT.z, ry: 0 }, // map turn 1.5 deg not applied (main.js slot is unrotated)
-  baagh: { x: -15 + OLD_SHIFT.x, z: 10 + OLD_SHIFT.z, ry: 0 },
+  baagh: { x: 137.7 + MAP_SHIFT.x, z: 132.3 + MAP_SHIFT.z, ry: 0 }, // the map's mango orchard centre
   canal: { x: -15 + OLD_SHIFT.x, z: 33 + OLD_SHIFT.z, ry: 0 },
   field: { x: 20 + OLD_SHIFT.x, z: -20 + OLD_SHIFT.z, ry: 0 },
   banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: 0 },
