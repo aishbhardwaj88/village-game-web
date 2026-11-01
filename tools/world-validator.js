@@ -411,24 +411,33 @@ async function main() {
     // just 'plaster') — see that sampling step's own comment for why.
     // -------------------------------------------------------------------
     {
-      const out = await page.evaluate((pts) => {
-        const d = window.__dopahar;
-        const colliders = d.getStaticColliders();
-        const orphans = [];
-        for (const box of colliders) {
-          const margin = 0.25;
-          let hit = false;
-          for (let i = 0; i < pts.length; i += 2) {
-            const x = pts[i], z = pts[i + 1];
-            if (x >= box.minX - margin && x <= box.maxX + margin && z >= box.minZ - margin && z <= box.maxZ + margin) {
-              hit = true;
-              break;
+      // Done in Node with a 2 m spatial hash: shipping 3.6M points back into the page (and an O(colliders x points) scan) crashed the headless browser once the whole +600 m map area streamed in.
+      const colliders = await page.evaluate(() => window.__dopahar.getStaticColliders());
+      const CELL5 = 2;
+      const grid = new Map();
+      for (let i = 0; i < solidPoints.length; i += 2) {
+        const k = Math.floor(solidPoints[i] / CELL5) * 100003 + Math.floor(solidPoints[i + 1] / CELL5);
+        let arr = grid.get(k);
+        if (!arr) grid.set(k, (arr = []));
+        arr.push(solidPoints[i], solidPoints[i + 1]);
+      }
+      const out = { colliderCount: colliders.length, orphans: [] };
+      const margin = 0.25;
+      for (const box of colliders) {
+        let hit = false;
+        const gx0 = Math.floor((box.minX - margin) / CELL5), gx1 = Math.floor((box.maxX + margin) / CELL5);
+        const gz0 = Math.floor((box.minZ - margin) / CELL5), gz1 = Math.floor((box.maxZ + margin) / CELL5);
+        for (let gx = gx0; gx <= gx1 && !hit; gx++) {
+          for (let gz = gz0; gz <= gz1 && !hit; gz++) {
+            const arr = grid.get(gx * 100003 + gz);
+            if (!arr) continue;
+            for (let i = 0; i < arr.length; i += 2) {
+              if (arr[i] >= box.minX - margin && arr[i] <= box.maxX + margin && arr[i + 1] >= box.minZ - margin && arr[i + 1] <= box.maxZ + margin) { hit = true; break; }
             }
           }
-          if (!hit) orphans.push(box);
         }
-        return { colliderCount: colliders.length, orphans };
-      }, solidPoints);
+        if (!hit) out.orphans.push(box);
+      }
       record(
         'check 5 — every collider corresponds to real, visible geometry',
         out.orphans.length === 0,
@@ -559,11 +568,15 @@ async function main() {
     // 2026-10-21 (school rebuild): the yard now has a real boundary wall with a 4.8m gate gap (x=-50+-2.4,
     // z=94) so every route into it goes through the gate. East of the halwai (x=-37) down to z=88, then
     // west to the gate line, through it, then the old stepping stones to the classroom door.
-    const SCHOOL_YARD_CHAIN = [{ x: -37, z: 88 }, { x: -50, z: 91, r: 0.6 }, { x: -50, z: 97, r: 0.6 }];
+    // The school stands at its 1 Nov map centre (src/anchors.js 'school'); its chains are the old ones (school was at -50,106) re-based on that,
+    // and the approach from the map-area spawn comes straight down open ground east of the yard instead of round the (moved) house and halwai.
+    const SCX = 556.5, SCZ = 108.5;
+    const sch = (x, z, r) => ({ x: SCX + (x + 50), z: SCZ + (z - 106), ...(r ? { r } : {}) });
+    const SCHOOL_YARD_CHAIN = [{ x: SCX + 13, z: 60 }, sch(-37, 88), sch(-50, 91, 0.6), sch(-50, 97, 0.6)];
     const SCHOOL_CHAIN = [
-      ...SCHOOL_YARD_CHAIN, { x: -58.3, z: 100 },
-      { x: -58.3, z: 106, r: 0.3 }, { x: -60, z: 106, r: 0.3 }, { x: -62, z: 106, r: 0.3 },
-      { x: -62, z: 101, r: 0.6 },
+      ...SCHOOL_YARD_CHAIN, sch(-58.3, 100),
+      sch(-58.3, 106, 0.3), sch(-60, 106, 0.3), sch(-62, 106, 0.3),
+      sch(-62, 101, 0.6),
     ];
     // SACK_PILE_CHAIN — the raw run reported sack_pile unreachable with
     // minDistanceToColliders showing ZERO negative clearance anywhere nearby
@@ -646,7 +659,7 @@ async function main() {
       const needsBypass = target.z > 30 || isSchoolYard || isBazaar || isTemple || isSchoolRoom || isHouseInterior || isRoof || isBaagh;
       const chain = [];
       if (isBaagh) return [...BAAGH_CHAIN]; // its own route across the canal bridge, no north BYPASS needed
-      if (needsBypass) chain.push(...BYPASS);
+      if (needsBypass && !isSchoolYard && !isSchoolRoom) chain.push(...BYPASS);
       if (isBazaar) chain.push(...BAZAAR_CHAIN);
       else if (isTemple) chain.push(...TEMPLE_CHAIN);
       else if (isSchoolRoom) chain.push(...SCHOOL_CHAIN);
@@ -769,7 +782,7 @@ async function main() {
           g[sk] = 0; push(h(six, siz), sk);
           const goalR = Math.max(0.4, gr - 0.6); // end the search comfortably inside the target's own interaction radius (the walk may stop a little short of the last waypoint)
           let found = -1, expanded = 0;
-          while (heap.length && expanded < 600000) {
+          while (heap.length && expanded < 4000000) {
             const [, k] = pop();
             if (closed[k]) continue;
             closed[k] = 1; expanded++;

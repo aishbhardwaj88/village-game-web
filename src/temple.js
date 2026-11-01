@@ -1,4 +1,4 @@
-import { pt } from './anchors.js';
+import { pt, OLD_SHIFT } from './anchors.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -340,9 +340,9 @@ export function buildFlowerStall() {
  * not by inspection — same discipline this whole session has used throughout. */
 // Exported (item 3b — vegetation needs real lane geometry to cluster along);
 // values unchanged.
-export const TEMPLE_LANE_START = { x: -44, z: 50.5 };
-export const TEMPLE_LANE_BEND = { x: -12, z: 55 };
-export const TEMPLE_LANE_ARRIVE = { x: 2, z: 51 }; // temple's west gate opening / beside the flower stall
+export const TEMPLE_LANE_START = { x: -44 + OLD_SHIFT.x, z: 50.5 };
+export const TEMPLE_LANE_BEND = { x: -12 + OLD_SHIFT.x, z: 55 };
+export const TEMPLE_LANE_ARRIVE = { x: 2 + OLD_SHIFT.x, z: 51 }; // temple's west gate opening / beside the flower stall
 export const TEMPLE_LANE_WIDTH = 6;
 
 export function buildTempleLane() {

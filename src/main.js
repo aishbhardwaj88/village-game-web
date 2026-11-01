@@ -25,7 +25,7 @@ import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './
 import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { WALKABLE_RECTS } from './walkable.js';
-import { pt } from './anchors.js';
+import { pt, OLD_SHIFT } from './anchors.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
@@ -157,6 +157,7 @@ import { ROAD_CHUNKS, createMapRoads } from './mapRoads.js';
 import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
+const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
 const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
 const MOVE_SPEED = 4.2; // m/s, walking pace
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
@@ -374,7 +375,7 @@ async function main() {
   scene.add(millerNpc);
 
   // Petrol pump attendant beside the east pump island (capsule stand-in until the 3D people arrive)
-  scene.add(createNPC(0x4a6a8a, { x: 189.4, z: 6.4 }, Math.PI / 2, 'npc_pump_attendant'));
+  scene.add(createNPC(0x4a6a8a, { x: 189.4 + OLD_SHIFT.x, z: 6.4 }, Math.PI / 2, 'npc_pump_attendant'));
 
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see
@@ -565,7 +566,7 @@ async function main() {
   // — see docs/shots/opening/ for the before/after and the two runners-up.
   // House/lane/every building stayed exactly where they are; only the spawn point
   // and the camera's own initial yaw moved.
-  const OPENING_SPAWN = { x: -60, z: 20 };
+  const OPENING_SPAWN = { x: 4 + OLD_SHIFT.x, z: 27 }; // on the 1 Nov map: the paved village square, by the peepal and the chowk
   const OPENING_YAW = 2.9;
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
@@ -626,8 +627,12 @@ async function main() {
     childNpc,
     [
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
-      { x: -44, z: 55 }, // west of the halwai's footprint, not through it
+      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 24 }, // south of the house compound, clear of its walls (the 1 Nov map put the halwai north of the house, so the old via-halwai waypoint doubled back through the compound)
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 20 }, // straight north of the yard gate, so the legs in and out meet it head-on
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 }, // in line with the yard gate, so the legs in and out pass through it
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 },
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 20 },
     ],
     { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -673,7 +678,7 @@ async function main() {
     postmanNpc,
     [
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
-      { x: -44, z: 55 },
+      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 24 },
     ],
     { speed: 1.5, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -1342,7 +1347,7 @@ async function main() {
         { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
         { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, kind: GARDEN_KIND.BOUGAINVILLEA },
         // Wall creepers (money plant) climbing the bazaar row's back wall and east end.
-        ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: -100 + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
+        ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: BAZAAR_WEST_X + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ + 1, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ - 1.2, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
         // Post office / ration shop / atta chakki (face +x, 3 m deep): creepers on the side walls
@@ -1657,7 +1662,8 @@ async function main() {
     // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.
     zoneManager.register('carrom_scene', { detail: true, x: -46, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46, z: 5.5 }, 'carrom_scene', 0.3) });
     // Laundry corners also stand at the lane edge, on the non-drain side, so the lane stays clear for carts and cattle.
-    for (const [id, x, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
+    for (const [id, x0, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
+      const x = x0 + OLD_SHIFT.x; // the old lanes ride east with the old village
       zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
     // Water corners stand at the lane edge on the side away from the open drain (kerb + 0.6 m), spout facing the lane.
@@ -1706,9 +1712,9 @@ async function main() {
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
-    zoneManager.register('canal_bank_road', { detail: true, x: -8, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 27.6 }) });
+    zoneManager.register('canal_bank_road', { detail: true, x: -8 + OLD_SHIFT.x, z: 27.6, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8 + OLD_SHIFT.x, z: 27.6 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
-    zoneManager.register('canal_bank_road_n', { detail: true, x: -8, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8, z: 38.8 }, 'canal_bank_road_n') });
+    zoneManager.register('canal_bank_road_n', { detail: true, x: -8 + OLD_SHIFT.x, z: 38.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: -8 + OLD_SHIFT.x, z: 38.8 }, 'canal_bank_road_n') });
     // MAP.md organic village edge: low compound walls closing the abadi's west, south and east sides, gaps where lanes leave.
     zoneManager.register('edge_wall_w', { detail: true, x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
     zoneManager.register('edge_wall_s', { detail: true, x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });
@@ -2279,7 +2285,7 @@ async function main() {
   function movePlayerBy(dx, dz) {
     resolveMove(player.position, dx, dz, PLAYER_COLLISION_RADIUS, otherVehicleBoxes(null));
     player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
-    player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+    player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
     player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
   }
 
@@ -2425,7 +2431,7 @@ async function main() {
       for (let k = 0; k < 24; k++) {
         const a = Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 12); // start due south (+z), alternate sides
         const x = place.x + Math.cos(a) * r, z = place.z + Math.sin(a) * r;
-        if (x < -GROUND_HALF_EXTENT || x > GROUND_HALF_X || Math.abs(z) > GROUND_HALF_EXTENT) continue;
+        if (x < -GROUND_HALF_EXTENT || x > GROUND_HALF_X || Math.abs(z) > GROUND_HALF_Z) continue;
         if (positionBlocked({ x, z }, PLAYER_COLLISION_RADIUS + 0.4, otherVehicleBoxes(null))) continue;
         if (!clearLine(x, z, place.x + (x - place.x) * 0.25, place.z + (z - place.z) * 0.25)) continue;
         best = { x, z };
@@ -3200,6 +3206,7 @@ async function main() {
       getWalkableAreas: () => [...lastCarves, ...WALKABLE_RECTS],
       groundHalfExtent: GROUND_HALF_EXTENT,
       groundHalfX: GROUND_HALF_X,
+      groundHalfZ: GROUND_HALF_Z,
       isBlockedAt: (x, z, r) => positionBlocked({ x, z }, r, otherVehicleBoxes(null)),
       rebuildColliders: () => initStaticColliders(scene),
       setStaticColliders: (boxes) => setStaticColliders(boxes),

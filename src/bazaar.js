@@ -1,4 +1,4 @@
-import { pt } from './anchors.js';
+import { pt, OLD_SHIFT } from './anchors.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -23,8 +23,8 @@ export const BAZAAR_UNIT_D = 5;
 export const BAZAAR_PARAPET_H = 4;
 export const BAZAAR_AWNING_EDGE_H = 2.8;
 export const BAZAAR_COUNTER_H = 0.9;
-export const BAZAAR_WEST_X = -100; // unit 1's west (outer) edge
-export const BAZAAR_ROW_CZ = 15; // row centreline z; shopfronts open south (-z) toward the lane/chowk
+export const BAZAAR_WEST_X = pt('bazaar').x - 18; // unit 1's west (outer) edge (the row is 36 m wide, centred on the bazaar anchor)
+export const BAZAAR_ROW_CZ = pt('bazaar').z; // row centreline z; shopfronts open south (-z) toward the lane/chowk
 export const BAZAAR_FRONT_Z = BAZAAR_ROW_CZ - BAZAAR_UNIT_D / 2; // open face
 export const BAZAAR_EAST_X = BAZAAR_WEST_X + BAZAAR_UNIT_W * 8; // = -64, unit 8's east (outer) edge, chowk end
 
@@ -647,9 +647,9 @@ export function buildBazaarInteriors() {
 // same materials/palette law as the rest of the village. ---
 
 export const CHOWK_TEA = { w: 6, d: 3.5, roofEdgeH: 2.8, counterH: 0.9, backWallH: 2.8 };
-export const CHOWK_TEA_POS = { x: -55, z: 10 };
-export const CHOWK_TEA_ROT = -Math.PI / 2; // faces west, toward the bazaar row
 export const CHOWK_CENTER = pt('chowk'); // the open plaza itself — chabutra/seating live here
+export const CHOWK_TEA_POS = { x: CHOWK_CENTER.x - 1, z: CHOWK_CENTER.z - 3 }; // the second tea stall stands at the same offset from the plaza as before the map move
+export const CHOWK_TEA_ROT = -Math.PI / 2; // faces west, toward the bazaar row
 
 function chowkWorldMatrix() {
   return new THREE.Matrix4().makeRotationY(CHOWK_TEA_ROT).setPosition(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z);
@@ -862,9 +862,9 @@ export function buildChowkPlaza() {
 // Exported (item 3b, real playtest report — vegetation needs real lane geometry
 // to cluster along, not invented coordinates) — values unchanged, just visible
 // to src/main.js now.
-export const BAZAAR_LANE_START = { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 7 };
-export const BAZAAR_LANE_BEND = { x: -58, z: 22 };
-export const BAZAAR_LANE_ARRIVE = { x: -58, z: 8 }; // just north-east of the chowk plaza
+export const BAZAAR_LANE_START = { x: -48 + OLD_SHIFT.x, z: 46 }; // the old bazaar lane keeps its own layout (rides east with the old village)
+export const BAZAAR_LANE_BEND = { x: -58 + OLD_SHIFT.x, z: 22 };
+export const BAZAAR_LANE_ARRIVE = { x: -58 + OLD_SHIFT.x, z: 8 }; // just north-east of the chowk plaza
 export const BAZAAR_LANE_ROW_WIDTH = 6;
 export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: 8 }; // just past unit 1's west end
 
@@ -875,16 +875,16 @@ export function buildBazaarLane() {
     // house compound's courtyard; drawn instead as two legs that stay outside the compound walls —
     // west along the lane (z=47.5, just south of the gate wall) then north along x=-58 (the same
     // route tools/world-validator.js's BAZAAR_CHAIN already walks). Constants above are unchanged.
-    buildStripSegment({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
-    buildStripSegment({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 44, ruts: true }),
+    buildStripSegment({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, { seed: 41, ruts: true }),
+    buildStripSegment({ x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { seed: 44, ruts: true }),
     buildStripSegment(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { seed: 42, ruts: true }),
     buildStripSegment(BAZAAR_LANE_ARRIVE, rowFrontageStart, BAZAAR_LANE_ROW_WIDTH, { seed: 43, ruts: true }),
     // Cement kerbs on the three approach legs only; the frontage leg stays open to the shop steps.
-    ...buildKerbSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 41 }),
-    ...buildKerbSegments({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 44 }),
+    ...buildKerbSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 41 }),
+    ...buildKerbSegments({ x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 44 }),
     ...buildKerbSegments(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 42 }),
-    ...buildDrainSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 45, side: -1 }),
-    ...buildDrainSegments({ x: -58, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 46, side: 1 }),
+    ...buildDrainSegments({ x: BAZAAR_LANE_START.x, z: BAZAAR_LANE_START.z + 1.5 }, { x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 45, side: -1 }),
+    ...buildDrainSegments({ x: -58 + OLD_SHIFT.x, z: BAZAAR_LANE_START.z + 1.5 }, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 46, side: 1 }),
     ...buildDrainSegments(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, 0.1, 0.9, { seed: 47, side: -1 }),
   ];
   return mergeMeshList(segments, 'bazaar_lane');

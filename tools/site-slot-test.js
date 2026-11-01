@@ -98,7 +98,7 @@ async function run(withFile, glb) {
     for (const site of SITES) {
       const a = ANCHORS[ANCHOR_OF[site]];
       await page.evaluate(({ x, z }) => window.__dopahar.teleportPlayer(x - 6, z - 6), a);
-      await page.waitForTimeout(4500); // the zone streams in, then its slot resolves
+      await page.waitForTimeout(9000); // the zone streams in (longer since the whole +600 m map area shares the frame budget), then its slot resolves
       const r = await page.evaluate((site) => {
         const d = window.__dopahar;
         let group = null;

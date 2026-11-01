@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2 } from './materials.js';
 import { bazaarUnitCx, BAZAAR_FRONT_Z } from './bazaar.js';
+import { pt } from './anchors.js';
+
+const HOUSE_AT = pt('house'); // the sack pile and Pitaji stand at fixed offsets from the house anchor, so they move with it
 
 /**
  * Third errand ("wheat to the bazaar") props — no new gameplay systems, just
@@ -15,8 +18,8 @@ import { bazaarUnitCx, BAZAAR_FRONT_Z } from './bazaar.js';
 // point (-51, 25) — not the walled inner courtyard itself (HOUSE_DOOR_WIDTH is
 // 1.3m, pedestrian-only, so the tractor+trolley could never physically reach a pile
 // placed inside those walls). See docs/parked.md for this placement call.
-export const SACK_PILE_POSITION = new THREE.Vector3(-45, 0, 29);
-export const PITAJI_POSITION = new THREE.Vector3(-48, 0, 31);
+export const SACK_PILE_POSITION = new THREE.Vector3(HOUSE_AT.x + 3, 0, HOUSE_AT.z - 10);
+export const PITAJI_POSITION = new THREE.Vector3(HOUSE_AT.x, 0, HOUSE_AT.z - 8);
 // Kirana is bazaar unit 1 (src/bazaar.js BAZAAR_UNITS[0]) — a couple of metres out
 // from its counter, on the lane-facing open side, same "stand just outside the
 // counter" distance every other shop interaction in this game uses.

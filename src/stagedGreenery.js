@@ -43,7 +43,9 @@ export function addPlaceGreenery(group, def, seed) {
   pg.name = def.zone + '_plants';
   pg.position.set(-ax, 0, -az);
   group.add(pg);
-  const W = (a) => a.map((p) => ({ ...p, x: p.x + ax, z: p.z + az }));
+  // place-local -> world, including the place's own turn (the 1 Nov map turns places a few degrees)
+  const ry = group.rotation.y, cs = Math.cos(ry), sn = Math.sin(ry);
+  const W = (a) => a.map((p) => ({ ...p, x: ax + p.x * cs + p.z * sn, z: az - p.x * sn + p.z * cs }));
   const [hw, hd] = g.half;
   // ragged band round the edge of the ground: tufts denser at the corners, a few shrubs, gazania only where a bed is named
   const edge = () => {
@@ -69,5 +71,6 @@ export function addPlaceGreenery(group, def, seed) {
     const beds = g.beds.flatMap((b) => Array.from({ length: b.n }, (_, i) => ({ x: b.x + (rnd() - 0.5) * 3, z: b.z + (rnd() - 0.5) * 1.2, scale: 0.9 + rnd() * 0.4 })));
     addPlantInstances(pg, 'flower_gazania', 0.4, W(beds), { seed: seed + 2, tint: 0.2, radius: 70 });
   }
-  if (g.trees.length) group.add(buildTrees(g.trees.map((t, i) => ({ ...t, seed: seed + i, rotationY: rnd() * 6 }))));
+  // trees register their colliders at the coordinates they are given, so they are built in WORLD metres and carried back by the undone group `pg`
+  if (g.trees.length) pg.add(buildTrees(W(g.trees).map((t, i) => ({ ...t, seed: seed + i, rotationY: rnd() * 6 }))));
 }

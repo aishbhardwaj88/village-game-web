@@ -19,7 +19,7 @@ export const MAP_PLAN = {
   yard_khalihan: { x: 58, z: -95.5, turn: 7.3 },
   yard_chakki: { x: -62.1, z: 23.1, turn: 5 },
   yard_tubewell: { x: 133.8, z: 29.4, turn: 4.9 },
-  yard_school: { x: -43.5, z: 108.5, turn: -11.2 },
+  // yard_school (v2) is NOT placed: the hero school (src/village.js, the playable classroom with bell/teacher/blackboard) now stands on this centre and the two would overlap; v2 waits in its staging slot (NEEDS_YOU).
   yard_gurukul: { x: 34.8, z: 108.3, turn: -11.2 },
   yard_volleyball: { x: -5.2, z: 150, turn: 96 },
   yard_khel: { x: 31.9, z: 154.3, turn: 6 },
