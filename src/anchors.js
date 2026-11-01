@@ -32,7 +32,7 @@ export const ANCHORS = {
   baagh: { x: 137.7 + MAP_SHIFT.x, z: 132.3 + MAP_SHIFT.z, ry: 0 }, // the map's mango orchard centre
   canal: { x: 771, z: 33.8, ry: 0 }, // the map's feeder channel centre (172.35, 33.8) + MAP_SHIFT; the bridge stands here (src/canal.js CANAL_DX)
   field: { x: 3.5 + MAP_SHIFT.x, z: -200 + MAP_SHIFT.z, ry: 0 }, // x = centre of the map's wheat strip (-94.6..101.7); z: the 80 m field is deeper than the 42 m strip, so its south edge sits on the strip's (-160) to stay clear of the petrol pump yard
-  banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: 0 },
+  banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, applied in src/main.js via turnSiteGroup */,
   eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: 0 },
   westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 0 },
