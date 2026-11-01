@@ -1578,12 +1578,12 @@ async function main() {
     // 'dudh_dairy' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
     zoneManager.register('health_subcentre', { ...pt('health'), buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre(pt('health')) });
-    zoneManager.register('chemist', { ...pt('chemist'), buildRadius: 40, teardownRadius: 52, build: () => createChemist(pt('chemist')) });
+    // 'chemist' standalone shop is no longer built: the map merges it into bazaar unit 3 (1 Nov map move).
     zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, ...pt('masjid'), buildRadius: 45, teardownRadius: 58, build: () => createMasjid(pt('masjid')) });
     zoneManager.register('gurudwara', { ...pt('gurudwara'), buildRadius: 45, teardownRadius: 58, build: () => createGurudwara(pt('gurudwara')) });
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
     // 'tv_house' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
-    zoneManager.register('manihari', { ...pt('manihari'), buildRadius: 35, teardownRadius: 48, build: () => createManihari(pt('manihari')) });
+    // 'manihari' standalone stall is no longer built: the map merges it into bazaar unit 7 (1 Nov map move).
     zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => turnSiteGroup(createSabziRehris(pt('sabzi')), ANCHORS.sabzi.ry) });
     zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, ...pt('jain'), buildRadius: 45, teardownRadius: 58, build: () => createJainMandir(pt('jain')) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).

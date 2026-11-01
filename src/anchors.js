@@ -48,8 +48,8 @@ export const ANCHORS = {
   cane: { x: -188 + MAP_SHIFT.x, z: 7 + MAP_SHIFT.z, ry: 0 }, // centre of the map's sugarcane outline (x -225.6..-151.6, z -106..120)
   tvhouse: onMap('yard_tvhouse'), // old code-built copy dropped; the v2 yard stands here
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
-  chemist: { x: 96 + OLD_SHIFT.x, z: 60 + OLD_SHIFT.z, ry: 0 },
-  manihari: { x: 90 + OLD_SHIFT.x, z: 78 + OLD_SHIFT.z, ry: 0 },
+  chemist: { x: -34.8 + MAP_SHIFT.x - 6.75, z: -5 + MAP_SHIFT.z - 7, ry: 0 }, // merged into bazaar unit 3 on the 1 Nov map: point is the lane in front of that unit (the old standalone shop is no longer built)
+  manihari: { x: -34.8 + MAP_SHIFT.x + 11.25, z: -5 + MAP_SHIFT.z - 7, ry: 0 }, // merged into bazaar unit 7 on the 1 Nov map (standalone stall no longer built)
   sabzi: { x: -22.8 + MAP_SHIFT.x, z: 17.1 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   johad: { x: 121.7 + MAP_SHIFT.x, z: 43.1 + MAP_SHIFT.z, ry: 0 },
   masjid: { x: -98.6 + MAP_SHIFT.x, z: -92.3 + MAP_SHIFT.z, ry: 0 },
