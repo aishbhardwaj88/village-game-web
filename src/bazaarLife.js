@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
-import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS, CHOWK_FURN_ORIGIN } from './bazaar.js';
+import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS, CHOWK_FURN_ORIGIN, bazaarXZ, BAZAAR_YAW } from './bazaar.js';
 
 /**
  * NPC life in the bazaar (this task's item 2) — reuses the same waypoint-loop idea
@@ -43,17 +43,17 @@ const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.
 
 const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
 const VILLAGER_LOOPS = [
-  [{ x: BAZAAR_WEST_X + 8, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 18, z: BAZAAR_FRONT_Z - 3.5 }],
-  [{ x: BAZAAR_WEST_X + 20, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 32, z: BAZAAR_FRONT_Z - 3.5 }],
-  [{ x: BAZAAR_EAST_X - 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_EAST_X - 16, z: BAZAAR_FRONT_Z - 3.5 }],
+  [bazaarXZ(BAZAAR_WEST_X + 8, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 18, BAZAAR_FRONT_Z - 3.5)],
+  [bazaarXZ(BAZAAR_WEST_X + 20, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 32, BAZAAR_FRONT_Z - 3.5)],
+  [bazaarXZ(BAZAAR_EAST_X - 4, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_EAST_X - 16, BAZAAR_FRONT_Z - 3.5)],
   [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 2.5 }, { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 6 }],
   // village lane between the house and the school: neighbours out on errands
   [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 19 }],
   [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
   [{ x: LH.x - 7, z: LH.z - 11 }, { x: LH.x - 5, z: LH.z - 5 }],
   // a few more walkers so the bazaar frontage and lane are not empty
-  [{ x: BAZAAR_WEST_X + 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_WEST_X + 26, z: BAZAAR_FRONT_Z - 2.5 }], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
-  [{ x: BAZAAR_EAST_X - 10, z: BAZAAR_FRONT_Z - 2.5 }, { x: BAZAAR_EAST_X - 26, z: BAZAAR_FRONT_Z - 2.5 }],
+  [bazaarXZ(BAZAAR_WEST_X + 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_WEST_X + 26, BAZAAR_FRONT_Z - 2.5)], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
+  [bazaarXZ(BAZAAR_EAST_X - 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_EAST_X - 26, BAZAAR_FRONT_Z - 2.5)],
   [{ x: LH.x - 6, z: LH.z }, { x: LH.x - 6.5, z: LH.z + 7 }],
   [{ x: LH.x - 8, z: LH.z + 37 }, { x: LH.x - 8, z: LH.z + 44 }], // west of the fence strip at x -47..-45
 ];
@@ -90,14 +90,13 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const shopkeepers = BAZAAR_UNITS.map((unit, idx) => ({
     index: idx,
-    x: bazaarUnitCx(idx),
-    z: BAZAAR_FRONT_Z + SHOPKEEPER_DEPTH,
+    ...bazaarXZ(bazaarUnitCx(idx), BAZAAR_FRONT_Z + SHOPKEEPER_DEPTH),
     idle: IDLE_BY_TRADE[unit.trade] || { rate: 1, amount: 0.1 },
     t: idx * 0.9, // phase offset so they don't all sway in lockstep
   }));
   shopkeepers.forEach((s, i) => {
     mesh.setColorAt(s.index, _color.setHex(SHOPKEEPER_TINTS[i % SHOPKEEPER_TINTS.length]));
-    setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI); // facing south, toward the lane
+    setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI + BAZAAR_YAW); // facing south, toward the lane (the row is turned)
   });
 
   VILLAGER_LOOPS.forEach((waypoints, i) => ROUTES.push({ kind: 'loop', name: `bazaar_villager_${i}`, waypoints, radius: NPC_RADIUS }));
@@ -124,7 +123,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     for (const s of shopkeepers) {
       s.t += dt * s.idle.rate;
       const wobble = Math.sin(s.t) * s.idle.amount;
-      setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI + wobble);
+      setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI + BAZAAR_YAW + wobble);
     }
 
     for (const v of villagers) {

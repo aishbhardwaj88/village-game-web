@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { turnGroupOf, turnBox, preTurnLeafBox } from './turn.js';
 
 /**
  * Draw-call reduction (task 2, docs/parked.md): merges static, non-animated meshes
@@ -28,11 +29,20 @@ const mayCast = (material, castShadow) => castShadow && !NO_SHADOW_MATERIALS.has
  * src/collision.js's buildCollidersFromScene(), which reads the same
  * `userData.colliderBoxes` this leaves on the final merged mesh. */
 function collectColliderBoxes(obj, into) {
+  const tg = turnGroupOf(obj); // inside a map-turned place the boxes were built square: turn them now (src/turn.js)
   if (obj.userData.collider === true) {
-    const box = new THREE.Box3().setFromObject(obj, true);
-    if (isFinite(box.min.x)) into.push({ minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z });
+    if (tg) {
+      const pre = preTurnLeafBox(obj, tg);
+      if (pre) into.push(...turnBox(pre, tg.userData.turn));
+    } else {
+      const box = new THREE.Box3().setFromObject(obj, true);
+      if (isFinite(box.min.x)) into.push({ minX: box.min.x, maxX: box.max.x, minZ: box.min.z, maxZ: box.max.z });
+    }
   }
-  if (Array.isArray(obj.userData.colliderBoxes)) into.push(...obj.userData.colliderBoxes);
+  if (Array.isArray(obj.userData.colliderBoxes)) {
+    if (tg) for (const b of obj.userData.colliderBoxes) into.push(...turnBox(b, tg.userData.turn));
+    else into.push(...obj.userData.colliderBoxes);
+  }
 }
 
 /** Merges every mesh descendant of `group` (InstancedMesh excluded — those are

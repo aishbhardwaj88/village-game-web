@@ -36,6 +36,9 @@ import {
   buildFlowerStall,
   buildTempleLane,
   TEMPLE_POS,
+  templeXZ,
+  TEMPLE_YAW,
+  turnTempleGroup,
   PLINTH as TEMPLE_PLINTH,
   PEEPAL_PLATFORM_POS,
   PEEPAL_PLATFORM_RADIUS,
@@ -57,6 +60,9 @@ import {
   buildBazaarLane,
   BAZAAR_UNITS,
   bazaarUnitCx,
+  bazaarXZ,
+  BAZAAR_YAW,
+  turnBazaarGroup,
   BAZAAR_FRONT_Z,
   BAZAAR_ROW_CZ,
   CHOWK_TEA_POS,
@@ -434,11 +440,17 @@ async function main() {
   // src/bazaar.js for the full build. Real gameplay content (not distant scenery), so
   // built eagerly with the rest of the hero zone, not deferred like the field/
   // background houses.
-  const bazaarGroup = buildBazaarRow(buildingKit);
+  // Map turn 4.8 deg: the row (shell, counters, interiors, goods) is built square and turned as ONE piece (src/turn.js); the
+  // chowk, lane and signboard mesh stay in the outer group. Colliders follow via userData.turn (collision.js, mergeUtils.js).
+  const bazaarGroup = new THREE.Group();
+  bazaarGroup.name = 'bazaar_row';
+  const bazaarRow = buildBazaarRow(buildingKit);
+  bazaarGroup.add(bazaarRow);
   scene.add(bazaarGroup);
-  bazaarGroup.add(buildBazaarCountersAndShutters());
-  bazaarGroup.add(buildBazaarInteriors());
-  bazaarGroup.add(buildBazaarKiranaGoods());
+  bazaarRow.add(buildBazaarCountersAndShutters());
+  bazaarRow.add(buildBazaarInteriors());
+  bazaarRow.add(buildBazaarKiranaGoods());
+  turnBazaarGroup(bazaarRow);
 
   // Chowk (item 4) — the second tea stall (Places V1/tea_stall_chowk/), a chabutra,
   // benches, a few plastic chairs, east of the bazaar row with open ground left
@@ -462,7 +474,8 @@ async function main() {
   // point uses.
   let DARZI_POSITION = null;
   BAZAAR_UNITS.forEach((unit, idx) => {
-    const pos = new THREE.Vector3(bazaarUnitCx(idx), 0, BAZAAR_FRONT_Z - 1.5);
+    const at = bazaarXZ(bazaarUnitCx(idx), BAZAAR_FRONT_Z - 1.5);
+    const pos = new THREE.Vector3(at.x, 0, at.z);
     if (unit.trade === 'kirana') return;
     if (unit.trade === 'sabzi') registerSabziWeighing(pos);
     else if (unit.trade === 'bangle') registerBangleTryOn(pos);
@@ -482,8 +495,12 @@ async function main() {
   // for the full build and docs/parked.md for the placement reasoning.
   const templeGroup = new THREE.Group();
   templeGroup.name = 'temple_area';
-  templeGroup.add(buildTemple(buildingKit));
-  templeGroup.add(buildTempleProps());
+  const templeTurned = new THREE.Group(); // map turn 1.5 deg: temple + its props are built square and turned as one piece
+  templeTurned.name = 'temple_turned';
+  templeTurned.add(buildTemple(buildingKit));
+  templeTurned.add(buildTempleProps());
+  turnTempleGroup(templeTurned);
+  templeGroup.add(templeTurned);
   templeGroup.add(buildFlowerStall());
   templeGroup.add(buildTempleLane());
   scene.add(templeGroup);
@@ -678,7 +695,7 @@ async function main() {
   // docs/FINISH_LINE.md Animals line — a real monkey shape (src/animals.js), not a
   // tinted/scaled humanoid capsule. Built at its own correct real-world size, so no
   // external scale hack is needed.
-  const monkeyNpc = createMonkeyNPC({ x: bazaarUnitCx(3), z: BAZAAR_FRONT_Z - 1.5 }, 0, 'npc_monkey');
+  const monkeyNpc = createMonkeyNPC(bazaarXZ(bazaarUnitCx(3), BAZAAR_FRONT_Z - 1.5), 0, 'npc_monkey');
   monkeyNpc.visible = false;
   scene.add(monkeyNpc);
   linkMonkeyPosition(monkeyNpc.position);
@@ -691,13 +708,13 @@ async function main() {
     const roofY5 = BAZAAR_UNITS[5].wallHeight + 0.12; // unit 5's own slab is 0.35 m lower; the old shared height left the monkey hovering
     return [
       { x: startX, z: startZ, y: 0 },
-      { x: bazaarUnitCx(3), z: BAZAAR_ROW_CZ, y: roofY }, // up onto the darzi's own roof
-      { x: bazaarUnitCx(5), z: BAZAAR_ROW_CZ, y: roofY5 }, // across the rooftops, east
-      { x: bazaarUnitCx(6), z: BAZAAR_FRONT_Z - 3, y: 0 }, // back down to the lane (3 m out: the shopfront props stand 1-2 m from the front)
-      { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
+      { ...bazaarXZ(bazaarUnitCx(3), BAZAAR_ROW_CZ), y: roofY }, // up onto the darzi's own roof
+      { ...bazaarXZ(bazaarUnitCx(5), BAZAAR_ROW_CZ), y: roofY5 }, // across the rooftops, east
+      { ...bazaarXZ(bazaarUnitCx(6), BAZAAR_FRONT_Z - 3), y: 0 }, // back down to the lane (3 m out: the shopfront props stand 1-2 m from the front)
+      { ...bazaarXZ(BAZAAR_EAST_X + 3, BAZAAR_FRONT_Z - 4), y: 0 },
     ];
   }
-  NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3), radius: 0.3 });
+  NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarXZ(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3).x, bazaarXZ(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3).z), radius: 0.3 });
 
   function startMonkeyChase() {
     monkeyNpc.position.set(player.position.x, 0, player.position.z);
@@ -775,8 +792,8 @@ async function main() {
       { x: BELL_POSITION.x, z: BELL_POSITION.z, radiusX: 0.6, radiusZ: 0.6 },
       // Item 2/6 (temple + flower stall) — one shadow for the whole raised plinth
       // (shrine + porch sit on it), one for the peepal chabutra, one for the stall.
-      { x: TEMPLE_POS.x, z: TEMPLE_POS.z, radiusX: TEMPLE_PLINTH.w / 2 + 0.4, radiusZ: TEMPLE_PLINTH.d / 2 + 0.4 },
-      { x: PEEPAL_PLATFORM_POS.x, z: PEEPAL_PLATFORM_POS.z, radiusX: PEEPAL_PLATFORM_RADIUS + 0.3, radiusZ: PEEPAL_PLATFORM_RADIUS + 0.3 },
+      { ...templeXZ(TEMPLE_POS.x, TEMPLE_POS.z), radiusX: TEMPLE_PLINTH.w / 2 + 0.4, radiusZ: TEMPLE_PLINTH.d / 2 + 0.4 },
+      { ...templeXZ(PEEPAL_PLATFORM_POS.x, PEEPAL_PLATFORM_POS.z), radiusX: PEEPAL_PLATFORM_RADIUS + 0.3, radiusZ: PEEPAL_PLATFORM_RADIUS + 0.3 },
       { x: FLOWER_STALL_POS.x, z: FLOWER_STALL_POS.z, radiusX: 1.5, radiusZ: 1.3 },
     ],
     4 // dynamic slots: bike, tractor, cart, trolley — set each frame below
@@ -891,7 +908,7 @@ async function main() {
     assetSlots.register('bazaar_row', {
       exact: true,
       hide: bazaarOld,
-      placements: [{ container: scene, position: new THREE.Vector3(pt('bazaar').x, 0, pt('bazaar').z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(pt('bazaar').x, 0, pt('bazaar').z), rotationY: BAZAAR_YAW }],
     });
   }
   {
@@ -917,7 +934,7 @@ async function main() {
     assetSlots.register('temple', {
       exact: true,
       hide: templeOld ? [templeOld] : [],
-      placements: [{ container: scene, position: new THREE.Vector3(TEMPLE_POS.x, 0, TEMPLE_POS.z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(TEMPLE_POS.x, 0, TEMPLE_POS.z), rotationY: TEMPLE_YAW }],
     });
     assetSlots.register('flower_stall', {
       exact: true,
@@ -1209,7 +1226,7 @@ async function main() {
     // courtyard walls at HOUSE_CENTER.x +/- 9, school similarly — offset well
     // past that); babool trees sit just outside the field track loop's own
     // corners (TRACK_CORNERS), offset outward from FIELD_CENTER.
-    templeGroup.add(buildTrees([{ kind: 'peepal', x: PEEPAL_PLATFORM_POS.x, z: PEEPAL_PLATFORM_POS.z, rotationY: 0.4, seed: 5 }]));
+    templeGroup.add(buildTrees([{ kind: 'peepal', ...templeXZ(PEEPAL_PLATFORM_POS.x, PEEPAL_PLATFORM_POS.z), rotationY: 0.4, seed: 5 }]));
     // Step E (2026-10-20, art director — "the village still reads as a
     // desert... instanced trees in clusters along lanes, around houses and the
     // chowk") — several more neem trees in real clusters (2-3 trees close
@@ -1267,7 +1284,7 @@ async function main() {
       ...lanesideClusters(HALWAI_CENTER, SCHOOL_CENTER, 6, { everyMetres: 5, count: 6 }),
       ...lanesideClusters(BAZAAR_LANE_START, BAZAAR_LANE_BEND, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
       ...lanesideClusters(BAZAAR_LANE_BEND, BAZAAR_LANE_ARRIVE, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
-      ...lanesideClusters(BAZAAR_LANE_ARRIVE, BAZAAR_ROW_FRONTAGE_START, BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
+      ...lanesideClusters(BAZAAR_LANE_ARRIVE, bazaarXZ(BAZAAR_ROW_FRONTAGE_START.x, BAZAAR_ROW_FRONTAGE_START.z), BAZAAR_LANE_ROW_WIDTH, { everyMetres: 5, count: 6 }),
       ...lanesideClusters(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, { everyMetres: 5, count: 6 }),
       ...lanesideClusters(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, { everyMetres: 5, count: 6 }),
       ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 14, margin: 2 }),
@@ -1279,13 +1296,13 @@ async function main() {
       { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z, radius: 1.8, count: 6 },
       { x: SCHOOL_CENTER.x + 15, z: SCHOOL_CENTER.z + 5, radius: 1.8, count: 6 },
       { x: HALWAI_CENTER.x - 4, z: HALWAI_CENTER.z + 3, radius: 1.5, count: 5 },
-      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ, radius: 1.8, count: 8 },
-      { x: BAZAAR_WEST_X - 1, z: BAZAAR_ROW_CZ + 10, radius: 1.6, count: 6 },
+      { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ), radius: 1.8, count: 8 },
+      { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ + 10), radius: 1.6, count: 6 },
       { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 6, radius: 1.8, count: 6 },
       { x: CHOWK_CENTER.x - 8, z: CHOWK_CENTER.z, radius: 1.6, count: 5 },
-      { x: TEMPLE_POS.x + 9, z: TEMPLE_POS.z - 2, radius: 1.6, count: 6 },
-      { x: TEMPLE_POS.x - 9, z: TEMPLE_POS.z + 3, radius: 1.6, count: 5 },
-      { x: TEMPLE_POS.x, z: TEMPLE_POS.z + 9, radius: 1.6, count: 5 },
+      { ...templeXZ(TEMPLE_POS.x + 9, TEMPLE_POS.z - 2), radius: 1.6, count: 6 },
+      { ...templeXZ(TEMPLE_POS.x - 9, TEMPLE_POS.z + 3), radius: 1.6, count: 5 },
+      { ...templeXZ(TEMPLE_POS.x, TEMPLE_POS.z + 9), radius: 1.6, count: 5 },
     ];
     const scrubAnchors = [
       ...lanesideClusters(TRACK_CORNERS[1], TRACK_CORNERS[2], 5, { everyMetres: 12, margin: 2.2, count: 4 }),
@@ -1293,7 +1310,7 @@ async function main() {
       ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
       ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
       { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 4 },
-      { x: BAZAAR_EAST_X + 1.5, z: BAZAAR_ROW_CZ, radius: 1.5, count: 5 },
+      { ...bazaarXZ(BAZAAR_EAST_X + 1.5, BAZAAR_ROW_CZ), radius: 1.5, count: 5 },
       { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z + 8, radius: 1.5, count: 4 },
     ];
     scene.add(buildVegetation(vegAnchors, scrubAnchors));
@@ -1311,15 +1328,15 @@ async function main() {
       buildGardenPlants([
         // Marigold beds at the flower stall and temple front.
         ...[-1.6, -0.5, 0.6, 1.7].map((dx) => ({ x: FLOWER_STALL_POS.x + dx, z: FLOWER_STALL_POS.z + 1.8, kind: GARDEN_KIND.MARIGOLD })),
-        ...[-3, -1.5, 1.5, 3].map((dx) => ({ x: TEMPLE_POS.x + dx, z: TEMPLE_POS.z - 6, kind: GARDEN_KIND.MARIGOLD })),
+        ...[-3, -1.5, 1.5, 3].map((dx) => ({ ...templeXZ(TEMPLE_POS.x + dx, TEMPLE_POS.z - 6), kind: GARDEN_KIND.MARIGOLD })),
         // Tulsi near the temple steps and the house courtyard corner.
-        { x: TEMPLE_POS.x + 4.5, z: TEMPLE_POS.z - 5.5, kind: GARDEN_KIND.TULSI },
-        { x: TEMPLE_POS.x - 4.5, z: TEMPLE_POS.z - 5.5, kind: GARDEN_KIND.TULSI },
+        { ...templeXZ(TEMPLE_POS.x + 4.5, TEMPLE_POS.z - 5.5), kind: GARDEN_KIND.TULSI },
+        { ...templeXZ(TEMPLE_POS.x - 4.5, TEMPLE_POS.z - 5.5), kind: GARDEN_KIND.TULSI },
         { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 6.5, kind: GARDEN_KIND.TULSI },
         // Banana clumps: behind the house, by the temple and at the chowk.
         { x: HOUSE_CENTER.x - 11, z: HOUSE_CENTER.z + 8, kind: GARDEN_KIND.BANANA },
         { x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z + 6, kind: GARDEN_KIND.BANANA, scale: 0.85 },
-        { x: TEMPLE_POS.x - 10, z: TEMPLE_POS.z - 4, kind: GARDEN_KIND.BANANA },
+        { ...templeXZ(TEMPLE_POS.x - 10, TEMPLE_POS.z - 4), kind: GARDEN_KIND.BANANA },
         { x: CHOWK_CENTER.x + 9, z: CHOWK_CENTER.z - 6, kind: GARDEN_KIND.BANANA, scale: 0.9 },
         // Bougainvillea along the chowk seating wall and tea stall.
         { x: CHOWK_CENTER.x + 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
@@ -1327,9 +1344,9 @@ async function main() {
         { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
         { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, kind: GARDEN_KIND.BOUGAINVILLEA },
         // Wall creepers (money plant) climbing the bazaar row's back wall and east end.
-        ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: BAZAAR_WEST_X + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
-        { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ + 1, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
-        { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ - 1.2, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
+        ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ ...bazaarXZ(BAZAAR_WEST_X + 4.5 * u + (i % 2) * 0.6, BAZAAR_ROW_CZ + 2.75), kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
+        { ...bazaarXZ(BAZAAR_EAST_X + 0.15, BAZAAR_ROW_CZ + 1), kind: GARDEN_KIND.CREEPER, scale: 1.1 },
+        { ...bazaarXZ(BAZAAR_EAST_X + 0.15, BAZAAR_ROW_CZ - 1.2), kind: GARDEN_KIND.CREEPER, scale: 0.9 },
         // School compound (south wall at z-12 from centre, 4.8 m gate gap): creepers on the wall's
         // street side, marigold + tulsi flanking the gate, banana at the corners.
         ...[-13, -9.5, -6, 6, 9.5, 13].map((dx, i) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 12.3, kind: GARDEN_KIND.CREEPER, scale: 0.6 + (i % 3) * 0.08 })),

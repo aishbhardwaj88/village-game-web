@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2 } from './materials.js';
-import { bazaarUnitCx, BAZAAR_FRONT_Z } from './bazaar.js';
+import { bazaarUnitCx, BAZAAR_FRONT_Z, bazaarXZ } from './bazaar.js';
 import { pt } from './anchors.js';
 
 const HOUSE_AT = pt('house'); // the sack pile and Pitaji stand at fixed offsets from the house anchor, so they move with it
@@ -23,7 +23,8 @@ export const PITAJI_POSITION = new THREE.Vector3(HOUSE_AT.x, 0, HOUSE_AT.z - 8);
 // Kirana is bazaar unit 1 (src/bazaar.js BAZAAR_UNITS[0]) — a couple of metres out
 // from its counter, on the lane-facing open side, same "stand just outside the
 // counter" distance every other shop interaction in this game uses.
-export const KIRANA_POSITION = new THREE.Vector3(bazaarUnitCx(0), 0, BAZAAR_FRONT_Z - 1.5);
+const KIRANA_AT = bazaarXZ(bazaarUnitCx(0), BAZAAR_FRONT_Z - 1.5); // the row is turned on the map (src/turn.js)
+export const KIRANA_POSITION = new THREE.Vector3(KIRANA_AT.x, 0, KIRANA_AT.z);
 
 const SACK_SIZE = { w: 0.42, h: 0.5, d: 0.34 };
 

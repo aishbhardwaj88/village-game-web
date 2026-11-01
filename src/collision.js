@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { isAutoSolidMesh, deriveMeshBoxes } from './autoColliders.js';
 import { WALKABLE_RECTS } from './walkable.js';
+import { turnGroupOf, turnBox, preTurnLeafBox, unturnPointRec, turnPointRec } from './turn.js';
 
 /**
  * Simple axis-aligned box colliders — no physics engine. Player and vehicles are
@@ -79,11 +80,20 @@ export function buildCollidersFromScene(scene) {
     if (obj.parent === scene) top = obj.name;
     if (obj.visible === false) hidden = true;
     if (obj.isMesh) {
+      const tg = turnGroupOf(obj); // under a map-turned place: boxes were built square, turn them (src/turn.js)
       if (obj.userData.collider === true) {
-        _box3.setFromObject(obj, true);
-        if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+        if (tg) {
+          const pre = preTurnLeafBox(obj, tg);
+          if (pre) boxes.push(...turnBox(pre, tg.userData.turn));
+        } else {
+          _box3.setFromObject(obj, true);
+          if (isFinite(_box3.min.x)) boxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+        }
       }
-      if (Array.isArray(obj.userData.colliderBoxes)) boxes.push(...obj.userData.colliderBoxes);
+      if (Array.isArray(obj.userData.colliderBoxes)) {
+        if (tg) for (const b of obj.userData.colliderBoxes) boxes.push(...turnBox(b, tg.userData.turn));
+        else boxes.push(...obj.userData.colliderBoxes);
+      }
       if (!hidden && isAutoSolidMesh(obj, top)) autoMeshes.push([obj, top]);
     }
     for (const c of obj.children) walk(c, top, hidden);
@@ -92,10 +102,32 @@ export function buildCollidersFromScene(scene) {
   // 0.45 m player circle off it, so door jambs, sills, grilles and awning posts hugging a wall add nothing but
   // closing the doorways the hand-tagged walls deliberately leave open.
   const tagged = buildBoxGrid(boxes);
-  const doorways = findDoorways(boxes);
+  // Doorways are found on the SQUARE boxes (a turned wall's slices no longer line up), then turned with their place.
+  const squareBoxes = [];
+  const turnedPre = new Map(); // turn record -> distinct pre-turn boxes
+  for (const b of boxes) {
+    if (!b.pre) { squareBoxes.push(b); continue; }
+    let a = turnedPre.get(b.turn);
+    if (!a) turnedPre.set(b.turn, (a = new Set()));
+    a.add(b.pre);
+  }
+  const doorways = findDoorways(squareBoxes);
+  for (const [t, set] of turnedPre) {
+    for (const c of findDoorways([...set])) {
+      const ps = [turnPointRec(t, c.minX, c.minZ), turnPointRec(t, c.maxX, c.minZ), turnPointRec(t, c.minX, c.maxZ), turnPointRec(t, c.maxX, c.maxZ)];
+      doorways.push({
+        minX: Math.min(...ps.map((p) => p.x)), maxX: Math.max(...ps.map((p) => p.x)),
+        minZ: Math.min(...ps.map((p) => p.z)), maxZ: Math.max(...ps.map((p) => p.z)),
+        pre: c, turn: t,
+      });
+    }
+  }
   lastCarves = doorways;
   const covered = (x, z) => {
-    for (const c of doorways) if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
+    for (const c of doorways) {
+      if (c.turn) { const q = unturnPointRec(c.turn, x, z); if (q.x >= c.pre.minX && q.x <= c.pre.maxX && q.z >= c.pre.minZ && q.z <= c.pre.maxZ) return true; }
+      else if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
+    }
     for (const c of WALKABLE_RECTS) if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
     for (const b of tagged(x, z)) if (x >= b.minX - 0.3 && x <= b.maxX + 0.3 && z >= b.minZ - 0.3 && z <= b.maxZ + 0.3) return true;
     return false;

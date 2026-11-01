@@ -9,6 +9,7 @@ import { addToSignHub } from './signAtlasHub.js';
 import { drawBilingual } from './signPaint.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
+import { applyTurn, turnXZ } from './turn.js';
 import { buildGoodsMesh, produceAndBangleItems, DESIGN as GOODS } from './shopGoods.js';
 
 /**
@@ -27,6 +28,12 @@ export const BAZAAR_COUNTER_H = 0.9;
 export const BAZAAR_WEST_X = pt('bazaar').x - 18; // unit 1's west (outer) edge (the row is 36 m wide, centred on the bazaar anchor)
 export const BAZAAR_ROW_CZ = pt('bazaar').z; // row centreline z; shopfronts open south (-z) toward the lane/chowk
 export const BAZAAR_FRONT_Z = BAZAAR_ROW_CZ - BAZAAR_UNIT_D / 2; // open face
+// Map turn (4.8 deg): the row is BUILT square to the grid in the coordinates below, then turned about the bazaar anchor as one piece
+// (src/turn.js; the bazaar group in src/main.js). Anything placed by row coordinates (shop stands, NPC beats, greenery) goes through bazaarXZ().
+export const BAZAAR_TURN_DEG = 4.8;
+export const BAZAAR_YAW = -BAZAAR_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned row
+export function bazaarXZ(x, z) { const a = pt('bazaar'); return turnXZ(a.x, a.z, BAZAAR_TURN_DEG, x, z); }
+export function turnBazaarGroup(group) { const a = pt('bazaar'); return applyTurn(group, a.x, a.z, BAZAAR_TURN_DEG); }
 export const BAZAAR_EAST_X = BAZAAR_WEST_X + BAZAAR_UNIT_W * 8; // = -64, unit 8's east (outer) edge, chowk end
 
 // Eight units, exact spellings/colours from LAYOUT.md's table — never from the
@@ -84,7 +91,7 @@ export function bazaarBoundaryXs() {
  */
 export function buildBazaarRow(kit) {
   const group = new THREE.Group();
-  group.name = 'bazaar_row';
+  group.name = 'bazaar_row_turned'; // the whole row, turned as one piece by turnBazaarGroup() (src/main.js)
   // Blender bazaar rebuild (2026-10-21, docs/bazaar-row-checklist.md): everything this function builds is the
   // INVISIBLE collision/validator backing ('bazaar_row_old'); tools/blender/build_bazaar_row.py's bazaar_row.glb draws
   // the terrace. (`group` stays the root the chowk, plaza and lane attach to.)
@@ -440,7 +447,8 @@ export async function buildBazaarSignboards() {
     const row = Math.floor(idx / SIGN_ATLAS_COLS);
     mapFrontFaceToAtlasCell(geo, col, row);
     const local = new THREE.Matrix4().makeTranslation(cx, boardY, BAZAAR_FRONT_Z - (idx === 4 ? 0.22 : 0.05)); // unit 5: stand proud of the Blender pediment_a (FRONT-0.15) that hid the Barber board
-    geos.push(geo.applyMatrix4(local));
+    const turnM = new THREE.Matrix4().makeRotationY(BAZAAR_YAW).setPosition(bazaarXZ(0, 0).x, 0, bazaarXZ(0, 0).z); // boards ride the turned row (this mesh is not under the turned group: it also carries the chowk board)
+    geos.push(geo.applyMatrix4(local).applyMatrix4(turnM));
   });
   // Item 2a — the chowk tea stall's board, sharing this same atlas/mesh (was its
   // own separate buildTeaStallChowkSign() mesh/draw call).

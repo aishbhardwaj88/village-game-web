@@ -7,6 +7,7 @@ import { PALETTE, darken, WALL_TINT_STRENGTH, WALL_THICKNESS } from './village.j
 import { mergeGroupByMaterial, mergeMeshList } from './mergeUtils.js';
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
 import { colliderBoxFromTransform } from './collision.js';
+import { applyTurn, turnXZ } from './turn.js';
 
 /**
  * Village mandir + flower stall (headroom-pass task item 2, docs/parked.md).
@@ -28,6 +29,10 @@ import { colliderBoxFromTransform } from './collision.js';
  * Plain and dignified per this task's own item 2 instruction and CLAUDE.md section
  * 4: no deity figures, no religious imagery, no text anywhere on or in it.
  */
+export const TEMPLE_TURN_DEG = 1.5; // map turn: the temple is built square about TEMPLE_POS, then turned as one piece (src/turn.js)
+export const TEMPLE_YAW = -TEMPLE_TURN_DEG * Math.PI / 180;
+export function templeXZ(x, z) { return turnXZ(TEMPLE_POS.x, TEMPLE_POS.z, TEMPLE_TURN_DEG, x, z); }
+export function turnTempleGroup(group) { return applyTurn(group, TEMPLE_POS.x, TEMPLE_POS.z, TEMPLE_TURN_DEG); }
 export const TEMPLE_POS = pt('temple'); // entrance faces west (-x), toward the approach lane
 
 export const PLOT = { w: 12, d: 10 }; // boundary wall footprint
