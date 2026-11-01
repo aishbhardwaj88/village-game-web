@@ -159,7 +159,7 @@ import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
-import { ROAD_CHUNKS, createMapRoads } from './mapRoads.js';
+import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
 import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -1714,6 +1714,17 @@ async function main() {
     registerStagingYard(zoneManager, LANDMARK_VIS);
     // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
+    // Solar LEDs along the map's village lanes, per 36 m chunk so each streams only near the player (the lanes themselves are the strips above).
+    for (const leg of mapLampLegs()) {
+      zoneManager.register(`lamps_map_${leg.id}`, {
+        detail: true,
+        x: (leg.a.x + leg.b.x) / 2,
+        z: (leg.a.z + leg.b.z) / 2,
+        buildRadius: 8 + leg.len / 2,
+        teardownRadius: 9 + leg.len / 2,
+        build: () => createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w }], { type: 'solar', everyMetres: 26 }),
+      });
+    }
     // 'khel_maidan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => turnSiteGroup(createMandi(pt('mandi')), ANCHORS.mandi.ry) });

@@ -63,3 +63,24 @@ export function createMapRoads(chunkId) {
 
 /** Bounding radius of a chunk (for the zone manager). */
 export const ROAD_CHUNK_RADIUS = 260;
+
+/** Street-lamp legs along the map's village lanes: polylines cut into straight chunks of at most 36 m, each { id, a, b, w, len }. Back lanes, farm tracks and front paths get none. */
+export function mapLampLegs() {
+  const legs = [];
+  MAP.lanes_and_tracks.forEach((l, li) => {
+    if (l.type !== 'village lane') return;
+    const pts = l.centreline.map(([x, z]) => ({ x: x + MAP_SHIFT.x, z: z + MAP_SHIFT.z }));
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      const len = Math.hypot(b.x - a.x, b.z - a.z);
+      const n = Math.ceil(len / 36);
+      for (let k = 0; k < n; k++) {
+        const f0 = k / n, f1 = (k + 1) / n;
+        const from = { x: a.x + (b.x - a.x) * f0, z: a.z + (b.z - a.z) * f0 };
+        const to = { x: a.x + (b.x - a.x) * f1, z: a.z + (b.z - a.z) * f1 };
+        legs.push({ id: `${li}_${i}_${k}`, a: from, b: to, w: l.width_m, len: len / n });
+      }
+    }
+  });
+  return legs;
+}
