@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
-import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS } from './bazaar.js';
+import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS, CHOWK_FURN_ORIGIN } from './bazaar.js';
 
 /**
  * NPC life in the bazaar (this task's item 2) — reuses the same waypoint-loop idea
@@ -43,7 +43,7 @@ const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.
 
 const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
 const VILLAGER_LOOPS = [
-  [{ x: BAZAAR_WEST_X + 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 16, z: BAZAAR_FRONT_Z - 3.5 }],
+  [{ x: BAZAAR_WEST_X + 8, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 18, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: BAZAAR_WEST_X + 20, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_WEST_X + 32, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: BAZAAR_EAST_X - 4, z: BAZAAR_FRONT_Z - 3.5 }, { x: BAZAAR_EAST_X - 16, z: BAZAAR_FRONT_Z - 3.5 }],
   [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 2.5 }, { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 6 }],
@@ -111,7 +111,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const seatedIndex = shopkeeperCount + villagerCount;
   // Same bench src/bazaar.js buildChowkPlaza() places at CHOWK_TEA_POS.x-2.6, z+1.5.
-  const seatedPos = { x: CHOWK_TEA_POS.x - 2.6, z: CHOWK_TEA_POS.z + 1.5 };
+  const seatedPos = { x: CHOWK_FURN_ORIGIN.x - 2.6, z: CHOWK_FURN_ORIGIN.z + 1.5 };
   mesh.setColorAt(seatedIndex, _color.setHex(SEATED_TINT));
   setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2 - 0.3, seatedPos.z, Math.PI * 0.3); // lowered a touch, "seated"
 

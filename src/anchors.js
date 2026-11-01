@@ -20,12 +20,12 @@ export const ANCHORS = {
   halwai: { x: 37.4 + MAP_SHIFT.x, z: 21.4 + MAP_SHIFT.z, ry: 0 },
   teastall: { x: -36.2 + MAP_SHIFT.x, z: 15.5 + MAP_SHIFT.z, ry: 0 },
   store: { x: 22.5 + MAP_SHIFT.x, z: 47.4 + MAP_SHIFT.z, ry: 0 },
-  bazaar: { x: -82 + OLD_SHIFT.x, z: 15 + OLD_SHIFT.z, ry: 0 },
+  bazaar: { x: -34.8 + MAP_SHIFT.x, z: -5 + MAP_SHIFT.z, ry: 0 }, // 8-unit row centre: units 1-7 land on the map's bazaar footprints (west edge -52.8); the map's 4.8 deg turn is not applied (main.js slot is unrotated)
   chowk: { x: 1.9 + MAP_SHIFT.x, z: 16.5 + MAP_SHIFT.z, ry: 0 },
   post: { x: -68 + OLD_SHIFT.x, z: 26 + OLD_SHIFT.z, ry: 0 },
   ration: { x: -68 + OLD_SHIFT.x, z: 31 + OLD_SHIFT.z, ry: 0 },
   chakki: { x: -68 + OLD_SHIFT.x, z: 36 + OLD_SHIFT.z, ry: 0 },
-  temple: { x: 8 + OLD_SHIFT.x, z: 52 + OLD_SHIFT.z, ry: 0 },
+  temple: { x: 95.7 + MAP_SHIFT.x, z: -78.3 + MAP_SHIFT.z, ry: 0 }, // map turn 1.5 deg not applied (main.js slot is unrotated)
   baagh: { x: -15 + OLD_SHIFT.x, z: 10 + OLD_SHIFT.z, ry: 0 },
   canal: { x: -15 + OLD_SHIFT.x, z: 33 + OLD_SHIFT.z, ry: 0 },
   field: { x: 20 + OLD_SHIFT.x, z: -20 + OLD_SHIFT.z, ry: 0 },

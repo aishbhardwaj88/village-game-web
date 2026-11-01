@@ -1,4 +1,5 @@
 import { pt, OLD_SHIFT } from './anchors.js';
+import { MAP_SHIFT } from './mapPlan.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -250,7 +251,7 @@ export function buildTemple(kit) {
  * people walk in from") — no tree over it (see docs/parked.md, same no-licensed-
  * tree-model reasoning as the chabutra above). */
 const FLOWER_STALL = { w: 2.5, d: 2, h: 2.2, tableH: 0.4 };
-export const FLOWER_STALL_POS = { x: TEMPLE_POS.x - PLOT.w / 2 - 4, z: TEMPLE_POS.z - 2 };
+export const FLOWER_STALL_POS = { x: 83.7 + MAP_SHIFT.x, z: -85.3 + MAP_SHIFT.z }; // map: Flower stall
 
 export function buildFlowerStall() {
   const group = new THREE.Group();
@@ -340,9 +341,9 @@ export function buildFlowerStall() {
  * not by inspection — same discipline this whole session has used throughout. */
 // Exported (item 3b — vegetation needs real lane geometry to cluster along);
 // values unchanged.
-export const TEMPLE_LANE_START = { x: -44 + OLD_SHIFT.x, z: 50.5 };
-export const TEMPLE_LANE_BEND = { x: -12 + OLD_SHIFT.x, z: 55 };
-export const TEMPLE_LANE_ARRIVE = { x: 2 + OLD_SHIFT.x, z: 51 }; // temple's west gate opening / beside the flower stall
+export const TEMPLE_LANE_START = { x: TEMPLE_POS.x - 21, z: TEMPLE_POS.z + 1 }; // short stub from the map's north outer lane to the gate
+export const TEMPLE_LANE_BEND = { x: TEMPLE_POS.x - 13, z: TEMPLE_POS.z + 3 };
+export const TEMPLE_LANE_ARRIVE = { x: TEMPLE_POS.x - 6, z: TEMPLE_POS.z - 1 }; // temple's west gate opening / beside the flower stall
 export const TEMPLE_LANE_WIDTH = 6;
 
 export function buildTempleLane() {

@@ -1,4 +1,5 @@
 import { pt, OLD_SHIFT } from './anchors.js';
+import { MAP_SHIFT } from './mapPlan.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedWallBox, texturedThickBox, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -648,8 +649,10 @@ export function buildBazaarInteriors() {
 
 export const CHOWK_TEA = { w: 6, d: 3.5, roofEdgeH: 2.8, counterH: 0.9, backWallH: 2.8 };
 export const CHOWK_CENTER = pt('chowk'); // the open plaza itself — chabutra/seating live here
-export const CHOWK_TEA_POS = { x: CHOWK_CENTER.x - 1, z: CHOWK_CENTER.z - 3 }; // the second tea stall stands at the same offset from the plaza as before the map move
-export const CHOWK_TEA_ROT = -Math.PI / 2; // faces west, toward the bazaar row
+export const CHOWK_TEA_POS = { x: 37.9 + MAP_SHIFT.x, z: 3.7 + MAP_SHIFT.z }; // map: 'Tea stall at the square', east edge of the paved square
+export const CHOWK_TEA_ROT = -95 * Math.PI / 180; // map turn 95 deg: faces west into the square
+// The chowk dressing (benches, chairs; baked into chowk_plaza.glb at the plaza) keeps its old offset from the plaza centre, so code and glb agree.
+export const CHOWK_FURN_ORIGIN = { x: CHOWK_CENTER.x - 1, z: CHOWK_CENTER.z - 3 };
 
 function chowkWorldMatrix() {
   return new THREE.Matrix4().makeRotationY(CHOWK_TEA_ROT).setPosition(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z);
@@ -789,7 +792,7 @@ export function buildChowkPlaza() {
 
   // Benches (2): two seat planks on four legs with a stretcher, near the stall's open front.
   [[-1.5, 0.04, 0x6a2a2a], [1.5, -0.05, 0x5c2626]].forEach(([dz, rot, tint]) => {
-    const ox = CHOWK_TEA_POS.x - 2.6, oz = CHOWK_TEA_POS.z + dz;
+    const ox = CHOWK_FURN_ORIGIN.x - 2.6, oz = CHOWK_FURN_ORIGIN.z + dz;
     addPart(1.4, 0.05, 0.19, 0, 0.43, -0.1, tint, ox, oz, rot);
     addPart(1.4, 0.05, 0.19, 0, 0.43, 0.1, darken(tint), ox, oz, rot);
     for (const lx of [-0.62, 0.62]) for (const lz of [-0.14, 0.14]) addPart(0.06, 0.41, 0.06, lx, 0.205, lz, 0x3d2a1e, ox, oz, rot);
@@ -812,8 +815,8 @@ export function buildChowkPlaza() {
   // differently so no two read as copies.
   const chairTints = [0xb23a3a, 0x3a9955, 0xa83434, 0x2f8a4d];
   chairTints.forEach((tint, i) => {
-    const ox = CHOWK_TEA_POS.x - 4.5 + (i % 2) * 0.75 + (i === 2 ? 0.08 : 0);
-    const oz = CHOWK_TEA_POS.z - 0.6 + Math.floor(i / 2) * 0.75;
+    const ox = CHOWK_FURN_ORIGIN.x - 4.5 + (i % 2) * 0.75 + (i === 2 ? 0.08 : 0);
+    const oz = CHOWK_FURN_ORIGIN.z - 0.6 + Math.floor(i / 2) * 0.75;
     const rot = [0.25, -0.18, 0.4, -0.35][i];
     const rake = [0.2, 0.26, 0.17, 0.23][i];
     addTilted(0.42, 0.045, 0.4, 0, 0.43, 0, tint, ox, oz, rot, -0.04);
@@ -866,7 +869,7 @@ export const BAZAAR_LANE_START = { x: -48 + OLD_SHIFT.x, z: 46 }; // the old baz
 export const BAZAAR_LANE_BEND = { x: -58 + OLD_SHIFT.x, z: 22 };
 export const BAZAAR_LANE_ARRIVE = { x: -58 + OLD_SHIFT.x, z: 8 }; // just north-east of the chowk plaza
 export const BAZAAR_LANE_ROW_WIDTH = 6;
-export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: 8 }; // just past unit 1's west end
+export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: BAZAAR_FRONT_Z - 4.5 }; // just past unit 1's west end
 
 export function buildBazaarLane() {
   const rowFrontageStart = BAZAAR_ROW_FRONTAGE_START;

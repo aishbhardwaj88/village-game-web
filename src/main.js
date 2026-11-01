@@ -627,12 +627,12 @@ async function main() {
     childNpc,
     [
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
-      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 24 }, // south of the house compound, clear of its walls (the 1 Nov map put the halwai north of the house, so the old via-halwai waypoint doubled back through the compound)
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 20 }, // straight north of the yard gate, so the legs in and out meet it head-on
+      { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 13 }, // south of the house compound, clear of its walls and north of the map's South houses (z 57+)
+      { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
+      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 18 },
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 }, // in line with the yard gate, so the legs in and out pass through it
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
       { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 },
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 20 },
     ],
     { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -678,7 +678,7 @@ async function main() {
     postmanNpc,
     [
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
-      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 24 },
+      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 13 },
     ],
     { speed: 1.5, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -712,7 +712,7 @@ async function main() {
       { x: BAZAAR_EAST_X + 3, z: BAZAAR_FRONT_Z - 4, y: 0 },
     ];
   }
-  NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarUnitCx(3), BAZAAR_FRONT_Z - 1.5), radius: 0.3 });
+  NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3), radius: 0.3 });
 
   function startMonkeyChase() {
     monkeyNpc.position.set(player.position.x, 0, player.position.z);
