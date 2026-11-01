@@ -21,8 +21,8 @@ export const ANCHORS = {
   house: { x: 52.1 + MAP_SHIFT.x, z: 40.2 + MAP_SHIFT.z, ry: 0 },
   school: { x: -43.5 + MAP_SHIFT.x, z: 108.5 + MAP_SHIFT.z, ry: 0 }, // the map's primary school centre; the hero school is axis-aligned, so the map's -11.2 deg turn is not applied (NEEDS_YOU)
   halwai: { x: 37.4 + MAP_SHIFT.x, z: 21.4 + MAP_SHIFT.z, ry: 0 },
-  teastall: { x: -36.2 + MAP_SHIFT.x, z: 15.5 + MAP_SHIFT.z, ry: 0 },
-  store: { x: 22.5 + MAP_SHIFT.x, z: 47.4 + MAP_SHIFT.z, ry: 0 },
+  teastall: { x: -36.2 + MAP_SHIFT.x, z: 15.5 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, added to TEA_SHOP_ROT in src/main.js */,
+  store: { x: 22.5 + MAP_SHIFT.x, z: 47.4 + MAP_SHIFT.z, ry: -5 * Math.PI / 180 } /* map turn 5 deg, added to STORE_ROT in src/main.js */,
   bazaar: { x: -34.8 + MAP_SHIFT.x, z: -5 + MAP_SHIFT.z, ry: 0 }, // 8-unit row centre: units 1-7 land on the map's bazaar footprints (west edge -52.8); the map's 4.8 deg turn is not applied (main.js slot is unrotated)
   chowk: { x: 1.9 + MAP_SHIFT.x, z: 16.5 + MAP_SHIFT.z, ry: 0 },
   post: onMap('yard_post'), // the old combined post/ration/chakki model is no longer drawn (src/main.js); the v2 yards stand here
