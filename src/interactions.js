@@ -8,6 +8,7 @@ import {
   HOUSE_TULSI_POSITION,
   SCHOOL_BLACKBOARD_POSITION,
   SCHOOL_BENCH_POSITION,
+  schoolXZ,
 } from './village.js';
 import { QUEST_STEPS, SACK_TARGET, MANGO_TARGET } from './quest.js';
 import { SACK_PILE_POSITION, PITAJI_POSITION, KIRANA_POSITION, isTrolleyNearby } from './wheatErrand.js';
@@ -153,13 +154,14 @@ registerInteraction({
 // (clearance exactly -NPC_RADIUS, i.e. these NPCs are centred ON the wall
 // boundary), not actually "beside the door" / "inside the yard" as the
 // original comments intended. Moved 6m south, clear of the block.
-export const BELL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x - 6, 0, SCHOOL_CENTER.z + 4); // between two verandah pillars of the back block (Blender school, pillars at x=-8,-4,0,4,8)
+const schoolV = (dx, dz) => { const p = schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz); return new THREE.Vector3(p.x, 0, p.z); }; // square school layout -> turned world (map turn -11.2 deg)
+export const BELL_POSITION = schoolV(-6, 4); // between two verandah pillars of the back block (Blender school, pillars at x=-8,-4,0,4,8)
 export const CHARPAI_POSITION = new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z + 5.5 / 2 + 0.85); // between the two chairs outside the halwai
 
 // --- task 4: second errand — the teacher and the school bell (already above) are the
 // two alternate ways to hand over the tiffin and collect the sister. ---
-export const TEACHER_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 2, 0, SCHOOL_CENTER.z + 4); // opposite side of the same yard-facing wall as the bell, in the open yard
-export const SISTER_SCHOOL_POSITION = new THREE.Vector3(SCHOOL_CENTER.x + 2, 0, SCHOOL_CENTER.z + 1); // beside the teacher, inside the yard — until collected
+export const TEACHER_POSITION = schoolV(2, 4); // opposite side of the same yard-facing wall as the bell, in the open yard
+export const SISTER_SCHOOL_POSITION = schoolV(2, 1); // beside the teacher, inside the yard — until collected
 
 /** Shared by both alternate triggers below — advances the quest and tells main.js to
  * start the sister NPC following the player (src/npcRoutines.js createFollowRoutine,
@@ -259,7 +261,7 @@ registerInteraction({
 
 registerInteraction({
   id: 'blackboard',
-  position: new THREE.Vector3(SCHOOL_BLACKBOARD_POSITION.x, 0, SCHOOL_BLACKBOARD_POSITION.z + 1.2),
+  position: schoolV(SCHOOL_BLACKBOARD_POSITION.x - SCHOOL_CENTER.x, SCHOOL_BLACKBOARD_POSITION.z + 1.2 - SCHOOL_CENTER.z),
   radius: 1.8,
   label: { hi: 'ब्लैकबोर्ड पर लिखें', en: 'Write on the blackboard' },
   onInteract: (ctx) => {
@@ -269,7 +271,7 @@ registerInteraction({
 
 registerInteraction({
   id: 'school_bench',
-  position: new THREE.Vector3(SCHOOL_BENCH_POSITION.x, 0, SCHOOL_BENCH_POSITION.z),
+  position: schoolV(SCHOOL_BENCH_POSITION.x - SCHOOL_CENTER.x, SCHOOL_BENCH_POSITION.z - SCHOOL_CENTER.z),
   radius: 1.4,
   label: { hi: 'बेंच पर बैठें', en: 'Sit on the bench' },
   available: (ctx) => !ctx.sitting && !ctx.lying,

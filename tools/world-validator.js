@@ -571,8 +571,11 @@ async function main() {
     // The school stands at its 1 Nov map centre (src/anchors.js 'school'); its chains are the old ones (school was at -50,106) re-based on that,
     // and the approach from the map-area spawn comes straight down open ground east of the yard instead of round the (moved) house and halwai.
     const SCX = 556.5, SCZ = 108.5;
-    const sch = (x, z, r) => ({ x: SCX + (x + 50), z: SCZ + (z - 106), ...(r ? { r } : {}) });
-    const SCHOOL_YARD_CHAIN = [{ x: SCX + 13, z: 60 }, sch(-37, 88), sch(-50, 91, 0.6), sch(-50, 97, 0.6)];
+    // The school is turned -11.2 deg about its centre (map turn, src/village.js): the chain points are written in the square layout and turned here.
+    const SCH_TH = -11.2 * Math.PI / 180, SCH_C = Math.cos(SCH_TH), SCH_S = Math.sin(SCH_TH);
+    const sch = (x, z, r) => { const dx = x + 50, dz = z - 106; return { x: SCX + dx * SCH_C + dz * SCH_S, z: SCZ - dx * SCH_S + dz * SCH_C, ...(r ? { r } : {}) }; };
+    // The turned school's old entry point (square -37,88) now lands inside the anganwadi, so come down the child route's open line (z 82.5) instead.
+    const SCHOOL_YARD_CHAIN = [{ x: SCX + 13, z: 60 }, { x: SCX + 3, z: 82.5 }, sch(-50, 91, 0.6), sch(-50, 97, 0.6)];
     const SCHOOL_CHAIN = [
       ...SCHOOL_YARD_CHAIN, sch(-58.3, 100),
       sch(-58.3, 106, 0.3), sch(-60, 106, 0.3), sch(-62, 106, 0.3),

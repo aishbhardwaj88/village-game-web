@@ -7,7 +7,7 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
-import { buildHeroZone, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
+import { buildHeroZone, schoolXZ, SCHOOL_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
@@ -180,6 +180,9 @@ const VEHICLE_LABEL_HI = {
   'Bullock cart': 'बैलगाड़ी',
 };
 
+/** A point of the square-built school layout (offset from its centre) in the turned world (map turn -11.2 deg, src/village.js). */
+const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz);
+
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
@@ -274,7 +277,7 @@ async function main() {
   // createDonationBoard's own doc comment) — same .then()/.catch() pattern
   // src/bazaar.js's buildBazaarSignboards() already uses.
   createDonationBoard({ x: SCHOOL_ROOM.cx - SCHOOL_ROOM.w / 2 - 0.18, y: 2.2, z: SCHOOL_ROOM.cz }, -Math.PI / 2)
-    .then((board) => heroZoneGroup.add(board))
+    .then((board) => heroZoneGroup.getObjectByName('school_compound').add(board)) // built square, rides the turned school group
     .catch((err) => console.error('Failed to build the donation board', err));
 
   // A-2c diegetic wayfinding: direction signposts at lane junctions + the chowk notice board (src/wayfinding.js; labels come from PLACES).
@@ -432,7 +435,7 @@ async function main() {
     // The school gate board shares this mesh (same atlas/material): one draw call for both, the hero view is at the 150 ceiling.
     const halwaiBoard = placeBoardsMesh([
       { id: 'halwai', x: HALWAI_CENTER.x, y: 3.55, z: HALWAI_CENTER.z + 3.1, w: 3.6 },
-      { id: 'school', x: SCHOOL_CENTER.x, y: 3.05, z: SCHOOL_CENTER.z - 12, ry: Math.PI, w: 4.2 }, // over the school's south gate, faces the lane
+      { id: 'school', ...schoolPt(0, -12), y: 3.05, ry: Math.PI + SCHOOL_YAW, w: 4.2 }, // over the school's south gate, faces the lane
     ], 'halwai_board');
     shopsGroup.add(halwaiBoard);
   }
@@ -634,10 +637,16 @@ async function main() {
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 14, z: SCHOOL_CENTER.z - 26 }, // detour north round the anganwadi, whose turned playground now lies on its north side
       { x: ANCHORS.anganwadi.x - 14, z: SCHOOL_CENTER.z - 26 },
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 18 },
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 }, // in line with the yard gate, so the legs in and out pass through it
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 10 },
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 14 },
+      schoolPt(0, -18),
+      schoolPt(0, -14), // in line with the (turned) yard gate, so the legs in and out pass through it
+      schoolPt(0, -10),
+      schoolPt(0, -14),
+      schoolPt(0, -18), // and home by the same detour, so the long return leg does not cut through the anganwadi
+      { x: ANCHORS.anganwadi.x - 14, z: SCHOOL_CENTER.z - 26 },
+      { x: ANCHORS.anganwadi.x + 14, z: SCHOOL_CENTER.z - 26 },
+      { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 },
+      { x: HOUSE_CENTER.x - 47, z: HOUSE_CENTER.z + 15 },
+      { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 15 },
     ],
     { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -651,7 +660,7 @@ async function main() {
   // attached." Open yard ground, south-central (clear of both classroom blocks and
   // the bell at SCHOOL_CENTER.x-5,110 — src/village.js's school_compound yard
   // spans x:[-65,-35] z:[94,118]).
-  scene.add(createFlagpoleProp({ x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z - 8 }));
+  scene.add(createFlagpoleProp({ ...schoolPt(0, -8) }));
 
 
   // Second errand (task 4) — the teacher (a fixed interaction point, like maaNpc/
@@ -787,9 +796,9 @@ async function main() {
     [
       { x: HOUSE_BLOCK.cx, z: HOUSE_BLOCK.cz, radiusX: HOUSE_BLOCK.w / 2 + 0.4, radiusZ: HOUSE_BLOCK.d / 2 + 0.4 },
       { x: HALWAI_CENTER.x, z: HALWAI_CENTER.z, radiusX: HALWAI_FOOTPRINT.w / 2 + 0.4, radiusZ: HALWAI_FOOTPRINT.d / 2 + 0.4 },
-      { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z + 9, radiusX: 12.4, radiusZ: 3.4 }, // school back block
-      { x: SCHOOL_CENTER.x + 12, z: SCHOOL_CENTER.z, radiusX: 3.4, radiusZ: 9.4 }, // school east wing
-      { x: SCHOOL_ROOM.cx, z: SCHOOL_ROOM.cz, radiusX: SCHOOL_ROOM.w / 2 + 0.4, radiusZ: SCHOOL_ROOM.d / 2 + 0.4 }, // school west wing (classroom)
+      { ...schoolPt(0, +9), radiusX: 12.4, radiusZ: 3.4 }, // school back block
+      { ...schoolPt(+12, 0), radiusX: 3.4, radiusZ: 9.4 }, // school east wing
+      { ...schoolPt(SCHOOL_ROOM.cx - SCHOOL_CENTER.x, SCHOOL_ROOM.cz - SCHOOL_CENTER.z), radiusX: SCHOOL_ROOM.w / 2 + 0.4, radiusZ: SCHOOL_ROOM.d / 2 + 0.4 }, // school west wing (classroom)
       { x: TEA_SHOP_POS.x, z: TEA_SHOP_POS.z, radiusX: TEA_DIMS.w / 2 + 0.4, radiusZ: TEA_DIMS.d / 2 + 0.4 },
       { x: STORE_POS.x, z: STORE_POS.z, radiusX: STORE_DIMS.w / 2 + 0.4, radiusZ: STORE_DIMS.d / 2 + 0.4 },
       { x: BELL_POSITION.x, z: BELL_POSITION.z, radiusX: 0.6, radiusZ: 0.6 },
@@ -977,7 +986,7 @@ async function main() {
       exact: true,
       noShadowMaterials: ['hb_decal'],
       hide: schoolOld ? [schoolOld] : [],
-      placements: [{ container: scene, position: new THREE.Vector3(SCHOOL_CENTER.x, 0, SCHOOL_CENTER.z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(SCHOOL_CENTER.x, 0, SCHOOL_CENTER.z), rotationY: SCHOOL_YAW }],
     });
   }
   const PERSON_DIMENSIONS = { w: PLAYER_RADIUS * 2, h: PLAYER_HEIGHT, d: PLAYER_RADIUS * 2 };
@@ -1243,14 +1252,14 @@ async function main() {
         // the courtyard tree in its raised brick planter (docs/house-checklist.md item 7); planter top is y=0.55
         { kind: 'neem', x: HOUSE_CENTER.x + 7, z: HOUSE_CENTER.z + 3.4, y: 0.5, scale: 0.5, rotationY: 0.7, seed: 17 },
         // the school yard's neem in its raised brick ring (docs/school-checklist.md item 17); ring top y=0.26
-        { kind: 'neem', x: SCHOOL_CENTER.x - 4.5, z: SCHOOL_CENTER.z - 6.2, y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
+        { kind: 'neem', ...schoolPt(-4.5, -6.2), y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
         { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
         // the school yard's big shade tree with the tyre swing + stuck kite (tools/blender/build_school.py hangs them at this spot)
-        { kind: 'neem', x: SCHOOL_CENTER.x + 6.2, z: SCHOOL_CENTER.z - 1.0, scale: 1.35, rotationY: 0.3, seed: 31 },
+        { kind: 'neem', ...schoolPt(+6.2, -1.0), scale: 1.35, rotationY: 0.3, seed: 31 },
         // a row of tall eucalyptus behind the school building (reference: slim pale-barked trees along the back wall)
-        ...[-14, -9.5, -5, 4.5, 9, 13.5].map((dx, i) => ({ kind: 'eucalyptus', x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z + 14.5 + (i % 2) * 1.2, rotationY: i, seed: 40 + i })),
-        { kind: 'neem', x: SCHOOL_CENTER.x - 10, z: SCHOOL_CENTER.z + 16, rotationY: 2.3, seed: 12 }, // behind the main block (these two used to stand INSIDE the wings, poking through the roofs)
-        { kind: 'neem', x: SCHOOL_CENTER.x + 6, z: SCHOOL_CENTER.z + 17, rotationY: 0.5, seed: 14 },
+        ...[-14, -9.5, -5, 4.5, 9, 13.5].map((dx, i) => ({ kind: 'eucalyptus', ...schoolPt(dx, 14.5 + (i % 2) * 1.2), rotationY: i, seed: 40 + i })),
+        { kind: 'neem', ...schoolPt(-10, +16), rotationY: 2.3, seed: 12 }, // behind the main block (these two used to stand INSIDE the wings, poking through the roofs)
+        { kind: 'neem', ...schoolPt(+6, +17), rotationY: 0.5, seed: 14 },
         { kind: 'neem', x: HALWAI_CENTER.x + 3, z: HALWAI_CENTER.z - 5, rotationY: 1.8, seed: 15 },
       ])
     );
@@ -1296,8 +1305,8 @@ async function main() {
       { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z - 2, radius: 1.6, count: 7 },
       { x: HOUSE_CENTER.x + 9.6, z: HOUSE_CENTER.z + 2, radius: 1.6, count: 7 },
       { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z - 8, radius: 1.8, count: 6 },
-      { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z, radius: 1.8, count: 6 },
-      { x: SCHOOL_CENTER.x + 15, z: SCHOOL_CENTER.z + 5, radius: 1.8, count: 6 },
+      { ...schoolPt(-15, 0), radius: 1.8, count: 6 },
+      { ...schoolPt(+15, +5), radius: 1.8, count: 6 },
       { x: HALWAI_CENTER.x - 4, z: HALWAI_CENTER.z + 3, radius: 1.5, count: 5 },
       { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ), radius: 1.8, count: 8 },
       { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ + 10), radius: 1.6, count: 6 },
@@ -1314,7 +1323,7 @@ async function main() {
       ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
       { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 4 },
       { ...bazaarXZ(BAZAAR_EAST_X + 1.5, BAZAAR_ROW_CZ), radius: 1.5, count: 5 },
-      { x: SCHOOL_CENTER.x - 15, z: SCHOOL_CENTER.z + 8, radius: 1.5, count: 4 },
+      { ...schoolPt(-15, +8), radius: 1.5, count: 4 },
     ];
     scene.add(buildVegetation(vegAnchors, scrubAnchors));
     // Abadi house fronts: creepers, tulsi, marigold, banana (own mesh, only drawn when the abadi is in view).
@@ -1352,8 +1361,8 @@ async function main() {
         { ...bazaarXZ(BAZAAR_EAST_X + 0.15, BAZAAR_ROW_CZ - 1.2), kind: GARDEN_KIND.CREEPER, scale: 0.9 },
         // School compound (south wall at z-12 from centre, 4.8 m gate gap): creepers on the wall's
         // street side, marigold + tulsi flanking the gate, banana at the corners.
-        ...[-13, -9.5, -6, 6, 9.5, 13].map((dx, i) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 12.3, kind: GARDEN_KIND.CREEPER, scale: 0.6 + (i % 3) * 0.08 })),
-        ...[-4.2, -3.6, 3.6, 4.2].map((dx) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 11.2, kind: GARDEN_KIND.MARIGOLD })),
+        ...[-13, -9.5, -6, 6, 9.5, 13].map((dx, i) => ({ ...schoolPt(+dx, -12.3), kind: GARDEN_KIND.CREEPER, scale: 0.6 + (i % 3) * 0.08 })),
+        ...[-4.2, -3.6, 3.6, 4.2].map((dx) => ({ ...schoolPt(+dx, -11.2), kind: GARDEN_KIND.MARIGOLD })),
         // The two flower beds along the main verandah (tools/blender/build_school.py flower_bed, z +1.4..+2.6, x -8.6..-1 and 1..8.6):
         // real scanned gazania, one plant per ~0.9 m, jittered and scaled.
         ...[[-8.0, -1.6], [1.6, 8.0]].flatMap(([x0, x1], b) => Array.from({ length: 8 }, (_, i) => ({
@@ -1361,10 +1370,10 @@ async function main() {
           z: SCHOOL_CENTER.z + 2.0 + Math.sin(i * 7.7 + b * 3) * 0.28,
           y: 0.2, kind: GARDEN_KIND.MARIGOLD, scale: 1.1 + 0.3 * Math.abs(Math.sin(i * 3.1 + b)),
         }))),
-        { x: SCHOOL_CENTER.x - 3.4, z: SCHOOL_CENTER.z - 13.2, kind: GARDEN_KIND.TULSI, scale: 0.9 },
-        { x: SCHOOL_CENTER.x + 3.4, z: SCHOOL_CENTER.z - 13.2, kind: GARDEN_KIND.TULSI, scale: 0.9 },
-        { x: SCHOOL_CENTER.x - 16.5, z: SCHOOL_CENTER.z - 12.8, kind: GARDEN_KIND.BANANA },
-        { x: SCHOOL_CENTER.x + 16.5, z: SCHOOL_CENTER.z - 12.8, kind: GARDEN_KIND.BANANA, scale: 0.9 },
+        { ...schoolPt(-3.4, -13.2), kind: GARDEN_KIND.TULSI, scale: 0.9 },
+        { ...schoolPt(+3.4, -13.2), kind: GARDEN_KIND.TULSI, scale: 0.9 },
+        { ...schoolPt(-16.5, -12.8), kind: GARDEN_KIND.BANANA },
+        { ...schoolPt(+16.5, -12.8), kind: GARDEN_KIND.BANANA, scale: 0.9 },
       ])
     );
 

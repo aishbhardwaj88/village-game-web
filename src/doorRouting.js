@@ -1,6 +1,6 @@
 import {
   HOUSE_BLOCK, HOUSE_DOOR_Z, HOUSE_PARTITION_Z,
-  SCHOOL_ROOM, SCHOOL_ROOM_DOOR_X,
+  SCHOOL_ROOM, SCHOOL_ROOM_DOOR_X, schoolXZ, schoolInverseXZ,
 } from './village.js';
 
 /**
@@ -24,7 +24,8 @@ export const BUILDING_ROUTES = [
   },
   {
     name: 'school_room',
-    zoneOf: (x, z) => (Math.abs(x - R.cx) < R.w / 2 && Math.abs(z - R.cz) < R.d / 2 ? 1 : 0),
-    links: [[{ x: SCHOOL_ROOM_DOOR_X + 1.2, z: R.cz }, { x: SCHOOL_ROOM_DOOR_X - 1.2, z: R.cz }]],
+    // the room is built square and the school is turned (map turn): test in the square frame, put the door links in the world
+    zoneOf: (x, z) => { const q = schoolInverseXZ(x, z); return Math.abs(q.x - R.cx) < R.w / 2 && Math.abs(q.z - R.cz) < R.d / 2 ? 1 : 0; },
+    links: [[schoolXZ(SCHOOL_ROOM_DOOR_X + 1.2, R.cz), schoolXZ(SCHOOL_ROOM_DOOR_X - 1.2, R.cz)]],
   },
 ];

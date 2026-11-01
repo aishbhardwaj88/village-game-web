@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { pt } from './anchors.js';
-import { PALETTE, darken } from './village.js';
+import { PALETTE, darken, schoolXZ } from './village.js';
 import { addPlantInstances } from './realPlants.js';
 
 /**
@@ -135,13 +135,17 @@ function buildScrubGeometry() { return buildCardGeometry(0.95, 0.8); }
 
 /** Water and tank footprints no plant may stand in (hauz, pond, johad, canal channel). Circles {x,z,r} or canal-style z-bands {zMin,zMax,xMin,xMax}. */
 const TW = pt('tubewell'), CN = pt('canal'), SC = pt('school'); // offsets below are from the anchors, so moving a place carries its keep-out
+const SCHOOL_ROOM_KEEP = (() => { // the classroom is turned with the school: keep out the box that bounds its turned rectangle
+  const c = [[-15.5, -9.5], [-15.5, 9.5], [-8.5, -9.5], [-8.5, 9.5]].map(([dx, dz]) => schoolXZ(SC.x + dx, SC.z + dz));
+  return { zMin: Math.min(...c.map((p) => p.z)), zMax: Math.max(...c.map((p) => p.z)), xMin: Math.min(...c.map((p) => p.x)), xMax: Math.max(...c.map((p) => p.x)) };
+})();
 export const VEG_KEEP_OUT = [
   { x: TW.x + 3.9, z: TW.z + 0.4, r: 3.0 }, // tubewell hauz + its outlet naali start
   { x: TW.x + 5.8, z: TW.z + 4.2, r: 2.6 }, // tubewell outlet channel
   { ...pt('pond'), r: 11 }, // pond
   { ...pt('johad'), r: 8 }, // johad
   { zMin: CN.z - 3.5, zMax: CN.z + 3.5, xMin: CN.x - 13, xMax: CN.x + 15 }, // canal water + banks
-  { zMin: SC.z - 9.5, zMax: SC.z + 9.5, xMin: SC.x - 15.5, xMax: SC.x - 8.5 }, // school classroom (SCHOOL_ROOM in village.js): grass was sprouting through its floor
+  SCHOOL_ROOM_KEEP, // school classroom (SCHOOL_ROOM in village.js, turned with the school): grass was sprouting through its floor
 ];
 /** Every lane stretch passed to lanesideClusters: its kerb + open drain band (half width + 0.8 m) is also a keep-out, so no tuft grows in a nali or on a kerb. */
 const LANE_BANDS = [];

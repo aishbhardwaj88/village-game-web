@@ -9,6 +9,7 @@ import { registerWalkable } from './walkable.js';
 import { drawBilingual } from './signPaint.js';
 import { addHandPumps } from './handPumps.js';
 import { addPots } from './pots.js';
+import { applyTurn, turnXZ } from './turn.js';
 
 // Hero-zone coordinates, 1 unit = 1 m, same axes as reference-from-unity/MAP.md and
 // WorldData/*.json (reserved.json: PlayersHouse centre (-48, 33.5) 50x53m footprint,
@@ -16,6 +17,16 @@ import { addPots } from './pots.js';
 const HOUSE_CENTER = pt('house'); // src/anchors.js is the one placement table
 const SCHOOL_CENTER = pt('school');
 const HALWAI_CENTER = pt('halwai');
+
+// Map turn -11.2 deg (1 Nov plan): the school is built square about SCHOOL_CENTER, then the whole group (classroom, props, colliders,
+// the Blender model via its slot) turns as ONE piece about the centre (src/turn.js). Anything keyed to the school's square layout
+// (bell, teacher, blackboard, bench, signboard, routes, trees) goes through schoolXZ(); schoolInverseXZ() is the other way.
+export const SCHOOL_TURN_DEG = 11.2;
+export const SCHOOL_YAW = -SCHOOL_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned school
+/** Where a point of the square school layout lands once the school is turned. */
+export function schoolXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CENTER.z, SCHOOL_TURN_DEG, x, z); }
+/** A world point back into the school's square layout. */
+export function schoolInverseXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CENTER.z, -SCHOOL_TURN_DEG, x, z); }
 
 // Fixed palette, law — see docs/look-standard.md. Exact hex values, no per-call tuning.
 // Applied at WALL_TINT_STRENGTH (0.3) so the plaster texture's own grain/colour stays
@@ -796,6 +807,7 @@ function buildSchool(kit) {
   mergeGroupByMaterial(schoolOld);
   group.add(schoolOld);
   mergeGroupByMaterial(group, { skipNames: ['school_old'] });
+  applyTurn(group, cx, cz, SCHOOL_TURN_DEG); // map turn: everything above was built square; colliders follow via userData.turn
 
   return group;
 }
@@ -848,11 +860,7 @@ function buildHalwai(kit) {
 }
 
 // The lane ends at the school's south gate (z = centre - 13), not at the compound's centre, so it no longer runs through the yard wall.
-const SCHOOL_GATE_LANE_END = (() => {
-  const z = SCHOOL_CENTER.z - 13;
-  const t = (z - HALWAI_CENTER.z) / (SCHOOL_CENTER.z - HALWAI_CENTER.z);
-  return { x: HALWAI_CENTER.x + (SCHOOL_CENTER.x - HALWAI_CENTER.x) * t, z };
-})();
+const SCHOOL_GATE_LANE_END = schoolXZ(0, -13); // the gate moved with the school's turn
 
 function buildLane() {
   // Task 2 (draw-call budget) — both segments share the lane's default tint, and
