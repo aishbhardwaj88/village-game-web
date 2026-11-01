@@ -448,6 +448,31 @@ export function createMapHaystacks(position) {
   return group;
 }
 
+/** The map's dung-cake drying yard (uple, centre -128, 131.5, 28 x 18 m): rows of patted-cake wall patches laid out to dry, a few bitauda stacks along the north edge. Shared gobar models. */
+export function createDungCakeYard(position) {
+  const placements = [];
+  const stacks = [];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) {
+    const j = Math.sin(r * 7.1 + c * 3.3);
+    placements.push({ type: (r + c) % 2 ? 'wall' : 'wall_b', x: -10.5 + c * 5.2 + j * 0.5, z: -1.5 + r * 4.2 + Math.cos(c * 2.1 + r) * 0.4, ry: (r + c) % 2 ? Math.PI / 2 : 0, s: 0.9 + 0.15 * Math.abs(j), tint: [0xd8cfc0, 0xc8bfae, 0xcfc4b0][(r + c) % 3] });
+  }
+  for (let k = 0; k < 4; k++) {
+    const x = -9 + k * 6, z = -7.2;
+    stacks.push([x, z, 1.8, 1.8]);
+    placements.push({ type: k % 2 ? 'stack_b' : 'stack', x, z, ry: k * 1.7, s: 1.1 - 0.1 * (k % 2), tint: k % 2 ? 0xc8bfae : 0xd8cfc0 });
+  }
+  const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+  carrier.name = 'dung_cake_yard';
+  carrier.visible = false;
+  carrier.userData.colliderBoxes = orientedSolids(position, 0, stacks);
+  const group = new THREE.Group();
+  group.name = 'dung_cake_yard_prop';
+  group.add(carrier);
+  group.position.set(position.x, 0, position.z);
+  addGobar(group, placements, 'dung_cake_yard_mesh');
+  return group;
+}
+
 /**
  * Sugarcane belt: rows of 3 m clumps, 4 stalks + arching leaf blades each, one InstancedMesh.
  * Rows run along x with a one-clump-wide gap every few rows so the belt can be crossed (a rough maze).
