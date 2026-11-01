@@ -1570,7 +1570,7 @@ async function main() {
         return { group, onFrame: (dt) => herd.update(dt) };
       },
     });
-    zoneManager.register('tea_haystacks', { visibleRadius: 45, x: -58 + OLD_SHIFT.x, z: 76, buildRadius: 30, teardownRadius: 40, build: () => createTeaStallHaystacks({ x: -58 + OLD_SHIFT.x, z: 76 }) });
+    // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
     // 'khalihan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
