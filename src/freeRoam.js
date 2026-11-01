@@ -6,10 +6,12 @@
  * player has found it through a postcard, a poster or a sound.
  */
 
-import { pt } from './anchors.js';
+import { pt, OLD_SHIFT } from './anchors.js';
+import { mapRoadLines } from './mapRoads.js';
+import { MAP_PLAN } from './mapPlan.js';
 import { STAGED_PLACES } from './stagedPlaces.js';
 import { QUEST_STEPS as S, OBJECTIVE_TEXT } from './quest.js';
-import { SPURS } from './eastRoad.js';
+import { SPURS, ROAD_PTS } from './eastRoad.js';
 import { JOBS } from './jobs/data.js';
 
 // World positions (1 unit = 1 m; +x east, +z south, so north is up on the map). Same numbers as the places' own source files.
@@ -59,20 +61,18 @@ export const PLACES = [
   ...STAGED_PLACES.filter((p) => !['yard_dairy', 'yard_khalihan', 'yard_tubewell'].includes(p.id)).map((p) => ({ id: p.id, en: p.en, hi: p.hi, ...pt(p.id), kind: p.kind, radius: p.radius })), // staging yard (src/stagedPlaces.js)
 ];
 
-// Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
-export const LANES = [
-  ...SPURS.map((sp) => sp.pts), // spurs off the east road to the far-east places
-  [[-48, 46], [-45, 46], [-45, 93]], // hero lane south from the house, ends at the school south gate (z 93, village.js SCHOOL_GATE_LANE_END)
-  [[-48, 46], [-58, 47], [-58, 8]], // bazaar lane
-  [[-44, 50.5], [-12, 55], [2, 51]], // temple lane
-  [[-37, 76], [36, 76]], [[-6, 76], [-6, 130]], // east gali
-  [[-84, 21], [-84, 104]], [[-84, 21], [-68, 21]], // west gali (ends at the banta stall front)
-  [[-100, 140], [-38, 140]], // south gali
-  [[-45, 76], [-37, 76]], // closes the gap between the hero lane and the east gali (src/scenery.js E0)
-  [[-38, 140], [-6, 140]], // joins the south gali to the east gali's south end (src/scenery.js S2)
-  [[36, 76], [60, 69], [90, 68.5], [103, 66], [116, 58], [135.3, 52.3], [174.7, 45.3], [194.4, 41.8]], // east road to the highway (src/eastRoad.js ROAD_PTS)
+// Faint pencil lanes so the page has structure before anything is inked. The old village's own lanes ride OLD_SHIFT with it
+// (src/anchors.js); the 1 Nov map's roads, lanes and tracks come straight from src/mapRoads.js (already at MAP_SHIFT).
+const OX = OLD_SHIFT.x;
+export const OLD_LANES = [
+  ...SPURS.map((sp) => sp.pts), // spurs off the east road to the far-east places (already shifted)
+  [[-48 + OX, 46], [-58 + OX, 47], [-58 + OX, 8]], // bazaar lane
+  [[-44 + OX, 50.5], [-12 + OX, 55], [2 + OX, 51]], // temple lane
+  ROAD_PTS, // east road to the highway (src/eastRoad.js, already shifted)
 ];
-const BOUNDS = { x0: -145, x1: 245, z0: -55, z1: 190 };
+export const LANES = [...OLD_LANES, ...mapRoadLines().map((l) => l.pts)];
+// The page frames the 1 Nov map (places span x 309-841, z -225 to 154 at MAP_SHIFT).
+const BOUNDS = { x0: 280, x1: 870, z0: -240, z1: 180 };
 
 const extraMarkers = []; // side jobs register their map star here: { id, en, hi, x, z }
 export function registerJobMarker(marker) {
@@ -140,7 +140,7 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
   const YARD_BOX = { x: 470, y: 6, w: 480, h: 88 };
   const YARD_IDX = new Map(STAGED_PLACES.map((p, i) => [p.id, i]));
   const yardXY = (id) => { const i = YARD_IDX.get(id) ?? 0; return [YARD_BOX.x + 24 + (i % 12) * 37.5, YARD_BOX.y + 36 + Math.floor(i / 12) * 34]; };
-  const isYard = (p) => p.id ? YARD_IDX.has(p.id) : p.x > 300;
+  const isYard = (p) => p.id ? YARD_IDX.has(p.id) && !MAP_PLAN[p.id] : false; // staged places standing on the map are drawn on the page; only unplaced ones sit in the inset
   const mapXY = (p) => (isYard(p) ? yardXY(p.id ?? nearestYardId(p)) : [sx(p.x), sy(p.z)]);
   const nearestYardId = (p) => { let best = STAGED_PLACES[0].id, d = 1e9; for (const q of PLACES) if (YARD_IDX.has(q.id)) { const dd = Math.hypot(q.x - p.x, q.z - p.z); if (dd < d) { d = dd; best = q.id; } } return best; };
 

@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { part, mergeProp } from './props.js';
+import { localPt, ANCHORS } from '../anchors.js';
 
 /**
  * Job 9 — Ration run with Maa (docs/MISSIONS_PLAN.md): Maa walks with you to the ration shop, the shopkeeper weighs out the
  * wheat, you carry the sack home on your back with Maa beside you, and hand it over. Reward: pocket money + Maa's blessing.
  */
-const SHOP_COUNTER = new THREE.Vector3(-65.2, 0, 31);
-const KEEPER_POS = { x: -65.9, z: 32.6 };
+const _c = localPt('ration', 0, 3.0); // 1 Nov map move: the map-placed v2 ration yard; counter on its front
+const SHOP_COUNTER = new THREE.Vector3(_c.x, 0, _c.z);
+const KEEPER_POS = localPt('ration', 0, 0.8);
 
 function sackMesh() {
   const jute = 0xb99a64;
@@ -26,7 +28,7 @@ export function registerRationJob(api, env) {
   const maa = env.npcs.maa;
   let carryRemove = null;
 
-  const keeper = api.npc('shopkeeper', KEEPER_POS, Math.PI / 2, 'npc_ration_keeper');
+  const keeper = api.npc('shopkeeper', KEEPER_POS, ANCHORS.ration.ry + Math.PI, 'npc_ration_keeper');
   env.addStaticAnimated?.(keeper);
 
   env.hooks.maaFreeRoam = () => {

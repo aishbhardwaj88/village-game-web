@@ -3,11 +3,13 @@
 import { readFileSync } from 'node:fs';
 import { pt } from '../src/anchors.js';
 import { MAP_SHIFT } from '../src/mapPlan.js';
-import { SPURS } from '../src/eastRoad.js';
+import { SPURS, ROAD_PTS } from '../src/eastRoad.js';
+import { OLD_SHIFT } from '../src/anchors.js';
+const OX = OLD_SHIFT.x; // in scope for the eval of OLD_LANES
 import { STAGED_PLACES } from '../src/stagedPlaces.js'; // PLACES entries spread pt(id), so the eval below needs it in scope
 const src = readFileSync(new URL('../src/freeRoam.js', import.meta.url), 'utf8');
 const placesSrc = src.match(/export const PLACES = (\[[\s\S]*?\n\]);/)[1];
-const lanesSrc = src.match(/export const LANES = (\[[\s\S]*?\n\]);/)[1];
+const lanesSrc = src.match(/export const OLD_LANES = (\[[\s\S]*?\n\]);/)[1];
 // the staging yard (x 320+) is a showroom for the new models, not part of the walkable village, so it is audited separately (not at all)
 const STAGED_IDS = new Set(STAGED_PLACES.map((p) => p.id));
 const PLACES = eval(placesSrc.replace(/\/\/.*$/gm, '')).filter((p) => !STAGED_IDS.has(p.id));

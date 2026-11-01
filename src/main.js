@@ -25,7 +25,7 @@ import { BAAGH_POSITION, MANGO_TREE_PLACEMENTS, MANGO_KNOCK_POSITIONS } from './
 import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { WALKABLE_RECTS } from './walkable.js';
-import { pt, OLD_SHIFT } from './anchors.js';
+import { pt, localPt, ANCHORS, OLD_SHIFT } from './anchors.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
@@ -134,10 +134,9 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
-import { buildPostOffice, buildRationShop, buildAttaChakki, buildNewShopWalls, buildNewShopRoofs, buildNewShopProps, buildNewShopSignboards, RATION_SHOP } from './newShops.js';
 import { placeBoardsMesh } from './placeBoards.js';
 import { setPlantFocus } from './realPlants.js';
-import { generalStoreGoods, rationGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
+import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
@@ -345,32 +344,19 @@ async function main() {
   // minDistanceToColliders probing with the real building half-extents
   // (tmp/scan-newshops-area.mjs + tmp/verify-newshops-reloc2.mjs) — 3.4m+
   // clearance at every one of the 3 new centres.
+  // 1 Nov map move: the old combined post/ration/chakki model and its code shells are no longer built; the map-placed v2 yards
+  // (src/stagedPlaces.js yard_post / yard_ration / yard_chakki) stand at these anchors, with collision derived from their models.
   const POST_OFFICE_POS = pt('post');
   const RATION_SHOP_POS = pt('ration');
   const ATTA_CHAKKI_POS = pt('chakki');
-  const NEW_SHOPS_ROT = Math.PI / 2; // faces +X, toward the bazaar lane
-  shopsGroup.add(buildPostOffice(POST_OFFICE_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(buildRationShop(RATION_SHOP_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(buildAttaChakki(ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  // Blender post office / ration shop / atta chakki (2026-10-21, docs/new-shops-checklist.md): the code shells are the
-  // INVISIBLE collision backing in 'new_shops_old'; one exact slot (anchored at the ration shop, rotated like them) draws all three.
-  const newShopsOld = new THREE.Group();
-  newShopsOld.name = 'new_shops_old';
-  newShopsOld.add(buildNewShopWalls(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  newShopsOld.add(buildNewShopRoofs(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  newShopsOld.add(buildNewShopProps(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT));
-  shopsGroup.add(newShopsOld);
-  buildNewShopSignboards(POST_OFFICE_POS, NEW_SHOPS_ROT, RATION_SHOP_POS, NEW_SHOPS_ROT, ATTA_CHAKKI_POS, NEW_SHOPS_ROT)
-    .then((mesh) => shopsGroup.add(mesh))
-    .catch((err) => console.error('Failed to build new-shop signboards', err));
   scene.add(shopsGroup);
   // Postmaster behind the counter window (capsule stand-in until the 3D people arrive; local +z = world +x here)
-  const postmasterNpc = createNPC(0x6a7a8a, { x: POST_OFFICE_POS.x + 0.7, z: POST_OFFICE_POS.z }, NEW_SHOPS_ROT, 'npc_postmaster');
+  const postmasterNpc = createNPC(0x6a7a8a, localPt('post', 0, 0.2), ANCHORS.post.ry + Math.PI, 'npc_postmaster');
   // Indoor capsule: its shadow pass costs a draw call the bazaar view (at the 150 ceiling) cannot spare; the interior is shaded anyway.
   postmasterNpc.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   scene.add(postmasterNpc);
   // Miller beside the flour mill in the atta chakki (capsule stand-in until the 3D people arrive)
-  const millerNpc = createNPC(0x8a7a5a, { x: ATTA_CHAKKI_POS.x + 0.5, z: ATTA_CHAKKI_POS.z + 0.9 }, NEW_SHOPS_ROT, 'npc_miller');
+  const millerNpc = createNPC(0x8a7a5a, localPt('chakki', 0.6, 0.4), ANCHORS.chakki.ry + Math.PI, 'npc_miller');
   millerNpc.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   scene.add(millerNpc);
 
@@ -386,8 +372,8 @@ async function main() {
   // game's convention — see tools/trolley-drive-test.js's own derivation),
   // opposite of STORE_ROT's -X, so the interaction point sits on the +X side
   // here, not -X like the general store's.
-  registerShopBuy('post_office', new THREE.Vector3(POST_OFFICE_POS.x + 2.5, 0, POST_OFFICE_POS.z));
-  registerShopBuy('ration_shop', new THREE.Vector3(RATION_SHOP_POS.x + 2.5, 0, RATION_SHOP_POS.z));
+  registerShopBuy('post_office', (({ x, z }) => new THREE.Vector3(x, 0, z))(localPt('post', 0, 3.0)));
+  registerShopBuy('ration_shop', (({ x, z }) => new THREE.Vector3(x, 0, z))(localPt('ration', 0, 3.0)));
 
   // Signboards (item 10) — not awaited inline (same reasoning as loadEnvironment
   // below: don't block the rest of scene setup on an async step); both boards share
@@ -431,7 +417,6 @@ async function main() {
   shopsGroup.add(mergeGoodsMeshes([
     generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)),
     teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
-    rationGoods(new THREE.Matrix4().makeRotationY(NEW_SHOPS_ROT).setPosition(RATION_SHOP_POS.x, 0, RATION_SHOP_POS.z), RATION_SHOP.w, RATION_SHOP.d, RATION_SHOP.counterTopY),
   ], 'general_store_stock'));
   shopsGroup.add(halwaiGoods(new THREE.Matrix4().setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
 
@@ -950,11 +935,6 @@ async function main() {
     exact: true,
     placements: [{ container: scene, position: new THREE.Vector3(pt('highway').x - 11, 0, pt('highway').z + 52), rotationY: 0 }],
   });
-  assetSlots.register('new_shops', {
-    exact: true,
-    hide: [scene.getObjectByName('new_shops_old')].filter(Boolean),
-    placements: [{ container: scene, position: new THREE.Vector3(RATION_SHOP_POS.x, 0, RATION_SHOP_POS.z), rotationY: NEW_SHOPS_ROT }],
-  });
   {
     const teaOldGroup = scene.getObjectByName('tea_old');
     const storeOldGroup = scene.getObjectByName('store_old');
@@ -1163,7 +1143,7 @@ async function main() {
       // +-60 m shadow box, so a mesh spanning half the village would double its full triangle count.
       assetSlots.mergeSlotModels(['house_compound', 'general_store'], 'blender_house_row', scene);
       assetSlots.mergeSlotModels(['halwai_compound', 'tea_stall', 'school_compound'], 'blender_halwai_row', scene);
-      assetSlots.mergeSlotModels(['bazaar_row', 'tea_stall_chowk', 'chowk_plaza', 'new_shops'], 'blender_bazaar', scene);
+      assetSlots.mergeSlotModels(['bazaar_row', 'tea_stall_chowk', 'chowk_plaza'], 'blender_bazaar', scene);
     }
   });
 
@@ -1350,16 +1330,6 @@ async function main() {
         ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ x: BAZAAR_WEST_X + 4.5 * u + (i % 2) * 0.6, z: BAZAAR_ROW_CZ + 2.75, kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ + 1, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
         { x: BAZAAR_EAST_X + 0.15, z: BAZAAR_ROW_CZ - 1.2, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
-        // Post office / ration shop / atta chakki (face +x, 3 m deep): creepers on the side walls
-        // and back, tulsi + marigold in the gaps between the fronts, banana behind.
-        { x: POST_OFFICE_POS.x + 0.6, z: POST_OFFICE_POS.z - 1.7, kind: GARDEN_KIND.CREEPER, scale: 1.0 },
-        { x: RATION_SHOP_POS.x - 1.6, z: RATION_SHOP_POS.z + 1.9, kind: GARDEN_KIND.CREEPER, scale: 1.1 },
-        { x: ATTA_CHAKKI_POS.x - 0.4, z: ATTA_CHAKKI_POS.z + 1.55, kind: GARDEN_KIND.CREEPER, scale: 0.9 },
-        { x: POST_OFFICE_POS.x + 2.0, z: POST_OFFICE_POS.z + 2.6, kind: GARDEN_KIND.TULSI },
-        { x: RATION_SHOP_POS.x + 2.0, z: RATION_SHOP_POS.z + 2.7, kind: GARDEN_KIND.TULSI, scale: 0.9 },
-        ...[-0.5, 0.5].map((dz) => ({ x: ATTA_CHAKKI_POS.x + 2.4, z: ATTA_CHAKKI_POS.z + 2.4 + dz, kind: GARDEN_KIND.MARIGOLD })),
-        { x: POST_OFFICE_POS.x - 4.2, z: POST_OFFICE_POS.z - 1, kind: GARDEN_KIND.BANANA },
-        { x: ATTA_CHAKKI_POS.x - 4.4, z: ATTA_CHAKKI_POS.z + 1, kind: GARDEN_KIND.BANANA, scale: 0.9 },
         // School compound (south wall at z-12 from centre, 4.8 m gate gap): creepers on the wall's
         // street side, marigold + tulsi flanking the gate, banana at the corners.
         ...[-13, -9.5, -6, 6, 9.5, 13].map((dx, i) => ({ x: SCHOOL_CENTER.x + dx, z: SCHOOL_CENTER.z - 12.3, kind: GARDEN_KIND.CREEPER, scale: 0.6 + (i % 3) * 0.08 })),

@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { part, mergeProp } from './props.js';
-import { pt } from '../anchors.js';
+import { pt, localPt, ANCHORS } from '../anchors.js';
 
 /**
  * Job 5 — Atta chakki run (docs/MISSIONS_PLAN.md): load Dadi's wheat sack onto the bullock cart, drive it to the chakki (the
  * bullocks have their own gentle mind), wait your turn in the queue, and bring the flour home to Dadi. Reward: pocket money.
  */
-const CHAKKI_A = pt('chakki'); // the old code-built chakki (post/ration/chakki share one merged model, see NEEDS_YOU); door and keeper keep their old offsets from it
-const CHAKKI_DOOR = new THREE.Vector3(CHAKKI_A.x + 2.7, 0, CHAKKI_A.z + 0.2);
+const _d = localPt('chakki', 0, 3.2); // 1 Nov map move: the map-placed v2 chakki yard; the door is on its front
+const CHAKKI_DOOR = new THREE.Vector3(_d.x, 0, _d.z);
 const DADI = new THREE.Vector3(-43.3, 0, 41.8);
 
 function sackOnCart(colour) {
@@ -156,7 +156,7 @@ export function registerChakkiJob(api, env) {
     },
   });
 
-  api.npc('shopkeeper', { x: CHAKKI_A.x + 1.7, z: CHAKKI_A.z + 2.6 }, Math.PI / 2, 'npc_chakki_keeper');
+  api.npc('shopkeeper', localPt('chakki', -1.0, 1.4), ANCHORS.chakki.ry + Math.PI, 'npc_chakki_keeper');
   // sound radar: the chakki motor thump carries
   let thump = 2;
   api.onUpdate((dt) => {
