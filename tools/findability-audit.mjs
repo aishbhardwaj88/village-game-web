@@ -2,6 +2,7 @@
 // and roughly how long is the walk from the house. Heuristic, no browser. Usage: node tools/findability-audit.mjs [--md]
 import { readFileSync } from 'node:fs';
 import { pt } from '../src/anchors.js';
+import { SPURS } from '../src/eastRoad.js';
 import { STAGED_PLACES } from '../src/stagedPlaces.js'; // PLACES entries spread pt(id), so the eval below needs it in scope
 const src = readFileSync(new URL('../src/freeRoam.js', import.meta.url), 'utf8');
 const placesSrc = src.match(/export const PLACES = (\[[\s\S]*?\n\]);/)[1];
@@ -9,7 +10,6 @@ const lanesSrc = src.match(/export const LANES = (\[[\s\S]*?\n\]);/)[1];
 // the staging yard (x 320+) is a showroom for the new models, not part of the walkable village, so it is audited separately (not at all)
 const STAGED_IDS = new Set(STAGED_PLACES.map((p) => p.id));
 const PLACES = eval(placesSrc.replace(/\/\/.*$/gm, '')).filter((p) => !STAGED_IDS.has(p.id));
-const SPURS = eval(readFileSync(new URL('../src/eastRoad.js', import.meta.url), 'utf8').match(/export const SPURS = (\[[\s\S]*?\n\]);/)[1].replace(/\/\/.*$/gm, ''));
 const LANES = eval(lanesSrc.replace(/\/\/.*$/gm, ''));
 const way = readFileSync(new URL('../src/wayfinding.js', import.meta.url), 'utf8');
 const signed = new Set();
