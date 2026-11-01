@@ -54,8 +54,12 @@ function frontNormal(group) {
 export function slotInfo(group) {
   const meshes = placeholderMeshes(group);
   _box.makeEmpty();
+  const turnedRy = group.rotation.y; // a map-turned site (src/turn.js turnSiteGroup) is measured square: the model is its child and turns with it
+  group.rotation.y = 0;
   group.updateWorldMatrix(true, true);
   for (const m of meshes) _box.expandByObject(m);
+  group.rotation.y = turnedRy;
+  group.updateWorldMatrix(true, true);
   if (_box.isEmpty()) return null;
   _box.getSize(_size);
   const gx = group.position.x, gz = group.position.z;

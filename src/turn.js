@@ -95,3 +95,14 @@ export function preTurnLeafBox(mesh, turnGroup) {
   }
   return isFinite(minX) ? { minX, maxX, minZ, maxZ } : null;
 }
+
+/**
+ * Turn a zone-streamed site whose geometry is LOCAL to its own origin (group.position = the site's anchor, collider boxes baked in
+ * world metres square to the grid). The group turns about its own origin; colliders follow via userData.turn.
+ */
+export function turnSiteGroup(group, ry) {
+  if (!ry) return group;
+  group.rotation.y = ry;
+  group.userData.turn = { px: group.position.x, pz: group.position.z, theta: ry, c: Math.cos(ry), s: Math.sin(ry) };
+  return group;
+}

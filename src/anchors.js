@@ -33,16 +33,16 @@ export const ANCHORS = {
   canal: { x: 771, z: 33.8, ry: 0 }, // the map's feeder channel centre (172.35, 33.8) + MAP_SHIFT; the bridge stands here (src/canal.js CANAL_DX)
   field: { x: 3.5 + MAP_SHIFT.x, z: -200 + MAP_SHIFT.z, ry: 0 }, // x = centre of the map's wheat strip (-94.6..101.7); z: the 80 m field is deeper than the 42 m strip, so its south edge sits on the strip's (-160) to stay clear of the petrol pump yard
   banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: 0 },
-  chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: 0 },
+  chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, applied in src/main.js via turnSiteGroup */,
   eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: 0 },
   westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 0 },
-  jalebi: { x: 35.5 + MAP_SHIFT.x, z: 26.4 + MAP_SHIFT.z, ry: 0 },
+  jalebi: { x: 35.5 + MAP_SHIFT.x, z: 26.4 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   dairy: onMap('yard_dairy'), // the old code-built copy is no longer built (src/main.js); the v2 yard stands here
   khalihan: onMap('yard_khalihan'),
   tubewell: onMap('yard_tubewell'),
   gaushala: { x: -122.6 + MAP_SHIFT.x, z: -41 + MAP_SHIFT.z, ry: 0 },
   pond: { x: -120.6 + MAP_SHIFT.x, z: 60.5 + MAP_SHIFT.z, ry: 0 },
-  anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: 0 },
+  anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: 0 } /* map turn 168.8 deg NOT applied: flipping it puts its colliders across the child's school route (NEEDS_YOU) */,
   mela: { x: 187.5 + MAP_SHIFT.x, z: 146.5 + MAP_SHIFT.z, ry: 0 },
   gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 0 },
   cane: { x: -188 + MAP_SHIFT.x, z: 7 + MAP_SHIFT.z, ry: 0 }, // centre of the map's sugarcane outline (x -225.6..-151.6, z -106..120)
@@ -50,16 +50,16 @@ export const ANCHORS = {
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
   chemist: { x: 96 + OLD_SHIFT.x, z: 60 + OLD_SHIFT.z, ry: 0 },
   manihari: { x: 90 + OLD_SHIFT.x, z: 78 + OLD_SHIFT.z, ry: 0 },
-  sabzi: { x: -22.8 + MAP_SHIFT.x, z: 17.1 + MAP_SHIFT.z, ry: 0 },
+  sabzi: { x: -22.8 + MAP_SHIFT.x, z: 17.1 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   johad: { x: 121.7 + MAP_SHIFT.x, z: 43.1 + MAP_SHIFT.z, ry: 0 },
   masjid: { x: -98.6 + MAP_SHIFT.x, z: -92.3 + MAP_SHIFT.z, ry: 0 },
   jain: { x: 117.7 + MAP_SHIFT.x, z: 96.3 + MAP_SHIFT.z, ry: 0 },
-  haveli: { x: 44.9 + MAP_SHIFT.x, z: -22.2 + MAP_SHIFT.z, ry: 0 },
+  haveli: { x: 44.9 + MAP_SHIFT.x, z: -22.2 + MAP_SHIFT.z, ry: -7.3 * Math.PI / 180 } /* map turn 7.3 deg, applied in src/main.js via turnSiteGroup */,
   gurukul: onMap('yard_gurukul'),
   maidan: onMap('yard_khel'),
   gilli: { x: 69 + MAP_SHIFT.x, z: 163 + MAP_SHIFT.z, ry: 0 }, // the map's gilli-danda play spot (open ground centre; 6 deg turn not applied)
   highway: { x: 205 + OLD_SHIFT.x, z: 40 + OLD_SHIFT.z, ry: 0 },
-  mandi: { x: 147.7 + MAP_SHIFT.x, z: -160.3 + MAP_SHIFT.z, ry: 0 },
+  mandi: { x: 147.7 + MAP_SHIFT.x, z: -160.3 + MAP_SHIFT.z, ry: -1 * Math.PI / 180 } /* map turn 1 deg, applied in src/main.js via turnSiteGroup */,
   // The v2 places stand on the 1 Nov map (src/mapPlan.js, shifted east as one piece); anything the map does not place (the material board) waits in the old staging slot.
   ...Object.fromEntries(STAGED_PLACES.map((p, n) => {
     const m = MAP_PLAN[p.id];

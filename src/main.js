@@ -26,6 +26,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { WALKABLE_RECTS } from './walkable.js';
 import { pt, localPt, ANCHORS, OLD_SHIFT } from './anchors.js';
+import { turnSiteGroup } from './turn.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
@@ -1569,7 +1570,7 @@ async function main() {
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
     // 'tv_house' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('manihari', { ...pt('manihari'), buildRadius: 35, teardownRadius: 48, build: () => createManihari(pt('manihari')) });
-    zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => createSabziRehris(pt('sabzi')) });
+    zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => turnSiteGroup(createSabziRehris(pt('sabzi')), ANCHORS.sabzi.ry) });
     zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, ...pt('jain'), buildRadius: 45, teardownRadius: 58, build: () => createJainMandir(pt('jain')) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).
     for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
@@ -1686,9 +1687,9 @@ async function main() {
         },
       });
     }
-    zoneManager.register('jalebi_stall', { ...pt('jalebi'), buildRadius: 35, teardownRadius: 48, build: () => createJalebiStall(pt('jalebi')) });
+    zoneManager.register('jalebi_stall', { ...pt('jalebi'), buildRadius: 35, teardownRadius: 48, build: () => turnSiteGroup(createJalebiStall(pt('jalebi')), ANCHORS.jalebi.ry) });
     zoneManager.register('banta_shop', { visibleRadius: 14, ...pt('banta'), buildRadius: 30, teardownRadius: 42, build: () => createBantaShop(pt('banta')) });
-    zoneManager.register('chaat_thela', { visibleRadius: 14, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => createChaatThela(pt('chaat')) });
+    zoneManager.register('chaat_thela', { visibleRadius: 14, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => turnSiteGroup(createChaatThela(pt('chaat')), ANCHORS.chaat.ry) });
     zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => createMelaGround(pt('mela')) });
     // 'gurukul' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
@@ -1697,7 +1698,7 @@ async function main() {
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
     // 'khel_maidan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
-    zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => createMandi(pt('mandi')) });
+    zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => turnSiteGroup(createMandi(pt('mandi')), ANCHORS.mandi.ry) });
     // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
     zoneManager.register('canal_bank_road', { detail: true, x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4 }) });
     // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
@@ -1715,7 +1716,7 @@ async function main() {
     zoneManager.register('edge_wall_w0', { detail: true, x: -101, z: 27, buildRadius: 30, teardownRadius: 42, build: () => createBoundaryWall({ x: -101, z: 27 }, 'edge_wall_w0', [{ a: { x: -101, z: 21 }, b: { x: -101, z: 34 } }]) });
     zoneManager.register('edge_wall_n0', { detail: true, x: -80, z: 21, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -80, z: 21 }, 'edge_wall_n0', [{ a: { x: -101, z: 21 }, b: { x: -58, z: 21 } }], [{ x: -88, z: 21, w: 3.5 }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
-    zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, ...pt('haveli'), buildRadius: 50, teardownRadius: 65, build: () => createOldHaveli(pt('haveli')) });
+    zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, ...pt('haveli'), buildRadius: 50, teardownRadius: 65, build: () => turnSiteGroup(createOldHaveli(pt('haveli')), ANCHORS.haveli.ry) });
     zoneManager.register('gaushala', { ...pt('gaushala'), buildRadius: 40, teardownRadius: 52, build: () => createGaushala(pt('gaushala')) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: ANCHORS.cane.x - 1, z: ANCHORS.cane.z - 24, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([

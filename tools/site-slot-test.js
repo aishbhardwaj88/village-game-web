@@ -110,6 +110,7 @@ async function run(withFile, glb) {
         const boards = group.children.some((c) => /_boards$/.test(c.name) && c.visible);
         const out = { site, info, hasWrapper: !!wrapper, placeholderVisible, boards, colliderBoxes: group.children.some((c) => Array.isArray(c.userData.colliderBoxes) && c.userData.colliderBoxes.length > 0) };
         if (wrapper) {
+          const turnedRy = group.rotation.y; group.rotation.y = 0; group.updateWorldMatrix(true, true); // a map-turned site is measured square, like slotInfo
           const box = new d.Box3().setFromObject(wrapper);
           const size = box.getSize(new d.Vector3());
           out.model = { size: [size.x, size.y, size.z], minY: box.min.y, centre: [(box.min.x + box.max.x) / 2 - group.position.x, (box.min.z + box.max.z) / 2 - group.position.z] };
@@ -119,6 +120,7 @@ async function run(withFile, glb) {
             const mb = new d.Box3().setFromObject(marker);
             out.markerDir = [(mb.min.x + mb.max.x) / 2 - group.position.x - out.model.centre[0], (mb.min.z + mb.max.z) / 2 - group.position.z - out.model.centre[1]];
           }
+          group.rotation.y = turnedRy; group.updateWorldMatrix(true, true);
         }
         return out;
       }, site);
