@@ -75,3 +75,4 @@ The primary school now stands at the map's school spot but square to the grid, n
 - Primary school turn (-11.2 deg) now applied (2 Nov): the playable school is turned with its bell, teacher, desks and routes. - status: done
 - Anganwadi turn (168.8 deg on the map) now applied; the school children's walking route detours north round it (2 Nov). - status: done
 - Map turn: the hero house (5 deg) is now turned with its stairs, roof, courtyard and family (2 Nov); east/west gali are name labels only. Roof family keep their old facing angles. - status: done
+The halwai shop is now turned 95 degrees to match the map; the abadi house rows (north, east, south, west houses) still stand square at the old spots because the map replaces them with new house footprints - status: open

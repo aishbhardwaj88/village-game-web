@@ -7,7 +7,7 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
-import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
+import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, halwaiXZ, HALWAI_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
@@ -304,7 +304,7 @@ async function main() {
   const teaSteam = createSteam([{ x: TEA_SHOP_POS.x + 0.7, y: 1.3, z: TEA_SHOP_POS.z + 0.3 }, { x: TEA_SHOP_POS.x + 0.76, y: 1.5, z: TEA_SHOP_POS.z + 0.97 }]);
   scene.add(teaSteam.points);
   // live fire under the halwai's two kadhais (bhatti centres from tools/blender/build_halwai.py: x = centre - 2.25 + 0.495, z = +-1.15, rim y ~1.45)
-  const halwaiFire = createHalwaiFire([-1.15, 1.15].map((dz) => ({ x: HALWAI_CENTER.x - 1.755, y: 1.45, z: HALWAI_CENTER.z + dz })));
+  const halwaiFire = createHalwaiFire([-1.15, 1.15].map((dz) => ({ ...halwaiXZ(HALWAI_CENTER.x - 1.755, HALWAI_CENTER.z + dz), y: 1.45 })));
   scene.add(halwaiFire.points);
   // Blender tea stall + general store (2026-10-21, docs/tea-stall-checklist.md / docs/general-store-checklist.md):
   // the code-built walls/roofs/counters/posts/goods are now the INVISIBLE collision backing in 'tea_old' + 'store_old'
@@ -431,13 +431,13 @@ async function main() {
     generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)),
     teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
   ], 'general_store_stock'));
-  shopsGroup.add(halwaiGoods(new THREE.Matrix4().setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
+  shopsGroup.add(halwaiGoods(new THREE.Matrix4().makeRotationY(HALWAI_YAW).setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
 
   // Halwai fascia board (FEEDBACK 24 Oct item 1: the stall had none). Bilingual, English dominant, on the front fascia.
   {
     // The school gate board shares this mesh (same atlas/material): one draw call for both, the hero view is at the 150 ceiling.
     const halwaiBoard = placeBoardsMesh([
-      { id: 'halwai', x: HALWAI_CENTER.x, y: 3.55, z: HALWAI_CENTER.z + 3.1, w: 3.6 },
+      { id: 'halwai', ...halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 3.1), y: 3.55, ry: HALWAI_YAW, w: 3.6 },
       { id: 'school', ...schoolPt(0, -12), y: 3.05, ry: Math.PI + SCHOOL_YAW, w: 4.2 }, // over the school's south gate, faces the lane
     ], 'halwai_board');
     shopsGroup.add(halwaiBoard);
@@ -587,7 +587,7 @@ async function main() {
   const maaNpc = maaBuilt.root;
   scene.add(maaNpc);
   const maaAnim = { root: maaNpc, animate: maaBuilt.animate, prev: maaNpc.position.clone() };
-  const halwaiBuilt = buildCharacterNpc('halwai', HALWAI_NPC_POSITION, Math.PI / 2, 'npc_halwai');
+  const halwaiBuilt = buildCharacterNpc('halwai', HALWAI_NPC_POSITION, Math.PI / 2 + HALWAI_YAW, 'npc_halwai');
   const halwaiNpc = halwaiBuilt.root;
   scene.add(halwaiNpc);
   // Dada — stationary in the courtyard near Maa, per docs/FINISH_LINE.md's
@@ -784,7 +784,7 @@ async function main() {
     ...TRACK_CORNERS.map((corner, i) => ({ a: corner, b: TRACK_CORNERS[(i + 1) % TRACK_CORNERS.length], halfWidth: 3.5, count: 45 })),
     { cx: FIELD_CENTER.x, cz: FIELD_CENTER.z, halfW: FIELD_SIZE.x / 2 - 5, halfD: FIELD_SIZE.z / 2 - 5, count: 110, maxY: 1.1 },
     { cx: houseAt(0, 6).x, cz: houseAt(0, 6).z, halfW: 3.2, halfD: 2.3, count: 18 }, // house courtyard, open to sky
-    { cx: HALWAI_CENTER.x + 2, cz: HALWAI_CENTER.z + 3, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
+    { cx: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).x, cz: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).z, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
   ]);
   scene.add(dust.points);
 
@@ -798,7 +798,7 @@ async function main() {
   const contactShadows = buildContactShadows(
     [
       { ...houseXZ(HOUSE_BLOCK.cx, HOUSE_BLOCK.cz), radiusX: HOUSE_BLOCK.w / 2 + 0.8, radiusZ: HOUSE_BLOCK.d / 2 + 0.8 }, // turned 5 deg: ellipse grown to cover it
-      { x: HALWAI_CENTER.x, z: HALWAI_CENTER.z, radiusX: HALWAI_FOOTPRINT.w / 2 + 0.4, radiusZ: HALWAI_FOOTPRINT.d / 2 + 0.4 },
+      { x: HALWAI_CENTER.x, z: HALWAI_CENTER.z, radiusX: HALWAI_FOOTPRINT.d / 2 + 0.4, radiusZ: HALWAI_FOOTPRINT.d / 2 + 0.4 }, // turned 95 deg: near-circular
       { ...schoolPt(0, +9), radiusX: 12.4, radiusZ: 3.4 }, // school back block
       { ...schoolPt(+12, 0), radiusX: 3.4, radiusZ: 9.4 }, // school east wing
       { ...schoolPt(SCHOOL_ROOM.cx - SCHOOL_CENTER.x, SCHOOL_ROOM.cz - SCHOOL_CENTER.z), radiusX: SCHOOL_ROOM.w / 2 + 0.4, radiusZ: SCHOOL_ROOM.d / 2 + 0.4 }, // school west wing (classroom)
@@ -897,7 +897,7 @@ async function main() {
     assetSlots.register('halwai_compound', {
       exact: true,
       hide: [halwaiShopGroup],
-      placements: [{ container: scene, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z), rotationY: HALWAI_YAW }],
     });
   }
   {

@@ -10,6 +10,7 @@ import {
   SCHOOL_BENCH_POSITION,
   schoolXZ,
   houseXZ,
+  halwaiXZ,
 } from './village.js';
 import { QUEST_STEPS, SACK_TARGET, MANGO_TARGET } from './quest.js';
 import { SACK_PILE_POSITION, PITAJI_POSITION, KIRANA_POSITION, isTrolleyNearby } from './wheatErrand.js';
@@ -57,7 +58,7 @@ export function resolveLabel(point, ctx) {
 // --- errand NPC positions (used by main.js to place their capsule stand-ins too) ---
 const houseV = (x, z) => { const p = houseXZ(x, z); return new THREE.Vector3(p.x, 0, p.z); }; // square house layout -> turned world (map turn 5 deg)
 export const MAA_POSITION = houseV(HOUSE_CENTER.x, HOUSE_CENTER.z + 3); // courtyard, south of the house block's door
-export const HALWAI_NPC_POSITION = new THREE.Vector3(HALWAI_CENTER.x + 1.3, 0, HALWAI_CENTER.z); // the working aisle, between the kadhai and the display cabinet
+export const HALWAI_NPC_POSITION = (() => { const p = halwaiXZ(HALWAI_CENTER.x + 1.3, HALWAI_CENTER.z); return new THREE.Vector3(p.x, 0, p.z); })(); // the working aisle, between the kadhai and the display cabinet
 
 registerInteraction({
   id: 'maa',
@@ -158,7 +159,7 @@ registerInteraction({
 // original comments intended. Moved 6m south, clear of the block.
 const schoolV = (dx, dz) => { const p = schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz); return new THREE.Vector3(p.x, 0, p.z); }; // square school layout -> turned world (map turn -11.2 deg)
 export const BELL_POSITION = schoolV(-6, 4); // between two verandah pillars of the back block (Blender school, pillars at x=-8,-4,0,4,8)
-export const CHARPAI_POSITION = new THREE.Vector3(HALWAI_CENTER.x, 0, HALWAI_CENTER.z + 5.5 / 2 + 0.85); // between the two chairs outside the halwai
+export const CHARPAI_POSITION = (() => { const p = halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 5.5 / 2 + 0.85); return new THREE.Vector3(p.x, 0, p.z); })(); // between the two chairs outside the halwai
 
 // --- task 4: second errand — the teacher and the school bell (already above) are the
 // two alternate ways to hand over the tiffin and collect the sister. ---

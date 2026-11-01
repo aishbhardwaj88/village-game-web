@@ -38,6 +38,13 @@ export function houseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTER.z, HO
 /** A world point back into the house's square layout. */
 export function houseInverseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTER.z, -HOUSE_TURN_DEG, x, z); }
 
+// Map turn 95 deg (1 Nov plan): the halwai is built square about HALWAI_CENTER, then the shop group, its Blender model, goods, board,
+// fire and the halwai himself turn as ONE piece. Anything keyed to the square layout goes through halwaiXZ().
+export const HALWAI_TURN_DEG = 95;
+export const HALWAI_YAW = -HALWAI_TURN_DEG * Math.PI / 180;
+/** Where a point of the square halwai layout lands once the shop is turned. */
+export function halwaiXZ(x, z) { return turnXZ(HALWAI_CENTER.x, HALWAI_CENTER.z, HALWAI_TURN_DEG, x, z); }
+
 // Fixed palette, law — see docs/look-standard.md. Exact hex values, no per-call tuning.
 // Applied at WALL_TINT_STRENGTH (0.3) so the plaster texture's own grain/colour stays
 // visible instead of a flat saturated cut-out (see src/materials.js getTiledMaterial).
@@ -867,6 +874,7 @@ function buildHalwai(kit) {
   // GLTF load resolves, so they're added afterwards untouched (own draw calls).
   mergeGroupByMaterial(group);
 
+  applyTurn(group, cx, cz, HALWAI_TURN_DEG); // map turn: everything above was built square; colliders follow via userData.turn
   return group;
 }
 
