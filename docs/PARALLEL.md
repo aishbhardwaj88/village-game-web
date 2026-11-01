@@ -1,3 +1,14 @@
+# HARD DEADLINE: COMPLETE BEFORE SHE WAKES, 2 Nov MORNING IST.
+
+She is not playing tonight. She checks in the morning and it must be DONE.
+Done means: every turn above 2 degrees applied, everything re-pointed, findability audit
+clean, regression 22/22, no new console errors, pushed.
+
+Do not stop. Do not wait on her. Do not report a half-finished village.
+If one item will not go, leave THAT ONE, note it in docs/NEEDS_YOU.md, finish the rest.
+
+---
+
 # 1 Nov, 21:15. THE TURNS ARE TOO SLOW. TWO CHANGES, APPLY BOTH.
 
 34 turns remain and you are doing roughly ONE per run. That is 12 to 18 hours. Not
