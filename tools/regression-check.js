@@ -492,7 +492,7 @@ async function main() {
     const LANDMARKS = {
       bazaar: { x: -54, z: 13, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // CHOWK_CENTER, src/bazaar.js
       temple: { x: 8, z: 52, from: { dx: -6, dz: 0 }, yaw: -Math.PI / 2 }, // TEMPLE_POS, src/temple.js — entrance faces west
-      school: { x: -50, z: 106, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // SCHOOL_CENTER, src/village.js
+      school: { x: 560, z: 90.8, from: { dx: 6.5, dz: -1 }, yaw: Math.PI / 2 }, // the (turned) school's north yard gate on the 1 Nov map (schoolPt(0,-18), src/village.js), walked at from the east along the child's corridor (2 Nov)
       field: { x: 20, z: -20, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // FIELD_CENTER, src/field.js
     };
     for (const [name, target] of Object.entries(LANDMARKS)) {

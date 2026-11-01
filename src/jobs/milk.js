@@ -1,22 +1,29 @@
 import * as THREE from 'three';
 import { buildMilkCans } from './props.js';
+import { abadiDoorstep } from '../scenery.js';
+import { halwaiXZ, HALWAI_CENTER } from '../village.js';
 
 /**
  * Job 2 — Milk round (docs/MISSIONS_PLAN.md): help the doodhwala deliver milk to five houses before his round ends (a generous
  * timer — on the cycle it is easy, on foot still doable; running out of time only halves the reward). Reward: pocket money.
  * The waypoint arrow points at the next house; one aunty NPC is moved to each doorstep in turn.
  */
-const DOODH = { x: -47.5, z: 62 };
-const STOPS = [
-  { x: -22, z: 76, side: -1, who: 'Sharma-ji ki bahu', hi: 'शर्मा जी की बहू' },
-  { x: -6, z: 76, side: 1, who: 'Chachi', hi: 'चाची' },
-  { x: 12, z: 76, side: -1, who: 'Kamla tai', hi: 'कमला ताई' },
-  { x: 26, z: 76, side: 1, who: 'Pushpa didi', hi: 'पुष्पा दीदी' },
-  { x: -6, z: 95, side: 1, who: 'Rani bua', hi: 'रानी बुआ' },
+// 1 Nov map (2 Nov): the abadi rows moved onto the map's house groups (src/scenery.js PLACEMENTS), so the round moved with
+// them: the doodhwala stands 6.5 m in front of the halwai's (west-facing) counter ("his round starts by the halwai",
+// jobs/data.js) and the five stops are doorsteps of the nearest abadi rows (two houses of one South row, East houses, two North rows).
+// Computed on register, not at import, so module order never matters.
+const STOP_ROWS = [
+  { row: 12, along: -5, who: 'Sharma-ji ki bahu', hi: 'शर्मा जी की बहू' },
+  { row: 12, along: 5, who: 'Chachi', hi: 'चाची' },
+  { row: 11, along: -2, who: 'Kamla tai', hi: 'कमला ताई' },
+  { row: 9, along: 3, who: 'Pushpa didi', hi: 'पुष्पा दीदी' },
+  { row: 8, along: -4, who: 'Rani bua', hi: 'रानी बुआ' },
 ];
 const TIME_LIMIT = 220; // seconds
 
 export function registerMilkJob(api, env) {
+  const DOODH = halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 6.5);
+  const STOPS = STOP_ROWS.map((s) => ({ ...s, ...abadiDoorstep(s.row, s.along) }));
   const st = { stage: 'idle', idx: 0, timeLeft: 0 };
   const dood = api.npc('doodhwala', DOODH, Math.PI / 2, 'npc_doodhwala');
   const aunty = api.npc('villager_aunty', { x: 0, z: 0 }, 0, 'npc_milk_aunty');
@@ -26,9 +33,9 @@ export function registerMilkJob(api, env) {
   function nextStop() {
     const s = STOPS[st.idx];
     aunty.root.visible = true;
-    aunty.root.position.set(s.x, 0, s.z + s.side * 2.0);
-    aunty.root.rotation.y = s.side > 0 ? Math.PI : 0;
-    env.setJobWaypoint(new THREE.Vector3(s.x, 0, s.z));
+    aunty.root.position.set(s.stand.x, 0, s.stand.z);
+    aunty.root.rotation.y = s.ry; // faces out of her door, toward the lane
+    env.setJobWaypoint(new THREE.Vector3(s.door.x, 0, s.door.z));
     hud();
   }
   function hud() {
