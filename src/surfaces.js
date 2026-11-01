@@ -1,4 +1,4 @@
-import { HOUSE_CENTER, SCHOOL_CENTER, schoolInverseXZ } from './village.js';
+import { HOUSE_CENTER, SCHOOL_CENTER, schoolInverseXZ, houseInverseXZ } from './village.js';
 import { FIELD_CENTER, FIELD_SIZE } from './field.js';
 
 /**
@@ -17,7 +17,8 @@ const TARMAC = { x: 205, z: 40, halfX: 7, halfZ: 75 };
 export const SURFACE = { CEMENT: 'cement', SOIL: 'soil', DIRT: 'dirt', TARMAC: 'tarmac' };
 
 export function surfaceAt(x, z) {
-  if (Math.abs(x - HOUSE_CENTER.x) < HOUSE_COURTYARD.halfX && Math.abs(z - HOUSE_CENTER.z) < HOUSE_COURTYARD.halfZ) {
+  const hq = houseInverseXZ(x, z); // the house is turned: test in its square frame
+  if (Math.abs(hq.x - HOUSE_CENTER.x) < HOUSE_COURTYARD.halfX && Math.abs(hq.z - HOUSE_CENTER.z) < HOUSE_COURTYARD.halfZ) {
     return SURFACE.CEMENT;
   }
   const sq = schoolInverseXZ(x, z); // the school is turned: test in its square frame

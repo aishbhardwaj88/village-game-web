@@ -18,7 +18,7 @@ export const OLD_SHIFT = MAP_SHIFT;
 const onMap = (yardId) => { const m = MAP_PLAN[yardId]; return { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 }; };
 
 export const ANCHORS = {
-  house: { x: 52.1 + MAP_SHIFT.x, z: 40.2 + MAP_SHIFT.z, ry: 0 },
+  house: { x: 52.1 + MAP_SHIFT.x, z: 40.2 + MAP_SHIFT.z, ry: -5 * Math.PI / 180 }, // map turn 5 deg, applied in src/village.js (HOUSE_TURN_DEG)
   school: { x: -43.5 + MAP_SHIFT.x, z: 108.5 + MAP_SHIFT.z, ry: 0 }, // the map's primary school centre; the hero school is axis-aligned, so the map's -11.2 deg turn is not applied (NEEDS_YOU)
   halwai: { x: 37.4 + MAP_SHIFT.x, z: 21.4 + MAP_SHIFT.z, ry: 0 },
   teastall: { x: -36.2 + MAP_SHIFT.x, z: 15.5 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, added to TEA_SHOP_ROT in src/main.js */,

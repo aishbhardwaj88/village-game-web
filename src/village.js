@@ -28,6 +28,16 @@ export function schoolXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CENTER.z,
 /** A world point back into the school's square layout. */
 export function schoolInverseXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CENTER.z, -SCHOOL_TURN_DEG, x, z); }
 
+// Map turn 5 deg (1 Nov plan): the hero house is built square about HOUSE_CENTER, then the whole group (walls, courtyard, stairs,
+// roof, props, colliders, the Blender model via its slot) turns as ONE piece. Anything keyed to the house's square layout (stairs,
+// roof, family, courtyard props, routes, trees) goes through houseXZ(); houseInverseXZ() is the other way.
+export const HOUSE_TURN_DEG = 5;
+export const HOUSE_YAW = -HOUSE_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned house
+/** Where a point of the square house layout lands once the house is turned. */
+export function houseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTER.z, HOUSE_TURN_DEG, x, z); }
+/** A world point back into the house's square layout. */
+export function houseInverseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTER.z, -HOUSE_TURN_DEG, x, z); }
+
 // Fixed palette, law — see docs/look-standard.md. Exact hex values, no per-call tuning.
 // Applied at WALL_TINT_STRENGTH (0.3) so the plaster texture's own grain/colour stays
 // visible instead of a flat saturated cut-out (see src/materials.js getTiledMaterial).
@@ -487,6 +497,7 @@ function buildHouse(kit) {
   mergeGroupByMaterial(group, { skipNames: ['house_shell_old', 'house_yard_old'] });
 
   const { charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh } = buildHouseInteriorProps(group);
+  applyTurn(group, cx, cz, HOUSE_TURN_DEG); // map turn: everything above was built square; colliders follow via userData.turn
 
   return { group, charpaiGroup, handPumpGroup, pumpWaterMesh, tulsiWaterMesh };
 }

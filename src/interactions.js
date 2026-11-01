@@ -9,6 +9,7 @@ import {
   SCHOOL_BLACKBOARD_POSITION,
   SCHOOL_BENCH_POSITION,
   schoolXZ,
+  houseXZ,
 } from './village.js';
 import { QUEST_STEPS, SACK_TARGET, MANGO_TARGET } from './quest.js';
 import { SACK_PILE_POSITION, PITAJI_POSITION, KIRANA_POSITION, isTrolleyNearby } from './wheatErrand.js';
@@ -54,7 +55,8 @@ export function resolveLabel(point, ctx) {
 }
 
 // --- errand NPC positions (used by main.js to place their capsule stand-ins too) ---
-export const MAA_POSITION = new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z + 3); // courtyard, south of the house block's door
+const houseV = (x, z) => { const p = houseXZ(x, z); return new THREE.Vector3(p.x, 0, p.z); }; // square house layout -> turned world (map turn 5 deg)
+export const MAA_POSITION = houseV(HOUSE_CENTER.x, HOUSE_CENTER.z + 3); // courtyard, south of the house block's door
 export const HALWAI_NPC_POSITION = new THREE.Vector3(HALWAI_CENTER.x + 1.3, 0, HALWAI_CENTER.z); // the working aisle, between the kadhai and the display cabinet
 
 registerInteraction({
@@ -228,7 +230,7 @@ registerInteraction({
 
 registerInteraction({
   id: 'house_charpai',
-  position: new THREE.Vector3(HOUSE_CHARPAI_POSITION.x, 0, HOUSE_CHARPAI_POSITION.z),
+  position: houseV(HOUSE_CHARPAI_POSITION.x + 0.15, HOUSE_CHARPAI_POSITION.z), // 0.15 m toward the open side: the turned charpai box grew a few cm, this keeps the reach point clear of it (validator check 6)
   radius: 1.6,
   label: { hi: 'लेट जाएं', en: 'Lie down' },
   // Same reasoning as 'charpai' above — standing back up is main.js's own "lying"
@@ -239,7 +241,7 @@ registerInteraction({
 
 registerInteraction({
   id: 'hand_pump',
-  position: new THREE.Vector3(HOUSE_HAND_PUMP_POSITION.x, 0, HOUSE_HAND_PUMP_POSITION.z),
+  position: houseV(HOUSE_HAND_PUMP_POSITION.x, HOUSE_HAND_PUMP_POSITION.z),
   radius: 1.6,
   label: { hi: 'पानी खींचें', en: 'Pump water' },
   onInteract: (ctx) => {
@@ -250,7 +252,7 @@ registerInteraction({
 
 registerInteraction({
   id: 'tulsi',
-  position: new THREE.Vector3(HOUSE_TULSI_POSITION.x, 0, HOUSE_TULSI_POSITION.z),
+  position: houseV(HOUSE_TULSI_POSITION.x, HOUSE_TULSI_POSITION.z),
   radius: 1.4,
   label: { hi: 'तुलसी को पानी दें', en: 'Water the tulsi' },
   onInteract: (ctx) => {

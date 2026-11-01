@@ -7,7 +7,7 @@ import { createComposer, resizeComposer } from './postfx.js';
 import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
-import { buildHeroZone, schoolXZ, SCHOOL_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
+import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
 import { milestoneSites, createMilestone } from './milestones.js';
@@ -183,6 +183,9 @@ const VEHICLE_LABEL_HI = {
 /** A point of the square-built school layout (offset from its centre) in the turned world (map turn -11.2 deg, src/village.js). */
 const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz);
 
+/** A point of the square-built house layout (offset from HOUSE_CENTER) in the turned world (map turn 5 deg, src/village.js). */
+const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
+
 async function main() {
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
@@ -211,7 +214,7 @@ async function main() {
   const ground = createGround({
     grassTint: 0x7b8a4a,
     grassCoverage: 0.7,
-    dampSpots: [{ x: HOUSE_HAND_PUMP_POSITION.x, z: HOUSE_HAND_PUMP_POSITION.z, radius: 2.2, tint: darken(0xffffff, 0.75) }],
+    dampSpots: [{ ...houseXZ(HOUSE_HAND_PUMP_POSITION.x, HOUSE_HAND_PUMP_POSITION.z), radius: 2.2, tint: darken(0xffffff, 0.75) }],
   });
   scene.add(ground);
 
@@ -609,7 +612,7 @@ async function main() {
   // roof") — so she's there, silently, same tier as the other plain-capsule NPCs
   // (child/teacher/sister/pitaji), not a new built character (the TRIPO people
   // decision was "no more code people", not "no more NPCs of any kind").
-  const dadiNpc = createNPC(0x8a5a6e, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z }, 0, 'npc_dadi');
+  const dadiNpc = createNPC(0x8a5a6e, { ...houseAt(0, 0) }, 0, 'npc_dadi');
   dadiNpc.visible = false;
   scene.add(dadiNpc);
   const sackCarrier = createSackCarrier(player);
@@ -623,16 +626,16 @@ async function main() {
   // docs/parked.md).
   const maaWalk = createWaypointLoop(maaNpc, [
     { x: MAA_POSITION.x, z: MAA_POSITION.z },
-    { x: MAA_POSITION.x - 3, z: MAA_POSITION.z + 2 },
+    { ...houseAt(-3, 5) }, // square-frame offset from her spot, turned with the house
   ], { getExtraBoxes: () => otherVehicleBoxes(null) });
   const halwaiStir = createStirLoop(halwaiNpc.userData.mesh);
 
-  const childNpc = createNPC(0x6d8a9c, { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_child');
+  const childNpc = createNPC(0x6d8a9c, { ...houseAt(0, 9) }, 0, 'npc_child');
   scene.add(childNpc);
   const childWalk = createWaypointLoop(
     childNpc,
     [
-      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
+      { ...houseAt(0, 9) },
       { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 13 }, // south of the house compound, clear of its walls and north of the map's South houses (z 57+)
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 14, z: SCHOOL_CENTER.z - 26 }, // detour north round the anganwadi, whose turned playground now lies on its north side
@@ -684,15 +687,15 @@ async function main() {
   // that particular midpoint is safe). A real code-built character (src/characters.js)
   // on foot, not an actual rigged bicycle — the "cycle round" is flavour text, not a
   // new vehicle-NPC rendering system.
-  const postmanBuilt = buildCharacterNpc('postman', { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 }, 0, 'npc_postman');
+  const postmanBuilt = buildCharacterNpc('postman', { ...houseAt(0, 9) }, 0, 'npc_postman');
   const postmanNpc = postmanBuilt.root;
   scene.add(postmanNpc);
   const postmanAnim = { root: postmanNpc, animate: postmanBuilt.animate, prev: postmanNpc.position.clone() };
   const postmanWalk = createWaypointLoop(
     postmanNpc,
     [
-      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 9 },
-      { x: HOUSE_CENTER.x - 6, z: HOUSE_CENTER.z + 13 },
+      { ...houseAt(0, 9) },
+      { ...houseAt(-6, 13) },
     ],
     { speed: 1.5, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -757,7 +760,7 @@ async function main() {
   // walkable right now. Unreachable on foot at ground level at this x/z (solid
   // wall/stair structure there), so only ever in range once the player has
   // actually climbed the real stairs.
-  registerRoofEnding(new THREE.Vector3(HOUSE_STAIRS.x, 0, (HOUSE_STAIRS.zStart + HOUSE_STAIRS.zEnd) / 2));
+  { const rp = houseXZ(HOUSE_STAIRS.x, (HOUSE_STAIRS.zStart + HOUSE_STAIRS.zEnd) / 2); registerRoofEnding(new THREE.Vector3(rp.x, 0, rp.z)); } // the stairs turn with the house
 
   // Waypoint (item 4) — repositioned each frame to the current objective's target.
   const waypointGlow = createWaypointGlow();
@@ -780,7 +783,7 @@ async function main() {
     { a: HALWAI_CENTER, b: SCHOOL_CENTER, halfWidth: 4, count: 70 },
     ...TRACK_CORNERS.map((corner, i) => ({ a: corner, b: TRACK_CORNERS[(i + 1) % TRACK_CORNERS.length], halfWidth: 3.5, count: 45 })),
     { cx: FIELD_CENTER.x, cz: FIELD_CENTER.z, halfW: FIELD_SIZE.x / 2 - 5, halfD: FIELD_SIZE.z / 2 - 5, count: 110, maxY: 1.1 },
-    { cx: HOUSE_CENTER.x, cz: HOUSE_CENTER.z + 6, halfW: 3, halfD: 2, count: 18 }, // house courtyard, open to sky
+    { cx: houseAt(0, 6).x, cz: houseAt(0, 6).z, halfW: 3.2, halfD: 2.3, count: 18 }, // house courtyard, open to sky
     { cx: HALWAI_CENTER.x + 2, cz: HALWAI_CENTER.z + 3, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
   ]);
   scene.add(dust.points);
@@ -794,7 +797,7 @@ async function main() {
   const HALWAI_FOOTPRINT = { w: 4.5, d: 5.5 }; // src/village.js buildHalwai's own dimensions
   const contactShadows = buildContactShadows(
     [
-      { x: HOUSE_BLOCK.cx, z: HOUSE_BLOCK.cz, radiusX: HOUSE_BLOCK.w / 2 + 0.4, radiusZ: HOUSE_BLOCK.d / 2 + 0.4 },
+      { ...houseXZ(HOUSE_BLOCK.cx, HOUSE_BLOCK.cz), radiusX: HOUSE_BLOCK.w / 2 + 0.8, radiusZ: HOUSE_BLOCK.d / 2 + 0.8 }, // turned 5 deg: ellipse grown to cover it
       { x: HALWAI_CENTER.x, z: HALWAI_CENTER.z, radiusX: HALWAI_FOOTPRINT.w / 2 + 0.4, radiusZ: HALWAI_FOOTPRINT.d / 2 + 0.4 },
       { ...schoolPt(0, +9), radiusX: 12.4, radiusZ: 3.4 }, // school back block
       { ...schoolPt(+12, 0), radiusX: 3.4, radiusZ: 9.4 }, // school east wing
@@ -910,7 +913,7 @@ async function main() {
       maskMaterials: ['hb_rangoli'],
       noShadowMaterials: ['hb_floor', 'hb_rangoli'],
       hide: hideOld,
-      placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(HOUSE_CENTER.x, 0, HOUSE_CENTER.z), rotationY: HOUSE_YAW }],
     });
   }
   {
@@ -1066,7 +1069,7 @@ async function main() {
   // rebuilt house courtyard (and cost 2 draw calls) for no gameplay reason.
   if (isDevMode()) {
     const testPotPlaceholder = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0xff00ff }));
-    testPotPlaceholder.position.set(HOUSE_CENTER.x + 3, 0.2, HOUSE_CENTER.z + 2);
+    { const tp = houseAt(3, 2); testPotPlaceholder.position.set(tp.x, 0.2, tp.z); }
     testPotPlaceholder.castShadow = true;
     scene.add(testPotPlaceholder);
     assetSlots.register('ceramic_pot', {
@@ -1248,12 +1251,12 @@ async function main() {
     // halwai's own lane frontage, and the bazaar chowk (CHOWK_CENTER).
     heroZoneGroup.add(
       buildTrees([
-        { kind: 'neem', x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z - 4, rotationY: 1.1, seed: 11 },
+        { kind: 'neem', ...houseAt(-13, -4), rotationY: 1.1, seed: 11 },
         // the courtyard tree in its raised brick planter (docs/house-checklist.md item 7); planter top is y=0.55
-        { kind: 'neem', x: HOUSE_CENTER.x + 7, z: HOUSE_CENTER.z + 3.4, y: 0.5, scale: 0.5, rotationY: 0.7, seed: 17 },
+        { kind: 'neem', ...houseAt(7, 3.4), y: 0.5, scale: 0.5, rotationY: 0.7, seed: 17 },
         // the school yard's neem in its raised brick ring (docs/school-checklist.md item 17); ring top y=0.26
         { kind: 'neem', ...schoolPt(-4.5, -6.2), y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
-        { kind: 'neem', x: HOUSE_CENTER.x - 10.5, z: HOUSE_CENTER.z - 6.5, rotationY: 2.6, seed: 13 },
+        { kind: 'neem', ...houseAt(-10.5, -6.5), rotationY: 2.6, seed: 13 },
         // the school yard's big shade tree with the tyre swing + stuck kite (tools/blender/build_school.py hangs them at this spot)
         { kind: 'neem', ...schoolPt(+6.2, -1.0), scale: 1.35, rotationY: 0.3, seed: 31 },
         // a row of tall eucalyptus behind the school building (reference: slim pale-barked trees along the back wall)
@@ -1302,9 +1305,9 @@ async function main() {
       ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 14, margin: 2 }),
       ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 14, margin: 2 }),
       // Wall-base clusters at real building perimeters.
-      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z - 2, radius: 1.6, count: 7 },
-      { x: HOUSE_CENTER.x + 9.6, z: HOUSE_CENTER.z + 2, radius: 1.6, count: 7 },
-      { x: HOUSE_CENTER.x, z: HOUSE_CENTER.z - 8, radius: 1.8, count: 6 },
+      { ...houseAt(-9.6, -2), radius: 1.6, count: 7 },
+      { ...houseAt(9.6, 2), radius: 1.6, count: 7 },
+      { ...houseAt(0, -8), radius: 1.8, count: 6 },
       { ...schoolPt(-15, 0), radius: 1.8, count: 6 },
       { ...schoolPt(+15, +5), radius: 1.8, count: 6 },
       { x: HALWAI_CENTER.x - 4, z: HALWAI_CENTER.z + 3, radius: 1.5, count: 5 },
@@ -1321,7 +1324,7 @@ async function main() {
       ...lanesideClusters(TRACK_CORNERS[3], TRACK_CORNERS[0], 5, { everyMetres: 12, margin: 2.2, count: 4 }),
       ...lanesideClusters(TRACK_CORNERS[0], TRACK_CORNERS[1], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
       ...lanesideClusters(TRACK_CORNERS[2], TRACK_CORNERS[3], 5, { everyMetres: 16, margin: 3.2, count: 3 }),
-      { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 4, radius: 1.3, count: 4 },
+      { ...houseAt(-9.6, 4), radius: 1.3, count: 4 },
       { ...bazaarXZ(BAZAAR_EAST_X + 1.5, BAZAAR_ROW_CZ), radius: 1.5, count: 5 },
       { ...schoolPt(-15, +8), radius: 1.5, count: 4 },
     ];
@@ -1344,10 +1347,10 @@ async function main() {
         // Tulsi near the temple steps and the house courtyard corner.
         { ...templeXZ(TEMPLE_POS.x + 4.5, TEMPLE_POS.z - 5.5), kind: GARDEN_KIND.TULSI },
         { ...templeXZ(TEMPLE_POS.x - 4.5, TEMPLE_POS.z - 5.5), kind: GARDEN_KIND.TULSI },
-        { x: HOUSE_CENTER.x - 9.6, z: HOUSE_CENTER.z + 6.5, kind: GARDEN_KIND.TULSI },
+        { ...houseAt(-9.6, 6.5), kind: GARDEN_KIND.TULSI },
         // Banana clumps: behind the house, by the temple and at the chowk.
-        { x: HOUSE_CENTER.x - 11, z: HOUSE_CENTER.z + 8, kind: GARDEN_KIND.BANANA },
-        { x: HOUSE_CENTER.x - 13, z: HOUSE_CENTER.z + 6, kind: GARDEN_KIND.BANANA, scale: 0.85 },
+        { ...houseAt(-11, 8), kind: GARDEN_KIND.BANANA },
+        { ...houseAt(-13, 6), kind: GARDEN_KIND.BANANA, scale: 0.85 },
         { ...templeXZ(TEMPLE_POS.x - 10, TEMPLE_POS.z - 4), kind: GARDEN_KIND.BANANA },
         { x: CHOWK_CENTER.x + 9, z: CHOWK_CENTER.z - 6, kind: GARDEN_KIND.BANANA, scale: 0.9 },
         // Bougainvillea along the chowk seating wall and tea stall.
@@ -2080,7 +2083,7 @@ async function main() {
     dadiNpc.visible = false;
     sisterFollowing = false;
     sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
-    player.position.set(HOUSE_CENTER.x + 1.5, 0, HOUSE_CENTER.z + 4.5);
+    { const hp = houseAt(1.5, 4.5); player.position.set(hp.x, 0, hp.z); }
     ensureSideJobs(); // the ten side jobs, built the first time free roam starts (zero cost during the story)
     updateObjective();
     freeRoam.toast('The afternoon is yours. Look around the village.', 'दोपहर तुम्हारी है। गाँव में घूमो।', 5200);
@@ -2219,15 +2222,15 @@ async function main() {
     // no longer matter.
     onReachRoofEnding: () => {
       endingSceneActive = true;
-      dadaNpc.position.set(HOUSE_CENTER.x, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 1);
+      { const rp = houseXZ(HOUSE_CENTER.x, HOUSE_BLOCK.cz - 1); dadaNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
       dadaNpc.rotation.y = Math.PI * 0.75;
-      maaNpc.position.set(HOUSE_CENTER.x - 1.5, HOUSE_ROOF_Y, HOUSE_BLOCK.cz + 0.5);
+      { const rp = houseXZ(HOUSE_CENTER.x - 1.5, HOUSE_BLOCK.cz + 0.5); maaNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
       maaNpc.rotation.y = Math.PI * 0.6;
-      pitajiNpc.position.set(HOUSE_CENTER.x + 1.5, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 0.5);
+      { const rp = houseXZ(HOUSE_CENTER.x + 1.5, HOUSE_BLOCK.cz - 0.5); pitajiNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
       pitajiNpc.rotation.y = Math.PI * 1.1;
-      sisterNpc.position.set(HOUSE_CENTER.x + 1, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 2.5);
+      { const rp = houseXZ(HOUSE_CENTER.x + 1, HOUSE_BLOCK.cz - 2.5); sisterNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
       sisterNpc.rotation.y = Math.PI * 1.3;
-      dadiNpc.position.set(HOUSE_CENTER.x - 1, HOUSE_ROOF_Y, HOUSE_BLOCK.cz - 2);
+      { const rp = houseXZ(HOUSE_CENTER.x - 1, HOUSE_BLOCK.cz - 2); dadiNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
       dadiNpc.rotation.y = Math.PI * 0.9;
       dadiNpc.visible = true;
     },
@@ -2363,7 +2366,8 @@ async function main() {
   // via the stairs) — without that check, just walking around *underneath* the roof,
   // inside the ground-floor rooms (same X/Z footprint, different Y), would wrongly
   // teleport them up to it.
-  function groundHeightAt(x, z, currentY) {
+  function groundHeightAt(wx, wz, currentY) {
+    const { x, z } = houseInverseXZ(wx, wz); // stairs and roof are built square: test in the house's own frame (map turn 5 deg)
     const s = HOUSE_STAIRS;
     const halfW = s.width / 2;
     const zMin = Math.min(s.zStart, s.zEnd);

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2 } from './materials.js';
 import { bazaarUnitCx, BAZAAR_FRONT_Z, bazaarXZ } from './bazaar.js';
-import { pt } from './anchors.js';
+import { pt, ANCHORS } from './anchors.js';
+import { turnXZ } from './turn.js';
 
 const HOUSE_AT = pt('house'); // the sack pile and Pitaji stand at fixed offsets from the house anchor, so they move with it
 
@@ -18,8 +19,9 @@ const HOUSE_AT = pt('house'); // the sack pile and Pitaji stand at fixed offsets
 // point (-51, 25) — not the walled inner courtyard itself (HOUSE_DOOR_WIDTH is
 // 1.3m, pedestrian-only, so the tractor+trolley could never physically reach a pile
 // placed inside those walls). See docs/parked.md for this placement call.
-export const SACK_PILE_POSITION = new THREE.Vector3(HOUSE_AT.x + 3, 0, HOUSE_AT.z - 10);
-export const PITAJI_POSITION = new THREE.Vector3(HOUSE_AT.x, 0, HOUSE_AT.z - 8);
+const houseTurned = (dx, dz) => { const p = turnXZ(HOUSE_AT.x, HOUSE_AT.z, -ANCHORS.house.ry * 180 / Math.PI, HOUSE_AT.x + dx, HOUSE_AT.z + dz); return new THREE.Vector3(p.x, 0, p.z); }; // the house is turned on the map (5 deg): the offsets turn with it
+export const SACK_PILE_POSITION = houseTurned(3, -10);
+export const PITAJI_POSITION = houseTurned(0, -8);
 // Kirana is bazaar unit 1 (src/bazaar.js BAZAAR_UNITS[0]) — a couple of metres out
 // from its counter, on the lane-facing open side, same "stand just outside the
 // counter" distance every other shop interaction in this game uses.
