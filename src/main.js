@@ -1569,11 +1569,11 @@ async function main() {
       },
     });
     zoneManager.register('tea_haystacks', { visibleRadius: 45, x: -58 + OLD_SHIFT.x, z: 76, buildRadius: 30, teardownRadius: 40, build: () => createTeaStallHaystacks({ x: -58 + OLD_SHIFT.x, z: 76 }) });
-    zoneManager.register('tubewell', { detail: true, ...pt('tubewell'), buildRadius: 30, teardownRadius: 40, build: () => createTubewell(pt('tubewell')) });
+    // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
-    zoneManager.register('khalihan', { detail: true, ...pt('khalihan'), buildRadius: 28, teardownRadius: 40, build: () => createKhalihan(pt('khalihan')) });
+    // 'khalihan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('anganwadi', { visibleRadius: 90, ...pt('anganwadi'), buildRadius: 40, teardownRadius: 52, build: () => createAnganwadi(pt('anganwadi')) });
-    zoneManager.register('dudh_dairy', { ...pt('dairy'), buildRadius: 40, teardownRadius: 52, build: () => createDudhDairy(pt('dairy')) });
+    // 'dudh_dairy' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md abadi places with no coordinates; open ground at the village edge. Faith buildings are peripheral scenery only, no gameplay.
     zoneManager.register('health_subcentre', { ...pt('health'), buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre(pt('health')) });
     zoneManager.register('chemist', { ...pt('chemist'), buildRadius: 40, teardownRadius: 52, build: () => createChemist(pt('chemist')) });

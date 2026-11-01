@@ -14,6 +14,9 @@ import { MAP_PLAN, MAP_SHIFT } from './mapPlan.js';
 /** The old village's own layout (places the 1 Nov map does not position) rides east by the same 600 m as the map, so the whole world is one contiguous area. */
 export const OLD_SHIFT = MAP_SHIFT;
 
+/** Where a map-placed v2 yard stands on the world (MAP_PLAN centre + MAP_SHIFT, turned as the map says). */
+const onMap = (yardId) => { const m = MAP_PLAN[yardId]; return { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 }; };
+
 export const ANCHORS = {
   house: { x: 52.1 + MAP_SHIFT.x, z: 40.2 + MAP_SHIFT.z, ry: 0 },
   school: { x: -43.5 + MAP_SHIFT.x, z: 108.5 + MAP_SHIFT.z, ry: 0 }, // the map's primary school centre; the hero school is axis-aligned, so the map's -11.2 deg turn is not applied (NEEDS_YOU)
@@ -34,9 +37,9 @@ export const ANCHORS = {
   eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: 0 },
   westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 0 },
   jalebi: { x: 35.5 + MAP_SHIFT.x, z: 26.4 + MAP_SHIFT.z, ry: 0 },
-  dairy: { x: -112 + OLD_SHIFT.x, z: 18 + OLD_SHIFT.z, ry: 0 },
-  khalihan: { x: -78 + OLD_SHIFT.x, z: -5 + OLD_SHIFT.z, ry: 0 },
-  tubewell: { x: -40 + OLD_SHIFT.x, z: -8 + OLD_SHIFT.z, ry: 0 },
+  dairy: onMap('yard_dairy'), // the old code-built copy is no longer built (src/main.js); the v2 yard stands here
+  khalihan: onMap('yard_khalihan'),
+  tubewell: onMap('yard_tubewell'),
   gaushala: { x: -122.6 + MAP_SHIFT.x, z: -41 + MAP_SHIFT.z, ry: 0 },
   pond: { x: -120.6 + MAP_SHIFT.x, z: 60.5 + MAP_SHIFT.z, ry: 0 },
   anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: 0 },

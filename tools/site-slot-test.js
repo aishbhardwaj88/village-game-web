@@ -22,7 +22,7 @@ import { ANCHORS } from '../src/anchors.js';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = 5237;
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
-const SITES = ['masjid', 'health_subcentre', 'gurukul', 'old_haveli', 'dudh_dairy']; // zone name === slot filename
+const SITES = ['masjid', 'health_subcentre', 'gurukul', 'old_haveli']; // dudh_dairy dropped 1 Nov: the map-placed v2 yard replaces it; zone name === slot filename
 const ANCHOR_OF = { masjid: 'masjid', health_subcentre: 'health', gurukul: 'gurukul', old_haveli: 'haveli', dudh_dairy: 'dairy' };
 
 function boxMesh(doc, buffer, name, [hx, hy, hz], [cx, cy, cz]) {

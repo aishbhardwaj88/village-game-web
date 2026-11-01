@@ -56,7 +56,7 @@ export const PLACES = [
   { id: 'maidan', en: 'Khel maidan', hi: 'खेल मैदान', ...pt('maidan'), kind: 'field', radius: 26 },
   { id: 'highway', en: 'Highway and bus adda', hi: 'हाईवे और बस अड्डा', ...pt('highway'), kind: 'bazaar', radius: 30 },
   { id: 'mandi', en: 'Mandi', hi: 'मंडी', ...pt('mandi'), kind: 'bazaar', radius: 26 },
-  ...STAGED_PLACES.map((p) => ({ id: p.id, en: p.en, hi: p.hi, ...pt(p.id), kind: p.kind, radius: p.radius })), // staging yard (src/stagedPlaces.js)
+  ...STAGED_PLACES.filter((p) => !['yard_dairy', 'yard_khalihan', 'yard_tubewell'].includes(p.id)).map((p) => ({ id: p.id, en: p.en, hi: p.hi, ...pt(p.id), kind: p.kind, radius: p.radius })), // staging yard (src/stagedPlaces.js)
 ];
 
 // Faint pencil lanes so the page has structure before anything is inked (same centre-lines as src/scenery.js and the hero lanes).
