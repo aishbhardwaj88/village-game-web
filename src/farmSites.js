@@ -11,6 +11,7 @@ import { addPots, flushMerged } from './pots.js';
 import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
 import { addHaystacks, hayPlacements } from './haystacks.js';
+import { addFieldProps } from './fieldProps.js';
 import { addGobar } from './gobar.js';
 import { addLanterns } from './lanterns.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
@@ -445,6 +446,25 @@ export function createMapHaystacks(position) {
   group.add(carrier);
   group.position.set(position.x, 0, position.z);
   addHaystacks(group, hayPlacements(hay), 'map_haystacks_mesh');
+  return group;
+}
+
+/**
+ * One of the map's field props (1 Nov plan) from the shared field_props.glb. `items` are { part, x, z, ry, solid: [w, d] } in world metres;
+ * solid is the collider footprint (omit for walk-through). The zone centres on `position`.
+ */
+export function createFieldPropSite(name, position, items) {
+  const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+  carrier.name = name;
+  carrier.visible = false;
+  carrier.userData.colliderBoxes = items.filter((i) => i.solid).map((i) => ({ minX: i.x - i.solid[0] / 2, maxX: i.x + i.solid[0] / 2, minZ: i.z - i.solid[1] / 2, maxZ: i.z + i.solid[1] / 2 }));
+  const group = new THREE.Group();
+  group.name = `${name}_prop`;
+  group.add(carrier);
+  const local = new THREE.Group();
+  local.position.set(position.x, 0, position.z);
+  group.add(local);
+  addFieldProps(local, items.map((i) => ({ ...i, x: i.x - position.x, z: i.z - position.z })), `${name}_mesh`);
   return group;
 }
 

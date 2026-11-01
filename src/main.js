@@ -134,7 +134,7 @@ import {
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
-import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
 import { createBazaarLife } from './bazaarLife.js';
@@ -1578,6 +1578,12 @@ async function main() {
     zoneManager.register('map_haystacks', { ...MAP_HAY, buildRadius: 50, teardownRadius: 65, build: () => createMapHaystacks(MAP_HAY) }); // the map's three 6 m stacks (1 Nov plan)
     const DUNG_YARD = { x: -128 + 600, z: 131.5 };
     zoneManager.register('dung_cake_yard', { ...DUNG_YARD, buildRadius: 50, teardownRadius: 65, build: () => createDungCakeYard(DUNG_YARD) }); // the map's uple drying yard (1 Nov plan)
+    const FP = (n, x, z, items, r = 40) => zoneManager.register(n, { x: x + 600, z, buildRadius: r, teardownRadius: r + 15, build: () => createFieldPropSite(n, { x: x + 600, z }, items.map((i) => ({ ...i, x: i.x + 600 }))) });
+    FP('map_well', -205.5, -20.6, [{ part: 'well', x: -205.5, z: -20.6, solid: [4.2, 4.2] }]); // the map's village well (1 Nov plan)
+    FP('map_field_gate', -27, 188.5, [{ part: 'field_gate', x: -32.8, z: 188.5, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: -21.2, z: 188.5, ry: Math.PI, solid: [0.9, 0.9] }]);
+    FP('map_field_gate_wheat', 9, -152.2, [{ part: 'field_gate', x: 3.6, z: -152.2, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: 14.4, z: -152.2, ry: Math.PI, solid: [0.9, 0.9] }]);
+    FP('map_field_shrine', -152.7, -60, [{ part: 'field_shrine', x: -152.7, z: -60, solid: [3, 3] }]);
+    FP('map_culvert', 144.5, 30.9, [{ part: 'culvert', x: 144.5, z: 30.9 }]);
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
