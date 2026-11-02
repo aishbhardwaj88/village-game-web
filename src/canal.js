@@ -3,6 +3,7 @@ import { createWaterMaterial, channelWaterGeometry } from './water.js';
 import { texturedBox, texturedThickBox } from './materials.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
+import { registerCanalDip, createCanalTrench } from './dips.js';
 
 /**
  * The nahar (canal) — reference-from-unity/MAP.md: "Runs east-west across the
@@ -119,8 +120,18 @@ export function buildCanal() {
   // real still water does read with a soft sheen — not run through
   // assetSlots.js's enforceMatteMaterial clamp, which only applies to imported
   // Tripo/Blender models, not hand-authored code materials.
-  const water = new THREE.Mesh(channelWaterGeometry(CANAL_MAX_X - CANAL_MIN_X, CANAL_HALF_WIDTH * 2, 0, 8), createWaterMaterial({ shallow: 0x7a7a4c, deep: 0x44502f, scale: 0.9, opacity: 0.95 }));
-  water.position.set((CANAL_MIN_X + CANAL_MAX_X) / 2, 0.05, CANAL_Z); // just above the ground plane so it actually renders, between the 0.35m-high banks
+  // Dug for real (docs/PARALLEL.md item 5): a cement-lined trench (src/dips.js) cut below the ground, the water
+  // 0.5 m under the bank line. The ground plane is holed over the trench by shader; the bridge deck and the
+  // pulia planks are registered as walk heights so the crossing still carries the player at deck level.
+  const PULIA_HALF_SPAN = CANAL_HALF_WIDTH + BANK_WIDTH + 0.4;
+  const dip = registerCanalDip({ minX: CANAL_MIN_X, maxX: CANAL_MAX_X, z: CANAL_Z, decks: [
+    { x: BRIDGE_X, halfX: BRIDGE_HALF_WIDTH, halfZ: CANAL_HALF_WIDTH + BANK_WIDTH + 0.3, y: 0.08 },
+    { x: PULIA_X, halfX: PULIA_HALF_WIDTH, halfZ: PULIA_HALF_SPAN, y: 0.45, ramp: 0.5 },
+  ] });
+  group.add(createCanalTrench());
+  const waterW = 2 * (dip.half - (dip.half - dip.toe) * (dip.water / dip.bed)) + 0.1; // where the lining crosses the water line
+  const water = new THREE.Mesh(channelWaterGeometry(CANAL_MAX_X - CANAL_MIN_X - 1.0, waterW, 0, 8), createWaterMaterial({ shallow: 0x7a7a4c, deep: 0x44502f, scale: 0.9, opacity: 0.95 }));
+  water.position.set((CANAL_MIN_X + CANAL_MAX_X) / 2, dip.water, CANAL_Z);
   water.name = 'canal_water';
   water.receiveShadow = true;
   group.add(water);

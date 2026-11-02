@@ -34,6 +34,7 @@ import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
+import { createVillageHouses } from './villageHouses.js'; // the house kit filling the map's empty house footprints (3 Nov)
 import {
   buildTemple,
   buildTempleProps,
@@ -139,6 +140,7 @@ import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, 
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
 import { createYardSite } from './yardModels.js';
+import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js'; // pond, johad, canal dug for real (local dips)
 import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
@@ -165,6 +167,7 @@ import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
+import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -221,6 +224,7 @@ async function main() {
     grassCoverage: 0.7,
     dampSpots: [{ ...houseXZ(HOUSE_HAND_PUMP_POSITION.x, HOUSE_HAND_PUMP_POSITION.z), radius: 2.2, tint: darken(0xffffff, 0.75) }],
   });
+  applyDipHoles(ground);
   scene.add(ground);
 
   const atmosphere = getActiveAtmosphere();
@@ -1181,7 +1185,7 @@ async function main() {
 
   // Play unlocks once the models around the opening spawn are in (first view never pops); the far ones keep
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
-  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 150 });
+  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 70 });
   slotLoads.near.then(() => markOpeningViewLoaded());
   slotLoads.all.then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
@@ -1231,6 +1235,7 @@ async function main() {
   const ambientLife = createAmbientLife(abadiSmokeSources());
   scene.add(ambientLife.group);
   let bgHousesGroup = null; // src/scenery.js — abadi rows, distance-culled per area each frame
+  let villageHouses = null; // src/villageHouses.js — house-kit houses, distance-culled per cluster
   let fieldCane = null;
   let fieldSarson = null;
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
@@ -1401,6 +1406,8 @@ async function main() {
     const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
     bgHousesGroup = backgroundHousesGroup;
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
+    villageHouses = createVillageHouses(scene); // src/villageHouses.js, distance-gated per cluster in the frame loop
+    cameraObstacles.push(villageHouses.group);
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
 
     // Headroom pass (docs/parked.md) — one village-wide merge across every static
@@ -1581,8 +1588,8 @@ async function main() {
         const group = new THREE.Group();
         group.name = 'zone_pond_buffalo';
         const herd = createCattleHerd([
-          { x: pt('pond').x + 11.2, z: pt('pond').z + 4.2, rotationY: 1.2, buffalo: true },
-          { x: pt('pond').x + 9.6, z: pt('pond').z + 7.0, rotationY: 2.3, buffalo: true },
+          { x: pt('pond').x + 11.2, z: pt('pond').z + 4.2, y: dipHeightRaw(pt('pond').x + 11.2, pt('pond').z + 4.2), rotationY: 1.2, buffalo: true }, // standing down the dug bank
+          { x: pt('pond').x + 9.6, z: pt('pond').z + 7.0, y: dipHeightRaw(pt('pond').x + 9.6, pt('pond').z + 7.0), rotationY: 2.3, buffalo: true },
         ]);
         group.add(herd.mesh);
         return { group, onFrame: (dt) => herd.update(dt) };
@@ -1766,6 +1773,8 @@ async function main() {
     registerStagingYard(zoneManager, LANDMARK_VIS);
     // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
+    // Dirt tracks to the places the map left without a way in (src/dirtTracks.js), one merged draw call.
+    zoneManager.register('dirt_tracks', { visibleRadius: 320, x: DIRT_TRACKS_ZONE.x, z: DIRT_TRACKS_ZONE.z, buildRadius: 300, teardownRadius: 360, build: () => createDirtTracks() });
     // Solar LEDs along the map's village lanes, per 36 m chunk so each streams only near the player (the lanes themselves are the strips above).
     for (const leg of mapLampLegs()) {
       zoneManager.register(`lamps_map_${leg.id}`, {
@@ -2453,7 +2462,7 @@ async function main() {
     const roofMinX = Math.min(HOUSE_BLOCK.cx - roofHalfW, s.x - halfW);
     const onRoofFootprint = x > roofMinX && x < HOUSE_BLOCK.cx + roofHalfW && z > HOUSE_BLOCK.cz - roofHalfD && z < HOUSE_BLOCK.cz + roofHalfD;
     if (onRoofFootprint && currentY > s.yTop * 0.5) return s.yTop;
-    return 0;
+    return dipHeightAt(wx, wz); // 0 except down the pond/johad/canal banks (src/dips.js)
   }
 
   function nearestMountable() {
@@ -2925,6 +2934,7 @@ async function main() {
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)
       setPlantFocus(listenerPos.x, listenerPos.z);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
+      if (villageHouses) villageHouses.update(listenerPos.x, listenerPos.z);
       freeRoam.update(dt);
       minimap.update(dt);
       ambientLife.update(dt, listenerPos.x, listenerPos.z);

@@ -142,8 +142,8 @@ const SCHOOL_ROOM_KEEP = (() => { // the classroom is turned with the school: ke
 export const VEG_KEEP_OUT = [
   { x: TW.x + 3.9, z: TW.z + 0.4, r: 3.0 }, // tubewell hauz + its outlet naali start
   { x: TW.x + 5.8, z: TW.z + 4.2, r: 2.6 }, // tubewell outlet channel
-  { ...pt('pond'), r: 11 }, // pond
-  { ...pt('johad'), r: 8 }, // johad
+  { ...pt('pond'), r: 16 }, // pond, out to its dug bank top (src/dips.js)
+  { ...pt('johad'), r: 9.5 }, // johad, out to its dug bank top (src/dips.js)
   { zMin: CN.z - 3.5, zMax: CN.z + 3.5, xMin: CN.x - 13, xMax: CN.x + 15 }, // canal water + banks
   SCHOOL_ROOM_KEEP, // school classroom (SCHOOL_ROOM in village.js, turned with the school): grass was sprouting through its floor
 ];

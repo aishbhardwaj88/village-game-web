@@ -6,7 +6,8 @@ import { MAP_SHIFT } from '../src/mapPlan.js';
 import { SPURS, ROAD_PTS } from '../src/eastRoad.js';
 import { OLD_SHIFT } from '../src/anchors.js';
 const OX = OLD_SHIFT.x; // in scope for the eval of OLD_LANES
-import { STAGED_PLACES } from '../src/stagedPlaces.js'; // PLACES entries spread pt(id), so the eval below needs it in scope
+import { STAGED_PLACES } from '../src/stagedPlaces.js';
+import { dirtTrackLines } from '../src/dirtTracks.js'; // the kachcha tracks laid to places the map left without a way in // PLACES entries spread pt(id), so the eval below needs it in scope
 const src = readFileSync(new URL('../src/freeRoam.js', import.meta.url), 'utf8');
 const placesSrc = src.match(/export const PLACES = (\[[\s\S]*?\n\]);/)[1];
 const lanesSrc = src.match(/export const OLD_LANES = (\[[\s\S]*?\n\]);/)[1];
@@ -17,7 +18,7 @@ const OLD_LANES = eval(lanesSrc.replace(/\/\/.*$/gm, ''));
 // the 1 Nov map's roads and lanes, shifted +MAP_SHIFT exactly as src/mapRoads.js lays them
 const MAPJ = JSON.parse(readFileSync(new URL('../docs/layout/village-plan-positions-2026-11-01.json', import.meta.url), 'utf8'));
 const mapLines = [...Object.values(MAPJ.roads), ...MAPJ.lanes_and_tracks].map((r) => r.centreline.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]));
-const LANES = [...OLD_LANES, ...mapLines];
+const LANES = [...OLD_LANES, ...mapLines, ...dirtTrackLines().map((t) => t.pts)];
 const way = readFileSync(new URL('../src/wayfinding.js', import.meta.url), 'utf8');
 const signed = new Set();
 for (const m of way.matchAll(/to: \[([^\]]*)\]/g)) for (const id of m[1].match(/'(\w+)'/g) || []) signed.add(id.replace(/'/g, ''));

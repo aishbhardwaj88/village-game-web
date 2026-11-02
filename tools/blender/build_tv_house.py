@@ -18,7 +18,7 @@ kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(53)
 CREAM = 0xE8D8A6
-MAROON = 0x7A2A2E
+MAROON = 0xA15354   # 3 Nov retint: sampled from MAIN_tv_house_front_isometric.png band (was 0x7A2A2E), tmp/sample_tints.py
 GOLD = 0xC9A23A
 DARK = 0x4A2E22
 X0, X1, Z0, Z1 = -6.0, 6.0, -10.0, 0.0

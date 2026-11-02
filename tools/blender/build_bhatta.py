@@ -109,7 +109,7 @@ add('brick', wb('shed_back', sx0 - 0.3, sx1 + 0.3, sz0 - 0.2, sz0 + 0.2, 0, 3.0,
 add('brick', wb('shed_side', sx1 - 0.2, sx1 + 0.2, sz0, sz1, 0, 2.5, 0.0)) if False else None
 for k in range(6):
     xa = sx0 - 0.5 + k * 1.2
-    add('tin', prism_x('roof_sheet', xa, xa + 1.18, [(sz0 - 0.4, 3.1), (sz1 + 0.5, 2.6), (sz1 + 0.5, 2.65), (sz0 - 0.4, 3.15)]), (0x8C5A44, 0x7A4F3C, 0x9A9EA0, 0xA0654A, 0x7F8588, 0x8C5A44)[k])
+    add('tin', prism_x('roof_sheet', xa, xa + 1.18, [(sz0 - 0.4, 3.1), (sz1 + 0.5, 2.6), (sz1 + 0.5, 2.65), (sz0 - 0.4, 3.15)]), (0xCC825B, 0xB27250, 0xE1E4D6, 0xE99263, 0xB9C0B6, 0xCC825B)[k])   # 3 Nov retint: palette scaled to MAIN_bhatta_views.png shed roof median (was 8C5A44 7A4F3C 9A9EA0 A0654A 7F8588)
 for z, h in ((sz0, 3.0), (sz1, 2.5)):
     add('wood', limb('beam', (sx0 - 0.3, z, h), (sx1 + 0.3, z, h), 0.15, 0.12))
 pk.charpai(kit, 31.0, -9.0, 0.0)

@@ -444,12 +444,12 @@ export function createCattleHerd(placements) {
     const scale = p.buffalo ? { x: 1.12, y: 1.12, z: 1.22 } : { x: 1, y: 1, z: 1 };
     const tints = p.buffalo ? BUFFALO_TINTS : COW_TINTS;
     mesh.setColorAt(i, color.setHex(tints[i % tints.length]));
-    return { x: p.x, z: p.z, rotY: p.rotationY ?? 0, scale, t: i * 1.7 + (p.buffalo ? 3 : 0), rate: 0.35 + (i % 3) * 0.05 };
+    return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, scale, t: i * 1.7 + (p.buffalo ? 3 : 0), rate: 0.35 + (i % 3) * 0.05 };
   });
   function applyInstance(i, inst, graze) {
     _herdEuler.set(graze * 0.1, inst.rotY, 0);
     _herdQuat.setFromEuler(_herdEuler);
-    _herdPos.set(inst.x, Math.max(graze, 0) * 0.015, inst.z);
+    _herdPos.set(inst.x, inst.y + Math.max(graze, 0) * 0.015, inst.z); // inst.y: down a dug bank (src/dips.js), 0 elsewhere
     _herdScale.set(inst.scale.x, inst.scale.y, inst.scale.z);
     _herdMat.compose(_herdPos, _herdQuat, _herdScale);
     mesh.setMatrixAt(i, _herdMat);

@@ -1260,7 +1260,8 @@ for _o in bpy.context.scene.objects:
     _o.location.x *= PLAN_SCALE
     _o.location.y *= PLAN_SCALE
 
-TINTS = {'hb_plaster': '#FFF1CF', 'hb_plinth': '#E39A3C', 'hb_trim': '#F6E6BC', 'hb_apron': '#A8845A',
+TINTS = {'hb_plaster': '#E0D8B9', 'hb_plinth': '#C78836',   # 3 Nov retint: sampled from MAIN_primary_school_isometrics.png (was #FFF1CF / #E39A3C), tmp/sample_tints.py
+         'hb_trim': '#F6E6BC', 'hb_apron': '#A8845A',
          'hb_wood': '#7A5A3E', 'hb_brick': '#C26A44', 'hb_tin': '#C5CDD2', 'hb_metal': '#FFFFFF'}
 if len(kit.extra) > 1:
     kit.extra[:] = [join_objects(kit.extra, 'decals')]

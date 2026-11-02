@@ -15,6 +15,7 @@ import { addFieldProps } from './fieldProps.js';
 import { addGobar } from './gobar.js';
 import { addLanterns } from './lanterns.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
+import { BLOB_DIPS, blobEdge, blobSolids, createDipBank, dipHeightRaw, registerDipPad } from './dips.js';
 
 /**
  * MAP.md farm and water sites, each streamed by zoneManager (src/main.js):
@@ -267,33 +268,49 @@ export function createPond(position) {
   group.name = 'pond';
   let s = 7;
   const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
-  // Bathing ghat: two stepped cement slabs and a washing stone on the east bank (merged into the shore mesh: one draw call).
-  const shore = shoreGeos(9.6, 1.3, rnd);
-  for (let i = 0; i < 3; i++) shore.push(bake(new THREE.BoxGeometry(2.6 - i * 0.3, 0.16, 0.7), at(10.4 - i * 0.7, 0.08 + i * 0.15, 0.0, Math.PI / 2), 0xb4ac98));
-  shore.push(bake(new THREE.BoxGeometry(0.9, 0.35, 0.55), at(11.9, 0.18, 2.0, 0.4), 0x8d8676));
-  const bank = new THREE.Mesh(mergeGeometries(shore), vcMat({ roughness: 1 }));
-  bank.receiveShadow = true;
-  bank.userData.colliderBoxes = solidBoxes(position, discSolids(0, 0, 8.4)); // water body, inside the blob's narrowest radius so the shore stays walkable
+  const D = BLOB_DIPS.pond;
+  // Dug for real (docs/PARALLEL.md item 5, src/dips.js): the bank slopes down to water 0.5 m below the ground.
+  // Bathing ghat: five cement steps cut into the east bank, the last one just under the water, and a washing
+  // stone at the waterline. Solid blocks down into the bank so no step floats; merged into the bank's draw call.
+  const extra = [];
+  const eE = D.R * blobEdge(0, D.seed); // water edge due east (local +x)
+  for (let i = 0; i < 5; i++) {
+    const x = eE + 2.7 - i * 0.68, w = 2.7 - i * 0.12;
+    const top = i === 4 ? D.water - 0.04 : Math.min(-0.02, dipHeightRaw(position.x + x, position.z) + 0.05); // each tread just proud of the bank it is cut into
+    extra.push(bake(new THREE.BoxGeometry(0.7, top + 1.1, w), at(x, (top - 1.1) / 2, (rnd() - 0.5) * 0.06, (rnd() - 0.5) * 0.03), [0xb4ac98, 0xaaa290, 0xa69e8c, 0x8f8a78, 0x76725f][i]));
+    registerDipPad('pond', { minX: position.x + x - 0.35, maxX: position.x + x + 0.35, minZ: position.z - w / 2, maxZ: position.z + w / 2, y: top });
+  }
+  const sx = eE - 0.1, sz = 2.2;
+  extra.push(bake(new THREE.BoxGeometry(0.9, 0.5, 0.55), at(sx, dipHeightRaw(position.x + sx, position.z + sz) + 0.1, sz, 0.4), 0x8d8676));
+  for (let i = 0; i < 30; i++) { // pebbles along the waterline and up the bank
+    const a = rnd() * Math.PI * 2, u = 0.98 + rnd() * 0.3, e = D.R * blobEdge(a, D.seed) * u, k = 0.04 + rnd() * 0.09;
+    const x = Math.cos(a) * e, z = -Math.sin(a) * e;
+    extra.push(bake(new THREE.SphereGeometry(k, 6, 4), new THREE.Matrix4().makeScale(1, 0.55, 1).setPosition(x, dipHeightRaw(position.x + x, position.z + z) + k * 0.2, z), [0x8d8676, 0x7a7466, 0x9c9586][i % 3]));
+  }
+  const bank = createDipBank('pond', extra);
+  bank.userData.colliderBoxes = solidBoxes(position, blobSolids('pond', 0.9)); // open water only: the bank and the shallow rim stay walkable
   group.add(bank);
-  const water = new THREE.Mesh(blobWaterGeometry(9.6, 1.3, 0.06), createWaterMaterial({ shallow: 0x80784a, deep: 0x34402c, scale: 1.1 }));
+  const water = new THREE.Mesh(blobWaterGeometry(D.R, D.seed, D.water), createWaterMaterial({ shallow: 0x80784a, deep: 0x34402c, scale: 1.1 }));
   water.name = 'pond_water';
   water.receiveShadow = true;
   group.add(water);
 
-  // Lotus pads only: the code-built flowers read as paper craft (reworked 5x), removed 26 Oct until a real CC0 model exists.
+  // Lotus pads only (bare, her call 3 Nov: a lotus comes later). Pads keep to open water, never up on the bank.
   const geos = [];
   for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
     const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
     for (let i = 0; i < 16; i++) {
       const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
-      const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6;
-      geos.push(lotusPadGeo(x, z, size, rnd() * 6.28, i % 3 ? 0x4a6e30 : 0x5d8238, (i % 5) * 0.012));
+      const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6, rot = rnd() * 6.28;
+      if (r + size > D.R * blobEdge(Math.atan2(-z, x), D.seed) * 0.92) continue;
+      geos.push(lotusPadGeo(x, z, size, rot, i % 3 ? 0x4a6e30 : 0x5d8238, (i % 5) * 0.012));
     }
   }
   const lotus = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))), vcMat({ roughness: 0.8 }));
   lotus.material.side = THREE.DoubleSide;
   lotus.castShadow = false;
   lotus.receiveShadow = true;
+  lotus.position.y = D.water - 0.06; // same offset to the water the pads had when the pond was flat
   group.add(lotus);
   group.position.set(position.x, 0, position.z);
   return group;
@@ -594,25 +611,27 @@ function reedClump(geos, cx, cz, rnd) {
 export function createJohad(position) {
   const group = new THREE.Group();
   group.name = 'johad';
-  let sr = 5;
-  const rr = () => { sr = (sr * 16807) % 2147483647; return sr / 2147483647; };
-  const rim = new THREE.Mesh(mergeGeometries(shoreGeos(5.4, 4.1, rr)), vcMat({ roughness: 1 }));
-  rim.receiveShadow = true;
-  rim.userData.colliderBoxes = solidBoxes(position, discSolids(0, 0, 4.6, 0.9));
-  group.add(rim);
-  const water = new THREE.Mesh(blobWaterGeometry(5.4, 4.1, 0.06, 6, 28), createWaterMaterial({ shallow: 0x77704a, deep: 0x3a4630, scale: 1.4 }));
-  water.name = 'johad_water';
-  water.receiveShadow = true;
-  group.add(water);
+  const D = BLOB_DIPS.johad;
   const geos = [];
   let s = 23;
   const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
-  // Reed clumps along the shore, and a flat stone where kids stand to throw pitthu.
+  // Reed clumps on the lower bank and in the shallows, each standing on the dug bank (src/dips.js), and a flat
+  // stone at the top of the bank where kids stand to throw pitthu.
   for (let i = 0; i < 14; i++) {
-    const a = rnd() * Math.PI * 2, r = 5.8 + rnd() * 1.2;
-    reedClump(geos, Math.cos(a) * r, Math.sin(a) * r, rnd);
+    const a = rnd() * Math.PI * 2, u = 0.95 + rnd() * 0.22, e = D.R * blobEdge(a, D.seed) * u;
+    const x = Math.cos(a) * e, z = -Math.sin(a) * e, n0 = geos.length;
+    reedClump(geos, x, z, rnd);
+    const y = dipHeightRaw(position.x + x, position.z + z) - 0.05;
+    for (let k = n0; k < geos.length; k++) geos[k].translate(0, y, 0);
   }
-  geos.push(bake(new THREE.BoxGeometry(1.0, 0.22, 0.7), at(-7.0, 0.11, 1.5, 0.5), 0x948c7a));
+  geos.push(bake(new THREE.BoxGeometry(1.0, 0.3, 0.7), at(-7.0, dipHeightRaw(position.x - 7.0, position.z + 1.5) + 0.08, 1.5, 0.5), 0x948c7a));
+  const rim = createDipBank('johad');
+  rim.userData.colliderBoxes = solidBoxes(position, blobSolids('johad', 0.88, 0.9));
+  group.add(rim);
+  const water = new THREE.Mesh(blobWaterGeometry(D.R, D.seed, D.water, 6, 28), createWaterMaterial({ shallow: 0x77704a, deep: 0x3a4630, scale: 1.4 }));
+  water.name = 'johad_water';
+  water.receiveShadow = true;
+  group.add(water);
   const props = new THREE.Mesh(mergeGeometries(geos), vcMat({ side: THREE.DoubleSide }));
   props.receiveShadow = true;
   group.add(props);

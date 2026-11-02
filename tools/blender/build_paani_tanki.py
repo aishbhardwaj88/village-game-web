@@ -17,8 +17,8 @@ OUT = os.path.join(ROOT, 'tmp', 'paani_tanki_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 rnd = random.Random(31)
 add = kit.add
-CONC = 0xB1B7B8
-CONC_D = 0x9CA2A3
+CONC = 0x8A8B8A   # 3 Nov retint: whole concrete palette scaled to the median of MAIN_paani_tanki_front_isometric.png tank (was B1B7B8 9CA2A3 AAB0B0 ACB2B2 B5BDBD)
+CONC_D = 0x7A7B7A
 IRONC = 0x4A4D52
 R_COL = 4.2
 H_COL = 16.0
@@ -49,20 +49,20 @@ for sg in (-1, 1):
 cols = [(R_COL * math.cos(i * math.pi / 3 + math.pi / 6), R_COL * math.sin(i * math.pi / 3 + math.pi / 6)) for i in range(6)]
 for i, (cx, cz) in enumerate(cols):
     conc(cyl('col_base', cx, cz, 0, 0.9, 0.62, 0.55, 14), CONC_D)
-    conc(cyl('col', cx, cz, 0.9, H_COL, 0.46, 0.44, 14), CONC if i % 2 else 0xAAB0B0)
+    conc(cyl('col', cx, cz, 0.9, H_COL, 0.46, 0.44, 14), CONC if i % 2 else 0x858584)
 for hh in (5.3, 10.6, 15.6):
     for i in range(6):
         a, b = cols[i], cols[(i + 1) % 6]
         conc(limb('beam', (a[0], a[1], hh), (b[0], b[1], hh), 0.42, 0.5), CONC)
 # the gallery slab + tank + dome
 G0 = H_COL
-conc(cyl('gallery', 0, 0, G0, G0 + 0.7, 5.0, 5.0, 32), 0xACB2B2)
+conc(cyl('gallery', 0, 0, G0, G0 + 0.7, 5.0, 5.0, 32), 0x868785)
 conc(cyl('gallery_under', 0, 0, G0 - 0.5, G0, 4.5, 4.9, 32), CONC_D)
-conc(lathe('tank', 0, 0, [(3.5, G0 + 0.7), (3.5, G0 + 0.85), (3.5, G0 + 1.5), (3.5, G0 + 2.5), (3.5, G0 + 3.5), (3.5, G0 + 4.5), (3.5, G0 + 5.5), (3.5, G0 + 6.4), (3.5, G0 + 6.7), (3.6, G0 + 6.75), (3.6, G0 + 6.9), (0.0, G0 + 6.9)], seg=40), 0xB5BDBD)
+conc(lathe('tank', 0, 0, [(3.5, G0 + 0.7), (3.5, G0 + 0.85), (3.5, G0 + 1.5), (3.5, G0 + 2.5), (3.5, G0 + 3.5), (3.5, G0 + 4.5), (3.5, G0 + 5.5), (3.5, G0 + 6.4), (3.5, G0 + 6.7), (3.6, G0 + 6.75), (3.6, G0 + 6.9), (0.0, G0 + 6.9)], seg=40), 0x8D8F8E)
 conc(lathe('dome', 0, 0, [(3.6, G0 + 6.9), (3.0, G0 + 7.45), (1.8, G0 + 7.85), (0.9, G0 + 8.0), (0.0, G0 + 8.0)], seg=40), 0xA8AEAE)
 # hatch + rail on the dome, lightning rod
 conc(cyl('hatch', 0, 0, G0 + 8.0, G0 + 8.45, 0.7, 0.7, 14), CONC)
-conc(lathe('hatch_dome', 0, 0, [(0.78, G0 + 8.45), (0.5, G0 + 8.7), (0.0, G0 + 8.8)], seg=14), 0xAAB0B0)
+conc(lathe('hatch_dome', 0, 0, [(0.78, G0 + 8.45), (0.5, G0 + 8.7), (0.0, G0 + 8.8)], seg=14), 0x858584)
 add('metal', limb('lrod', (0, 0, G0 + 8.8), (0, 0, G0 + 9.0 + 0.8), 0.04), 0x4A4C50)
 for k in range(8):
     a = k / 8 * math.tau
@@ -116,7 +116,7 @@ for f in range(3):
     # landing at the bottom of this flight (not at ground)
     if f < 2:
         lz0, lz1 = (z_b - 1.4, z_b) if z_b < z_a else (z_b, z_b + 1.4)
-        conc(wb('landing', SX - W / 2 - 0.05, SX + W / 2 + 0.05, lz0, lz1, h_bot - 0.2, h_bot, 0.01), 0xAAB0B0)
+        conc(wb('landing', SX - W / 2 - 0.05, SX + W / 2 + 0.05, lz0, lz1, h_bot - 0.2, h_bot, 0.01), 0x858584)
         for side in (-1, 1):
             add('metal', limb('land_rail', (SX + side * (W / 2), lz0, h_bot + 0.95), (SX + side * (W / 2), lz1, h_bot + 0.95), 0.045), IRONC)
         cur_z = lz0 if z_b < z_a else lz1
@@ -126,8 +126,8 @@ for f in range(3):
         else:
             cur_z = lz1
 # a landing slab at the top joining the gallery
-conc(wb('top_landing', SX - W / 2 - 0.05, SX + W / 2 + 0.05, zs, zs + 1.6, G0 + 0.45, G0 + 0.7, 0.01), 0xAAB0B0)
-conc(limb('top_bridge', (SX - W / 2, zs + 0.8, G0 + 0.55), (RR - 0.1, zs * 0.55, G0 + 0.55), 1.0, 0.25), 0xAAB0B0)
+conc(wb('top_landing', SX - W / 2 - 0.05, SX + W / 2 + 0.05, zs, zs + 1.6, G0 + 0.45, G0 + 0.7, 0.01), 0x858584)
+conc(limb('top_bridge', (SX - W / 2, zs + 0.8, G0 + 0.55), (RR - 0.1, zs * 0.55, G0 + 0.55), 1.0, 0.25), 0x858584)
 # pump room (brick, back-left)
 px0, px1, pz0, pz1 = -9.0, -5.8, -9.0, -6.2
 add('brick', wb('pump_room', px0, px1, pz0, pz1, 0, 2.7, 0.0))

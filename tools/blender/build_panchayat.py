@@ -17,7 +17,7 @@ import placekit as pk
 OUT = os.path.join(ROOT, 'tmp', 'panchayat_v2_raw.glb')
 kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
-WHITE = 0xF4F1EA
+WHITE = 0xFCFFFF   # 3 Nov retint: sampled from MAIN_panchayat_front_isometric.png parapet (was 0xF4F1EA), tmp/sample_tints.py
 TERRA = 0xB4583C
 DARK = 0x3A2A22
 X0, X1, Z0, Z1 = -7.0, 7.0, -10.0, 0.0
