@@ -1,68 +1,73 @@
-# THE QUEUE, her answers of 3 Nov. Work top to bottom. `./tools/truth.sh` before any status.
+# TONIGHT, 3 Nov. Her playthrough notes are the whole queue. `docs/playtest/2026-11-03-her-notes.md`
 
-She answered the open list. Decisions below are FINAL. Never wait on her.
-
----
-
-## 1. LOAD TIME UNDER 10 SECONDS. HARD REQUIREMENT. START HERE.
-
-Her words: "Load time 15.2 seconds is too much. It should not cross 10. You have to
-optimize it without compromising on the quality. Also remember, once the characters come
-in, this load time will increase even more."
-
-So 10 s is not the target, it is the ceiling, and characters still have to fit under it.
-Aim for **8 s**, to leave the characters room.
-
-Quality is NOT negotiable. Do these in order, measure after each, stop when under 8 s:
-- **KTX2 / Basis compressed textures** on ground, walls and roofs. NEVER on signboards or
-  anything with lettering. This is the big one: textures are most of the 12.5 MB.
-  Install the compressor if it is missing (`toktx` or `@gltf-transform/cli`).
-- **Load Play-critical models first, stream the rest.** The player cannot see the brick
-  kiln at spawn. Anything beyond the first zone loads after Play unlocks.
-- **One shared texture set, already started in `sharedTextures.js`.** Finish it: no model
-  carries its own copy of a library texture.
-- **Drop duplicate geometry** between LOD and full models where the LOD is never seen.
-Report the measured seconds after each step, not an estimate.
-
-## 2. USE THE HOUSE KIT THROUGHOUT THE VILLAGE.
-
-Her words: "the house kit was built for a reason. You have to use it throughout the
-village at appropriate places."
-The 8 house types exist and are unused. Put them through the village wherever a house
-belongs. Vary type, turn and tint per instance so no two neighbours read as copies.
-Instance them, do not duplicate meshes. Keep the mission spots and doorstep props that
-are tied to the existing rows working.
-
-## 3. EVERY PLACE GETS A PATH TO IT.
-
-Her words: "all places need to have path to them. If path doesn't exist in map, you are
-supposed to add it yourself. Maybe it could be dirt track."
-Four have none today: family field, gaushala, mango baagh, mandi (36 to 69 m of open
-ground). Lay a dirt track to each. Then run the findability audit and lay a track to
-anything else it reports as stranded. Dirt tracks are cheap, do not blow the load budget.
-
-## 4. HOUSE ROWS VERSUS THE MAP FOOTPRINTS. Her call: whatever looks natural in play.
-
-Her words: "whatever looks good, whatever looks natural while someone is playing."
-The map's footprints are smaller than the existing rows. Do NOT force the rows to match
-the drawing. Make the street read like a real village street from eye level: no row
-straddling three footprints, no footprint left as a bald gap. Use the house kit (item 2)
-to fill gaps. Judge it from a walking camera, not from above.
-
-## 5. CANAL AND POND. Tech lead call: dig them for real, locally.
-
-She left this to Claude. Decision: **(a), real ground heights, but ONLY in a local dip
-around the pond, the johad and the canal.** Not a global terrain system.
-Reason: sunken water is what makes water read as water, and a local dip is geometry, not
-texture, so it costs almost nothing against the load budget that item 1 is fighting for.
-Banks slope in, water sits below the bank line, edges are irregular, never a clean oval.
-
-## 6. POND LOTUS: leave the pads bare. Her call, a lotus comes later.
+She is asleep. Never wait on her. A run with no game change is a failed run.
+Run `./tools/truth.sh` before any status. Measured rate is ~2 commits/hour, so about 16
+commits fit before morning. The list below is ordered so the most valuable land first.
 
 ---
 
-## WAITING ON HER, do not block on any of these
-- Tripo credits (no 3D characters until topped up)
-- Primary school: which of the two models the village keeps
-- Whether her map moves the culvert and field channel off the highway
-- Her eye on: the 15 rebuilt buildings, dairy/chaupal/tubewell, the trees
+## 1. KILL THE DUPLICATES. Bug, and it confused her. (her item 5)
+Two petrol pumps and two dharam kantas exist in the world.
+- Stop `createHighwayCluster` (src/farmSites.js) drawing its own pump and weighbridge.
+- Delete the two exact slot registrations in src/main.js (~lines 983, 988).
+- Keep only the map-placed v2 versions.
+- Add a build check: for any `X_v2.glb` that also has `X.glb`, FAIL the build if the old
+  one is still referenced in src/. This class of bug must not recur.
+
+## 2. THE CYCLE BECOMES THE DEFAULT. (her item 6)
+Her own answer to the village feeling too big, and far cheaper than moving 76 places.
+- Player spawns ON the cycle. One clear control to dismount and remount, named on screen
+  the first time.
+- About 3x walking speed. Must go everywhere the player can walk, no catching on kerbs.
+- Dismount cleanly for doors, narrow back lanes and anything needing precision.
+- All jobs, missions and NPC interactions still work.
+- **Then measure and report the new time to cross the village.** That number decides
+  whether the map still needs shrinking at all.
+
+## 3. ORIENTATION: MAKE IT READ AS A COMMUNITY. (her items 7 and 10, her headline note)
+The map move copied `turn_deg` mechanically and never asked what each building FACES.
+Fix by TURNING only, never moving, so it survives any later map shrink.
+- Fronts face fronts across a street. Verandah looks at verandah.
+- Every building faces shared space: street, square, chaupal, pond, well. Never a
+  neighbour's back, never a blank field.
+- Public buildings open onto the square: panchayat, temple, chaupal, school gate, shops.
+- Backs press against backs, or hide behind a compound wall.
+- **Named case: panchayat and the dark ghar (TV house) face each other's backs. Turn them.**
+- Work STREET BY STREET, not building by building. Judge from a walking camera at each
+  end and the middle of each street. Start with the square and the main street.
+- One shot per street as proof.
+
+## 4. REBUILD THE ROADS AS ROADS. (her items 1 and 3)
+- **No road or lane ends in open ground.** Each joins another road or ends at something
+  that explains it: field gate, well, shrine, compound gate.
+- **Round every edge.** Worn and irregular, never a straight cut. Vary the edge along it.
+- **One continuous surface per road.** No notches, no gaps, no overlapping rectangles.
+  Real merged junctions where roads meet.
+- **Transition band at the edge:** scuffed earth and thinning grass, not a hard line.
+- Kerbs follow the road edge round curves, or leave them out.
+- Judge from the player camera at standing height, never from above.
+
+## 5. RAISE THE SHOP SHUTTERS. (her item 2)
+Shops read as half shut. Raise the tin awning FIRST, then roll the shutters further up,
+so the whole shop front from counter to shelf top is visible at standing eye level.
+Every shuttered shop in the village, not just the bazaar row.
+
+## 6. ZERO MILESTONE AT THE SQUARE. (her item 8)
+Whitewashed plinth-and-pillar marker carrying the village name, with the Indian flag
+(reuse the existing flagpole, do not build a second kind).
+- Hindi अमराई खेड़ा bold and larger on top, English "Amrai Kheda" below, not bold,
+  never under 55 percent of the Hindi cap height. The CLAUDE.md signboard rule.
+- Lime washed and weathered: chipped at the base, rain stained. Never clean.
+- Place it where the square is most open and visible from the lanes feeding in.
+
+## 7. IF TIME REMAINS: measure the village for her. (her items 4 and 9)
+Walking and cycling time between neighbouring places, the worst gaps, and built footprint
+against total area. Put it in docs/NEEDS_YOU.md. Do NOT move anything for this.
+
+---
+
+## DO NOT START TONIGHT
+- Shrinking the map. It waits for her decision after she tries the cycle.
+- Anything new from the map: bazaar units, haveli courtyard, mango trees.
+- Load time work. It is a real ceiling but nothing above makes it worse; keep an eye on
+  the asset budget and report if any item pushes it.
