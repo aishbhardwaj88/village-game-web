@@ -380,7 +380,7 @@ async function main() {
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see
   // src/interactions.js's registerShopBuy doc comment).
-  registerShopBuy('general_store', new THREE.Vector3(STORE_POS.x - 2.5, 0, STORE_POS.z));
+  registerShopBuy('general_store', new THREE.Vector3(STORE_POS.x - 2.5, 0, STORE_POS.z + 1.4));
   registerShopBuy('tea_stall', new THREE.Vector3(TEA_SHOP_POS.x + 2.5, 0, TEA_SHOP_POS.z));
   // NEW_SHOPS_ROT = +PI/2 faces +X (forward=(-sin(yaw),0,-cos(yaw)), this
   // game's convention — see tools/trolley-drive-test.js's own derivation),
@@ -637,7 +637,8 @@ async function main() {
     childNpc,
     [
       { ...houseAt(0, 9) },
-      { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 13 }, // south of the house compound, clear of its walls and north of the map's South houses (z 57+)
+      { x: HOUSE_CENTER.x - 20, z: 55.3 },
+      { x: HOUSE_CENTER.x - 40, z: 55.3 }, // south of the house compound and the kirana goods yard, north of the map's South houses (z 57+)
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 }, // out and home by the corridor between the South houses' row and the turned anganwadi playground (probed collider gaps, 2 Nov)
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },
@@ -653,8 +654,9 @@ async function main() {
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 },
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 },
-      { x: HOUSE_CENTER.x - 47, z: HOUSE_CENTER.z + 15 },
-      { x: HOUSE_CENTER.x - 40, z: HOUSE_CENTER.z + 15 },
+      { x: HOUSE_CENTER.x - 47, z: 55.3 },
+      { x: HOUSE_CENTER.x - 40, z: 55.3 },
+      { x: HOUSE_CENTER.x - 20, z: 55.3 },
     ],
     { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
@@ -1588,7 +1590,7 @@ async function main() {
     const GOODS = { x: 14.5 + 600, z: 48.1 };
     const GOODS_SOLIDS = [{ x: -4.5, z: 0, w: 0.3, d: 10.44 }, { x: 4.5, z: 0, w: 0.3, d: 10.44 }, { x: -3.095, z: 5.22, w: 3.11, d: 0.3 }, { x: 3.075, z: 5.22, w: 3.15, d: 0.3 }];
     // NOT built: its presence at the map spot makes the old general store's buy point (620, 47.4) unreachable on foot (check 6), see NEEDS_YOU.
-    //GOODS zoneManager.register('goods_yard', { ...GOODS, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('goods_yard', 'goods_yard.glb', GOODS, GOODS_SOLIDS), -99.7 * Math.PI / 180) }); // the map's kirana goods yard (1 Nov plan, turn 99.7); its store-side wall has no collider because the old general store's buy point sits on that wall line
+    zoneManager.register('goods_yard', { ...GOODS, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('goods_yard', 'goods_yard.glb', GOODS, GOODS_SOLIDS), -99.7 * Math.PI / 180) }); // the map's kirana goods yard (1 Nov plan, turn 99.7); its store-side wall has no collider because the old general store's buy point sits on that wall line
     const GHER = { x: 38 + 600, z: 41.5 };
     const GHER_SOLIDS = [{ x: -4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: 4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: -3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 0, z: 3.82, w: 9.3, d: 0.3 }];
     zoneManager.register('gher_yard', { ...GHER, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('gher_yard', 'gher_yard.glb', GHER, GHER_SOLIDS), -5 * Math.PI / 180) }); // the map's family cattle and tractor yard (1 Nov plan, turn 5)
