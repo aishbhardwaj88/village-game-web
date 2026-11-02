@@ -46,7 +46,7 @@ const VILLAGER_LOOPS = [
   [bazaarXZ(BAZAAR_WEST_X + 8, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 18, BAZAAR_FRONT_Z - 3.5)],
   [bazaarXZ(BAZAAR_WEST_X + 20, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 32, BAZAAR_FRONT_Z - 3.5)],
   [bazaarXZ(BAZAAR_EAST_X - 4, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_EAST_X - 16, BAZAAR_FRONT_Z - 3.5)],
-  [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 2.5 }, { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 6 }],
+  [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 0.7 }, { x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z + 1.8 }], // stays inside the map's square tea stall compound wall (z +1.2..+7)
   // village lane between the house and the school: neighbours out on errands
   [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 10.6 }], // shortened: the map's gher yard walls stand from z LH.z+12
   [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],

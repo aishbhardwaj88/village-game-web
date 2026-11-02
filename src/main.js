@@ -27,6 +27,7 @@ import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY
 import { WALKABLE_RECTS } from './walkable.js';
 import { pt, localPt, ANCHORS, OLD_SHIFT } from './anchors.js';
 import { turnSiteGroup } from './turn.js';
+import { MAP_COMPOUND_WALLS, createMapCompoundWall } from './mapCompoundWalls.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
@@ -1606,6 +1607,11 @@ async function main() {
       const at = { x: x + 600, z };
       zoneManager.register(n, { ...at, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite(n, n + '.glb', at, solids), -deg * Math.PI / 180) });
     }
+    // the map's roadside-place compound walls (1 Nov plan, compound_walls): low walls with the map's gate gaps, colliders per 2 m.
+    MAP_COMPOUND_WALLS.forEach((entry, i) => {
+      const xs = entry.lines.flat(); const at = { x: xs.reduce((s, p) => s + p[0], 0) / xs.length + 600, z: xs.reduce((s, p) => s + p[1], 0) / xs.length };
+      zoneManager.register(`map_wall_${i}`, { ...at, buildRadius: 50, teardownRadius: 65, build: () => createMapCompoundWall(entry, createBoundaryWall, THREE).group });
+    });
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
