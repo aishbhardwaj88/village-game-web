@@ -12,7 +12,7 @@ export const MAP_PLAN = {
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
   yard_chaupal: { x: 23.5, z: 28.5, turn: 5 },
   yard_paani_tanki: { x: -44.9, z: -90.3, turn: 3 },
-  yard_panchayat: { x: -50, z: 42.3, turn: 5 },
+  yard_panchayat: { x: -50, z: 42.3, turn: -85 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
   yard_post: { x: -52.2, z: 65.4, turn: -11.2 },
   yard_tvhouse: { x: -47.3, z: 21.8, turn: 5 },
   yard_dairy: { x: -95.1, z: -37.4, turn: -7 },
