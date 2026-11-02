@@ -1,5 +1,6 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { sharedTexturePlugin } from './sharedTextures.js';
 
 let sharedLoader = null;
 
@@ -13,6 +14,7 @@ export function getGLTFLoader() {
   if (!sharedLoader) {
     sharedLoader = new GLTFLoader();
     sharedLoader.setMeshoptDecoder(MeshoptDecoder);
+    sharedLoader.register(sharedTexturePlugin); // older models ship without their library textures (tools/strip-textures.mjs --relink)
     const loadAsync = sharedLoader.loadAsync.bind(sharedLoader);
     sharedLoader.loadAsync = (...a) => loadAsync(...a).then((g) => { modelLoads.count++; return g; });
     const load = sharedLoader.load.bind(sharedLoader);
