@@ -1,3 +1,5 @@
+**2026-11-02 (wayfinding on the map):** src/wayfinding.js SIGNPOSTS_ON_MAP, 8 posts (30 boards) on the map cross/main/ring roads. Build passed, regression-check 22/22, findability 0 of 40. collision-test 1 failed: the same cart box at (-80,71) as before, far from this change. Not eyeballed. NEXT: screenshot the posts; the notice board is still at its old spot.
+
 **2026-11-02 (kerbs verified, docs only):** the kerb/drain commit a668fb0 was never regression-checked; now run on HEAD: build ALL PASSED, collision-test 7680 static solids 276 NPC legs 0 failed, regression-check 22/22, no regressions. No unbuilt family in PARALLEL.md.
 
 **2026-11-02 (map gates):** src/mapGates.js: To-the-city boards at both highway ends, 40 back-lane mouth posts, colliders. Build ALL PASSED, collision-test 7677 solids 0 failed, regression-check 22/22. Shots docs/shots/map-gates-2026-11-02, no console errors. NEXT: kerbs and drains along the map roads.

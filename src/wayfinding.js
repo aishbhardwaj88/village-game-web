@@ -28,20 +28,21 @@ const PAPER = '#efe4c8';
  * Signposts. `ry` is the way the boards face (their normal is (sin ry, cos ry)); `to` lists PLACES ids top to bottom.
  * Positions sit beside the lane, clear of the carriageway.
  */
-const SIGNPOSTS_AT_OLD_SPOTS = [
-  { id: 'house_gate', x: -54.5, z: 49.5, ry: Math.PI, to: ['school', 'bazaar', 'temple', 'teastall'] },
-  { id: 'temple_fork', x: -12, z: 58.5, ry: -Math.PI / 2, to: ['temple', 'canal', 'house', 'baagh', 'field'] },
-  { id: 'east_gali', x: -2.6, z: 78.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
-  { id: 'east_far_a', x: 35, z: 73.5, ry: -Math.PI / 2, to: ['tvhouse', 'chemist', 'manihari', 'sabzi', 'johad'] },
-  { id: 'east_far_b', x: 75, z: 73.5, ry: -Math.PI / 2, to: ['masjid', 'jain', 'maidan', 'highway'] },
-  { id: 'school_lane', x: -45.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela', 'cane'] },
-  { id: 'west_gali', x: -81.5, z: 41, ry: Math.PI, to: ['pond', 'dairy', 'jalebi', 'gaushala'] },
-  // Lane head: the west gali ends at (-84,21) with jalebi 26 m and gaushala 69 m beyond it; faces south for walkers arriving up the lane.
-  { id: 'west_gali_head', x: -82.3, z: 24, ry: 0, to: ['jalebi', 'gaushala'] },
+const SIGNPOSTS_ON_MAP = [
+  // Map coordinates (docs/layout/village-plan-positions-2026-11-01.json), 5-6 m off the road centreline, clear of the kerb.
+  // Each post faces the walker it is meant for: ry 0 reads from the north, PI from the south, -PI/2 from the east, PI/2 from the west.
+  { id: 'cross_west', x: -45, z: 11, ry: Math.PI / 2, to: ['pond', 'cane', 'gaushala', 'masjid'] },
+  { id: 'cross_east', x: 45, z: 19, ry: -Math.PI / 2, to: ['johad', 'jain', 'health', 'mela'] },
+  { id: 'main_north', x: 2.5, z: -30, ry: 0, to: ['haveli', 'mandi', 'highway', 'tvhouse'] },
+  { id: 'main_south', x: 9, z: 60, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'gilli'] },
+  { id: 'chowk_north', x: -6, z: -8, ry: Math.PI, to: ['bazaar', 'chemist', 'manihari', 'teastall'] },
+  { id: 'chowk_south', x: 15, z: 24, ry: 0, to: ['sabzi', 'house', 'dairy', 'jalebi'] },
+  { id: 'ring_west', x: -68, z: 5, ry: -Math.PI / 2, to: ['temple', 'canal', 'field', 'baagh'] },
+  { id: 'ring_east', x: 69, z: -10, ry: Math.PI / 2, to: ['gurukul', 'maidan'] },
 ];
 
-// The old village rode east with everything else (anchors.js OLD_SHIFT); the posts and the board ride with it.
-const SIGNPOSTS = SIGNPOSTS_AT_OLD_SPOTS.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }));
+// The map rides east by MAP_SHIFT as one piece (anchors.js OLD_SHIFT); the posts and the board ride with it.
+const SIGNPOSTS = SIGNPOSTS_ON_MAP.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }));
 const NOTICE = { x: -49.2 + OLD_SHIFT.x, z: 8.5 + OLD_SHIFT.z, ry: -Math.PI / 2 };
 const NOTICE_LIST = ['school', 'bazaar', 'post', 'temple', 'canal', 'field', 'highway', 'mandi'];
 
