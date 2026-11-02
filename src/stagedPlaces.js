@@ -17,7 +17,7 @@ export const STAGED_PLACES = [
     boards: [{ id: 'gurukul_v2', x: 0, y: 4.93, z: 22.66, w: 4.8 }] },
   { id: 'yard_dairy', zone: 'dudh_dairy_v2', model: 'dudh_dairy_v2', en: 'Yard 3: Dudh dairy', hi: 'यार्ड 3: दूध डेयरी', kind: 'shop', radius: 20, build: 50, front: 6,
     cattle: [{ x: 4.6, z: -3.4, rotationY: Math.PI }, { x: 7.2, z: -3.4, rotationY: Math.PI - 0.15, buffalo: true }],
-    boards: [{ id: 'dairy', x: -5.0, y: 3.3, z: -0.4, w: 4.4 }, { id: 'dairy_slogan', x: -8.56, y: 2.3, z: -3.85, w: 2.2, ry: -Math.PI / 2 }] },
+    boards: [{ id: 'dairy', x: -5.0, y: 3.3, z: -0.4, w: 4.4 }, { id: 'dairy_slogan', x: -8.56, y: 2.3, z: -3.68, w: 2.55, ry: -Math.PI / 2 }] },
   { id: 'yard_bus_adda', zone: 'bus_adda_v2', model: 'bus_adda_v2', en: 'Yard 4: Bus adda', hi: 'यार्ड 4: बस अड्डा', kind: 'bazaar', radius: 16, build: 45, front: 5,
     boards: [{ id: 'bus_adda', x: -9.08, y: 2.35, z: 4.1, w: 1.4, ry: Math.PI / 2 }, { id: 'bus_adda', x: -9.12, y: 2.35, z: 4.1, w: 1.4, ry: -Math.PI / 2 }] },
   { id: 'yard_chaupal', zone: 'chaupal_v2', model: 'chaupal_v2', en: 'Yard 5: Peepal chaupal', hi: 'यार्ड 5: पीपल चौपाल', kind: 'tree', radius: 20, build: 40, front: 10, boards: [] },
