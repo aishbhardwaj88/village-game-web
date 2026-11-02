@@ -1,3 +1,25 @@
+# 2 Nov 15:40. THREE TURNS LEFT. ONE RUN. DO THEM TOGETHER.
+
+Claude audited every anchor against `docs/layout/village-plan-positions-2026-11-01.json`.
+Result: all 34 mapped anchors are within 2 m of their map position. Turns are done
+EXCEPT these three, which have no turn applied anywhere in the code:
+
+- **chowk: 5 deg**
+- **eastgali: 4.6 deg**
+- **westgali: -11 deg**
+
+Do all three in ONE run with `turnSiteGroup`, the same way bazaar, temple and mela were
+done. Turn each as one group about its own anchor, including its furniture, props, NPC
+waypoints and any job marker.
+
+NOTE, do not get this wrong: halwai is ALREADY turned 95 deg via `HALWAI_YAW` in
+src/village.js, not via `anchors.ry`. Do NOT add ry to halwai, it would double the turn.
+
+After the three turns: build, collision test, regression check, findability audit,
+then push. That closes the map move.
+
+---
+
 # HARD DEADLINE: COMPLETE BEFORE SHE WAKES, 2 Nov MORNING IST.
 
 She is not playing tonight. She checks in the morning and it must be DONE.
