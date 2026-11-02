@@ -9,12 +9,13 @@ import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
 import { PLACES } from './freeRoam.js';
 import { roadAt } from './eastRoad.js';
+import { OLD_SHIFT } from './anchors.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 // Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
 const HIGHWAY_STONES = [
-  { x: 196.6, z: -18, ry: Math.PI, to: 'mandi', back: 'chowk' },
-  { x: 196.6, z: 82, ry: 0, to: 'mandi', back: 'chowk' },
+  { x: 196.6 + OLD_SHIFT.x, z: -18, ry: Math.PI, to: 'mandi', back: 'chowk' },
+  { x: 196.6 + OLD_SHIFT.x, z: 82, ry: 0, to: 'mandi', back: 'chowk' },
 ];
 const SIDE = 3.4; // stands this far to the right of the walker, clear of the carriageway
 

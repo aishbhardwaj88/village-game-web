@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLACES } from './freeRoam.js';
+import { OLD_SHIFT } from './anchors.js';
 import { drawBilingual, hiFont, enFont } from './signPaint.js';
 
 const CELL_W = 1024;
@@ -27,19 +28,21 @@ const PAPER = '#efe4c8';
  * Signposts. `ry` is the way the boards face (their normal is (sin ry, cos ry)); `to` lists PLACES ids top to bottom.
  * Positions sit beside the lane, clear of the carriageway.
  */
-const SIGNPOSTS = [
+const SIGNPOSTS_AT_OLD_SPOTS = [
   { id: 'house_gate', x: -54.5, z: 49.5, ry: Math.PI, to: ['school', 'bazaar', 'temple', 'teastall'] },
   { id: 'temple_fork', x: -12, z: 58.5, ry: -Math.PI / 2, to: ['temple', 'canal', 'house', 'baagh', 'field'] },
   { id: 'east_gali', x: -2.6, z: 78.7, ry: -Math.PI / 2, to: ['highway', 'health', 'haveli', 'gurukul'] },
   { id: 'east_far_a', x: 35, z: 73.5, ry: -Math.PI / 2, to: ['tvhouse', 'chemist', 'manihari', 'sabzi', 'johad'] },
   { id: 'east_far_b', x: 75, z: 73.5, ry: -Math.PI / 2, to: ['masjid', 'jain', 'maidan', 'highway'] },
-  { id: 'school_lane', x: -41.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela', 'cane'] },
+  { id: 'school_lane', x: -45.5, z: 98, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'mela', 'cane'] },
   { id: 'west_gali', x: -81.5, z: 41, ry: Math.PI, to: ['pond', 'dairy', 'jalebi', 'gaushala'] },
   // Lane head: the west gali ends at (-84,21) with jalebi 26 m and gaushala 69 m beyond it; faces south for walkers arriving up the lane.
   { id: 'west_gali_head', x: -82.3, z: 24, ry: 0, to: ['jalebi', 'gaushala'] },
 ];
 
-const NOTICE = { x: -49.2, z: 8.5, ry: -Math.PI / 2 };
+// The old village rode east with everything else (anchors.js OLD_SHIFT); the posts and the board ride with it.
+const SIGNPOSTS = SIGNPOSTS_AT_OLD_SPOTS.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }));
+const NOTICE = { x: -49.2 + OLD_SHIFT.x, z: 8.5 + OLD_SHIFT.z, ry: -Math.PI / 2 };
 const NOTICE_LIST = ['school', 'bazaar', 'post', 'temple', 'canal', 'field', 'highway', 'mandi'];
 
 const byId = (id) => PLACES.find((p) => p.id === id);
