@@ -144,6 +144,7 @@ import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js'; // pond, j
 import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
+import { createZeroMilestone } from './zeroMilestone.js'; // zero milestone + flag at the village square (docs/PARALLEL.md item 6)
 import { createBazaarLife } from './bazaarLife.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -174,6 +175,8 @@ const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metr
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
 const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
 const MOVE_SPEED = 4.2; // m/s, walking pace
+const CYCLE_SPEED_MULT = 3; // the player starts on a cycle (3 Nov): C gets off / on
+let onCycle = true;
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
@@ -686,6 +689,7 @@ async function main() {
   // the bell at SCHOOL_CENTER.x-5,110 — src/village.js's school_compound yard
   // spans x:[-65,-35] z:[94,118]).
   scene.add(createFlagpoleProp({ ...schoolPt(0, -8) }));
+  scene.add(createZeroMilestone());
 
 
   // Second errand (task 4) — the teacher (a fixed interaction point, like maaNpc/
@@ -2153,7 +2157,7 @@ async function main() {
     { const hp = houseAt(1.5, 4.5); player.position.set(hp.x, 0, hp.z); }
     ensureSideJobs(); // the ten side jobs, built the first time free roam starts (zero cost during the story)
     updateObjective();
-    freeRoam.toast('The afternoon is yours. Look around the village.', 'दोपहर तुम्हारी है। गाँव में घूमो।', 5200);
+    freeRoam.toast('The afternoon is yours. You are on your cycle: press C to get off or on.', 'दोपहर तुम्हारी है। साइकिल पर हो: C दबाकर उतरो या चढ़ो।', 6500);
   }
 
   function showEndCard(step) {
@@ -2634,6 +2638,10 @@ async function main() {
     onShowTasks: () => freeRoam.openTasks(),
   });
   window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) {
+      onCycle = !onCycle;
+      freeRoam.toast(onCycle ? 'On the cycle. Press C to get off.' : 'On foot. Press C to get back on the cycle.', onCycle ? 'साइकिल पर हो। उतरने के लिए C दबाओ।' : 'पैदल हो। साइकिल पर चढ़ने के लिए C दबाओ।', 3000);
+    }
     if (e.code === 'KeyT' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) night.toggle();
     if (e.code !== 'KeyN' || !started || e.repeat) return;
     if (freeRoam.isOpen()) freeRoam.closeNotebook();
@@ -2865,7 +2873,7 @@ async function main() {
         // Structural fix (playtest, item 2) — swept resolveMove(), same as every
         // other moving body, instead of moving the full step then resolving only
         // the endpoint.
-        movePlayerBy(moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt);
+        movePlayerBy(moveDir.x * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt, moveDir.z * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
         audio.setSurface(surfaceAt(player.position.x, player.position.z));
 

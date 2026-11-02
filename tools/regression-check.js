@@ -495,6 +495,8 @@ async function main() {
       school: { x: 560, z: 90.8, from: { dx: 6.5, dz: -1 }, yaw: Math.PI / 2 }, // the (turned) school's north yard gate on the 1 Nov map (schoolPt(0,-18), src/village.js), walked at from the east along the child's corridor (2 Nov)
       field: { x: 20, z: -20, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // FIELD_CENTER, src/field.js
     };
+    // The player starts on the cycle (3x speed, 3 Nov); this check measures walking, so step off first.
+    await page.keyboard.press('KeyC');
     for (const [name, target] of Object.entries(LANDMARKS)) {
       const before = await page.evaluate(
         ({ x, z, from, yaw }) => {

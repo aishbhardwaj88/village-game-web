@@ -416,12 +416,14 @@ def build_shop():
     ox0, ox1 = SH_X0 + jamb, SH_X1 - jamb
     for nm, a, b in (('fj_l', SH_X0, ox0), ('fj_r', ox1, SH_X1)):
         add('plaster', wb(nm, a, b, SH_Z1 - T, SH_Z1, 0, wall_h, 0.0), WHITE)
-    add('plaster', wb('lintel', SH_X0, SH_X1, SH_Z1 - T, SH_Z1, 2.7, wall_h, 0.0), WHITE)
-    add('metal', wb('shutter_box', ox0, ox1, SH_Z1 - T - 0.02, SH_Z1 - T + 0.2, 2.55, 2.95, 0.02), 0x8A8F94)
+    # 3 Nov (her item 2, "shops read as half shut"): opening top 2.7 -> 2.98 m (just under the board edge), rolled shutter bottom 2.55 -> 2.85 m
+    sb = 2.85
+    add('plaster', wb('lintel', SH_X0, SH_X1, SH_Z1 - T, SH_Z1, 2.98, wall_h, 0.0), WHITE)
+    add('metal', wb('shutter_box', ox0, ox1, SH_Z1 - T - 0.02, SH_Z1 - T + 0.2, sb, sb + 0.4, 0.02), 0x8A8F94)
     for k in range(10):    # ribbed rolled-up shutter: ridges
-        add('metal', wb('shutter_rib', ox0 + 0.1, ox1 - 0.1, SH_Z1 - T - 0.03, SH_Z1 - T - 0.01, 2.58 + k * 0.035, 2.6 + k * 0.035, 0.0), 0x9EA3A8)
-    add('metal', wb('guide_l', ox0, ox0 + 0.07, SH_Z1 - T - 0.02, SH_Z1 - T + 0.1, 0, 2.55, 0.0), 0x8A8F94)
-    add('metal', wb('guide_r', ox1 - 0.07, ox1, SH_Z1 - T - 0.02, SH_Z1 - T + 0.1, 0, 2.55, 0.0), 0x8A8F94)
+        add('metal', wb('shutter_rib', ox0 + 0.1, ox1 - 0.1, SH_Z1 - T - 0.03, SH_Z1 - T - 0.01, sb + 0.03 + k * 0.035, sb + 0.05 + k * 0.035, 0.0), 0x9EA3A8)
+    add('metal', wb('guide_l', ox0, ox0 + 0.07, SH_Z1 - T - 0.02, SH_Z1 - T + 0.1, 0, sb, 0.0), 0x8A8F94)
+    add('metal', wb('guide_r', ox1 - 0.07, ox1, SH_Z1 - T - 0.02, SH_Z1 - T + 0.1, 0, sb, 0.0), 0x8A8F94)
     # blank cream board over the opening (text is painted in-game over it)
     add('plaster', wb('board', SH_X0 + 1.0, SH_X1 - 1.0, SH_Z1 + 0.0, SH_Z1 + 0.08, 3.05, 3.55, 0.0), 0xEFE3BE)
     for nm, a, b, h0, h1 in (('t', SH_X0 + 0.96, SH_X1 - 0.96, 3.55, 3.6), ('b', SH_X0 + 0.96, SH_X1 - 0.96, 3.0, 3.05), ('l', SH_X0 + 0.96, SH_X0 + 1.0, 3.0, 3.6), ('r', SH_X1 - 1.0, SH_X1 - 0.96, 3.0, 3.6)):

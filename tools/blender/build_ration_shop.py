@@ -55,12 +55,14 @@ wall_z(X1 - T, X1, -5.0 + T, Z1, [(-3.0, -2.0, 1.2, 2.4)])                      
 # front: two jambs, lintel, rolled shutter box, opening 5.0 wide
 add('plaster', wb('f_jl', X0, X0 + 0.5, Z1 - T, Z1, 0, H, 0.0), MUST)
 add('plaster', wb('f_jr', X1 - 0.5, X1, Z1 - T, Z1, 0, H, 0.0), MUST)
-add('plaster', wb('f_lin', X0, X1, Z1 - T, Z1, 3.0, H, 0.0), MUST)
-add('metal', wb('shutter_box', X0 + 0.45, X1 - 0.45, Z1 - T - 0.05, Z1 + 0.35, 2.55, 3.05, 0.03), 0x7C8186)
-for k in range(9):
-    add('metal', wb('shutter_rib', X0 + 0.5, X1 - 0.5, Z1 + 0.34, Z1 + 0.37, 2.6 + k * 0.05, 2.63 + k * 0.05, 0.0), 0x8A8F94)
+# 3 Nov (her item 2, "shops read as half shut"): opening top 3.0 -> 3.3 m, rolled shutter bottom edge 2.55 -> 2.95 m
+SB = 2.95
+add('plaster', wb('f_lin', X0, X1, Z1 - T, Z1, 3.3, H, 0.0), MUST)
+add('metal', wb('shutter_box', X0 + 0.45, X1 - 0.45, Z1 - T - 0.05, Z1 + 0.35, SB, 3.4, 0.03), 0x7C8186)
+for k in range(8):
+    add('metal', wb('shutter_rib', X0 + 0.5, X1 - 0.5, Z1 + 0.34, Z1 + 0.37, SB + 0.05 + k * 0.05, SB + 0.08 + k * 0.05, 0.0), 0x8A8F94)
 for sx in (X0 + 0.5, X1 - 0.5):
-    add('metal', wb('guide', sx - 0.04, sx + 0.04, Z1 - 0.05, Z1 + 0.1, 0, 2.55, 0.0), 0x6C7074)
+    add('metal', wb('guide', sx - 0.04, sx + 0.04, Z1 - 0.05, Z1 + 0.1, 0, SB, 0.0), 0x6C7074)
 # dark brown base band + roof line
 for (a, b, c, d) in ((X0 - 0.02, X1 + 0.02, Z1 - T - 0.03, Z1 + 0.03), (X0 - 0.03, X1 + 0.03, -5.03, -5.0 + T)):
     add('plinth', wb('band', a, b, c, d, 0, 0.85, 0.0), BROWN)

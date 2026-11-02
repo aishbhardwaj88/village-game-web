@@ -29,7 +29,8 @@ TRADES = ['kirana', 'sabzi', 'medical', 'tailor', 'barber', 'mobile', 'bangle', 
 # A1 wall variation (2026-10-23): limewash pink / mint units between the cream and the one soft-blue unit.
 WALL_COLOR = {1: 0xF2D4CC, 3: 0xD2E6D8, 6: 0xD2E6D8, 7: 0xF2D4CC}
 BLUE_UNITS = (4,)                   # unit 5 (barber) is soft blue in the reference; the rest cream
-OPEN_H = 2.35                       # shutter opening height
+OPEN_H = 2.9                        # shutter opening height (3 Nov playtest item 2: was 2.35, raised so the shop reads open from counter to shelf top at 1.6 m eye level)
+AW = 0.36                           # awning raise (3 Nov playtest item 2): front edge 2.84 -> 3.20 m, overrides LAYOUT.md's 2.8 m on her later instruction
 COUNTER_Z0, COUNTER_Z1 = -2.15, -1.65
 CZ = -1.9                           # counterZ in src/bazaar.js (frontZ + 0.6)
 BZ = 2.1                            # backInnerZ
@@ -131,13 +132,13 @@ def h_roof(k):
 
 def awning():
     # one continuous sloped corrugated-tin awning over the whole frontage, on diagonal metal brackets
-    kit.add('tin', prism_x('awning', -18.3, 18.3, [(FRONT + 0.02, 3.45), (FRONT - 1.82, 2.84), (FRONT - 1.82, 2.9), (FRONT + 0.02, 3.51)]))
-    kit.add('trim', wb('awning_fascia', -18.3, 18.3, FRONT - 1.86, FRONT - 1.78, 2.74, 2.92, 0.005))
+    kit.add('tin', prism_x('awning', -18.3, 18.3, [(FRONT + 0.02, 3.45 + AW), (FRONT - 1.82, 2.84 + AW), (FRONT - 1.82, 2.9 + AW), (FRONT + 0.02, 3.51 + AW)]))
+    kit.add('trim', wb('awning_fascia', -18.3, 18.3, FRONT - 1.86, FRONT - 1.78, 2.74 + AW, 2.92 + AW, 0.005))
     for k in range(9):
         x = bx(k)
-        kit.add('paint', limb('bracket_d', (x, FRONT - 0.02, 3.2), (x, FRONT - 1.7, 2.8), 0.045, 0.045), 0x30343A)
-        kit.add('paint', limb('bracket_h', (x, FRONT - 0.02, 2.85), (x, FRONT - 1.0, 2.82), 0.04, 0.04), 0x30343A)
-        kit.add('paint', limb('post', (x, FRONT - 1.76, 0.2), (x, FRONT - 1.76, 2.8), 0.08, 0.08), 0x30343A)
+        kit.add('paint', limb('bracket_d', (x, FRONT - 0.02, 3.2 + AW), (x, FRONT - 1.7, 2.8 + AW), 0.045, 0.045), 0x30343A)
+        kit.add('paint', limb('bracket_h', (x, FRONT - 0.02, 2.85 + AW), (x, FRONT - 1.0, 2.82 + AW), 0.04, 0.04), 0x30343A)
+        kit.add('paint', limb('post', (x, FRONT - 1.76, 0.2), (x, FRONT - 1.76, 2.8 + AW), 0.08, 0.08), 0x30343A)
 
 
 def shutters_and_counters():
@@ -146,14 +147,15 @@ def shutters_and_counters():
         col = SHUTTER[i]
         ow = UW - WT - 0.2
         # roller housing + rolled-up slats (in the trade colour) just under the header, guide rails down both jambs
-        kit.add('paint', wb('housing', c - ow / 2 - 0.05, c + ow / 2 + 0.05, FRONT - 0.12, FRONT + 0.22, OPEN_H - 0.38, OPEN_H - 0.02, 0.01), 0x4A4640)
+        # 3 Nov (her item 2, "shops read as half shut"): the rolled bundle is tighter (0.32 m, was 0.48) and sits higher, bottom edge 2.56 m (was 1.85)
+        kit.add('paint', wb('housing', c - ow / 2 - 0.05, c + ow / 2 + 0.05, FRONT - 0.12, FRONT + 0.22, OPEN_H - 0.3, OPEN_H - 0.02, 0.01), 0x4A4640)
         # bold trade-coloured shutter box across the full opening (reference: a coloured header band above each shutter)
-        kit.add('paint', wb('shutter_box', c - ow / 2 - 0.05, c + ow / 2 + 0.05, FRONT - 0.2, FRONT + 0.2, OPEN_H - 0.5, OPEN_H - 0.02, 0.012), col)
-        kit.add('paint', limb('coil', (c - ow / 2, FRONT - 0.02, OPEN_H - 0.2), (c + ow / 2, FRONT - 0.02, OPEN_H - 0.2), 0.3, 0.3, 0.02), col)
+        kit.add('paint', wb('shutter_box', c - ow / 2 - 0.05, c + ow / 2 + 0.05, FRONT - 0.2, FRONT + 0.2, OPEN_H - 0.34, OPEN_H - 0.02, 0.012), col)
+        kit.add('paint', limb('coil', (c - ow / 2, FRONT - 0.02, OPEN_H - 0.18), (c + ow / 2, FRONT - 0.02, OPEN_H - 0.18), 0.26, 0.26, 0.02), col)
         # 24 Oct 2026 (art director: "every shop in the market is half closed, open them all"): shutters are fully rolled up into the
         # coloured box above the opening; no curtain hangs in the doorway, the counter and the shop behind are fully visible.
         for sgn in (-1, 1):
-            kit.add('paint', wb('rail', c + sgn * (ow / 2) - 0.03, c + sgn * (ow / 2) + 0.03, FRONT - 0.04, FRONT + 0.12, 0.06, OPEN_H - 0.38, 0.004), 0x3A3733)
+            kit.add('paint', wb('rail', c + sgn * (ow / 2) - 0.03, c + sgn * (ow / 2) + 0.03, FRONT - 0.04, FRONT + 0.12, 0.06, OPEN_H - 0.34, 0.004), 0x3A3733)
         # counter (0.9 high, 0.5 deep, 3.8 wide): planked front painted in the trade colour, wooden top
         cw = UW - 0.7
         kit.add('wood', wb('counter_top', c - cw / 2 - 0.04, c + cw / 2 + 0.04, COUNTER_Z0 - 0.04, COUNTER_Z1 + 0.04, 0.83, 0.90, 0.008))
