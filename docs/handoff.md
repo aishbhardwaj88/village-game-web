@@ -1,3 +1,5 @@
+**2026-11-02 (eyeball of wayfinding posts, docs only):** docs/shots/wayfinding-2026-11-02 (local): cross_west post renders at its map spot with the notice board beside it (cw_a.png): boards read, English line small at 5 m. main_south post not seen (framing missed). No console errors. No game change; no unbuilt family in PARALLEL.md. NEXT: frame main_south and ring posts.
+
 **2026-11-02 (wayfinding on the map):** src/wayfinding.js SIGNPOSTS_ON_MAP, 8 posts (30 boards) on the map cross/main/ring roads. Build passed, regression-check 22/22, findability 0 of 40. collision-test 1 failed: the same cart box at (-80,71) as before, far from this change. Not eyeballed. NEXT: screenshot the posts; the notice board is still at its old spot.
 
 **2026-11-02 (kerbs verified, docs only):** the kerb/drain commit a668fb0 was never regression-checked; now run on HEAD: build ALL PASSED, collision-test 7680 static solids 276 NPC legs 0 failed, regression-check 22/22, no regressions. No unbuilt family in PARALLEL.md.
