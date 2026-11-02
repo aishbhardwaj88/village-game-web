@@ -1598,9 +1598,11 @@ async function main() {
     FP('map_field_gate_wheat', 9, -152.2, [{ part: 'field_gate', x: 3.6, z: -152.2, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: 14.4, z: -152.2, ry: Math.PI, solid: [0.9, 0.9] }]);
     FP('map_field_shrine', -152.7, -60, [{ part: 'field_shrine', x: -152.7, z: -60, solid: [3, 3] }]);
     FP('map_culvert', 144.5, 30.9, [{ part: 'culvert', x: 144.5, z: 30.9 }]);
-    FP('map_culvert_2', 203.05, 30.2, [{ part: 'culvert', x: 203.40, z: 27.88, ry: 1.4224, solid: [0.9, 4.6] }, { part: 'culvert_b', x: 202.70, z: 32.52, ry: -1.7191, solid: [0.9, 4.6] }], 30); // the map's second culvert strip (2.7 x 9.4 m, turn 8.5): two 4.6 m ends side by side
+    // DROPPED 2 Nov (PARALLEL phase 1): the map strip lies inside the highway (x 798-812, N-S); a wall/channel across the road is worse than no culvert.
+    // FP('map_culvert_2', 203.05, 30.2, [{ part: 'culvert', x: 203.40, z: 27.88, ry: 1.4224, solid: [0.9, 4.6] }, { part: 'culvert_b', x: 202.70, z: 32.52, ry: -1.7191, solid: [0.9, 4.6] }], 30); // the map's second culvert strip (2.7 x 9.4 m, turn 8.5): two 4.6 m ends side by side
     // the map's field channel (1 Nov plan water.field_channel), (208.9,-9.4) to (197.1,69.8) + 600 east; flat and walkable, the second culvert stands on it
-    zoneManager.register('map_field_channel', { x: 803 + 0, z: 30.2, buildRadius: 70, teardownRadius: 90, build: () => buildFieldChannel({ x: 808.9, z: -9.4 }, { x: 797.1, z: 69.8 }) });
+    // DROPPED 2 Nov (PARALLEL phase 1): the map strip lies inside the highway (x 798-812, N-S); a wall/channel across the road is worse than no culvert.
+    // zoneManager.register('map_field_channel', { x: 803 + 0, z: 30.2, buildRadius: 70, teardownRadius: 90, build: () => buildFieldChannel({ x: 808.9, z: -9.4 }, { x: 797.1, z: 69.8 }) });
     const GOODS = { x: 14.5 + 600, z: 48.1 };
     const GOODS_SOLIDS = [{ x: -4.5, z: 0, w: 0.3, d: 10.44 }, { x: 4.5, z: 0, w: 0.3, d: 10.44 }, { x: -3.095, z: 5.22, w: 3.11, d: 0.3 }, { x: 3.075, z: 5.22, w: 3.15, d: 0.3 }];
     // NOT built: its presence at the map spot makes the old general store's buy point (620, 47.4) unreachable on foot (check 6), see NEEDS_YOU.

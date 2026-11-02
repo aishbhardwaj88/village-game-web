@@ -28,9 +28,18 @@ _roof_thatch = arch.thatch_straw
 def stack_thatch(obj, base_hex, seed=0):
     """arch.thatch_straw (bundle ridges, shag, valley weathering), then its roof-tuned darkening is lifted: it pulls up to 85%
     toward near-black, right under eaves, far too heavy on a free-standing stack (the body read as dark fur under golden locks).
-    Kept: half its variation. Added: a dirty foot band, a sun-bleached grey crown and low-frequency forkful patches."""
+    Kept: half its variation. Added: a dirty foot band, a sun-bleached grey crown and low-frequency forkful patches.
+    The body is triangulated first: thatch_straw subdivides big QUADS 6x6 on any mesh under 400 faces, which on these
+    low-poly shells (2 Nov triangle cut, ~3k per stack) multiplied the body ~36x. Triangles keep it as built."""
+    tb = bmesh.new()
+    tb.from_mesh(obj.data)
+    bmesh.ops.triangulate(tb, faces=tb.faces[:])
+    tb.to_mesh(obj.data)
+    tb.free()
     _roof_thatch(obj, base_hex, seed)
     me = obj.data
+    for poly in me.polygons:   # thatch_straw flat-shades; at ~24 segments that reads as facets, so smooth it (free)
+        poly.use_smooth = True
     lay = me.color_attributes['Base']
     br, bg, bb = hex_to_linear_rgb(base_hex)
     gr, gg, gb = hex_to_linear_rgb(GREY)
@@ -214,7 +223,7 @@ def tone_at(rnd, h, weathered):
     return pick(rnd, [(GOLD, 4), (TAN, 3), (FRESH, 2), (BLEACH, 1), (GREY, 1 + 3 * weathered), (DIRT, 0.5)])
 
 
-def shag(bk, surf, seed, n_locks, n_strands, Lk, weathered=0.0, cut=None, zmin=0.05, zmax=0.93):
+def shag(bk, surf, seed, n_locks, n_strands, Lk, weathered=0.0, cut=None, zmin=0.05, zmax=0.93, wk=1.0):
     """Hanging locks and loose strands on the surface. More low down and under the ropes (where straw is pulled and hangs)."""
     rnd = random.Random(seed)
     placed = 0
@@ -243,7 +252,7 @@ def shag(bk, surf, seed, n_locks, n_strands, Lk, weathered=0.0, cut=None, zmin=0
         root = p - nrm * 0.03
         if is_lock:
             L = Lk * rnd.uniform(0.5, 1.3) * (1.25 if h < 0.3 else 1.0)
-            lock(bk.get(col), root, d, L, rnd.uniform(0.045, 0.09), rnd.uniform(0.012, 0.022), rnd.uniform(0.1, 0.45))
+            lock(bk.get(col), root, d, L, rnd.uniform(0.045, 0.09) * wk, rnd.uniform(0.012, 0.022) * wk, rnd.uniform(0.1, 0.45))
         else:
             strand(bk.get(col), root, d, Lk * rnd.uniform(0.6, 1.6), rnd.uniform(0.007, 0.012))
         placed += 1
@@ -272,7 +281,7 @@ def skirt(bk, surf, seed, n, spread, cut=None):
             strand(bk.get(col), p, d, rnd.uniform(0.2, 0.5), 0.008)
 
 
-def rope(bk, surf, h, seed, sides=5, seg=48, r=0.03, cut=None):
+def rope(bk, surf, h, seed, sides=4, seg=26, r=0.03, cut=None):
     """A sagging coir rope round the stack, half sunk into the cinch it makes."""
     rnd = random.Random(seed)
     ph = rnd.uniform(0, 6.28)
@@ -283,7 +292,7 @@ def rope(bk, surf, h, seed, sides=5, seg=48, r=0.03, cut=None):
         z = h + 0.07 * math.sin(a * 2 + ph) + 0.025 * math.sin(a * 5 + ph * 2)
         c = surf.p(a, z)
         nrm = surf.normal(a, z)
-        c = c + nrm * (r * 0.85)
+        c = c + nrm * (r * 0.85 + 0.04)   # thatch_straw lifts the body up to ~5 cm; keep the rope on top of it
         tan = Vector((-math.sin(a), math.cos(a), 0))
         u = nrm
         v = tan.cross(u).normalized()
@@ -299,9 +308,9 @@ def rope(bk, surf, h, seed, sides=5, seg=48, r=0.03, cut=None):
 def mud_cap(bk, surf, z0, seed):
     """Gobar-mud plaster sealing the top of the kup against rain: a thin shell over the crown with a ragged lower edge, two tones."""
     rnd = random.Random(seed)
-    seg = 28
+    seg = 18
     edge = [z0 + 0.18 * math.sin(i * 0.9 + seed) + rnd.uniform(-0.12, 0.12) for i in range(seg)]
-    rows = 6
+    rows = 3
     grid = []
     for k in range(rows + 1):
         ring = []
@@ -326,7 +335,7 @@ def mud_cap(bk, surf, z0, seed):
         bm.faces.new((bm.verts.new(grid[-1][i]), bm.verts.new(grid[-1][j]), bm.verts.new(tip)))
     # a few straw ends poking out under the ragged edge
     for i in range(seg):
-        if rnd.random() < 0.7:
+        if rnd.random() < 0.55:
             a = i / seg * math.tau
             p = surf.p(a, edge[i] - 0.02)
             n = surf.normal(a, edge[i])
@@ -337,16 +346,16 @@ def mud_cap(bk, surf, z0, seed):
 def top_knot(bk, tip, seed):
     """The twisted straw knot the stacker leaves on the peak."""
     rnd = random.Random(seed)
-    for k in range(9):
+    for k in range(6):
         d = Vector((rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), 1.0)).normalized()
         lock(bk.get(pick(rnd, [(GREY, 2), (BLEACH, 2), (GOLD, 1)])), tip - Vector((0, 0, 0.05)), d, rnd.uniform(0.25, 0.45), 0.06, 0.02, rnd.uniform(0.3, 0.9))
 
 
-def cut_face(bk, surf, cut, z0, z1, seed, nu=18, nv=None):
+def cut_face(bk, surf, cut, z0, z1, seed, nu=10, nv=None):
     """Vertical cut face at x = cut(z) between z0 and z1: compressed straw strata (horizontal ridges), hollows where forkfuls
     were pulled out, banded fresh/gold/tan. Built straight into the tone buckets, one quad at a time."""
     rnd = random.Random(seed)
-    nv = nv or max(6, int((z1 - z0) / 0.05))
+    nv = nv or max(6, int((z1 - z0) / 0.075))
     hollows = [(rnd.uniform(-1.2, 1.2), rnd.uniform(z0, z1), rnd.uniform(0.18, 0.35), rnd.uniform(0.012, 0.028)) for _ in range(5)]
     ph = rnd.uniform(0, 6.28)
 
@@ -392,7 +401,7 @@ def cut_face(bk, surf, cut, z0, z1, seed, nu=18, nv=None):
             bm = bk.get(col)
             bm.faces.new([bm.verts.new(q) for q in (grid[k][i], grid[k + 1][i], grid[k + 1][i + 1], grid[k][i + 1])])
     # short cut-off ends bristling out of the face
-    for _ in range(int(45 * (z1 - z0))):
+    for _ in range(int(16 * (z1 - z0))):
         k, i = rnd.randint(1, nv - 1), rnd.randint(1, nu - 1)
         p = grid[k][i] - Vector((0.03, 0, 0))
         d = Vector((1.0, rnd.uniform(-0.6, 0.6), rnd.uniform(-0.7, 0.2))).normalized()
@@ -408,37 +417,37 @@ def build_kit(kind):
     bk = Buckets()
     if kind == 'cone':
         s = Surf(PROFILES['cone'], 3, sx=1.0, sy=0.94, lumps=16, amp=0.08, bands=(1.15, 2.35), lean=(0.03, -0.015))
-        kit.add('thatch', body('stack', s, seg=32, rows=18), 0xD6B977)
+        kit.add('thatch', body('stack', s, seg=24, rows=12), 0xD6B977)
         rope(bk, s, 1.15, 1)
         rope(bk, s, 2.35, 2)
         tip = mud_cap(bk, s, 3.75, 4)
         top_knot(bk, tip, 5)
-        shag(bk, s, 23, 620, 260, 0.4, weathered=0.4, zmax=0.8)
-        skirt(bk, s, 24, 110, 0.7)
+        shag(bk, s, 23, 150, 110, 0.55, weathered=0.4, zmax=0.8, wk=1.6)
+        skirt(bk, s, 24, 40, 0.7)
     elif kind == 'heap':
         s = Surf(PROFILES['heap'], 5, sx=1.18, sy=0.88, lumps=18, amp=0.11, lean=(0.0, 0.02))
         s2 = Surf(PROFILES['heap2'], 6, sx=1.1, sy=0.9, lumps=10, amp=0.12, cx=-1.7, cy=0.55, rot=0.5)
-        kit.add('thatch', body('stack', s, seg=32, rows=14), 0xC2AB7A)
-        kit.add('thatch', body('lobe', s2, seg=26, rows=10), 0xCDB27A)
-        shag(bk, s, 25, 560, 240, 0.36, weathered=0.9, zmax=0.97)
-        shag(bk, s2, 26, 200, 80, 0.3, weathered=0.6, zmax=0.97)
-        skirt(bk, s, 27, 120, 0.8)
-        skirt(bk, s2, 28, 50, 0.6)
+        kit.add('thatch', body('stack', s, seg=24, rows=10), 0xC2AB7A)
+        kit.add('thatch', body('lobe', s2, seg=18, rows=7), 0xCDB27A)
+        shag(bk, s, 25, 150, 70, 0.5, weathered=0.9, zmax=0.97, wk=1.6)
+        shag(bk, s2, 26, 45, 20, 0.42, weathered=0.6, zmax=0.97, wk=1.6)
+        skirt(bk, s, 27, 40, 0.8)
+        skirt(bk, s2, 28, 16, 0.6)
     else:  # half
         s = Surf(PROFILES['half'], 8, sx=1.0, sy=0.96, lumps=16, amp=0.09, bands=(1.2,), lean=(-0.02, 0.0))
         zs = 1.75
 
         def cut(z):
             return 0.5 if z < zs else 0.0
-        kit.add('thatch', body('stack', s, seg=34, rows=18, cut=cut, extra_z=(zs - 0.012, zs + 0.012)), 0xD0B575)
+        kit.add('thatch', body('stack', s, seg=24, rows=12, cut=cut, extra_z=(zs - 0.012, zs + 0.012)), 0xD0B575)
         rope(bk, s, 1.2, 3, cut=cut)
-        shag(bk, s, 29, 560, 220, 0.38, weathered=0.6, cut=cut)
-        skirt(bk, s, 30, 90, 0.6, cut=cut)
+        shag(bk, s, 29, 85, 55, 0.55, weathered=0.6, cut=cut, wk=1.6)
+        skirt(bk, s, 30, 25, 0.6, cut=cut)
         cut_face(bk, s, cut, 0.0, zs - 0.012, 31)
-        cut_face(bk, s, cut, zs + 0.012, s.top * 0.8, 32, nu=14)
+        cut_face(bk, s, cut, zs + 0.012, s.top * 0.8, 32, nu=8)
         # the shelf left by the step: loose straw lying on it
         rnd = random.Random(33)
-        for _ in range(30):
+        for _ in range(10):
             p = Vector((rnd.uniform(0.0, 0.45), rnd.uniform(-1.1, 1.1), zs + 0.01))
             if math.hypot(p.x, p.y) > s.r(math.atan2(p.y, p.x), zs) * 0.92:
                 continue
@@ -446,9 +455,9 @@ def build_kit(kind):
             lock(bk.get(pick(rnd, [(GOLD, 3), (FRESH, 2), (BLEACH, 1)])), p, d, rnd.uniform(0.15, 0.35), 0.07, 0.015, 0.1)
         # slumped loose straw pulled from the face, in a low lumpy heap at its foot
         m = Surf([(1.05, 0), (1.05, 0.12), (0.8, 0.38), (0.35, 0.58), (0.0, 0.64)], 11, sx=0.75, sy=1.25, lumps=8, amp=0.18, cx=1.2, cy=0.15)
-        kit.add('thatch', body('mound', m, seg=22, rows=6), 0xD8BE80)
-        shag(bk, m, 34, 150, 90, 0.28, weathered=0.0, zmin=0.0, zmax=0.98)
-        skirt(bk, m, 35, 50, 0.5)
+        kit.add('thatch', body('mound', m, seg=16, rows=5), 0xD8BE80)
+        shag(bk, m, 34, 22, 14, 0.36, weathered=0.0, zmin=0.0, zmax=0.98, wk=1.5)
+        skirt(bk, m, 35, 16, 0.5)
     bk.add_to(kit, 'straw')
     return kit
 

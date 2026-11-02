@@ -33,7 +33,7 @@ applyFog(scene, preset);
 const ground = createGround();
 scene.add(ground);
 
-loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_1k.hdr').catch((err) => console.error('HDRI failed to load', err));
+loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').catch((err) => console.error('HDRI failed to load', err));
 
 const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 500);
 const composer = createComposer(renderer, scene, camera, { enableBloom: !isTouch, enableGrain: true });
