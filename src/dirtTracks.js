@@ -28,6 +28,7 @@ const PATH_TINT = 0xb9a37c; // the map's front-path tint
 export const DIRT_TRACKS = [
   { id: 'track_gaushala', from: 'cross road', to: 'gaushala gate', w: 3, tint: TRACK_TINT, y: 0.03, pts: [[-122.6, -3.7], [-122.3, -12], [-122.7, -22], [-122.6, -30.2]] },
   { id: 'track_baagh', from: 'east outer lane', to: 'mango baagh clearing', w: 2.2, tint: PATH_TINT, y: 0.03, pts: [[142, 112.6], [141.9, 119.5], [140.3, 126.5], [138.6, 130.8]] },
+  { id: 'track_mandi', from: 'highway', to: 'mandi west apron', w: 3, tint: TRACK_TINT, y: 0.03, pts: [[128.4, -160.3], [121, -160.5], [114, -151], [113.5, -138], [114.5, -123.4]] },
   { id: 'track_mela', from: 'east outer lane', to: 'mela shamiana', w: 3, tint: PATH_TINT, y: 0.055, pts: [[190.4, 116.6], [190, 127], [189.2, 138.3]] },
 ];
 
