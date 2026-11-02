@@ -28,7 +28,7 @@ import { buildDust } from './dust.js';
 import { spawnVehicles, buildBikeGroup, updateWheel, TROLLEY_HALF_WIDTH, TROLLEY_HALF_LENGTH } from './vehicles.js';
 import { WALKABLE_RECTS } from './walkable.js';
 import { pt, localPt, ANCHORS, OLD_SHIFT } from './anchors.js';
-import { turnSiteGroup } from './turn.js';
+import { turnSiteGroup, applyTurn } from './turn.js';
 import { MAP_COMPOUND_WALLS, createMapCompoundWall } from './mapCompoundWalls.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
@@ -72,6 +72,7 @@ import {
   CHOWK_TEA_POS,
   CHOWK_TEA_ROT,
   CHOWK_CENTER,
+  CHOWK_TURN_DEG,
   BAZAAR_LANE_START,
   BAZAAR_LANE_BEND,
   BAZAAR_LANE_ARRIVE,
@@ -472,7 +473,9 @@ async function main() {
   // benches, a few plastic chairs, east of the bazaar row with open ground left
   // around it for future content.
   bazaarGroup.add(buildTeaStallChowk());
-  bazaarGroup.add(buildChowkPlaza());
+  const chowkPlaza = buildChowkPlaza();
+  applyTurn(chowkPlaza, CHOWK_CENTER.x, CHOWK_CENTER.z, CHOWK_TURN_DEG); // map turn 5 deg about the plaza centre
+  bazaarGroup.add(chowkPlaza);
 
   // Item 5 — the lane extension itself (a bumpy, curved strip, never a straight
   // ribbon), connecting the existing hero-zone lane to the bazaar/chowk.
@@ -954,7 +957,7 @@ async function main() {
     assetSlots.register('chowk_plaza', {
       exact: true,
       hide: chowkPlazaOld ? [chowkPlazaOld] : [],
-      placements: [{ container: scene, position: new THREE.Vector3(CHOWK_CENTER.x, 0, CHOWK_CENTER.z), rotationY: 0 }],
+      placements: [{ container: scene, position: new THREE.Vector3(CHOWK_CENTER.x, 0, CHOWK_CENTER.z), rotationY: -CHOWK_TURN_DEG * Math.PI / 180 }],
     });
   }
   {

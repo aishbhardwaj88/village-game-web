@@ -655,6 +655,7 @@ export function buildBazaarInteriors() {
 // the other 3 sides, post-supported), teal counter/posts, cream/ochre walls — the
 // same materials/palette law as the rest of the village. ---
 
+export const CHOWK_TURN_DEG = 5; // map turn of the paved square, about CHOWK_CENTER
 export const CHOWK_TEA = { w: 6, d: 3.5, roofEdgeH: 2.8, counterH: 0.9, backWallH: 2.8 };
 export const CHOWK_CENTER = pt('chowk'); // the open plaza itself — chabutra/seating live here
 export const CHOWK_TEA_POS = { x: 37.9 + MAP_SHIFT.x, z: 3.7 + MAP_SHIFT.z }; // map: 'Tea stall at the square', east edge of the paved square

@@ -24,7 +24,7 @@ export const ANCHORS = {
   teastall: { x: -36.2 + MAP_SHIFT.x, z: 15.5 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, added to TEA_SHOP_ROT in src/main.js */,
   store: { x: 22.5 + MAP_SHIFT.x, z: 47.4 + MAP_SHIFT.z, ry: -5 * Math.PI / 180 } /* map turn 5 deg, added to STORE_ROT in src/main.js */,
   bazaar: { x: -34.8 + MAP_SHIFT.x, z: -5 + MAP_SHIFT.z, ry: 0 }, // 8-unit row centre: units 1-7 land on the map's bazaar footprints (west edge -52.8); the map's 4.8 deg turn is not applied (main.js slot is unrotated)
-  chowk: { x: 1.9 + MAP_SHIFT.x, z: 16.5 + MAP_SHIFT.z, ry: 0 },
+  chowk: { x: 1.9 + MAP_SHIFT.x, z: 16.5 + MAP_SHIFT.z, ry: -5 * Math.PI / 180 } /* map turn 5 deg, applied in src/main.js via applyTurn */,
   post: onMap('yard_post'), // the old combined post/ration/chakki model is no longer drawn (src/main.js); the v2 yards stand here
   ration: onMap('yard_ration'),
   chakki: onMap('yard_chakki'),
@@ -34,8 +34,8 @@ export const ANCHORS = {
   field: { x: 3.5 + MAP_SHIFT.x, z: -200 + MAP_SHIFT.z, ry: 0 }, // x = centre of the map's wheat strip (-94.6..101.7); z: the 80 m field is deeper than the 42 m strip, so its south edge sits on the strip's (-160) to stay clear of the petrol pump yard
   banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, applied in src/main.js via turnSiteGroup */,
-  eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: 0 },
-  westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 0 },
+  eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: -4.6 * Math.PI / 180 } /* label only, nothing to turn */,
+  westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 11 * Math.PI / 180 } /* label only, nothing to turn */,
   jalebi: { x: 35.5 + MAP_SHIFT.x, z: 26.4 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
   dairy: onMap('yard_dairy'), // the old code-built copy is no longer built (src/main.js); the v2 yard stands here
   khalihan: onMap('yard_khalihan'),
