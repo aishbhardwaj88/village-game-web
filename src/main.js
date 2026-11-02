@@ -979,16 +979,7 @@ async function main() {
       placements: [{ container: scene, position: new THREE.Vector3(FLOWER_STALL_POS.x, 0, FLOWER_STALL_POS.z), rotationY: 0 }],
     });
   }
-  // Roadside petrol pump (Blender, 2026-10-24): exact slot at the old pump site, highway cluster (205,40) + (-19,-35).
-  assetSlots.register('petrol_pump', {
-    exact: true,
-    placements: [{ container: scene, position: new THREE.Vector3(pt('highway').x - 19, 0, pt('highway').z - 35), rotationY: 0 }],
-  });
-  // Dharam kanta weighbridge (Blender, 2026-10-24): exact slot at highway cluster (205,40) + (-11,52).
-  assetSlots.register('dharam_kanta', {
-    exact: true,
-    placements: [{ container: scene, position: new THREE.Vector3(pt('highway').x - 11, 0, pt('highway').z + 52), rotationY: 0 }],
-  });
+  // Petrol pump and dharam kanta: only the map-placed v2 models (stagedPlaces.js) exist; the old exact slots were duplicates (3 Nov).
   {
     const teaOldGroup = scene.getObjectByName('tea_old');
     const storeOldGroup = scene.getObjectByName('store_old');

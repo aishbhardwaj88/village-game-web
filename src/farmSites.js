@@ -1172,23 +1172,17 @@ function roadGeos() {
 export function createHighwayCluster(position) {
   const geos = [];
   const road = roadGeos(); // asphalt, patches, cracks, worn lines, dust margins, dirt run-outs: its own mesh on the concrete PBR set
-  // Petrol pump: now the Blender model 'petrol_pump' (tools/blender/build_petrol_pump.py, asset slot in main.js); only its collision solids stay here.
+  // Petrol pump: now the map-placed v2 model (stagedPlaces.js), nothing here.
   // Bus adda: tin-roof shelter, bench, kerb-side concrete pad.
   geos.push(bake(new THREE.BoxGeometry(8, 0.15, 3.5), at(-10, 0.08, 20), 0xa8a59c));
   geos.push(bake(new THREE.BoxGeometry(8.4, 0.08, 3.8), new THREE.Matrix4().makeRotationX(0.06).setPosition(-10, 3.0, 20), 0x8e969c));
   for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.07, 0.07, 3, 6), at(-10 + sx * 3.8, 1.5, 19), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(0.1, 0.9, 3), at(-10, 0.6, 21.5), 0xc9b79a));
   geos.push(bake(new THREE.BoxGeometry(5, 0.1, 0.5), at(-10, 0.5, 20.8), 0x7a5a3a));
-  // Dharam kanta: now the Blender model 'dharam_kanta' (tools/blender/build_dharam_kanta.py, asset slot in main.js); only its collision solids stay here.
+  // Dharam kanta: now the map-placed v2 model (stagedPlaces.js), nothing here.
   const site = finishSite('highway_cluster', geos, position, { roughness: 0.92, solids: [
-    [-27, -41, 4, 3.5], [-16, 50, 3, 3], [-13.5, 50, 0.8, 1.1], // petrol office, dharam kanta cabin, display post
-    [-21.5, -35, 0.9, 0.6], [-16.5, -35, 0.9, 0.6], // two pumps
-    [-13.8, -34.7, 2.3, 3.0], // parked tractor at the east pumps (build_petrol_pump.py tractor())
-    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-19 + sx * 5.5, -35 + sz * 3.2, 0.4, 0.4]), // canopy posts
     [-13.8, 19, 0.15, 0.15], [-6.2, 19, 0.15, 0.15], [-10, 21.5, 3, 0.2], // bus adda posts + back panel
   ], boards: [
-    { id: 'petrol', x: -11.8, y: 5.1, z: -35, ry: Math.PI / 2, w: 4.2 }, // canopy front edge, facing the road
-    { id: 'kanta', x: -14.3, y: 3.3, z: 50, ry: Math.PI / 2, w: 2.7 }, // standing on the cabin roof edge, facing the weighing platform
     { id: 'busadda', x: -10, y: 3.45, z: 18.1, ry: Math.PI, w: 4 }, // shelter roof front, facing the lane
   ] });
   const roadMesh = new THREE.Mesh(mergeGeometries(road), vcMat({ set: 'concrete', roughness: 0.88 }));
