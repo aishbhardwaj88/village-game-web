@@ -108,3 +108,4 @@ The halwai shop is now turned 95 degrees to match the map - status: done
 - Cycle (3 Nov): a round cycle button now sits top right on touch screens to get off and on; no cycle model drawn yet. - status: open
 - Vehicles (3 Nov): the tractor, cart and bike were held inside x 238 by an old limit, so they could not leave the old village area; the limit now matches the player (x to 880, z to the map edge). Not driven to the canal bridge in a screenshot yet. - status: open
 - Orientation (3 Nov): checked the petrol pump (front faces the highway, fine). My automatic front-vs-road check gave false alarms, so the other buildings still need your eye; no turns changed beyond the panchayat. - status: open
+- Canal bridge (3 Nov): the bullock cart now drives through the bridge gap at x 771 (z 46 to 30.6, no errors); the test's tractor run was not conclusive (it did not mount), so tractor crossing is still unproven. - status: open

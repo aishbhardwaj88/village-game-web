@@ -9,7 +9,7 @@ try {
   await wait();
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
   const errors = [];
-  for (const [kind, bx, secs] of [['cart', -15, 40], ['tractor', -15, 24]]) {
+  for (const [kind, bx, secs] of [['cart', 771, 40], ['tractor', 771, 24]]) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${BASE}?proof=1`); await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
