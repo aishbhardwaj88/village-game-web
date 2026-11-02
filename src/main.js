@@ -1592,6 +1592,17 @@ async function main() {
     const GHER = { x: 38 + 600, z: 41.5 };
     const GHER_SOLIDS = [{ x: -4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: 4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: -3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 0, z: 3.82, w: 9.3, d: 0.3 }];
     zoneManager.register('gher_yard', { ...GHER, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('gher_yard', 'gher_yard.glb', GHER, GHER_SOLIDS), -5 * Math.PI / 180) }); // the map's family cattle and tractor yard (1 Nov plan, turn 5)
+    // the map's four house plot walls round the haveli (1 Nov plan, places 'House plots round the haveli'): one GLB per plot,
+    // origin = plot centroid, each at its own turn (tools/blender/build_house_plots.py); gates open on the haveli courtyard.
+    for (const [n, x, z, deg, solids] of [
+      ['house_plots_1', 6.05, -33.05, -8.865, [{ x: 0, z: -5.968, w: 10.692, d: 0.3 }, { x: -1.63, z: 5.968, w: 7.431, d: 0.3 }, { x: 4.63, z: 5.968, w: 1.431, d: 0.3 }, { x: -5.516, z: 0, w: 0.3, d: 11.596 }, { x: 5.516, z: 0, w: 0.3, d: 11.596 }, { x: -5.516, z: -5.968, w: 0.4, d: 0.4 }, { x: -5.516, z: 5.968, w: 0.4, d: 0.4 }, { x: 5.516, z: -5.968, w: 0.4, d: 0.4 }, { x: 5.516, z: 5.968, w: 0.4, d: 0.4 }, { x: 2.085, z: 5.968, w: 0.44, d: 0.44 }, { x: 3.915, z: 5.968, w: 0.44, d: 0.44 }]],
+      ['house_plots_2', 8.225, -19.2, -8.865, [{ x: 0, z: -6.021, w: 10.642, d: 0.3 }, { x: 0, z: 6.021, w: 10.642, d: 0.3 }, { x: -5.491, z: 0, w: 0.3, d: 11.703 }, { x: 5.491, z: -3.958, w: 0.3, d: 3.786 }, { x: 5.491, z: 2.758, w: 0.3, d: 6.186 }, { x: -5.491, z: -6.021, w: 0.4, d: 0.4 }, { x: -5.491, z: 6.021, w: 0.4, d: 0.4 }, { x: 5.491, z: -6.021, w: 0.4, d: 0.4 }, { x: 5.491, z: 6.021, w: 0.4, d: 0.4 }, { x: 5.491, z: -2.065, w: 0.44, d: 0.44 }, { x: 5.491, z: -0.335, w: 0.44, d: 0.44 }]],
+      ['house_plots_3', 19.4, -34.05, 7.319, [{ x: 0, z: -4.992, w: 10.65, d: 0.3 }, { x: -2.307, z: 4.992, w: 6.035, d: 0.3 }, { x: 3.907, z: 4.992, w: 2.835, d: 0.3 }, { x: -5.495, z: 0, w: 0.3, d: 9.645 }, { x: 5.495, z: 0, w: 0.3, d: 9.645 }, { x: -5.495, z: -4.992, w: 0.4, d: 0.4 }, { x: -5.495, z: 4.992, w: 0.4, d: 0.4 }, { x: 5.495, z: -4.992, w: 0.4, d: 0.4 }, { x: 5.495, z: 4.992, w: 0.4, d: 0.4 }, { x: 0.71, z: 4.992, w: 0.44, d: 0.44 }, { x: 2.49, z: 4.992, w: 0.44, d: 0.44 }]],
+      ['house_plots_4', 20.275, -10.5, 5.194, [{ x: -3.784, z: -5.018, w: 3.088, d: 0.3 }, { x: 2.384, z: -5.018, w: 5.888, d: 0.3 }, { x: 0, z: 5.018, w: 10.656, d: 0.3 }, { x: -5.498, z: 0, w: 0.3, d: 9.696 }, { x: 5.498, z: 0, w: 0.3, d: 9.696 }, { x: -5.498, z: -5.018, w: 0.4, d: 0.4 }, { x: -5.498, z: 5.018, w: 0.4, d: 0.4 }, { x: 5.498, z: -5.018, w: 0.4, d: 0.4 }, { x: 5.498, z: 5.018, w: 0.4, d: 0.4 }, { x: -2.24, z: -5.018, w: 0.44, d: 0.44 }, { x: -0.56, z: -5.018, w: 0.44, d: 0.44 }]],
+    ]) {
+      const at = { x: x + 600, z };
+      zoneManager.register(n, { ...at, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite(n, n + '.glb', at, solids), -deg * Math.PI / 180) });
+    }
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
