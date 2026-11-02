@@ -48,7 +48,7 @@ const VILLAGER_LOOPS = [
   [bazaarXZ(BAZAAR_EAST_X - 4, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_EAST_X - 16, BAZAAR_FRONT_Z - 3.5)],
   [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 2.5 }, { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 6 }],
   // village lane between the house and the school: neighbours out on errands
-  [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 19 }],
+  [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 10.6 }], // shortened: the map's gher yard walls stand from z LH.z+12
   [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
   [{ x: LH.x - 7, z: LH.z - 11 }, { x: LH.x - 5, z: LH.z - 5 }],
   // a few more walkers so the bazaar frontage and lane are not empty

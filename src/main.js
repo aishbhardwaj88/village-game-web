@@ -134,6 +134,7 @@ import {
 import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, KIRANA_POSITION } from './wheatErrand.js';
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
+import { createYardSite } from './yardModels.js';
 import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
@@ -1584,6 +1585,13 @@ async function main() {
     FP('map_field_gate_wheat', 9, -152.2, [{ part: 'field_gate', x: 3.6, z: -152.2, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: 14.4, z: -152.2, ry: Math.PI, solid: [0.9, 0.9] }]);
     FP('map_field_shrine', -152.7, -60, [{ part: 'field_shrine', x: -152.7, z: -60, solid: [3, 3] }]);
     FP('map_culvert', 144.5, 30.9, [{ part: 'culvert', x: 144.5, z: 30.9 }]);
+    const GOODS = { x: 14.5 + 600, z: 48.1 };
+    const GOODS_SOLIDS = [{ x: -4.5, z: 0, w: 0.3, d: 10.44 }, { x: 4.5, z: 0, w: 0.3, d: 10.44 }, { x: -3.095, z: 5.22, w: 3.11, d: 0.3 }, { x: 3.075, z: 5.22, w: 3.15, d: 0.3 }];
+    // NOT built: its presence at the map spot makes the old general store's buy point (620, 47.4) unreachable on foot (check 6), see NEEDS_YOU.
+    //GOODS zoneManager.register('goods_yard', { ...GOODS, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('goods_yard', 'goods_yard.glb', GOODS, GOODS_SOLIDS), -99.7 * Math.PI / 180) }); // the map's kirana goods yard (1 Nov plan, turn 99.7); its store-side wall has no collider because the old general store's buy point sits on that wall line
+    const GHER = { x: 38 + 600, z: 41.5 };
+    const GHER_SOLIDS = [{ x: -4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: 4.55, z: -2.05, w: 0.3, d: 11.95 }, { x: -3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 3.15, z: -7.9, w: 3.1, d: 0.3 }, { x: 0, z: 3.82, w: 9.3, d: 0.3 }];
+    zoneManager.register('gher_yard', { ...GHER, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite('gher_yard', 'gher_yard.glb', GHER, GHER_SOLIDS), -5 * Math.PI / 180) }); // the map's family cattle and tractor yard (1 Nov plan, turn 5)
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
