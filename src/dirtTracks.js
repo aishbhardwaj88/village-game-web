@@ -1,16 +1,13 @@
 /**
  * Kachcha dirt tracks to the places the 1 Nov map left without a drawn way in (her 3 Nov answer, PARALLEL.md item 3:
  * "all places need to have path to them ... maybe it could be dirt track"). Positions only: every track is built from
- * the shared dirt-strip piece (src/paths.js buildStripSegment, the 'lane' Ground102 set, no new texture) and ALL of
- * them merge into ONE mesh, one draw call. Ground-level, not solid, so they never block a route.
+ * the one road network (src/roadNetwork.js, the 'lane' Ground102 set, no new texture), merged with the map's roads. Ground-level, not solid, so they never block a route.
  *
  * Coordinates are in map metres (docs/layout/village-plan-positions-2026-11-01.json frame), shifted by +MAP_SHIFT
  * exactly as src/mapRoads.js lays the map's own roads. Each track starts under the road it leaves (so the road draws
  * on top at the joint) and stops at the place's gate / edge, never through a collider.
  */
 import * as THREE from 'three';
-import { buildStripSegment } from './paths.js';
-import { mergeMeshList } from './mergeUtils.js';
 import { MAP_SHIFT } from './mapPlan.js';
 
 const TRACK_TINT = 0xa88a5e; // the map's own farm-track tint (src/mapRoads.js TINT.track)
@@ -39,21 +36,14 @@ export function dirtTrackLines() {
   return DIRT_TRACKS.map((t) => ({ ...t, pts: t.pts.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]) }));
 }
 
-/** One merged mesh of every dirt track. Bumps are flattened to 40% so a narrow track lies under the road it joins. */
+/**
+ * The tracks' surface is part of the one road network (src/roadNetwork.js via src/mapRoads.js), so each track merges into
+ * the road it leaves with a real junction instead of lying on top of it. This zone stays as an empty group so the zone
+ * table in src/main.js needs no change.
+ */
 export function createDirtTracks() {
   const group = new THREE.Group();
   group.name = 'dirt_tracks';
-  const strips = [];
-  dirtTrackLines().forEach((t, ti) => {
-    for (let i = 1; i < t.pts.length; i++) {
-      const a = t.pts[i - 1], b = t.pts[i];
-      const m = buildStripSegment({ x: a[0], z: a[1] }, { x: b[0], z: b[1] }, t.w, { seed: 41 + ti * 3.3 + i, tint: t.tint, ruts: !!t.ruts });
-      m.position.y = t.y;
-      m.scale.y = 0.4;
-      strips.push(m);
-    }
-  });
-  group.add(mergeMeshList(strips, 'dirt_tracks_strips'));
   return group;
 }
 

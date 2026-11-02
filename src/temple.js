@@ -352,6 +352,11 @@ export const TEMPLE_LANE_ARRIVE = { x: TEMPLE_POS.x - 6, z: TEMPLE_POS.z - 1 }; 
 export const TEMPLE_LANE_WIDTH = 6;
 
 export function buildTempleLane() {
+  // 3 Nov (her playtest notes 1 and 3): the stub's surface is now part of the one road network (src/roadNetwork.js,
+  // src/mapRoads.js reads the three points above), so it merges into the lane it leaves. Empty named group, callers unchanged.
+  const none = new THREE.Group();
+  none.name = 'temple_lane';
+  if (none) return none;
   const segments = [
     buildStripSegment(TEMPLE_LANE_START, TEMPLE_LANE_BEND, TEMPLE_LANE_WIDTH, { seed: 71, ruts: true }),
     buildStripSegment(TEMPLE_LANE_BEND, TEMPLE_LANE_ARRIVE, TEMPLE_LANE_WIDTH, { seed: 72, ruts: true }),

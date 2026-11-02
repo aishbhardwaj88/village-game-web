@@ -882,14 +882,13 @@ function buildHalwai(kit) {
 const SCHOOL_GATE_LANE_END = schoolXZ(0, -13); // the gate moved with the school's turn
 
 function buildLane() {
-  // Task 2 (draw-call budget) — both segments share the lane's default tint, and
-  // buildStripSegment now bakes its own repeat/tint into the geometry (see
-  // paths.js), so they merge into a single mesh instead of a 2-mesh group.
-  const mesh = mergeMeshList(
-    [buildStripSegment({ x: HOUSE_CENTER.x, z: HOUSE_CENTER.z + 8.6 }, HALWAI_CENTER, 6, { seed: 1.0, ruts: true }), buildStripSegment(HALWAI_CENTER, SCHOOL_GATE_LANE_END, 6, { seed: 2.0, ruts: true }), ...buildKerbSegments(HALWAI_CENTER, SCHOOL_GATE_LANE_END, 6, 0.12, 0.88, { seed: 2.0 })],
-    'lane'
-  );
-  return mesh;
+  // 3 Nov (her playtest notes 1 and 3): the old house->halwai->school strip predated the 1 Nov map and cut across it as
+  // straight rectangles with dead ends. Every road surface is now the one network in src/roadNetwork.js (src/mapRoads.js);
+  // the map's own lanes reach the house, halwai and school. Kept as an empty named group so callers are unchanged.
+  void SCHOOL_GATE_LANE_END; void buildStripSegment; void buildKerbSegments; void mergeMeshList;
+  const g = new THREE.Group();
+  g.name = 'lane';
+  return g;
 }
 
 export function buildHeroZone(scene, kit) {

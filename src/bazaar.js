@@ -881,6 +881,12 @@ export const BAZAAR_LANE_ROW_WIDTH = 6;
 export const BAZAAR_ROW_FRONTAGE_START = { x: BAZAAR_WEST_X + 2, z: BAZAAR_FRONT_Z - 4.5 }; // just past unit 1's west end
 
 export function buildBazaarLane() {
+  // 3 Nov (her playtest notes 1 and 3): this old-layout lane predated the 1 Nov map; its frontage leg ran ~600 m west
+  // into open grass and the rest overlapped the map's roads as straight rectangles. Every road surface is now the one
+  // network in src/roadNetwork.js (src/mapRoads.js), whose own lanes serve the bazaar row. Empty named group, callers unchanged.
+  const none = new THREE.Group();
+  none.name = 'bazaar_lane';
+  if (none) return none;
   const rowFrontageStart = BAZAAR_ROW_FRONTAGE_START;
   const segments = [
     // 2026-10-21 (house rebuild): the straight START->BEND diagonal sliced diagonally through the

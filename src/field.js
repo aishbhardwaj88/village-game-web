@@ -66,6 +66,11 @@ function buildTrackVerge() {
 }
 
 function buildTrack() {
+  // 3 Nov (her playtest notes 1 and 3): the loop's surface is now part of the one road network (src/roadNetwork.js,
+  // src/mapRoads.js lays the same four corners), so it merges with the map's field tracks where they cross. Empty named group.
+  const none = new THREE.Group();
+  none.name = 'field_track';
+  if (none) return none;
   // Task 2 (draw-call budget) — all 5 segments share the same tint, and
   // buildStripSegment now bakes its own repeat/tint into the geometry (see
   // paths.js), so they merge into one mesh instead of 5.
