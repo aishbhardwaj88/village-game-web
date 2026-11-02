@@ -30,11 +30,11 @@ const PAPER = '#efe4c8';
  */
 const SIGNPOSTS_ON_MAP = [
   // Map coordinates (docs/layout/village-plan-positions-2026-11-01.json), 5-6 m off the road centreline, clear of the kerb.
-  // Each post faces the walker it is meant for: ry 0 reads from the north, PI from the south, -PI/2 from the east, PI/2 from the west.
+  // Each post faces the walker it is meant for: the board normal is (sin ry, cos ry) and the reader stands on that side: ry 0 is read walking north, PI walking south, PI/2 walking west, -PI/2 walking east. main_south was PI, which put the school behind the reader and showed a blank back from the south.
   { id: 'cross_west', x: -45, z: 11, ry: Math.PI / 2, to: ['pond', 'cane', 'gaushala', 'masjid'] },
   { id: 'cross_east', x: 45, z: 19, ry: -Math.PI / 2, to: ['johad', 'jain', 'health', 'mela'] },
   { id: 'main_north', x: 2.5, z: -30, ry: 0, to: ['haveli', 'mandi', 'highway', 'tvhouse'] },
-  { id: 'main_south', x: 9, z: 60, ry: Math.PI, to: ['school', 'anganwadi', 'gurudwara', 'gilli'] },
+  { id: 'main_south', x: 9, z: 60, ry: 0, to: ['school', 'anganwadi', 'gurudwara', 'gilli'] },
   { id: 'chowk_north', x: -6, z: -8, ry: Math.PI, to: ['bazaar', 'chemist', 'manihari', 'teastall'] },
   { id: 'chowk_south', x: 15, z: 24, ry: 0, to: ['sabzi', 'house', 'dairy', 'jalebi'] },
   { id: 'ring_west', x: -68, z: 5, ry: -Math.PI / 2, to: ['temple', 'canal', 'field', 'baagh'] },
