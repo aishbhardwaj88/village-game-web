@@ -2639,11 +2639,22 @@ async function main() {
     onShowVisit: () => freeRoam.openVisit(),
     onShowTasks: () => freeRoam.openTasks(),
   });
+  const cycleBtn = document.getElementById('cycle-btn-touch');
+  const toggleCycle = () => {
+    onCycle = !onCycle;
+    cycleBtn?.classList.toggle('off', !onCycle);
+    const key = touch ? 'the cycle button' : 'C';
+    freeRoam.toast(onCycle ? `On the cycle. Press ${key} to get off.` : `On foot. Press ${key} to get back on the cycle.`, onCycle ? `साइकिल पर हो। उतरने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।` : `पैदल हो। साइकिल पर चढ़ने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।`, 3000);
+  };
+  if (touch && cycleBtn) {
+    cycleBtn.classList.add('visible');
+    cycleBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (started && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
+    });
+  }
   window.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) {
-      onCycle = !onCycle;
-      freeRoam.toast(onCycle ? 'On the cycle. Press C to get off.' : 'On foot. Press C to get back on the cycle.', onCycle ? 'साइकिल पर हो। उतरने के लिए C दबाओ।' : 'पैदल हो। साइकिल पर चढ़ने के लिए C दबाओ।', 3000);
-    }
+    if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
     if (e.code === 'KeyT' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) night.toggle();
     if (e.code !== 'KeyN' || !started || e.repeat) return;
     if (freeRoam.isOpen()) freeRoam.closeNotebook();

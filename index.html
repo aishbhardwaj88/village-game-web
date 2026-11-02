@@ -605,6 +605,24 @@
       #pause-btn-touch:active {
         transform: scale(0.94);
       }
+      #cycle-btn-touch {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(20, 14, 10, 0.55);
+        border: 1.5px solid rgba(255, 255, 255, 0.28);
+        color: #f8ead0;
+        font-size: 1.2rem;
+        line-height: 1;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+      #cycle-btn-touch.visible { display: flex; }
+      #cycle-btn-touch.off { opacity: 0.55; }
+      #cycle-btn-touch:active { transform: scale(0.94); }
 
 
       /* --- Free roam (docs/MISSIONS_PLAN.md): notebook map + discovery toast + side-job panels --- */
@@ -1086,6 +1104,7 @@
       </div>
       <div id="top-right-stack">
         <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
+        <button id="cycle-btn-touch" type="button" aria-label="Get off or on the cycle">&#128690;</button>
         <div id="minimap-wrap" role="button" aria-label="Open map"><canvas id="minimap-canvas"></canvas></div>
         <div id="attach-hint">
           <div id="attach-key-badge">F</div>
