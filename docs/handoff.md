@@ -1,3 +1,5 @@
+**2026-11-02 (kerbs verified, docs only):** the kerb/drain commit a668fb0 was never regression-checked; now run on HEAD: build ALL PASSED, collision-test 7680 static solids 276 NPC legs 0 failed, regression-check 22/22, no regressions. No unbuilt family in PARALLEL.md.
+
 **2026-11-02 (map gates):** src/mapGates.js: To-the-city boards at both highway ends, 40 back-lane mouth posts, colliders. Build ALL PASSED, collision-test 7677 solids 0 failed, regression-check 22/22. Shots docs/shots/map-gates-2026-11-02, no console errors. NEXT: kerbs and drains along the map roads.
 
 **2026-11-02 (map field channel):** src/fieldChannel.js + zone map_field_channel in src/main.js: the map's water.field_channel (208.9,-9.4)->(197.1,69.8) +600 east, water strip and low lips, no colliders. Build ALL PASSED, collision-test 7635 static solids 312 NPC legs 0 failed, regression-check 22/22. Shots docs/shots/field-channel-2026-11-02, no console errors. NEXT: nothing unbuilt in PARALLEL.md; fields (crops) are organic, off the list.
