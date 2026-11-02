@@ -2781,8 +2781,8 @@ async function main() {
         } else {
           moveSmallVehicle(vehicle, vehicle.pendingDx, vehicle.pendingDz);
         }
-        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
         const collisionCorrection = Math.hypot(vehicle.group.position.x - preCollisionX, vehicle.group.position.z - preCollisionZ);
         const properlyBlocked = Math.hypot(vehicle.pendingDx, vehicle.pendingDz) - collisionCorrection > 0.01;
         if (properlyBlocked) {
@@ -3250,8 +3250,8 @@ async function main() {
         // Mirrors the real loop's tractor-resolution exactly (see the
         // mountedVehicle branch above) — oriented box, not a circle.
         resolveOrientedMove(vehicle.group.position, vehicle.group.rotation.y, vehicle.pendingDx, vehicle.pendingDz, p.body.w / 2, p.body.d / 2, otherVehicleBoxes(vehicle));
-        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
         if (vehicle.trolley && vehicle.trolley.attached) {
           const trolley = vehicle.trolley;
           const trolleyPrevX = trolley.group.position.x;
@@ -3313,8 +3313,8 @@ async function main() {
         if (!vehicle) return null;
         vehicle.update(dt, { moveZ: throttleZ, moveX: steerX });
         moveSmallVehicle(vehicle, vehicle.pendingDx, vehicle.pendingDz);
-        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
-        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_EXTENT, GROUND_HALF_EXTENT);
+        vehicle.group.position.x = THREE.MathUtils.clamp(vehicle.group.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
+        vehicle.group.position.z = THREE.MathUtils.clamp(vehicle.group.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
         return { x: vehicle.group.position.x, z: vehicle.group.position.z, speed: vehicle.speed, yaw: vehicle.group.rotation.y };
       },
     };
