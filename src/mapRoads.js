@@ -2,7 +2,7 @@
  * The 1 Nov map's roads (docs/layout/village-plan-positions-2026-11-01.json `roads` and `lanes_and_tracks`), laid at the same
  * +MAP_SHIFT as the places (src/mapPlan.js). Positions only: every polyline is built from the shared dirt-strip piece
  * (src/paths.js buildStripSegment), merged to ONE draw call per zone chunk. Roads are ground-level, not solid.
- * Kerbs, drains, posts and "To the city" boards are not built yet (docs/NEEDS_YOU.md).
+ * Kerbs and drains are not built yet (docs/NEEDS_YOU.md); the "To the city" boards and back-lane posts are src/mapGates.js.
  */
 import * as THREE from 'three';
 import { buildStripSegment } from './paths.js';

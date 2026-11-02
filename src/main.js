@@ -10,6 +10,7 @@ import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, halwaiXZ, HALWAI_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
 import { BuildingKit } from './buildingKit.js';
 import { createWayfinding } from './wayfinding.js';
+import { createMapGates } from './mapGates.js';
 import { milestoneSites, createMilestone } from './milestones.js';
 import { roadLegs, spurLegs, roadAt } from './eastRoad.js';
 import { propCells, createPropCell } from './villageProps.js';
@@ -290,6 +291,11 @@ async function main() {
   createWayfinding()
     .then((wf) => { scene.add(wf); initStaticColliders(scene); })
     .catch((err) => console.error('Failed to build the wayfinding signs', err));
+
+  // The map's "To the city" boards at the highway ends and the posts at the back-lane mouths (src/mapGates.js).
+  createMapGates()
+    .then((g) => { scene.add(g); initStaticColliders(scene); })
+    .catch((err) => console.error('Failed to build the map gates', err));
 
   // Places V1 locations (item 9) on the lanes near the hero zone — neither has a
   // LAYOUT.md, dimensions/names read off the reference orthographic images instead
