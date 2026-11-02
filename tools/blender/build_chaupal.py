@@ -31,7 +31,9 @@ import arch
 from arch import Kit, plastic_chair, lathe, clay_pot, decal_material, bicycle, STEEL, BRASS
 
 OUT = os.path.join(ROOT, 'tmp', 'chaupal_v2_raw.glb')
-kit = Kit(split_props=False, own=('metal',), wood_slot='props')
+# Phase 5b (2 Nov): the earth patch rides the library's packed earth BY NAME as the approved material board renders it (dryearth scan x
+# vertex colour) through the unused 'jute' slot; in the plaster set the runtime low-wall weathering turned it a dark blotchy grey-brown.
+kit = Kit(split_props=False, own=('metal',), wood_slot='props', route={'earth': 'jute'}, tex_override={'jute': ('dryearth', 1.0)})
 rnd = random.Random(3)
 CEMENT = 0x8E8C86
 CEMENT_DK, CEMENT_WORN, CEMENT_WET = 0x77756F, 0x83817A, 0x6C6B66

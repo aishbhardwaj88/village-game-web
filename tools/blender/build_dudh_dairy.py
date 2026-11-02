@@ -24,7 +24,11 @@ import arch
 from arch import Kit, lathe, clay_pot, decal_material, ring, bicycle, STEEL, BRASS
 
 OUT = os.path.join(ROOT, 'tmp', 'dudh_dairy_v2_raw.glb')
-kit = Kit(split_props=False, own=('metal', 'thatch'), wood_slot='props')
+# Phase 5b (2 Nov): the yard ground and every mark lying on it ride the library's packed-earth material BY NAME, exactly as the approved
+# material board (build_material_board.py) renders it: the dryearth scan at repeat 1.0 x vertex colour. Kind 'earth' is routed into the
+# otherwise unused 'jute' slot carrying that set. In the plaster set the runtime weathering (src/stagingYard.js addWeathering) desaturates
+# and darkens everything below 0.7 m, which is why the painted stains, paths and wet patches read as one flat grey-brown.
+kit = Kit(split_props=False, own=('metal', 'thatch'), wood_slot='props', route={'earth': 'jute'}, tex_override={'jute': ('dryearth', 1.0)})
 
 BLUE = 0x8FBBD6
 WHITE = 0xF4F1EA
@@ -165,7 +169,13 @@ def ground_colour(x, z):
     c = [c[i] + (mc[i] - c[i]) * mud for i in range(3)]
     c = [v * (1.0 - 0.42 * wet) for v in c]                            # damp earth darkens
     c = [v * (1.0 + 0.1 * dust) for v in c]                            # paler dust on the rim
-    n = 1.0 + 0.05 * math.sin(x * 13.1 + z * 7.7) * math.sin(z * 11.3 - x * 3.1)
+    # phase 5b: big soft blotches so 18 m of yard is never one tone - darker old damp/dung-trodden patches, paler sun-dried dust patches
+    bl = math.sin(x * 0.61 + 1.3) * math.sin(z * 0.83 + 0.2) + 0.6 * math.sin(x * 1.37 - z * 0.91 + 2.1)
+    dark = _smooth(0.55, 1.1, bl)
+    pale = _smooth(0.5, 1.05, -bl) * (1.0 - wet)
+    c = [v * (1.0 - 0.22 * dark) for v in c]
+    c = [v * (1.0 + 0.12 * pale) for v in c]
+    n = 1.0 + 0.07 * math.sin(x * 13.1 + z * 7.7) * math.sin(z * 11.3 - x * 3.1)
     return tuple(min(1.0, v * n) for v in c) + (1.0,)
 
 
@@ -270,7 +280,7 @@ def blob(name, cx, cz, h, rx, rz, seed, n=10, rough=0.22, ang=0.0):
 def ground_blob(name, cx, cz, rx, rz, colour, ang=0.0, lift=0.005, n=10, rough=0.22):
     r = max(rx, rz)
     h = max(gh(cx + dx * r, cz + dz * r) for dx, dz in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1), (0.7, 0.7), (-0.7, -0.7), (0.7, -0.7), (-0.7, 0.7)))
-    return add('paint', blob(name, cx, cz, h + lift, rx, rz, rnd.randint(0, 99999), n=n, rough=rough, ang=ang), colour)
+    return add('earth', blob(name, cx, cz, h + lift, rx, rz, rnd.randint(0, 99999), n=n, rough=rough, ang=ang), colour)
 
 
 def jit(hexc, amt=0.06):
@@ -321,7 +331,7 @@ def build_ground_marks():
             ground_blob('hoof', cx - math.sin(a) * s * 0.028, cz + math.cos(a) * s * 0.028, 0.045, 0.024, col, ang=a, lift=0.004, n=7, rough=0.15)
     # dung pats: low domed lumps by the stable and on the cattle track, plus flattened old dark smears
     for (x, z, r) in ((6.1, -1.0, 0.17), (2.9, 2.1, 0.13), (7.7, -1.25, 0.2), (4.0, -0.4, 0.12), (8.3, -2.9, 0.16)):
-        add('paint', sphere('dung_pat', x, z, gh(x, z) - 0.01, r, r * rnd.uniform(0.8, 1.0), 0.045, 1), jit(0x4C3D2A, 0.08))
+        add('earth', sphere('dung_pat', x, z, gh(x, z) - 0.01, r, r * rnd.uniform(0.8, 1.0), 0.045, 1), jit(0x4C3D2A, 0.08))
     for _ in range(9):
         ground_blob('dung_smear', rnd.uniform(1.8, 6.0), rnd.uniform(-1.0, 2.6), rnd.uniform(0.1, 0.22), rnd.uniform(0.07, 0.14), jit(0x5E4C36, 0.08), rnd.uniform(0, 3), n=9, rough=0.35)
     # drip line under the shop's roof-slab overhang (left, back, right): a pitted dark strip in the earth
@@ -331,6 +341,31 @@ def build_ground_marks():
         for k in range(n):
             t = (k + 0.5) / n
             ground_blob('drip_pit', x0 + (x1 - x0) * t + rnd.uniform(-0.05, 0.05), z0 + (z1 - z0) * t + rnd.uniform(-0.05, 0.05), rnd.uniform(0.1, 0.2), rnd.uniform(0.06, 0.1), jit(0x8F7F62, 0.06), math.atan2(z1 - z0, x1 - x0), n=8, rough=0.3)
+    # phase 5b: dark stains - cattle urine / dung wash in front of the stable and on the track to the pump, old spilt-water darks
+    for _ in range(10):
+        ground_blob('urine_stain', rnd.uniform(3.4, 8.4), rnd.uniform(-1.3, 0.4), rnd.uniform(0.18, 0.42), rnd.uniform(0.12, 0.3), jit(0x6A5A44, 0.08), rnd.uniform(0, 3), lift=0.003, n=11, rough=0.35)
+    for _ in range(6):
+        t = rnd.uniform(0.1, 0.9)
+        ground_blob('track_stain', 5.4 + (1.4 - 5.4) * t + rnd.uniform(-0.4, 0.4), -1.2 + 4.4 * t + rnd.uniform(-0.4, 0.4), rnd.uniform(0.15, 0.32), rnd.uniform(0.1, 0.22), jit(0x75644B, 0.08), rnd.uniform(0, 3), lift=0.003, n=10, rough=0.35)
+    for _ in range(7):
+        ground_blob('old_stain', rnd.uniform(-8.0, 8.0), rnd.uniform(2.6, 5.6), rnd.uniform(0.25, 0.6), rnd.uniform(0.18, 0.4), jit(0x8E7C5E, 0.06), rnd.uniform(0, 3), lift=0.003, n=12, rough=0.3)
+    # the wet patch at the pump: a dark soaked ring round the tub, slopped water where buckets are filled, two fresh splashes
+    for k in range(9):
+        a = k / 9 * math.tau + rnd.uniform(-0.2, 0.2)
+        r = rnd.uniform(0.95, 1.2)
+        ground_blob('pump_wet', PUMP[0] + r * math.cos(a), PUMP[1] + r * math.sin(a), rnd.uniform(0.38, 0.6), rnd.uniform(0.26, 0.4), jit(0x4A4034, 0.05), a, lift=0.0035, n=11, rough=0.3)
+    ground_blob('pump_slop', PUMP[0] + 1.05, PUMP[1] - 0.6, 0.7, 0.48, 0x433A2F, 0.4, lift=0.004, n=13)
+    for (dx, dz) in ((-1.1, 0.4), (0.3, 1.2)):
+        ground_blob('pump_splash', PUMP[0] + dx, PUMP[1] + dz, 0.22, 0.12, 0x4E4438, rnd.uniform(0, 3), lift=0.0045, n=9, rough=0.5)
+    # straw scattered thinly over the whole yard (blown off the cutter and the bhusa heap), not only round the cutter
+    for _ in range(150):
+        x, z = rnd.uniform(PX0 + 0.3, PX1 - 0.3), rnd.uniform(PZ0 + 0.3, PZ1 - 0.3)
+        if SH_X0 - 0.1 < x < SH_X1 + 0.1 and SH_Z0 - 0.1 < z < SH_Z1 + 0.1:
+            continue
+        a = rnd.uniform(0, math.pi)
+        L = rnd.uniform(0.07, 0.22)
+        h = gh(x, z) + 0.008
+        add('earth', limb('straw_bit', (x - math.cos(a) * L / 2, z - math.sin(a) * L / 2, h), (x + math.cos(a) * L / 2, z + math.sin(a) * L / 2, h + 0.004), 0.009, 0.006), rnd.choice((0xD6C184, 0xCBB474, 0xE0CF98, 0xBFA764)))
     # chopped straw and fodder bits blown about round the chaff cutter, the stable and the charpai
     for (cx, cz, sx, sz, n) in ((3.2, 1.2, 1.6, 1.1, 44), (6.0, -1.0, 2.8, 0.8, 34), (6.6, 1.8, 1.4, 0.9, 12)):
         for _ in range(n):
@@ -341,7 +376,7 @@ def build_ground_marks():
             L = rnd.uniform(0.06, 0.2)
             h = gh(x, z) + 0.008
             c = rnd.choice((0xCDB57A, 0xC2A866, 0xD8C58E, 0xB59A5A)) if rnd.random() < 0.8 else rnd.choice((0x6F8A3A, 0x5E7A32))
-            add('paint', limb('straw_bit', (x - math.cos(a) * L / 2, z - math.sin(a) * L / 2, h), (x + math.cos(a) * L / 2, z + math.sin(a) * L / 2, h + 0.004), 0.008, 0.006), c)
+            add('earth', limb('straw_bit', (x - math.cos(a) * L / 2, z - math.sin(a) * L / 2, h), (x + math.cos(a) * L / 2, z + math.sin(a) * L / 2, h + 0.004), 0.008, 0.006), c)
 
 
 # ---------------------------------------------------------------------------------------------- shop
@@ -532,7 +567,7 @@ def build_stable():
     for _ in range(18):
         sx, sz = rnd.uniform(x0 + 0.5, x1 - 0.6), rnd.uniform(z0 + 1.2, z1 - 0.3)
         r = rnd.uniform(0.3, 0.6)
-        add('paint', sphere('straw_heap', sx, sz, gh(sx, sz) - 0.02, r, r * rnd.uniform(0.6, 1.0), rnd.uniform(0.04, 0.09), 2), jit(rnd.choice((0xC9B070, 0xBDA262, 0xD2BC80, 0xA98F55)), 0.05))
+        add('earth', sphere('straw_heap', sx, sz, gh(sx, sz) - 0.02, r, r * rnd.uniform(0.6, 1.0), rnd.uniform(0.04, 0.09), 2), jit(rnd.choice((0xC9B070, 0xBDA262, 0xD2BC80, 0xA98F55)), 0.05))
     # six wooden posts (rough, slightly tapered) + beams
     posts = [(x0 + 0.15, z1 - 0.1), (x0 + 3.0, z1 - 0.1), (x1 - 0.15, z1 - 0.1), (x0 + 0.15, z0 + 0.35), (x0 + 3.0, z0 + 0.35), (x1 - 0.15, z0 + 0.35)]
     for k, (px, pz) in enumerate(posts):
@@ -729,19 +764,43 @@ def build_props():
     for _ in range(9):
         fx, fz = 4.15 + rnd.uniform(-0.45, 0.45), 1.0 + rnd.uniform(-0.45, 0.45)
         r = rnd.uniform(0.22, 0.42)
-        add('paint', sphere('fodder_heap', fx, fz, gh(fx, fz) - 0.02, r, r * rnd.uniform(0.7, 1.0), rnd.uniform(0.1, 0.2), 1), jit(rnd.choice((0x5F7F3A, 0x6B8A3E, 0x56743A, 0x7A8F45)), 0.06))
+        add('earth', sphere('fodder_heap', fx, fz, gh(fx, fz) - 0.02, r, r * rnd.uniform(0.7, 1.0), rnd.uniform(0.1, 0.2), 1), jit(rnd.choice((0x5F7F3A, 0x6B8A3E, 0x56743A, 0x7A8F45)), 0.06))
     for _ in range(40):
         fx, fz = 4.15 + rnd.gauss(0, 0.35), 1.0 + rnd.gauss(0, 0.35)
         a = rnd.uniform(0, math.tau)
         L = rnd.uniform(0.08, 0.2)
         h = gh(fx, fz) + rnd.uniform(0.06, 0.18)
-        add('paint', limb('fodder_bit', (fx, fz, h), (fx + math.cos(a) * L, fz + math.sin(a) * L, h + rnd.uniform(-0.05, 0.05)), 0.012, 0.004), jit(rnd.choice((0x5F7F3A, 0x6E8E40, 0x8C9A50)), 0.06))
+        add('earth', limb('fodder_bit', (fx, fz, h), (fx + math.cos(a) * L, fz + math.sin(a) * L, h + rnd.uniform(-0.05, 0.05)), 0.012, 0.004), jit(rnd.choice((0x5F7F3A, 0x6E8E40, 0x8C9A50)), 0.06))
+    # phase 5b: the FODDER PILE proper - a knee-high heap of chopped green fodder beside the cutter (LAYOUT: "chaff cutter with big
+    # flywheel + fodder pile"), built from overlapping domes so its outline is lumpy, with loose bits on its flanks
+    FP = (4.9, 0.35)
+    for k in range(14):
+        a, r = rnd.uniform(0, math.tau), abs(rnd.gauss(0, 0.32))
+        fx, fz = FP[0] + r * math.cos(a), FP[1] + r * math.sin(a) * 0.8
+        rad = rnd.uniform(0.35, 0.55) * (1.0 - 0.35 * r)
+        add('earth', sphere('fodder_pile', fx, fz, gh(fx, fz) - 0.03, rad, rad * rnd.uniform(0.75, 1.0), rnd.uniform(0.28, 0.48) * (1.0 - 0.6 * r), 2), jit(rnd.choice((0x5F7F3A, 0x6B8A3E, 0x56743A, 0x748C42, 0x4E6A34)), 0.06))
+    for _ in range(60):
+        a, r = rnd.uniform(0, math.tau), rnd.uniform(0.5, 1.0)
+        fx, fz = FP[0] + r * math.cos(a), FP[1] + r * math.sin(a) * 0.8
+        b = rnd.uniform(0, math.tau)
+        L = rnd.uniform(0.08, 0.2)
+        h = gh(fx, fz) + 0.02 + max(0.0, 0.42 * (1.0 - r))
+        add('earth', limb('fodder_bit', (fx, fz, h), (fx + math.cos(b) * L, fz + math.sin(b) * L, h + rnd.uniform(-0.04, 0.02)), 0.012, 0.004), jit(rnd.choice((0x5F7F3A, 0x6E8E40, 0x8C9A50)), 0.06))
+    # dry bhusa (chopped wheat straw) heap behind, between the shop and the stable, a few loose bricks at its foot
+    BP = (2.0, -2.7)
+    for k in range(10):
+        a, r = rnd.uniform(0, math.tau), abs(rnd.gauss(0, 0.35))
+        bx_, bz_ = BP[0] + r * math.cos(a), BP[1] + r * math.sin(a)
+        rad = rnd.uniform(0.45, 0.7) * (1.0 - 0.3 * r)
+        add('earth', sphere('bhusa', bx_, bz_, gh(bx_, bz_) - 0.04, rad, rad * rnd.uniform(0.8, 1.0), rnd.uniform(0.35, 0.6) * (1.0 - 0.5 * r), 2), jit(rnd.choice((0xD2BC80, 0xC9B070, 0xDCC88E, 0xBFA662)), 0.05))
+    for k in range(3):
+        add('brick', wb('bhusa_brick', BP[0] - 0.5 + k * 0.45, BP[0] - 0.28 + k * 0.45, BP[1] + 0.6, BP[1] + 0.71, 0.0, 0.07, 0.004))
     for k in range(22):   # uncut stalks lying in a loose bundle, butts together at the feed end
         z = 0.55 + rnd.uniform(-0.18, 0.18)
         x0 = 1.55 + rnd.uniform(-0.08, 0.08)
         L = rnd.uniform(1.1, 1.5)
         h = gh(x0, z) + 0.03 + 0.03 * (k % 3)
-        add('paint', limb('green_stalk', (x0, z, h), (x0 + L, z + rnd.uniform(-0.25, 0.25), h + rnd.uniform(-0.02, 0.03)), 0.018, 0.006), jit(rnd.choice((0x6F8F3E, 0x5E7E36, 0x86994A)), 0.05))
+        add('earth', limb('green_stalk', (x0, z, h), (x0 + L, z + rnd.uniform(-0.25, 0.25), h + rnd.uniform(-0.02, 0.03)), 0.018, 0.006), jit(rnd.choice((0x6F8F3E, 0x5E7E36, 0x86994A)), 0.05))
     # green fodder in the stable trough (LAYOUT: "cement feeding trough with green fodder")
     for k in range(10):
         tx = 3.0 + 0.5 + k * 0.27 + rnd.uniform(-0.05, 0.05)

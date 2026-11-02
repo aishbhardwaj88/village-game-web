@@ -36,13 +36,17 @@ from arch import Kit, lathe, ring, STEEL, BRASS
 import placekit as pk
 
 OUT = os.path.join(ROOT, 'tmp', 'tubewell_v2_raw.glb')
-kit = Kit(split_props=False, own=('metal',), wood_slot='props')
+# Phase 5b (2 Nov): ground + ground marks ride the library's packed earth BY NAME, as the approved material board renders it (dryearth
+# scan x vertex colour), through the unused 'jute' slot. In the plaster set the runtime weathering desaturates/darkens everything below
+# 0.7 m, which made the patch read as grey paving.
+kit = Kit(split_props=False, own=('metal',), wood_slot='props', route={'earth': 'jute'}, tex_override={'jute': ('dryearth', 1.0)})
 rnd = random.Random(21)
 add = kit.add
 CEM = pk.CEMENT
 IRON = 0x6E7378
 CABLE = 0x2C2C2E
-EARTH = 0x8A7058
+EARTH = 0xC4B496                                  # library 'packed_earth' (build_material_board.py), was a darker sampled 0x8A7058
+EARTH_LO, MUD, MUD_LO = 0xB0A07E, 0x7E7058, 0x6A5C48   # library packed_earth low tone, library 'mud_dung'
 ALGAE, ALGAE_DK, LIME = 0x5F6747, 0x4C5538, 0xD2CDBE
 _uid = [0]
 
@@ -231,13 +235,18 @@ def ground_fx(obj):
             v.co.z += -0.028 * w * (0.7 + 0.3 * nz(x, z, 7)) - 0.012 * p
             v.co.z = v.co.z * (1 - 0.6 * p) + (0.032) * 0.6 * p              # paths: trodden flat, cracks filled
         vinfo[v.index] = (w, p, o, edge)
-    wet_c, dust_c, oil_c, grass_c = lin(0x4A3B2C), lin(0xA08A70), lin(0x2E2A26), lin(0x6E6A44)
+    wet_c, dust_c, oil_c, grass_c = lin(0x5A4A38), lin(0xD2C6AA), lin(0x3A342E), lin(0x8A8458)
+    lo_c, mud_c = lin(EARTH_LO), lin(MUD)
     for li, lp in enumerate(me.loops):
         inf = vinfo.get(lp.vertex_index)
         if not inf:
             continue
         w, p, o, e = inf
         c = cols[li * 4:li * 4 + 3]
+        x_, z_ = me.vertices[lp.vertex_index].co.x, -me.vertices[lp.vertex_index].co.y
+        bl = math.sin(x_ * 0.67 + 0.4) * math.sin(z_ * 0.91 + 1.9) + 0.6 * math.sin(x_ * 1.43 - z_ * 1.07 + 0.8)
+        c = mix(c, lo_c, 0.5 * smooth(-0.2, 0.6, bl))                       # big soft tone patches: the patch is never one colour
+        c = mix(c, mud_c, 0.45 * smooth(0.7, 1.25, bl) * (1 - p))            # old trodden mud-and-dung patches
         c = mix(c, grass_c, 0.45 * e * (1 - w))
         c = mix(c, dust_c, 0.5 * p)
         c = mix(c, wet_c, 0.78 * w)
@@ -258,9 +267,57 @@ def _earth(obj, base_hex, seed=0):
 
 
 arch.earth_ground = _earth
-for i, (gx0, gx1) in enumerate(((-6, 0), (0, 6))):
-    for j, (gz0, gz1) in enumerate(((-5, 0), (0, 5))):
-        add('earth', wb('tw_ground_%d%d' % (i, j), gx0, gx1, gz0, gz1, -0.08, 0.04, bevel=0), EARTH)
+# ONE ground slab (was 2 x 2 tiles with their own crack seeds: the tile border read as a straight paving seam)
+add('earth', wb('tw_ground', -6, 6, -5, 5, -0.08, 0.04, bevel=0), EARTH)
+
+
+def ground_h(x, z):
+    """approx top of the earth at (x, z): sunk in the wet mud, flattened on the paths (marks sit on it)"""
+    return 0.04 - 0.028 * wetness(x, z) * 0.85
+
+
+# footprints: bare feet and chappals pressed into the soft ground along the paths and round the hauz, darker where it is wet
+fr = random.Random(77)
+for pl in PATHS:
+    for a, b in zip(pl, pl[1:]):
+        L = math.hypot(b[0] - a[0], b[1] - a[1])
+        ang = math.atan2(b[1] - a[1], b[0] - a[0])
+        for k in range(int(L / 0.36)):
+            tt = (k + fr.uniform(0, 0.4)) / max(1, int(L / 0.36))
+            side = 0.09 if k % 2 else -0.09
+            fx = a[0] + (b[0] - a[0]) * tt - math.sin(ang) * side + fr.uniform(-0.04, 0.04)
+            fz = a[1] + (b[1] - a[1]) * tt + math.cos(ang) * side + fr.uniform(-0.04, 0.04)
+            if hx0 - 0.05 < fx < hx1 + 0.05 and hz0 - 0.05 < fz < hz1 + 0.05:
+                continue
+            w_ = wetness(fx, fz)
+            col = 0x4E3F30 if w_ > 0.4 else (0x9A8A6C if fr.random() < 0.7 else 0x887858)
+            add('earth', blob('footprint', fx, fz, ground_h(fx, fz) + 0.016, 0.11, fr.randint(0, 9999), n=8, sq=0.42), col)
+            # rotate the print along the walk direction
+            o = kit.records[-1][1]
+            o.data.transform(Matrix.Translation((fx, -fz, 0)) @ Matrix.Rotation(-(ang + fr.uniform(-0.2, 0.2)), 4, 'Z') @ Matrix.Translation((-fx, fz, 0)))
+for k in range(26):                                   # splashing kids' prints round the hauz, in the wet
+    a = fr.uniform(0, math.tau)
+    fx, fz = cx + 1.75 * math.cos(a) * fr.uniform(0.9, 1.15), hcz + 1.75 * math.sin(a) * fr.uniform(0.9, 1.15)
+    if fz < hz0 - 0.2 and fx < x1 + 0.1:
+        continue
+    add('earth', blob('footprint', fx, fz, ground_h(fx, fz) + 0.016, 0.09, fr.randint(0, 9999), n=8, sq=0.45), 0x4A3C2E)
+# dry dung pats and stains where the bullocks are watered at the hauz (east side), straw bits blown in from the fields
+for k in range(5):
+    fx, fz = fr.uniform(-1.6, 0.4), fr.uniform(-0.6, 2.2)
+    add('earth', sphere('dung_pat', fx, fz, ground_h(fx, fz) - 0.01, 0.14, 0.12, 0.04, 1), [0x5A4834, 0x4C3D2A, 0x66523A][k % 3])
+for k in range(8):
+    fx, fz = fr.uniform(-5.5, 5.5), fr.uniform(-4.5, 4.7)
+    if wetness(fx, fz) > 0.3 or (x0 - 0.3 < fx < x1 + 0.3 and z0 - 0.3 < fz < z1 + 0.4):
+        continue
+    add('earth', blob('dry_stain', fx, fz, ground_h(fx, fz) + 0.015, fr.uniform(0.25, 0.55), fr.randint(0, 9999), n=12, sq=0.7), [0x8E7C5E, 0x9A8868, 0x84725A][k % 3])
+for k in range(90):
+    fx, fz = fr.uniform(-5.8, 5.8), fr.uniform(-4.8, 4.8)
+    if (x0 - 0.1 < fx < x1 + 0.1 and z0 - 0.1 < fz < z1 + 0.1) or (hx0 - 0.1 < fx < hx1 + 0.1 and hz0 - 0.1 < fz < hz1 + 0.1):
+        continue
+    a = fr.uniform(0, math.pi)
+    L = fr.uniform(0.07, 0.2)
+    h = ground_h(fx, fz) + 0.018
+    add('earth', limb('straw_bit', (fx - math.cos(a) * L / 2, fz - math.sin(a) * L / 2, h), (fx + math.cos(a) * L / 2, fz + math.sin(a) * L / 2, h + 0.004), 0.009, 0.006), fr.choice((0xD6C184, 0xCBB474, 0xBFA764)))
 
 # puddles in the sunk mud by the notch and along the channel banks (water material, below)
 WATER_OBJS = []
@@ -273,8 +330,10 @@ HS = (0.08, 0.18, 0.3, 0.42, 0.56, 0.75, 1.1, 1.6, 2.1, 2.5, 2.75, 2.9)
 
 def brick_grime(x, z, h, n, c):
     k = nz(x, z, 2.2, 5)
-    damp = 1.0 - smooth(0.25 + 0.3 * k, 0.6 + 0.3 * k, h)                    # rising damp, ragged top
-    c = tuple(ch * (1 - 0.32 * damp) for ch in c)
+    damp = 1.0 - smooth(0.35 + 0.35 * k, 0.75 + 0.35 * k, h)                  # rising damp, ragged top (phase 5b: higher and darker)
+    c = tuple(ch * (1 - 0.48 * damp) for ch in c)
+    soot = smooth(1.9, 2.95, h) * (0.55 + 0.45 * nz(x, z, 3, 8))              # soot / grime blackening under the slab edge
+    c = tuple(ch * (1 - 0.35 * soot) for ch in c)
     dust = 1.0 - smooth(0.0, 0.35 + 0.25 * nz(x, z, 6, 2), h)                # splash dust
     c = mix(c, mix(c, lin(0x8E7A62), 1.0), 0.45 * dust)
     if n[2] < 0.5:
@@ -318,6 +377,57 @@ add('paint', wb('spout_stain2', x0 + 0.56, x0 + 0.64, z0 - 0.008, z0 - 0.004, 1.
 for sx, w_, l in ((x0 + 0.05, 0.12, 1.4), (x1 - 0.18, 0.1, 1.1), (dx1 + 0.4, 0.05, 0.6)):
     add('paint', wb('streak', sx, sx + w_, z1, z1 + 0.004, H - l, H - 0.02, 0.0), 0x5C564E)
 add('paint', wb('lime_run', x1, x1 + 0.004, z0 + 0.3, z0 + 0.36, 2.2, H - 0.02, 0.0), 0xC9C5B8)
+
+# phase 5b weathering on the brick: white efflorescence (salt bloom) crusting just above the damp line, soot smudged up the front wall
+# over the door and over the back vent, a dark damp tide-mark band at the foot. Paint decals a few mm proud of the brick face.
+OUTN = {'W': (-1, 0), 'E': (1, 0), 'N': (0, 1), 'S': (0, -1)}   # outward normal in Blender (x, y); Blender y = -site z
+
+
+def face_out(o, face):
+    """single-sided decal: make its normal point away from the wall (quad()'s recalc on a lone face can pick either side)"""
+    nx, ny = OUTN[face]
+    pn = o.data.polygons[0].normal
+    if pn.x * nx + pn.y * ny < 0:
+        o.data.flip_normals()
+    return o
+
+
+def wall_blob(face, c, u, h, ru, rh, seed, col, n=12):
+    rr = random.Random(seed)
+    pts = []
+    for i in range(n):
+        a = i / n * math.tau
+        k = 0.7 + 0.45 * rr.random()
+        uu, hh = u + ru * k * math.cos(a), max(0.03, h + rh * k * math.sin(a))
+        pts.append((c, uu, hh) if face in ('W', 'E') else (uu, c, hh))
+    add('paint', face_out(quad(uname('wall_blob'), pts), face), col)
+
+
+er = random.Random(404)
+EFF = (0xDCD7CA, 0xD2CCBE, 0xE4E0D4)
+for face, c, u0, u1, avoid in (('W', x0 - 0.006, z0 + 0.2, z1 - 0.2, ()), ('E', x1 + 0.006, z0 + 0.2, z1 - 0.2, ((z0 + 0.9, z0 + 1.7),)),
+                               ('N', z0 - 0.006, x0 + 0.2, x1 - 0.2, ()), ('S', z1 + 0.006, dx1 + 0.15, x1 - 0.15, ((PX - 0.35, PX + 0.35),))):
+    for k in range(int((u1 - u0) / 0.42)):
+        u = u0 + (k + er.uniform(0.1, 0.9)) * 0.42
+        if any(a_ < u < b_ for a_, b_ in avoid):
+            continue
+        hh = er.uniform(0.55, 0.95)
+        wall_blob(face, c, u, hh, er.uniform(0.1, 0.24), er.uniform(0.05, 0.12), er.randint(0, 9999), er.choice(EFF))
+        if er.random() < 0.5:                                         # thin salt run below a bloom
+            wall_blob(face, c - (0.0005 if face in ('W', 'N') else -0.0005), u + er.uniform(-0.05, 0.05), hh - 0.14, 0.035, 0.12, er.randint(0, 9999), er.choice(EFF), n=8)
+# soot fanning up the front wall above the door head (hurricane lantern hung there on power-cut nights) and above the back vent
+for face, c, u, h0_, w_ in (('S', z1 + 0.007, (dx0 + dx1) / 2, 2.25, 0.5), ('N', z0 - 0.007, (vx0 + vx1) / 2, 2.62, 0.38)):
+    for j in range(4):
+        wall_blob(face, c + (0.0006 * j if face == 'S' else -0.0006 * j), u + er.uniform(-0.08, 0.08), h0_ + 0.12 + j * 0.1, w_ * (1 - 0.18 * j), 0.13, er.randint(0, 9999), (0x4A4440, 0x3E3A36, 0x55504A, 0x46423E)[j], n=12)
+# a dark damp tide-mark band at the foot of every face: ragged-topped strip
+for face, c, u0, u1 in (('W', x0 - 0.004, z0, z1), ('E', x1 + 0.004, z0, z1), ('N', z0 - 0.004, x0, x1), ('S', z1 + 0.004, dx1, x1)):
+    nseg = max(1, int((u1 - u0) / 0.25))
+    tops = [0.16 + 0.14 * er.random() for _ in range(nseg + 1)]
+    for k in range(nseg):
+        a_, b_ = u0 + (u1 - u0) * k / nseg, u0 + (u1 - u0) * (k + 1) / nseg
+        P = (lambda u, hh: (c, u, hh)) if face in ('W', 'E') else (lambda u, hh: (u, c, hh))
+        add('paint', face_out(quad(uname('damp_foot'), [P(a_, 0.02), P(b_, 0.02), P(b_, tops[k + 1]), P(a_, tops[k])]), face), 0x5A4C40)
+
 
 # door: frame + grey iron leaf standing open, swung flat against the front wall to the LEFT (the delivery pipe leaves right of the door)
 for xx0, xx1, y0, y1 in ((dx0, dx0 + 0.08, 0, 2.2), (dx1 - 0.08, dx1, 0, 2.2), (dx0, dx1, 2.12, 2.2)):
