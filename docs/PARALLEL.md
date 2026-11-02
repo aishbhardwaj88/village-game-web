@@ -1,56 +1,68 @@
-# THE QUEUE, set by Claude as tech lead, 2 Nov 18:45. She tests at the END, not between.
+# THE QUEUE, her answers of 3 Nov. Work top to bottom. `./tools/truth.sh` before any status.
 
-She has handed over sequencing. She is NOT answering verdicts, so stop asking. Decide,
-build, and write what you decided in docs/NEEDS_YOU.md so she can overrule it later.
-Work top to bottom. Run `./tools/truth.sh` before any status. Never wait on her.
+She answered the open list. Decisions below are FINAL. Never wait on her.
 
 ---
 
-## PHASE 1. Fix what is visibly broken. Nothing else matters until this is clean.
+## 1. LOAD TIME UNDER 10 SECONDS. HARD REQUIREMENT. START HERE.
 
-1. **The second culvert stands across the highway like two low walls, with no collision.**
-   The map's 2.7 x 9.4 m strip falls on the highway. Either sink it under the road
-   surface so it reads as a culvert, or drop it and note it. A wall across the main road
-   is the worst defect in the game right now.
-2. **The field channel crosses the highway strip.** Same problem. Make the road win:
-   the channel passes under it, or stops at both kerbs.
+Her words: "Load time 15.2 seconds is too much. It should not cross 10. You have to
+optimize it without compromising on the quality. Also remember, once the characters come
+in, this load time will increase even more."
 
-## PHASE 2. Reclaim asset budget. 53.86 of 56 MB is not enough to finish the job.
+So 10 s is not the target, it is the ceiling, and characters still have to fit under it.
+Aim for **8 s**, to leave the characters room.
 
-3. **Haystacks: 10k triangles each, 32k for a site of three.** She flagged this herself.
-   Cut to about 3k by replacing interior straw with alpha-cutout cards on the silhouette
-   only. The shaggy outline is what reads; the inside is never seen.
-4. **Audit the 15 largest files in public/assets.** Anything only ever seen from more
-   than 30 m gets its texture halved. Report what you freed.
-   **Target: 8 MB free before Phase 3 starts.**
+Quality is NOT negotiable. Do these in order, measure after each, stop when under 8 s:
+- **KTX2 / Basis compressed textures** on ground, walls and roofs. NEVER on signboards or
+  anything with lettering. This is the big one: textures are most of the 12.5 MB.
+  Install the compressor if it is missing (`toktx` or `@gltf-transform/cli`).
+- **Load Play-critical models first, stream the rest.** The player cannot see the brick
+  kiln at spawn. Anything beyond the first zone loads after Play unlocks.
+- **One shared texture set, already started in `sharedTextures.js`.** Finish it: no model
+  carries its own copy of a library texture.
+- **Drop duplicate geometry** between LOD and full models where the LOD is never seen.
+Report the measured seconds after each step, not an estimate.
 
-## PHASE 3. Put the materials on the buildings. This is the whole point of the last week.
+## 2. USE THE HOUSE KIT THROUGHOUT THE VILLAGE.
 
-5. Right now NOT ONE building uses the reworked materials. They exist only as sample
-   panels. Wire all eight onto the places that use them:
-   - FROZEN, she approved: terracotta, painted wood, rusted steel, packed earth
-   - REBUILT as geometry, she has not ruled: tin, thatch, mud and dung, jute
-   **Tech lead call: wire all eight.** Claude's own read of the 28 Oct board was that
-   the four rebuilt ones are fixed, and she agreed with his read of the previous board.
-   Write one line in NEEDS_YOU saying all eight were wired on Claude's judgement and she
-   can reject any of them on sight.
-   Roofs first (tin, terracotta, thatch), then walls (mud and dung), then gates and
-   shutters (rusted steel, painted wood), then ground (packed earth), then sacking (jute).
+Her words: "the house kit was built for a reason. You have to use it throughout the
+village at appropriate places."
+The 8 house types exist and are unused. Put them through the village wherever a house
+belongs. Vary type, turn and tint per instance so no two neighbours read as copies.
+Instance them, do not duplicate meshes. Keep the mission spots and doorstep props that
+are tied to the existing rows working.
 
-## PHASE 4. Look at the things nobody has looked at.
+## 3. EVERY PLACE GETS A PATH TO IT.
 
-6. These were placed but never seen in a screenshot: cattle and tractor yard (gher),
-   kirana goods yard, the four haveli house plots, the dung-cake drying yard, the 24
-   compound walls, the 8 wayfinding signposts. Take one shot of each, look at it, and fix
-   what is obviously wrong. Anything you cannot see, say so.
+Her words: "all places need to have path to them. If path doesn't exist in map, you are
+supposed to add it yourself. Maybe it could be dirt track."
+Four have none today: family field, gaushala, mango baagh, mandi (36 to 69 m of open
+ground). Lay a dirt track to each. Then run the findability audit and lay a track to
+anything else it reports as stranded. Dirt tracks are cheap, do not blow the load budget.
 
-## PHASE 5. The three places the reviewer failed.
+## 4. HOUSE ROWS VERSUS THE MAP FOOTPRINTS. Her call: whatever looks natural in play.
 
-7. Dairy, chaupal and tubewell: flat ground, spotless surfaces, missing props. Use the
-   budget freed in Phase 2. Ground variation and dirt first, props second.
+Her words: "whatever looks good, whatever looks natural while someone is playing."
+The map's footprints are smaller than the existing rows. Do NOT force the rows to match
+the drawing. Make the street read like a real village street from eye level: no row
+straddling three footprints, no footprint left as a bald gap. Use the house kit (item 2)
+to fill gaps. Judge it from a walking camera, not from above.
 
-## NOT IN SCOPE. Do not start these.
-- Bazaar shop units, haveli courtyard, mango trees: she said build nothing new from the
-  map. They stay on the NEEDS_YOU list.
-- Night view: deferred to version 2.
-- Any further map or layout work: the move is done and verified.
+## 5. CANAL AND POND. Tech lead call: dig them for real, locally.
+
+She left this to Claude. Decision: **(a), real ground heights, but ONLY in a local dip
+around the pond, the johad and the canal.** Not a global terrain system.
+Reason: sunken water is what makes water read as water, and a local dip is geometry, not
+texture, so it costs almost nothing against the load budget that item 1 is fighting for.
+Banks slope in, water sits below the bank line, edges are irregular, never a clean oval.
+
+## 6. POND LOTUS: leave the pads bare. Her call, a lotus comes later.
+
+---
+
+## WAITING ON HER, do not block on any of these
+- Tripo credits (no 3D characters until topped up)
+- Primary school: which of the two models the village keeps
+- Whether her map moves the culvert and field channel off the highway
+- Her eye on: the 15 rebuilt buildings, dairy/chaupal/tubewell, the trees
