@@ -71,3 +71,51 @@ against total area. Put it in docs/NEEDS_YOU.md. Do NOT move anything for this.
 - Anything new from the map: bazaar units, haveli courtyard, mango trees.
 - Load time work. It is a real ceiling but nothing above makes it worse; keep an eye on
   the asset budget and report if any item pushes it.
+
+---
+
+# AFTER THE LIST ABOVE: KEEP GOING. She is away for 24 hours from 3 Nov midnight.
+
+She cannot be reached and cannot approve anything. The queue must NEVER run dry: an idle
+loop wastes her 24 hours. When items 1 to 7 are done, work straight down this list.
+
+## 8. LOAD TIME UNDER 10 SECONDS. Her hard ceiling. Aim for 8.
+Characters still have to fit under it later, so leave room.
+- KTX2 / Basis compressed textures on ground, walls and roofs. NEVER on signboards or
+  anything carrying lettering. Install the compressor if missing.
+- Load only what is visible at spawn; stream the rest after Play unlocks.
+- Finish `sharedTextures.js`: no model carries its own copy of a library texture.
+- Report MEASURED seconds after each step, never an estimate.
+
+## 9. THE HOUSE KIT GOES VILLAGE-WIDE.
+Her words: "the house kit was built for a reason. You have to use it throughout the
+village at appropriate places." All 8 types, varied turn and tint so no two neighbours
+read as copies. Instance them. Keep existing mission spots and doorstep props working.
+Use it to fill the bald gaps between house rows and the map's footprints.
+
+## 10. EVERY PLACE GETS A PATH.
+Her words: "all places need to have path to them. If path doesn't exist in map, you are
+supposed to add it yourself. Maybe it could be dirt track."
+Family field, gaushala, mango baagh and mandi have none. Then run the findability audit
+and lay a track to anything else it reports stranded. Follow the road rules in item 4:
+no track ends in open ground.
+
+## 11. DIG THE POND, JOHAD AND CANAL FOR REAL.
+Tech lead call she approved: a LOCAL dip around each water body, not a global terrain
+system. Banks slope in, water sits below the bank line, edges irregular and never a clean
+oval. Geometry not texture, so it barely touches the load budget.
+
+## 12. FILL THE LONG WALKS.
+Every walk over 20 seconds gets something on it: a well, a shrine, a cart, a buffalo,
+haystacks, a boundary gate. All these props already exist. This is what turns distance
+into atmosphere instead of boredom.
+
+## 13. THEN: pick the highest-value unticked item in docs/BACKLOG.md and keep going.
+Never idle. Never wait for her. Never end a run with no game change.
+
+---
+
+# WIFI WILL DROP for about 6 to 7 hours on 4 Nov morning.
+`wait_for_net` already handles it: the loop waits, then resumes by itself. Commits keep
+happening locally while offline; the auto-pusher sends them the moment the net returns.
+**Do not stop, do not create tmp/STOP, do not report an outage as a blocker.**
