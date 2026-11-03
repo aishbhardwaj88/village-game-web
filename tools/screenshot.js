@@ -77,8 +77,12 @@ async function main() {
     // The overlay only accepts a tap once THREE.DefaultLoadingManager reports every
     // queued asset loaded (see src/ui.js setupLoadingScreen) — wait for that class
     // before clicking, same gate a real player hits.
-    await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
-    await page.click('#play-btn');
+    // Software GL loads slowly (15-45 s), so the gate is generous; if it still has not
+    // opened, force the click rather than waiting out Playwright's 30 s actionability.
+    const gateOpen = await page
+      .waitForSelector('#start-overlay.ready', { timeout: 90000 })
+      .then(() => true, () => false);
+    await page.click('#play-btn', gateOpen ? {} : { force: true, timeout: 5000 });
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(1500);
 
