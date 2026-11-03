@@ -1,4 +1,6 @@
 
+**2026-11-04 (audit run, docs only):** findability-audit: 0 of 40 places stranded. PARALLEL items 1-12 built, no family to give builders. npm run build: 21/22, school draw calls read 196 vs ratchet 195 (same 1-call noise as the earlier run; check not loosened). Zero milestone pillar is already 1.15 m, NEEDS_YOU note corrected. No game file changed. NEXT: lower school view by 1-2 calls so the ratchet stops flaking.
+
 **2026-11-04 (cycle indoors):** src/main.js: riding into a house or the classroom (BUILDING_ROUTES zoneOf > 0) now gets you off the cycle with a bilingual toast; C will not remount indoors. Build 22/22 (school view read 196 once vs ratchet 195, 195 on rerun: noise), regression-check 22/22. Not walked on screen. NEXT: PARALLEL item 13, next BACKLOG pick.
 **2026-11-04 (draw calls, small-place draw range):** src/stagingYard.js: staged places with footprint radius <= 14 m draw only within 130 m (was 215 m). Validator ratchets lowered: school 206 to 195, bazaar 194 to 190. Build ALL PASSED. Still over 150 in five zones; no single hot spot (spread over ~20 place models at 3-7 calls each). Trade-off in NEEDS_YOU. NEXT: fewer hb_* meshes per place, or lower the ratchet further.
 
