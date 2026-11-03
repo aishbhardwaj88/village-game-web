@@ -28,7 +28,7 @@ try {
     if (kind === 'tractor') await page.evaluate(() => { const d = window.__dopahar; d.mount(d.vehicles.find((q) => q.preset.kind === 'tractor')); }); // same hook regression-check uses
     else await page.keyboard.press('KeyE');
     await page.waitForTimeout(600);
-    const mounted = await page.evaluate((kind) => window.__dopahar.vehicles.find((q) => q.preset.kind === kind).mounted, kind);
+    const mounted = await page.evaluate((kind) => window.__dopahar.mountedVehicle?.preset.kind === kind, kind);
     await page.keyboard.down('KeyW');
     const trace = [];
     for (let i = 0; i < secs; i++) { await page.waitForTimeout(1000); trace.push(await page.evaluate((kind) => { const v = window.__dopahar.vehicles.find((q) => q.preset.kind === kind); return +v.group.position.z.toFixed(1) + '/x' + v.group.position.x.toFixed(1); }, kind)); }

@@ -3028,6 +3028,7 @@ async function main() {
       startFreeRoam,
       mount,
       dismount,
+      get mountedVehicle() { return mountedVehicle; },
       sitDown,
       standUp,
       lieDown,
