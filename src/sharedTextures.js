@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applySurfaceVariation, surfaceFamilyFor } from './materials.js';
 
 /**
  * Shared library textures for the OLDER Blender models (gaushala, temple, house_compound, abadi rows, chowk, shops...).
@@ -6,8 +7,8 @@ import * as THREE from 'three';
  * wrote extras.dopahar_relink = { set, c, n, mr, ns } on each material: which set, plus the exact texture-info of each slot
  * (uv set, KHR_texture_transform scale/offset/rotation, sampler, normal scale). This GLTFLoader plugin puts the shared maps
  * back before the load resolves, so every load site sees the same material it always did, and each image is downloaded once
- * for the whole game instead of once per model. Unlike stagingYard.js swapShared(), the material is NOT replaced and no
- * weathering is added: the look is exactly the exported one.
+ * for the whole game instead of once per model. Unlike stagingYard.js swapShared(), the material is NOT replaced; the only
+ * addition is materials.js applySurfaceVariation (subtle world-space mottling/roughness/cavity, shader values only).
  */
 const images = new Map();   // url -> Promise<THREE.Source>
 function sourceFor(set, kind) {
@@ -56,6 +57,11 @@ async function relinkMaterial(m, hasTangents) {
     m.normalScale.set(s, hasTangents ? s : -s);   // GLTFLoader flips y for derivative tangents
   }
   if (r) m.roughnessMap = textureFor(r, rl.mr, false);   // metalness was folded into metallicFactor by the strip tool
+  // BACKLOG J0 (materials read as plastic): metalness 0 except real metal, then the shared world-space
+  // variation (mottling, roughness, ground cavity on masonry). Maps and tiling stay exactly as exported.
+  const family = surfaceFamilyFor(rl.set);
+  if (family !== 'tin') m.metalness = 0;
+  if (family) applySurfaceVariation(m, family);
   m.needsUpdate = true;
 }
 

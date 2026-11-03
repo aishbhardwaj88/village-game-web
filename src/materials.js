@@ -86,8 +86,101 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
     mat.color = new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength);
   }
   if (MATTE_SETS.has(name)) applyMatteVariation(mat);
+  else if (name === 'tin') applySurfaceVariation(mat, 'tin');
+  else if (name === 'lane') applySurfaceVariation(mat, 'earth');
   materialCache.set(key, mat);
   return mat;
+}
+
+/**
+ * BACKLOG J0 "materials read as plastic", shader values only (no texture, geometry or
+ * draw call). One shared GLSL chunk; one program per (material parameters, family),
+ * because customProgramCacheKey is a constant per family instead of a per-closure string.
+ * World position includes instanceMatrix so instanced copies do not share one pattern.
+ *   masonry (plaster/brick/concrete): +-6% luminance mottling at 3-9 m, roughness 0.80-1.0,
+ *           and a cheap cavity term: vertical faces darken up to 14% in the first ~0.2-0.4 m
+ *           above ground (world y 0), with a noisy upper edge. Floors/tops are not touched.
+ *   matte   (wood/terracotta/thatch/jute): +-6% mottling, roughness 0.72-1.0.
+ *   tin     (tin/metal/rust): +-6% mottling (dust/rust wash), roughness +-0.08, never below 0.45.
+ *   earth   (lane): +-6% mottling, roughness 0.85-1.0.
+ * The frozen library maps and their tiling are untouched; this only multiplies on top.
+ */
+const DP_NOISE_GLSL = `
+#ifndef DP_NOISE_DEF
+#define DP_NOISE_DEF
+float dpHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+float dpNoise(vec2 p) {
+  vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(dpHash(i), dpHash(i + vec2(1, 0)), f.x), mix(dpHash(i + vec2(0, 1)), dpHash(i + vec2(1, 1)), f.x), f.y);
+}
+#endif`;
+const DP_MOTTLE = `
+  float dpMot = dpNoise(vDpWorld.xz * 0.11 + vDpWorld.y * 0.07) * 0.6 + dpNoise(vDpWorld.xz * 0.33 - vDpWorld.y * 0.23) * 0.4;
+  diffuseColor.rgb *= 0.94 + 0.12 * dpMot;`;
+const DP_FAMILY = {
+  masonry: {
+    color: DP_MOTTLE + `
+  float dpEdge = 0.2 + 0.2 * dpNoise(vec2(vDpWorld.x + vDpWorld.z, vDpWorld.x - vDpWorld.z) * 2.3);
+  float dpCav = (1.0 - smoothstep(0.0, dpEdge, vDpWorld.y)) * (1.0 - abs(vDpNy));
+  diffuseColor.rgb *= 1.0 - 0.14 * dpCav;`,
+    rough: 'roughnessFactor = clamp(max(roughnessFactor, 0.8) + (dpR - 0.5) * 0.12, 0.8, 1.0);',
+  },
+  matte: { color: DP_MOTTLE, rough: 'roughnessFactor = clamp(max(roughnessFactor, 0.75) + (dpR - 0.5) * 0.14, 0.72, 1.0);' },
+  tin: { color: DP_MOTTLE, rough: 'roughnessFactor = clamp(roughnessFactor + (dpR - 0.5) * 0.16, 0.45, 1.0);' },
+  earth: { color: DP_MOTTLE, rough: 'roughnessFactor = clamp(max(roughnessFactor, 0.85) + (dpR - 0.5) * 0.1, 0.85, 1.0);' },
+};
+const dpPrevHooks = new WeakMap();   // material -> { hook, key } it had before applySurfaceVariation
+
+/** Library set name -> variation family (null = leave alone). */
+export function surfaceFamilyFor(set) {
+  if (set === 'plaster' || set === 'brick' || set === 'concrete') return 'masonry';
+  if (set === 'wood' || set === 'terracotta' || set === 'thatch' || set === 'jute' || set === 'tarpaulin') return 'matte';
+  if (set === 'tin' || set === 'metal' || set === 'rust') return 'tin';
+  if (set === 'lane') return 'earth';
+  return null;
+}
+
+export function applySurfaceVariation(material, family) {
+  const fam = DP_FAMILY[family];
+  if (!fam || !material || material.isShaderMaterial || material.transparent || material.userData.dpVar || material.userData.baseGrime) return;
+  const own = Object.prototype.hasOwnProperty.call(material, 'onBeforeCompile');
+  const prev = own ? material.onBeforeCompile : null;
+  const prevKey = own ? material.customProgramCacheKey() : '';
+  dpPrevHooks.set(material, { hook: prev, key: Object.prototype.hasOwnProperty.call(material, 'customProgramCacheKey') ? material.customProgramCacheKey : null });
+  material.userData.dpVar = family;
+  material.onBeforeCompile = (shader, renderer) => {
+    if (prev) prev(shader, renderer);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vDpWorld;\nvarying float vDpNy;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        {
+          vec4 dpW = vec4(transformed, 1.0);
+          vec3 dpN = objectNormal;
+          #ifdef USE_INSTANCING
+            dpW = instanceMatrix * dpW;
+            dpN = mat3(instanceMatrix) * dpN;
+          #endif
+          vDpWorld = (modelMatrix * dpW).xyz;
+          vDpNy = normalize(mat3(modelMatrix) * dpN).y;
+        }`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\nvarying vec3 vDpWorld;\nvarying float vDpNy;${DP_NOISE_GLSL}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>\n{${fam.color}\n}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        { float dpR = dpNoise(vDpWorld.xz * 0.9 + vDpWorld.y * 0.6); ${fam.rough} }`);
+  };
+  material.customProgramCacheKey = () => `dpVar:${family}${prevKey ? '|' + prevKey : ''}`;
+  material.needsUpdate = true;
+}
+
+/** Undo applySurfaceVariation (used when a stronger hook such as applyWallBaseGrime takes over). */
+function removeSurfaceVariation(material) {
+  const saved = dpPrevHooks.get(material);
+  delete material.userData.dpVar;
+  if (!saved) return;   // a clone: userData was copied but the hook never was
+  dpPrevHooks.delete(material);
+  if (saved.hook) material.onBeforeCompile = saved.hook; else delete material.onBeforeCompile;
+  if (saved.key) material.customProgramCacheKey = saved.key; else delete material.customProgramCacheKey;
 }
 
 const MATTE_SETS = new Set(['plaster', 'concrete', 'wood', 'terracotta', 'jute', 'tarpaulin', 'brick']);
@@ -132,6 +225,7 @@ function applyMatteVariation(material) {
           roughnessFactor = clamp(max(roughnessFactor, 0.78) + (mvR - 0.5) * 0.18, 0.78, 1.0);
         }`);
   };
+  material.customProgramCacheKey = () => 'dpMatteVar';   // one program per parameter set, not per closure
   material.needsUpdate = true;
 }
 
@@ -665,8 +759,11 @@ export function texturedWallBox(width, height, depth, materialName, opts = {}) {
 export function applyWallBaseGrime(material) {
   if (!material || material.isShaderMaterial || material.userData.baseGrime) return;
   if ((material.metalness || 0) > 0.5 || material.transparent) return;
+  if (material.userData.dpVar) removeSurfaceVariation(material);   // grime carries its own mottling/roughness; never stack both
   material.userData.baseGrime = true;
-  const prev = material.onBeforeCompile;
+  const ownHook = Object.prototype.hasOwnProperty.call(material, 'onBeforeCompile');
+  const prev = ownHook ? material.onBeforeCompile : null;
+  const prevKey = ownHook ? material.customProgramCacheKey() : '';
   material.onBeforeCompile = (shader, renderer) => {
     if (prev) prev(shader, renderer);
     shader.vertexShader = shader.vertexShader
@@ -716,5 +813,6 @@ export function applyWallBaseGrime(material) {
           roughnessFactor = clamp(max(roughnessFactor, 0.78) + (wgR - 0.5) * 0.18, 0.78, 1.0);
         }`);
   };
+  material.customProgramCacheKey = () => `dpWallGrime${prevKey ? '|' + prevKey : ''}`;
   material.needsUpdate = true;
 }
