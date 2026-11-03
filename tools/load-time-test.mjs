@@ -50,7 +50,7 @@ await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU 
 let bytes = 0;
 const reqUrl = new Map(); const sizes = [];
 cdp.on('Network.requestWillBeSent', e => reqUrl.set(e.requestId, e.request.url));
-cdp.on('Network.loadingFinished', e => { bytes += e.encodedDataLength || 0; sizes.push([e.encodedDataLength || 0, reqUrl.get(e.requestId)]); });
+const tl=[]; cdp.on('Network.loadingFinished', e => { tl.push([Date.now()-t0, e.encodedDataLength||0, (reqUrl.get(e.requestId)||'').replace(URL_,'')]); bytes += e.encodedDataLength || 0; sizes.push([e.encodedDataLength || 0, reqUrl.get(e.requestId)]); });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
 
@@ -64,6 +64,7 @@ await page.waitForSelector('#start-overlay.ready', { timeout: 120000 });
 const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
 if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, Number(process.env.LISTN||25)).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
+if (process.env.TIMELINE) tl.forEach(([t,n,u]) => console.log(String(t).padStart(6), (n/1024).toFixed(0).padStart(6)+'K', u));
 await browser.close(); stop();
 
 const mb = n => (n / 1048576).toFixed(2) + ' MB';
