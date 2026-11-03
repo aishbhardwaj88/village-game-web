@@ -593,7 +593,7 @@ class Kit:
             out.setdefault(k, []).append(o)
         return out
 
-    def finalize(self, out, tints, drift=None, ao_strength=0.5, drift_amp=0.05):
+    def finalize(self, out, tints, drift=None, ao_strength=0.5, drift_amp=0.05, edge_wear=None):
         """Colour every object (per-kind sRGB tint from `tints['hb_<kind>']`, or its own paint colour) into a 'Base'
         vertex-colour layer, join into hb_main / hb_brick / hb_tin, box-UV, bake dirty-vertex AO, then write
         AO(soft) x Base x a smooth +-drift into the exported COLOR_0 layer."""
@@ -634,12 +634,18 @@ class Kit:
             ao_layer.data.foreach_get('color', ao)
             base_layer.data.foreach_get('color', base)
             verts = me.vertices
+            ew = float(os.environ.get('DOPAHAR_EDGE_WEAR', '0')) if edge_wear is None else edge_wear   # J0: lighten convex edges (plinths, steps, copings) as if rubbed bare; 0 = off
+            if ew > 0:
+                hist = sorted(ao[i * 4] for i in range(n))
+                print('edge-wear AO percentiles 10/50/90/99:', [round(hist[int(n * q)], 3) for q in (0.1, 0.5, 0.9, 0.99)])
             for li in range(n):
                 co = verts[me.loops[li].vertex_index].co
+                ao_raw = ao[li * 4]
                 v = 1.0 + drift_amp * math.sin(co.x * 0.9 + co.y * 1.3) * math.cos(co.z * 0.7 + co.x * 0.4) + drift_amp * 0.5 * math.sin(co.y * 3.1 + co.z * 2.3)
                 for k in range(3):
                     a = 1.0 - (1.0 - ao[li * 4 + k]) * ao_strength
-                    ao[li * 4 + k] = min(1.0, a * base[li * 4 + k] * v)
+                    w = 1.0 + ew * min(1.0, max(0.0, (ao_raw - 0.62) / 0.3)) if ew > 0 else 1.0
+                    ao[li * 4 + k] = min(1.0, a * base[li * 4 + k] * v * w)
             ao_layer.data.foreach_set('color', ao)
             me.color_attributes.active_color = ao_layer
             me.color_attributes.remove(base_layer)
