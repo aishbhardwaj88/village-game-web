@@ -116,7 +116,10 @@ float dpNoise(vec2 p) {
 #endif`;
 const DP_MOTTLE = `
   float dpMot = dpNoise(vDpWorld.xz * 0.11 + vDpWorld.y * 0.07) * 0.6 + dpNoise(vDpWorld.xz * 0.33 - vDpWorld.y * 0.23) * 0.4;
-  diffuseColor.rgb *= 0.94 + 0.12 * dpMot;`;
+  diffuseColor.rgb *= 0.94 + 0.12 * dpMot;
+  float dpL = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  diffuseColor.rgb = mix(vec3(dpL), diffuseColor.rgb, min(1.0, 0.85 / max(0.001, max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b)) - min(diffuseColor.r, min(diffuseColor.g, diffuseColor.b)) + 0.001)));
+  diffuseColor.rgb = clamp(diffuseColor.rgb, vec3(0.035), vec3(0.9));`;
 const DP_FAMILY = {
   masonry: {
     color: DP_MOTTLE + `
