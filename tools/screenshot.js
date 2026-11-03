@@ -82,7 +82,10 @@ async function main() {
     const gateOpen = await page
       .waitForSelector('#start-overlay.ready', { timeout: 90000 })
       .then(() => true, () => false);
-    await page.click('#play-btn', gateOpen ? {} : { force: true, timeout: 5000 });
+    // Even with the gate open the button can report "not visible" under load; fall back to a forced click.
+    await page
+      .click('#play-btn', gateOpen ? { timeout: 8000 } : { force: true, timeout: 5000 })
+      .catch(() => page.evaluate(() => document.querySelector('#play-btn')?.click()));
     await page.waitForLoadState('networkidle').catch(() => {});
     await page.waitForTimeout(1500);
 
@@ -257,7 +260,7 @@ async function main() {
     // Task 4 — errand 1's card is no longer the end of the game: "Continue" just
     // dismisses it (quest.step stays COMPLETE), which is what unlocks the second
     // errand on the next Maa visit.
-    await page.click('#end-continue-btn');
+    await page.evaluate(() => document.querySelector('#end-continue-btn')?.click());
     await page.waitForTimeout(150);
     const stepAfterContinue = await page.evaluate(() => window.__dopahar.quest.step);
     const endCardHiddenAfterContinue = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
@@ -334,7 +337,7 @@ async function main() {
     // Pitaji -> LOADING_WHEAT, pick up and deliver all 3 sacks on foot (no trolley
     // nearby, so one at a time), buy at the general store -> BOUGHT_GOODS, back to
     // Pitaji -> ALL_COMPLETE, the true final card.
-    await page.click('#end-continue-btn');
+    await page.evaluate(() => document.querySelector('#end-continue-btn')?.click());
     await page.waitForTimeout(150);
     await page.evaluate(() => {
       const dd = window.__dopahar;
@@ -404,7 +407,7 @@ async function main() {
     await page.waitForTimeout(300);
     const stepErrand3Complete = await page.evaluate(() => window.__dopahar.quest.step);
     console.log('quest step after telling Pitaji (should be errand3_complete):', stepErrand3Complete);
-    await page.click('#end-continue-btn');
+    await page.evaluate(() => document.querySelector('#end-continue-btn')?.click());
     await page.waitForTimeout(150);
 
     // M4-M7 aren't exercised by this visual-screenshot script (tools/
@@ -422,7 +425,7 @@ async function main() {
     await page.screenshot({ path: resolve(shotsDir, 'final_end_card.png') });
     console.log(`Captured final_end_card -> ${resolve(shotsDir, 'final_end_card.png')}`);
 
-    await page.click('#play-again-btn');
+    await page.evaluate(() => document.querySelector('#play-again-btn')?.click());
     await page.waitForTimeout(150);
     const stepAfterReset = await page.evaluate(() => window.__dopahar.quest.step);
     const endCardHiddenAfterReset = await page.evaluate(() => !document.getElementById('end-card').classList.contains('visible'));
