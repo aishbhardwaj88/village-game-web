@@ -2655,11 +2655,13 @@ async function main() {
     onShowTasks: () => freeRoam.openTasks(),
   });
   const cycleBtn = document.getElementById('cycle-btn-touch');
-  const toggleCycle = () => {
+  const insideBuilding = () => BUILDING_ROUTES.some((b) => b.zoneOf(player.position.x, player.position.z) > 0);
+  const toggleCycle = (auto = false) => {
+    if (!onCycle && insideBuilding()) return; // no remounting indoors
     onCycle = !onCycle;
     cycleBtn?.classList.toggle('off', !onCycle);
     const key = touch ? 'the cycle button' : 'C';
-    freeRoam.toast(onCycle ? `On the cycle. Press ${key} to get off.` : `On foot. Press ${key} to get back on the cycle.`, onCycle ? `साइकिल पर हो। उतरने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।` : `पैदल हो। साइकिल पर चढ़ने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।`, 3000);
+    if (!auto) freeRoam.toast(onCycle ? `On the cycle. Press ${key} to get off.` : `On foot. Press ${key} to get back on the cycle.`, onCycle ? `साइकिल पर हो। उतरने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।` : `पैदल हो। साइकिल पर चढ़ने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।`, 3000);
   };
   if (touch && cycleBtn) {
     cycleBtn.classList.add('visible');
@@ -2903,6 +2905,7 @@ async function main() {
         // Structural fix (playtest, item 2) — swept resolveMove(), same as every
         // other moving body, instead of moving the full step then resolving only
         // the endpoint.
+        if (onCycle && insideBuilding()) { toggleCycle(true); freeRoam.toast('You got off the cycle to go indoors.', 'अंदर जाने के लिए साइकिल से उतर गए।', 3000); }
         movePlayerBy(moveDir.x * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt, moveDir.z * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt);
         playerCycle.update(dt, onCycle, moveDir.x, moveDir.z);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
