@@ -47,6 +47,7 @@ const cdp = await page.context().newCDPSession(page);
 await cdp.send('Network.enable');
 await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 100, downloadThroughput: (9e6 / 8), uploadThroughput: (750e3 / 8) });
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU || 4) });
+if (process.env.PROFILE) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 2000 }); await cdp.send('Profiler.start'); }
 let bytes = 0;
 const reqUrl = new Map(); const sizes = [];
 cdp.on('Network.requestWillBeSent', e => reqUrl.set(e.requestId, e.request.url));
@@ -65,6 +66,14 @@ const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
 if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, Number(process.env.LISTN||25)).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
 if (process.env.TIMELINE) tl.forEach(([t,n,u]) => console.log(String(t).padStart(6), (n/1024).toFixed(0).padStart(6)+'K', u));
+if (process.env.PROFILE) {
+  const { profile } = await cdp.send('Profiler.stop');
+  const dt = profile.timeDeltas, self = new Map(), byId = new Map(profile.nodes.map(n => [n.id, n]));
+  profile.samples.forEach((id, i) => self.set(id, (self.get(id) || 0) + (dt[i] || 0)));
+  const agg = new Map();
+  for (const [id, us] of self) { const f = byId.get(id).callFrame; const k = `${f.functionName || '(anon)'} ${f.url.replace(URL_, '')}:${f.lineNumber}`; agg.set(k, (agg.get(k) || 0) + us); }
+  [...agg].sort((a, b) => b[1] - a[1]).slice(0, 25).forEach(([k, us]) => console.log((us / 1000).toFixed(0).padStart(6) + ' ms', k));
+}
 await browser.close(); stop();
 
 const mb = n => (n / 1048576).toFixed(2) + ' MB';
