@@ -9,6 +9,7 @@ import { addPlaceGreenery } from './stagedGreenery.js';
 import { createCattleHerd } from './animals.js';
 import { addLanterns } from './lanterns.js';
 import { addSchoolProps } from './schoolProps.js';
+import { isDevMode } from './ui.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
 
 /**
@@ -210,6 +211,8 @@ function createStagingTrack() {
 export function registerStagingYard(zoneManager, visibleRadius) {
   // The old dirt track between the yard's rows is gone: the places now stand on the 1 Nov map (src/mapPlan.js); its roads are not built yet (docs/NEEDS_YOU.md).
   for (const def of STAGED_PLACES) {
+    // The material board is a swatch sample, not a village place; it stood mid-village at (560, 15) and cost 9 draw calls in the school view (3 Nov). Dev only.
+    if (def.id === 'yard_matboard' && !isDevMode()) continue;
     zoneManager.register(def.zone, { visibleRadius, ...pt(def.id), buildRadius: def.build, teardownRadius: def.build * 1.25, build: () => createStagedPlace(def) });
   }
 }
