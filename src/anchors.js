@@ -33,7 +33,7 @@ export const ANCHORS = {
   canal: { x: 771, z: 33.8, ry: 0 }, // the map's feeder channel centre (172.35, 33.8) + MAP_SHIFT; the bridge stands here (src/canal.js CANAL_DX)
   field: { x: 3.5 + MAP_SHIFT.x, z: -200 + MAP_SHIFT.z, ry: 0 }, // x = centre of the map's wheat strip (-94.6..101.7); z: the 80 m field is deeper than the 42 m strip, so its south edge sits on the strip's (-160) to stay clear of the petrol pump yard
   banta: { x: -23.7 + MAP_SHIFT.x, z: 24.6 + MAP_SHIFT.z, ry: 85 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
-  chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: -5.6 * Math.PI / 180 } /* map turn 5.6 deg, applied in src/main.js via turnSiteGroup */,
+  chaat: { x: -28.3 + MAP_SHIFT.x, z: 15.4 + MAP_SHIFT.z, ry: 174.4 * Math.PI / 180 } /* map turn 5.6 deg + 180 (3 Nov orientation pass): her own front path to the chaat cart runs north to the cross road, so the front faces north; applied in src/main.js via turnSiteGroup */,
   eastgali: { x: 68.1 + MAP_SHIFT.x, z: 51.8 + MAP_SHIFT.z, ry: -4.6 * Math.PI / 180 } /* label only, nothing to turn */,
   westgali: { x: -63.8 + MAP_SHIFT.x, z: 77.9 + MAP_SHIFT.z, ry: 11 * Math.PI / 180 } /* label only, nothing to turn */,
   jalebi: { x: 35.5 + MAP_SHIFT.x, z: 26.4 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
@@ -50,7 +50,7 @@ export const ANCHORS = {
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
   chemist: { x: -34.8 + MAP_SHIFT.x - 6.75, z: -5 + MAP_SHIFT.z - 7, ry: 0 }, // merged into bazaar unit 3 on the 1 Nov map: point is the lane in front of that unit (the old standalone shop is no longer built)
   manihari: { x: -34.8 + MAP_SHIFT.x + 11.25, z: -5 + MAP_SHIFT.z - 7, ry: 0 }, // merged into bazaar unit 7 on the 1 Nov map (standalone stall no longer built)
-  sabzi: { x: -22.8 + MAP_SHIFT.x, z: 17.1 + MAP_SHIFT.z, ry: -95 * Math.PI / 180 } /* map turn 95 deg, applied in src/main.js via turnSiteGroup */,
+  sabzi: { x: -22.8 + MAP_SHIFT.x, z: 17.1 + MAP_SHIFT.z, ry: 85 * Math.PI / 180 } /* map turn 95 deg + 180 (3 Nov orientation pass): the carts sit on the square's west edge, so the front faces east onto the square; applied in src/main.js via turnSiteGroup */,
   johad: { x: 121.7 + MAP_SHIFT.x, z: 43.1 + MAP_SHIFT.z, ry: 0 },
   masjid: { x: -98.6 + MAP_SHIFT.x, z: -92.3 + MAP_SHIFT.z, ry: 0 },
   jain: { x: 117.7 + MAP_SHIFT.x, z: 96.3 + MAP_SHIFT.z, ry: 0 },

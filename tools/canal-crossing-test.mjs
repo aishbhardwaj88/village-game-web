@@ -17,11 +17,17 @@ try {
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput()); await page.waitForTimeout(2500);
     const start = await page.evaluate(({ kind, bx }) => {
       const d = window.__dopahar; const v = d.vehicles.find((q) => q.preset.kind === kind);
+      const t = v.trolley; // an attached trolley must move with the tractor, else it drags the tractor back to its old spot
+      const off = t ? { x: t.group.position.x - v.group.position.x, z: t.group.position.z - v.group.position.z, ry: t.group.rotation.y - v.group.rotation.y } : null;
+      const oy = v.group.rotation.y; const c = Math.cos(-oy), sn = Math.sin(-oy);
       v.group.position.set(bx, 0, 46); v.group.rotation.y = 0; v.yaw = 0; v.speed = 0;
+      if (t) { const lx = off.x * c + off.z * sn, lz = -off.x * sn + off.z * c; t.group.position.set(bx + lx, t.group.position.y, 46 + lz); t.group.rotation.y = off.ry; }
       d.teleportPlayer(bx + 2.2, 46); return { z: v.group.position.z };
     }, { kind, bx });
     await page.waitForTimeout(500);
-    await page.keyboard.press('KeyE'); await page.waitForTimeout(600);
+    if (kind === 'tractor') await page.evaluate(() => { const d = window.__dopahar; d.mount(d.vehicles.find((q) => q.preset.kind === 'tractor')); }); // same hook regression-check uses
+    else await page.keyboard.press('KeyE');
+    await page.waitForTimeout(600);
     const mounted = await page.evaluate((kind) => window.__dopahar.vehicles.find((q) => q.preset.kind === kind).mounted, kind);
     await page.keyboard.down('KeyW');
     const trace = [];
