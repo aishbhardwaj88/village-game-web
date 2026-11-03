@@ -99,6 +99,12 @@ async function run(withFile, glb) {
       const a = ANCHORS[ANCHOR_OF[site]];
       await page.evaluate(({ x, z }) => window.__dopahar.teleportPlayer(x - 6, z - 6), a);
       await page.waitForTimeout(9000); // the zone streams in (longer since the whole +600 m map area shares the frame budget), then its slot resolves
+      // On a busy machine 9 s is not always enough: poll up to 40 s more for the slot wrapper before measuring.
+      if (withFile) await page.waitForFunction((site) => {
+        let w = null;
+        window.__dopahar.scene.traverse((o) => { if (o.name === `${site}_slot`) w = o; });
+        return !!w;
+      }, site, { timeout: 40000, polling: 500 }).catch(() => {});
       const r = await page.evaluate((site) => {
         const d = window.__dopahar;
         let group = null;

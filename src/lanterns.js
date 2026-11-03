@@ -12,6 +12,7 @@ import { floatGeometry, flushMerged } from './pots.js';
 export const LANTERN_TYPES = ['hurricane', 'tin', 'hanging'];
 
 let modelsPromise = null;
+let glassMat = null; // one chimney-glass material for every lantern type, so a place's glass merges into one draw call
 function loadLanterns() {
   if (!modelsPromise) {
     modelsPromise = Promise.all(LANTERN_TYPES.map((t) => getGLTFLoader().loadAsync(`assets/models/lantern_${t}_v2.glb`).then((gltf) => {
@@ -20,7 +21,10 @@ function loadLanterns() {
       gltf.scene.traverse((o) => {
         if (!o.isMesh) return;
         swapShared(o);
-        if (o.material && /props/.test(o.material.name || '')) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.35; o.material.roughness = 0.08; o.material.depthWrite = false; } // chimney glass, see-through
+        if (o.material && /props/.test(o.material.name || '')) { // chimney glass, see-through
+          if (!glassMat) { glassMat = o.material.clone(); glassMat.transparent = true; glassMat.opacity = 0.35; glassMat.roughness = 0.08; glassMat.depthWrite = false; }
+          o.material = glassMat;
+        }
         parts.push({ geo: floatGeometry(o.geometry).applyMatrix4(o.matrixWorld), mat: o.material });
       });
       return [t, parts];

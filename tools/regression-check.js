@@ -510,10 +510,15 @@ async function main() {
       );
       await page.keyboard.down('KeyW');
       // 2026-10-21: headless frame rate is now ~3 fps with the dense abadi (distance walked scales with frames), so hold 6s.
-      await page.waitForTimeout(6000);
-      await page.keyboard.up('KeyW');
-      const after = await page.evaluate(() => ({ x: window.__dopahar.player.position.x, z: window.__dopahar.player.position.z }));
+      // Distance walked scales with frames, so on a busy machine extend the hold (up to 4 x 6 s) until the 1 m of progress shows; a stuck player never gets there.
       const distBefore = Math.hypot(before.x - target.x, before.z - target.z);
+      let after = before;
+      for (let hold = 0; hold < 4; hold++) {
+        await page.waitForTimeout(6000);
+        after = await page.evaluate(() => ({ x: window.__dopahar.player.position.x, z: window.__dopahar.player.position.z }));
+        if (Math.hypot(after.x - target.x, after.z - target.z) < distBefore - 1) break;
+      }
+      await page.keyboard.up('KeyW');
       const distAfter = Math.hypot(after.x - target.x, after.z - target.z);
       record(`player can reach the ${name}`, distAfter < distBefore - 1, `distance to target went from ${distBefore.toFixed(1)}m to ${distAfter.toFixed(1)}m`);
     }

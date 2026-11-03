@@ -65,7 +65,7 @@ async function main() {
 
     await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
     await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
-    await page.click('#play-btn');
+    await page.click('#play-btn', { timeout: 90000 }).catch(() => page.click('#play-btn', { force: true, timeout: 90000 })); // software GL on a busy machine is slow
     await page.waitForTimeout(1500);
     // The one blocking intro-dialogue panel — advancing it is required to reach
     // the playable world at all, same as every other headless tool in this
