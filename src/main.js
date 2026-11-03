@@ -233,7 +233,15 @@ async function main() {
 
   const atmosphere = getActiveAtmosphere();
   const sun = createSun(touch, atmosphere);
-  scene.add(sun);
+  // The village stands 600 m east of the origin, so a sun at the origin shadowed nothing there. The light and its target
+  // ride a rig that follows the player (snapped to 1 m so shadow edges do not shimmer); sun.position stays the local
+  // sun direction that dayline, night and the sky dome read.
+  // OFF by default: real shadows at the village add 20 to 85 draw calls per view (measured 3 Nov), and the ceiling is already
+  // breached. Try it with ?shadows=follow; turning it on for everyone is the art director's trade-off.
+  const FOLLOW_SUN_SHADOWS = new URLSearchParams(location.search).get('shadows') === 'follow';
+  const sunRig = new THREE.Group();
+  sunRig.add(sun, sun.target);
+  scene.add(sunRig);
 
   // Pause menu quality setting (task 2) — default Medium on touch / High on desktop,
   // overridden by whatever was last saved. Applied immediately so the very first
@@ -2668,6 +2676,7 @@ async function main() {
     requestAnimationFrame(tick);
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
+    if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
     if (started && paused) {
       // Drain any input that landed while paused so it doesn't fire the instant the
@@ -2993,6 +3002,7 @@ async function main() {
     // that effect.
     window.__dopahar = {
       scene,
+      ANCHORS,
       renderer,
       get composer() {
         return composer; // reassigned by setQuality() (task 2) — must read live, not a snapshot
