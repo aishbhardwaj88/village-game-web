@@ -207,12 +207,15 @@ function createStagingTrack() {
   return mesh;
 }
 
+/** Small places (shop, house, tank: footprint radius <= 14 m) are a few pixels past this range, so they stop drawing sooner than the big yards (draw-call ceiling, 4 Nov). */
+const SMALL_PLACE_VIS = (def) => (def.radius <= 14 ? 130 : Infinity);
+
 /** Registers the track and every staged place with the zone manager. */
 export function registerStagingYard(zoneManager, visibleRadius) {
   // The old dirt track between the yard's rows is gone: the places now stand on the 1 Nov map (src/mapPlan.js); its roads are not built yet (docs/NEEDS_YOU.md).
   for (const def of STAGED_PLACES) {
     // The material board is a swatch sample, not a village place; it stood mid-village at (560, 15) and cost 9 draw calls in the school view (3 Nov). Dev only.
     if (def.id === 'yard_matboard' && !isDevMode()) continue;
-    zoneManager.register(def.zone, { visibleRadius, ...pt(def.id), buildRadius: def.build, teardownRadius: def.build * 1.25, build: () => createStagedPlace(def) });
+    zoneManager.register(def.zone, { visibleRadius: Math.min(visibleRadius, SMALL_PLACE_VIS(def)), ...pt(def.id), buildRadius: def.build, teardownRadius: def.build * 1.25, build: () => createStagedPlace(def) });
   }
 }
