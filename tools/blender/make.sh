@@ -7,5 +7,6 @@ cd "$(dirname "$0")/../.."
 ~/Applications/Blender.app/Contents/MacOS/Blender -b --python tools/blender/build_$1.py 2>&1 | grep -E "Error|Traceback|File \"|tri count|Exported" || true
 node tools/shrink.js tmp/$2_raw.glb public/assets/models/$2.glb 999999 2>&1 | grep -E "after|Wrote"
 case "$2" in
+  bazaar_row) node tools/strip-textures.mjs --relink public/assets/models/$2.glb public/assets/models/$2.glb ;;
   *_v2|primary_school) node tools/strip-textures.mjs public/assets/models/$2.glb public/assets/models/$2.glb ;;
 esac

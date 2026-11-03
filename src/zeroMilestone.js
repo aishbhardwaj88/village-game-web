@@ -47,13 +47,50 @@ function rng(seed) {
 }
 const hash = (x) => { const s = Math.sin(x * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const vnoise = (x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i) * (1 - u) + hash(i + 1) * u; };
+const hash2 = (x, y) => hash(x * 1.7 + y * 113.3);
+/** 2D value noise, 0..1, for blotches on horizontal faces (the 1D one makes stripes there). */
+const vnoise2 = (x, y) => {
+  const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+  const ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+  const a = hash2(ix, iy), b = hash2(ix + 1, iy), c = hash2(ix, iy + 1), d = hash2(ix + 1, iy + 1);
+  return (a * (1 - ux) + b * ux) * (1 - uy) + (c * (1 - ux) + d * ux) * uy;
+};
+const FOOTWORN = new THREE.Color(0x9a9282); // grey-brown scuff where people sit and stand
+const POOL = new THREE.Color(0x5f6457); // dark rain-pooling stain, faint green-grey
+
+/**
+ * Step-top wear, added to a top-face vertex colour: scuffed sitting/standing patches, dust banked against the riser
+ * of the step above (`riser`: {hw, hd, cx, cz} of that step's footprint), dark blotches where rain stands, and a
+ * dusty band along the nosing. Never a clean lime top.
+ */
+function topWear(c, x, z, { hw, hd, cx, cz, seed, riser }) {
+  // Scuffs: large soft patches.
+  const scuff = Math.max(0, vnoise2(x * 1.6 + seed, z * 1.6 - seed) - 0.35) / 0.65;
+  c.lerp(FOOTWORN, Math.min(0.55, scuff * 0.7));
+  // Rain pools: smaller darker blotches, mostly near the corners where the step settles.
+  const corner = Math.min(1, (Math.abs(x - cx) / hw) ** 4 + (Math.abs(z - cz) / hd) ** 4);
+  const pool = Math.max(0, vnoise2(x * 3.7 - seed * 2, z * 3.7 + seed) - 0.5) / 0.5;
+  c.lerp(POOL, Math.min(0.5, pool * (0.35 + 0.6 * corner)));
+  // Dust banked against the riser above.
+  if (riser) {
+    const dx = Math.max(0, Math.abs(x - riser.cx) - riser.hw), dz = Math.max(0, Math.abs(z - riser.cz) - riser.hd);
+    const dist = Math.hypot(dx, dz);
+    const band = 0.12 + 0.14 * vnoise((x + z) * 5 + seed);
+    c.lerp(DIRT, Math.min(0.6, Math.max(0, 1 - dist / band) * 0.65));
+  }
+  // Dusty, sun-greyed nosing along the outer edge.
+  const toEdge = Math.min(hw - Math.abs(x - cx), hd - Math.abs(z - cz));
+  c.lerp(DIRT, Math.min(0.35, Math.max(0, 1 - toEdge / 0.1) * 0.35 * vnoise((x - z) * 7 + seed)));
+  // Fine grain so it never reads as one flat sheet.
+  c.multiplyScalar(0.9 + 0.14 * vnoise2(x * 11 + seed, z * 11));
+}
 
 /**
  * A segmented box, centred at (cx, cy, cz) in the marker's local frame, with UVs in metres / tile (planar per face,
  * continuous across neighbouring boxes) and weathering baked into vertex colour: a base tint with per-vertex blotch,
  * earth dirt rising from the ground, and rain streaks running down from the box's own top edge.
  */
-function weatheredBox(w, h, d, cx, cy, cz, { tile, tint, seg = 0.07, streaks = 1, dirt = 1, seed = 1 }) {
+function weatheredBox(w, h, d, cx, cy, cz, { tile, tint, seg = 0.07, streaks = 1, dirt = 1, seed = 1, top: topOpts = null }) {
   const g = new THREE.BoxGeometry(w, h, d, Math.max(1, Math.round(w / seg)), Math.max(2, Math.round(h / seg)), Math.max(1, Math.round(d / seg)));
   g.translate(cx, cy, cz);
   const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv;
@@ -80,6 +117,7 @@ function weatheredBox(w, h, d, cx, cy, cz, { tile, tint, seg = 0.07, streaks = 1
       const fall = Math.max(0, 1 - (top - y) / len);
       c.lerp(STAIN, Math.min(0.55, streaks * col01 * Math.pow(fall, 0.7) * 0.8));
     }
+    if (topOpts && n.getY(i) > 0.5) topWear(c, x, z, { hw: w / 2, hd: d / 2, cx, cz, seed, riser: topOpts.riser });
     col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -131,28 +169,73 @@ function chip(plaster, brick, r, face, f, u, v, rw, rh, foot = false) {
   brick.push(place(new THREE.ShapeGeometry(outline(0.95, 0.7)), 0.005, new THREE.Color(0xa07a64), 0.8, r()));
 }
 
+/**
+ * A chip on a step TOP: the lime broken off the nosing (or, `edge` false, a flake lost mid-tread), brick showing.
+ * Laid a few mm proud of the top face at height `y`. For a nosing chip, (u, v) is a point on the edge and `side` is
+ * which edge ('z+', 'z-', 'x+', 'x-'): the half-patch grows inward from it.
+ */
+function chipTop(plaster, brick, r, y, u, v, rw, rd, side = null) {
+  const edge = !!side;
+  const outline = (scale, jag) => {
+    const pts = [];
+    const N = edge ? 9 : 13;
+    for (let i = 0; i < (edge ? N + 1 : N); i++) {
+      const a = (i / N) * (edge ? Math.PI : Math.PI * 2);
+      const k = scale * (1 - jag / 2 + r() * jag);
+      const sy = edge && (i === 0 || i === N) ? 0 : Math.sin(a) * rd * k;
+      pts.push(new THREE.Vector2(Math.cos(a) * rw * k, sy));
+    }
+    return new THREE.Shape(pts);
+  };
+  const ang = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[side] ?? r() * Math.PI;
+  const place = (geo, lift, tint, tile, seed) => {
+    geo.rotateX(-Math.PI / 2).rotateY(ang).translate(u, y + lift, v);
+    const g = geo.index ? geo.toNonIndexed() : geo;
+    const p = g.attributes.position;
+    const uv = new Float32Array(p.count * 2), col = new Float32Array(p.count * 3), nrm = new Float32Array(p.count * 3);
+    const c = new THREE.Color();
+    for (let i = 0; i < p.count; i++) {
+      const px = p.getX(i), pz = p.getZ(i);
+      uv[i * 2] = px / tile + seed; uv[i * 2 + 1] = pz / tile;
+      c.copy(tint).multiplyScalar(0.82 + 0.22 * vnoise2(px * 23 + seed, pz * 17));
+      c.lerp(DIRT, 0.18);
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+      nrm[i * 3 + 1] = 1;
+    }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    return g;
+  };
+  plaster.push(place(new THREE.ShapeGeometry(outline(1.3, 0.6)), 0.003, new THREE.Color(0xaaa596), 1.5, 0.7));
+  brick.push(place(new THREE.ShapeGeometry(outline(0.95, 0.7)), 0.005, new THREE.Color(0xa07a64), 0.8, r()));
+}
+
 function paintBoard(canvas) {
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
+  const k = W / 512; // all strokes and specks were tuned on a 512 px board
   const r = rng(77);
   // Whitewash a shade fresher than the pillar (the board gets a coat at Independence Day), still not white.
   ctx.fillStyle = '#dcd5c3';
   ctx.fillRect(0, 0, W, H);
-  for (let i = 0; i < 2600; i++) {
+  for (let i = 0; i < 2600 * k * k; i++) {
     const v = 200 + Math.floor(r() * 30);
     ctx.fillStyle = `rgba(${v},${v - 4},${v - 14},0.18)`;
-    ctx.fillRect(r() * W, r() * H, 1 + r() * 3, 1 + r() * 3);
+    ctx.fillRect(r() * W, r() * H, (1 + r() * 3) * k, (1 + r() * 3) * k);
   }
-  // Painted border, faded charcoal.
+  // Painted border, faded charcoal, kept thin and close to the edge so the lettering gets the width.
   ctx.strokeStyle = 'rgba(52,48,42,0.85)';
-  ctx.lineWidth = 8;
-  ctx.strokeRect(10, 10, W - 20, H - 20);
-  drawBilingual(ctx, HI, EN, { x: W / 2, y: 24, w: W - 52, h: H - 48, fg: '#2c2924', fillFraction: 0.86 });
+  ctx.lineWidth = 6 * k;
+  ctx.strokeRect(7 * k, 7 * k, W - 14 * k, H - 14 * k);
+  // Lettering fills the board: the English line is the one that has to read at 8 m.
+  const pad = 20 * k;
+  const L = drawBilingual(ctx, HI, EN, { x: W / 2, y: pad, w: W - 2 * pad, h: H - 2 * pad, fg: '#2c2924', fillFraction: 0.96, gapFraction: 0.08 });
   // Weathering over the paint: runoff streaks from the top, flaked spots, dust at the bottom edge.
   for (let i = 0; i < 14; i++) {
-    const x = r() * W, len = H * (0.2 + r() * 0.6), w = 3 + r() * 10;
+    const x = r() * W, len = H * (0.2 + r() * 0.6), w = (3 + r() * 10) * k;
     const gr = ctx.createLinearGradient(0, 0, 0, len);
-    gr.addColorStop(0, 'rgba(110,106,92,0.28)');
+    gr.addColorStop(0, 'rgba(110,106,92,0.24)');
     gr.addColorStop(1, 'rgba(110,106,92,0)');
     ctx.fillStyle = gr;
     ctx.fillRect(x, 0, w, len);
@@ -160,7 +243,7 @@ function paintBoard(canvas) {
   for (let i = 0; i < 40; i++) {
     ctx.fillStyle = r() < 0.5 ? 'rgba(225,219,203,0.85)' : 'rgba(150,128,104,0.5)';
     ctx.beginPath();
-    ctx.ellipse(r() * W, r() * H, 1 + r() * 5, 1 + r() * 3, r() * 3, 0, Math.PI * 2);
+    ctx.ellipse(r() * W, r() * H, (1 + r() * 5) * k, (1 + r() * 3) * k, r() * 3, 0, Math.PI * 2);
     ctx.fill();
   }
   const dust = ctx.createLinearGradient(0, H * 0.7, 0, H);
@@ -168,6 +251,7 @@ function paintBoard(canvas) {
   dust.addColorStop(1, 'rgba(140,118,88,0.3)');
   ctx.fillStyle = dust;
   ctx.fillRect(0, H * 0.7, W, H * 0.3);
+  return L;
 }
 
 export function createZeroMilestone(pos = ZERO_MILESTONE_POS) {
@@ -177,19 +261,25 @@ export function createZeroMilestone(pos = ZERO_MILESTONE_POS) {
 
   const plaster = [], brick = [], concrete = [];
   // Footing: a rough cement apron, slightly wider than the plinth, worn and dusty.
-  concrete.push(weatheredBox(3.3, 0.08, 2.3, 0, 0.04, 0, { tile: 1.5, tint: new THREE.Color(0xaaa391), seg: 0.3, streaks: 0, dirt: 0.35, seed: 2 }));
-  // Two-step plinth and the pillar, lime over brick.
-  const s1 = { w: 3.0, h: 0.3, d: 2.0, y: 0.08 };
-  const s2 = { w: 2.3, h: 0.26, d: 1.45, y: s1.y + s1.h };
+  concrete.push(weatheredBox(3.6, 0.08, 2.65, 0, 0.04, 0, { tile: 1.5, tint: new THREE.Color(0xaaa391), seg: 0.3, streaks: 0, dirt: 0.35, seed: 2 }));
+  // Two-step plinth and the pillar, lime over brick. The pillar is 1.15 m square (was 0.8) so the painted name board
+  // on each face is 1.09 m wide: at 0.8 m the English line was width-bound and too small to read at 8 m. The plinth
+  // grew with it (0.3 m longer, 0.35 m deeper) to keep the same step-to-pillar proportion.
+  const s1 = { w: 3.3, h: 0.3, d: 2.35, y: 0.08 };
+  const s2 = { w: 2.6, h: 0.26, d: 1.8, y: s1.y + s1.h };
   const deck = s2.y + s2.h;
-  plaster.push(weatheredBox(s1.w, s1.h, s1.d, 0, s1.y + s1.h / 2, 0, { tile: 1.5, tint: LIME.clone().multiplyScalar(0.96), seg: 0.15, streaks: 0.7, dirt: 1.2, seed: 3 }));
-  plaster.push(weatheredBox(s2.w, s2.h, s2.d, 0, s2.y + s2.h / 2, 0, { tile: 1.5, tint: LIME, seg: 0.14, streaks: 0.8, dirt: 0.6, seed: 5 }));
-  const P = { w: 0.8, h: 1.6, x: -0.5 };
-  plaster.push(weatheredBox(P.w, P.h, P.w, P.x, deck + P.h / 2, 0, { tile: 1.5, tint: LIME, seg: 0.08, streaks: 1, dirt: 0.4, seed: 7 }));
+  const P = { w: 1.15, h: 1.85, x: -0.6 };
+  const hw1 = s1.w / 2, hd1 = s1.d / 2, hw2 = s2.w / 2, hd2 = s2.d / 2;
+  const s1Top = s1.y + s1.h, s2Top = deck;
+  plaster.push(weatheredBox(s1.w, s1.h, s1.d, 0, s1.y + s1.h / 2, 0, { tile: 1.5, tint: LIME.clone().multiplyScalar(0.96), seg: 0.1, streaks: 0.7, dirt: 1.2, seed: 3, top: { riser: { hw: hw2, hd: hd2, cx: 0, cz: 0 } } }));
+  plaster.push(weatheredBox(s2.w, s2.h, s2.d, 0, s2.y + s2.h / 2, 0, { tile: 1.5, tint: LIME, seg: 0.1, streaks: 0.8, dirt: 0.6, seed: 5, top: { riser: { hw: P.w / 2, hd: P.w / 2, cx: P.x, cz: 0 } } }));
+  plaster.push(weatheredBox(P.w, P.h, P.w, P.x, deck + P.h / 2, 0, { tile: 1.5, tint: LIME, seg: 0.1, streaks: 1, dirt: 0.4, seed: 7 }));
   // Cap: a projecting ochre band and a low pyramid, the milestone's painted top.
   const capY = deck + P.h;
-  plaster.push(weatheredBox(0.92, 0.1, 0.92, P.x, capY + 0.045, 0, { tile: 1.5, tint: OCHRE.clone().lerp(LIME, 0.15), seg: 0.06, streaks: 0.6, dirt: 0, seed: 9 }));
-  const pyr = new THREE.ConeGeometry(0.62, 0.3, 4, 3).rotateY(Math.PI / 4).translate(P.x, capY + 0.1 + 0.15, 0).toNonIndexed();
+  const capW = P.w + 0.12;
+  plaster.push(weatheredBox(capW, 0.11, capW, P.x, capY + 0.05, 0, { tile: 1.5, tint: OCHRE.clone().lerp(LIME, 0.15), seg: 0.08, streaks: 0.6, dirt: 0, seed: 9 }));
+  const pyrH = 0.38;
+  const pyr = new THREE.ConeGeometry((capW / 2) * Math.SQRT2, pyrH, 4, 3).rotateY(Math.PI / 4).translate(P.x, capY + 0.105 + pyrH / 2, 0).toNonIndexed();
   {
     const pp = pyr.attributes.position, pc = new Float32Array(pp.count * 3), c = new THREE.Color();
     for (let i = 0; i < pp.count; i++) {
@@ -202,19 +292,36 @@ export function createZeroMilestone(pos = ZERO_MILESTONE_POS) {
     plaster.push(pyr);
   }
   // Chipped base: plaster gone at the step corners and along the bottom of the lower step, brick showing.
-  const hw1 = s1.w / 2, hd1 = s1.d / 2, hw2 = s2.w / 2, hd2 = s2.d / 2;
   // Foot of the lower step (bumped by cycles and carts, splashed every monsoon), the lower-step corners, a couple on
   // the upper step and one low on the pillar.
   chip(plaster, brick, r, 'z+', hd1, -hw1 + 0.32, s1.y, 0.3, 0.17, true);
-  chip(plaster, brick, r, 'z+', hd1, 0.55, s1.y, 0.18, 0.11, true);
-  chip(plaster, brick, r, 'x+', hw1, 0.6, s1.y, 0.26, 0.15, true);
+  chip(plaster, brick, r, 'z+', hd1, 0.6, s1.y, 0.18, 0.11, true);
+  chip(plaster, brick, r, 'x+', hw1, 0.7, s1.y, 0.26, 0.15, true);
   chip(plaster, brick, r, 'x+', hw1, -hd1 + 0.2, s1.y + 0.17, 0.12, 0.08);
-  chip(plaster, brick, r, 'z-', -hd1, 0.9, s1.y, 0.34, 0.18, true);
-  chip(plaster, brick, r, 'z-', -hd1, -1.05, s1.y + 0.18, 0.13, 0.07);
-  chip(plaster, brick, r, 'x-', -hw1, -0.35, s1.y, 0.22, 0.14, true);
+  chip(plaster, brick, r, 'z-', -hd1, 1.0, s1.y, 0.34, 0.18, true);
+  chip(plaster, brick, r, 'z-', -hd1, -1.15, s1.y + 0.18, 0.13, 0.07);
+  chip(plaster, brick, r, 'x-', -hw1, -0.4, s1.y, 0.22, 0.14, true);
   chip(plaster, brick, r, 'z+', hd2, hw2 - 0.2, s2.y + 0.13, 0.11, 0.07);
-  chip(plaster, brick, r, 'x-', -hw2, 0.4, s2.y + 0.1, 0.1, 0.06);
-  chip(plaster, brick, r, 'z+', P.w / 2, P.x + 0.27, deck + 0.12, 0.09, 0.07);
+  chip(plaster, brick, r, 'x-', -hw2, 0.45, s2.y + 0.1, 0.1, 0.06);
+  chip(plaster, brick, r, 'z+', P.w / 2, P.x + 0.4, deck + 0.12, 0.09, 0.07);
+  // Step tops: the nosings are where it breaks first (people sit on them, cycles knock them), so broken edges on the
+  // treads with the matching loss just below on the riser, plus a couple of flakes mid-tread.
+  const nosing = (top, side, f, u, rw, rd) => {
+    if (side[0] === 'z') chipTop(plaster, brick, r, top, u, f, rw, rd, side);
+    else chipTop(plaster, brick, r, top, f, u, rw, rd, side);
+    chip(plaster, brick, r, side, f, u, top - 0.075, rw * 0.9, 0.05);
+  };
+  nosing(s1Top, 'z+', hd1, 0.95, 0.16, 0.09);
+  nosing(s1Top, 'z+', hd1, -1.2, 0.1, 0.06);
+  nosing(s1Top, 'z-', -hd1, -0.3, 0.14, 0.08);
+  nosing(s1Top, 'x-', -hw1, 0.55, 0.12, 0.07);
+  nosing(s1Top, 'x+', hw1, -0.6, 0.09, 0.05);
+  nosing(s2Top, 'z+', hd2, 0.25, 0.13, 0.08);
+  nosing(s2Top, 'x+', hw2, -0.45, 0.1, 0.06);
+  nosing(s2Top, 'z-', -hd2, -0.95, 0.11, 0.06);
+  chipTop(plaster, brick, r, s1Top, -0.4, hd1 - 0.13, 0.07, 0.05);
+  chipTop(plaster, brick, r, s1Top, hw1 - 0.15, 0.3, 0.05, 0.04);
+  chipTop(plaster, brick, r, s2Top, 0.85, -0.55, 0.06, 0.04);
 
   const merge = (geos, name, mat) => {
     const m = new THREE.Mesh(mergeGeometries(geos), mat);
@@ -232,17 +339,17 @@ export function createZeroMilestone(pos = ZERO_MILESTONE_POS) {
 
   // Name board painted on all four faces of the pillar, a few mm proud. One canvas, one material, one draw call;
   // the library plaster normal + roughness maps sit under the paint so it reads as paint on lime, not a sticker.
+  const bw = P.w - 0.06, bh = 0.62;
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 448;
-  paintBoard(canvas);
+  canvas.width = 1024;
+  canvas.height = Math.round((1024 * bh) / bw);
+  group.userData.boardText = paintBoard(canvas);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   const lime = getTiledMaterial('plaster', { repeatX: 1, repeatY: 1 });
   const boardMat = new THREE.MeshStandardMaterial({ map: tex, normalMap: lime.normalMap, roughnessMap: lime.roughnessMap, roughness: 1, normalScale: new THREE.Vector2(0.8, 0.8) });
-  const bw = P.w - 0.06, bh = 0.64;
-  const boardY = deck + P.h - 0.2 - bh / 2;
+  const boardY = deck + P.h - 0.16 - bh / 2;
   const boards = [];
   for (let k = 0; k < 4; k++) {
     const a = (k * Math.PI) / 2;
@@ -258,11 +365,11 @@ export function createZeroMilestone(pos = ZERO_MILESTONE_POS) {
   group.add(boardMesh);
   // The webfont may still be loading at build time: repaint once it is in, so the Devanagari never falls back.
   if (document.fonts) {
-    document.fonts.load('700 40px "Noto Sans Devanagari"').then(() => document.fonts.ready).then(() => { paintBoard(canvas); tex.needsUpdate = true; }).catch(() => {});
+    document.fonts.load('700 40px "Noto Sans Devanagari"').then(() => document.fonts.ready).then(() => { group.userData.boardText = paintBoard(canvas); tex.needsUpdate = true; }).catch(() => {});
   }
 
   // The flag: the village's one flagpole kind, stood on the upper step beside the pillar, flag flying away from it.
-  const flag = createFlagpoleProp({ x: 0.62, z: 0.05 });
+  const flag = createFlagpoleProp({ x: 0.72, z: 0.05 });
   flag.position.y = deck;
   flag.rotation.y = Math.PI / 2; // flag flies west across the grass: broadside to the main road and the spawn, not edge-on
   flag.name = 'zero_milestone_flagpole';
