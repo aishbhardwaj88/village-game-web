@@ -10,7 +10,7 @@ try {
   for (let i = 0; i < 100; i++) { try { await fetch(BASE); break; } catch { await new Promise((r) => setTimeout(r, 300)); } }
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await page.goto(`${BASE}?proof=1`); await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
+  await page.goto(`${BASE}?proof=1${process.env.QS || ''}`); await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
   await page.click('#play-btn'); await page.waitForTimeout(3500);
   const r = await page.evaluate(({ x, z, yaw }) => {
     const d = window.__dopahar; d.teleportPlayer(x, z); d.camRig.yaw = yaw; d.camRig.pitch = -0.15; d.camRig.distance = 5; d.camRig.update(10);
@@ -26,10 +26,11 @@ try {
         if (!vis) return; if (!o.frustumCulled === false && o.isMesh && !inFrustum(o)) return;
         rows.push([o.name || o.type, Array.isArray(o.material) ? o.material.map(m=>m.name).join('+') : (o.material && o.material.name) || '', o.castShadow ? 'S' : '-', o.isInstancedMesh ? 'I' : '', o.parent && o.parent.name]);
       });
-      res({ calls: d.renderer.info.render.calls, rows });
+      res({ dbg: window.__batchDbg, calls: d.renderer.info.render.calls, rows });
     } }; requestAnimationFrame(f); });
   }, { x, z, yaw });
   console.log('renderer calls', r.calls, 'visible meshes', r.rows.length, 'casting', r.rows.filter(a => a[2] === 'S').length);
+  if (process.env.DBG) console.log(JSON.stringify(r.dbg, null, 0).replace(/\],\[\"/g, '],\n["'));
   for (const row of r.rows) console.log(row.join(' | '));
   await browser.close();
 } finally { server.kill(); }
