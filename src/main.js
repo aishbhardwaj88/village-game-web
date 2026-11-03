@@ -873,10 +873,9 @@ async function main() {
 
   const fps = setupFpsCounter();
 
-  // HDRI lighting (IBL) loads async; scene renders as soon as ground/sun/sky are up.
-  loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').catch((err) =>
-    console.error('Failed to load environment HDRI', err)
-  );
+  // HDRI lighting (IBL) loads async, AFTER Play unlocks (see slotLoads below): the PMREM bake is a single long
+  // main-thread task (4 s on the software-GL load test) and the HDR download shares the opening bandwidth, and
+  // the title screen needs neither. Measured: Play ready 10.4 s -> 6.6 s at CPU x1 with the HDR out of the way.
 
   // Asset slots (queue item 1) — every registration below just reads each object's
   // already-public handles (vehicle.group/.bodyPivot/.wheels/etc, all exposed since
@@ -1189,8 +1188,13 @@ async function main() {
 
   // Play unlocks once the models around the opening spawn are in (first view never pops); the far ones keep
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
-  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 70 });
-  slotLoads.near.then(() => markOpeningViewLoaded());
+  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 40 });
+  slotLoads.near.then(() => {
+    markOpeningViewLoaded();
+    requestAnimationFrame(() => loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').catch((err) =>
+      console.error('Failed to load environment HDRI', err)
+    ));
+  });
   slotLoads.all.then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
     // Draw-call budget: fold each CLUSTER of Blender buildings into one mesh per material (src/assetSlots.js
