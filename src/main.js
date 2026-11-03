@@ -171,6 +171,7 @@ import { createSideJobs } from './sideJobs.js';
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
+import { createPlayerCycle } from './playerCycle.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -607,6 +608,7 @@ async function main() {
   const OPENING_YAW = 2.9;
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
+  const playerCycle = createPlayerCycle(player);
 
   // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
   // in src/interactions.js. Maa/halwai are now the real code-built characters
@@ -2755,6 +2757,7 @@ async function main() {
         setInteractPrompt('खड़े हो जाएं', 'Stand up');
         if (interactPressed) standUpFromLying();
       } else if (mountedVehicle) {
+        playerCycle.update(dt, false, 0, 0);
         // Bugfix 2/4 — a stable snapshot for this whole frame: `dismount()` below
         // sets the outer `mountedVehicle` to null, and it must run LAST in this
         // branch (E is unconditional now, see below) — reading the outer variable
@@ -2900,6 +2903,7 @@ async function main() {
         // other moving body, instead of moving the full step then resolving only
         // the endpoint.
         movePlayerBy(moveDir.x * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt, moveDir.z * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt);
+        playerCycle.update(dt, onCycle, moveDir.x, moveDir.z);
         audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
         audio.setSurface(surfaceAt(player.position.x, player.position.z));
 
