@@ -12,12 +12,12 @@ export const MAP_PLAN = {
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
   yard_chaupal: { x: 23.5, z: 28.5, turn: 5 },
   yard_paani_tanki: { x: -44.9, z: -90.3, turn: 3 },
-  yard_panchayat: { x: -50, z: 42.3, turn: -85 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
+  yard_panchayat: { x: -50, z: 42.3, turn: 185 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
   yard_post: { x: -52.2, z: 65.4, turn: -11.2 },
-  yard_tvhouse: { x: -47.3, z: 21.8, turn: 185 },
+  yard_tvhouse: { x: -47.3, z: 21.8, turn: 5 },
   yard_dairy: { x: -95.1, z: -37.4, turn: -7 },
   yard_khalihan: { x: 58, z: -95.5, turn: 7.3 },
-  yard_chakki: { x: -62.1, z: 23.1, turn: 185 },
+  yard_chakki: { x: -62.1, z: 23.1, turn: 5 },
   yard_tubewell: { x: 133.8, z: 29.4, turn: 4.9 },
   // yard_school (v2) is NOT placed: the hero school (src/village.js, the playable classroom with bell/teacher/blackboard) now stands on this centre and the two would overlap; v2 waits in its staging slot (NEEDS_YOU).
   yard_gurukul: { x: 34.8, z: 108.3, turn: -11.2 },

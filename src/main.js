@@ -1641,6 +1641,7 @@ async function main() {
     }
     // the map's roadside-place compound walls (1 Nov plan, compound_walls): low walls with the map's gate gaps, colliders per 2 m.
     MAP_COMPOUND_WALLS.forEach((entry, i) => {
+      if (entry.name === 'Village TV house' || entry.name === 'Flour mill') return; // 3 Nov: both turned to face the Council lane; their own yard walls replace these
       const xs = entry.lines.flat(); const at = { x: xs.reduce((s, p) => s + p[0], 0) / xs.length + 600, z: xs.reduce((s, p) => s + p[1], 0) / xs.length };
       zoneManager.register(`map_wall_${i}`, { ...at, buildRadius: 50, teardownRadius: 65, build: () => createMapCompoundWall(entry, createBoundaryWall, THREE).group });
     });
