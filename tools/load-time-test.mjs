@@ -63,7 +63,7 @@ const bytesAtTitle = bytes;
 await page.waitForSelector('#start-overlay.ready', { timeout: 120000 });
 const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
-if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, 25).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
+if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, Number(process.env.LISTN||25)).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
 await browser.close(); stop();
 
 const mb = n => (n / 1048576).toFixed(2) + ' MB';
