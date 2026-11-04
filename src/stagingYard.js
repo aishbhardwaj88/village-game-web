@@ -173,7 +173,7 @@ function foldLanterns(group, model, sink, name) {
 }
 
 /** Places whose model draws through the village-wide batches (src/placeBatch.js). */
-const BATCHED_PLACES = new Set(['yard_post', 'yard_chakki', 'yard_panchayat', 'yard_tvhouse', 'yard_chaupal', 'yard_paani_tanki', 'yard_school', 'yard_dairy', 'yard_gurukul', 'yard_bus_adda', 'yard_ration', 'yard_petrol', 'yard_dharam_kanta', 'yard_akhada', 'yard_tubewell']);
+const BATCHED_PLACES = new Set(['yard_post', 'yard_chakki', 'yard_panchayat', 'yard_tvhouse', 'yard_chaupal', 'yard_paani_tanki', 'yard_school', 'yard_dairy', 'yard_gurukul', 'yard_bus_adda', 'yard_ration', 'yard_petrol', 'yard_dharam_kanta', 'yard_akhada', 'yard_tubewell', 'yard_volleyball', 'yard_khel', 'yard_puncture', 'yard_bhatta', 'yard_khalihan', 'yard_matboard']);
 
 function createStagedPlace(def) {
   const a = ANCHORS[def.id];
