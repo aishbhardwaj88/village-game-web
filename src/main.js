@@ -1640,11 +1640,20 @@ async function main() {
       zoneManager.register(n, { ...at, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite(n, n + '.glb', at, solids), -deg * Math.PI / 180) });
     }
     // the map's roadside-place compound walls (1 Nov plan, compound_walls): low walls with the map's gate gaps, colliders per 2 m.
-    MAP_COMPOUND_WALLS.forEach((entry, i) => {
-      if (entry.name === 'Village TV house' || entry.name === 'Flour mill') return; // 3 Nov: both turned to face the Council lane; their own yard walls replace these
+    // 4 Nov: walls are merged per 80 m cell (one wall mesh and one plant mesh per cell, not per place) to save draw calls.
+    const wallCells = new Map();
+    for (const entry of MAP_COMPOUND_WALLS) {
+      if (entry.name === 'Village TV house' || entry.name === 'Flour mill') continue; // 3 Nov: both turned to face the Council lane; their own yard walls replace these
+      const f = entry.lines[0][0];
+      const key = `${Math.floor((f[0] + 600) / 80)}_${Math.floor(f[1] / 80)}`;
+      if (!wallCells.has(key)) wallCells.set(key, { name: key, lines: [] });
+      wallCells.get(key).lines.push(...entry.lines);
+    }
+    for (const entry of wallCells.values()) {
       const xs = entry.lines.flat(); const at = { x: xs.reduce((s, p) => s + p[0], 0) / xs.length + 600, z: xs.reduce((s, p) => s + p[1], 0) / xs.length };
-      zoneManager.register(`map_wall_${i}`, { ...at, buildRadius: 50, teardownRadius: 65, build: () => createMapCompoundWall(entry, createBoundaryWall, THREE).group });
-    });
+      const reach = Math.max(...xs.map((p) => Math.hypot(p[0] + 600 - at.x, p[1] - at.z)));
+      zoneManager.register(`map_wall_${entry.name}`, { ...at, buildRadius: 50 + reach, teardownRadius: 65 + reach, build: () => createMapCompoundWall(entry, createBoundaryWall, THREE).group });
+    }
     // 'tea_haystacks' no longer built: the 1 Nov map places no haystacks by the tea stall and the old +600 spot stood in open ground.
     // 'tubewell' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     zoneManager.register('johad', { ...pt('johad'), buildRadius: 45, teardownRadius: 60, build: () => createJohad(pt('johad')) });
