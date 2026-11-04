@@ -24,7 +24,7 @@ try {
         if (!(o.isMesh || o.isPoints || o.isLine)) return;
         let vis = true; for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; }
         if (!vis) return; if (!o.frustumCulled === false && o.isMesh && !inFrustum(o)) return;
-        rows.push([o.name || o.type, Array.isArray(o.material) ? o.material.map(m=>m.name).join('+') : (o.material && o.material.name) || '', o.castShadow ? 'S' : '-', o.isInstancedMesh ? 'I' : '', o.parent && o.parent.name]);
+        rows.push([o.name || o.type, Array.isArray(o.material) ? o.material.map(m=>m.name).join('+') : (o.material && o.material.name) || '', o.castShadow ? 'S' : '-', o.isInstancedMesh ? 'I' : '', o.parent && o.parent.name, (() => { if (!o.geometry) return ''; if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const b = o.geometry.boundingSphere; return b ? `c(${b.center.x.toFixed(0)},${b.center.z.toFixed(0)}) r${b.radius.toFixed(0)}` : ''; })()]);
       });
       res({ dbg: window.__batchDbg, calls: d.renderer.info.render.calls, rows });
     } }; requestAnimationFrame(f); });

@@ -151,6 +151,11 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
       geometry.computeBoundingSphere();
       const bs = geometry.boundingSphere;
       mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 30 };
+    } else {
+      // Small merged clusters (a handful of props, one patch of ground) stop drawing well past fog distance: each costs a call from anywhere in view.
+      geometry.computeBoundingSphere();
+      const bs = geometry.boundingSphere;
+      if (bs.radius <= 60) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 170 };
     }
     mesh.castShadow = mayCast(material, bucket.castShadow);
     mesh.receiveShadow = bucket.receiveShadow;
