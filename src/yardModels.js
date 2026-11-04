@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
 import { floatGeometry, flushMerged } from './pots.js';
+import { batchPlaceModel } from './placeBatch.js';
 
 /** Build a yard group at `position` from assets/models/<glb>; `solids` are { x, z, w, d } in LOCAL metres (square), baked into world colliders. */
 export function createYardSite(name, glb, position, solids) {
@@ -28,6 +29,7 @@ export function createYardSite(name, glb, position, solids) {
       byMat.get(o.material).push(floatGeometry(o.geometry).applyMatrix4(o.matrixWorld));
     });
     flushMerged(group, byMat, `${name}_mesh`, true);
+    batchPlaceModel(group, name); // drawing moves into the village-wide per-material batches (src/placeBatch.js); the merged meshes stay as hidden colliders/visibility sources
   }).catch((err) => console.warn(`${name} did not load`, err));
   return group;
 }
