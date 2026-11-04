@@ -1032,7 +1032,7 @@ async function main() {
       // 4 Nov: reads now wait for the count to settle (streaming is async); school settled at 196, not the 195 an unsettled read gave.
       // Measured 3 Nov with the cameras above: these zones were ALREADY over the ceiling. They may not get worse than the
       // recorded number (3 Nov: +2 each for the player cycle's two meshes; school was already 204 on HEAD before it) (a ratchet, not a loosening); lower the number when a zone improves. Reported in docs/NEEDS_YOU.md.
-      const KNOWN_OVER = { bazaar: 182, chowk: 157, school: 184, haveli: 185, temple: 174 }; // 4 Nov (small merged clusters distance-gated in mergeUtils.js, settled 183, 183, 171): place boards are one BatchedMesh (src/placeBoards.js); settled reads 182, 153, 188, 184, 173; lanterns folded into the place model mesh 4 Nov (stagingYard foldLanterns): bazaar 180, school 181
+      const KNOWN_OVER = { bazaar: 174, chowk: 153, school: 170, haveli: 185, temple: 174 }; // 4 Nov, after place BatchedMesh: settled reads bazaar 170, chowk 149, school 166, ratchets = read + margin; earlier note: (small merged clusters distance-gated in mergeUtils.js, settled 183, 183, 171): place boards are one BatchedMesh (src/placeBoards.js); settled reads 182, 153, 188, 184, 173; lanterns folded into the place model mesh 4 Nov (stagingYard foldLanterns): bazaar 180, school 181
       for (const [id, calls] of worst) {
         record(
           `check 8a — draw calls <= ${KNOWN_OVER[id] ? `${KNOWN_OVER[id]} (known over ${DRAW_CALL_CEILING}, ratchet)` : DRAW_CALL_CEILING} (${id})`,
