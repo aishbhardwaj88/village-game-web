@@ -15,6 +15,7 @@ const KID_START = [{ x: -4, z: 0 }, { x: -8, z: 4 }, { x: 0, z: 6 }].map((o) => 
 
 export function registerPatangJob(api, env) {
   const st = { stage: 'idle', t: 0, from: null, to: null, spot: null, runners: [] };
+  api.nodes.patang = st; // live run state, read by tools/sidejobs-check.js (st.spot = where the kite lands)
   const starter = api.npc('kid_d', STARTER, 0, 'npc_patang_kid');
   const kite = mergeProp(buildKiteGeometryParts(0xe0392b, 0xf2b01e), 'job_kite');
   kite.scale.setScalar(1.6);

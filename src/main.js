@@ -3062,6 +3062,7 @@ async function main() {
       QUEST_STEPS,
       freeRoam,
       startFreeRoam,
+      get sideJobs() { return sideJobs; }, // dev/test only (tools/sidejobs-check.js): api.nodes holds live job state
       mount,
       dismount,
       get mountedVehicle() { return mountedVehicle; },

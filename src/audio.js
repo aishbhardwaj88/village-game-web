@@ -93,7 +93,7 @@ export class AudioEngine {
   /** Distance (metres) from the player/camera to the halwai — drives the distant
    * radio's fade (item 7). Called once per frame; harmless before start() (no-op). */
   setListenerDistanceToRadio(distanceMetres) {
-    if (!this.started || !this._radioGain) return;
+    if (!this.started || !this._radioGain || !Number.isFinite(distanceMetres)) return;
     // Audible within ~18m, inaudible by ~35m — a soft-knee fade, not a hard cutoff.
     const t = 1 - Math.min(1, Math.max(0, (distanceMetres - 18) / 17));
     this._radioGain.gain.setTargetAtTime(t * 0.05, this.ctx.currentTime, 0.8);
@@ -102,7 +102,7 @@ export class AudioEngine {
   /** Distance (metres) from the player to the canal channel — drives a soft water
    * murmur that is audible within ~14 m and gone by ~30 m. Harmless before start(). */
   setListenerDistanceToWater(distanceMetres) {
-    if (!this.started || !this._waterGain) return;
+    if (!this.started || !this._waterGain || !Number.isFinite(distanceMetres)) return;
     const t = 1 - Math.min(1, Math.max(0, (distanceMetres - 4) / 26));
     this._waterGain.gain.setTargetAtTime(t * t * 0.07, this.ctx.currentTime, 0.6);
   }
