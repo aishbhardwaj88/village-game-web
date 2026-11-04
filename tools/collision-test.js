@@ -358,10 +358,14 @@ function inPage(cfg) {
     if (!pos) return;
     const tc = idx ? idx.count / 3 : pos.count / 3;
     o.updateWorldMatrix(true, false);
-    const n = o.isInstancedMesh ? o.count : 1;
-    for (let i = 0; i < n; i++) {
-      if (o.isInstancedMesh) { o.getMatrixAt(i, M2); M.multiplyMatrices(o.matrixWorld, M2); } else M.copy(o.matrixWorld);
-      for (let t = 0; t < tc; t++) {
+    // a BatchedMesh (src/placeBoards.js) holds many boards in one buffer: each live instance has its own geometry range and matrix
+    const items = o.isBatchedMesh
+      ? [...o.userData.pairs].map((k) => k.split(',').map(Number)).filter(([, i]) => o.getVisibleAt(i)).map(([g, i]) => { const r = o.getGeometryRangeAt(g); return { i, t0: r.start / 3, t1: (r.start + r.count) / 3 }; })
+      : Array.from({ length: o.isInstancedMesh ? o.count : 1 }, (_, i) => ({ i, t0: 0, t1: tc }));
+    for (const { i, t0, t1 } of items) {
+      if (o.isBatchedMesh) { o.getMatrixAt(i, M2); M.multiplyMatrices(o.matrixWorld, M2); }
+      else if (o.isInstancedMesh) { o.getMatrixAt(i, M2); M.multiplyMatrices(o.matrixWorld, M2); } else M.copy(o.matrixWorld);
+      for (let t = t0; t < t1; t++) {
         const a = idx ? idx.getX(t * 3) : t * 3, b = idx ? idx.getX(t * 3 + 1) : t * 3 + 1, c = idx ? idx.getX(t * 3 + 2) : t * 3 + 2;
         P0.fromBufferAttribute(pos, a).applyMatrix4(M); P1.fromBufferAttribute(pos, b).applyMatrix4(M); P2.fromBufferAttribute(pos, c).applyMatrix4(M);
         if (Math.max(P0.y, P1.y, P2.y) < 0.35 || Math.min(P0.y, P1.y, P2.y) > 1.5) continue;

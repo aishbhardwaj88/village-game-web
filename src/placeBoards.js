@@ -78,10 +78,68 @@ export function placeBoardGeometry({ id, x, y, z, ry = 0, w = 3 }) {
   return geo;
 }
 
-/** One merged mesh (one draw call) for a site's boards. */
+/**
+ * Every place board in the world is an instance of ONE BatchedMesh (one draw call village-wide, was one per place).
+ * placeBoardsMesh() returns an empty holder that sits in the place's group exactly as the old mesh did, so the place
+ * moves, turns, hides (zone / distance) and tears down with it; syncPlaceBoards() (once a frame) mirrors that into
+ * the batch: first sight bakes the holder's world matrix into an instance, hidden ancestors hide the instance,
+ * a holder that left the scene frees its instances.
+ */
+const MAX_BOARDS = 192;
+let batch = null;
+const holders = new Set();
+function getBatch() {
+  if (!batch) {
+    batch = new THREE.BatchedMesh(MAX_BOARDS, MAX_BOARDS * 24, MAX_BOARDS * 36, atlas().material);
+    batch.name = 'place_boards_batch';
+    batch.castShadow = false;
+    batch.userData.pairs = new Set(); // 'geometryId,instanceId' of every live board (tools/collision-test.js reads it)
+    batch.frustumCulled = false; // instances are culled one by one
+  }
+  return batch;
+}
+
+/** The single batched mesh; main.js adds it to the scene once. */
+export function placeBoardsBatch() { return getBatch(); }
+
 export function placeBoardsMesh(boards, name = 'place_boards') {
-  const mesh = new THREE.Mesh(mergeGeometries(boards.map(placeBoardGeometry)), atlas().material);
-  mesh.name = name;
-  mesh.castShadow = false;
-  return mesh;
+  const holder = new THREE.Object3D();
+  holder.name = name;
+  holder.userData.boardGeos = boards.map(placeBoardGeometry);
+  holder.userData.boardIds = null;
+  holders.add(holder);
+  return holder;
+}
+
+function rooted(o) {
+  let visible = true;
+  for (let p = o; p; p = p.parent) {
+    if (!p.visible) visible = false;
+    if (p.isScene) return visible;
+  }
+  return null; // not in the scene
+}
+
+export function syncPlaceBoards() {
+  if (!holders.size) return;
+  const b = getBatch();
+  for (const h of holders) {
+    const vis = rooted(h);
+    const ids = h.userData.boardIds;
+    if (vis === null) {
+      if (ids) { for (const [g, i] of ids) { b.deleteInstance(i); b.deleteGeometry(g); b.userData.pairs.delete(g + ',' + i); } h.userData.boardIds = null; holders.delete(h); }
+      continue;
+    }
+    if (!ids) {
+      h.updateWorldMatrix(true, false);
+      h.userData.boardIds = h.userData.boardGeos.map((geo) => {
+        const g = b.addGeometry(geo);
+        const i = b.addInstance(g);
+        b.setMatrixAt(i, h.matrixWorld);
+        b.userData.pairs.add(g + ',' + i);
+        return [g, i];
+      });
+    }
+    for (const [, i] of h.userData.boardIds) b.setVisibleAt(i, vis);
+  }
 }

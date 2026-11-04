@@ -150,7 +150,7 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
-import { placeBoardsMesh } from './placeBoards.js';
+import { placeBoardsMesh, placeBoardsBatch, syncPlaceBoards } from './placeBoards.js';
 import { setPlantFocus } from './realPlants.js';
 import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
@@ -231,6 +231,7 @@ async function main() {
   });
   applyDipHoles(ground);
   scene.add(ground);
+  scene.add(placeBoardsBatch()); // every place board, one draw call (src/placeBoards.js)
 
   const atmosphere = getActiveAtmosphere();
   const sun = createSun(touch, atmosphere);
@@ -2972,6 +2973,7 @@ async function main() {
         audio.setPlaceAmbience(bestKind, bestC);
       }
       zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
+      syncPlaceBoards();
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)
       setPlantFocus(listenerPos.x, listenerPos.z);
