@@ -46,7 +46,8 @@ const DISH = ['#e3e1da', '#cfcdc6', '#b9bdc1', '#e7ddd0'];
 const PANEL = ['#27384f', '#1f2f45', '#2f3f55'];
 const BRICKS = ['#c98f6d', '#bf8260', '#d19a78'];
 
-export function createRoofCell(cell) {
+/** Builds the fitting geometry for `sites` ({x,y,z,yaw,kind,pick}) into { metal, concrete, brick } lists (world space, attributes position/normal/uv/uv2/color; uv in 1.2 m tiles). Also used by villageHouses.js for the kit houses. */
+export function buildRoofParts(sites) {
   const parts = { metal: [], concrete: [], brick: [] };
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
   const at = (x, y, z, rx = 0, ry = 0, rz = 0) => m.compose(p.set(x, y, z), q.setFromEuler(e.set(rx, ry, rz)), one).clone();
@@ -54,7 +55,7 @@ export function createRoofCell(cell) {
   const siteM = new THREE.Matrix4();
   const local = (s, x, y, z, rx = 0, ry = 0, rz = 0) => siteM.clone().multiply(at(x, y, z, rx, ry, rz));
 
-  for (const s of cell.sites) {
+  for (const s of sites) {
     const r = (n) => (((s.pick * 2654435761 + n * 40503) >>> 0) % 1000) / 1000; // deterministic 0..1 per site and slot
     const pickOf = (list, n) => list[Math.floor(r(n) * list.length) % list.length];
     siteM.compose(p.set(s.x, s.y, s.z), q.setFromEuler(e.set(0, s.yaw + (r(1) - 0.5) * 0.5, 0)), one);
@@ -113,7 +114,11 @@ export function createRoofCell(cell) {
       }
     }
   }
+  return parts;
+}
 
+export function createRoofCell(cell) {
+  const parts = buildRoofParts(cell.sites);
   const group = new THREE.Group();
   group.name = cell.id;
   const mats = {

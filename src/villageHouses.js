@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loadKitModels } from './houseKit.js';
+import { buildRoofParts } from './rooftops.js';
 import { swapShared } from './stagingYard.js';
 import { requestColliderRebuild } from './collision.js';
 
@@ -72,6 +73,57 @@ const CASTERS = /hb_main|hb_brick/;
 const PASTELS = [0xf4c7c3, 0xf2c9a0, 0xc7e6d2, 0xf1e6b8, 0xf6e7a0, 0xf4c7c3, 0xf2c9a0, 0xf1e6b8, 0xc4d5ea];
 const PASTEL_TYPES = new Set(['c', 'd', 'e']);
 
+// Rooftop fittings (src/rooftops.js builders) on the flat-roofed kit types, merged into the cluster's EXISTING meshes (no new draw call).
+// y = roof surface, rect = free roof in type-local metres (inside the parapet, clear of the ladder / stair room), keep = [x, z, r] existing
+// fittings to stay away from. Types a (thatch), e (open frame), f (stone slab), g and h (already carry tanks, solar, dish) get none.
+const ROOFS = {
+  b: { y: 3.2, rect: [-2.5, 2.5, -2.0, 2.0], keep: [[1.8, -1.5, 1.0]] },
+  c: { y: 3.6, rect: [-2.5, 1.8, -2.5, 2.5], keep: [] },
+  d: { y: 3.8, rect: [-3.0, 0.7, -5.5, 2.0], keep: [[-1.2, -4.5, 1.1]] },
+};
+const FIT_KINDS = ['antenna', 'tank', 'bricks', 'solar', 'antenna', 'bricks', 'tank', 'solar'];
+const FIT_PART_MATS = { metal: [/hb_metal/, /hb_props/, /hb_main/], concrete: [/hb_main/], brick: [/hb_brick/] };
+
+/** A rooftop-fitting geometry in the kit cluster's attribute layout (position/normal/uv in metres/color), already in world space. */
+function kitGeometry(g) {
+  const n = g.attributes.position.count;
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', g.attributes.position);
+  out.setAttribute('normal', g.attributes.normal);
+  const uv = new Float32Array(n * 2);
+  for (let k = 0; k < n; k++) { uv[k * 2] = g.attributes.uv.getX(k) * 1.2; uv[k * 2 + 1] = g.attributes.uv.getY(k) * 1.2; }
+  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  out.setAttribute('color', g.attributes.color);
+  if (g.index) out.setIndex(g.index);
+  return out;
+}
+
+/** Fitting sites on the roof of house `p` (index i): one or two, never the same kind as the previous house, yaw and kind vary house to house. */
+function houseRoofSites(p, i, place, prevKind) {
+  const roof = ROOFS[p.t];
+  if (!roof) return [];
+  const sites = [];
+  const n = hash(i * 13 + 5) < 0.45 ? 2 : 1;
+  const pos = new THREE.Vector3();
+  for (let k = 0; k < n; k++) {
+    let kind = FIT_KINDS[Math.floor(hash(i * 29 + k * 7 + 1) * FIT_KINDS.length)];
+    if (kind === prevKind.v) kind = FIT_KINDS[(FIT_KINDS.indexOf(kind) + 1 + k) % FIT_KINDS.length];
+    if (kind === prevKind.v) kind = 'bricks';
+    const inset = kind === 'tank' ? 0.85 : kind === 'solar' ? 0.75 : 0.5;
+    let lx = 0, lz = 0, ok = false;
+    for (let t = 0; t < 14 && !ok; t++) {
+      lx = roof.rect[0] + inset + hash(i * 41 + k * 11 + t * 3 + 2) * (roof.rect[1] - roof.rect[0] - 2 * inset);
+      lz = roof.rect[2] + inset + hash(i * 43 + k * 17 + t * 5 + 3) * (roof.rect[3] - roof.rect[2] - 2 * inset);
+      ok = roof.keep.every(([kx, kz, kr]) => Math.hypot(lx - kx, lz - kz) > kr + inset * 0.6) && sites.every((o) => Math.hypot(lx - o.lx, lz - o.lz) > 1.5);
+    }
+    if (!ok) continue;
+    pos.set(lx, 0, lz).applyMatrix4(place);
+    sites.push({ lx, lz, x: pos.x, y: roof.y, z: pos.z, yaw: p.ry, kind, pick: i * 7 + k * 13 + 3 });
+    if (k === 0) prevKind.v = kind;
+  }
+  return sites;
+}
+
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 /** Float copy of a (possibly meshopt-quantised) geometry with exactly position/normal/uv/color(3), baked by `m`. */
@@ -121,6 +173,8 @@ export function createVillageHouses(scene) {
     const place = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), pos = new THREE.Vector3(), full = new THREE.Matrix4();
     for (const [key, c] of cells) {
       const byMat = new Map(); // material -> [geometry]
+      const fitSites = [];
+      const prevKind = { v: '' };
       for (const [p, i] of c.list) {
         const src = models[p.t];
         if (!src) continue;
@@ -138,6 +192,18 @@ export function createVillageHouses(scene) {
           list.push(bakedGeometry(mesh.geometry, full, tint));
           byMat.set(mesh.material, list);
         });
+        fitSites.push(...houseRoofSites(p, i, place, prevKind));
+      }
+      if (fitSites.length) { // fittings join the cluster's meshes of a material it already has: zero extra draw calls
+        const parts = buildRoofParts(fitSites);
+        for (const [part, list] of Object.entries(parts)) {
+          if (!list.length) continue;
+          let target = null;
+          for (const re of FIT_PART_MATS[part]) { for (const mat of byMat.keys()) if (re.test(mat.name)) { target = mat; break; } if (target) break; }
+          if (!target) continue;
+          const dst = byMat.get(target);
+          for (const g of list) { const kg = kitGeometry(g); dst.push(dst[0].index && !kg.index ? kg : !dst[0].index && kg.index ? kg.toNonIndexed() : kg); }
+        }
       }
       const root = new THREE.Group();
       root.name = `kit_houses_${key}`;
