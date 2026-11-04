@@ -73,6 +73,10 @@ export function mapFrontFaceToRow(geometry, row, rows) {
     touched[vi] = 1;
     uv.setXY(vi, uv.getX(vi), v0 + uv.getY(vi) * (v1 - v0));
   }
+  // The other five faces (back, edges) kept UVs spanning the whole atlas, so the back read as a streaked smear of every board.
+  // Collapse them onto one texel inside this row's painted border so they take that board's frame colour.
+  const edgeU = 0.006, edgeV = (v0 + v1) / 2;
+  for (let vi = 0; vi < uv.count; vi++) if (!touched[vi]) uv.setXY(vi, edgeU, edgeV);
   uv.needsUpdate = true;
 }
 

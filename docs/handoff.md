@@ -1,3 +1,5 @@
+**2026-11-04 (signboard backs fixed, src/signboards.js):** found by walking-camera shot at the square's west edge: the back and edges of every wide place board sampled the whole atlas (streaked red/blue/black smear, seen on the sabzi cart sign from behind). mapFrontFaceToRow now collapses the other five faces onto one texel of the board's own border colour. Before/after docs/shots/orient-2026-11-04/sabzi_board_3m.png vs sabzi_board_back_fixed.png. Build exit 0, collision-test 0 failed. Square from 4 sides (square_from_*.png): fronts read onto the square, no orientation change made. NEXT: more street-by-street looks (temple, haveli, main street).
+
 
 **2026-11-04 (draw-call check made deterministic, tools/world-validator.js):** check 8a read 154 to 187 calls at the school on identical builds because zones stream in slices and models land async; it now waits until the count holds for 6 reads before measuring. Settled numbers: school 196 (ratchet 195 to 196, the 195 was an unsettled read), others unchanged. Build 22/22. Not a game-file change. NEXT: next BACKLOG pick.
 
