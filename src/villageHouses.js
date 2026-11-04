@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { batchPlaceModel } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loadKitModels } from './houseKit.js';
 import { buildRoofParts } from './rooftops.js';
@@ -220,6 +221,8 @@ export function createVillageHouses(scene) {
       }
       root.visible = false;
       group.add(root);
+      for (const m of root.children) if (!m.material.userData.placeBatchable && !m.material.transparent && m.material.name !== 'hb_decal' && m.material.name !== 'hb_flag' && !m.material.onBeforeCompile.toString().includes('vWxyz')) m.material.userData.placeBatchable = true;
+      batchPlaceModel(root, `kit_houses_${key}`); // drawn through the village-wide per-material batches; the meshes stay as hidden collider/visibility sources
       clusters.push({ pts: c.list.map(([p]) => [p.x, p.z]), root, shadow: false });
     }
     lx = 1e9; // the first update after loading must place the clusters even if the player has not moved
