@@ -39,7 +39,7 @@ function loadParts() {
 }
 
 /** Placements: { part, x, z, ry, y } in `group`'s local metres; the part's footprint centre lands on (x, z). */
-export function addSchoolProps(group, placements, name = 'school_props') {
+export function addSchoolProps(group, placements, name = 'school_props', sink = null) {
   return loadParts().then((parts) => {
     const byMat = new Map();
     const up = new THREE.Vector3(0, 1, 0);
@@ -54,6 +54,6 @@ export function addSchoolProps(group, placements, name = 'school_props') {
         byMat.get(part.mat).push(part.geo.clone().applyMatrix4(mat4));
       }
     }
-    flushMerged(group, byMat, name, true);
+    flushMerged(group, byMat, name, true, sink);
   }).catch((err) => console.warn('school props did not load', err));
 }

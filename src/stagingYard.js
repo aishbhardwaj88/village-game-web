@@ -196,7 +196,7 @@ function createStagedPlace(def) {
     return group;
   }
   addPlaceGreenery(group, def, STAGED_PLACES.indexOf(def) + 1);
-  const lanternSink = def.lanterns ? new Map() : null; // lantern geometry per material, folded into the place model's own mesh of that material (saves a draw call per material per place)
+  const lanternSink = def.lanterns || def.props ? new Map() : null; // (also takes the school props) lantern geometry per material, folded into the place model's own mesh of that material (saves a draw call per material per place)
   const lanternsDone = def.lanterns ? addLanterns(group, def.lanterns, def.zone + '_lanterns', lanternSink) : Promise.resolve(); // day props, place-local
   const modelDone = getGLTFLoader().loadAsync(`assets/models/${def.model}.glb`).then((gltf) => {
     const m = gltf.scene;
@@ -206,8 +206,8 @@ function createStagedPlace(def) {
     requestColliderRebuild(); // the model lands after its load was counted: have the zone manager rebuild colliders now, not at the next load
     return m;
   }).catch((err) => { console.warn(`${def.model}.glb did not load`, err); return null; });
-  if (def.props) addSchoolProps(group, def.props, def.zone + '_props').then(() => requestColliderRebuild());
-  if (lanternSink) Promise.all([modelDone, lanternsDone]).then(([m]) => foldLanterns(group, m, lanternSink, def.zone + '_lanterns'));
+  const propsDone = def.props ? addSchoolProps(group, def.props, def.zone + '_props', lanternSink) : Promise.resolve();
+  if (lanternSink) Promise.all([modelDone, lanternsDone, propsDone]).then(([m]) => foldLanterns(group, m, lanternSink, def.zone + '_lanterns'));
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.
     const herd = createCattleHerd(def.cattle.map((c) => { const k = Math.cos(a.ry || 0), n = Math.sin(a.ry || 0); return { ...c, x: a.x + c.x * k + c.z * n, z: a.z - c.x * n + c.z * k, rotationY: (c.rotationY || 0) + (a.ry || 0) }; }));
