@@ -8,6 +8,7 @@ import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
 import { addPlaceGreenery } from './stagedGreenery.js';
 import { createCattleHerd } from './animals.js';
 import { addLanterns } from './lanterns.js';
+import { floatGeometry } from './pots.js';
 import { addSchoolProps } from './schoolProps.js';
 import { isDevMode } from './ui.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
@@ -140,6 +141,32 @@ export function swapShared(o) {
   }
 }
 
+/** Adds the lantern geometry in `sink` (material -> group-local geometries) to the model's mesh of the same material; any material the model lacks, or whose attributes do not match, gets its own mesh as before. */
+function foldLanterns(group, model, sink, name) {
+  group.updateWorldMatrix(true, true);
+  const leftovers = new Map();
+  let n = 0;
+  for (const [mat, list] of sink) {
+    let target = null;
+    if (model) model.traverse((o) => { if (!target && o.isMesh && !o.isInstancedMesh && o.material === mat) target = o; });
+    let merged = null;
+    if (target) {
+      const toLocal = new THREE.Matrix4().copy(target.matrixWorld).invert().multiply(group.matrixWorld);
+      const extra = list.map((g) => g.clone().applyMatrix4(toLocal));
+      try { merged = mergeGeometries([floatGeometry(target.geometry), ...extra]); } catch (e) { merged = null; }
+    }
+    if (merged) { target.geometry = merged; target.userData.mergedStatic = true; continue; }
+    leftovers.set(mat, list);
+  }
+  for (const [mat, list] of leftovers) {
+    const mesh = new THREE.Mesh(mergeGeometries(list), mat);
+    mesh.name = `${name}_${n++}`;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  requestColliderRebuild();
+}
+
 function createStagedPlace(def) {
   const a = ANCHORS[def.id];
   const group = new THREE.Group();
@@ -169,15 +196,18 @@ function createStagedPlace(def) {
     return group;
   }
   addPlaceGreenery(group, def, STAGED_PLACES.indexOf(def) + 1);
-  getGLTFLoader().loadAsync(`assets/models/${def.model}.glb`).then((gltf) => {
+  const lanternSink = def.lanterns ? new Map() : null; // lantern geometry per material, folded into the place model's own mesh of that material (saves a draw call per material per place)
+  const lanternsDone = def.lanterns ? addLanterns(group, def.lanterns, def.zone + '_lanterns', lanternSink) : Promise.resolve(); // day props, place-local
+  const modelDone = getGLTFLoader().loadAsync(`assets/models/${def.model}.glb`).then((gltf) => {
     const m = gltf.scene;
     m.name = def.zone + '_model';
     m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; swapShared(o); } });
     group.add(m);
     requestColliderRebuild(); // the model lands after its load was counted: have the zone manager rebuild colliders now, not at the next load
-  }).catch((err) => console.warn(`${def.model}.glb did not load`, err));
+    return m;
+  }).catch((err) => { console.warn(`${def.model}.glb did not load`, err); return null; });
   if (def.props) addSchoolProps(group, def.props, def.zone + '_props').then(() => requestColliderRebuild());
-  if (def.lanterns) addLanterns(group, def.lanterns, def.zone + '_lanterns'); // day props, place-local
+  if (lanternSink) Promise.all([modelDone, lanternsDone]).then(([m]) => foldLanterns(group, m, lanternSink, def.zone + '_lanterns'));
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.
     const herd = createCattleHerd(def.cattle.map((c) => { const k = Math.cos(a.ry || 0), n = Math.sin(a.ry || 0); return { ...c, x: a.x + c.x * k + c.z * n, z: a.z - c.x * n + c.z * k, rotationY: (c.rotationY || 0) + (a.ry || 0) }; }));
