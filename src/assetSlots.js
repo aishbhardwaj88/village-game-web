@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { applyWallBaseGrime } from './materials.js';
+import { batchPlaceModel } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -231,8 +232,9 @@ export function createAssetSlotRegistry() {
    * vertex colours and real-metre UVs, so merging by material NAME is exact. Call after resolveAll().
    * Only meaningful for `exact` slots (their geometry is already in world-aligned local space). Static only.
    */
+  const clusterMaterials = new Map();
   function mergeSlotModels(names, zoneName, scene) {
-    const unified = new Map(); // material name -> first material instance (shared textures from then on)
+    const unified = clusterMaterials; // material name -> first material instance (shared textures from then on), shared by all clusters so their batches coincide
     const buckets = new Map(); // `${materialName}|${castShadow}` -> { material, geos, cast }
     const dead = [];
     for (const name of names) {
@@ -286,7 +288,9 @@ export function createAssetSlotRegistry() {
       mesh.castShadow = b.cast;
       mesh.receiveShadow = true;
       mesh.userData.mergedStatic = true;
+      if (!b.material.userData.placeBatchable && !b.material.transparent && b.material.name !== 'hb_decal' && b.material.name !== 'hb_flag' && !b.material.onBeforeCompile.toString().includes('vWxyz')) b.material.userData.placeBatchable = true;
       scene.add(mesh);
+      batchPlaceModel(mesh, mesh.name); // drawn through the village-wide per-material batch when the material is batchable; the mesh stays as hidden collider/visibility source
     }
   }
 
