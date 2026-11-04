@@ -853,8 +853,8 @@ function milkCanGeos(x, z, rot, tone) {
 /** Dudh dairy: cream-walled collection room with a steel can stack, a milk-can rack and a tin awning. */
 export function createDudhDairy(position) {
   const geos = smallBuilding({ w: 5, d: 4, h: 3.0, wall: 0xe7dcc0, band: 0x4a78a6, door: 0x7a4a2a });
-  geos.push(bake(new THREE.BoxGeometry(5.6, 0.07, 1.8), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 2.75, 3.0), 0x8e969c));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.6, 1.2, 3.7), 0x5a5a5a));
+  geos.push(bake(new THREE.BoxGeometry(5.6, 0.07, 1.8), new THREE.Matrix4().makeRotationX(0.12).setPosition(0, 3.15, 3.0), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.8, 6), at(sx * 2.6, 1.4, 3.7), 0x5a5a5a));
   // Milk cans: real dairy cans (flared foot, straight body, sloped shoulder, narrow neck, domed lid with a knob, two rolled bands, side lugs), two rows beside the door.
   for (let i = 0; i < 6; i++) {
     const x = -2.2 + (i % 3) * 0.55, z = 2.9 + Math.floor(i / 3) * 0.55;
@@ -942,8 +942,8 @@ export function createHealthSubCentre(position) {
 /** Chemist: narrow cream shop with a green shutter, tin awning and a glass counter front. */
 export function createChemist(position) {
   const geos = smallBuilding({ w: 4.2, d: 4, h: 3.1, wall: 0xe9d9c3, band: 0x2f7d5b, door: 0x2f7d5b });
-  geos.push(bake(new THREE.BoxGeometry(4.8, 0.07, 1.6), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.75, 2.8), 0x8e969c));
-  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.4, 6), at(sx * 2.2, 1.2, 3.4), 0x5a5a5a));
+  geos.push(bake(new THREE.BoxGeometry(4.8, 0.07, 1.6), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 3.15, 2.8), 0x8e969c));
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.05, 0.05, 2.8, 6), at(sx * 2.2, 1.4, 3.4), 0x5a5a5a));
   geos.push(bake(new THREE.BoxGeometry(3.2, 1.0, 0.7), at(0, 0.85, 2.6), 0x9a7a52));
   geos.push(bake(new THREE.BoxGeometry(3.0, 0.9, 0.05), at(0, 1.8, 2.3), 0x9fb8bd));
   const site = finishSite('chemist', geos, position, { roughness: 0.85, solids: [[0, 0, 4.4, 4.2]], boards: [parapetBoard('chemist', { w: 4.2, d: 4, h: 3.1 }, 3.6)] });
@@ -1219,8 +1219,8 @@ export function createBantaShop(position) {
   box(0.08, 0.9, 1.1, -1.25, 0.5, 0, 0x7a5a3a);
   box(0.08, 0.9, 1.1, 1.25, 0.5, 0, 0x7a5a3a);
   box(2.6, 2.3, 0.08, 0, 1.15, -0.6, 0x9a7a52); // back plank wall
-  for (const sx of [-1, 1]) box(0.1, 2.5, 0.1, sx * 1.3, 1.25, 0.65, 0x6f5233); // awning posts
-  metal.push(bake(new THREE.BoxGeometry(3.2, 0.05, 1.8), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.55, 0.2), 0x8e969c)); // tin awning
+  for (const sx of [-1, 1]) box(0.1, 2.9, 0.1, sx * 1.3, 1.45, 0.65, 0x6f5233); // awning posts
+  metal.push(bake(new THREE.BoxGeometry(3.2, 0.05, 1.8), new THREE.Matrix4().makeRotationX(0.14).setPosition(0, 2.95, 0.2), 0x8e969c)); // tin awning
   box(0.8, 0.28, 0.5, -0.8, 1.14, 0, 0x7a5a3a); // soda crate
   for (let i = 0; i < 6; i++) { // goli soda bottles standing in the crate, pale green glass
     const bx = -1.05 + (i % 3) * 0.25, bz = -0.12 + Math.floor(i / 3) * 0.24;

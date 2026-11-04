@@ -23,7 +23,7 @@ import { buildGoodsMesh, produceAndBangleItems, DESIGN as GOODS } from './shopGo
 export const BAZAAR_UNIT_W = 4.5;
 export const BAZAAR_UNIT_D = 5;
 export const BAZAAR_PARAPET_H = 4;
-export const BAZAAR_AWNING_EDGE_H = 2.8;
+export const BAZAAR_AWNING_EDGE_H = 3.2; // 4 Nov: was 2.8; matches the baked bazaar_row.glb awning (+0.36) so the runtime shutter bundle no longer hangs in the opening
 export const BAZAAR_COUNTER_H = 0.9;
 export const BAZAAR_WEST_X = pt('bazaar').x - 18; // unit 1's west (outer) edge (the row is 36 m wide, centred on the bazaar anchor)
 export const BAZAAR_ROW_CZ = pt('bazaar').z; // row centreline z; shopfronts open south (-z) toward the lane/chowk
@@ -319,7 +319,7 @@ export function buildBazaarCountersAndShutters() {
     const openingW = BAZAAR_UNIT_W - WALL_THICKNESS - 0.2;
     const housingMesh = texturedThickBox(openingW, 0.3, 0.2, 'metal', { tint: darken(PALETTE.woodTrim, 0.55), tileSize: 1, roughness: 1 });
     shutterMaterial = housingMesh.material;
-    const housingLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.15, frontZ + 0.03);
+    const housingLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H + 0.05, frontZ + 0.03);
     shutterGeos.push(housingMesh.geometry.clone().applyMatrix4(housingLocal));
 
     // Rolled-open shutter — a thick horizontal bundle tucked just under the
@@ -327,7 +327,7 @@ export function buildBazaarCountersAndShutters() {
     // forward of it (real depth between the two, not coplanar). Reads as "open"
     // (not blocking the opening) since it sits high and doesn't extend down.
     const shutterMesh = texturedThickBox(openingW - 0.06, 0.26, 0.18, 'metal', { tint: unit.shutter, tileSize: 1, roughness: 1 });
-    const shutterLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.32, frontZ - 0.04);
+    const shutterLocal = new THREE.Matrix4().makeTranslation(cx, BAZAAR_AWNING_EDGE_H - 0.17, frontZ - 0.04);
     shutterGeos.push(shutterMesh.geometry.clone().applyMatrix4(shutterLocal));
   });
 
