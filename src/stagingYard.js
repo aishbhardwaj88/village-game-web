@@ -11,6 +11,7 @@ import { addLanterns } from './lanterns.js';
 import { floatGeometry } from './pots.js';
 import { addSchoolProps } from './schoolProps.js';
 import { isDevMode } from './ui.js';
+import { batchPlaceModel } from './placeBatch.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
 
 /**
@@ -44,6 +45,7 @@ function sharedSetMaterial(set, repeat, src) {
   const mk = (kind) => { const t = setTexture(set, kind).clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); t.anisotropy = 8; return t; };
   m = new THREE.MeshStandardMaterial({ map: mk('color'), normalMap: mk('normal'), roughnessMap: mk('roughness'), roughness: 1, metalness: set === 'metal' ? 0.6 : 0, vertexColors: true });
   m.name = src.name;
+  if (src.name !== 'hb_decal' && src.name !== 'hb_flag' && !src.transparent) m.userData.placeBatchable = true;
   if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin' || set === 'terracotta') addWeathering(m, set);
   sharedMats.set(key, m);
   return m;
@@ -66,6 +68,9 @@ function addWeathering(m, set) {
         vec4 wp_ = vec4(transformed, 1.0);
         #ifdef USE_INSTANCING
           wp_ = instanceMatrix * wp_;
+        #endif
+        #ifdef USE_BATCHING
+          wp_ = batchingMatrix * wp_;
         #endif
         vWxyz = (modelMatrix * wp_).xyz;`);
     shader.fragmentShader = shader.fragmentShader
@@ -167,6 +172,9 @@ function foldLanterns(group, model, sink, name) {
   requestColliderRebuild();
 }
 
+/** Places whose model draws through the village-wide batches (src/placeBatch.js). */
+const BATCHED_PLACES = new Set(['yard_post', 'yard_chakki', 'yard_panchayat', 'yard_tvhouse', 'yard_chaupal', 'yard_paani_tanki']);
+
 function createStagedPlace(def) {
   const a = ANCHORS[def.id];
   const group = new THREE.Group();
@@ -207,7 +215,9 @@ function createStagedPlace(def) {
     return m;
   }).catch((err) => { console.warn(`${def.model}.glb did not load`, err); return null; });
   const propsDone = def.props ? addSchoolProps(group, def.props, def.zone + '_props', lanternSink) : Promise.resolve();
-  if (lanternSink) Promise.all([modelDone, lanternsDone, propsDone]).then(([m]) => foldLanterns(group, m, lanternSink, def.zone + '_lanterns'));
+  const batched = BATCHED_PLACES.has(def.id);
+  if (lanternSink) Promise.all([modelDone, lanternsDone, propsDone]).then(([m]) => { foldLanterns(group, m, lanternSink, def.zone + '_lanterns'); if (batched && m) batchPlaceModel(m, def.zone); });
+  else if (batched) modelDone.then((m) => { if (m) batchPlaceModel(m, def.zone); });
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.
     const herd = createCattleHerd(def.cattle.map((c) => { const k = Math.cos(a.ry || 0), n = Math.sin(a.ry || 0); return { ...c, x: a.x + c.x * k + c.z * n, z: a.z - c.x * n + c.z * k, rotationY: (c.rotationY || 0) + (a.ry || 0) }; }));

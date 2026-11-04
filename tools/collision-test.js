@@ -355,7 +355,7 @@ function inPage(cfg) {
     const src = `${top}/${o.name || '?'}/${m.name || ''}`;
     if (nonSolid.some(([re]) => re.test(src))) return;
     const g = o.geometry, pos = g && g.attributes.position, idx = g && g.index;
-    if (!pos) return;
+    if (!pos || (o.isBatchedMesh && !o.userData.pairs)) return; // place batches (src/placeBatch.js) are draw-only
     const tc = idx ? idx.count / 3 : pos.count / 3;
     o.updateWorldMatrix(true, false);
     // a BatchedMesh (src/placeBoards.js) holds many boards in one buffer: each live instance has its own geometry range and matrix
