@@ -284,13 +284,13 @@ async function main() {
         const t = d.vehicles.find((v) => v.preset.kind === 'tractor');
         d.teleportPlayer(t.group.position.x, t.group.position.z);
         d.mount(t);
-        t.group.position.set(30, t.group.position.y, 47);
-        t.group.rotation.y = Math.PI;
-        t.speed = 0;
+        d.teleportVehicle('tractor', 30, 47, Math.PI); // snaps the attached trolley back behind it too
       });
       const hitched = await ev(() => !!window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor').trolley);
       need(hitched, 'tractor has no trolley hitched (test setup)');
       await page.keyboard.down('KeyS');
+      await sleep(1500);
+      console.log('  [gate] diag', JSON.stringify(await ev(() => { const d = window.__dopahar; const t = d.vehicles.find((v) => v.preset.kind === 'tractor'); return { mounted: d.mountedVehicle?.preset?.kind ?? null, paused: d.isPaused?.(), tz: +t.group.position.z.toFixed(2), speed: +t.speed.toFixed(2), hud: document.getElementById('job-hud-en').textContent, focus: document.hasFocus() }; }).catch((e) => String(e))));
       const t0 = Date.now();
       let inYard = false;
       while (Date.now() - t0 < 60000) {
@@ -299,7 +299,7 @@ async function main() {
         if (inYard) break;
       }
       await page.keyboard.up('KeyS');
-      const pos = await ev(() => { const g = window.__dopahar.currentTrolley?.(); return g ? { x: g.group?.position.x, z: g.group?.position.z } : null; }).catch(() => null);
+      const pos = await ev(() => { const d = window.__dopahar; const g = d.currentTrolley?.(); const t = d.vehicles.find((v) => v.preset.kind === 'tractor'); return { trolley: g ? { x: +g.x.toFixed(1), z: +g.z.toFixed(1), yaw: +g.yaw.toFixed(2) } : null, tractor: { x: +t.group.position.x.toFixed(1), z: +t.group.position.z.toFixed(1), yaw: +t.group.rotation.y.toFixed(2), speed: +t.speed.toFixed(2) } }; }).catch((e) => String(e));
       need(inYard, `trolley never reached the yard by reversing (trolley at ${JSON.stringify(pos)})`);
       await ev(() => window.__dopahar.dismount());
       await tele(pj.x, pj.z + 0.6); await frame();
