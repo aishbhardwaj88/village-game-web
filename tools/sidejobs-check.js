@@ -194,7 +194,8 @@ async function main() {
       await frame(); await frame();
       await interact();
       await until(() => /Carry the sack/.test(document.getElementById('job-hud-en').textContent));
-      await tele(maa.x, maa.z + 0.6); await frame(); // the hand-over point is Maa's fixed courtyard spot (the 'maa' interaction), not wherever she walked to
+      const maa2 = await ev(() => { const m = window.__dopahar.interactions.MAA_POSITION; return { x: m.x, z: m.z }; }); // main.js copies Maa's live position into MAA_POSITION every frame, so the hand-over point is wherever she now stands
+      await tele(maa2.x, maa2.z + 0.6); await frame();
       await interact();
       need(await untilJob('ration'), 'Maa never paid out');
       return 'walked to shop with Maa, carried sack back';
