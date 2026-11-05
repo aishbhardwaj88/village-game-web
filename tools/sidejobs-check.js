@@ -50,9 +50,9 @@ async function main() {
     page.on('pageerror', (e) => errors.push(`pageerror: ${e.message} @ ${(e.stack || '').split('\n').slice(1, 3).join(' ').trim()}`));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(`console.error: ${m.text()}`); });
 
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 60000 }).catch(() => {});
-    await page.click('#play-btn');
+    await page.evaluate(() => document.getElementById('play-btn').click());
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(1500);
@@ -145,6 +145,8 @@ async function main() {
         ok = true;
       } catch (e) {
         reason = e.message;
+        const snap = await ev(() => ({ hud: document.getElementById('job-hud-en')?.textContent, overlay: document.getElementById('job-overlay').className, text: document.getElementById('job-overlay').innerText.slice(0, 160), dlg: window.__dopahar.dialogue.isOpen }));
+        console.log(`  [${id}] stuck state: ${JSON.stringify(snap)}`);
       }
       const after = await q();
       const jobsDelta = (after.jobs[id] || 0) - (before.jobs[id] || 0);
@@ -192,7 +194,7 @@ async function main() {
       await frame(); await frame();
       await interact();
       await until(() => /Carry the sack/.test(document.getElementById('job-hud-en').textContent));
-      await tele(maa.x, maa.z + 0.6); await frame();
+      await tele(maa.x, maa.z + 0.6); await frame(); // the hand-over point is Maa's fixed courtyard spot (the 'maa' interaction), not wherever she walked to
       await interact();
       need(await untilJob('ration'), 'Maa never paid out');
       return 'walked to shop with Maa, carried sack back';

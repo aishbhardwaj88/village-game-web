@@ -71,7 +71,7 @@ export const ANCHORS = {
 export function pt(id) {
   const a = ANCHORS[id];
   if (!a) throw new Error(`anchors.js: no anchor for "${id}"`);
-  return { x: a.x, z: a.z };
+  return { x: a.x, z: a.z, ry: a.ry || 0 };
 }
 
 /** A point in a place's own metres (local +z = its front) on the world, turned by the anchor's ry. */
