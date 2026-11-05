@@ -83,6 +83,11 @@ function addWeathering(m, set) {
                      mix(mix(wh_(i + vec3(0,0,1)), wh_(i + vec3(1,0,1)), f.x), mix(wh_(i + vec3(0,1,1)), wh_(i + vec3(1,1,1)), f.x), f.y), f.z);
         }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        {   // roughness is never one value: large-scale patches (dust, damp, wear) plus fine grain, and a slightly damper (glossier) plinth band
+          float rn_ = wn_(vWxyz * 0.8 + 41.0) * 0.65 + wn_(vWxyz * 5.3 + 17.0) * 0.35;
+          float damp_ = 1.0 - smoothstep(0.0, 0.5, vWxyz.y);
+          roughnessFactor = clamp(roughnessFactor * (0.84 + 0.30 * rn_) - 0.07 * damp_ * rn_, 0.5, 1.0);
+        }
         ${set === 'tin' ? 'roughnessFactor = max(roughnessFactor, 0.62);   // weathered galvanised sheet is dull, not mirror-bright' : ''}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
