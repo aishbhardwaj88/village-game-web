@@ -3280,6 +3280,7 @@ async function main() {
       // mount/UI/audio/attach-prompt bookkeeping around them, so the test can
       // step frame-by-frame with a fixed dt instead of depending on real
       // wall-clock frame pacing.
+      isPaused: () => ({ paused, modalFrozen, started }), // dev hook: the side-jobs check reads this when a job's update seems not to run
       stepTractorTrolleyPhysics: (dt = 1 / 60, throttleZ = -1, steerX = 0) => {
         const vehicle = vehicles.find((v) => v.preset.kind === 'tractor');
         if (!vehicle) return null;

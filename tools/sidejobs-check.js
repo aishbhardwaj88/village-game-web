@@ -288,6 +288,7 @@ async function main() {
       });
       const hitched = await ev(() => !!window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor').trolley);
       need(hitched, 'tractor has no trolley hitched (test setup)');
+      console.log('  [gate] pause state', JSON.stringify(await ev(() => window.__dopahar.isPaused())));
       console.log('  [gate] rAF in 1s', await ev(() => new Promise((r) => { let n = 0; const f = () => { n++; requestAnimationFrame(f); }; requestAnimationFrame(f); setTimeout(() => r(n), 1000); })), 'mounted', await ev(() => window.__dopahar.mountedVehicle?.preset?.kind ?? null));
       // deterministic reverse: fixed-dt physics steps (throttleZ +1 = reverse); the live frame loop still runs the job logic between batches
       const t0 = Date.now();
