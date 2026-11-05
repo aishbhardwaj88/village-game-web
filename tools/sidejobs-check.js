@@ -52,7 +52,7 @@ async function main() {
 
     await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 60000 }).catch(() => {});
-    await page.evaluate(() => document.getElementById('play-btn').click());
+    await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(1500);
