@@ -12,7 +12,7 @@
  * with 0 console errors during the job.
  *
  * Test-driving limits (not game bugs): the player is teleported between stops instead of walked (the bullock cart too, for the
- * chakki leg); the gate job's reversing IS driven with a real held S key. Patang reads the landing spot from the job's own state.
+ * chakki leg); the gate job's reversing is driven by fixed-dt stepTractorTrolleyPhysics. Patang reads the landing spot from the job's own state.
  *
  * Usage: node tools/sidejobs-check.js [--preview] [--only=id,id]   (default: vite dev server; --preview serves dist/ after a build)
  */
@@ -288,17 +288,16 @@ async function main() {
       });
       const hitched = await ev(() => !!window.__dopahar.vehicles.find((v) => v.preset.kind === 'tractor').trolley);
       need(hitched, 'tractor has no trolley hitched (test setup)');
-      await page.keyboard.down('KeyS');
-      await sleep(1500);
-      console.log('  [gate] diag', JSON.stringify(await ev(() => { const d = window.__dopahar; const t = d.vehicles.find((v) => v.preset.kind === 'tractor'); return { mounted: d.mountedVehicle?.preset?.kind ?? null, paused: d.isPaused?.(), tz: +t.group.position.z.toFixed(2), speed: +t.speed.toFixed(2), hud: document.getElementById('job-hud-en').textContent, focus: document.hasFocus() }; }).catch((e) => String(e))));
+      console.log('  [gate] rAF in 1s', await ev(() => new Promise((r) => { let n = 0; const f = () => { n++; requestAnimationFrame(f); }; requestAnimationFrame(f); setTimeout(() => r(n), 1000); })), 'mounted', await ev(() => window.__dopahar.mountedVehicle?.preset?.kind ?? null));
+      // deterministic reverse: fixed-dt physics steps (throttleZ +1 = reverse); the live frame loop still runs the job logic between batches
       const t0 = Date.now();
       let inYard = false;
       while (Date.now() - t0 < 60000) {
-        await sleep(200);
+        await ev(() => { for (let i = 0; i < 20; i++) window.__dopahar.stepTractorTrolleyPhysics(1 / 60, 1, 0); });
+        await sleep(100);
         inYard = await ev(() => /In!/.test(document.getElementById('job-hud-en').textContent));
         if (inYard) break;
       }
-      await page.keyboard.up('KeyS');
       const pos = await ev(() => { const d = window.__dopahar; const g = d.currentTrolley?.(); const t = d.vehicles.find((v) => v.preset.kind === 'tractor'); return { trolley: g ? { x: +g.x.toFixed(1), z: +g.z.toFixed(1), yaw: +g.yaw.toFixed(2) } : null, tractor: { x: +t.group.position.x.toFixed(1), z: +t.group.position.z.toFixed(1), yaw: +t.group.rotation.y.toFixed(2), speed: +t.speed.toFixed(2) } }; }).catch((e) => String(e));
       need(inYard, `trolley never reached the yard by reversing (trolley at ${JSON.stringify(pos)})`);
       await ev(() => window.__dopahar.dismount());
