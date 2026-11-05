@@ -40,6 +40,7 @@ export class AudioEngine {
     this._dogTimer = 0;
 
     this._masterVolume = 1; // pause menu slider, 0-1 (item 8)
+    this._muted = false; // M key
     this._duckFactor = 1; // ducked while the dialogue panel is open (item 8)
   }
 
@@ -49,7 +50,7 @@ export class AudioEngine {
     if (!Ctx) return;
     this.ctx = new Ctx();
     this.master = this.ctx.createGain();
-    this.master.gain.value = BASE_MASTER_GAIN * this._masterVolume * this._duckFactor;
+    this.master.gain.value = BASE_MASTER_GAIN * this._masterVolume * this._duckFactor * (this._muted ? 0 : 1);
     this.master.connect(this.ctx.destination);
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.started = true;
@@ -58,7 +59,7 @@ export class AudioEngine {
 
   _applyMasterGain() {
     if (!this.started) return;
-    this.master.gain.setTargetAtTime(BASE_MASTER_GAIN * this._masterVolume * this._duckFactor, this.ctx.currentTime, 0.25);
+    this.master.gain.setTargetAtTime(BASE_MASTER_GAIN * this._masterVolume * this._duckFactor * (this._muted ? 0 : 1), this.ctx.currentTime, 0.25);
   }
 
   /** Pause menu master volume slider (item 8) — 0-1, multiplies every sound at once
@@ -66,6 +67,13 @@ export class AudioEngine {
   setMasterVolume(v) {
     this._masterVolume = Math.max(0, Math.min(1, v));
     this._applyMasterGain();
+  }
+
+  /** M key: silences everything without touching the saved slider volume. Returns the new state. */
+  toggleMute() {
+    this._muted = !this._muted;
+    this._applyMasterGain();
+    return this._muted;
   }
 
   /** "Sits under dialogue" (item 8) — the whole mix ducks a bit while the dialogue

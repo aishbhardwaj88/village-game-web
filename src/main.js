@@ -2684,6 +2684,10 @@ async function main() {
   }
   window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
+    if (e.code === 'KeyM' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) {
+      const muted = audio.toggleMute();
+      freeRoam.toast(muted ? 'Sound off. Press M to turn it back on.' : 'Sound on.', muted ? 'आवाज़ बंद। फिर चालू करने के लिए M दबाओ।' : 'आवाज़ चालू।', 2500);
+    }
     if (e.code === 'KeyT' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) night.toggle();
     if (e.code !== 'KeyN' || !started || e.repeat) return;
     if (freeRoam.isOpen()) freeRoam.closeNotebook();
