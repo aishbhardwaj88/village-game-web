@@ -47,6 +47,18 @@ export const LONG_WALK_SITES = [
   { kind: 'shrine', x: 538.50, z: -99.51, ry: 1.571, v: 143 }, // masjid-yard_paani_tanki (44 m along)
   { kind: 'well', x: 505.80, z: -53.50, ry: 3.142, v: 150 }, // dairy-gaushala (42 m along)
   { kind: 'well', x: 749.24, z: 11.41, ry: -0.149, v: 157 }, // highway-tubewell (48 m along)
+  { kind: 'shrine', x: 499.52, z: 82.85, ry: -1.587, v: 160 }, // gurudwara-school (19 m along; 5 Nov fill)
+  { kind: 'pump', x: 486.25, z: 31.59, ry: -1.604, v: 167 }, // gurudwara-school (80 m along; 5 Nov fill)
+  { kind: 'shrine', x: 518.95, z: 69.42, ry: -1.449, v: 174 }, // gurudwara-school (188 m along; 5 Nov fill)
+  { kind: 'well', x: 624.08, z: -90.01, ry: -0.127, v: 181 }, // temple-yard_dharam_kanta (80 m along; 5 Nov fill)
+  { kind: 'hay', x: 674.34, z: -133.14, ry: -0.014, v: 188 }, // temple-yard_dharam_kanta (213 m along; 5 Nov fill)
+  { kind: 'pump', x: 611.80, z: 93.19, ry: 0.195, v: 195 }, // gurukul-yard_akhada (20 m along; 5 Nov fill)
+  { kind: 'well', x: 573.31, z: 134.19, ry: 1.272, v: 202 }, // gurukul-yard_akhada (77 m along; 5 Nov fill)
+  { kind: 'hay', x: 588.30, z: 178.70, ry: 0.033, v: 209 }, // gurukul-yard_akhada (141 m along; 5 Nov fill)
+  { kind: 'pump', x: 522.37, z: 6.32, ry: 3.044, v: 216 }, // pond-post (91 m along; 5 Nov fill)
+  { kind: 'pump', x: 570.80, z: -94.54, ry: -1.571, v: 223 }, // yard_bus_adda-yard_petrol (19 m along; 5 Nov fill)
+  { kind: 'gate', x: 621.57, z: -144.22, ry: -1.554, v: 230 }, // yard_bus_adda-yard_petrol (111 m along; 5 Nov fill)
+  { kind: 'hay', x: 767.94, z: -112.41, ry: 3.125, v: 237 }, // mandi-yard_bhatta (19 m along; 5 Nov fill)
 ];
 // ---- end generated
 
