@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node tools/check-dup-models.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
+    "build": "node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
     "build:unchecked": "vite build",
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
