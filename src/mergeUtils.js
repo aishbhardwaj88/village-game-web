@@ -92,6 +92,22 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
   }
 }
 
+/** Geometries of one material can differ in indexing or attribute set (small prop modules vs Blender models); mergeGeometries needs them identical.
+ * Leaves an already-compatible list untouched; otherwise makes all non-indexed with position/normal/uv (+ white colour if the material reads it). */
+function compatGeometries(list, material) {
+  const sig = (g) => (g.index ? 'i' : 'n') + Object.keys(g.attributes).sort().join(',');
+  if (list.every((g) => sig(g) === sig(list[0]))) return list;
+  return list.map((g0) => {
+    const g = g0.index ? g0.toNonIndexed() : g0;
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'color'].includes(k)) g.deleteAttribute(k);
+    if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    if (!g.attributes.normal) g.computeVertexNormals();
+    if (material.vertexColors && !g.attributes.color) g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
+    else if (!material.vertexColors && g.attributes.color) g.deleteAttribute('color');
+    return g;
+  });
+}
+
 /** Merges same-material meshes ACROSS several already-built, already-in-the-scene
  * static root groups (e.g. the hero zone, the bazaar row, the background houses —
  * each already merged internally by its own builder) into one mesh per material,
@@ -144,7 +160,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   let i = 0;
   for (const [key, bucket] of buckets) {
     const material = keyMaterial.get(key) || key;
-    const geometry = bucket.geometries.length > 1 ? mergeGeometries(bucket.geometries) : bucket.geometries[0];
+    const geometry = bucket.geometries.length > 1 ? mergeGeometries(compatGeometries(bucket.geometries, material)) : bucket.geometries[0];
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = `${material.name || 'merged'}_${i++}`;
     if (material.name === 'shop_goods') {

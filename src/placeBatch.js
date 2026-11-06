@@ -24,13 +24,22 @@ const entries = new Set(); // { src, batch, gid, iid, key }
 const eligible = (o) => o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && !Array.isArray(o.material) && o.material.userData.placeBatchable
   && !o.material.transparent && !(o.material.alphaTest > 0) && o.geometry.attributes.position && o.geometry.attributes.normal && o.geometry.attributes.uv && o.geometry.attributes.color;
 
-function flat(src) {
+/** Materials of one texture set that differ ONLY in UV repeat share a batch: the repeat ratio is baked into the geometry UVs (same look, one draw). */
+function setKey(mat) {
+  const t = mat.map;
+  if (!t || !t.source || mat.userData.noRepeatFold || t.offset.x || t.offset.y || t.rotation || mat.alphaMap) return null;
+  return mat.name + '|' + t.source.uuid + '|' + (mat.normalMap ? mat.normalMap.source.uuid : '') + '|' + (mat.roughnessMap ? mat.roughnessMap.source.uuid : '') + '|' + mat.roughness + '|' + mat.metalness + '|' + mat.side + '|' + (mat.onBeforeCompile === Material.prototype.onBeforeCompile ? 'p' : mat.customProgramCacheKey());
+}
+const Material = THREE.Material;
+const leaders = new Map(); // setKey -> leader material
+
+function flat(src, ratio = [1, 1]) {
   const g = new THREE.BufferGeometry();
   for (const [name, size] of [['position', 3], ['normal', 3], ['uv', 2], ['color', 3]]) {
     const a = src.attributes[name];
     const f = new Float32Array(a.count * size);
     const get = [a.getX, a.getY, a.getZ];
-    for (let i = 0; i < a.count; i++) for (let k = 0; k < size; k++) f[i * size + k] = get[k].call(a, i);
+    for (let i = 0; i < a.count; i++) for (let k = 0; k < size; k++) f[i * size + k] = get[k].call(a, i) * (name === 'uv' ? ratio[k] : 1);
     g.setAttribute(name, new THREE.BufferAttribute(f, size));
   }
   if (src.index) g.setIndex(new THREE.BufferAttribute(Uint32Array.from(src.index.array), 1));
@@ -58,11 +67,19 @@ export function batchPlaceModel(model, key) {
   model.updateWorldMatrix(true, true);
   model.traverse((o) => {
     if (!eligible(o) || o.userData.placeBatched) return;
-    const mat = o.material, b = batchFor(mat);
-    const ck = key + '|' + o.name + '|' + mat.uuid;
+    let mat = o.material, ratio = [1, 1];
+    const sk = setKey(mat);
+    if (sk) {
+      const lead = leaders.get(sk);
+      if (!lead) leaders.set(sk, mat);
+      else if (lead !== mat) { ratio = [mat.map.repeat.x / lead.map.repeat.x, mat.map.repeat.y / lead.map.repeat.y]; mat = lead; }
+    }
+    (globalThis.__pbDbg ||= []).push(sk || ('NOKEY|' + mat.name));
+    const b = batchFor(mat);
+    const ck = key + '|' + o.name + '|' + o.material.uuid;
     let gid = geoCache.get(ck);
     if (gid === undefined) {
-      const geo = flat(o.geometry);
+      const geo = flat(o.geometry, ratio);
       const nv = geo.attributes.position.count, ni = geo.index.count;
       if (b.unusedVertexCount < nv || b.unusedIndexCount < ni) b.setGeometrySize(Math.max(b._maxVertexCount * 2, b._nextVertexStart + nv), Math.max(b._maxIndexCount * 2, b._nextIndexStart + ni));
       gid = b.addGeometry(geo);

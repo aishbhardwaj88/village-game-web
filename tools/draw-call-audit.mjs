@@ -13,6 +13,7 @@ try {
   await page.goto(`${BASE}?proof=1${process.env.QS || ''}`); await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
   await page.click('#play-btn'); await page.waitForTimeout(3500);
   const r = await page.evaluate(({ x, z, yaw }) => {
+    const process_dbg = () => window.__batchDbg;
     const d = window.__dopahar; d.teleportPlayer(x, z); d.camRig.yaw = yaw; d.camRig.pitch = -0.15; d.camRig.distance = 5; d.camRig.update(10);
     return new Promise((res) => { let n = 0; const f = () => { if (++n < 6) requestAnimationFrame(f); else {
       const cam = d.camera; cam.updateMatrixWorld(); const M = new d.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
@@ -26,10 +27,11 @@ try {
         if (!vis) return; if (!(o.layers.mask & 1)) return; if (!o.frustumCulled === false && o.isMesh && !inFrustum(o)) return;
         rows.push([o.name || o.type, Array.isArray(o.material) ? o.material.map(m=>m.name).join('+') : (o.material && o.material.name) || '', o.castShadow ? 'S' : '-', o.isInstancedMesh ? 'I' : '', o.parent && o.parent.name, (() => { if (!o.geometry) return ''; if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const b = o.geometry.boundingSphere; return b ? `c(${b.center.x.toFixed(0)},${b.center.z.toFixed(0)}) r${b.radius.toFixed(0)}` : ''; })()]);
       });
-      res({ dbg: window.__batchDbg, calls: d.renderer.info.render.calls, rows });
+      res({ dbg: process_dbg(), pb: [...new Set(window.__pbDbg||[])], calls: d.renderer.info.render.calls, rows });
     } }; requestAnimationFrame(f); });
   }, { x, z, yaw });
   console.log('renderer calls', r.calls, 'visible meshes', r.rows.length, 'casting', r.rows.filter(a => a[2] === 'S').length);
+  if (process.env.PB) console.log(r.pb.join('\n'));
   if (process.env.DBG) console.log(JSON.stringify(r.dbg, null, 0).replace(/\],\[\"/g, '],\n["'));
   for (const row of r.rows) console.log(row.join(' | '));
   await browser.close();

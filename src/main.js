@@ -150,6 +150,7 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
 import { createSmallShops } from './smallShops.js';
+import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents } from './roadEvents.js';
 import { createCyclistEvents } from './cyclistEvents.js';
 import { createAnimalsExtra } from './animalsExtra.js';
@@ -545,6 +546,7 @@ async function main() {
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
+  createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
@@ -1237,6 +1239,7 @@ async function main() {
       assetSlots.mergeSlotModels(['house_compound', 'general_store'], 'blender_house_row', scene);
       assetSlots.mergeSlotModels(['halwai_compound', 'tea_stall', 'school_compound'], 'blender_halwai_row', scene);
       assetSlots.mergeSlotModels(['bazaar_row', 'tea_stall_chowk', 'chowk_plaza'], 'blender_bazaar', scene);
+      assetSlots.mergeSlotModels(['temple', 'flower_stall'], 'blender_temple', scene); // temple + flower stall: one batched mesh per material instead of ~7 loose draws
     }
   });
 
@@ -1525,8 +1528,8 @@ async function main() {
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
-    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup], villageStaticGroup, {
-      skipNames: ['halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
+    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
+      skipNames: ['zero_milestone_flagpole', 'halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);
     villageStaticGroup.traverse((o) => { if (o.userData.distGate) distGated.push(o); });
