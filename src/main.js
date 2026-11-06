@@ -156,11 +156,14 @@ import { createCyclistEvents } from './cyclistEvents.js';
 import { createCyclistEvents2 } from './cyclistEvents2.js';
 import { createAnimalsExtra } from './animalsExtra.js';
 import { createInteractionsExtra } from './interactionsExtra.js';
+import { createInteractionsVillage } from './interactionsVillage.js';
 import { createVendors } from './vendors.js';
 import { createVendors2 } from './vendors2.js';
 import { createNostalgia } from './nostalgia.js';
 import { createVillageOddities } from './villageOddities.js';
+import { createVillageFixtures } from "./villageFixtures.js";
 import { createVillageFurniture } from './villageFurniture.js';
+import { createVillageFurniture2 } from './villageFurniture2.js';
 import { createWallWriting } from './wallWriting.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -555,6 +558,8 @@ async function main() {
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
+  createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
+  createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
   createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
   createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
@@ -2372,6 +2377,7 @@ async function main() {
     sackCarrier,
   };
   createInteractionsExtra(scene, interactionCtx); // temple bell, chai, radio, notice board, kite (src/interactionsExtra.js)
+  createInteractionsVillage(scene, interactionCtx); // jhoola, gaushala cow (src/interactionsVillage.js)
 
   // Bugfix (real playtest bug, reproduced with real keyboard input — player walked
   // straight through the trolley, and the trolley drove through buildings): this

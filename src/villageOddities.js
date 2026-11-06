@@ -20,7 +20,7 @@ import { colliderBoxFromTransform } from './collision.js';
  */
 
 const TILE = { metal: 1.0, wood: 1.0, tarpaulin: 1.0, concrete: 1.0, jute: 0.5, brick: 1.2, plaster: 0.5, ground: 2.0 };
-const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+export const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 // anchor id, local x, local z (place frame, front = +z), object yaw. Scouted against every collider + visible mesh + the roads.
 export const ODDITY_SPOTS = {
@@ -32,7 +32,7 @@ export const ODDITY_SPOTS = {
   shamiana: { at: 'khalihan', lx: -28.3, lz: 7.2, yaw: -0.003 },
 };
 
-function spotMatrix(sp) {
+export function spotMatrix(sp) {
   const a = ANCHORS[sp.at];
   if (!a) return null;
   const ry = a.ry || 0, s = Math.sin(ry), c = Math.cos(ry);
@@ -80,9 +80,9 @@ function weather(geo, tint, w, seed) {
 }
 
 const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1), _p = new THREE.Vector3();
-const local = (x, y, z, rx = 0, ry = 0, rz = 0) => new THREE.Matrix4().compose(_p.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz, 'YXZ')), _s.set(1, 1, 1));
+export const local = (x, y, z, rx = 0, ry = 0, rz = 0) => new THREE.Matrix4().compose(_p.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz, 'YXZ')), _s.set(1, 1, 1));
 
-class Obj {
+export class Obj {
   constructor(batch, world, seed, w = {}) { this.b = batch; this.world = world; this.seed = seed; this.w = w; this.tris = 0; }
   add(set, geo, m, tint, w = null) {
     const g = geo.index ? geo.toNonIndexed() : geo;
@@ -106,14 +106,14 @@ class Obj {
   }
 }
 
-class Batch {
+export class Batch {
   constructor() { this.by = new Map(); }
   add(key, geo) { if (!this.by.has(key)) this.by.set(key, []); this.by.get(key).push(geo); }
-  flush(group) {
+  flush(group, prefix = "oddities_") {
     const out = {};
     for (const [key, list] of this.by) {
       const m = new THREE.Mesh(mergeGeometries(list), getTiledMaterial(key, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
-      m.name = `oddities_${key}`; m.castShadow = true; m.receiveShadow = true;
+      m.name = `${prefix}${key}`; m.castShadow = true; m.receiveShadow = true;
       group.add(m); out[key] = m;
     }
     return out;
