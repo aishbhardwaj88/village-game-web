@@ -272,7 +272,7 @@ function createStagingTrack() {
 }
 
 /** Small places (shop, house, tank: footprint radius <= 14 m) are a few pixels past this range, so they stop drawing sooner than the big yards (draw-call ceiling, 4 Nov). */
-const SMALL_PLACE_VIS = (def) => (def.radius <= 14 ? 130 : Infinity);
+const SMALL_PLACE_VIS = (def) => (def.radius <= 14 ? 350 : Infinity);
 
 /** Registers the track and every staged place with the zone manager. */
 export function registerStagingYard(zoneManager, visibleRadius) {
