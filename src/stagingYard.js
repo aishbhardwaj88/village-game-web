@@ -129,6 +129,12 @@ function addWeathering(m, set) {
             vec3 dc_ = vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(0.86, 0.72, 0.55);
             diffuseColor.rgb = mix(diffuseColor.rgb, dc_, dust_);
           }
+          ${set === 'plaster' ? `
+          {   // plinth edge wear: knocked-off paint in ragged flecks that thin out with height, showing grey cement beneath (no geometry)
+            float wear_ = wn_(vWxyz * 9.0 + 31.0) * 0.6 + wn_(vWxyz * 23.0 + 5.0) * 0.4;
+            float chip_ = smoothstep(0.62, 0.74, wear_) * (1.0 - smoothstep(0.08, 0.5, vWxyz.y)) * (1.0 - flat_);
+            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(0.78, 0.76, 0.72), 0.7 * chip_);
+          }` : ''}
           float col = wn_(vec3(vWxyz.x * 6.0 + vWxyz.z * 6.0, 0.0, 1.0)) * smoothstep(0.0, 2.5, vWxyz.y);
           diffuseColor.rgb *= 1.0 - ${streak.toFixed(3)} * col * col * wn_(vec3(vWxyz.x + vWxyz.z, vWxyz.y * 0.4, 5.0));
           ${set === 'plaster' ? `
