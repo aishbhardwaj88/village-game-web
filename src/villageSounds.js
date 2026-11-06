@@ -163,7 +163,7 @@ export function createVillageSounds(audio, getListener) {
 
   // Scheduler: each event has its own next-due time (seconds of wall clock).
   const events = [
-    { fn: templeBell, every: [150, 260] }, { fn: azaan, every: [360, 540], first: [200, 300] },
+    { fn: templeBell, every: [150, 260] }, // azaan deliberately NOT scheduled: a synthesised call is disrespectful; function kept unused
     { fn: cooker, every: [60, 120] }, { fn: crow, every: [18, 40] }, { fn: koel, every: [40, 80] },
     { fn: peacock, every: [70, 140] }, { fn: buffalo, every: [35, 80] }, { fn: truckHorn, every: [45, 100] },
     { fn: () => cycleBell(0.12), every: [50, 110] },
