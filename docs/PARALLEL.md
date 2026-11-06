@@ -23,6 +23,10 @@ A bus stop that does not face the road buses drive on is wrong.
   on? Report any that do not, and fix them. A temple fronts the village, a kiln fronts
   its drive, a school gate fronts the lane parents walk.
 
+## THE VOCABULARY IS `docs/VILLAGE_VOCABULARY.md`. Build from it, section by section.
+Her name for the game will change, ignore the title. She gave no map: use your own
+judgement of how a UP village is laid out, and that file.
+
 ## PRIORITY 0b. EVERY NOOK MUST REWARD A CYCLIST.
 Her words: "User will be basically riding bicycle and exploring the village. Everything
 should look interesting to them... discovering something new or interesting at every nook
