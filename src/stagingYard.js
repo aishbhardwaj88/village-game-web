@@ -137,6 +137,12 @@ function addWeathering(m, set) {
           diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.333))), diffuseColor.rgb, 0.5);   // pale weathered whitish-grey
           float ru_ = smoothstep(0.6, 0.85, wn_(vWxyz * vec3(1.3, 1.3, 1.3) + 5.0));
           diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.0, 0.8, 0.62), 0.5 * ru_);   // rust bleed` : ''}
+          {   // crevice darkening where a face meets the ground, then keep every albedo physical: no pure black or white, nothing fully saturated
+            diffuseColor.rgb *= 1.0 - 0.18 * (1.0 - smoothstep(0.0, 0.12, vWxyz.y));
+            float lum_ = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
+            diffuseColor.rgb = mix(vec3(lum_), diffuseColor.rgb, min(1.0, 0.7 / max(1e-3, max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b)) - min(diffuseColor.r, min(diffuseColor.g, diffuseColor.b)) + 1e-3)));
+            diffuseColor.rgb = clamp(diffuseColor.rgb, vec3(0.03), vec3(0.88));
+          }
         }`);
   };
   m.customProgramCacheKey = () => 'weather_' + set;
