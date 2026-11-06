@@ -411,7 +411,7 @@ async function main() {
     page.setDefaultTimeout(0);
     page.on('pageerror', (e) => console.error('pageerror:', e.message));
     page.on('console', (m) => { if (m.text().startsWith('[collision-test]')) console.log(m.text()); });
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
     await page.click('#play-btn');
     await page.waitForTimeout(1500);

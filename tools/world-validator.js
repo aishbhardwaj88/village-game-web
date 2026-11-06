@@ -63,7 +63,7 @@ async function main() {
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(e.message));
 
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
     await page.click('#play-btn', { timeout: 90000 }).catch(() => page.click('#play-btn', { force: true, timeout: 90000 })); // software GL on a busy machine is slow
     await page.waitForTimeout(1500);
