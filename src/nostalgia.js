@@ -49,6 +49,7 @@ export const NOSTALGIA_SPOTS = {
   ambassador: { at: 'yard_panchayat', lx: 9.4, lz: 3.5, yaw: 0.08 },
   gola: { at: 'mela', lx: 13.2, lz: -3.2, yaw: -Math.PI / 2 + 0.2 },
   tanker: { at: 'mela', lx: -16.5, lz: 9.5, yaw: 0.35 },
+  bioscope: { at: 'mela', lx: 7.0, lz: 8.2, yaw: 2.6 },
   motorcycle: { at: 'teastall', lx: 4.6, lz: 3.6, yaw: 1.35 },
   scooter: { at: 'haveli', lx: -3.2, lz: 9.0, yaw: -0.3 },
 };
@@ -548,8 +549,33 @@ function buildAnimals(group) {
   return mesh;
 }
 
+// BIOSCOPE: a peep-show box on a wooden trestle, three brass-ringed eyepieces on the front, a hand-crank on the side,
+// a faded striped cloth shading the top, a stool for the showman. Boxes ~1.0 x 0.55 x 0.6 m at 1.1 m.
+function buildBioscope(o) {
+  const BOX = 0x7a4a2a, TRIM = 0x3e5a6a, CLOTH = 0xb06a3c;
+  for (const sx of [-1, 1]) { o.rod('wood', 0.03, [sx * 0.42, 0, 0.26], [sx * 0.3, 0.85, 0.02], 0x5a3e28, 6); o.rod('wood', 0.03, [sx * 0.42, 0, -0.26], [sx * 0.3, 0.85, -0.02], 0x5a3e28, 6); }
+  o.box('wood', 0.92, 0.04, 0.5, 0, 0.84, 0, 0x6a4a30);
+  o.box('wood', 1.0, 0.5, 0.58, 0, 1.12, 0, BOX, 0, 0, 0, { dust: 0.2 });
+  o.box('wood', 1.03, 0.04, 0.61, 0, 1.39, 0, TRIM);
+  o.box('wood', 1.03, 0.04, 0.61, 0, 0.88, 0, TRIM);
+  for (let k = -1; k <= 1; k++) {
+    o.cyl('metal', 0.05, 0.05, 0.05, 12, k * 0.3, 1.14, 0.3, 0xb89a4a, Math.PI / 2, 0, 0, { dirt: 0 });
+    o.cyl('metal', 0.032, 0.032, 0.06, 10, k * 0.3, 1.14, 0.31, 0x24201c, Math.PI / 2, 0, 0, { dirt: 0, dust: 0 });
+    o.box('wood', 0.14, 0.2, 0.01, k * 0.3, 1.14, 0.296, k % 2 ? 0xa04a30 : 0xc8a050, 0, 0, 0, { dirt: 0.05 });
+  }
+  o.cyl('metal', 0.012, 0.012, 0.22, 6, 0.58, 1.12, 0, 0x5a5a56, 0, 0, Math.PI / 2);
+  o.rod('metal', 0.012, [0.66, 1.12, 0], [0.7, 1.3, 0.02], 0x5a5a56, 5);
+  o.cyl('wood', 0.022, 0.022, 0.1, 6, 0.7, 1.33, 0.02, 0x6a4a30);
+  // striped cloth canopy sloping over the top, hung from the back
+  for (let k = 0; k < 5; k++) o.box('jute', 0.2, 0.012, 0.74, -0.4 + k * 0.2, 1.5, -0.05, k % 2 ? CLOTH : 0xd8c8a0, 0.22, 0, 0, { dirt: 0 });
+  // showman's stool
+  o.cyl('wood', 0.17, 0.17, 0.04, 10, -0.2, 0.42, 0.95, 0x7a5a3c);
+  for (const a of [0.6, 2.2, 3.8, 5.4]) o.rod('wood', 0.02, [-0.2 + Math.cos(a) * 0.14, 0, 0.95 + Math.sin(a) * 0.14], [-0.2 + Math.cos(a) * 0.1, 0.42, 0.95 + Math.sin(a) * 0.1], 0x5a3e28, 5);
+  return { w: 1.1, d: 0.7, cx: 0 };
+}
+
 // ---------------------------------------------------------------------------------------------------------------
-const BUILDERS = { gola: buildGola, scooter: buildScooter, motorcycle: buildMotorcycle, letterbox: buildLetterbox, tv: buildTV, ambassador: buildAmbassador, tanker: buildTanker };
+const BUILDERS = { gola: buildGola, scooter: buildScooter, motorcycle: buildMotorcycle, letterbox: buildLetterbox, tv: buildTV, ambassador: buildAmbassador, tanker: buildTanker, bioscope: buildBioscope };
 
 /** Builds every nostalgic object and the roof animals into one group (7 draw calls) and adds it to the scene. */
 export function createNostalgia(scene) {
