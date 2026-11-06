@@ -151,6 +151,7 @@ import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
 import { createSmallShops } from './smallShops.js';
 import { createRoadEvents } from './roadEvents.js';
+import { createCyclistEvents } from './cyclistEvents.js';
 import { createAnimalsExtra } from './animalsExtra.js';
 import { createInteractionsExtra } from './interactionsExtra.js';
 import { createVendors } from './vendors.js';
@@ -850,6 +851,7 @@ async function main() {
     { cx: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).x, cz: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).z, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
   ]);
   scene.add(dust.points);
+  createCyclistEvents(scene, { getPlayer: () => player, isOnCycle: () => onCycle }); // speed-breaker jolt, dog that follows (src/cyclistEvents.js)
   createAfternoonMood(scene); // kites, crows and heat haze (src/afternoonMood.js)
 
   // Bugfix 3/4 — contact shadows: a cheap, omnidirectional "touching the ground" cue
