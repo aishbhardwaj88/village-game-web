@@ -1,3 +1,39 @@
+# 24 HOURS. SATURDAY AND SUNDAY ONLY. The game ships Tuesday.
+
+Her words, 6 Nov: "You only have Saturday and Sunday to finish the game." Tripo character
+models go in after that, published Tuesday. There is no third day. Decide, build, never
+wait on her, never idle. Measured rate is about 2 commits/hour.
+
+## PRIORITY 0. THINGS MUST STAND WHERE THEY MAKE SENSE. "Use your brain."
+Her words: "why is a bus adda in middle of the gaon? Shouldn't bus adda be on the main
+road? Use your brain and accordingly put things."
+
+She is right, and the data says why: the bus adda is 12 m from the highway but its
+NEAREST road is a village lane at 10 m, so it fronts the lane, not the highway.
+A bus stop that does not face the road buses drive on is wrong.
+
+**Fix these, and then audit every place the same way:**
+- **Bus adda**: move onto the highway edge and FRONT THE HIGHWAY. A bay, a shelter facing
+  the carriageway, people waiting looking at the road.
+- **Petrol pump**: currently fronts a wheat-field track. It must front the highway, with
+  its forecourt open to it so a vehicle can pull in.
+- **Dharam kanta (weighbridge)**: trucks use it. Front the highway.
+- **Mandi**: currently fronts a footpath. Front the road trucks arrive on.
+- **Then audit all 64 places**: does this thing front the road its users actually arrive
+  on? Report any that do not, and fix them. A temple fronts the village, a kiln fronts
+  its drive, a school gate fronts the lane parents walk.
+
+## PRIORITY 0b. EVERY NOOK MUST REWARD A CYCLIST.
+Her words: "User will be basically riding bicycle and exploring the village. Everything
+should look interesting to them... discovering something new or interesting at every nook
+and corner."
+
+**The test: ride every road and lane end to end. If any stretch longer than about 8
+seconds has nothing worth looking at, put something there.** Not decoration: a scene.
+Section D below is the vocabulary. Use it everywhere, not just at the square.
+
+---
+
 # FILL THE VILLAGE. Her 6 Nov brief. Work top to bottom, never wait on her.
 
 Her three faults: no life, too empty, houses look like boxes.
