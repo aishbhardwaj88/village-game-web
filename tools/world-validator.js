@@ -222,7 +222,8 @@ async function main() {
         // roof-like fixture (one background house's roof, the bazaar's own
         // corrugated-tin awning), correctly elevated above the ground by
         // design, same reasoning as 'signboard' above.
-        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards', 'shop_goods'];
+        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards', 'shop_goods', 'small_shop_glass', 'small_shop_goods', 'tarpaulin', 'vendor_sign', 'nostalgia_glass', 'wall_writing'];
+        // small_shop_glass/goods, tarpaulin, vendor_sign, nostalgia_glass, wall_writing (7 Nov): village-wide per-material buckets of window glass, shelf stock, awnings, hung signs and painted wall text, all elevated by design like shop_goods; a whole-bucket lowestY says nothing about any one object.
         // shop_goods (src/shopGoods.js): packets, jars and bottles standing on shelves and counters 0.3-2.2 m up, and strings of packs hanging in
         // the window: elevated by design, same reasoning as 'signboard'. Each item's own base is a flat footprint on a real shelf.
         // tree_leaf_cards: alpha-cut canopy foliage, airborne by nature; its trunks (tree_foliage bucket) are checked and grounded.
