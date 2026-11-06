@@ -181,6 +181,7 @@ import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
 import { createVillageSounds } from './villageSounds.js';
+import { createAfternoonMood } from './afternoonMood.js';
 import { createPlayerCycle } from './playerCycle.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -844,6 +845,7 @@ async function main() {
     { cx: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).x, cz: halwaiXZ(HALWAI_CENTER.x + 2, HALWAI_CENTER.z + 3).z, halfW: 3, halfD: 3, count: 18 }, // halwai's open frontage, not its own footprint
   ]);
   scene.add(dust.points);
+  createAfternoonMood(scene); // kites, crows and heat haze (src/afternoonMood.js)
 
   // Bugfix 3/4 — contact shadows: a cheap, omnidirectional "touching the ground" cue
   // under every building/prop (static) and vehicle (updated each frame below), on top
