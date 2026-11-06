@@ -153,6 +153,8 @@ import { createSmallShops } from './smallShops.js';
 import { createRoadEvents } from './roadEvents.js';
 import { createVendors } from './vendors.js';
 import { createNostalgia } from './nostalgia.js';
+import { createVillageOddities } from './villageOddities.js';
+import { createWallWriting } from './wallWriting.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -178,6 +180,7 @@ import { createSideJobs } from './sideJobs.js';
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
+import { createVillageSounds } from './villageSounds.js';
 import { createPlayerCycle } from './playerCycle.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -540,6 +543,8 @@ async function main() {
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
+  createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
+  createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
   // north of the field/track, reachable by a lane spur (item 4). See src/temple.js
@@ -1899,6 +1904,7 @@ async function main() {
   }
 
   const audio = new AudioEngine();
+  createVillageSounds(audio, () => (mountedVehicle ? mountedVehicle.group.position : player.position));
   let started = false;
   const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
   setupStartOverlay({
