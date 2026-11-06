@@ -151,9 +151,12 @@ import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
 import { createSmallShops } from './smallShops.js';
 import { createRoadEvents } from './roadEvents.js';
+import { createAnimalsExtra } from './animalsExtra.js';
+import { createInteractionsExtra } from './interactionsExtra.js';
 import { createVendors } from './vendors.js';
 import { createNostalgia } from './nostalgia.js';
 import { createVillageOddities } from './villageOddities.js';
+import { createVillageFurniture } from './villageFurniture.js';
 import { createWallWriting } from './wallWriting.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -542,9 +545,11 @@ async function main() {
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
+  createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
+  createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
   createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
@@ -2357,6 +2362,7 @@ async function main() {
     tractor: tractorForShadows, // third errand — isTrolleyNearby() reads this live, see src/wheatErrand.js
     sackCarrier,
   };
+  createInteractionsExtra(scene, interactionCtx); // temple bell, chai, radio, notice board, kite (src/interactionsExtra.js)
 
   // Bugfix (real playtest bug, reproduced with real keyboard input — player walked
   // straight through the trolley, and the trolley drove through buildings): this
