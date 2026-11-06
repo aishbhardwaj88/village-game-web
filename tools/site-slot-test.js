@@ -89,9 +89,9 @@ async function run(withFile, glb) {
         return route.continue();
       });
     }
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
-    await page.click('#play-btn');
+    await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(1500);

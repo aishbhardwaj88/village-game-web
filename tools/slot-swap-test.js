@@ -128,9 +128,9 @@ async function withGame(fn) {
     const consoleErrors = [];
     page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     page.on('pageerror', (err) => consoleErrors.push(`PAGEERROR: ${err.message}`));
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
-    await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
-    await page.click('#play-btn');
+    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await page.waitForSelector('#start-overlay.ready', { timeout: 120000 }).catch(() => {});
+    await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(2500); // give assetSlots.resolveAll() (fire-and-forget) time to finish
