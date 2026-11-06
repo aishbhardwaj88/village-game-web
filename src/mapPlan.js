@@ -18,7 +18,7 @@ export const MAP_PLAN = {
   yard_dairy: { x: -95.1, z: -37.4, turn: -7 },
   yard_khalihan: { x: 58, z: -95.5, turn: 7.3 },
   yard_chakki: { x: -62.1, z: 23.1, turn: 5 },
-  yard_tubewell: { x: 133.8, z: 29.4, turn: 4.9 },
+  yard_tubewell: { x: 133.8, z: 29.4, turn: 184.9 }, // 4.9 + 180 (7 Nov road-front audit): front onto the cross road, not the field
   // yard_school (v2) is NOT placed: the hero school (src/village.js, the playable classroom with bell/teacher/blackboard) now stands on this centre and the two would overlap; v2 waits in its staging slot (NEEDS_YOU).
   yard_gurukul: { x: 34.8, z: 108.3, turn: 168.8 }, // -11.2 + 180 (7 Nov road-front audit): gate onto the School lane, not the back field
   yard_volleyball: { x: -5.2, z: 150, turn: 96 },
