@@ -147,6 +147,8 @@ import { registerLongWalks } from './longWalks.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
 import { createZeroMilestone } from './zeroMilestone.js'; // zero milestone + flag at the village square (docs/PARALLEL.md item 6)
 import { createBazaarLife } from './bazaarLife.js';
+import { createLifeScenes } from './lifeScenes.js';
+import { createLifeScenes2 } from './lifeScenes2.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -528,6 +530,8 @@ async function main() {
   // src/bazaarLife.js.
   const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
   scene.add(bazaarLife.mesh);
+  createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
+  createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
   // north of the field/track, reachable by a lane spur (item 4). See src/temple.js

@@ -3,6 +3,7 @@ import { batchPlaceModel } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loadKitModels } from './houseKit.js';
 import { buildRoofParts } from './rooftops.js';
+import { buildHouseExtras, pickFeatures } from './houseExtras.js';
 import { swapShared } from './stagingYard.js';
 import { requestColliderRebuild } from './collision.js';
 
@@ -62,6 +63,13 @@ export const VILLAGE_HOUSES = [
   { t: 'b', x: 503.11, z: 50.33, ry: 1.6925, sx: 1.00, sz: 1.00, area: 'w' },
   { t: 'e', x: 505.52, z: 57.69, ry: 1.6925, sx: 1.00, sz: 1.00, area: 'w' },
   { t: 'd', x: 505.78, z: 66.34, ry: 1.6925, sx: 1.00, sz: 1.00, area: 'w' },
+  // The four empty house plots round the haveli (her 6 Nov note), one house each, front to the plot's gate gap (plot frames from
+  // src/main.js 'house_plots_N': plot 1 gate south, 2 east, 3 south, 4 north). Pukka beside kachcha; f = forced personality set
+  // (src/houseExtras.js), plot 1 double storey, plot 2 with an outside stair to the roof.
+  { t: 'c', x: 606.99, z: -34.82, ry: 0.1547, sx: 0.95, sz: 0.85, area: 'hv', f: ['chajja', 'hood', 'plate', 'meter', 'dado', 'vents', 'plants', 'upper'] },
+  { t: 'e', x: 606.85, z: -20.20, ry: 1.7255, sx: 0.95, sz: 0.85, area: 'hv', f: ['chajja', 'plate', 'meter', 'cycle', 'dado', 'plants', 'stair'] },
+  { t: 'a', x: 620.92, z: -33.35, ry: -0.1277, sx: 1.0, sz: 1.0, area: 'hv', f: ['cycle', 'plants'] },
+  { t: 'f', x: 619.22, z: -9.99, ry: 3.0509, sx: 0.95, sz: 0.8, area: 'hv', f: ['plate'] },
 ];
 
 const DRAW_DIST = 115; // player to the NEAREST house of an area; the haze has taken most of a house by then
@@ -100,8 +108,8 @@ function kitGeometry(g) {
 }
 
 /** Fitting sites on the roof of house `p` (index i): one or two, never the same kind as the previous house, yaw and kind vary house to house. */
-function houseRoofSites(p, i, place, prevKind) {
-  const roof = ROOFS[p.t];
+function houseRoofSites(p, i, place, prevKind, extraKeep = [], roofOver = null) {
+  const roof = roofOver ? { ...roofOver, keep: [] } : ROOFS[p.t];
   if (!roof) return [];
   const sites = [];
   const n = hash(i * 13 + 5) < 0.45 ? 2 : 1;
@@ -115,7 +123,7 @@ function houseRoofSites(p, i, place, prevKind) {
     for (let t = 0; t < 14 && !ok; t++) {
       lx = roof.rect[0] + inset + hash(i * 41 + k * 11 + t * 3 + 2) * (roof.rect[1] - roof.rect[0] - 2 * inset);
       lz = roof.rect[2] + inset + hash(i * 43 + k * 17 + t * 5 + 3) * (roof.rect[3] - roof.rect[2] - 2 * inset);
-      ok = roof.keep.every(([kx, kz, kr]) => Math.hypot(lx - kx, lz - kz) > kr + inset * 0.6) && sites.every((o) => Math.hypot(lx - o.lx, lz - o.lz) > 1.5);
+      ok = [...roof.keep, ...extraKeep].every(([kx, kz, kr]) => Math.hypot(lx - kx, lz - kz) > kr + inset * 0.6) && sites.every((o) => Math.hypot(lx - o.lx, lz - o.lz) > 1.5);
     }
     if (!ok) continue;
     pos.set(lx, 0, lz).applyMatrix4(place);
@@ -123,6 +131,14 @@ function houseRoofSites(p, i, place, prevKind) {
     if (k === 0) prevKind.v = kind;
   }
   return sites;
+}
+
+const EXTRA_MATS = [['main', /hb_main/], ['props', /hb_props/], ['metal', /hb_metal/], ['brick', /hb_brick/]];
+/** `g` (kit attribute layout) indexed or not like `like`, so mergeGeometries accepts both. */
+function conform(g, like) {
+  if (like.index && !g.index) { const n = g.attributes.position.count; g.setIndex(Array.from({ length: n }, (_, k) => k)); }
+  else if (!like.index && g.index) g = g.toNonIndexed();
+  return g;
 }
 
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -193,7 +209,19 @@ export function createVillageHouses(scene) {
           list.push(bakedGeometry(mesh.geometry, full, tint));
           byMat.set(mesh.material, list);
         });
-        fitSites.push(...houseRoofSites(p, i, place, prevKind));
+        // personality (src/houseExtras.js): chajja, dado, plate, meter, vents, washing, plants, cycle, outside stair, second floor
+        const feats = pickFeatures(p, i, hash, p.f);
+        const ex = buildHouseExtras(p, feats, place, wall, wear, (k) => hash(i * 31 + k * 1.7 + 0.3));
+        for (const [part, re] of EXTRA_MATS) {
+          if (!ex[part].length) continue;
+          let target = null;
+          for (const mat of byMat.keys()) if (re.test(mat.name)) { target = mat; break; }
+          if (!target) continue;
+          const dst = byMat.get(target);
+          for (const g of ex[part]) dst.push(conform(g, dst[0]));
+        }
+        if (ex.upperRoof) fitSites.push(...houseRoofSites({ ...p, t: 'b' }, i, place, prevKind, [], { y: ex.upperRoof.y, rect: ex.upperRoof.rect }));
+        else if (!ex.noFittings) fitSites.push(...houseRoofSites(p, i, place, prevKind, ex.roofKeep));
       }
       if (fitSites.length) { // fittings join the cluster's meshes of a material it already has: zero extra draw calls
         const parts = buildRoofParts(fitSites);
