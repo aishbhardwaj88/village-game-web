@@ -150,6 +150,9 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
 import { createSmallShops } from './smallShops.js';
+import { createRoadEvents } from './roadEvents.js';
+import { createVendors } from './vendors.js';
+import { createNostalgia } from './nostalgia.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
@@ -534,6 +537,9 @@ async function main() {
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
+  createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
+  createVendors(scene); // street vendors round the chowk (src/vendors.js)
+  createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
   // north of the field/track, reachable by a lane spur (item 4). See src/temple.js

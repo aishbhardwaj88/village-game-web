@@ -19,7 +19,7 @@ export const NON_SOLID_RULES = [
   // Dev-only staging boxes (hidden outside ?dev=1).
   [/^tripo_[a-z_]+_placeholder\//, 'dev-only staging boxes'],
   // Animals carry their own boxes (src/animals.js), the herds' meshes are not walls.
-  [/cattle_herd|dog_pack|^zone_lane_cattle|^zone_dogs/, 'animals have explicit boxes'],
+  [/cattle_herd|dog_pack|^zone_lane_cattle|^zone_dogs|road_events\/road_events_(goats|goatherd|bovine|dogs|wood)/, 'animals have explicit boxes; goats and herder are soft by design; pegs and ropes are ankle-thin (src/roadEvents.js)'],
   // The abadi rows are instanced and distance-culled; their footprints come from src/abadiBoxes.json.
   [/^background_houses\/abadi_row_/, 'abadi rows: footprints from abadiBoxes.json'],
 ];
