@@ -82,6 +82,13 @@ function addWeathering(m, set) {
           return mix(mix(mix(wh_(i), wh_(i + vec3(1,0,0)), f.x), mix(wh_(i + vec3(0,1,0)), wh_(i + vec3(1,1,0)), f.x), f.y),
                      mix(mix(wh_(i + vec3(0,0,1)), wh_(i + vec3(1,0,1)), f.x), mix(wh_(i + vec3(0,1,1)), wh_(i + vec3(1,1,1)), f.x), f.y), f.z);
         }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        #if defined( USE_NORMALMAP_TANGENTSPACE ) || defined( USE_NORMALMAP_OBJECTSPACE )
+        {   // normal strength is never uniform: patches where dust/render fills the relief (flatter) and patches where it is crisp
+          float ns_ = 0.55 + 0.6 * wn_(vWxyz * 0.7 + 63.0);
+          normal = normalize( mix( nonPerturbedNormal, normal, ns_ ) );
+        }
+        #endif`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         {   // roughness is never one value: large-scale patches (dust, damp, wear) plus fine grain, and a slightly damper (glossier) plinth band
           float rn_ = wn_(vWxyz * 0.8 + 41.0) * 0.65 + wn_(vWxyz * 5.3 + 17.0) * 0.35;
