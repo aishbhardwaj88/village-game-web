@@ -5,9 +5,9 @@
  */
 export const MAP_SHIFT = { x: 600, z: 0 };
 export const MAP_PLAN = {
-  yard_bus_adda: { x: -43.5, z: -113.3, turn: 1 },
-  yard_puncture: { x: 31.9, z: -113.8, turn: 1 },
-  yard_dharam_kanta: { x: 121.7, z: -108.3, turn: 1 },
+  yard_bus_adda: { x: -43.5, z: -113.3, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front turned from the water-tank lane onto the highway
+  yard_puncture: { x: 31.9, z: -113.8, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front onto the highway
+  yard_dharam_kanta: { x: 121.7, z: -108.3, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front onto the highway, along the map's front path
   yard_petrol: { x: -43.5, z: -146.6, turn: 1 },
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
   yard_chaupal: { x: 23.5, z: 28.5, turn: 5 },
@@ -20,7 +20,7 @@ export const MAP_PLAN = {
   yard_chakki: { x: -62.1, z: 23.1, turn: 5 },
   yard_tubewell: { x: 133.8, z: 29.4, turn: 4.9 },
   // yard_school (v2) is NOT placed: the hero school (src/village.js, the playable classroom with bell/teacher/blackboard) now stands on this centre and the two would overlap; v2 waits in its staging slot (NEEDS_YOU).
-  yard_gurukul: { x: 34.8, z: 108.3, turn: -11.2 },
+  yard_gurukul: { x: 34.8, z: 108.3, turn: 168.8 }, // -11.2 + 180 (7 Nov road-front audit): gate onto the School lane, not the back field
   yard_volleyball: { x: -5.2, z: 150, turn: 96 },
   yard_khel: { x: 31.9, z: 154.3, turn: 6 },
   yard_akhada: { x: 72, z: 141, turn: 6 },
