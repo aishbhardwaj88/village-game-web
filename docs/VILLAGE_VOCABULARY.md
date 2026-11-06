@@ -82,3 +82,44 @@ the sun. The dog asleep. A radio low. Lighting and a few placements: nearly free
 Ride every road and lane end to end. Any stretch over about 8 seconds with nothing worth
 looking at gets a scene from this list. Scenes go where people gather: the square, the
 chaupal, under trees, at the pond and the well, outside shops, in the gullies.
+
+## 8. THINGS THAT HAPPEN TO THE CYCLIST. The best of all, build these early.
+- a cow sitting in the middle of the road, you go round it (trivial, do it first)
+- a goat herd crossing with a goatherd and a stick
+- an unmarked speed breaker, a small jolt on the cycle
+- a kid runs alongside the cycle for a few seconds then drops off
+- a dog follows you after you ride past it twice
+- a tractor overtakes on the highway, honking, "Horn OK Please" on the back
+- a kite fight overhead, one cut, drifting into a tree
+
+## 9. THINGS YOU CAN DO. Cheapest first.
+ring the temple bell; pump the hand pump; sit on a charpai in the shade; buy a kulhad
+chai with steam at the screen edge; sit on the banyan jhoola; switch channels on a radio;
+read the panchayat notice board with real notices; feed a cow a roti; pick up a kite.
+
+## 10. SOUND. Free and the biggest lever for "life".
+temple bell at intervals; azaan once; a pressure cooker whistle from a house; the thump of
+a diesel tubewell engine; chakki hum; cycle bell; crows, a koel, a peacock cry, a buffalo;
+a truck horn on the highway.
+
+## 11. EVERY VILLAGE HAS ONE OF THESE.
+- a ruined house with a tree growing through the roof (the bhootiya ghar)
+- a half-built house with iron rods sticking out of the roof
+- a banyan with hanging roots to walk between, a swing on it
+- a new pukka house beside a crumbling kachcha one
+- an old well with a pulley and a bucket on a rope
+- a mazar with a green chadar and a lamp
+- a shamiana going up for a shaadi, chairs stacked, a band's drum
+- sand pile and sieve, stacked bricks, bamboo scaffolding
+
+## 12. WALL WRITING AND SMALL STORIES. Three or four per street.
+"yahan peshab karna mana hai" with a god's picture beside it; political slogans and
+symbols half painted over; a "PCO STD ISD" board on a shuttered booth; a shaadi card
+pasted on a door; chalk cricket score and children's chalk drawings; "To Let" on a locked
+house; a cycle with a child seat at the school gate; yesterday's newspaper on the barber's
+chair.
+
+## 13. NOSTALGIC OBJECTS, scattered as discoveries.
+gola cart with a hand-cranked ice shaver; a Bajaj scooter under a cover; a Rajdoot; a red
+letterbox at the post office; a Doordarshan TV in a wooden cabinet; a jeep, an Ambassador,
+a water tanker; a bioscope at the mela ground.

@@ -1,3 +1,22 @@
+# 48 HOURS, NON-STOP. Her order, 6 Nov night. NO STOPPING. NO WAITING. NO IDLE RUNS.
+
+Her words: "You cannot stop at all. You will always be connected for the next 48 hours to
+the Wi-Fi, and my system will be on. You are not allowed to stop. You are not allowed to
+wait on me for permission. If I am not available, you need to start the next task."
+
+She checks every 6 hours. Between checks you do not pause for anything. If an item is
+blocked, note it in docs/NEEDS_YOU.md in ONE line and take the next. A run with no game
+change is a failed run. Run `./tools/truth.sh` before any status.
+
+Build from `docs/VILLAGE_VOCABULARY.md`, all 13 sections. Order of value:
+Priority 0 (road-facing fixes) -> uncull -> section 1 and 2 (houses) -> section 8 (things
+that happen to the cyclist, cow in the road FIRST) -> sections 4 and 5 (vendors and
+people) -> section 3 (animals) -> section 10 (sound) -> section 11 -> section 12 ->
+section 9 (interactions, cheapest first) -> section 13 -> section 7 (afternoon mood,
+can be done any time it is cheap).
+
+---
+
 # 24 HOURS. SATURDAY AND SUNDAY ONLY. The game ships Tuesday.
 
 Her words, 6 Nov: "You only have Saturday and Sunday to finish the game." Tripo character
