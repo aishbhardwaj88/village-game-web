@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildBovineGeometry, buildDogGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
+import { registerInteraction } from './interactions.js';
 import { mapRoadLines } from './mapRoads.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 
@@ -255,6 +256,13 @@ export function createRoadEvents(scene) {
       bov.push({ x: site.x, y: -0.76, z: site.z, yaw: site.yaw, s: [1, 1, 1], tint: 0xd6ccb4, sit: true, ph: 0.4 });
       box(2.05, 0.95, site, 0, 0.1, 0, true);
       dungPats(b, site, [[0.15, -1.45, 1.1], [-0.3, -1.9, 0.8], [0.5, -2.6, 1.0]], 11);
+      registerInteraction({
+        id: 'feed_road_cow',
+        position: new THREE.Vector3(site.x, 0, site.z),
+        radius: 2.6,
+        label: { hi: 'गाय को रोटी खिलाएं', en: 'Feed the cow a roti' },
+        onInteract: (ctx) => ctx.dialogue.say([{ hi: 'गाय ने रोटी चबाई और आँखें मूँद लीं। गौ माता का आशीर्वाद!', en: 'The cow takes the roti, chews slowly and shuts her eyes. Blessings of Gau Mata.' }]),
+      });
       info.placed.cow = { x: +site.x.toFixed(2), z: +site.z.toFixed(2), road: COW_SITE.road, clear: clearAt(site.x, site.z, 1.1) };
     }
 
