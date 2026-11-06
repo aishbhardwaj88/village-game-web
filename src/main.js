@@ -153,9 +153,11 @@ import { createSmallShops } from './smallShops.js';
 import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents } from './roadEvents.js';
 import { createCyclistEvents } from './cyclistEvents.js';
+import { createCyclistEvents2 } from './cyclistEvents2.js';
 import { createAnimalsExtra } from './animalsExtra.js';
 import { createInteractionsExtra } from './interactionsExtra.js';
 import { createVendors } from './vendors.js';
+import { createVendors2 } from './vendors2.js';
 import { createNostalgia } from './nostalgia.js';
 import { createVillageOddities } from './villageOddities.js';
 import { createVillageFurniture } from './villageFurniture.js';
@@ -550,6 +552,7 @@ async function main() {
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
+  createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
   createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
@@ -854,6 +857,7 @@ async function main() {
   ]);
   scene.add(dust.points);
   createCyclistEvents(scene, { getPlayer: () => player, isOnCycle: () => onCycle }); // speed-breaker jolt, dog that follows (src/cyclistEvents.js)
+  createCyclistEvents2(scene, { getPlayer: () => player, isOnCycle: () => onCycle }); // tractor overtakes, kid runs alongside, kite fight (src/cyclistEvents2.js)
   createAfternoonMood(scene); // kites, crows and heat haze (src/afternoonMood.js)
 
   // Bugfix 3/4 — contact shadows: a cheap, omnidirectional "touching the ground" cue
