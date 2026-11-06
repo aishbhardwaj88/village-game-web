@@ -128,12 +128,15 @@ async function withGame(fn) {
     const consoleErrors = [];
     page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     page.on('pageerror', (err) => consoleErrors.push(`PAGEERROR: ${err.message}`));
+    // dev mode logs this once every slot has settled (src/main.js); a fixed sleep flaked under machine load
+    const slotsResolved = new Promise((res) => page.on('console', (msg) => { if (msg.text().startsWith('[assetSlots] resolved')) res(); }));
     await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 120000 }).catch(() => {});
     await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
-    await page.waitForTimeout(2500); // give assetSlots.resolveAll() (fire-and-forget) time to finish
+    await Promise.race([slotsResolved, page.waitForTimeout(120000)]);
+    await page.waitForTimeout(500);
     return await fn(page, consoleErrors);
   } finally {
     if (browser) await browser.close();
