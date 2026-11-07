@@ -72,7 +72,7 @@ function rng(seed) {
  * Frontage along the four arms is switched on only when it finishes and is clean (PARALLEL.md TONIGHT item 1). The
  * island always builds. Frontage is off until the arm rows exist.
  */
-const ENABLE_FRONTAGE = false;
+const ENABLE_FRONTAGE = true;
 
 /**
  * The raised central island of the roundabout: radius CHAURAHA.islandR (6 m), a concrete kerb 0.22 m high, a grass top
