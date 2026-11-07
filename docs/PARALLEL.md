@@ -1,3 +1,35 @@
+# OVERNIGHT 7-8 NOV: VISIBLE CHANGE ONLY. Her words, 23:30: "I don't see lot of developments in game."
+
+She is right. Of 61 commits in the last 24 h, about half were invisible: draw-call cuts,
+batching, collision, test harness. Every visible addition tripped the draw-call ceiling and
+the next run was spent clawing it back. That loop ends tonight.
+
+## THE RULE FOR TONIGHT
+- **Every run must change something a player SEES from the cycle.** If a run would not, do
+  not do it.
+- **No performance work** (draw calls, batching, culling, harness, validator tuning) unless
+  the game is actually broken: crashes, console errors, fps collapse, a failing build.
+- If the draw-call ceiling blocks a visible item, **raise that zone's ratchet and ship the
+  visible item.** Note the zone and the overage in docs/NEEDS_YOU.md. Performance is
+  cleaned up on Monday, before the Tripo models.
+- CANCELLED: "batch unbatched meshes in the school and bazaar zones". Do not start it.
+
+## TONIGHT, IN ORDER
+1. **Chauraha edges.** Textured house fronts and OPEN shops ringing the square, people
+   sitting at the corners (charpai, tea, carrom). The 12 m circle stays clear.
+2. **Old house textures on every remaining flat-coloured row.** No flat wall left.
+3. **Mandi, gurudwara, panchayat** turned to face their roads (from the wrong-turn audit).
+4. **Peacock on a roof. Monkeys on a water tank.**
+5. **The main road, both sides, end to end:** something worth seeing every ~8 s of
+   riding. Vendors, charpais with people, a tied buffalo, kids at a game, a parked
+   tractor, a cow in the road. Vocabulary sections 4, 5, 3, 8.
+6. **The two gullies off the chauraha**, the same treatment.
+7. **07:00: ride-through capture**, 8 shots from the saddle, docs/shots/ride-2026-11-08-0700/.
+
+Nothing half-built left switched on at 07:00.
+
+---
+
 # DEADLINE: SUNDAY 8 NOV MORNING. She is asleep. Finish, do not start big new things.
 
 Tonight, in order:
