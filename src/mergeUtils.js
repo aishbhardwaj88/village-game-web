@@ -55,6 +55,7 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
 
   const buckets = new Map(); // material -> { geometries, castShadow, receiveShadow, colliderBoxes }
   const toRemove = [];
+  const hiddenBoxes = []; // footprints of invisible collider boxes, carried by one invisible mesh after the merge
 
   // `skipNames`: named sub-groups (already locally merged, e.g. 'house_shell_old') to leave
   // completely alone — folding them into this merge would make them un-hideable.
@@ -64,6 +65,7 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
     if (obj === group) return;
     if (!obj.isMesh || obj.isInstancedMesh) return;
     if (obj.userData.lodExtra) { toRemove.push(obj); return; } // lower LOD levels mean nothing once merged
+    if (obj.userData.collider === true && obj.visible === false) { collectColliderBoxes(obj, hiddenBoxes); toRemove.push(obj); return; } // hidden collider: footprint kept, never drawn
     let bucket = buckets.get(obj.material);
     if (!bucket) buckets.set(obj.material, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
     bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
@@ -90,6 +92,16 @@ export function mergeGroupByMaterial(group, { skipNames = [] } = {}) {
     if (bucket.colliderBoxes.length) mesh.userData.colliderBoxes = bucket.colliderBoxes;
     group.add(mesh);
   }
+  addHiddenColliderCarrier(group, hiddenBoxes);
+}
+
+function addHiddenColliderCarrier(group, boxes) {
+  if (!boxes.length) return;
+  const carrier = new THREE.Mesh(new THREE.BufferGeometry());
+  carrier.name = 'merged_hidden_colliders';
+  carrier.visible = false;
+  carrier.userData.colliderBoxes = boxes;
+  group.add(carrier);
 }
 
 /** Geometries of one material can differ in indexing or attribute set (small prop modules vs Blender models); mergeGeometries needs them identical.
@@ -129,12 +141,14 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   const buckets = new Map();
   const keyMaterial = new Map();
   const toRemove = [];
+  const hiddenBoxes = [];
 
   for (const root of roots) {
     root.updateWorldMatrix(true, true);
     (function walk(obj) {
       if (obj !== root && skipNames.includes(obj.name)) return;
       if (obj.isMesh && obj.userData.lodExtra) toRemove.push(obj);
+      else if (obj.isMesh && obj.userData.collider === true && obj.visible === false) { collectColliderBoxes(obj, hiddenBoxes); toRemove.push(obj); } // hidden collider: footprint kept, never drawn
       else if (obj.isMesh && !obj.isInstancedMesh) {
         // Shop stock (tiny packets, ~125k tris) is split into 100 m cells so the per-frame distance gate (userData.distGate) can drop far cells.
         let key = obj.material;
@@ -181,6 +195,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     if (bucket.colliderBoxes.length) mesh.userData.colliderBoxes = bucket.colliderBoxes;
     dest.add(mesh);
   }
+  addHiddenColliderCarrier(dest, hiddenBoxes);
 }
 
 /** Merges a flat list of already-positioned, unparented Meshes (e.g. several
