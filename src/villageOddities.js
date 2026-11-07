@@ -343,7 +343,7 @@ function buildShamiana(o) {
   return { w: 1.5, d: 1.0, cx: W / 2 - 0.7, cz: D / 2 - 0.9, extra: [] };
 }
 
-const BUILDERS = { halfbuilt: buildHalfBuilt, sandpile: buildSandPile, scaffold: buildScaffold, well: buildWell, mazar: buildMazar, shamiana: buildShamiana };
+const BUILDERS = { halfbuilt: buildHalfBuilt, sandpile: buildSandPile, scaffold: buildScaffold, well: buildWell, /* mazar removed on her order, 7 Nov */ shamiana: buildShamiana };
 
 export function createVillageOddities(scene) {
   const group = new THREE.Group(); group.name = 'village_oddities';

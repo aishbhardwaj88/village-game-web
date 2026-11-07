@@ -309,3 +309,5 @@ She does not want the small field shrines, roadside shrines or shrines under tre
 as long-walk fillers. The temple, the Jain mandir, the masjid and the gurudwara are
 PLACES and stay. The small shrine inside the temple compound is part of the temple and
 stays. Anything else shrine-shaped standing on its own: remove on sight.
+This includes mazars and majars (the roadside one under the johad neem and the domed one by
+the dairy were both removed 7 Nov on her order). Never place one again.

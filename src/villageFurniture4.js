@@ -297,7 +297,7 @@ export function createVillageFurniture4(scene) {
 
   // 1. the roadside majar: plaster pieces in one batch (local), its cloth into the shared cloth batch with the kites
   const cloth = new Batch();
-  const mw = ANCHORS.johad && spotMatrix(FURNITURE4_SPOTS.majar);
+  const mw = null; // roadside majar removed on her order, 7 Nov (CLAUDE.md: no standalone shrines or mazars)
   if (mw) {
     const stone = new Batch();
     const o = new Obj(stone, mw, 113, { dirt: 0.4, dust: 0.12 });
