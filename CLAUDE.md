@@ -302,3 +302,10 @@ span of play.
 ```
 LINK: <url or 'not yet'>. YOU: <exactly what I must do, or 'nothing'>. NEXT: <what I will do next>.
 ```
+
+## NO STANDALONE SHRINES. Her order, 7 Nov. Permanent.
+She does not want the small field shrines, roadside shrines or shrines under trees
+(the little plinth-with-dome-and-flag kind). Never place one again, anywhere, including
+as long-walk fillers. The temple, the Jain mandir, the masjid and the gurudwara are
+PLACES and stay. The small shrine inside the temple compound is part of the temple and
+stays. Anything else shrine-shaped standing on its own: remove on sight.

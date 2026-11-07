@@ -1675,7 +1675,7 @@ async function main() {
     FP('map_well', -205.5, -20.6, [{ part: 'well', x: -205.5, z: -20.6, solid: [4.2, 4.2] }]); // the map's village well (1 Nov plan)
     FP('map_field_gate', -27, 188.5, [{ part: 'field_gate', x: -32.8, z: 188.5, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: -21.2, z: 188.5, ry: Math.PI, solid: [0.9, 0.9] }]);
     FP('map_field_gate_wheat', 9, -152.2, [{ part: 'field_gate', x: 3.6, z: -152.2, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: 14.4, z: -152.2, ry: Math.PI, solid: [0.9, 0.9] }]);
-    FP('map_field_shrine', -152.7, -60, [{ part: 'field_shrine', x: -152.7, z: -60, solid: [3, 3] }]);
+    // map_field_shrine removed: she does not want standalone shrines (7 Nov)
     FP('map_culvert', 144.5, 30.9, [{ part: 'culvert', x: 144.5, z: 30.9 }]);
     // DROPPED 2 Nov (PARALLEL phase 1): the map strip lies inside the highway (x 798-812, N-S); a wall/channel across the road is worse than no culvert.
     // FP('map_culvert_2', 203.05, 30.2, [{ part: 'culvert', x: 203.40, z: 27.88, ry: 1.4224, solid: [0.9, 4.6] }, { part: 'culvert_b', x: 202.70, z: 32.52, ry: -1.7191, solid: [0.9, 4.6] }], 30); // the map's second culvert strip (2.7 x 9.4 m, turn 8.5): two 4.6 m ends side by side
