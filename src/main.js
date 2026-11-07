@@ -565,6 +565,7 @@ async function main() {
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
   createScooters(scene); // parked scooters + motorcycles, Blender models (src/scooters.js)
+  import('./jeep.js').then((m) => m.createJeep(scene)); // the old open-top jeep by the panchayat (src/jeep.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
   createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
   createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
