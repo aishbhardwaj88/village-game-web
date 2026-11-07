@@ -74,7 +74,7 @@ export const VILLAGE_HOUSES = [
 
 const DRAW_DIST = 115; // player to the NEAREST house of an area; the haze has taken most of a house by then
 const SHADOW_DIST = 50; // and only the walls (main + brick) of an area this near cast shadows: every caster is a second draw call
-const CASTERS = /hb_main|hb_brick/;
+const CASTERS = /hb_c?main|hb_brick/;
 
 // Limewash range from LAYOUT.md (pale pink, peach, mint, cream, light yellow, soft blue sparingly). Pastels go on the
 // pakka types' plaster only; the mud house, the bare-brick room, the old ancestral house and the two rich houses keep
@@ -133,6 +133,40 @@ function houseRoofSites(p, i, place, prevKind, extraKeep = [], roofOver = null) 
   return sites;
 }
 
+
+// Roof coverings from the old abadi houses (tin + terracotta shared sets, the very materials abadi_row_b/c use): a low sheet-roofed shelter
+// on some flat roofs, tin or tiles, per house. Walls: ~1 in 5 pakka houses stand in bare cement (the shared 'concrete' set) instead of limewash.
+let roofMats = null;
+function getRoofMats() {
+  if (roofMats) return roofMats;
+  const mk = (set, rep, name) => { const o = { material: new THREE.MeshStandardMaterial({ name }) }; o.material.userData.dopahar_set = set; o.material.userData.dopahar_repeat = rep; swapShared(o); return o.material; };
+  roofMats = { tin: mk('tin', 0.8, 'hb_tin'), tile: mk('terracotta', 1, 'hb_terracotta'), cmain: mk('concrete', 0.5, 'hb_cmain') };
+  return roofMats;
+}
+const CONCRETE_TYPES = new Set(['b', 'c', 'd', 'e', 'f']);
+const SHED = { b: [-0.6, 0.3], c: [-0.5, 0.2], d: [-1.5, -1.0] }; // type-local centre on the flat roof, clear of the stair room / tank spots
+/** A box in metres (uv in metres so the shared texture repeats keep their real scale), rotated about x by `pitch`, vertex colour `rgb`. */
+function metreBox(w, h, d, cx, cy, cz, pitch, rgb) {
+  const g = new THREE.BoxGeometry(w, h, d);
+  const uv = g.attributes.uv, dims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+  for (let f = 0; f < 6; f++) for (let k = 0; k < 4; k++) { const i = f * 4 + k; uv.setXY(i, uv.getX(i) * dims[f][0], uv.getY(i) * dims[f][1]); }
+  g.rotateX(pitch).translate(cx, cy, cz);
+  const c = new Float32Array(g.attributes.position.count * 3);
+  for (let i = 0; i < c.length; i += 3) { c[i] = rgb.r; c[i + 1] = rgb.g; c[i + 2] = rgb.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  return g;
+}
+/** Shed roof: sheet (pitched, rising to the back) on four slim posts, all in the one roof material. Local to the house. */
+function shedGeometries(cx, cz, y, rgb) {
+  const hw = 1.3, hd = 1.0, pitch = -0.14;
+  const out = [metreBox(hw * 2 + 0.3, 0.05, hd * 2 + 0.3, cx, y + 1.25, cz, pitch, rgb)];
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const hh = sz < 0 ? 1.4 : 1.1;
+    out.push(metreBox(0.1, hh, 0.1, cx + sx * (hw - 0.05), y + hh / 2, cz + sz * (hd - 0.05), 0, rgb));
+  }
+  return out;
+}
+
 const EXTRA_MATS = [['main', /hb_main/], ['props', /hb_props/], ['metal', /hb_metal/], ['brick', /hb_brick/]];
 /** `g` (kit attribute layout) indexed or not like `like`, so mergeGeometries accepts both. */
 function conform(g, like) {
@@ -144,7 +178,7 @@ function conform(g, like) {
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 /** Float copy of a (possibly meshopt-quantised) geometry with exactly position/normal/uv/color(3), baked by `m`. */
-function bakedGeometry(src, m, tint) {
+function bakedGeometry(src, m, tint, uvv = null) {
   const n = src.attributes.position.count;
   const g = new THREE.BufferGeometry();
   const copy = (name, size, fallback) => {
@@ -157,7 +191,9 @@ function bakedGeometry(src, m, tint) {
   };
   g.setAttribute('position', copy('position', 3, 0));
   g.setAttribute('normal', copy('normal', 3, 0));
-  g.setAttribute('uv', copy('uv', 2, 0));
+  const uvA = copy('uv', 2, 0);
+  if (uvv) for (let i = 0; i < n; i++) uvA.setXY(i, uvA.getX(i) * uvv.s + uvv.u, uvA.getY(i) * uvv.s + uvv.v); // per-house texture scale + offset: no two walls tile alike
+  g.setAttribute('uv', uvA);
   const col = copy('color', 3, 1);
   for (let i = 0; i < n; i++) col.setXYZ(i, col.getX(i) * tint.r, col.getY(i) * tint.g, col.getZ(i) * tint.b);
   g.setAttribute('color', col);
@@ -198,30 +234,51 @@ export function createVillageHouses(scene) {
         q.setFromAxisAngle(THREE.Object3D.DEFAULT_UP, p.ry);
         place.compose(pos.set(p.x, 0, p.z), q, s.set(p.sx || 1, 1, p.sz || 1));
         const wear = 0.92 + 0.1 * hash(i * 3 + 1); // per-house overall value: some freshly washed, some dusty
-        const wall = PASTEL_TYPES.has(p.t)
-          ? new THREE.Color(PASTELS[Math.floor(hash(i * 7 + 2) * PASTELS.length)]).lerp(white, 0.55)
-          : new THREE.Color(1, 0.97 + 0.05 * hash(i * 5 + 3), 0.93 + 0.08 * hash(i * 11 + 4));
+        const rm = getRoofMats();
+        const bare = CONCRETE_TYPES.has(p.t) && hash(i * 17 + 9) < 0.22; // bare cement walls, not limewashed
+        const wall = bare
+          ? new THREE.Color(1.0, 0.84 + 0.08 * hash(i * 5 + 4), 0.68 + 0.1 * hash(i * 5 + 5)) // warm: the cement scan has a green cast
+          : PASTEL_TYPES.has(p.t)
+            ? new THREE.Color(PASTELS[Math.floor(hash(i * 7 + 2) * PASTELS.length)]).lerp(white, 0.55)
+            : new THREE.Color(1, 0.97 + 0.05 * hash(i * 5 + 3), 0.93 + 0.08 * hash(i * 11 + 4));
+        const uvv = { s: 0.75 + 0.8 * hash(i * 19 + 6), u: hash(i * 23 + 1) * 4, v: hash(i * 29 + 2) * 4 }; // wall texture repeat 0.75-1.55x of the library value, shifted per house
+        let wallMat = null;
         src.traverse((mesh) => {
           if (!mesh.isMesh) return;
-          const tint = (/hb_main/.test(mesh.material.name) ? wall.clone() : new THREE.Color(1, 1, 1)).multiplyScalar(wear);
+          const isWall = mesh.material.name === 'hb_main';
+          const tint = (isWall ? wall.clone() : new THREE.Color(1, 1, 1)).multiplyScalar(wear);
           full.multiplyMatrices(place, mesh.matrixWorld);
-          const list = byMat.get(mesh.material) || [];
-          list.push(bakedGeometry(mesh.geometry, full, tint));
-          byMat.set(mesh.material, list);
+          const mat = isWall && bare ? rm.cmain : mesh.material;
+          if (isWall) wallMat = mat;
+          const list = byMat.get(mat) || [];
+          list.push(bakedGeometry(mesh.geometry, full, tint, isWall || mesh.material.name === 'hb_brick' ? uvv : null));
+          byMat.set(mat, list);
         });
         // personality (src/houseExtras.js): chajja, dado, plate, meter, vents, washing, plants, cycle, outside stair, second floor
         const feats = pickFeatures(p, i, hash, p.f);
         const ex = buildHouseExtras(p, feats, place, wall, wear, (k) => hash(i * 31 + k * 1.7 + 0.3));
         for (const [part, re] of EXTRA_MATS) {
           if (!ex[part].length) continue;
-          let target = null;
-          for (const mat of byMat.keys()) if (re.test(mat.name)) { target = mat; break; }
+          let target = part === 'main' && wallMat ? wallMat : null;
+          if (!target) for (const mat of byMat.keys()) if (re.test(mat.name)) { target = mat; break; }
           if (!target) continue;
           const dst = byMat.get(target);
           for (const g of ex[part]) dst.push(conform(g, dst[0]));
         }
+        let shedKeep = [];
+        if (SHED[p.t] && !ex.upperRoof && !ex.noFittings && hash(i * 37 + 8) < 0.6) { // tin or terracotta shed roof on this flat roof
+          const [scx, scz] = SHED[p.t];
+          const tile = hash(i * 41 + 3) < 0.4;
+          const mat = tile ? rm.tile : rm.tin;
+          const rgb = tile ? new THREE.Color(1, 0.88 + 0.1 * hash(i * 3 + 7), 0.8) : new THREE.Color(0.95 + 0.1 * hash(i * 3 + 8), 1, 1);
+          rgb.multiplyScalar(wear);
+          const list = byMat.get(mat) || [];
+          for (const g of shedGeometries(scx, scz, ROOFS[p.t].y, rgb)) list.push(g.applyMatrix4(place));
+          byMat.set(mat, list);
+          shedKeep = [[scx, scz, 1.9]];
+        }
         if (ex.upperRoof) fitSites.push(...houseRoofSites({ ...p, t: 'b' }, i, place, prevKind, [], { y: ex.upperRoof.y, rect: ex.upperRoof.rect }));
-        else if (!ex.noFittings) fitSites.push(...houseRoofSites(p, i, place, prevKind, ex.roofKeep));
+        else if (!ex.noFittings) fitSites.push(...houseRoofSites(p, i, place, prevKind, [...(ex.roofKeep || []), ...shedKeep]));
       }
       if (fitSites.length) { // fittings join the cluster's meshes of a material it already has: zero extra draw calls
         const parts = buildRoofParts(fitSites);

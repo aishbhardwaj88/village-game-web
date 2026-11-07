@@ -73,6 +73,7 @@ import {
   CHOWK_TEA_POS,
   CHOWK_TEA_ROT,
   CHOWK_CENTER,
+  CHOWK_PLAZA,
   CHOWK_TURN_DEG,
   BAZAAR_LANE_START,
   BAZAAR_LANE_BEND,
@@ -524,7 +525,7 @@ async function main() {
   // around it for future content.
   bazaarGroup.add(buildTeaStallChowk());
   const chowkPlaza = buildChowkPlaza();
-  applyTurn(chowkPlaza, CHOWK_CENTER.x, CHOWK_CENTER.z, CHOWK_TURN_DEG); // map turn 5 deg about the plaza centre
+  applyTurn(chowkPlaza, CHOWK_PLAZA.x, CHOWK_PLAZA.z, CHOWK_TURN_DEG); // map turn 5 deg about the plaza centre
   bazaarGroup.add(chowkPlaza);
 
   // Item 5 — the lane extension itself (a bumpy, curved strip, never a straight
@@ -1033,7 +1034,7 @@ async function main() {
     assetSlots.register('chowk_plaza', {
       exact: true,
       hide: chowkPlazaOld ? [chowkPlazaOld] : [],
-      placements: [{ container: scene, position: new THREE.Vector3(CHOWK_CENTER.x, 0, CHOWK_CENTER.z), rotationY: -CHOWK_TURN_DEG * Math.PI / 180 }],
+      placements: [{ container: scene, position: new THREE.Vector3(CHOWK_PLAZA.x, 0, CHOWK_PLAZA.z), rotationY: -CHOWK_TURN_DEG * Math.PI / 180 }],
     });
   }
   {
@@ -1361,8 +1362,8 @@ async function main() {
     );
     bazaarGroup.add(
       buildTrees([
-        { kind: 'neem', x: CHOWK_CENTER.x - 6, z: CHOWK_CENTER.z + 5, rotationY: 0.9, seed: 16 },
-        { kind: 'neem', x: CHOWK_CENTER.x + 7, z: CHOWK_CENTER.z + 4, rotationY: 2.1, seed: 17 },
+        { kind: 'neem', x: CHOWK_PLAZA.x - 3, z: CHOWK_PLAZA.z + 6, rotationY: 0.9, seed: 16 },
+        { kind: 'neem', x: CHOWK_PLAZA.x + 7, z: CHOWK_PLAZA.z + 4, rotationY: 2.1, seed: 17 },
       ])
     );
     // Track-corner babools stay in the merged field group (streaming them pushed the hero zone view over 150 calls).
@@ -1406,8 +1407,8 @@ async function main() {
       { x: HALWAI_CENTER.x - 4, z: HALWAI_CENTER.z + 3, radius: 1.5, count: 5 },
       { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ), radius: 1.8, count: 8 },
       { ...bazaarXZ(BAZAAR_WEST_X - 1, BAZAAR_ROW_CZ + 10), radius: 1.6, count: 6 },
-      { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 6, radius: 1.8, count: 6 },
-      { x: CHOWK_CENTER.x - 8, z: CHOWK_CENTER.z, radius: 1.6, count: 5 },
+      { x: CHOWK_PLAZA.x, z: CHOWK_PLAZA.z - 6, radius: 1.8, count: 6 },
+      { x: CHOWK_PLAZA.x - 8, z: CHOWK_PLAZA.z, radius: 1.6, count: 5 },
       { ...templeXZ(TEMPLE_POS.x + 9, TEMPLE_POS.z - 2), radius: 1.6, count: 6 },
       { ...templeXZ(TEMPLE_POS.x - 9, TEMPLE_POS.z + 3), radius: 1.6, count: 5 },
       { ...templeXZ(TEMPLE_POS.x, TEMPLE_POS.z + 9), radius: 1.6, count: 5 },
@@ -1445,11 +1446,11 @@ async function main() {
         { ...houseAt(-11, 8), kind: GARDEN_KIND.BANANA },
         { ...houseAt(-13, 6), kind: GARDEN_KIND.BANANA, scale: 0.85 },
         { ...templeXZ(TEMPLE_POS.x - 10, TEMPLE_POS.z - 4), kind: GARDEN_KIND.BANANA },
-        { x: CHOWK_CENTER.x + 9, z: CHOWK_CENTER.z - 6, kind: GARDEN_KIND.BANANA, scale: 0.9 },
+        { x: CHOWK_PLAZA.x + 9, z: CHOWK_PLAZA.z - 6, kind: GARDEN_KIND.BANANA, scale: 0.9 },
         // Bougainvillea along the chowk seating wall and tea stall.
-        { x: CHOWK_CENTER.x + 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
-        { x: CHOWK_CENTER.x - 3, z: CHOWK_CENTER.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
-        { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
+        { x: CHOWK_PLAZA.x + 3, z: CHOWK_PLAZA.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
+        { x: CHOWK_PLAZA.x - 3, z: CHOWK_PLAZA.z - 4, kind: GARDEN_KIND.BOUGAINVILLEA },
+        { x: CHOWK_PLAZA.x, z: CHOWK_PLAZA.z - 4.3, kind: GARDEN_KIND.BOUGAINVILLEA, scale: 0.8 },
         { x: CHOWK_TEA_POS.x + 2, z: CHOWK_TEA_POS.z + 3, kind: GARDEN_KIND.BOUGAINVILLEA },
         // Wall creepers (money plant) climbing the bazaar row's back wall and east end.
         ...[0.5, 2.5, 4.5, 6.5].map((u, i) => ({ ...bazaarXZ(BAZAAR_WEST_X + 4.5 * u + (i % 2) * 0.6, BAZAAR_ROW_CZ + 2.75), kind: GARDEN_KIND.CREEPER, scale: 1.1 + (i % 3) * 0.15 })),

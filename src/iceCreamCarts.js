@@ -17,7 +17,7 @@ export const ICECREAM_FILES = ['icecream_cart', 'icecream_cart_b'];
 export const ICECREAM_SPOTS = [
   { at: 'school', lx: 8.0, lz: 7.0, yaw: 1.2, m: 'icecream_cart' },
   { at: 'mela', lx: 5.0, lz: 6.0, yaw: -0.8, m: 'icecream_cart_b' },
-  { at: 'chowk', lx: -6.0, lz: 5.0, yaw: 0.6, m: 'icecream_cart' },
+  { at: 'chowk', lx: -12.0, lz: 9.0, yaw: 0.6, m: 'icecream_cart' },
 ];
 
 const rnd = (i) => { const s = Math.sin(i * 91.7 + 17.3) * 43758.5453; return s - Math.floor(s); };

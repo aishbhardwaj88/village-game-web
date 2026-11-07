@@ -661,7 +661,10 @@ export const CHOWK_CENTER = pt('chowk'); // the open plaza itself — chabutra/s
 export const CHOWK_TEA_POS = { x: 37.9 + MAP_SHIFT.x, z: 3.7 + MAP_SHIFT.z }; // map: 'Tea stall at the square', east edge of the paved square
 export const CHOWK_TEA_ROT = -95 * Math.PI / 180; // map turn 95 deg: faces west into the square
 // The chowk dressing (benches, chairs; baked into chowk_plaza.glb at the plaza) keeps its old offset from the plaza centre, so code and glb agree.
-export const CHOWK_FURN_ORIGIN = { x: CHOWK_CENTER.x - 1, z: CHOWK_CENTER.z - 3 };
+// SPATIAL_SENSE.md s1: the chauraha stays clear for 12 m round the zero milestone, so the chabutra/bench/chair dressing (and its
+// glb slot, neems, hens, plants) stands on the north-east corner plot, 17 m east and 7 m north of the old centre.
+export const CHOWK_PLAZA = { x: CHOWK_CENTER.x + 17, z: CHOWK_CENTER.z - 7 };
+export const CHOWK_FURN_ORIGIN = { x: CHOWK_PLAZA.x - 1, z: CHOWK_PLAZA.z - 3 };
 
 function chowkWorldMatrix() {
   return new THREE.Matrix4().makeRotationY(CHOWK_TEA_ROT).setPosition(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z);
@@ -767,8 +770,8 @@ export function buildChowkPlaza() {
 
   // Chabutra — a round brick kerb + a slightly raised deck, per the orthos' "Tree
   // Platform 0.5m" callout (built as a plain seating platform here, no tree).
-  const chabX = CHOWK_CENTER.x - 3;
-  const chabZ = CHOWK_CENTER.z + 2;
+  const chabX = CHOWK_PLAZA.x - 3;
+  const chabZ = CHOWK_PLAZA.z + 2;
   const kerbSegs = 12;
   const kerbR = 1.15;
   for (let i = 0; i < kerbSegs; i++) {

@@ -46,7 +46,7 @@ function sharedSetMaterial(set, repeat, src) {
   m = new THREE.MeshStandardMaterial({ map: mk('color'), normalMap: mk('normal'), roughnessMap: mk('roughness'), roughness: 1, metalness: set === 'metal' ? 0.6 : 0, vertexColors: true });
   m.name = src.name;
   if (src.name !== 'hb_decal' && src.name !== 'hb_flag' && !src.transparent) m.userData.placeBatchable = true;
-  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin' || set === 'terracotta') addWeathering(m, set);
+  if (set === 'plaster' || set === 'brick' || set === 'wood' || set === 'thatch' || set === 'tin' || set === 'terracotta' || set === 'concrete') addWeathering(m, set);
   sharedMats.set(key, m);
   return m;
 }
@@ -60,7 +60,7 @@ function addWeathering(m, set) {
   const mottle = set === 'brick' ? 0.10 : set === 'thatch' ? 0.12 : 0.16;
   const grime = set === 'brick' ? 0.15 : 0.32;
   const streak = set === 'plaster' ? 0.10 : 0.0;
-  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : set === 'tin' ? 1.9 : set === 'wood' ? 2.6 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
+  const boost = set === 'plaster' ? 1.4 : set === 'brick' ? 1.3 : set === 'tin' ? 1.9 : set === 'wood' ? 2.6 : set === 'concrete' ? 1.5 : 1.0;   // the scan's albedo averages ~0.5 linear, so a 'white' tint rendered grey; this lets the tint BE the wall colour
   m.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vWxyz;')

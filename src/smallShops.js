@@ -28,9 +28,9 @@ import { HI_FAMILY } from './signPaint.js';
 
 // ---- where (offsets from the chowk anchor, world axes) ----
 const SHOPS = [
-  { kind: 'mithai', dx: -0.79, dz: 10.63, ry: 1.401 }, // west side of the main road, north of the square
-  { kind: 'cd', dx: -9.75, dz: -2.67, ry: 3.044 }, // north side of the cross road, just west of the square
-  { kind: 'book', dx: -14.22, dz: -2.88, ry: 3.044 }, // its neighbour, 4.5 m further west
+  { kind: 'mithai', dx: -0.79, dz: 21.5, ry: 1.401 }, // west side of the main road, well south of the square (was dz 10.63, inside the 12 m chauraha circle)
+  { kind: 'cd', dx: -12.75, dz: -2.67, ry: 3.044 }, // north side of the cross road, just west of the square
+  { kind: 'book', dx: -17.22, dz: -2.88, ry: 3.044 }, // its neighbour, 4.5 m further west
 ];
 const SIGNS = {
   book: { hi: 'अख़बार और किताबें', en: 'Newspapers and Books', bg: '#e9dcc0', fg: '#1f2a4a', border: '#2a3a66' },
