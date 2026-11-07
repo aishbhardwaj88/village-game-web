@@ -161,6 +161,7 @@ import { createVendors } from './vendors.js';
 import { createVendors2 } from './vendors2.js';
 import { createNostalgia } from './nostalgia.js';
 import { createScooters } from './scooters.js';
+import { createIceCreamCarts } from './iceCreamCarts.js';
 import { createVillageOddities } from './villageOddities.js';
 import { createVillageFixtures } from "./villageFixtures.js";
 import { createVillageFurniture } from './villageFurniture.js';
@@ -565,6 +566,7 @@ async function main() {
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
+  createIceCreamCarts(scene); // ice-cream carts with a bell (src/iceCreamCarts.js)
   createScooters(scene); // parked scooters + motorcycles, Blender models (src/scooters.js)
   import('./jeep.js').then((m) => m.createJeep(scene)); // the old open-top jeep by the panchayat (src/jeep.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
