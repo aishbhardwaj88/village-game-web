@@ -35,6 +35,7 @@ const LEAF = [0x4c7a3a, 0x5e8c3d, 0x3e6b34, 0x6b9444];
 export function pickFeatures(p, i, hash, pre) {
   const t = p.t;
   const a = T[t];
+  if (!a) return new Set(); // g, h (the two rich houses) carry their own fittings in the model
   if (pre) return new Set(pre);
   const f = new Set();
   const r = (k) => hash(i * 17 + k * 5.3 + 0.7);
@@ -83,6 +84,7 @@ function cylG(rt, rb, h, seg = 8) {
 export function buildHouseExtras(p, f, place, wall, wear, rnd) {
   const a = T[p.t];
   const out = { main: [], props: [], metal: [], brick: [], roofKeep: [], noFittings: false };
+  if (!a) return out; // types without facade anchors (g, h) get no add-ons
   const plain = new THREE.Color(wear, wear, wear);
   const wallT = wall.clone().multiplyScalar(1);
   const put = (list, g, hex, m, tint = plain) => { list.push(finish(g, col(hex), m.clone().premultiply(place), tint)); };
