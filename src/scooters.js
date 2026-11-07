@@ -22,18 +22,18 @@ import { requestColliderRebuild } from './collision.js';
  * Spots were scouted clear of every collider, visible mesh and map road/lane (tmp/scooters/search.mjs, all zones forced).
  * src/nostalgia.js no longer builds its code-built scooter and motorcycle; these replace them (tea stall spot kept, haveli moved 3 m).
  */
-export const SCOOTER_FILES = ['scooter_covered_v2', 'scooter_covered_v2_b', 'scooter_motorcycle_v2', 'scooter_motorcycle_v2_b'];
+export const SCOOTER_FILES = ['scooter_covered_v2', 'scooter_covered_v2_b', 'scooter_motorcycle_v2', 'scooter_motorcycle_v2_b', 'scooter_open_v2', 'scooter_open_v2_b'];
 
 // [anchor id, local x, local z (place frame, front = +z), yaw (rad; the vehicle's front is its +z), model, tint]
 export const SCOOTER_SPOTS = [
   { at: 'haveli', lx: -3.2, lz: 12.0, yaw: -0.3, m: 'scooter_covered_v2' },
   { at: 'teastall', lx: 4.6, lz: 3.6, yaw: 1.35, m: 'scooter_motorcycle_v2' },
-  { at: 'house', lx: -5.2, lz: 4.4, yaw: 0.12, m: 'scooter_covered_v2_b' },
+  { at: 'house', lx: -5.2, lz: 4.4, yaw: 0.12, m: 'scooter_open_v2' },
   { at: 'store', lx: 4.4, lz: 4.2, yaw: -1.48, m: 'scooter_motorcycle_v2_b' },
   { at: 'halwai', lx: 1.1, lz: 5.1, yaw: 1.7, m: 'scooter_motorcycle_v2' },
-  { at: 'post', lx: 7.1, lz: 0.0, yaw: 1.62, m: 'scooter_covered_v2' },
+  { at: 'post', lx: 7.1, lz: 0.0, yaw: 1.62, m: 'scooter_open_v2_b' },
   { at: 'chemist', lx: 0.1, lz: -0.6, yaw: 1.52, m: 'scooter_motorcycle_v2_b' },
-  { at: 'ration', lx: 3.0, lz: 6.0, yaw: 0.25, m: 'scooter_covered_v2_b' },
+  { at: 'ration', lx: 3.0, lz: 6.0, yaw: 0.25, m: 'scooter_open_v2_b' },
 ];
 
 const rnd = (i) => { const s = Math.sin(i * 91.7 + 17.3) * 43758.5453; return s - Math.floor(s); };
