@@ -1,3 +1,18 @@
+# 7 Nov 12:00 CHECK. Three things slipped past the queue order. Do them NEXT, before anything else.
+
+1. **PETROL PUMP still fronts a wheat-field track.** Priority 0 said it must front the
+   highway with its forecourt open so a vehicle can pull in. Not in any commit. Do it now.
+2. **The old house TEXTURES are not back on the kit.** Chajjas and door marks landed,
+   good, but she liked the earlier houses for their textures and variety. bg_house_a..d
+   and the abadi rows still exist: lift their wall, roof and trim textures and put them on
+   the kit houses, varied per house. Flat-coloured kit walls are the thing she called
+   "extremely bad".
+3. **Peacock.** Section 3. On a roof or a wall. The most UP thing possible. Not built yet.
+
+Then carry on down the vocabulary in the stated order.
+
+---
+
 # 48 HOURS, NON-STOP. Her order, 6 Nov night. NO STOPPING. NO WAITING. NO IDLE RUNS.
 
 Her words: "You cannot stop at all. You will always be connected for the next 48 hours to
