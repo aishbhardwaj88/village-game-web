@@ -1,3 +1,23 @@
+# 7 Nov 12:30. SHE LOOKED. THE VIEW HAS NOT CHANGED ENOUGH. DAY 2 IS HOUSES AND DENSITY.
+
+44 commits of correct small things, and from the saddle the streets are still flat boxes
+and bare grass. The list is long, the view is not. From now until she checks again:
+
+**ONLY these, in this order. Nothing else until they are visibly done.**
+1. **Old house textures onto every kit house.** Walls, roofs, trim from bg_house_a..d and
+   the abadi rows. Varied per house. No flat-coloured wall left anywhere.
+2. **Fill the gaps.** Run the gap measurement (any ground inside the ring road more than
+   35 m from anything built) and put clustered house rows with gullies in every gap, kit
+   houses with their outside-every-house set (charpai, cycle, pots, gobar, washing).
+3. **Petrol pump fronts the highway.** Still not done.
+4. **Peacock** on a roof.
+
+**Every 6 hours: a RIDE-THROUGH capture.** From the saddle at cycle height, along the
+main road end to end, then two gullies, 8 shots. Save to docs/shots/ride-<date>/. She
+judges the village the way a player sees it, so that is the proof, not a commit list.
+
+---
+
 # 7 Nov 12:00 CHECK. Three things slipped past the queue order. Do them NEXT, before anything else.
 
 1. **PETROL PUMP still fronts a wheat-field track.** Priority 0 said it must front the
