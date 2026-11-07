@@ -1838,7 +1838,7 @@ async function main() {
             return null;
           };
           const cow = spot([[0, 0], [0, -2], [0, 2]], 0.9);
-          const buffalo = spot([[3.2, 1.4], [-3.2, 1.4], [3.2, -1.4], [-3.2, -1.4], [0, 3.4], [0, -3.4]], 0.9);
+          const buffalo = spot([[2, 1.4], [-2, 1.4], [3.2, 1.4], [-3.2, 1.4], [3.2, -1.4], [-3.2, -1.4], [0, 3.4], [0, -3.4]], 0.9);
           const dog = spot([[-2.5, -1.2], [2.5, -1.2], [-2.5, 1.2], [2.5, 1.2]], 0.4);
           const cattle = createCattleHerd([cow && { ...cow, rotationY: ry }, buffalo && { ...buffalo, rotationY: ry + 0.5, buffalo: true }].filter(Boolean));
           const dogs = createDogPack([dog && { ...dog, rotationY: ry + 2.2 }].filter(Boolean));

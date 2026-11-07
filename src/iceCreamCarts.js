@@ -15,7 +15,7 @@ export const ICECREAM_FILES = ['icecream_cart', 'icecream_cart_b'];
 
 // [anchor id, local x, local z (place frame, front = +z), yaw (rad; the vehicle's front is its +z), model, tint]
 export const ICECREAM_SPOTS = [
-  { at: 'school', lx: 8.0, lz: 7.0, yaw: 1.2, m: 'icecream_cart' },
+  { at: 'school', lx: 7.5, lz: -14.2, yaw: 3.1, m: 'icecream_cart' }, // 7 Nov spatial audit: was lx 8, lz 7 = inside the school yard; now outside the wall, 7.5 m east of the gate, 2 m clear of the outer lane edge
   { at: 'mela', lx: 5.0, lz: 6.0, yaw: -0.8, m: 'icecream_cart_b' },
   { at: 'chowk', lx: -12.0, lz: 9.0, yaw: 0.6, m: 'icecream_cart' },
 ];
