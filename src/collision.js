@@ -501,6 +501,23 @@ export function orientedBoxOverlapsAnyBox(pos, yaw, halfW, halfD, boxes) {
 /** True if a circle (pos, radius) overlaps any box in `boxes` — read-only test,
  * used by the swept movement resolver (src/movement.js) to find the furthest
  * point along a proposed path that's still clear, without mutating `pos`. */
+/** Deepest penetration (m) of a circle into any of `boxes`, with the same soft/hard radius rule the resolver uses; 0 if clear.
+ * src/movement.js uses it to spot a wedged body: a gap narrower than the body, between a hard wall and a soft prop, where the
+ * resolve passes only trade one overlap for the other and the last pass (the soft prop) leaves the body inside the wall. */
+export function circleMaxOverlap(pos, radius, boxes) {
+  let worst = 0;
+  for (const box of boxes) {
+    const r = effRadius(box, radius);
+    const dx = pos.x - Math.min(Math.max(pos.x, box.minX), box.maxX);
+    const dz = pos.z - Math.min(Math.max(pos.z, box.minZ), box.maxZ);
+    const d2 = dx * dx + dz * dz;
+    if (d2 >= r * r) continue;
+    const pen = d2 > 0 ? r - Math.sqrt(d2) : r + Math.min(pos.x - box.minX, box.maxX - pos.x, pos.z - box.minZ, box.maxZ - pos.z);
+    if (pen > worst) worst = pen;
+  }
+  return worst;
+}
+
 export function circleHitsAnyBox(pos, radius, boxes) {
   for (const box of boxes) {
     const r = effRadius(box, radius);

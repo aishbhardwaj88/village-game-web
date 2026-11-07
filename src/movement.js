@@ -1,4 +1,4 @@
-import { resolveCollisions, resolveOrientedCollisions, circleHitsAnyBox, staticBoxesNear } from './collision.js';
+import { resolveCollisions, resolveOrientedCollisions, circleHitsAnyBox, circleMaxOverlap, staticBoxesNear } from './collision.js';
 
 /**
  * Structural fix 2/3 (playtest): the single movement resolver. Before this,
@@ -29,11 +29,20 @@ export function resolveMove(pos, dx, dz, radius, extraBoxes = []) {
   const stepX = dx / steps;
   const stepZ = dz / steps;
   for (let i = 0; i < steps; i++) {
+    const px = pos.x, pz = pos.z;
+    const wasClear = overlapAt(pos, radius, extraBoxes) <= WEDGE_TOL;
     pos.x += stepX;
     pos.z += stepZ;
     resolveCollisions(pos, radius, extraBoxes);
+    // Wedged: the substep entered a gap narrower than the body (e.g. a hard wall 0.8 m from a soft prop), the resolve could
+    // not satisfy both boxes and ended inside one. A body that was clear stays where it was instead (collision-test, 7 Nov:
+    // the player slid 5 cm into a bg-house wall at (683,-45) between it and a kit-house prop box).
+    if (wasClear && overlapAt(pos, radius, extraBoxes) > WEDGE_TOL) { pos.x = px; pos.z = pz; return; }
   }
 }
+
+const WEDGE_TOL = 0.02; // metres: resolver round-off and the 5 cm corner residuals are not a wedge
+const overlapAt = (pos, radius, extraBoxes) => Math.max(circleMaxOverlap(pos, radius, staticBoxesNear(pos.x, pos.z, radius + 0.5)), extraBoxes.length ? circleMaxOverlap(pos, radius, extraBoxes) : 0);
 
 /** Oriented-box equivalent of resolveMove() — same swept-substep sweep, but using
  * the body's exact rectangular footprint (halfW along local X, halfD along local
