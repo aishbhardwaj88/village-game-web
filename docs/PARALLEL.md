@@ -1,3 +1,57 @@
+# TOP OF TONIGHT: THE CYCLE AND GROUND CONTACT. She rides constantly, she feels these every second.
+
+Her words, 7 Nov 23:45: "cow's legs are inside the ground... All human beings and animals
+should stand ... on the ground. They should neither float nor ... be inserted into the
+ground. ... reduce the speed of cycles ... cycle is still crossing certain things ... not
+following A and D command very well ... work on the haptics. It should look like I'm
+actually riding a cycle."
+
+Verified causes:
+- `src/main.js:210` MOVE_SPEED = 4.2 m/s (walking), `:211` CYCLE_SPEED_MULT = 3, so the
+  cycle does **12.6 m/s = 45 km/h**. Motorbike speed.
+- `src/main.js:2992` the cycle moves through the SAME walking movement as the player: any
+  direction, turn on the spot, no momentum. That is why A and D feel wrong.
+- The cycle collides as a person-sized capsule, so its front wheel enters walls; at 12.6 m/s
+  each frame's step is also large.
+
+## C1. Speed. One commit, do it first.
+Replace the multiplier with a fixed cycle top speed of **5.5 m/s (about 20 km/h)**. Walking
+unchanged. Keep the multiplier gone, so a future motorbike gets its own speed.
+
+## C2. Real cycle steering.
+- W pedals (accelerate to top speed over about 1.5 s), S brakes, no input coasts down over
+  about 3 s.
+- **A and D steer the handlebar**: they change the heading at a rate that falls as speed
+  rises. The cycle always moves along its heading, never sideways.
+- It cannot turn on the spot: below about 0.5 m/s, steering does nothing.
+- Must still work on touch (the on-screen stick: forward component = pedal, sideways = steer).
+
+## C3. Collision.
+- A cycle-shaped footprint: about 0.6 m wide by 1.8 m long, oriented along the heading,
+  swept every substep. Front wheel never enters a wall.
+- Hitting something head-on stops the cycle. A glancing hit slides along the wall.
+- **Test: ride at full speed into every building wall, fence, cart, charpai and tree within
+  the village, from 8 angles. Zero penetrations. Add it to the build checks.**
+
+## C4. Riding feel ("haptics").
+- Rider and cycle lean into turns, proportional to speed x turn rate, max about 12 deg.
+- Pedals and wheels rotate at the rate matching ground speed.
+- Small pedalling bob of the rider while pedalling; none while coasting.
+- Gentle camera sway and a slight camera lag on turns. Nothing nauseating.
+- A small bump on kerbs, the speed breaker and rough ground.
+- Cycle bell on a key (B), bilingual hint on screen the first time.
+
+## G1. Every person and animal stands ON the ground.
+- Snap every NPC, vendor, villager figure, cow, buffalo, goat, dog, peacock and monkey so
+  its lowest point (feet, hooves) sits exactly on the ground height under it, including in
+  the dug dips around the pond and johad (src/dips.js).
+- Anything on a raised surface (chabutra, charpai, roof, wall) stands on THAT surface.
+- **Check: fail the build if any figure's feet float or sink more than 3 cm.**
+
+Then continue with the visible-change list below.
+
+---
+
 # OVERNIGHT 7-8 NOV: VISIBLE CHANGE ONLY. Her words, 23:30: "I don't see lot of developments in game."
 
 She is right. Of 61 commits in the last 24 h, about half were invisible: draw-call cuts,
