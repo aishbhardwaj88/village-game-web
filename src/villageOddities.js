@@ -28,7 +28,7 @@ export const ODDITY_SPOTS = {
   sandpile: { at: 'post', lx: 24.6, lz: -4.7, yaw: 0.005 },
   scaffold: { at: 'haveli', lx: 4.9, lz: 21.8, yaw: 0.037 },
   well: { at: 'halwai', lx: -7.4, lz: -20.4, yaw: -0.09 },
-  mazar: { at: 'dairy', lx: 8.3, lz: 15.5, yaw: 1.568 },
+  mazar: { at: 'dairy', lx: -15.5, lz: 8.3, yaw: -0.003 }, // 7 Nov: dairy turned +90 deg (road-front audit); same world spot as before (was lx 8.3, lz 15.5, yaw 1.568)
   shamiana: { at: 'khalihan', lx: -28.3, lz: 7.2, yaw: -0.003 },
 };
 

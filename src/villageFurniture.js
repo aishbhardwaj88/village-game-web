@@ -91,7 +91,7 @@ export const FURNITURE_SPOTS = {
   scarecrowB: { at: 'field', lx: 21, lz: 10, yaw: -0.4 },
   thresher: { at: 'khalihan', lx: 22, lz: 10, yaw: 0.6 },
   jhoola: { at: 'pond', lx: 16, lz: 4, yaw: 1.2 },
-  chaffcutter: { at: 'dairy', lx: -14, lz: 12, yaw: 0.2 },
+  chaffcutter: { at: 'dairy', lx: -12, lz: -14, yaw: -1.371 }, // 7 Nov: dairy turned +90 deg (road-front audit); re-expressed so the world spot is unchanged (was lx -14, lz 12, yaw 0.2)
 };
 function spotMatrix(sp) {
   const a = ANCHORS[sp.at];

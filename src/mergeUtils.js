@@ -146,6 +146,8 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
         let bucket = buckets.get(key);
         if (!bucket) buckets.set(key, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
         bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
+        // Remember the source mesh name while every source agrees on it, so a bucket with an unnamed material is still identifiable.
+        if (bucket.srcName === undefined) bucket.srcName = obj.name || null; else if (bucket.srcName !== obj.name) bucket.srcName = null;
         bucket.castShadow = bucket.castShadow || obj.castShadow;
         bucket.receiveShadow = bucket.receiveShadow || obj.receiveShadow;
         collectColliderBoxes(obj, bucket.colliderBoxes);
@@ -162,7 +164,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     const material = keyMaterial.get(key) || key;
     const geometry = bucket.geometries.length > 1 ? mergeGeometries(compatGeometries(bucket.geometries, material)) : bucket.geometries[0];
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.name = `${material.name || 'merged'}_${i++}`;
+    mesh.name = `${material.name || bucket.srcName || 'merged'}_${i++}`; // unnamed material: the shared source mesh name, so the world validator can tell what a bucket is
     if (material.name === 'shop_goods') {
       geometry.computeBoundingSphere();
       const bs = geometry.boundingSphere;

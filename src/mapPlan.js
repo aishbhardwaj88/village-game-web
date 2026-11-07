@@ -15,7 +15,7 @@ export const MAP_PLAN = {
   yard_panchayat: { x: -50, z: 42.3, turn: 185 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
   yard_post: { x: -52.2, z: 65.4, turn: -11.2 },
   yard_tvhouse: { x: -47.3, z: 21.8, turn: 5 },
-  yard_dairy: { x: -95.1, z: -37.4, turn: -7 },
+  yard_dairy: { x: -95.1, z: -37.4, turn: -97 }, // -7 - 90 (7 Nov road-front audit): front turned from the back field onto the ring road, along the map's 'Front path to Milk dairy' (runs east)
   yard_khalihan: { x: 58, z: -95.5, turn: 7.3 },
   yard_chakki: { x: -62.1, z: 23.1, turn: 5 },
   yard_tubewell: { x: 133.8, z: 29.4, turn: 184.9 }, // 4.9 + 180 (7 Nov road-front audit): front onto the cross road, not the field

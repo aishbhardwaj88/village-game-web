@@ -38,6 +38,18 @@ const NATIVE = {
   anganwadi: PLUSZ, banta: PLUSZ, chaat: PLUSZ, chemist: PLUSZ, gurudwara: PLUSZ, health: PLUSZ, jain: PLUSZ,
   jalebi: PLUSZ, mandi: MINUSX, manihari: PLUSZ, masjid: PLUSZ, mela: PLUSZ, haveli: PLUSZ, sabzi: PLUSZ,
 };
+// Hero places whose real front was read from the Blender script / main.js (7 Nov 2026) and whose in-game yaw differs from the anchor ry.
+// nat = native front in the model's own frame; ry (deg, three.js yaw) replaces the anchor ry where main.js / village.js apply their own turn.
+const HERO_FRONT = {
+  school: { nat: MINUSZ, ryDeg: -11.2 }, // build_school.py: yard open to the lane on the -z side (gate); village.js SCHOOL_YAW
+  halwai: { nat: MINUSX, ryDeg: -95 }, // build_halwai.py: FRONT = -x, the lane side; village.js HALWAI_YAW
+  house: { nat: PLUSZ }, // build_house.py: south wall with the gate
+  bazaar: { nat: MINUSZ }, // build_bazaar_row.py: shops open toward -z
+  teastall: { nat: MINUSZ }, // build_tea_stall.py front = +wz; main.js TEA_SHOP_ROT = PI + ry (7 Nov), so the counter faces -z
+  store: { nat: MINUSZ }, // build_general_store.py front = +wz; main.js STORE_ROT = PI + ry (7 Nov)
+  gaushala: { nat: PLUSZ }, // build_gaushala.py: +z south = front, where the gate is
+  temple: { nat: MINUSX }, // build_temple.py: gate gap on the west (-x) side
+};
 const V2_ALIAS = { post: 'yard_post', ration: 'yard_ration', chakki: 'yard_chakki', dairy: 'yard_dairy', khalihan: 'yard_khalihan',
   tubewell: 'yard_tubewell', tvhouse: 'yard_tvhouse', gurukul: 'yard_gurukul', maidan: 'yard_khel' };
 const LABELS = new Set(['eastgali', 'westgali', 'highway', 'canal']);
@@ -103,10 +115,11 @@ const rows = [];
 for (const [id, a] of Object.entries(ANCHORS)) {
   const key = V2_ALIAS[id] || id;
   const isV2 = key.startsWith('yard_');
-  let nat = isV2 ? PLUSZ : NATIVE[id];
+  const hero = HERO_FRONT[id];
+  let nat = isV2 ? PLUSZ : hero ? hero.nat : NATIVE[id];
   const assumed = !nat;
   nat = nat || PLUSZ;
-  const ry = a.ry || 0, c = Math.cos(ry), s = Math.sin(ry);
+  const ry = hero && hero.ryDeg !== undefined ? hero.ryDeg * Math.PI / 180 : a.ry || 0, c = Math.cos(ry), s = Math.sin(ry);
   const fx = nat[0] * c + nat[1] * s, fz = -nat[0] * s + nat[1] * c;
   const near = nearest(a.x, a.z, roads.filter((r) => r.kind !== 'back lane'));
   const exp = expected(key);

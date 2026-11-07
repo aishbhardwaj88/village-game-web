@@ -347,11 +347,12 @@ async function main() {
   const shopsGroup = new THREE.Group();
   shopsGroup.name = 'shops';
   const TEA_SHOP_POS = pt('teastall');
-  const TEA_SHOP_ROT = Math.PI / 2 + ANCHORS.teastall.ry; // west of the lane, facing east
+  const TEA_SHOP_ROT = Math.PI + ANCHORS.teastall.ry; // 7 Nov road-front audit: was +PI/2 (facing east at the chaat cart); the map's front path runs north to the cross road, so the counter faces north
   const STORE_POS = pt('store');
-  const STORE_ROT = -Math.PI / 2 + ANCHORS.store.ry; // east of the hero-zone-to-bazaar lane, facing west
+  const STORE_ROT = Math.PI + ANCHORS.store.ry; // 7 Nov road-front audit: was -PI/2 (facing west); the map's front path runs north to the lane east of the square, so the counter faces north
   // steam over the tea stall's kettle + big pot (art review 1). Model-local (x, wz) -> world via the stall's yaw (PI/2: x' = wz, z' = -x).
-  const teaSteam = createSteam([{ x: TEA_SHOP_POS.x + 0.7, y: 1.3, z: TEA_SHOP_POS.z + 0.3 }, { x: TEA_SHOP_POS.x + 0.76, y: 1.5, z: TEA_SHOP_POS.z + 0.97 }]);
+  const teaW = (lx, lz) => ({ x: TEA_SHOP_POS.x + lx * Math.cos(TEA_SHOP_ROT) + lz * Math.sin(TEA_SHOP_ROT), z: TEA_SHOP_POS.z - lx * Math.sin(TEA_SHOP_ROT) + lz * Math.cos(TEA_SHOP_ROT) }); // stall-local (x, front) -> world, follows the stall's yaw
+  const teaSteam = createSteam([{ ...teaW(-0.3, 0.7), y: 1.3 }, { ...teaW(-0.97, 0.76), y: 1.5 }].map((p) => ({ x: p.x, y: p.y, z: p.z })));
   scene.add(teaSteam.points);
   // live fire under the halwai's two kadhais (bhatti centres from tools/blender/build_halwai.py: x = centre - 2.25 + 0.495, z = +-1.15, rim y ~1.45)
   const halwaiFire = createHalwaiFire([-1.15, 1.15].map((dz) => ({ ...halwaiXZ(HALWAI_CENTER.x - 1.755, HALWAI_CENTER.z + dz), y: 1.45 })));
@@ -429,8 +430,11 @@ async function main() {
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see
   // src/interactions.js's registerShopBuy doc comment).
-  registerShopBuy('general_store', new THREE.Vector3(STORE_POS.x - 2.5, 0, STORE_POS.z + 1.4));
-  registerShopBuy('tea_stall', new THREE.Vector3(TEA_SHOP_POS.x + 2.5, 0, TEA_SHOP_POS.z));
+  { // buy points sit 2.5 m in front of each counter, in the shop's own frame (7 Nov: both now face north)
+    const fw = (pos, rot, lx, lz) => new THREE.Vector3(pos.x + lx * Math.cos(rot) + lz * Math.sin(rot), 0, pos.z - lx * Math.sin(rot) + lz * Math.cos(rot));
+    registerShopBuy('general_store', fw(STORE_POS, STORE_ROT, 1.4, 2.5));
+    registerShopBuy('tea_stall', fw(TEA_SHOP_POS, TEA_SHOP_ROT, 0, 2.5));
+  }
   // NEW_SHOPS_ROT = +PI/2 faces +X (forward=(-sin(yaw),0,-cos(yaw)), this
   // game's convention — see tools/trolley-drive-test.js's own derivation),
   // opposite of STORE_ROT's -X, so the interaction point sits on the +X side
@@ -1537,8 +1541,8 @@ async function main() {
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
-    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
-      skipNames: ['zero_milestone_flagpole', 'halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
+    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture', 'village_fixtures', 'village_furniture2', 'vendors2', 'milk_centre', 'life_scenes_2', 'road_events', 'cyclist_events'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
+      skipNames: ['game_decals', 'rangoli', 'tv_screen', 'net_cloth', 'furniture2_wall_paint', 'tyre', 'zero_milestone_flagpole', 'halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);
     villageStaticGroup.traverse((o) => { if (o.userData.distGate) distGated.push(o); });
@@ -1705,7 +1709,7 @@ async function main() {
     zoneManager.register('health_subcentre', { ...pt('health'), buildRadius: 40, teardownRadius: 52, build: () => createHealthSubCentre(pt('health')) });
     // 'chemist' standalone shop is no longer built: the map merges it into bazaar unit 3 (1 Nov map move).
     zoneManager.register('masjid', { visibleRadius: LANDMARK_VIS, ...pt('masjid'), buildRadius: 45, teardownRadius: 58, build: () => createMasjid(pt('masjid')) });
-    zoneManager.register('gurudwara', { ...pt('gurudwara'), buildRadius: 45, teardownRadius: 58, build: () => createGurudwara(pt('gurudwara')) });
+    zoneManager.register('gurudwara', { ...pt('gurudwara'), buildRadius: 45, teardownRadius: 58, build: () => turnSiteGroup(createGurudwara(pt('gurudwara')), ANCHORS.gurudwara.ry) });
     // More MAP.md abadi/edge places, no coordinates given; open ground picked. Highway is the east edge (x 205), the modern boundary.
     // 'tv_house' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // 'manihari' standalone stall is no longer built: the map merges it into bazaar unit 7 (1 Nov map move).
@@ -1869,7 +1873,7 @@ async function main() {
     // dropped 2 Nov (old outline, empty ground since the map move): zoneManager.register('edge_wall_n0', { detail: true, x: -80, z: 21, buildRadius: 40, teardownRadius: 52, build: () => createBoundaryWall({ x: -80, z: 21 }, 'edge_wall_n0', [{ a: { x: -101, z: 21 }, b: { x: -58, z: 21 } }], [{ x: -88, z: 21, w: 3.5 }]) });
     // MAP.md: old haveli (east, quiet) and gaushala (village edge). No coordinates given; open ground picked.
     zoneManager.register('old_haveli', { visibleRadius: LANDMARK_VIS, ...pt('haveli'), buildRadius: 50, teardownRadius: 65, build: () => turnSiteGroup(createOldHaveli(pt('haveli')), ANCHORS.haveli.ry) });
-    zoneManager.register('gaushala', { ...pt('gaushala'), buildRadius: 40, teardownRadius: 52, build: () => createGaushala(pt('gaushala')) });
+    zoneManager.register('gaushala', { ...pt('gaushala'), buildRadius: 40, teardownRadius: 52, build: () => turnSiteGroup(createGaushala(pt('gaushala')), ANCHORS.gaushala.ry) });
     // Neighbour's small orchard (MAP.md): 2 mango trees at the northern edge of the sugarcane belt.
     zoneManager.register('neighbour_orchard', { visibleRadius: 110, x: ANCHORS.cane.x - 1, z: ANCHORS.cane.z - 24, buildRadius: 60, teardownRadius: 75, build: () => { const g = buildTrees([
       { kind: 'mango', x: ANCHORS.cane.x - 9, z: ANCHORS.cane.z - 25, seed: 11, scale: 0.85 },

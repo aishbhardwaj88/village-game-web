@@ -40,11 +40,11 @@ export const ANCHORS = {
   dairy: onMap('yard_dairy'), // the old code-built copy is no longer built (src/main.js); the v2 yard stands here
   khalihan: onMap('yard_khalihan'),
   tubewell: onMap('yard_tubewell'),
-  gaushala: { x: -122.6 + MAP_SHIFT.x, z: -41 + MAP_SHIFT.z, ry: 0 },
+  gaushala: { x: -122.6 + MAP_SHIFT.x, z: -41 + MAP_SHIFT.z, ry: Math.PI }, // 7 Nov road-front audit: gate (site +z) turned from the south field onto the map's 'Front path to Cow shelter', which reaches the cattle lane on the north side; applied in src/main.js via turnSiteGroup
   pond: { x: -120.6 + MAP_SHIFT.x, z: 60.5 + MAP_SHIFT.z, ry: 0 },
   anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: -168.8 * Math.PI / 180 } /* map turn 168.8 deg, applied in src/main.js via turnSiteGroup */,
   mela: { x: 187.5 + MAP_SHIFT.x, z: 146.5 + MAP_SHIFT.z, ry: -3 * Math.PI / 180 } /* map turn 3 deg, applied in src/main.js via turnSiteGroup */,
-  gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 0 },
+  gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 100 * Math.PI / 180 }, // 7 Nov road-front audit: front (site +z) turned from the blind field south of it to face the corner of the outer lanes 13 m east-north-east (100 deg = straight at the lane corner); applied in src/main.js via turnSiteGroup
   cane: { x: -188 + MAP_SHIFT.x, z: 7 + MAP_SHIFT.z, ry: 0 }, // centre of the map's sugarcane outline (x -225.6..-151.6, z -106..120)
   tvhouse: onMap('yard_tvhouse'), // old code-built copy dropped; the v2 yard stands here
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
