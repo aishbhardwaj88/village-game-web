@@ -133,6 +133,9 @@ export function syncPlaceBoards() {
     if (!ids) {
       h.updateWorldMatrix(true, false);
       h.userData.boardIds = h.userData.boardGeos.map((geo) => {
+        const nv = geo.attributes.position.count, ni = geo.index ? geo.index.count : nv;
+        if (b.unusedVertexCount < nv || b.unusedIndexCount < ni) b.setGeometrySize(Math.max(b._maxVertexCount * 2, b._nextVertexStart + nv), Math.max(b._maxIndexCount * 2, b._nextIndexStart + ni)); // all 332 zones built overflowed the fixed 192-board size
+        if (b._instanceInfo.filter((x) => x.active).length >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
         const g = b.addGeometry(geo);
         const i = b.addInstance(g);
         b.setMatrixAt(i, h.matrixWorld);
