@@ -672,7 +672,7 @@ function furnishClassroom(group) {
   wood(1.0, 0.16, 0.02, rx, 0.65, tz + 0.29, 0, WOODS[3]);
   wood(0.3, 0.025, 0.4, rx - 0.3, 0.80, tz, 0.15, 0x7a2a22); // register
   metal(0.06, 0.09, 0.06, rx + 0.35, 0.84, tz - 0.1, 0, 0x3a4a5a); // pen pot
-  const cz2 = tz + 0.95;
+  const cz2 = tz + 0.6; // chair pushed in under the table, so the aisle to the blackboard is wide enough to walk
   wood(0.42, 0.04, 0.42, rx + 0.05, 0.45, cz2, 0.12, WOODS[0]);
   wood(0.42, 0.45, 0.04, rx + 0.05, 0.7, cz2 + 0.2, 0.12, WOODS[0]);
   for (const [lx, lz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) wood(0.04, 0.44, 0.04, rx + 0.05 + lx, 0.22, cz2 + lz, 0.12, WOODS[1]);

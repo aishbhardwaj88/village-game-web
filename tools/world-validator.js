@@ -222,7 +222,8 @@ async function main() {
         // roof-like fixture (one background house's roof, the bazaar's own
         // corrugated-tin awning), correctly elevated above the ground by
         // design, same reasoning as 'signboard' above.
-        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards', 'shop_goods', 'small_shop_glass', 'small_shop_goods', 'tarpaulin', 'vendor_sign', 'nostalgia_glass', 'wall_writing'];
+        const AGGREGATE_EXCLUDE_PREFIXES = ['lane', 'bazaar_lane', 'temple_lane', 'field_track', 'crop', 'signboard', 'tin', 'tree_leaf_cards', 'shop_goods', 'small_shop_glass', 'small_shop_goods', 'tarpaulin', 'vendor_sign', 'nostalgia_glass', 'wall_writing', 'nostalgia_animals', 'zero_milestone_board'];
+        // nostalgia_animals (src/nostalgia.js): monkeys and the peacock perched on roofs and walls (lowest bucket vertex 4.04 m = a roof perch), elevated by design. zero_milestone_board (src/zeroMilestone.js): four painted boards hung on the milestone pillar, 1.7 m up by design.
         // small_shop_glass/goods, tarpaulin, vendor_sign, nostalgia_glass, wall_writing (7 Nov): village-wide per-material buckets of window glass, shelf stock, awnings, hung signs and painted wall text, all elevated by design like shop_goods; a whole-bucket lowestY says nothing about any one object.
         // shop_goods (src/shopGoods.js): packets, jars and bottles standing on shelves and counters 0.3-2.2 m up, and strings of packs hanging in
         // the window: elevated by design, same reasoning as 'signboard'. Each item's own base is a flat footprint on a real shelf.
@@ -236,6 +237,8 @@ async function main() {
             // holding only them rests at exactly the plinth top; accepted ONLY at 0.40 +-0.01, not any height.
             const last = rows[rows.length - 1];
             if (last && last.label === `village_static_merged/${child.name}` && Math.abs(last.lowestY - 0.4) <= 0.01) rows.pop();
+            // Zero milestone (src/zeroMilestone.js): its brick chips sit on the 0.08 m concrete deck (concrete bucket spans y 0..0.08 under the same footprint), so the brick bucket rests at exactly 0.08. Accepted ONLY at 0.08 +-0.005.
+            if (last && last.label === `village_static_merged/${child.name}` && child.name.startsWith('brick') && Math.abs(last.lowestY - 0.08) <= 0.005) rows.pop();
           }
         }
         for (const v of d.vehicles) {

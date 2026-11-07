@@ -712,7 +712,7 @@ async function main() {
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 }, // out and home by the corridor between the South houses' row and the turned anganwadi playground (probed collider gaps, 2 Nov)
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },
-      { x: ANCHORS.anganwadi.x + -7.4, z: ANCHORS.anganwadi.z + -7.5 },
+      { x: ANCHORS.anganwadi.x + -7.4, z: ANCHORS.anganwadi.z + -6.5 },
       { x: ANCHORS.anganwadi.x + -11.9, z: ANCHORS.anganwadi.z + -5.6 },
       schoolPt(0, -18),
       schoolPt(0, -14), // in line with the (turned) yard gate, so the legs in and out pass through it
@@ -720,7 +720,7 @@ async function main() {
       schoolPt(0, -14),
       schoolPt(0, -18), // and home by the same detour, so the long return leg does not cut through the anganwadi
       { x: ANCHORS.anganwadi.x + -11.9, z: ANCHORS.anganwadi.z + -5.6 },
-      { x: ANCHORS.anganwadi.x + -7.4, z: ANCHORS.anganwadi.z + -7.5 },
+      { x: ANCHORS.anganwadi.x + -7.4, z: ANCHORS.anganwadi.z + -6.5 },
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 },
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 },

@@ -9,6 +9,7 @@
  * cycle). Every feature is chosen per house (hash of its index), so two neighbours are never given the same set.
  */
 import * as THREE from 'three';
+import { buildDoorMarks } from './houseDoorMarks.js';
 
 const col = (hex) => new THREE.Color(hex);
 
@@ -210,5 +211,6 @@ export function buildHouseExtras(p, f, place, wall, wear, rnd) {
     out.noFittings = true;
     out.upperRoof = { y: y0 + h + 0.2, rect: [ux0 + 0.3, ux1 - 0.3, uz0 + 0.3, uz1 - 0.5] };
   }
+  buildDoorMarks(a, out, put, mat, boxG, cylG, rnd); // swastik, toran, nimbu-mirchi (src/houseDoorMarks.js)
   return out;
 }
