@@ -70,6 +70,30 @@ export const VILLAGE_HOUSES = [
   { t: 'e', x: 606.85, z: -20.20, ry: 1.7255, sx: 0.95, sz: 0.85, area: 'hv', f: ['chajja', 'plate', 'meter', 'cycle', 'dado', 'plants', 'stair'] },
   { t: 'a', x: 620.92, z: -33.35, ry: -0.1277, sx: 1.0, sz: 1.0, area: 'hv', f: ['cycle', 'plants'] },
   { t: 'f', x: 619.22, z: -9.99, ry: 3.0509, sx: 0.95, sz: 0.8, area: 'hv', f: ['plate'] },
+  // Three gap fills (PARALLEL.md item 3, 7 Nov): the biggest bare ground inside the ring road, found with tools/gap-list.mjs (threshold lowered,
+  // roads/lanes/fields/water excluded). Two rows face each other across a 9 m gully (A, B), or each fronts the east street (C); backs outward,
+  // >= 2 m from every road, lane and building. The outside-every-house sets are RIDE_NOOK_SITES entries (src/rideNooks.js) in the gully.
+  // gA (546..591, -44..-18), gB (559..599, 38..62), gC (646..667, -2..8 and 20..28)
+  { t: 'c', x: 550.45, z: -38.20, ry: 0.00, sx: 1.00, sz: 0.90, area: 'gA' },
+  { t: 'b', x: 557.67, z: -37.55, ry: 0.00, sx: 0.85, sz: 0.82, area: 'gA' },
+  { t: 'e', x: 565.76, z: -38.65, ry: 0.00, sx: 0.94, sz: 0.90, area: 'gA' },
+  { t: 'c', x: 574.70, z: -38.05, ry: 0.00, sx: 0.90, sz: 0.85, area: 'gA' },
+  { t: 'b', x: 552.97, z: -24.25, ry: 3.14, sx: 0.88, sz: 0.90, area: 'gA' },
+  { t: 'c', x: 560.88, z: -24.04, ry: 3.14, sx: 1.00, sz: 0.82, area: 'gA' },
+  { t: 'b', x: 569.30, z: -24.25, ry: 3.14, sx: 0.85, sz: 0.90, area: 'gA' },
+  { t: 'e', x: 576.79, z: -23.52, ry: 3.14, sx: 0.94, sz: 0.85, area: 'gA' },
+  { t: 'c', x: 585.14, z: -23.80, ry: 3.14, sx: 0.90, sz: 0.90, area: 'gA' },
+  { t: 'c', x: 563.95, z: 42.80, ry: 0.00, sx: 1.00, sz: 0.90, area: 'gB' },
+  { t: 'b', x: 571.17, z: 43.45, ry: 0.00, sx: 0.85, sz: 0.82, area: 'gB' },
+  { t: 'e', x: 579.26, z: 42.35, ry: 0.00, sx: 0.94, sz: 0.90, area: 'gB' },
+  { t: 'c', x: 588.20, z: 42.95, ry: 0.00, sx: 0.90, sz: 0.85, area: 'gB' },
+  { t: 'b', x: 564.97, z: 56.75, ry: 3.14, sx: 0.88, sz: 0.90, area: 'gB' },
+  { t: 'c', x: 572.88, z: 56.96, ry: 3.14, sx: 1.00, sz: 0.82, area: 'gB' },
+  { t: 'b', x: 581.30, z: 56.75, ry: 3.14, sx: 0.85, sz: 0.90, area: 'gB' },
+  { t: 'e', x: 588.79, z: 57.48, ry: 3.14, sx: 0.94, sz: 0.85, area: 'gB' },
+  { t: 'c', x: 648.95, z: 0.80, ry: 0.00, sx: 1.00, sz: 0.90, area: 'gC' },
+  { t: 'b', x: 656.17, z: 1.45, ry: 0.00, sx: 0.85, sz: 0.82, area: 'gC' },
+  { t: 'c', x: 653.62, z: 24.50, ry: 3.14, sx: 0.90, sz: 0.90, area: 'gC' },
 ];
 
 const DRAW_DIST = 115; // player to the NEAREST house of an area; the haze has taken most of a house by then

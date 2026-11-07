@@ -103,6 +103,27 @@ export const RIDE_NOOK_SITES = [
   { kind: 'laundry', x: 682.88, z: 94.85, ry: -2.947, v: 852 }, // School lane (90 m along)
   { kind: 'dung', x: 689.32, z: 8.45, ry: -0.086, v: 865 }, // cross_road (292 m along)
   { kind: 'pump', x: 640.84, z: 80.91, ry: -2.946, v: 878 }, // Outer lane, south (50 m along)
+  // Gully sets of the three kit-house gap fills (src/villageHouses.js areas gA, gB, gC): one everyday scene in front of each house.
+  { kind: 'rest', x: 550.05, z: -33.40, ry: 0.00, v: 700 }, // gully set, north row house
+  { kind: 'dung', x: 558.07, z: -33.40, ry: 0.00, v: 713 }, // gully set, north row house
+  { kind: 'laundry', x: 565.36, z: -33.40, ry: 0.00, v: 726 }, // gully set, north row house
+  { kind: 'rest', x: 575.10, z: -33.40, ry: 0.00, v: 739 }, // gully set, north row house
+  { kind: 'laundry', x: 552.57, z: -28.60, ry: 3.14, v: 752 }, // gully set, south row house
+  { kind: 'rest', x: 561.28, z: -28.60, ry: 3.14, v: 765 }, // gully set, south row house
+  { kind: 'rest', x: 568.90, z: -28.60, ry: 3.14, v: 778 }, // gully set, south row house
+  { kind: 'dung', x: 577.19, z: -28.60, ry: 3.14, v: 791 }, // gully set, south row house
+  { kind: 'laundry', x: 584.74, z: -28.60, ry: 3.14, v: 804 }, // gully set, south row house
+  { kind: 'rest', x: 563.55, z: 47.60, ry: 0.00, v: 817 }, // gully set, north row house
+  { kind: 'dung', x: 571.57, z: 47.60, ry: 0.00, v: 830 }, // gully set, north row house
+  { kind: 'laundry', x: 578.86, z: 47.60, ry: 0.00, v: 843 }, // gully set, north row house
+  { kind: 'rest', x: 588.60, z: 47.60, ry: 0.00, v: 856 }, // gully set, north row house
+  { kind: 'laundry', x: 564.57, z: 52.40, ry: 3.14, v: 869 }, // gully set, south row house
+  { kind: 'rest', x: 573.28, z: 52.40, ry: 3.14, v: 882 }, // gully set, south row house
+  { kind: 'rest', x: 580.90, z: 52.40, ry: 3.14, v: 895 }, // gully set, south row house
+  { kind: 'dung', x: 589.19, z: 52.40, ry: 3.14, v: 908 }, // gully set, south row house
+  { kind: 'rest', x: 648.55, z: 5.60, ry: 0.00, v: 921 }, // gully set, north row house
+  { kind: 'dung', x: 656.57, z: 5.60, ry: 0.00, v: 934 }, // gully set, north row house
+  { kind: 'laundry', x: 653.22, z: 19.70, ry: 3.14, v: 947 }, // gully set, south row house
 ];
 // ---- end generated
 
