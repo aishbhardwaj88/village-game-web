@@ -8,7 +8,7 @@ export const MAP_PLAN = {
   yard_bus_adda: { x: -43.5, z: -113.3, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front turned from the water-tank lane onto the highway
   yard_puncture: { x: 31.9, z: -113.8, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front onto the highway
   yard_dharam_kanta: { x: 121.7, z: -108.3, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front onto the highway, along the map's front path
-  yard_petrol: { x: -43.5, z: -142.6, turn: 1 }, // z +4 (7 Nov road-front audit): forecourt front edge 2 m off the highway's north kerb, back clear of the wheat edge track; front (+z) already faces the highway
+  yard_petrol: { x: -43.5, z: -146.6, turn: 1 }, // exactly the map centre (her compound outline's centre). The model's origin sits here and its slab is built 4 m forward of it (build_petrol_pump_v2.py SITE_DZ), so the slab covers her open ground (-153.6..-133), the apron meets the highway's north kerb and the back clears the wheat edge track; front (+z) faces the highway
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
   yard_chaupal: { x: 23.5, z: 28.5, turn: 5 },
   yard_paani_tanki: { x: -44.9, z: -90.3, turn: 3 },

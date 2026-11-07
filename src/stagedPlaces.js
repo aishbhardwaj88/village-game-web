@@ -38,7 +38,7 @@ export const STAGED_PLACES = [
     lanterns: [{ type: 'tin', x: 1.7, y: 0, z: 1.4, ry: 1.1, s: 1, tint: 0xeadfcc }, { type: 'hurricane', x: -2.0, y: 0, z: 1.5, ry: 4.0, s: 1, tint: 0xf4ecdc }],
     boards: [{ id: 'chakki_v2', x: 0, y: 3.05, z: 0.04, w: 2.4 }] },
   { id: 'yard_petrol', zone: 'petrol_pump_v2', model: 'petrol_pump_v2', en: 'Yard 13: Petrol pump', hi: 'यार्ड 13: पेट्रोल पंप', kind: 'bazaar', radius: 26, build: 55, front: 12,
-    boards: [{ id: 'petrol_v2', x: -13.0, y: 5.3, z: 8.7, w: 2.2 }] },
+    boards: [{ id: 'petrol_v2', x: -13.0, y: 5.3, z: 12.7, w: 2.2 }] }, // on the pole sign (model shifted +4 z, SITE_DZ)
   { id: 'yard_panchayat', zone: 'panchayat_v2', model: 'panchayat_v2', en: 'Yard 14: Panchayat bhavan', hi: 'यार्ड 14: पंचायत भवन', kind: 'house', radius: 18, build: 45, front: 13,
     lanterns: [{ type: 'hurricane', x: -3.1, y: 0, z: 11.2, ry: 2.9, s: 1, tint: 0xeee5d2 }, { type: 'hurricane', x: 3.3, y: 0, z: 11.3, ry: 0.7, s: 1, tint: 0xf3eadb }],
     boards: [{ id: 'panchayat_v2', x: 0, y: 4.55, z: 0.08, w: 2.6 }] },

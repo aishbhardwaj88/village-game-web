@@ -159,6 +159,9 @@ import { createCyclistEvents2 } from './cyclistEvents2.js';
 import { createAnimalsExtra } from './animalsExtra.js';
 import { createInteractionsExtra } from './interactionsExtra.js';
 import { createInteractionsVillage } from './interactionsVillage.js';
+import { createNostalgiaDiscoveries } from './nostalgiaDiscoveries.js';
+import { createWallStories } from './wallStories.js';
+import { createOddityDiscoveries } from './oddityDiscoveries.js';
 import { createVendors } from './vendors.js';
 import { createVendors2 } from './vendors2.js';
 import { createNostalgia } from './nostalgia.js';
@@ -2400,6 +2403,7 @@ async function main() {
   };
   createInteractionsExtra(scene, interactionCtx); // temple bell, chai, radio, notice board, kite (src/interactionsExtra.js)
   createInteractionsVillage(scene, interactionCtx); // jhoola, gaushala cow (src/interactionsVillage.js)
+  createNostalgiaDiscoveries(); createWallStories(); createOddityDiscoveries(); // vocab s11-s13 discoveries, interactions only, 0 draw calls (src/nostalgiaDiscoveries.js, wallStories.js, oddityDiscoveries.js)
 
   // Bugfix (real playtest bug, reproduced with real keyboard input — player walked
   // straight through the trolley, and the trolley drove through buildings): this

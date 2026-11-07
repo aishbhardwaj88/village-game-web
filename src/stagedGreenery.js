@@ -21,7 +21,7 @@ const GREEN = {
   yard_ration: { half: [10, 8], trees: [] },
   yard_post: { half: [10, 8], trees: [] },
   yard_chakki: { half: [10, 8], trees: [] },
-  yard_petrol: { half: [22, 16], trees: [], beds: [{ x: 9, z: 7, n: 8 }] },
+  yard_petrol: { half: [22, 16], trees: [], beds: [{ x: 9, z: 11, n: 8 }] }, // z +4 with the model (SITE_DZ)
   yard_panchayat: { half: [16, 20], trees: [{ kind: 'neem', x: 0, z: 8, scale: 0.8 }] },
   yard_tvhouse: { half: [11, 10], trees: [] },
   yard_bhatta: { half: [34, 30], trees: [] },
