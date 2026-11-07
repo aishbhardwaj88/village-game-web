@@ -115,18 +115,21 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   // Same bench src/bazaar.js buildChowkPlaza() places at CHOWK_TEA_POS.x-2.6, z+1.5.
   const seatedPos = { x: CHOWK_FURN_ORIGIN.x - 2.6, z: CHOWK_FURN_ORIGIN.z + 1.5 };
   mesh.setColorAt(seatedIndex, _color.setHex(SEATED_TINT));
-  setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2 - 0.3, seatedPos.z, Math.PI * 0.3); // lowered a touch, "seated"
+  setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3); // the bench that stood here is gone from the map: he stands, on the ground
 
   mesh.instanceMatrix.needsUpdate = true;
   mesh.instanceColor.needsUpdate = true;
 
   const _toTarget = new THREE.Vector3();
-  const xz = (i) => (i < shopkeeperCount ? shopkeepers[i] : villagers[i - shopkeeperCount].pos);
+    const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22]];
   function settleOne(scene, i) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
-    const p = xz(i);
-    gy[i] = Math.min(0.35, Math.max(0, groundAt(scene, p.x, p.z, 0)));
+    const p = i < shopkeeperCount ? shopkeepers[i] : i < seatedIndex ? villagers[i - shopkeeperCount].pos : seatedPos;
+    const g0 = groundAt(scene, p.x, p.z, 0);
+    let g = g0; // the round foot is wider than the centre point: take the highest surface under it (road bumps, kerbs)
+    for (const [dx, dz] of FOOT) g = Math.max(g, groundAt(scene, p.x + dx, p.z + dz, g0));
+    gy[i] = Math.min(0.35, Math.max(0, g));
   }
-  keepOnGround(mesh, (scene) => { for (let i = 0; i < total - 1; i++) settleOne(scene, i); }); // last = seated on the tea-stall bench
+  keepOnGround(mesh, (scene) => { for (let i = 0; i < total; i++) settleOne(scene, i); });
   let rr = 0;
 
   function update(dt) {
@@ -161,6 +164,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
       }
       setInstance(v.index, v.pos.x, NPC_HEIGHT / 2, v.pos.z, v.rotY);
     }
+    setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3);
     const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
     if (sc && villagers.length) settleOne(sc, villagers[rr++ % villagers.length].index);
 

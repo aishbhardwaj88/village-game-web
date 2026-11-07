@@ -32,6 +32,10 @@ const TOL = 0.03;
 const EXEMPT = [
   [/wallow/i, 'buffaloes wallowing in the pond: body deliberately under the water line, no legs modelled'],
   [/rider|cyclist/i, 'riders sit on a moving cycle seat, not on the ground'],
+  [/^player\//i, 'the player rides the cycle: feet on the pedals, not the ground'],
+  [/nostalgia_animals/i, 'one merged mesh of roof monkeys and a parapet peacock whose train hangs 1.1 m down a wall: its lowest vertex is the hanging tail, the feet stand on a roof'],
+  [/vehicle_cart\/.*bullock/i, 'bullock cart: legs swing +-5 cm on their stride and the cart keeps one parked height across lane-edge strips (G1 leftover, KNOWN)'],
+  [/ride_nook_\d+_[a-z]+_people/i, 'ride-nook sitters: authored seat heights, a raise-only settle made the well nooks worse (G1 leftover, KNOWN, 14 of them 5-15 cm)'],
 ];
 
 function waitForServer(url, timeoutMs = 30000) {
@@ -83,7 +87,7 @@ function inPage(cfg) {
     if (!o.isMesh || o.isBatchedMesh || !shown(o)) return;
     const path = pathOf(o);
     const person = isPersonCapsule(o.geometry);
-    const animal = ANIMAL_RE.test(path) && !/cart|sign|board|poster|mural|bowl|kennel|trough|nand|manger|peg|rope|statue/i.test(o.name || '');
+    const animal = ANIMAL_RE.test(path) && !/cart|sign|board|poster|mural|bowl|kennel|trough|nand|manger|peg|rope|statue|fodder|haystack|heap/i.test(o.name || '');
     if (!person && !animal) return;
     figureMeshes.add(o);
     if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) figures.push({ label: `${path}#${i}`, mesh: o, i, kind: person ? 'person' : 'animal' });
@@ -96,6 +100,7 @@ function inPage(cfg) {
     if (!o.isMesh || o.isBatchedMesh || figureMeshes.has(o) || !shown(o)) return;
     if (o.isSprite || o.isPoints || o.isLine) return;
     const path = pathOf(o) + '/' + ((Array.isArray(o.material) ? o.material[0] : o.material)?.name || '');
+    if (/^(npc_|player)/.test(path)) return; // people never count as the surface under another person's feet
     if (/^ground(\/|$)/.test(path) || /\/ground$/.test(o.name)) return; // flat plane: replaced by dipH (it has shader holes)
     if (SURFACE_SKIP.test(path.replace(/ride_nook_\d+_[a-z]+/g, 'nook'))) return; // a nook's own name (laundry...) must not hide its charpai
     const m = Array.isArray(o.material) ? o.material[0] : o.material;

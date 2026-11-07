@@ -253,7 +253,7 @@ T.hitchZ = T.noseZ + T.hitchZFromNose;
 T.seatZ = T.rearAxleZ;
 T.steerZ = T.seatZ - 0.55;
 
-function buildTractorGroup() {
+export function buildTractorGroup() {
   const group = new THREE.Group();
   const bodyPivot = new THREE.Group(); // pitch/roll under throttle/brake/turns (item 4)
   group.add(bodyPivot);

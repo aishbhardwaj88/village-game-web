@@ -155,6 +155,7 @@ import { createChaurahaEdges } from './chaurahaEdges.js'; // houses, open shops 
 import { createSmallShops } from './smallShops.js';
 import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents } from './roadEvents.js';
+import { createMainRoadLife } from './mainRoadLife.js'; // something to see every ~8 s along the whole main road (src/mainRoadLife.js)
 import { createCyclistEvents } from './cyclistEvents.js';
 import { createCyclistEvents2 } from './cyclistEvents2.js';
 import { createAnimalsExtra } from './animalsExtra.js';
@@ -573,6 +574,7 @@ async function main() {
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
+  // createMainRoadLife(scene); // OFF 8 Nov 01:50: 6 scenes placed but none seen from the saddle in shots, collision-test had 1 failure with it on; see docs/handoff.md
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
