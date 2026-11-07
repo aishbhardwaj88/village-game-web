@@ -1,3 +1,20 @@
+# 7 Nov 13:00. STOP. READ docs/SPATIAL_SENSE.md BEFORE THE NEXT PLACEMENT.
+
+She found the halwai butted against the zero milestone at the chauraha, with a well next
+to it. A crossroads that vehicles turn around had a shop standing in the turning circle.
+Her words: "Is this not stupid? You need to use your brain when you're putting things."
+
+**Do this first, before anything else in the queue:**
+1. Clear the chauraha: 12 m radius around the milestone with NOTHING in it but the
+   milestone and the flag. Move the halwai and the well to a corner plot, facing in.
+2. Walk the whole village with docs/SPATIAL_SENSE.md section 5 in hand: find every pair
+   of things that touch but do not belong together, and fix them. Report the list.
+3. Then every placement from now on passes the section 6 test before it is committed.
+
+Then back to the houses-and-density queue below.
+
+---
+
 # 7 Nov 12:30. SHE LOOKED. THE VIEW HAS NOT CHANGED ENOUGH. DAY 2 IS HOUSES AND DENSITY.
 
 44 commits of correct small things, and from the saddle the streets are still flat boxes
