@@ -166,6 +166,7 @@ import { createVillageFixtures } from "./villageFixtures.js";
 import { createVillageFurniture } from './villageFurniture.js';
 import { createVillageFurniture2 } from './villageFurniture2.js';
 import { createVillageFurniture3 } from './villageFurniture3.js';
+import { createVillageFurniture4 } from './villageFurniture4.js';
 import { createWallWriting } from './wallWriting.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -570,6 +571,7 @@ async function main() {
   createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
   createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
   createVillageFurniture3(scene); // bhootiya ghar round the pond peepal, panchayat notices, kiln chimney smoke (src/villageFurniture3.js)
+  createVillageFurniture4(scene); // roadside majar under the johad neem, paper kites snagged in trees and on the transformer wire (src/villageFurniture4.js)
   createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
   createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
