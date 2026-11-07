@@ -69,7 +69,7 @@ while true; do
   if [ $took -lt 120 ]; then
     short=$((short+1))
     echo "Run was very short ($short in a row)." | tee -a tmp/autopilot.log
-    if [ $short -ge 3 ]; then echo "3 short runs in a row: likely a usage limit. Waiting 30 min." | tee -a tmp/autopilot.log; sleep 1800; short=0; else sleep 30; fi
+    if [ $short -ge 3 ]; then echo "3 short runs in a row: likely a usage limit. Waiting 30 min." | tee -a tmp/autopilot.log; for hb in 1 2 3 4 5 6; do sleep 300; echo "=== heartbeat: still waiting on the limit ($((hb*5)) of 30 min) $(date)" >> tmp/autopilot.log; done; short=0; else sleep 30; fi
   else
     short=0; sleep 60
   fi

@@ -9,14 +9,30 @@
 cd "$(dirname "$0")/.." || exit 1
 echo "=== TRUTH CHECK  $(date '+%d %b %H:%M %Z') ==="
 
-# 1. LOOP ALIVE. Measured by log movement, never by pgrep: pgrep matched this sandbox's
-#    own processes and reported a dead loop as alive for three days.
+# 1. LOOP ALIVE. Measured by log movement, never by pgrep (pgrep matched this sandbox's
+#    own processes and reported a dead loop as alive for three days).
+#    7 Nov lesson: a quiet log is NOT a dead loop. The loop sat 3.5 h in a usage-limit
+#    wait, I called it dead, and she started a second loop on the same files. So: if the
+#    last lines show a limit message, report WAITING, with the reset time, and only call
+#    it dead when the log is quiet well past that reset. Never tell her to restart it on
+#    a WAITING verdict.
 LOG=tmp/autopilot.log
 if [ -f "$LOG" ]; then
   AGE=$(( ($(date +%s) - $(stat -c %Y "$LOG" 2>/dev/null || stat -f %m "$LOG")) / 60 ))
   LAST=$(grep "^=== Run" "$LOG" | tail -1)
-  if [ "$AGE" -lt 60 ]; then echo "LOOP: ALIVE (log moved ${AGE} min ago) | $LAST"
-  else echo "LOOP: ** DEAD or STUCK ** (log last moved ${AGE} min ago) | $LAST"; fi
+  TAIL=$(tail -8 "$LOG")
+  RESET=$(echo "$TAIL" | grep -oE "resets [0-9]+:[0-9]+ ?[ap]m" | tail -1)
+  if [ "$AGE" -lt 60 ]; then
+    echo "LOOP: ALIVE (log moved ${AGE} min ago) | $LAST"
+  elif echo "$TAIL" | grep -qiE "limit|Waiting 30 min|No usable internet"; then
+    if [ "$AGE" -lt 300 ]; then
+      echo "LOOP: WAITING (quiet ${AGE} min, last message: usage limit, ${RESET:-reset time unknown}). ALIVE. Do NOT ask her to restart."
+    else
+      echo "LOOP: ** PROBABLY DEAD ** (quiet ${AGE} min, far past the limit wait: ${RESET:-?}). Ask her to check the Terminal window FIRST, restart only if it is gone."
+    fi
+  else
+    echo "LOOP: ** DEAD or STUCK ** (log quiet ${AGE} min, no wait message) | $LAST"
+  fi
 else echo "LOOP: ** NO LOG **"; fi
 
 # 2. REAL THROUGHPUT. Game commits only, docs do not count as work.
