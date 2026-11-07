@@ -48,13 +48,16 @@ function flat(src, ratio = [1, 1]) {
   return g;
 }
 
+/** Same rule as mergeUtils.js NO_SHADOW_MATERIALS: small jute sacks cast no useful shadow and every caster costs a second draw in the shadow pass. */
+const NO_SHADOW_NAMES = new Set(['jute', 'hb_jute']);
+
 function batchFor(mat, cast = true) {
   const bk = mat.userData.worldBakedOnly ? (cast ? mat : mat.userData.noCastTwin || (mat.userData.noCastTwin = { mat })) : mat;
   let b = batches.get(bk);
   if (!b) {
     b = new THREE.BatchedMesh(16, 60000, 180000, mat);
     b.name = 'placebatch_' + mat.name;
-    b.castShadow = !mat.userData.batchNoShadow && cast; b.receiveShadow = true;
+    b.castShadow = !mat.userData.batchNoShadow && !NO_SHADOW_NAMES.has(mat.name) && cast; b.receiveShadow = true;
     b.frustumCulled = false; // instances are culled one by one
     b.userData.noAutoCollider = true; // the hidden source meshes carry the colliders
     b.userData.visualOnly = true;
