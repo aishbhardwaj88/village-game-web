@@ -69,7 +69,26 @@ the next run was spent clawing it back. That loop ends tonight.
 - CANCELLED: "batch unbatched meshes in the school and bazaar zones". Do not start it.
 
 ## TONIGHT, IN ORDER
-1. **Chauraha edges.** Textured house fronts and OPEN shops ringing the square, people
+1. **Chauraha = a real roundabout where FOUR ROADS meet.** Her words, 7 Nov 23:50: "a
+   chauraha has clear four roads ... a roundabout is basically a connection between four
+   roads ... when someone looks from top, it is very clear that the ... roundabout where
+   Amrai Kheda with the flag is there, it is actually connection between four roads."
+   Verified today: main_road (8 m) passes 3.6 m off the milestone and cross_road (7 m)
+   passes 7.1 m off. They cross NEAR the square, not AT it, so it does not read as a
+   crossroads from above.
+   - **Bend both roads so all four arms (main N, main S, cross E, cross W) aim straight at
+     the zero milestone** (602.9, 19.9) and meet it.
+   - **Roundabout:** a ring carriageway about 7 m wide round a raised central island. The
+     milestone and flag stand on the island. Island radius about 6 m, so the outer edge of
+     the ring sits at the existing 12 to 13 m clear circle. The four arms join the ring.
+   - Vehicles and NPC routes go round the ring, never across the island.
+   - **Each arm, for its first 60 m out from the ring, gets frontage on BOTH sides** with
+     something happening: open shops, a vendor, people on a charpai, a cycle repair, tea.
+     Use src/chaurahaEdges.js, extend it along the four arms.
+   - **Proof: a top-down screenshot of the chauraha, docs/shots/chauraha-top-<date>.png.
+     It must read at a glance as a circle with four roads.** Then a saddle-height shot
+     down each arm.
+   Then: **Chauraha edges.** Textured house fronts and OPEN shops ringing the square, people
    sitting at the corners (charpai, tea, carrom). The 12 m circle stays clear.
 2. **Old house textures on every remaining flat-coloured row.** No flat wall left.
 3. **Mandi, gurudwara, panchayat** turned to face their roads (from the wrong-turn audit).
