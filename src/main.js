@@ -160,10 +160,12 @@ import { createInteractionsVillage } from './interactionsVillage.js';
 import { createVendors } from './vendors.js';
 import { createVendors2 } from './vendors2.js';
 import { createNostalgia } from './nostalgia.js';
+import { createScooters } from './scooters.js';
 import { createVillageOddities } from './villageOddities.js';
 import { createVillageFixtures } from "./villageFixtures.js";
 import { createVillageFurniture } from './villageFurniture.js';
 import { createVillageFurniture2 } from './villageFurniture2.js';
+import { createVillageFurniture3 } from './villageFurniture3.js';
 import { createWallWriting } from './wallWriting.js';
 import { createNightController } from './night.js';
 import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
@@ -191,7 +193,8 @@ import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
 import { createVillageSounds } from './villageSounds.js';
-import { createAfternoonMood } from './afternoonMood.js';
+import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
+import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
@@ -561,9 +564,11 @@ async function main() {
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
+  createScooters(scene); // parked scooters + motorcycles, Blender models (src/scooters.js)
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
   createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
   createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
+  createVillageFurniture3(scene); // bhootiya ghar round the pond peepal, panchayat notices, kiln chimney smoke (src/villageFurniture3.js)
   createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
   createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
@@ -916,6 +921,9 @@ async function main() {
   const input = new InputController(canvas);
 
   let composer = createComposer(renderer, scene, camera, { enableBloom, enableGrain });
+  // Heat shimmer on the far ground (src/afternoonMood.js): merged into the one EffectPass, 0 draw calls; off on touch, fades at dusk/night.
+  const shimmerStrength = () => (1 - night.mix) * (1 - Math.max(0, Math.min(1, (dayProgressForQuestStep(quest.step) - 0.6) / 0.3)));
+  if (!touch) addHeatShimmer(composer, camera, shimmerStrength);
 
   const fps = setupFpsCounter();
 
@@ -1274,6 +1282,7 @@ async function main() {
     const result = applyQuality(level, { renderer, sun, isTouch: touch });
     composer.dispose();
     composer = createComposer(renderer, scene, camera, { enableBloom: result.enableBloom, enableGrain: result.enableGrain });
+    if (!touch) addHeatShimmer(composer, camera, shimmerStrength);
     resizeRendererToDisplaySize(renderer, camera, result.pixelRatioCap);
     resizeComposer(composer, window.innerWidth, window.innerHeight);
   }
@@ -2031,6 +2040,7 @@ async function main() {
 
   // The errand (item 3) — one small in-memory state object, no save system.
   const quest = createQuestState();
+  createAmbientBeds(audio, () => ({ day: dayProgressForQuestStep(quest.step), night: night.mix })); // afternoon cicada drone (src/ambientBeds.js)
   // Free roam (docs/MISSIONS_PLAN.md): the part of the quest state that survives the story and is saved with it.
   const roamSnapshot = () => ({ storyDone: quest.storyDone, pocket: quest.pocket, discovered: quest.discovered, jobsDone: quest.jobsDone, marbles: quest.marbles, kites: quest.kites, mangoVarieties: quest.mangoVarieties, records: quest.records });
   const freeRoam = createFreeRoam({

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Effect, EffectAttribute } from 'postprocessing';
 import { pt } from './anchors.js';
 
 // VILLAGE_VOCABULARY section 7 (afternoon mood). Anchored to the school anchor so it follows a map change.
@@ -56,4 +57,51 @@ export function createAfternoonMood(scene, opts = {}) {
   update(0, last); external = false;
   raf = requestAnimationFrame(loop);
   return { update, dispose() { cancelAnimationFrame(raf); scene.remove(pts); g.dispose(); mat.dispose(); if (scene.fog) scene.fog.density = baseDensity; } };
+}
+
+// VILLAGE_VOCABULARY s7 "haze": heat shimmer over the far ground. A UV-only effect merged INTO the
+// existing single EffectPass (postfx.js), so it costs zero draw calls and no extra pass; the only
+// new GPU work is the composer's depth blit, which gates the wobble to distant surfaces (60 m+) in a
+// band around the horizon, so near people and walls never ripple and the sky dome (depth 1) is left
+// alone. Amplitude is ~1-2 px at 1080p: felt more than seen. Fades with night and late dusk via getStrength().
+// Call again after any composer rebuild (main.js setQuality). Skip on touch (caller decides).
+export function addHeatShimmer(composer, camera, getStrength = () => 1) {
+  const pass = composer.passes.find((p) => p.name === 'EffectPass');
+  if (!pass) return null;
+  const frag = /* glsl */`
+uniform float strength;
+uniform float horizonY;
+void mainUv(inout vec2 uv) {
+  if (strength <= 0.001) return;
+  float band = 1.0 - smoothstep(0.0, 0.14, abs(uv.y - (horizonY - 0.03)));
+  if (band <= 0.0) return;
+  float d = readDepth(uv);
+  if (d >= 0.9999) return;
+  float dist = -getViewZ(d);
+  float a = strength * band * smoothstep(60.0, 170.0, dist);
+  if (a <= 0.0) return;
+  float w = 0.6 * sin(uv.y * 820.0 + time * 6.3) + 0.4 * sin(uv.y * 1530.0 - time * 9.7 + uv.x * 37.0);
+  uv.x += w * a * 0.0011;
+  uv.y += sin(uv.x * 540.0 + uv.y * 310.0 + time * 4.1) * a * 0.0005;
+}`;
+  const fx = new Effect('HeatShimmerEffect', frag, {
+    attributes: EffectAttribute.DEPTH,
+    uniforms: new Map([['strength', new THREE.Uniform(0)], ['horizonY', new THREE.Uniform(0.5)]]),
+  });
+  const v = new THREE.Vector3(), f = new THREE.Vector3();
+  fx.update = () => {
+    camera.getWorldDirection(f); f.y = 0;
+    if (f.lengthSq() < 1e-6) { fx.uniforms.get('strength').value = 0; return; }
+    f.normalize();
+    v.copy(camera.position).addScaledVector(f, 400).project(camera);
+    fx.uniforms.get('horizonY').value = v.y * 0.5 + 0.5;
+    let s = 1; try { s = getStrength(); } catch (e) { s = 0; }
+    fx.uniforms.get('strength').value = Math.max(0, Math.min(1, s));
+  };
+  // Re-add the pass so the composer sees it now needs depth (creates the depth texture, wires every pass).
+  const idx = composer.passes.indexOf(pass);
+  composer.removePass(pass);
+  pass.setEffects([...pass.effects, fx]);
+  composer.addPass(pass, idx);
+  return fx;
 }

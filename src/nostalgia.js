@@ -575,7 +575,8 @@ function buildBioscope(o) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-const BUILDERS = { gola: buildGola, scooter: buildScooter, motorcycle: buildMotorcycle, letterbox: buildLetterbox, tv: buildTV, ambassador: buildAmbassador, tanker: buildTanker, bioscope: buildBioscope };
+// scooter + motorcycle are now the Blender models placed by src/scooters.js (same two spots), so they are not built here
+const BUILDERS = { gola: buildGola, letterbox: buildLetterbox, tv: buildTV, ambassador: buildAmbassador, tanker: buildTanker, bioscope: buildBioscope };
 
 /** Builds every nostalgic object and the roof animals into one group (7 draw calls) and adds it to the scene. */
 export function createNostalgia(scene) {
