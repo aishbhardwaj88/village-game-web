@@ -76,7 +76,7 @@ export function batchPlaceModel(model, key) {
     }
     (globalThis.__pbDbg ||= []).push(sk || ('NOKEY|' + mat.name));
     const b = batchFor(mat);
-    const ck = key + '|' + o.name + '|' + o.material.uuid;
+    const ck = key + '|' + o.name + '|' + (o.material.userData.siteProps ? 'sp' + o.geometry.attributes.position.count + '|' + o.material.name + '|' + o.material.roughness : o.material.uuid); // site builders make a fresh material clone per build; geometry is deterministic, so key by shape to avoid re-adding on every re-stream
     let gid = geoCache.get(ck);
     if (gid === undefined) {
       const geo = flat(o.geometry, ratio);
@@ -96,6 +96,10 @@ export function batchPlaceModel(model, key) {
   });
 }
 
+const pending = []; // { model, key, age }
+/** Like batchPlaceModel, for builders that return a group before the zone manager has added it to the scene: batches once the group is rooted. */
+export function batchPlaceModelWhenRooted(model, key) { pending.push({ model, key, age: 0 }); }
+
 function rooted(o) {
   let visible = true;
   for (let p = o; p; p = p.parent) {
@@ -107,6 +111,10 @@ function rooted(o) {
 
 /** Once a frame: mirrors each source mesh's visibility (zone / distance hiding) into its batch instance; frees instances of torn-down places. */
 export function syncPlaceBatches() {
+  for (let i = pending.length - 1; i >= 0; i--) {
+    const p = pending[i];
+    if (rooted(p.model) !== null) { pending.splice(i, 1); batchPlaceModel(p.model, p.key); } else if (++p.age > 1800) pending.splice(i, 1);
+  }
   for (const e of entries) {
     const vis = rooted(e.src);
     if (vis === null) { e.batch.deleteInstance(e.iid); entries.delete(e); continue; }

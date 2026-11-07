@@ -1,6 +1,7 @@
 import { dairyGoods, chemistGoods, buildGoodsMesh, DESIGN as GOODS } from './shopGoods.js';
 import { createNPC } from './npc.js';
 import { placeBoardsMesh } from './placeBoards.js';
+import { batchPlaceModelWhenRooted } from './placeBatch.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
@@ -118,6 +119,7 @@ const vcMat = (opts = {}) => {
   m.name = 'site_props';
   m.aoMap = null;
   m.roughness = roughness;
+  m.userData.placeBatchable = true; m.userData.siteProps = true; // folded into the village-wide per-material batches (src/placeBatch.js) by finishSite
   m.color.setScalar(1.7); // the scans are mid-grey; lift so the baked colours keep their value
   Object.assign(m, rest);
   return m;
@@ -925,6 +927,7 @@ function finishSite(name, geos, position, opts = {}) {
   }
   if (opts.boards) group.add(placeBoardsMesh(opts.boards, name + '_boards')); // bilingual signboard(s), one draw call (src/placeBoards.js)
   group.position.set(position.x, 0, position.z);
+  batchPlaceModelWhenRooted(group, 'site_' + name); // drawing moves into the shared batches once the zone adds the group; meshes stay as hidden colliders
   group.userData.slotMeta = { doors: takeDoors(geos), boards: (opts.boards || []).map((b) => ({ x: b.x, z: b.z, ry: b.ry || 0 })) };
   return group;
 }
