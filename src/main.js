@@ -151,6 +151,7 @@ import { createZeroMilestone } from './zeroMilestone.js'; // zero milestone + fl
 import { createBazaarLife } from './bazaarLife.js';
 import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
+import { createChaurahaEdges } from './chaurahaEdges.js'; // houses, open shops and corner groups ringing the chauraha (docs/SPATIAL_SENSE.md section 1)
 import { createSmallShops } from './smallShops.js';
 import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents } from './roadEvents.js';
@@ -208,8 +209,13 @@ const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metr
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
 const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
 const MOVE_SPEED = 4.2; // m/s, walking pace
-const CYCLE_SPEED_MULT = 3; // the player starts on a cycle (3 Nov): C gets off / on
-let onCycle = true;
+const CYCLE_TOP_SPEED = 5.5; // m/s, about 20 km/h; a fixed cycle speed, not a walking multiple (7 Nov), so a motorbike can get its own
+const CYCLE_ACCEL = CYCLE_TOP_SPEED / 1.5; // pedal to top speed in about 1.5 s
+const CYCLE_COAST = CYCLE_TOP_SPEED / 3; // no input: coast to a stop in about 3 s
+const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
+const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
+let onCycle = true; // the player starts on a cycle (3 Nov): C gets off / on
+let cycleSpeed = 0, cycleHeading = 0;
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
@@ -563,6 +569,7 @@ async function main() {
   const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
   scene.add(bazaarLife.mesh);
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
+  //TMP createChaurahaEdges(scene);
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
@@ -2989,9 +2996,43 @@ async function main() {
         // other moving body, instead of moving the full step then resolving only
         // the endpoint.
         if (onCycle && insideBuilding()) { toggleCycle(true); freeRoam.toast('You got off the cycle to go indoors.', 'अंदर जाने के लिए साइकिल से उतर गए।', 3000); }
-        movePlayerBy(moveDir.x * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt, moveDir.z * MOVE_SPEED * (onCycle ? CYCLE_SPEED_MULT : 1) * dt);
+        let walkSound = moveDir.lengthSq() > 0.01, walkMag = moveDir.length();
+        if (onCycle) {
+          // Real cycle: W pedals, S brakes, A/D turn the handlebar (heading changes, never sideways); on touch the stick's forward = pedal, sideways = steer.
+          const pedal = -input.moveZ, steerIn = input.moveX;
+          if (pedal > 0.1) cycleSpeed = Math.min(CYCLE_TOP_SPEED * Math.min(1, pedal), cycleSpeed + CYCLE_ACCEL * dt);
+          else if (pedal < -0.1) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt);
+          else cycleSpeed = Math.max(0, cycleSpeed - CYCLE_COAST * dt);
+          if (cycleSpeed < 0.3 && pedal > 0.1) {
+            // pulling away from rest: the bike points where the camera looks (A/D cannot turn it on the spot)
+            const want = camRig.yaw + Math.PI;
+            const dh = Math.atan2(Math.sin(want - cycleHeading), Math.cos(want - cycleHeading));
+            cycleHeading += dh * (1 - Math.exp(-12 * dt));
+          } else if (cycleSpeed > 0.5) {
+            // turn rate falls as speed rises: about 100 deg/s at 1 m/s, 40 deg/s at top speed
+            const rate = THREE.MathUtils.lerp(1.75, 0.7, Math.min(1, cycleSpeed / CYCLE_TOP_SPEED));
+            cycleHeading -= steerIn * rate * dt;
+          }
+          const sx = Math.sin(cycleHeading), cz = Math.cos(cycleHeading);
+          const want = cycleSpeed * dt;
+          if (want > 0) {
+            const bx = player.position.x, bz = player.position.z;
+            resolveOrientedMove(player.position, cycleHeading, sx * want, cz * want, CYCLE_HALF_W, CYCLE_HALF_L, otherVehicleBoxes(null));
+            player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
+            player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
+            player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
+            const along = ((player.position.x - bx) * sx + (player.position.z - bz) * cz) / want;
+            if (along < 0.35) cycleSpeed = 0; // head-on: stops dead
+            else if (along < 0.95) cycleSpeed *= along; // glancing: slides along the wall, loses speed
+          }
+          moveDir.set(sx * (cycleSpeed > 0.05 ? 1 : 0), 0, cz * (cycleSpeed > 0.05 ? 1 : 0)); // the cycle model follows the heading
+          walkSound = cycleSpeed > 0.1; walkMag = cycleSpeed / MOVE_SPEED;
+        } else {
+          cycleSpeed = 0;
+          movePlayerBy(moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt);
+        }
         playerCycle.update(dt, onCycle, moveDir.x, moveDir.z);
-        audio.setWalking(moveDir.lengthSq() > 0.01, moveDir.length());
+        audio.setWalking(walkSound, walkMag);
         audio.setSurface(surfaceAt(player.position.x, player.position.z));
 
         const nearby = nearestMountable();
