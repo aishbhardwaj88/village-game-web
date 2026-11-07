@@ -92,8 +92,11 @@ export function addLaundryLine(group, { x = 0, z = 0, ry = 0, seed = 1, name = '
     // posts, rope and pegs ride in the cloth mesh (hang 0 so they never sway): one draw call per line
     fixed.forEach((g) => cloth.push(g.clone().applyMatrix4(mat4)));
     {
-      const m = new THREE.Mesh(mergeGeometries(cloth), clothMat());
-      m.name = name + '_cloth'; m.castShadow = false; m.receiveShadow = true; m.frustumCulled = false;
+      const geo = mergeGeometries(cloth);
+      geo.computeBoundingSphere();
+      geo.boundingSphere.radius += 1; // the breeze shader swings the hems; keep the sphere generous so they never clip at the screen edge
+      const m = new THREE.Mesh(geo, clothMat());
+      m.name = name + '_cloth'; m.castShadow = false; m.receiveShadow = true;
       group.add(m);
     }
   }).catch((err) => console.warn('laundry line did not load', err));
