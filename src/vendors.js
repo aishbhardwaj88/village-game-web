@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { batchPeopleMesh } from './placeBatch.js';
+import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { ANCHORS } from './anchors.js';
 import { getTiledMaterial, texturedBox } from './materials.js';
@@ -547,7 +548,7 @@ export function createVendors(scene) {
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), pp.site.ry + pp.yaw); sc.set(k * (pp.sit === 2 ? 1.25 : 1), sy, k * (pp.sit === 2 ? 1.25 : 1));
     pm.setMatrixAt(i, m.compose(p, q, sc)); pm.setColorAt(i, col.setHex(pp.tint));
   });
-  group.add(pm); batchPeopleMesh(pm);
+  group.add(pm); batchPeopleMesh(pm); markFigure(pm); keepOnGround(pm, (sc) => settleInstances(sc, pm, refreshPeopleMesh));
 
   scene.add(group);
   const per = {};

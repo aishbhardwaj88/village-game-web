@@ -4,7 +4,8 @@ import { ANCHORS, localPt } from './anchors.js';
 import { getTiledMaterial, texturedBox } from './materials.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
-import { batchLateGroup, batchPeopleMesh } from './placeBatch.js';
+import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 
 /**
  * Street vendors, second set: a cabin kiosk (paan shop: mirror, film posters, a bulb, glass jars of sweets; no tobacco of any kind),
@@ -206,7 +207,7 @@ export function createVendors2(scene) {
       sm.name = 'vendors2_sign'; sm.castShadow = true; group.add(sm);
     }
     const pm = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.3, 1.1, 4, 8), new THREE.MeshStandardMaterial({ roughness: 0.85 }), Math.max(1, people.length));
-    pm.name = 'vendors2_people'; pm.castShadow = true; pm.frustumCulled = false; batchPeopleMesh(pm);
+    pm.name = 'vendors2_people'; pm.castShadow = true; pm.frustumCulled = false; batchPeopleMesh(pm); markFigure(pm); keepOnGround(pm, (sc) => settleInstances(sc, pm, refreshPeopleMesh));
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), col = new THREE.Color(), up = new THREE.Vector3(0, 1, 0);
     people.forEach((pp, i) => {
       const k = pp.h / 1.7, sy = pp.sit ? k * 0.62 : k, sn = Math.sin(pp.site.ry), cs = Math.cos(pp.site.ry), baseY = pp.sit ? 0.42 : 0.18;

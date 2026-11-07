@@ -215,7 +215,7 @@ const CYCLE_COAST = CYCLE_TOP_SPEED / 3; // no input: coast to a stop in about 3
 const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
 const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
 let onCycle = true; // the player starts on a cycle (3 Nov): C gets off / on
-let cycleSpeed = 0, cycleHeading = 0;
+let cycleSpeed = 0, cycleHeading = 0, cyclePedalling = false, bellHintShown = false; // C4 riding feel: pedalling drives the cranks/bob, B rings the bell
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
@@ -569,7 +569,7 @@ async function main() {
   const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
   scene.add(bazaarLife.mesh);
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
-  //TMP createChaurahaEdges(scene);
+  createChaurahaEdges(scene);
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
@@ -2756,6 +2756,13 @@ async function main() {
       if (started && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
     });
   }
+  // C4: B rings the handlebar bell while riding. Capture phase + stopImmediatePropagation so villageSounds.js's own
+  // B-key ding (its listener, not ours) does not ring on top of it; on foot B still reaches that one.
+  window.addEventListener('keydown', (e) => {
+    if (e.code !== 'KeyB' || !started || !onCycle || mountedVehicle || pauseMenu.isOpen() || dialogue.isOpen) return;
+    e.stopImmediatePropagation();
+    if (!e.repeat) playerCycle.ringBell(audio);
+  }, { capture: true });
   window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
     if (e.code === 'KeyM' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) {
@@ -3000,6 +3007,7 @@ async function main() {
         if (onCycle) {
           // Real cycle: W pedals, S brakes, A/D turn the handlebar (heading changes, never sideways); on touch the stick's forward = pedal, sideways = steer.
           const pedal = -input.moveZ, steerIn = input.moveX;
+          cyclePedalling = pedal > 0.1;
           if (pedal > 0.1) cycleSpeed = Math.min(CYCLE_TOP_SPEED * Math.min(1, pedal), cycleSpeed + CYCLE_ACCEL * dt);
           else if (pedal < -0.1) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt);
           else cycleSpeed = Math.max(0, cycleSpeed - CYCLE_COAST * dt);
@@ -3031,9 +3039,16 @@ async function main() {
           cycleSpeed = 0;
           movePlayerBy(moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt);
         }
-        playerCycle.update(dt, onCycle, moveDir.x, moveDir.z);
+        const underSurface = surfaceAt(player.position.x, player.position.z);
+        playerCycle.update(dt, onCycle, moveDir.x, moveDir.z, { pedalling: onCycle && cyclePedalling, surface: underSurface });
+        if (onCycle && !bellHintShown && !touch && playerCycle.ridingSeconds > 5) {
+          bellHintShown = true;
+          try { bellHintShown = localStorage.getItem('dopahar.bellHint') === '1'; localStorage.setItem('dopahar.bellHint', '1'); } catch (e) { /* private mode: show it once per session */ }
+          if (!bellHintShown) freeRoam.toast('Press B to ring your cycle bell.', 'साइकिल की घंटी बजाने के लिए B दबाओ।', 4500);
+          bellHintShown = true;
+        }
         audio.setWalking(walkSound, walkMag);
-        audio.setSurface(surfaceAt(player.position.x, player.position.z));
+        audio.setSurface(underSurface);
 
         const nearby = nearestMountable();
         if (nearby) {
@@ -3059,6 +3074,7 @@ async function main() {
       if (isDevMode()) devCheckPenetration();
 
       camRig.update();
+      if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying); // C4 sway/lag; skipped while a screenshot has frozen the rig
       audio.update(dt);
       dust.update(dt, now / 1000);
       updateSky(sky, now / 1000, camera);

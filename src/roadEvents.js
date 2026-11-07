@@ -6,6 +6,7 @@ import { registerInteraction } from './interactions.js';
 import { mapRoadLines } from './mapRoads.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { batchLateGroup } from './placeBatch.js';
+import { keepOnGround, markFigure, settleDy, groundAt } from './standOn.js';
 
 /**
  * Things that happen to the cyclist, and the animals that make an afternoon (docs/VILLAGE_VOCABULARY.md sections 8 and 3):
@@ -238,7 +239,7 @@ export function createRoadEvents(scene) {
   const info = { placed: {}, drawCalls: 0, tris: 0 };
   if (typeof window !== 'undefined') window.__roadEvents = info;
   let built = false, frames = 0, last = 0, elapsed = 0;
-  let bovine = null, dogs = null, goats = null, herder = null, player = null;
+  let bovine = null, lying = null, dogs = null, goats = null, herder = null, player = null;
   const bov = [], slp = [], herd = [];
   let crossing = null;
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ'), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
@@ -255,7 +256,7 @@ export function createRoadEvents(scene) {
     const cf = roadFrame(COW_SITE.road, COW_SITE.seg, COW_SITE.t);
     if (cf) {
       const site = { x: cf.x + cf.nx * COW_SITE.lat, z: cf.z + cf.nz * COW_SITE.lat, yaw: cf.yaw + COW_SITE.turn };
-      bov.push({ x: site.x, y: -0.76, z: site.z, yaw: site.yaw, s: [1, 1, 1], tint: 0xd6ccb4, sit: true, ph: 0.4 });
+      bov.push({ x: site.x, y: 0, z: site.z, yaw: site.yaw, s: [1, 1, 1], tint: 0xd6ccb4, sit: true, ph: 0.4 }); // lying-down geometry, belly and folded legs on the road (G1)
       box(2.05, 0.95, site, 0, 0.1, 0, true);
       dungPats(b, site, [[0.15, -1.45, 1.1], [-0.3, -1.9, 0.8], [0.5, -2.6, 1.0]], 11);
       registerInteraction({
@@ -332,11 +333,18 @@ export function createRoadEvents(scene) {
     // meshes
     const meshes = b.flush(group);
     const hideMat = createHideMaterial(0xffffff);
-    if (bov.length) {
-      bovine = new THREE.InstancedMesh(buildBovineGeometry(), hideMat, bov.length);
+    const standing = bov.filter((a) => !a.sit), sitting = bov.filter((a) => a.sit);
+    if (standing.length) {
+      bovine = new THREE.InstancedMesh(buildBovineGeometry(), hideMat, standing.length);
       bovine.name = 'road_events_bovine';
-      bov.forEach((a, i) => bovine.setColorAt(i, _c.setHex(a.tint)));
+      standing.forEach((a, i) => { a.mesh = bovine; a.idx = i; bovine.setColorAt(i, _c.setHex(a.tint)); });
       group.add(bovine);
+    }
+    if (sitting.length) {
+      lying = new THREE.InstancedMesh(buildBovineGeometry({ lying: true }), hideMat, sitting.length);
+      lying.name = 'road_events_bovine_lying';
+      sitting.forEach((a, i) => { a.mesh = lying; a.idx = i; lying.setColorAt(i, _c.setHex(a.tint)); });
+      group.add(lying);
     }
     if (slp.length) {
       dogs = new THREE.InstancedMesh(sleepingDogGeometry(), hideMat, slp.length);
@@ -354,9 +362,17 @@ export function createRoadEvents(scene) {
       herder.setColorAt(0, _c.setHex(0xcfc4a8)); // faded off-white kurta
       group.add(herder);
     }
-    for (const m of [bovine, dogs, goats, herder]) if (m) { m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+    for (const m of [bovine, lying, dogs, goats, herder]) if (m) { markFigure(m); m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
     (meshes.wood || meshes.concrete || group.children[0]).userData.colliderBoxes = colliders;
     animate(0);
+    // feet on the road / verge surface (src/standOn.js): standing and lying cattle and the sleeping dogs settle once their
+    // surroundings are in; goats and the goatherd walk, so they read the surface every frame (stepHerd)
+    keepOnGround(group, (scene) => {
+      animate(0);
+      bov.forEach((a) => { const dy = settleDy(scene, a.mesh, a.idx); if (Math.abs(dy) < 1.2) a.y += dy; });
+      slp.forEach((a, i) => { const dy = settleDy(scene, dogs, i); if (Math.abs(dy) < 1.2) a.y = (a.y || 0) + dy; });
+      animate(0);
+    });
     group.updateMatrixWorld(true);
     group.traverse((o) => { if (o.isMesh) { info.drawCalls++; const g = o.geometry; info.tris += Math.round((g.index ? g.index.count : g.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1)); } });
     info.colliders = colliders.length;
@@ -409,8 +425,11 @@ export function createRoadEvents(scene) {
       const sp = ease(g, tx, tz, grazing ? 0.45 : 0.9);
       g.graze += ((grazing && sp < 0.2 ? 0.35 + Math.sin(elapsed * 0.7 + g.ph) * 0.12 : 0.02) - g.graze) * Math.min(1, dt * 1.5);
       const walking = sp > 0.1;
-      _e.set(g.graze, g.yaw, walking ? Math.sin(elapsed * 9 + g.ph) * 0.03 : 0);
-      _q.setFromEuler(_e); _p.set(g.x, walking ? Math.abs(Math.sin(elapsed * 9 + g.ph)) * 0.025 : 0, g.z); _s.setScalar(g.s);
+      // no head-down pitch: the goat is one rigid piece, and pitching it about its middle buried the forelegs (G1).
+      // Grazing reads as a slow turn of the whole goat; walking keeps a small roll and a 2 cm step lift.
+      _e.set(0, g.yaw + g.graze * Math.sin(elapsed * 0.6 + g.ph) * 0.25, walking ? Math.sin(elapsed * 9 + g.ph) * 0.03 : 0);
+      const gy = groundAt(scene, g.x, g.z, g.y ?? 0); g.y = gy;
+      _q.setFromEuler(_e); _p.set(g.x, gy + (walking ? Math.abs(Math.sin(elapsed * 9 + g.ph)) * 0.02 : 0), g.z); _s.setScalar(g.s);
       goats.setMatrixAt(i, _m.compose(_p, _q, _s));
     });
     goats.instanceMatrix.needsUpdate = true;
@@ -420,28 +439,30 @@ export function createRoadEvents(scene) {
     const h = c.herder;
     const hyaw = hs > 0.1 ? h.yaw : Math.atan2(f.nx * c.dir, f.nz * c.dir) + (grazing ? Math.sin(elapsed * 0.2) * 0.8 : 0);
     _e.set(hs > 0.1 ? Math.sin(elapsed * 4.5) * 0.05 : 0, hyaw, 0);
-    _q.setFromEuler(_e); _p.set(h.x, hs > 0.1 ? Math.abs(Math.sin(elapsed * 4.5)) * 0.02 : 0, h.z); _s.set(1, 1, 1);
+    h.y = groundAt(scene, h.x, h.z, h.y ?? 0);
+    _q.setFromEuler(_e); _p.set(h.x, h.y + (hs > 0.1 ? Math.abs(Math.sin(elapsed * 4.5)) * 0.02 : 0), h.z); _s.set(1, 1, 1);
     herder.setMatrixAt(0, _m.compose(_p, _q, _s));
     herder.instanceMatrix.needsUpdate = true;
   }
 
   function animate(dt) {
     elapsed += dt;
-    if (bovine) {
-      bov.forEach((a, i) => {
-        // sitting cow: chewing-cud sway and breath; buffalo: head down at the naand, slow shift of weight
+    if (bov.length) {
+      bov.forEach((a) => {
+        // lying cow: chewing-cud sway and breath; buffalo at the naand: slow shift of weight. No pitch: a rigid body
+        // pitched about its middle drives the front hooves into the ground (G1), so the motion stays a turn and a breath.
         const w = Math.sin(elapsed * (a.sit ? 1.6 : 0.4) + a.ph);
-        _e.set(a.graze ? 0.12 + w * 0.03 : a.sit ? 0.02 : w * 0.02, a.yaw + (a.sit ? w * 0.025 : w * 0.01), 0);
+        _e.set(0, a.yaw + (a.sit ? w * 0.025 : w * 0.01), 0);
         const br = 1 + Math.sin(elapsed * 1.1 + a.ph) * 0.012;
         _q.setFromEuler(_e); _p.set(a.x, a.y, a.z); _s.set(a.s[0] * br, a.s[1], a.s[2]);
-        bovine.setMatrixAt(i, _m.compose(_p, _q, _s));
+        a.mesh.setMatrixAt(a.idx, _m.compose(_p, _q, _s));
+        a.mesh.instanceMatrix.needsUpdate = true;
       });
-      bovine.instanceMatrix.needsUpdate = true;
     }
     if (dogs) {
       slp.forEach((a, i) => {
         const br = 1 + Math.sin(elapsed * 1.4 + a.ph) * 0.035; // slow sleeping breath, ribs rising
-        _e.set(0, a.yaw, 0); _q.setFromEuler(_e); _p.set(a.x, 0, a.z); _s.set(a.s, a.s * br, a.s);
+        _e.set(0, a.yaw, 0); _q.setFromEuler(_e); _p.set(a.x, a.y || 0, a.z); _s.set(a.s, a.s * br, a.s);
         dogs.setMatrixAt(i, _m.compose(_p, _q, _s));
       });
       dogs.instanceMatrix.needsUpdate = true;

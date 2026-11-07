@@ -27,3 +27,21 @@ export const MAP_PLAN = {
   yard_ration: { x: -7.9, z: -10.1, turn: 5 }, // bazaar unit 8
   yard_houses: { x: -291.4, z: -175.1, turn: 0 },
 };
+
+/**
+ * THE CHAURAHA (docs/PARALLEL.md "TONIGHT" item 1): four roads meeting at the zero milestone round a raised island.
+ * map-local milestone (2.9, 19.9). CHAURAHA is its world position. The map draws main_road passing 3.6 m off it and
+ * cross_road 7.1 m off, so both are bent where loaded: each arm runs dead straight at the milestone for 45-60 m, the
+ * two through-lines are split at the ring (see ringArms) and a closed ring carriageway joins the four arms.
+ */
+export const CHAURAHA = { x: 2.9 + MAP_SHIFT.x, z: 19.9 + MAP_SHIFT.z, islandR: 6, ringW: 7 };
+CHAURAHA.ringR = CHAURAHA.islandR + CHAURAHA.ringW / 2; // ring carriageway centreline radius (9.5 m); outer edge 13 m
+
+/** Map-local centreline of a named map road with the chauraha bend applied (point count of main_road is kept). */
+export function bendMapRoad(name, c) {
+  const mx = 2.9, mz = 19.9;
+  const pts = c.map((p) => p.slice());
+  if (name === 'main_road') pts.splice(2, 2, [mx, mz - 65], [mx, mz + 25]); // N arm: straight from z -45; S arm: straight to z +45
+  if (name === 'cross_road') pts.splice(2, 1, [mx - 60, mz], [mx + 45, mz]); // W arm 60 m, E arm 45 m, both dead level
+  return pts;
+}

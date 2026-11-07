@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
+import { keepOnGround, markFigure, settleDy } from './standOn.js';
 
 // docs/FINISH_LINE.md Animals line: "the M6 monkey as a recognisable monkey" — it was
 // a scaled-down generic humanoid capsule (src/npc.js's createNPC, tinted brown), not a
@@ -155,6 +156,8 @@ export function createMonkeyNPC(position, rotationY = 0, name = 'npc_monkey') {
   group.userData.mesh = mesh;
   group.position.set(position.x, 0, position.z);
   group.rotation.y = rotationY;
+  markFigure(mesh);
+  keepOnGround(group, (scene) => { const dy = settleDy(scene, mesh); if (Math.abs(dy) < 1.2) mesh.position.y += dy; }, true); // paws on the surface (src/standOn.js)
   return group;
 }
 
@@ -185,7 +188,8 @@ const HORN_DARK = 0x3a332a;
  * way) — createCattleHerd() applies the "heavier/bigger" difference as a per-
  * instance non-uniform scale baked into that instance's own matrix, so the extra
  * bulk costs nothing structurally. */
-export function buildBovineGeometry({ legs = true, udder = true } = {}) {
+export function buildBovineGeometry({ legs = true, udder = true, lying = false } = {}) {
+  if (lying) { legs = false; udder = false; }
   const geos = [];
   const legLen = 0.82;
   const torsoRadius = 0.3;
@@ -225,9 +229,25 @@ export function buildBovineGeometry({ legs = true, udder = true } = {}) {
     geos.push(sc(new THREE.CylinderGeometry(0.055, 0.07, 0.09, 8), 1, 1, 1.15, bot.x, 0.045, bot.z, HORN_DARK));
   }
 
-  // Tail: thin rope with a dark switch tuft.
-  geos.push(capsuleBetween(P(0, torsoY + 0.2, -torsoHalfLen - torsoRadius + 0.05), P(0, 0.4, -torsoHalfLen - torsoRadius - 0.1), 0.022, HIDE_NEUTRAL, 3, 6));
-  geos.push(sc(new THREE.SphereGeometry(0.05, 6, 5), 1, 2.2, 1, 0, 0.32, -torsoHalfLen - torsoRadius - 0.1, HORN_DARK));
+  if (!lying) {
+    // Tail: thin rope with a dark switch tuft.
+    geos.push(capsuleBetween(P(0, torsoY + 0.2, -torsoHalfLen - torsoRadius + 0.05), P(0, 0.4, -torsoHalfLen - torsoRadius - 0.1), 0.022, HIDE_NEUTRAL, 3, 6));
+    geos.push(sc(new THREE.SphereGeometry(0.05, 6, 5), 1, 2.2, 1, 0, 0.32, -torsoHalfLen - torsoRadius - 0.1, HORN_DARK));
+  } else {
+    // Lying down, chewing cud (G1: the road cow used to be the standing cow sunk 0.76 m, legs and tail through the road).
+    // The barrel rests on the ground, forelegs folded under the chest, one hind leg out to the side, tail on the ground.
+    const drop = 0.7;
+    for (const g of geos) g.translate(0, -drop, 0);
+    for (const side of [-1, 1]) {
+      geos.push(capsuleBetween(P(side * 0.2, 0.075, 0.5), P(side * 0.17, 0.07, 0.14), 0.075, HIDE_NEUTRAL, 4, 8)); // folded foreleg
+      geos.push(sc(new THREE.SphereGeometry(0.06, 8, 6), 1.1, 0.8, 1.2, side * 0.17, 0.05, 0.12, HORN_DARK)); // hoof tucked under
+    }
+    geos.push(capsuleBetween(P(0.3, 0.13, -0.5), P(0.5, 0.08, -0.08), 0.085, HIDE_NEUTRAL, 4, 8)); // hind leg out to the side
+    geos.push(sc(new THREE.SphereGeometry(0.06, 8, 6), 1.2, 0.8, 1.1, 0.52, 0.05, -0.02, HORN_DARK));
+    geos.push(capsuleBetween(P(-0.27, 0.11, -0.55), P(-0.31, 0.08, -0.22), 0.08, HIDE_NEUTRAL, 4, 8)); // hind leg folded under
+    geos.push(capsuleBetween(P(0, torsoY + 0.2 - drop, -torsoHalfLen - torsoRadius + 0.05), P(0.14, 0.03, -1.0), 0.022, HIDE_NEUTRAL, 3, 6)); // tail
+    geos.push(sc(new THREE.SphereGeometry(0.05, 6, 5), 2.0, 0.6, 1, 0.22, 0.032, -1.03, HORN_DARK));
+  }
 
   const merged = mergeGeometries(geos);
   // Seamless projected UVs so one hide texture runs across every part (hair grain, soft patches).
@@ -446,11 +466,14 @@ export function createCattleHerd(placements) {
     mesh.setColorAt(i, color.setHex(tints[i % tints.length]));
     return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, scale, t: i * 1.7 + (p.buffalo ? 3 : 0), rate: 0.35 + (i % 3) * 0.05 };
   });
+  // Idle motion keeps all four hooves planted (G1: the old head-down pitch swung the whole rigid body about its centre,
+  // driving the front hooves 5 cm into the ground): a slow shift of the head side to side and the barrel breathing.
   function applyInstance(i, inst, graze) {
-    _herdEuler.set(graze * 0.1, inst.rotY, 0);
+    _herdEuler.set(0, inst.rotY + graze * 0.035, 0);
     _herdQuat.setFromEuler(_herdEuler);
-    _herdPos.set(inst.x, inst.y + Math.max(graze, 0) * 0.015, inst.z); // inst.y: down a dug bank (src/dips.js), 0 elsewhere
-    _herdScale.set(inst.scale.x, inst.scale.y, inst.scale.z);
+    _herdPos.set(inst.x, inst.y, inst.z); // inst.y: settled on the surface under the hooves (src/standOn.js)
+    const br = 1 + graze * 0.012;
+    _herdScale.set(inst.scale.x * br, inst.scale.y, inst.scale.z);
     _herdMat.compose(_herdPos, _herdQuat, _herdScale);
     mesh.setMatrixAt(i, _herdMat);
   }
@@ -458,6 +481,10 @@ export function createCattleHerd(placements) {
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   swapInAnimalModel(mesh, 'cow');
+  markFigure(mesh);
+  keepOnGround(mesh, (scene) => {
+    instances.forEach((inst, i) => { applyInstance(i, inst, 0); mesh.instanceMatrix.needsUpdate = true; const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
+  });
   function update(dt) {
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];
@@ -484,12 +511,12 @@ export function createDogPack(placements) {
   const color = new THREE.Color();
   const instances = placements.map((p, i) => {
     mesh.setColorAt(i, color.setHex(DOG_TINTS[i % DOG_TINTS.length]));
-    return { x: p.x, z: p.z, rotY: p.rotationY ?? 0, t: i * 2.1, rate: 0.5 + (i % 2) * 0.1 };
+    return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, t: i * 2.1, rate: 0.5 + (i % 2) * 0.1 };
   });
   function applyInstance(i, inst, sniff) {
     _herdEuler.set(0, inst.rotY + sniff * 0.12, 0);
     _herdQuat.setFromEuler(_herdEuler);
-    _herdPos.set(inst.x, 0, inst.z);
+    _herdPos.set(inst.x, inst.y, inst.z);
     _herdScale.set(1, 1, 1);
     _herdMat.compose(_herdPos, _herdQuat, _herdScale);
     mesh.setMatrixAt(i, _herdMat);
@@ -498,6 +525,10 @@ export function createDogPack(placements) {
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   swapInAnimalModel(mesh, 'dog');
+  markFigure(mesh);
+  keepOnGround(mesh, (scene) => {
+    instances.forEach((inst, i) => { applyInstance(i, inst, 0); const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
+  });
   function update(dt) {
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];

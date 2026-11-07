@@ -1,8 +1,11 @@
 import * as THREE from 'three';
-import { batchPeopleMesh } from './placeBatch.js';
+import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { texturedBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
 import { mergeMeshList } from './mergeUtils.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { CHAURAHA } from './mapPlan.js';
+import { ensureUv2 } from './materials.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 
 /**
@@ -65,7 +68,64 @@ function rng(seed) {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
+/**
+ * Frontage along the four arms is switched on only when it finishes and is clean (PARALLEL.md TONIGHT item 1). The
+ * island always builds. Frontage is off until the arm rows exist.
+ */
+const ENABLE_FRONTAGE = false;
+
+/**
+ * The raised central island of the roundabout: radius CHAURAHA.islandR (6 m), a concrete kerb 0.22 m high, a grass top
+ * 0.14 m up (below the milestone plinth's first step so the marker stands on it without moving). Solid: the colliders
+ * are inscribed horizontal slabs, so nothing on wheels or feet crosses it; the ring carriageway is the only way round.
+ */
+export function createChaurahaIsland(scene) {
+  const { x: cx, z: cz, islandR: R } = CHAURAHA;
+  const root = new THREE.Group();
+  root.name = 'chauraha_island';
+  const kerbW = 0.4, kerbH = 0.22, topY = 0.14;
+  // kerb: a lathe of the kerb's cross-section, UVs in metres
+  const prof = [[R - kerbW, 0], [R, 0], [R, kerbH], [R - kerbW, kerbH]].map(([r, y]) => new THREE.Vector2(r, y));
+  const kg = new THREE.LatheGeometry(prof, 48);
+  { const uv = kg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (2 * Math.PI * R), uv.getY(i) * 1.2); }
+  const kerb = new THREE.Mesh(kg, getTiledMaterial('concrete', { repeatX: 1 / 1.5, repeatY: 1 / 1.5, roughness: 1, tint: 0xd0cabc }));
+  kerb.name = 'chauraha_island_kerb';
+  kerb.receiveShadow = true; kerb.castShadow = true;
+  ensureUv2(kg);
+  root.add(kerb);
+  // grass top (soil edge under the kerb), UVs in metres
+  const tg = new THREE.CircleGeometry(R - kerbW + 0.02, 48).rotateX(-Math.PI / 2);
+  { const p = tg.attributes.position, uv = tg.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3, p.getZ(i) / 3); }
+  ensureUv2(tg);
+  const top = new THREE.Mesh(tg, getTiledMaterial('grass', { repeatX: 1, repeatY: 1, roughness: 1 }));
+  top.position.y = topY;
+  top.name = 'chauraha_island_top';
+  top.receiveShadow = true;
+  root.add(top);
+  // solid: inscribed slabs (inside the circle, so the ring edge is never clipped)
+  const boxes = [];
+  const n = 16, step = (2 * R) / n;
+  for (let i = 0; i < n; i++) {
+    const z0 = -R + i * step, z1 = z0 + step, zf = Math.max(Math.abs(z0), Math.abs(z1));
+    const hw = Math.sqrt(Math.max(0, R * R - zf * zf)) - 0.05;
+    if (hw > 0.2) boxes.push({ minX: cx - hw, maxX: cx + hw, minZ: cz + z0, maxZ: cz + z1 });
+  }
+  const col = new THREE.Mesh(new THREE.BufferGeometry());
+  col.visible = false;
+  col.name = 'chauraha_island_collider';
+  col.userData.colliderBoxes = boxes;
+  root.add(col);
+  root.position.set(cx, 0, cz);
+  // kerb/top are local to the centre; collider boxes are world, so keep the collider child out of the offset
+  root.remove(col);
+  scene.add(col);
+  scene.add(root);
+  return root;
+}
+
 export function createChaurahaEdges(scene) {
+  createChaurahaIsland(scene);
+  if (!ENABLE_FRONTAGE) return null;
   const rand = rng(4107);
   const pick = (a) => a[Math.floor(rand() * a.length)];
   const t = (lo, hi) => lo + rand() * (hi - lo);
@@ -352,7 +412,7 @@ export function createChaurahaEdges(scene) {
   });
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  batchPeopleMesh(mesh);
+  batchPeopleMesh(mesh); markFigure(mesh); keepOnGround(mesh, (sc) => settleInstances(sc, mesh, refreshPeopleMesh));
   scene.add(mesh);
   if (typeof window !== 'undefined') window.__chaurahaEdges = { buildings: BUILDINGS.length, people: people.length, signs: SIGN_KEYS.length };
   return { root, people: mesh };

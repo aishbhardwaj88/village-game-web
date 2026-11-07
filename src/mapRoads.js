@@ -8,7 +8,7 @@
  */
 import * as THREE from 'three';
 import { buildNetwork, networkMesh } from './roadNetwork.js';
-import { MAP_SHIFT } from './mapPlan.js';
+import { MAP_SHIFT, CHAURAHA, bendMapRoad } from './mapPlan.js';
 import { dirtTrackLines } from './dirtTracks.js';
 import { pt } from './anchors.js';
 import MAP from '../docs/layout/village-plan-positions-2026-11-01.json';
@@ -23,7 +23,7 @@ export function mapRoadLines() {
     if (closed && (pts[0][0] !== pts[pts.length - 1][0] || pts[0][1] !== pts[pts.length - 1][1])) pts.push(pts[0]);
     lines.push({ id, w, pts, kind, closed: !!closed, ...extra });
   };
-  for (const [name, r] of Object.entries(MAP.roads)) add(name, r.width_m, r.centreline, name === 'highway' ? 'highway' : 'road', r.closed);
+  for (const [name, r] of Object.entries(MAP.roads)) add(name, r.width_m, bendMapRoad(name, r.centreline), name === 'highway' ? 'highway' : 'road', r.closed);
   MAP.lanes_and_tracks.forEach((l, i) => {
     // the kiln drive and the tractor route run through open country: no nali there
     const kind = kindOf(l.type) === 'lane' && /kiln|tractor/i.test(l.name) ? 'back' : kindOf(l.type);
@@ -62,8 +62,35 @@ function nearestOnLines(lines, p) {
 }
 
 /** Every line the surface is built from: the map's own, the dirt tracks and the two older lanes (all world metres). */
+/**
+ * The chauraha: the bent main_road and cross_road each pass straight through the milestone, so cut each at the ring
+ * (its two halves end on the ring's centreline, never cross the island) and add the closed ring carriageway.
+ */
+function ringArms(lines) {
+  const { x: cx, z: cz, ringR, ringW } = CHAURAHA;
+  const out = [];
+  for (const l of lines) {
+    if (l.id !== 'main_road' && l.id !== 'cross_road') { out.push(l); continue; }
+    let k = -1;
+    for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i];
+      const dx = bx - ax, dz = bz - az, t = ((cx - ax) * dx + (cz - az) * dz) / (dx * dx + dz * dz);
+      if (t > 0 && t < 1 && Math.hypot(ax + t * dx - cx, az + t * dz - cz) < 0.5) k = i;
+    }
+    if (k < 0) { out.push(l); continue; }
+    const a = l.pts[k - 1], b = l.pts[k], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const ux = (b[0] - a[0]) / len, uz = (b[1] - a[1]) / len;
+    out.push({ ...l, pts: [...l.pts.slice(0, k), [cx - ux * ringR, cz - uz * ringR]] });
+    out.push({ ...l, id: `${l.id}_${l.id === 'main_road' ? 's' : 'e'}`, pts: [[cx + ux * ringR, cz + uz * ringR], ...l.pts.slice(k)] });
+  }
+  const ring = [];
+  for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2; ring.push([cx + Math.cos(a) * ringR, cz + Math.sin(a) * ringR]); }
+  out.push({ id: 'chauraha_ring', w: ringW, pts: ring, kind: 'road', closed: true });
+  return out;
+}
+
 export function allRoadLines() {
-  const map = mapRoadLines();
+  const map = ringArms(mapRoadLines());
   const lines = [...map, ...dirtTrackLines().map((t) => ({ id: t.id, w: t.w, pts: t.pts, y: t.y, kind: t.w >= 3 ? 'track' : 'path' }))];
   for (const l of legacyLines()) {
     if (l.joinStart) {

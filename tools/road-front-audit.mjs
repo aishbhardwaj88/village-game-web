@@ -18,7 +18,7 @@
  * Usage: node tools/road-front-audit.mjs
  */
 import fs from 'fs';
-import { MAP_SHIFT } from '../src/mapPlan.js';
+import { MAP_SHIFT, bendMapRoad } from '../src/mapPlan.js';
 import { ANCHORS } from '../src/anchors.js';
 
 const MAP = JSON.parse(fs.readFileSync('docs/layout/village-plan-positions-2026-11-01.json', 'utf8'));
@@ -26,7 +26,7 @@ const sh = ([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z];
 
 const roads = [];
 for (const [id, r] of Object.entries(MAP.roads))
-  roads.push({ id, kind: id === 'highway' ? 'highway' : 'road', w: r.width_m, pts: r.centreline.map(sh) });
+  roads.push({ id, kind: id === 'highway' ? 'highway' : 'road', w: r.width_m, pts: bendMapRoad(id, r.centreline).map(sh) });
 for (const l of MAP.lanes_and_tracks) {
   const kind = /front path/.test(l.type) ? 'front path' : /back/.test(l.type) ? 'back lane' : /farm/.test(l.type) ? 'farm track' : 'village lane';
   roads.push({ id: l.name, kind, w: l.width_m, pts: l.centreline.map(sh) });

@@ -26,6 +26,40 @@ const MAX_STEER = 0.2;                            // rad: small, the hands sit o
 // real character arrives.
 const SADDLE_TOP = 1.0, SADDLE_Z = -0.30, SEATED_HEIGHT = 0.9, SEATED_SLIM = 0.55, LEAN = 0.24;
 
+// Riding feel (C4, 8 Nov). All numbers are deliberately small: this is a village cycle, not a stunt bike.
+const MAX_LEAN = THREE.MathUtils.degToRad(12); // roll into a turn, cycle and rider together, about the tyre contact line
+const LEAN_GAIN = 0.6;                          // fraction of the physical lean atan(v * yawRate / g)
+const BOB = 0.014, SWAY = 0.03;                 // rider rise per pedal stroke (m) and torso side sway (rad), only while pedalling
+const SPRING_W = 18, SPRING_Z = 0.35;           // bump spring: ~3 Hz, settles in a few bounces
+const CAM_ROLL = 0.22, CAM_SHIFT = 0.25;        // camera rolls 22 % of the bike's lean (max ~2.6 deg), slides up to 0.25 m outward
+
+const _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _e = new THREE.Euler();
+
+/** A thumb-lever bicycle bell, procedural: the striker rattles against a steel dome in two quick bursts ("tring-tring").
+ * Partials are a struck dome's inharmonic set, each a detuned pair so the ring beats a little like a real bell. */
+function ringCycleBell(ctx, out) {
+  const t0 = ctx.currentTime + 0.01;
+  const f0 = 2350 * (0.98 + Math.random() * 0.04);
+  const partials = [[1, 1, 0.55], [1.49, 0.55, 0.32], [2.42, 0.32, 0.18], [3.17, 0.18, 0.12]]; // ratio, gain, decay (s)
+  const strikes = [];
+  for (const [start, n] of [[0, 6], [0.4, 7]]) for (let k = 0; k < n; k++) strikes.push([t0 + start + k * 0.031 + Math.random() * 0.006, 1 - k * 0.06]);
+  const end = strikes[strikes.length - 1][0] + 1.2;
+  const bus = ctx.createGain();
+  bus.gain.value = 0.11;
+  bus.connect(out);
+  for (const [ratio, g, decay] of partials) {
+    for (const det of [-1, 1]) {
+      const o = ctx.createOscillator(), a = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f0 * ratio + det * (2 + ratio * 1.5);
+      a.gain.setValueAtTime(0, t0);
+      for (const [t, v] of strikes) { a.gain.setTargetAtTime(g * v * 0.5, t, 0.002); a.gain.setTargetAtTime(0, t + 0.006, decay / 3); }
+      o.connect(a).connect(bus);
+      o.start(t0); o.stop(end);
+    }
+  }
+}
+
 /** Two-bone IK in the (y, z) plane, knee forward. Angles from straight down toward +z. Same as leg_ik() in the builder. */
 function legIK(hy, hz, ty, tz) {
   const dz = tz - hz, dy = ty - hy;
@@ -100,8 +134,16 @@ export function createPlayerCycle(playerGroup) {
   holder.name = 'player_cycle';
   holder.visible = false;
   playerGroup.add(holder);
+  // holder: heading (y) here, and cyclistEvents.js writes its speed-breaker jolt into holder.position.y.
+  // rig: lean (z) and bump pitch (x) / bump lift, about the ground point between the wheels.
+  const rig = new THREE.Group();
+  rig.name = 'player_cycle_rig';
+  holder.add(rig);
   let heading = 0, steer = 0, dist = 0;
-  let lastX = playerGroup.position.x, lastZ = playerGroup.position.z;
+  let lastX = playerGroup.position.x, lastZ = playerGroup.position.z, lastY = playerGroup.position.y;
+  let speed = 0, yawRate = 0, lean = 0, camLean = 0, crank = 0, pedalAmt = 0, ridingT = 0;
+  let bumpY = 0, bumpV = 0, pitch = 0, pitchV = 0, roughT = 0;
+  let lastBell = -1;
   const body = playerGroup.children.find((c) => c.isMesh && c.geometry?.type === 'CapsuleGeometry');
   const standY = body?.position.y ?? 1;
   const standH = body ? (body.geometry.computeBoundingBox(), body.geometry.boundingBox.max.y - body.geometry.boundingBox.min.y) : 2;
@@ -157,56 +199,132 @@ export function createPlayerCycle(playerGroup) {
       m.receiveShadow = true;
       out.add(m);
     });
-    holder.add(out);
+    rig.add(out);
   }).catch((e) => console.warn('player cycle model failed', e));
 
+  /** Kick the bump springs: lift (m/s) and nose pitch (rad/s, negative = nose up). */
+  function kick(lift, nose) { bumpV += lift; pitchV += nose; }
+
   return {
-    /** Call every frame. moveX/moveZ is the world-space step direction (0 when standing). */
-    update(dt, onCycle, moveX, moveZ) {
+    get ridingSeconds() { return ridingT; },
+    /** Ring the handlebar bell through the game's master gain (so mute and volume apply). */
+    ringBell(audio) {
+      if (!audio?.started || !audio.ctx || !audio.master) return false;
+      if (audio.ctx.currentTime - lastBell < 0.35) return false;
+      lastBell = audio.ctx.currentTime;
+      try { ringCycleBell(audio.ctx, audio.master); } catch (e) { /* sound must never break the game */ }
+      return true;
+    },
+    /**
+     * Call every frame. moveX/moveZ is the world-space step direction (0 when standing).
+     * opts.pedalling: W is held and the cycle is rolling (the cranks freewheel otherwise).
+     * opts.surface: surfaces.js SURFACE value under the cycle ('dirt', 'soil', ... ) for the rough-ground judder.
+     */
+    update(dt, onCycle, moveX, moveZ, opts = {}) {
       holder.visible = onCycle;
       // Distance actually travelled (after collision), so the wheels never spin against a wall.
-      const px = playerGroup.position.x, pz = playerGroup.position.z;
+      const px = playerGroup.position.x, pz = playerGroup.position.z, py = playerGroup.position.y;
       let step = Math.hypot(px - lastX, pz - lastZ);
-      lastX = px; lastZ = pz;
-      if (!onCycle || step > 3) step = 0;   // teleports and on-foot moves do not turn the wheels
+      const dy = py - lastY;
+      lastX = px; lastZ = pz; lastY = py;
+      const teleport = step > 3;
+      if (!onCycle || teleport) step = 0;   // teleports and on-foot moves do not turn the wheels
       dist += step;
 
       if (!onCycle) {
         if (body) { body.scale.set(1, 1, 1); body.position.set(0, standY, 0); body.rotation.set(0, 0, 0); }
+        speed = 0; yawRate = 0; lean = 0; camLean = 0; bumpY = bumpV = pitch = pitchV = 0; pedalAmt = 0; ridingT = 0;
+        rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0);
         return;
       }
+      const k1 = (r) => 1 - Math.exp(-r * dt);
+      if (dt > 0) speed += (step / dt - speed) * k1(10);
+      if (speed > 1.5) ridingT += dt;
+
       let turnRate = 0;
-      if (onCycle && moveX * moveX + moveZ * moveZ >= 1e-4) {
+      if (moveX * moveX + moveZ * moveZ >= 1e-4) {
         const target = Math.atan2(moveX, moveZ);
         let d = target - heading;
         d = Math.atan2(Math.sin(d), Math.cos(d));
-        const turn = d * (1 - Math.exp(-TURN_RATE * dt));
+        const turn = d * k1(TURN_RATE);
         heading += turn;
         turnRate = dt > 0 ? turn / dt : 0;
+        if (Math.abs(turnRate) > 6) turnRate = 0; // a snap (pull-away re-aim, respawn) is not a carved turn
         holder.rotation.y = heading;
       }
+      yawRate += (turnRate - yawRate) * k1(8);
       const steerTarget = THREE.MathUtils.clamp(turnRate * 0.06, -MAX_STEER, MAX_STEER);
-      steer += (steerTarget - steer) * (1 - Math.exp(-10 * dt));
+      steer += (steerTarget - steer) * k1(10);
 
-      // Rolling forward turns the top of each wheel toward +z: a negative angle in the shader's convention.
+      // Lean: positive yawRate turns left (+heading swings forward toward +x); leaning left is a negative z roll.
+      const leanTarget = THREE.MathUtils.clamp(Math.atan(speed * yawRate / 9.81) * LEAN_GAIN, -MAX_LEAN, MAX_LEAN);
+      lean += (leanTarget - lean) * k1(5);
+      camLean += (lean - camLean) * k1(2.2); // the camera follows the lean late: that lag is the turn feel
+
+      // Wheels always turn with the ground; the cranks only while pedalling (freewheel), and drift level when coasting.
       const wheelA = -dist / HY;
-      const crankA = wheelA / GEAR;
-      uniforms.cyA.value.set(wheelA % (Math.PI * 2), wheelA % (Math.PI * 2), crankA % (Math.PI * 2), steer);
-      pose(crankA % (Math.PI * 2));
+      const pedalling = !!opts.pedalling && speed > 0.2;
+      pedalAmt += ((pedalling ? 1 : 0) - pedalAmt) * k1(pedalling ? 6 : 3);
+      if (pedalling) crank -= step / HY / GEAR;
+      else {
+        const level = Math.round(crank / Math.PI) * Math.PI;
+        crank += (level - crank) * k1(2.5);
+      }
+      crank %= Math.PI * 2;
+      uniforms.cyA.value.set(wheelA % (Math.PI * 2), wheelA % (Math.PI * 2), crank, steer);
+      pose(crank);
 
-      if (body) {
-        if (onCycle) {
-          const k = SEATED_HEIGHT / standH;
-          body.scale.set(SEATED_SLIM, k, SEATED_SLIM);
-          const cz = SADDLE_Z + (SEATED_HEIGHT / 2) * Math.sin(LEAN);
-          body.position.set(Math.sin(heading) * cz, SADDLE_TOP + (SEATED_HEIGHT / 2) * Math.cos(LEAN), Math.cos(heading) * cz);
-          body.rotation.set(LEAN, heading, 0, 'YXZ');
-        } else {
-          body.scale.set(1, 1, 1);
-          body.position.set(0, standY, 0);
-          body.rotation.set(0, 0, 0);
+      // Bumps: a sudden change of ground height under the cycle (kerb, platform edge, dip lip), plus a fine judder on kachcha ground.
+      if (!teleport && speed > 0.8 && Math.abs(dy) > 0.012) {
+        const h = Math.min(Math.abs(dy), 0.2);
+        kick(h * 7 * Math.min(1, speed / 3), -h * 3 * Math.sign(dy));
+      }
+      const rough = opts.surface === 'soil' ? 1 : opts.surface === 'dirt' ? 0.45 : 0;
+      if (rough > 0 && speed > 1) {
+        roughT -= dt;
+        if (roughT <= 0) {
+          roughT = 0.09 + Math.random() * 0.16;
+          const v = Math.min(1, speed / 5.5) * rough;
+          kick((Math.random() * 0.06 + 0.02) * v, (Math.random() - 0.5) * 0.12 * v);
         }
       }
+      const sub = Math.max(1, Math.ceil(dt / (1 / 120)));
+      for (let i = 0; i < sub; i++) {
+        const h = dt / sub;
+        bumpV += (-SPRING_W * SPRING_W * bumpY - 2 * SPRING_Z * SPRING_W * bumpV) * h; bumpY += bumpV * h;
+        pitchV += (-SPRING_W * SPRING_W * pitch - 2 * SPRING_Z * SPRING_W * pitchV) * h; pitch += pitchV * h;
+      }
+      bumpY = THREE.MathUtils.clamp(bumpY, -0.03, 0.06); pitch = THREE.MathUtils.clamp(pitch, -0.05, 0.05);
+      rig.position.set(0, bumpY, 0);
+      rig.rotation.set(pitch, 0, -lean, 'ZXY');
+
+      if (body) {
+        // The seated torso rides on the same chain as the cycle: jolt, heading, lean, bump, then the seat offset, bob and sway.
+        const k = SEATED_HEIGHT / standH;
+        body.scale.set(SEATED_SLIM, k, SEATED_SLIM);
+        const bob = pedalAmt * BOB * Math.sin(crank * 2) ** 2;
+        const sway = pedalAmt * SWAY * Math.sin(crank);
+        _m.makeTranslation(0, holder.position.y + bumpY, 0);
+        _m.multiply(_m2.makeRotationY(heading));
+        _m.multiply(_m2.makeRotationFromEuler(_e.set(pitch, 0, -lean + sway, 'ZXY')));
+        _m.multiply(_m2.makeTranslation(0, SADDLE_TOP + bob, SADDLE_Z));
+        _m.multiply(_m2.makeRotationX(LEAN));
+        _m.multiply(_m2.makeTranslation(0, SEATED_HEIGHT / 2, 0));
+        _m.decompose(body.position, _q, _s);
+        body.quaternion.copy(_q);
+      }
+    },
+    /**
+     * Call right AFTER the camera rig's own update (which rebuilds the camera from scratch every frame, so nothing here
+     * accumulates). Rolls the view a little into the turn, slides it outward as the lean builds (the late camLean is the
+     * lag), and passes a fraction of each bump through. Never call it when the rig is frozen.
+     */
+    applyCamera(camera, active) {
+      if (!active || !holder.visible) return;
+      const leanLeft = camLean; // > 0 while turning left
+      camera.translateX(leanLeft / MAX_LEAN * CAM_SHIFT); // turning left, the camera sits a little to the right of the line: it has not caught up yet
+      camera.position.y += (bumpY + holder.position.y) * 0.35;
+      camera.rotateZ(leanLeft * CAM_ROLL + pedalAmt * 0.002 * Math.sin(crank));
     },
   };
 }

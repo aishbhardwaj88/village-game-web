@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { keepOnGround, markFigure, groundAt, sceneOf } from './standOn.js';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
@@ -70,6 +71,8 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const mesh = new THREE.InstancedMesh(geometry, material, total);
   mesh.name = 'bazaar_life';
+  markFigure(mesh);
+  const gy = new Float32Array(total); // per-figure lift onto the surface under its feet (src/standOn.js)
   mesh.castShadow = true;
   mesh.receiveShadow = true;
 
@@ -81,7 +84,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   const _color = new THREE.Color();
 
   function setInstance(index, x, y, z, rotY) {
-    _pos.set(x, y, z);
+    _pos.set(x, y + gy[index], z);
     _euler.set(0, rotY, 0);
     _quat.setFromEuler(_euler);
     _mat.compose(_pos, _quat, _scale);
@@ -118,6 +121,13 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   mesh.instanceColor.needsUpdate = true;
 
   const _toTarget = new THREE.Vector3();
+  const xz = (i) => (i < shopkeeperCount ? shopkeepers[i] : villagers[i - shopkeeperCount].pos);
+  function settleOne(scene, i) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
+    const p = xz(i);
+    gy[i] = Math.min(0.35, Math.max(0, groundAt(scene, p.x, p.z, 0)));
+  }
+  keepOnGround(mesh, (scene) => { for (let i = 0; i < total - 1; i++) settleOne(scene, i); }); // last = seated on the tea-stall bench
+  let rr = 0;
 
   function update(dt) {
     for (const s of shopkeepers) {
@@ -151,6 +161,8 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
       }
       setInstance(v.index, v.pos.x, NPC_HEIGHT / 2, v.pos.z, v.rotY);
     }
+    const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
+    if (sc && villagers.length) settleOne(sc, villagers[rr++ % villagers.length].index);
 
     mesh.instanceMatrix.needsUpdate = true;
   }

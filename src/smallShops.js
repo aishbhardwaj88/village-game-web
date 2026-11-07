@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { batchPeopleMesh } from './placeBatch.js';
+import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { ANCHORS } from './anchors.js';
 import { getTiledMaterial, texturedBox, texturedWallBox } from './materials.js';
@@ -515,7 +516,7 @@ export function createSmallShops(scene) {
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), pp.site.ry + pp.yaw); sc.set(k, sy, k);
     pm.setMatrixAt(i, m.compose(p, q, sc)); pm.setColorAt(i, col.setHex(pp.tint));
   });
-  group.add(pm); batchPeopleMesh(pm);
+  group.add(pm); batchPeopleMesh(pm); markFigure(pm); keepOnGround(pm, (sc) => settleInstances(sc, pm, refreshPeopleMesh));
 
   scene.add(group);
   let tris = 0; group.traverse((o) => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); });

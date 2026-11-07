@@ -104,6 +104,9 @@ export function dipHeightAt(x, z) {
   return y < 0 ? Math.max(y, c.water - 0.18) : 0;
 }
 
+// tools/feet-check.js reads the dug ground height through this (the flat ground plane only has a shader hole there).
+if (typeof window !== 'undefined') window.__dips = { dipHeightRaw, dipHeightAt };
+
 /** Ghat steps and other flat tops inside a dip (world rect). */
 export function registerDipPad(dip, rect) { PADS.push({ dip, ...rect }); }
 

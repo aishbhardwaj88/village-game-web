@@ -123,6 +123,14 @@ const peopleSrc = []; // { mesh, iids, last }
 let peopleBatch = null, peopleCount = 0;
 const peopleGeo = new Map();
 export function batchPeopleMesh(mesh) { peopleSrc.push({ mesh, iids: null, last: null, age: 0 }); }
+/** Re-copy a batched people mesh's instance matrices into the shared batch (after they were moved, e.g. settled on the ground). */
+export function refreshPeopleMesh(mesh) {
+  const e = peopleSrc.find((s) => s.mesh === mesh);
+  if (!e || !e.iids) return;
+  const mm = new THREE.Matrix4();
+  mesh.updateWorldMatrix(true, false);
+  for (let k = 0; k < e.iids.length; k++) { mesh.getMatrixAt(k, mm); mm.premultiply(mesh.matrixWorld); peopleBatch.setMatrixAt(e.iids[k], mm); }
+}
 function peopleBatchGet() {
   if (!peopleBatch) {
     const mat = new THREE.MeshStandardMaterial({ roughness: 0.85 }); mat.name = 'people_pool';

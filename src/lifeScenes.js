@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { batchPeopleMesh } from './placeBatch.js';
+import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { texturedBox } from './materials.js';
 import { mergeMeshList } from './mergeUtils.js';
 import { buildTrees } from './trees.js';
@@ -167,6 +168,6 @@ export function createLifeScenes(scene) {
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   scene.add(root);
-  batchPeopleMesh(mesh); scene.add(mesh); // top-level name starts 'ambient_life' so the auto-collider pass skips the placeholder people (src/solidRules.js SKIP_TOP)
+  batchPeopleMesh(mesh); markFigure(mesh); keepOnGround(mesh, (sc) => settleInstances(sc, mesh, refreshPeopleMesh)); scene.add(mesh); // top-level name starts 'ambient_life' so the auto-collider pass skips the placeholder people (src/solidRules.js SKIP_TOP)
   return { root, people: mesh };
 }
