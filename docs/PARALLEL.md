@@ -1,3 +1,7 @@
+# SHE TESTS AT 10:00 IST, SUNDAY 8 NOV. Ride-through capture at 09:30, not 07:00.
+Work the list below straight through until 09:30. Then: capture, and stop starting new
+features. Anything unfinished at 09:30 is switched off, not left half on.
+
 # TOP OF TONIGHT: THE CYCLE AND GROUND CONTACT. She rides constantly, she feels these every second.
 
 Her words, 7 Nov 23:45: "cow's legs are inside the ground... All human beings and animals
@@ -97,9 +101,9 @@ the next run was spent clawing it back. That loop ends tonight.
    riding. Vendors, charpais with people, a tied buffalo, kids at a game, a parked
    tractor, a cow in the road. Vocabulary sections 4, 5, 3, 8.
 6. **The two gullies off the chauraha**, the same treatment.
-7. **07:00: ride-through capture**, 8 shots from the saddle, docs/shots/ride-2026-11-08-0700/.
+7. **09:30: ride-through capture**, 8 shots from the saddle, docs/shots/ride-2026-11-08-0930/.
 
-Nothing half-built left switched on at 07:00.
+Nothing half-built left switched on at 09:30.
 
 ---
 
@@ -111,10 +115,10 @@ Tonight, in order:
 3. Peacock on a roof.
 4. Fill the chauraha's edges: textured house fronts and shops ringing it, people at
    the corners. The circle itself stays clear.
-5. Ride-through capture at 07:00 to docs/shots/ride-2026-11-08-0700/ (main road,
+5. Ride-through capture at 09:30 to docs/shots/ride-2026-11-08-0930/ (main road,
    chauraha, two gullies). That is what she sees first.
 Anything after that: polish and bug fixes only. No half-finished features left in the
-build at 07:00. If a feature cannot finish, leave it switched off, not half on.
+build at 09:30. If a feature cannot finish, leave it switched off, not half on.
 
 ---
 
