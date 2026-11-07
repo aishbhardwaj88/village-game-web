@@ -144,6 +144,7 @@ import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js'; // pond, j
 import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { registerLongWalks } from './longWalks.js';
+import { registerRideNooks } from './rideNooks.js';
 import { createBellProp, createFlagpoleProp, createDonationBoard, createStreetLamps, createWaterTankProp, lampNight } from './props.js';
 import { createZeroMilestone } from './zeroMilestone.js'; // zero milestone + flag at the village square (docs/PARALLEL.md item 6)
 import { createBazaarLife } from './bazaarLife.js';
@@ -1668,6 +1669,7 @@ async function main() {
     zoneManager.register('map_haystacks', { ...MAP_HAY, buildRadius: 50, teardownRadius: 65, build: () => createMapHaystacks(MAP_HAY) }); // the map's three 6 m stacks (1 Nov plan)
     const DUNG_YARD = { x: -128 + 600, z: 131.5 };
     zoneManager.register('dung_cake_yard', { ...DUNG_YARD, buildRadius: 50, teardownRadius: 65, build: () => createDungCakeYard(DUNG_YARD) }); // the map's uple drying yard (1 Nov plan)
+    registerRideNooks(zoneManager); // everyday scenes on every bare road/lane stretch (src/rideNooks.js, docs/ride-nooks-2026-11-07.md)
     registerLongWalks(zoneManager); // wells, shrines, gates, haystacks, buffalo, pumps along every walk over 20 s (src/longWalks.js)
     const FP = (n, x, z, items, r = 40) => zoneManager.register(n, { x: x + 600, z, buildRadius: r, teardownRadius: r + 15, build: () => createFieldPropSite(n, { x: x + 600, z }, items.map((i) => ({ ...i, x: i.x + 600 }))) });
     FP('map_well', -205.5, -20.6, [{ part: 'well', x: -205.5, z: -20.6, solid: [4.2, 4.2] }]); // the map's village well (1 Nov plan)
