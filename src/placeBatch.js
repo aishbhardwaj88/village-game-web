@@ -114,6 +114,50 @@ function markTiled(root) {
 }
 export function batchLateGroup(group, key) { pending.push({ model: group, key, age: 0, late: true, rooted: false, tiled: true }); }
 
+/** Static capsule-people InstancedMeshes (ride nooks, vendors, small shops, ambient life scenes) fold into ONE BatchedMesh with one shared
+ *  material and per-instance colour; the source meshes stay in the graph on the hidden layer and drive visibility. */
+const peopleSrc = []; // { mesh, iids, last }
+let peopleBatch = null, peopleCount = 0;
+const peopleGeo = new Map();
+export function batchPeopleMesh(mesh) { peopleSrc.push({ mesh, iids: null, last: null, age: 0 }); }
+function peopleBatchGet() {
+  if (!peopleBatch) {
+    const mat = new THREE.MeshStandardMaterial({ roughness: 0.85 }); mat.name = 'people_pool';
+    peopleBatch = new THREE.BatchedMesh(64, 4000, 16000, mat);
+    peopleBatch.name = 'placebatch_people'; peopleBatch.castShadow = true; peopleBatch.receiveShadow = true;
+    peopleBatch.frustumCulled = false; peopleBatch.userData.noAutoCollider = true; peopleBatch.userData.visualOnly = true;
+    root.add(peopleBatch);
+  }
+  return peopleBatch;
+}
+function syncPeople() {
+  for (let i = peopleSrc.length - 1; i >= 0; i--) {
+    const e = peopleSrc[i], m = e.mesh, vis = rooted(m);
+    if (!e.iids) {
+      if (vis === null) { if (++e.age > 1800) peopleSrc.splice(i, 1); continue; }
+      const g = m.geometry, pr = g.parameters;
+      if (!pr || pr.radius === undefined || !pr.capSegments) { peopleSrc.splice(i, 1); continue; } // only capsule placeholders
+      const b = peopleBatchGet();
+      const gk = [pr.radius, pr.height ?? pr.length, pr.capSegments, pr.radialSegments].join('|');
+      let gid = peopleGeo.get(gk);
+      if (gid === undefined) { gid = b.addGeometry(g.clone()); peopleGeo.set(gk, gid); }
+      m.updateWorldMatrix(true, false);
+      const mm = new THREE.Matrix4(), c = new THREE.Color();
+      e.iids = [];
+      for (let k = 0; k < m.count; k++) {
+        if (peopleCount >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
+        const iid = b.addInstance(gid); peopleCount++;
+        m.getMatrixAt(k, mm); mm.premultiply(m.matrixWorld); b.setMatrixAt(iid, mm);
+        if (m.instanceColor) { m.getColorAt(k, c); b.setColorAt(iid, c); } else b.setColorAt(iid, c.set(0xffffff));
+        b.setVisibleAt(iid, false); e.iids.push(iid);
+      }
+      m.layers.set(HIDDEN_LAYER);
+    }
+    if (vis === null) { for (const iid of e.iids) peopleBatch.deleteInstance(iid); peopleCount -= e.iids.length; peopleSrc.splice(i, 1); continue; }
+    if (e.last !== vis) { for (const iid of e.iids) peopleBatch.setVisibleAt(iid, vis); e.last = vis; }
+  }
+}
+
 function rooted(o) {
   let visible = true;
   for (let p = o; p; p = p.parent) {
@@ -133,6 +177,7 @@ export function syncPlaceBatches() {
       if (p.age > 3000 || rooted(p.model) === null) pending.splice(i, 1);
     } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
   }
+  syncPeople();
   for (const e of entries) {
     const vis = rooted(e.src);
     if (vis === null) { e.batch.deleteInstance(e.iid); entries.delete(e); continue; }

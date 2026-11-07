@@ -119,6 +119,7 @@ const vcMat = (opts = {}) => {
   m.name = 'site_props';
   m.aoMap = null;
   m.roughness = roughness;
+  delete m.userData.worldBakedOnly; // the clone copied the plaster base's userData, which markTiled (placeBatch.js) flags world-baked once any late group has used plaster; site groups are rotated, so that flag left them unbatched
   m.userData.placeBatchable = true; m.userData.siteProps = true; // folded into the village-wide per-material batches (src/placeBatch.js) by finishSite
   m.color.setScalar(1.7); // the scans are mid-grey; lift so the baked colours keep their value
   Object.assign(m, rest);

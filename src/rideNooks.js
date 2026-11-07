@@ -21,6 +21,7 @@
  * the shared per-material batches (src/placeBatch.js); the capsule people are one small InstancedMesh per site. Solid parts carry
  * explicit collider boxes; src/autoColliders.js fills the rest from the visible mesh.
  */
+import { batchPeopleMesh } from './placeBatch.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
@@ -414,7 +415,7 @@ export function buildRideNook(site, name) {
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     mesh.computeBoundingSphere();
-    pg.add(mesh);
+    pg.add(mesh); batchPeopleMesh(mesh);
     group.add(pg);
   }
   return group;
