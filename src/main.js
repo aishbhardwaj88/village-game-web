@@ -34,6 +34,7 @@ import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
+import { createRoofMonkeys } from './roofMonkeys.js'; // monkeys on roof water tanks
 import { createVillageHouses } from './villageHouses.js'; // the house kit filling the map's empty house footprints (3 Nov)
 import {
   buildTemple,
@@ -576,6 +577,7 @@ async function main() {
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
   // createMainRoadLife(scene); // OFF 8 Nov 01:50: 6 scenes placed but none seen from the saddle in shots, collision-test had 1 failure with it on; see docs/handoff.md
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
+  createRoofMonkeys(scene); // 3 monkeys on kit-house roof tanks (src/roofMonkeys.js)
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)

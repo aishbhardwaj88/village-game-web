@@ -231,6 +231,8 @@ function bakedGeometry(src, m, tint, uvv = null) {
 }
 
 /** Builds the kit houses into `scene` (async: the 8 kit models load after Play). Returns { group, update(px, pz) }. */
+/** World top of every roof water tank once the kit houses have loaded. */
+export const ROOF_TANK_TOPS = []; if (typeof window !== 'undefined') window.__roofTankTops = ROOF_TANK_TOPS;
 export function createVillageHouses(scene) {
   const group = new THREE.Group();
   group.name = 'village_kit_houses';
@@ -306,6 +308,10 @@ export function createVillageHouses(scene) {
       }
       if (fitSites.length) { // fittings join the cluster's meshes of a material it already has: zero extra draw calls
         const parts = buildRoofParts(fitSites);
+        for (const s of fitSites) if (s.kind === 'tank') { // top of the lid, for the monkeys on the tank (src/roofMonkeys.js); same r() as rooftops.js
+          const r = (n) => (((s.pick * 2654435761 + n * 40503) >>> 0) % 1000) / 1000;
+          ROOF_TANK_TOPS.push({ x: s.x, z: s.z, y: s.y + 0.28 + 0.85 + r(3) * 0.35 + 0.1, rad: 0.42 + r(2) * 0.18, yaw: s.yaw });
+        }
         for (const [part, list] of Object.entries(parts)) {
           if (!list.length) continue;
           let target = null;
