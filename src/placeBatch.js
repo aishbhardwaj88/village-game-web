@@ -21,14 +21,15 @@ const batches = new Map(); // material -> BatchedMesh
 const geoCache = new Map(); // `${key}|${material uuid}` -> geometry id
 const entries = new Set(); // { src, batch, gid, iid, key }
 
-const eligible = (o) => o.isMesh && !o.isInstancedMesh && !o.isSkinnedMesh && !Array.isArray(o.material) && o.material.userData.placeBatchable
-  && !o.material.transparent && !(o.material.alphaTest > 0) && o.geometry.attributes.position && o.geometry.attributes.normal && o.geometry.attributes.uv && o.geometry.attributes.color;
+const IDENTITY = new THREE.Matrix4();
+const eligible = (o) => o.isMesh && o.name !== 'tyre' && !o.isInstancedMesh && !o.isSkinnedMesh && !Array.isArray(o.material) && o.material.userData.placeBatchable && (!o.material.userData.worldBakedOnly || o.matrixWorld.equals(IDENTITY))
+  && (!o.material.transparent || o.material.userData.batchTransparent) && !(o.material.alphaTest > 0) && o.geometry.attributes.position && o.geometry.attributes.normal && o.geometry.attributes.uv && o.geometry.attributes.color;
 
 /** Materials of one texture set that differ ONLY in UV repeat share a batch: the repeat ratio is baked into the geometry UVs (same look, one draw). */
 function setKey(mat) {
   const t = mat.map;
-  if (!t || !t.source || mat.userData.noRepeatFold || t.offset.x || t.offset.y || t.rotation || mat.alphaMap) return null;
-  return mat.name + '|' + t.source.uuid + '|' + (mat.normalMap ? mat.normalMap.source.uuid : '') + '|' + (mat.roughnessMap ? mat.roughnessMap.source.uuid : '') + '|' + mat.roughness + '|' + mat.metalness + '|' + mat.side + '|' + (mat.onBeforeCompile === Material.prototype.onBeforeCompile ? 'p' : mat.customProgramCacheKey());
+  if (!t || !t.source || mat.aoMap || mat.vertexColors !== true && mat.userData.worldBakedOnly || mat.userData.noRepeatFold || t.offset.x || t.offset.y || t.rotation || mat.alphaMap) return null;
+  return mat.name + '|' + t.source.uuid + '|' + (mat.normalMap ? mat.normalMap.source.uuid : '') + '|' + (mat.roughnessMap ? mat.roughnessMap.source.uuid : '') + '|' + mat.roughness + '|' + mat.metalness + '|' + mat.color.getHex() + '|' + mat.vertexColors + '|' + mat.side + '|' + (mat.onBeforeCompile === Material.prototype.onBeforeCompile ? 'p' : mat.customProgramCacheKey());
 }
 const Material = THREE.Material;
 const leaders = new Map(); // setKey -> leader material
@@ -47,16 +48,17 @@ function flat(src, ratio = [1, 1]) {
   return g;
 }
 
-function batchFor(mat) {
-  let b = batches.get(mat);
+function batchFor(mat, cast = true) {
+  const bk = mat.userData.worldBakedOnly ? (cast ? mat : mat.userData.noCastTwin || (mat.userData.noCastTwin = { mat })) : mat;
+  let b = batches.get(bk);
   if (!b) {
     b = new THREE.BatchedMesh(16, 60000, 180000, mat);
     b.name = 'placebatch_' + mat.name;
-    b.castShadow = true; b.receiveShadow = true;
+    b.castShadow = !mat.userData.batchNoShadow && cast; b.receiveShadow = true;
     b.frustumCulled = false; // instances are culled one by one
     b.userData.noAutoCollider = true; // the hidden source meshes carry the colliders
     b.userData.visualOnly = true;
-    batches.set(mat, b);
+    batches.set(bk, b);
     root.add(b);
   }
   return b;
@@ -75,7 +77,7 @@ export function batchPlaceModel(model, key) {
       else if (lead !== mat) { ratio = [mat.map.repeat.x / lead.map.repeat.x, mat.map.repeat.y / lead.map.repeat.y]; mat = lead; }
     }
     (globalThis.__pbDbg ||= []).push(sk || ('NOKEY|' + mat.name));
-    const b = batchFor(mat);
+    const b = batchFor(mat, mat.userData.worldBakedOnly ? o.castShadow : true);
     const ck = key + '|' + o.name + '|' + (o.material.userData.siteProps ? 'sp' + o.geometry.attributes.position.count + '|' + o.material.name + '|' + o.material.roughness : o.material.uuid); // site builders make a fresh material clone per build; geometry is deterministic, so key by shape to avoid re-adding on every re-stream
     let gid = geoCache.get(ck);
     if (gid === undefined) {
@@ -98,7 +100,19 @@ export function batchPlaceModel(model, key) {
 
 const pending = []; // { model, key, age }
 /** Like batchPlaceModel, for builders that return a group before the zone manager has added it to the scene: batches once the group is rooted. */
-export function batchPlaceModelWhenRooted(model, key) { pending.push({ model, key, age: 0 }); }
+export function batchPlaceModelWhenRooted(model, key, late = false) { pending.push({ model, key, age: 0, late, rooted: false }); }
+
+/** World-baked static groups built after the village merge (road events, vendors2, life scenes 2, cyclist events): their code-built tiled meshes
+ *  (geometry already in world space, so the world-space mottling shaders stay correct) join one batch per material and shadow flag. */
+const TILED = new Set(['wood', 'metal', 'concrete', 'plaster', 'brick', 'terracotta', 'tin', 'jute', 'tarpaulin']);
+function markTiled(root) {
+  root.traverse((o) => {
+    const m = o.isMesh && !o.isInstancedMesh && !Array.isArray(o.material) ? o.material : null;
+    if (!m || !m.isMeshStandardMaterial || m.transparent || !m.map || !TILED.has(m.name) || m.userData.placeBatchable || m.userData.baseGrime) return;
+    m.userData.placeBatchable = true; m.userData.worldBakedOnly = true;
+  });
+}
+export function batchLateGroup(group, key) { pending.push({ model: group, key, age: 0, late: true, rooted: false, tiled: true }); }
 
 function rooted(o) {
   let visible = true;
@@ -113,7 +127,11 @@ function rooted(o) {
 export function syncPlaceBatches() {
   for (let i = pending.length - 1; i >= 0; i--) {
     const p = pending[i];
-    if (rooted(p.model) !== null) { pending.splice(i, 1); batchPlaceModel(p.model, p.key); } else if (++p.age > 1800) pending.splice(i, 1);
+    if (p.tiled) markTiled(p.model);
+    if (p.rooted) { // `late` groups get meshes added after the first frame (async model loads): sweep again for a few seconds
+      if (++p.age < 240 || p.age % 30 === 0) batchPlaceModel(p.model, p.key);
+      if (p.age > 3000 || rooted(p.model) === null) pending.splice(i, 1);
+    } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
   }
   for (const e of entries) {
     const vis = rooted(e.src);

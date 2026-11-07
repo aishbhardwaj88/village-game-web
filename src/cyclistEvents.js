@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildDogGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
 import { mapRoadLines } from './mapRoads.js';
+import { batchLateGroup } from './placeBatch.js';
 
 /**
  * More things that happen to the cyclist (docs/VILLAGE_VOCABULARY.md section 8):
@@ -73,6 +74,7 @@ function breakerGeometry(site, hw, index) {
 export function createCyclistEvents(scene, { getPlayer, isOnCycle }) {
   const group = new THREE.Group(); group.name = 'cyclist_events';
   scene.add(group);
+  batchLateGroup(group, group.name); // code-built tiled meshes join the shared per-material batches (src/placeBatch.js)
   const info = { breakers: 0, jolts: 0, dogState: 'sleep', passes: 0 };
   if (typeof window !== 'undefined') window.__cyclistEvents = info;
 

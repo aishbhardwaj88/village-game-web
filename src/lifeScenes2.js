@@ -6,6 +6,7 @@ import { getTiledMaterial, texturedBox } from './materials.js';
 import { STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox } from './collision.js';
 import { addHandPumps } from './handPumps.js';
 import { addPots, flushMerged } from './pots.js';
+import { batchLateGroup } from './placeBatch.js';
 
 /**
  * Life scenes, second set (docs/PARALLEL.md section D): mosquito net over a charpai in an angan, rangoli at doorways,
@@ -323,6 +324,7 @@ function buildRangoli(group) {
 export function createLifeScenes2(scene) {
   const group = new THREE.Group(); group.name = 'life_scenes_2';
   scene.add(group);
+  batchLateGroup(group, group.name); // code-built tiled meshes join the shared per-material batches (src/placeBatch.js)
   const geo = new THREE.CapsuleGeometry(NPC_R, NPC_H - NPC_R * 2, 4, 8);
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.85 });
   let mesh = null, built = false, elapsed = 0, frames = 0;

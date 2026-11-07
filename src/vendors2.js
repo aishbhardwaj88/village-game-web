@@ -4,6 +4,7 @@ import { ANCHORS, localPt } from './anchors.js';
 import { getTiledMaterial, texturedBox } from './materials.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
+import { batchLateGroup } from './placeBatch.js';
 
 /**
  * Street vendors, second set: a cabin kiosk (paan shop: mirror, film posters, a bulb, glass jars of sweets; no tobacco of any kind),
@@ -170,6 +171,7 @@ function findSite(sp, taken) {
 export function createVendors2(scene) {
   const group = new THREE.Group(); group.name = 'vendors2';
   scene.add(group);
+  batchLateGroup(group, group.name); // code-built tiled meshes join the shared per-material batches (src/placeBatch.js)
   let built = false, frames = 0;
   function build() {
     const by = { wood: [], metal: [] }, taken = [], colliders = [], people = [], signs = [];

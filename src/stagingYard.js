@@ -174,6 +174,7 @@ export function swapShared(o) {
 function foldLanterns(group, model, sink, name) {
   group.updateWorldMatrix(true, true);
   const leftovers = new Map();
+  const made = [];
   let n = 0;
   for (const [mat, list] of sink) {
     let target = null;
@@ -192,8 +193,10 @@ function foldLanterns(group, model, sink, name) {
     mesh.name = `${name}_${n++}`;
     mesh.receiveShadow = true;
     group.add(mesh);
+    made.push(mesh);
   }
   requestColliderRebuild();
+  return made;
 }
 
 /** Places whose model draws through the village-wide batches (src/placeBatch.js). */
@@ -240,7 +243,7 @@ function createStagedPlace(def) {
   }).catch((err) => { console.warn(`${def.model}.glb did not load`, err); return null; });
   const propsDone = def.props ? addSchoolProps(group, def.props, def.zone + '_props', lanternSink) : Promise.resolve();
   const batched = BATCHED_PLACES.has(def.id);
-  if (lanternSink) Promise.all([modelDone, lanternsDone, propsDone]).then(([m]) => { foldLanterns(group, m, lanternSink, def.zone + '_lanterns'); if (batched && m) batchPlaceModel(m, def.zone); });
+  if (lanternSink) Promise.all([modelDone, lanternsDone, propsDone]).then(([m]) => { const left = foldLanterns(group, m, lanternSink, def.zone + '_lanterns'); if (batched && m) { batchPlaceModel(m, def.zone); for (const l of left) batchPlaceModel(l, def.zone); } });
   else if (batched) modelDone.then((m) => { if (m) batchPlaceModel(m, def.zone); });
   if (def.cattle) {
     // cows/buffalo standing in the place (place-local x, z; anchors are unrotated). The herd mesh carries world positions, so it sits beside the place group under an identity wrapper.

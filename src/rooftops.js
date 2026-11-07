@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, bakeFlatTintColors } from './materials.js';
+import { batchPlaceModelWhenRooted } from './placeBatch.js';
 
 const CELL = 36;
 
@@ -126,6 +127,7 @@ export function createRoofCell(cell) {
     concrete: getTiledMaterial('concrete', { vertexColors: true }),
     brick: getTiledMaterial('brick', { vertexColors: true }),
   };
+  for (const m of Object.values(mats)) { m.userData.placeBatchable = true; m.userData.batchNoShadow = true; }
   for (const [name, list] of Object.entries(parts)) {
     if (!list.length) continue;
     const mesh = new THREE.Mesh(mergeGeometries(list, false), mats[name]);
@@ -135,5 +137,6 @@ export function createRoofCell(cell) {
     mesh.name = `roof_${name}`;
     group.add(mesh);
   }
+  batchPlaceModelWhenRooted(group, cell.id); // drawing moves into one village-wide batch per roof material
   return group;
 }

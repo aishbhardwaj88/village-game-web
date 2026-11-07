@@ -22,7 +22,7 @@ function loadLanterns() {
         if (!o.isMesh) return;
         swapShared(o);
         if (o.material && /props/.test(o.material.name || '')) { // chimney glass, see-through
-          if (!glassMat) { glassMat = o.material.clone(); glassMat.transparent = true; glassMat.opacity = 0.35; glassMat.roughness = 0.08; glassMat.depthWrite = false; }
+          if (!glassMat) { glassMat = o.material.clone(); glassMat.transparent = true; glassMat.opacity = 0.35; glassMat.roughness = 0.08; glassMat.depthWrite = false; glassMat.userData.placeBatchable = true; glassMat.userData.batchTransparent = true; }
           o.material = glassMat;
         }
         parts.push({ geo: floatGeometry(o.geometry).applyMatrix4(o.matrixWorld), mat: o.material });

@@ -6,6 +6,7 @@ import { mergeGroupByMaterial } from './mergeUtils.js';
 import { getTiledMaterial } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { registerLampSites } from './lampPools.js';
+import { batchPlaceModelWhenRooted } from './placeBatch.js';
 
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
@@ -108,6 +109,7 @@ function flagTexture() {
  * merged mesh — pole + flag + chakra all baked into one vertex-coloured geometry,
  * one draw call total.
  */
+let flagpoleMaterial = null;
 export function createFlagpoleProp(position) {
   const geos = [];
   const poleHeight = 6.0;
@@ -136,7 +138,10 @@ export function createFlagpoleProp(position) {
   flagGeo.deleteAttribute('color');
   geos.push(flagGeo);
   const merged = mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g)));
-  const material = new THREE.MeshStandardMaterial({ map: flagTex, roughness: 0.8, side: THREE.DoubleSide });
+  { const n = merged.attributes.position.count; merged.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3).fill(1), 3)); } // white: lets the shared batch (src/placeBatch.js) take the mesh; the material ignores it
+  const material = flagpoleMaterial || (flagpoleMaterial = new THREE.MeshStandardMaterial({ map: flagTex, roughness: 0.8, side: THREE.DoubleSide }));
+  material.name = 'flagpole';
+  material.userData.placeBatchable = true; material.userData.batchNoShadow = true; // every flagpole draws through one batch, like the lamps' shared materials
   const mesh = new THREE.Mesh(merged, material);
   mesh.name = 'flagpole';
   mesh.castShadow = false; // thin/small prop: its shadow pass cost a call at the hero-zone ceiling
@@ -145,6 +150,7 @@ export function createFlagpoleProp(position) {
   const group = new THREE.Group();
   group.name = 'flagpole_prop';
   group.add(mesh);
+  batchPlaceModelWhenRooted(group, 'flagpole_' + position.x.toFixed(1) + '_' + position.z.toFixed(1));
   group.position.set(position.x, 0, position.z);
   // A thin real collider (a flagpole is a real, if minor, physical obstacle) —
   // same userData.collider convention src/collision.js's buildCollidersFromScene()

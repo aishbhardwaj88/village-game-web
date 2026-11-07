@@ -5,6 +5,7 @@ import { getTiledMaterial } from './materials.js';
 import { registerInteraction } from './interactions.js';
 import { mapRoadLines } from './mapRoads.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
+import { batchLateGroup } from './placeBatch.js';
 
 /**
  * Things that happen to the cyclist, and the animals that make an afternoon (docs/VILLAGE_VOCABULARY.md sections 8 and 3):
@@ -233,6 +234,7 @@ function buildKhoonta(b, site, seed) {
 export function createRoadEvents(scene) {
   const group = new THREE.Group(); group.name = 'road_events';
   scene.add(group);
+  batchLateGroup(group, group.name); // code-built tiled meshes join the shared per-material batches (src/placeBatch.js)
   const info = { placed: {}, drawCalls: 0, tris: 0 };
   if (typeof window !== 'undefined') window.__roadEvents = info;
   let built = false, frames = 0, last = 0, elapsed = 0;

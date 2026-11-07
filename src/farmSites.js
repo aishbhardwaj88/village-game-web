@@ -837,6 +837,7 @@ export function createAnganwadi(position) {
   group.add(placeBoardsMesh([parapetBoard('anganwadi', { w: 7, d: 5, h: 3.1 }, 3.8)], 'anganwadi_boards'));
   group.userData.slotMeta = { doors: takeDoors(geos), boards: [], front: [0, 1] };
   group.position.set(position.x, 0, position.z);
+  batchPlaceModelWhenRooted(group, 'site_anganwadi'); // same as finishSite: drawing moves into the shared batches
   return group;
 }
 
