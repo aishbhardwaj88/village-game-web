@@ -1,3 +1,18 @@
+# DEADLINE: SUNDAY 8 NOV MORNING. She is asleep. Finish, do not start big new things.
+
+Tonight, in order:
+1. Turn mandi, gurudwara and panchayat to face correctly (queued from the wrong-turn audit).
+2. Old house textures on the remaining older rows. No flat-coloured wall left.
+3. Peacock on a roof.
+4. Fill the chauraha's edges: textured house fronts and shops ringing it, people at
+   the corners. The circle itself stays clear.
+5. Ride-through capture at 07:00 to docs/shots/ride-2026-11-08-0700/ (main road,
+   chauraha, two gullies). That is what she sees first.
+Anything after that: polish and bug fixes only. No half-finished features left in the
+build at 07:00. If a feature cannot finish, leave it switched off, not half on.
+
+---
+
 # SHE PLAYS AT 16:30 IST TODAY. About 3 hours. Only what changes the VIEW lands first.
 
 Order, nothing else until each is committed and visible from the saddle:
