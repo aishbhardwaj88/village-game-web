@@ -1,7 +1,7 @@
 """
 Petrol pump V2 - arch.py Kit, to Places V1/petrol_pump/LAYOUT.md + MAIN_petrol_pump_front_isometric.png (navy + orange). Unbranded: no logos, no numbers.
 Run: tools/blender/make.sh petrol_pump_v2 petrol_pump_v2
-Frame: site-local metres, +z south = front (the long 30 m edge, the road). Concrete forecourt slab 30 x 20 m: x[-15,15] z[-10,10].
+Frame: site-local metres, +z south = front (the long 30 m edge, the road). Concrete forecourt slab 30 x 20 m: x[-15,15] z[-10,10] as authored below, then the whole site is shifted SITE_DZ = +4 m (see the end) so the origin is the map centre: final slab z[-6,14].
 Canopy 18 x 10 m over the front half (front edge 2 m in from the slab front), 4 square columns, 5.5 m clear, 6.5 m top; orange fascia with a navy stripe, white underside;
 columns navy below, white above. 2 raised islands (yellow/black striped ends) ~6 m apart running front-to-back, 1 white dispenser each with navy panels.
 Sales office at the back 8 x 5 m, 4.4 m, white, navy base band, orange roof line, glass door + window, black water tank; back wall on the slab's back edge with one barred window
@@ -154,6 +154,16 @@ for (lx, lz) in ((10.0, 4.0), (12.2, 6.0)):
     # flush (spec): lid sits 5 mm proud of the slab, inner plate 3 mm more
     add('metal', cyl('tank_lid', lx, lz, 0.09, 0.105, 0.45, 0.45, 20), 0x6C7074)
     add('metal', cyl('tank_lid_in', lx, lz, 0.105, 0.108, 0.3, 0.3, 16), 0x5E6266)
+
+# 7 Nov: the model origin moves to the 1 Nov map's petrol-pump centre (-43.5, -146.6), which is the centre of her compound
+# outline, not of the slab: her open ground runs z -153.6..-133 and her office -152.9..-147.7. So the whole site shifts
+# SITE_DZ forward (+z, toward the highway): slab z[-6,14], office back wall on z -6, ground apron front edge at +16 (the
+# highway's north kerb). The anchor then sits exactly on her centre and the slab exactly on her open ground.
+SITE_DZ = 4.0
+for _, o, _ in kit.records:
+    if o.parent is None:
+        o.location.y -= SITE_DZ   # wb(): game +z = Blender -y
+bpy.context.view_layer.update()   # refresh matrix_world before finalize() joins the objects
 
 TINTS = {'hb_plaster': '#FFFFFF', 'hb_plinth': '#FFFFFF', 'hb_trim': '#C9C6BE', 'hb_wood': '#8A6A48', 'hb_metal': '#FFFFFF'}
 kit.finalize(OUT, TINTS, drift={'hb_plaster': 0.03})
