@@ -1,3 +1,19 @@
+# SHE PLAYS AT 16:30 IST TODAY. About 3 hours. Only what changes the VIEW lands first.
+
+Order, nothing else until each is committed and visible from the saddle:
+1. **Chauraha cleared** (12 m circle, halwai and well to a corner plot). 1 commit.
+2. **Old house textures on every kit house**, varied. This is the single biggest visual
+   change she will notice. Ship it in parts if you must: walls first, then roofs.
+3. **Fill the three largest gaps** with kit house rows and gullies. Not all gaps. The
+   three biggest, so the main ride feels dense.
+4. **Petrol pump fronting the highway.**
+5. **Ride-through capture at 16:00**: 8 shots from the saddle, main road and two gullies,
+   to docs/shots/ride-2026-11-07-1600/. She sees these before she plays.
+
+Peacock, the never-touch audit and the rest of the gaps come AFTER 16:30.
+
+---
+
 # 7 Nov 13:00. STOP. READ docs/SPATIAL_SENSE.md BEFORE THE NEXT PLACEMENT.
 
 She found the halwai butted against the zero milestone at the chauraha, with a well next
