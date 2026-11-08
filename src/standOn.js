@@ -177,8 +177,12 @@ function runEntry(e, scene, now) {
 // Load-time (docs/perf-2026-11-08.md): the settle raycasts are ~10 s of main thread under the 4G/4x test, all before Play.
 // Nothing needs feet settled until the title is gone, so the scheduler idles until ui.js says the opening view is ready.
 let held = true;
-export function releaseSettling() { held = false; }
+let releasedAt = 0;
+export function releaseSettling() { if (held) releasedAt = performance.now(); held = false; }
 export function settlingReleased() { return !held; }
+/** True once `frames` rendered frames have passed since the opening view, OR n x 100 ms of wall clock. Lazy builds gated on
+ * frames alone land ~n seconds late on a 1 fps machine (the test browser), after the collider list was last checked. */
+export function lazyDue(frames, n) { return frames > n || (!held && performance.now() - releasedAt > n * 100); }
 function tick() {
   if (held) { if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick); return; }
   const now = performance.now();

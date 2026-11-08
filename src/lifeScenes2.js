@@ -7,7 +7,7 @@ import { STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox } from './collision
 import { addHandPumps } from './handPumps.js';
 import { addPots, flushMerged } from './pots.js';
 import { batchLateGroup } from './placeBatch.js';
-import { settlingReleased } from './standOn.js';
+import { settlingReleased, lazyDue } from './standOn.js';
 
 /**
  * Life scenes, second set (docs/PARALLEL.md section D): mosquito net over a charpai in an angan, rangoli at doorways,
@@ -386,7 +386,7 @@ export function createLifeScenes2(scene) {
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
     if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
-    if (!built && frames > 30 && STATIC_COLLIDERS.length > 0) { built = true; build(); requestColliderRebuild(); }
+    if (!built && lazyDue(frames, 30) && STATIC_COLLIDERS.length > 0) { built = true; build(); requestColliderRebuild(); }
     const now = performance.now() / 1000;
     const dt = Math.min(0.1, last ? now - last : 0); last = now;
     if (mesh) animate(dt);

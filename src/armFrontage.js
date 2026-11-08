@@ -11,7 +11,7 @@ import { batchLateGroup, batchPlaceModel, batchPeopleMesh } from './placeBatch.j
 import { keepOnGround, markFigure, settleInstances, groundAt } from './standOn.js';
 import { refreshPeopleMesh } from './placeBatch.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
-import { settlingReleased } from './standOn.js';
+import { settlingReleased, lazyDue } from './standOn.js';
 
 /**
  * Frontage along BOTH sides of every arm of the chauraha, out to ARM_LEN m from the ring (docs/PARALLEL.md items 4 + 5; the
@@ -459,7 +459,7 @@ export function createArmFrontage(scene) {
   scene.onBeforeRender = function (renderer, sc, camera, ...rest) {
     if (prev) prev.call(this, renderer, sc, camera, ...rest);
     if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
-    if (!built && frames > 40 && STATIC_COLLIDERS.length > 0 && models) {
+    if (!built && lazyDue(frames, 40) && STATIC_COLLIDERS.length > 0 && models) {
       built = true;
       try { build(); requestColliderRebuild(); } catch (err) { console.error('armFrontage build failed', err); }
     }

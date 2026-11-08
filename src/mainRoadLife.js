@@ -9,7 +9,7 @@ import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch
 import { keepOnGround, markFigure, settleDy, settleInstances, groundAt } from './standOn.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildTractorGroup } from './vehicles.js';
-import { settlingReleased } from './standOn.js';
+import { settlingReleased, lazyDue } from './standOn.js';
 
 /**
  * Something worth seeing every ~8 s of cycling along the whole main road (docs/VILLAGE_VOCABULARY.md sections 3, 4, 5, 8).
@@ -333,7 +333,7 @@ export function createMainRoadLife(scene) {
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
     if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
-    if (!built && frames > 40 && STATIC_COLLIDERS.length > 0) {
+    if (!built && lazyDue(frames, 40) && STATIC_COLLIDERS.length > 0) {
       built = true;
       try { build(); requestColliderRebuild(); } catch (err) { console.error('mainRoadLife build failed', err); }
     }

@@ -8,7 +8,7 @@ import { swapShared } from './stagingYard.js';
 import { VILLAGE_HOUSES } from './villageHouses.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { batchLateGroup, batchPlaceModel, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
-import { keepOnGround, markFigure, settleInstances, groundAt, settlingReleased } from './standOn.js';
+import { keepOnGround, markFigure, settleInstances, groundAt, settlingReleased, lazyDue } from './standOn.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 
 /**
@@ -46,7 +46,7 @@ const SIGNS = {
   cycle: { hi: 'साइकिल मरम्मत', en: 'Cycle Repair', bg: '#e9dfc6', fg: '#6e1a12', border: '#8a2a18' },
   tailor: { hi: 'दर्ज़ी', en: 'Tailor', bg: '#efe3c8', fg: '#16402a', border: '#1f5a3a' },
 };
-const ARMS = [['main_road', true, 'N'], ['main_road_s', false, 'S']];
+const ARMS = [['main_road', true, 'N'], ['main_road_s', false, 'S'], ['cross_road', true, 'W'], ['cross_road_e', false, 'E']]; // W + E (cross road) added 9 Nov
 
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 const colour = (geo, c) => {
@@ -275,17 +275,18 @@ export function createMainRoadFrontage(scene) {
       return a > R.x0 - pad && a < R.x1 + pad && b > R.z0 - pad && b < R.z1 + pad;
     };
     const taken = [];
+    const why = info.why = {}; const fail = (k) => { why[k] = (why[k] || 0) + 1; return false; };
     const siteOk = (R) => {
       for (const [x, z] of rectPts(R)) {
-        if (Math.hypot(x - CHAURAHA.x, z - CHAURAHA.z) < 14.5) return false;
-        if (!roadClear(x, z, 0.15)) return false;
-        if (avoid.some(([ax, az]) => Math.hypot(ax - x, az - z) < 7)) return false;
-        if (first.some(([ax, az]) => Math.hypot(ax - x, az - z) < 4.6)) return false; // armFrontage's plots (centres; footprints are ~7 m wide)
-        if (circleHitsAnyBox({ x, z }, 1.0, staticBoxesNear(x, z, 2.2))) return false;
-        if (Math.abs(groundAt(scene, x, z, 0)) > 0.12) return false;
-        if (taken.some((t) => inRect(t, x, z, 0.5))) return false;
+        if (Math.hypot(x - CHAURAHA.x, z - CHAURAHA.z) < 14.5) return fail(1);
+        if (!roadClear(x, z, 0.15)) return fail(2);
+        if (avoid.some(([ax, az]) => Math.hypot(ax - x, az - z) < 7)) return fail(3);
+        if (first.some(([ax, az]) => Math.hypot(ax - x, az - z) < 4.6)) return fail(4); // armFrontage's plots (centres; footprints are ~7 m wide)
+        if (circleHitsAnyBox({ x, z }, 1.0, staticBoxesNear(x, z, 2.2))) return fail(5);
+        if (Math.abs(groundAt(scene, x, z, 0)) > 0.12) return fail(6);
+        if (taken.some((t) => inRect(t, x, z, 0.5))) return fail(7);
       }
-      for (const t of taken) for (const [x, z] of rectPts(t)) if (inRect(R, x, z, 0.5)) return false;
+      for (const t of taken) for (const [x, z] of rectPts(t)) if (inRect(R, x, z, 0.5)) return fail(8);
       return true;
     };
 
@@ -444,8 +445,8 @@ export function createMainRoadFrontage(scene) {
   scene.onBeforeRender = function (renderer, sc, camera, ...rest) {
     if (prev) prev.call(this, renderer, sc, camera, ...rest);
     if (settlingReleased()) frames++;
-    const armDone = typeof window === 'undefined' || (window.__armFrontage && window.__armFrontage.placed.length > 0) || frames > 600;
-    if (!built && frames > 60 && STATIC_COLLIDERS.length > 0 && models && armDone) {
+    const armDone = typeof window === 'undefined' || (window.__armFrontage && window.__armFrontage.placed.length > 0) || lazyDue(frames, 600);
+    if (!built && lazyDue(frames, 60) && STATIC_COLLIDERS.length > 0 && models && armDone) {
       built = true;
       try { build(); requestColliderRebuild(); } catch (err) { console.error('mainRoadFrontage build failed', err); }
     }

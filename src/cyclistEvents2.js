@@ -3,7 +3,7 @@ import { getTiledMaterial } from './materials.js';
 import { mapRoadLines } from './mapRoads.js';
 import { CANOPIES } from './trees.js';
 import { drawBilingual } from './signPaint.js';
-import { settlingReleased } from './standOn.js';
+import { settlingReleased, lazyDue } from './standOn.js';
 
 /**
  * The rest of "things that happen to the cyclist" (docs/VILLAGE_VOCABULARY.md section 8), all pure visuals, no colliders:
@@ -333,7 +333,7 @@ export function createCyclistEvents2(scene, { getPlayer, isOnCycle }) {
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
     if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
-    if (!built && frames > 40) { built = true; build(); }
+    if (!built && lazyDue(frames, 40)) { built = true; build(); }
     const now = performance.now() / 1000;
     const dt = Math.min(0.1, last ? now - last : 0); last = now;
     if (built) animate(dt);
