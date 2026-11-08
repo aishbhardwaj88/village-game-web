@@ -747,6 +747,7 @@ async function main() {
       { ...houseAt(0, 9) },
       { x: HOUSE_CENTER.x - 20, z: 55.3 },
       { x: HOUSE_CENTER.x - 40, z: 55.3 }, // south of the house compound and the kirana goods yard, north of the map's South houses (z 57+)
+      { x: HOUSE_CENTER.x - 46.6, z: 68.5 }, // probed 9 Nov: a prop box at (605-607, 71-73) sits on the straight leg; one waypoint west of it clears both halves
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 }, // out and home by the corridor between the South houses' row and the turned anganwadi playground (probed collider gaps, 2 Nov)
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },
