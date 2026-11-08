@@ -120,6 +120,64 @@ function compatGeometries(list, material) {
   });
 }
 
+/** Splits a world-space geometry (several welded boxes from an earlier per-building merge) into ground-clutter triangles
+ * (connected pieces under 2 m in every direction, touching the ground, e.g. pots, charpais, crates) and the rest. Returns null when
+ * there is nothing to split. Pieces are found by welding vertices at 1 mm, so each source box is one piece. */
+// Measured 8 Nov (docs/perf-2026-11-08.md): ON adds draw calls (spawn 92->108, chauraha 121->140) and removes no triangles, so it stays OFF.
+const SPLIT_MERGED_PROPS = false;
+function splitGroundProps(geo) {
+  const pos = geo.attributes.position, idx = geo.index;
+  if (!pos) return null;
+  const triCount = (idx ? idx.count : pos.count) / 3;
+  if (triCount < 2) return null;
+  const vi = (t, k) => (idx ? idx.getX(t * 3 + k) : t * 3 + k);
+  const weld = new Map(), parent = [];
+  const find = (a) => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+  const vid = new Int32Array(pos.count).fill(-1);
+  const idOf = (v) => {
+    if (vid[v] >= 0) return vid[v];
+    const k = `${Math.round(pos.getX(v) * 1000)},${Math.round(pos.getY(v) * 1000)},${Math.round(pos.getZ(v) * 1000)}`;
+    let id = weld.get(k);
+    if (id === undefined) { id = parent.length; parent.push(id); weld.set(k, id); }
+    return (vid[v] = id);
+  };
+  const triRoot = new Int32Array(triCount);
+  for (let t = 0; t < triCount; t++) {
+    const a = idOf(vi(t, 0)), b = idOf(vi(t, 1)), c = idOf(vi(t, 2));
+    const ra = find(a), rb = find(b), rc = find(c);
+    parent[rb] = ra; parent[find(rc)] = ra;
+    triRoot[t] = a;
+  }
+  const bb = new Map();
+  for (let t = 0; t < triCount; t++) {
+    const r = find(triRoot[t]);
+    let b = bb.get(r);
+    if (!b) bb.set(r, (b = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]));
+    for (let k = 0; k < 3; k++) {
+      const v = vi(t, k), x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (z < b[2]) b[2] = z;
+      if (x > b[3]) b[3] = x; if (y > b[4]) b[4] = y; if (z > b[5]) b[5] = z;
+    }
+  }
+  const isProp = new Map();
+  for (const [r, b] of bb) isProp.set(r, Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]) < 2 && b[1] < 0.5);
+  const propTris = [], restTris = [];
+  for (let t = 0; t < triCount; t++) (isProp.get(find(triRoot[t])) ? propTris : restTris).push(t);
+  if (!propTris.length) return null;
+  const take = (tris) => {
+    if (!tris.length) return null;
+    const g = new THREE.BufferGeometry();
+    for (const name of Object.keys(geo.attributes)) {
+      const src = geo.attributes[name], n = src.itemSize, arr = new src.array.constructor(tris.length * 3 * n);
+      let o = 0;
+      for (const t of tris) for (let k = 0; k < 3; k++) { const v = vi(t, k); for (let j = 0; j < n; j++) arr[o++] = src.array[v * n + j]; }
+      g.setAttribute(name, new THREE.BufferAttribute(arr, n, src.normalized));
+    }
+    return g;
+  };
+  return { props: take(propTris), rest: take(restTris) };
+}
+
 /** Merges same-material meshes ACROSS several already-built, already-in-the-scene
  * static root groups (e.g. the hero zone, the bazaar row, the background houses —
  * each already merged internally by its own builder) into one mesh per material,
@@ -143,6 +201,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   const propKeys = new Set();
   const toRemove = [];
   const hiddenBoxes = [];
+  const propGeoms = [];
 
   for (const root of roots) {
     root.updateWorldMatrix(true, true);
@@ -170,7 +229,16 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
         }
         let bucket = buckets.get(key);
         if (!bucket) buckets.set(key, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
-        bucket.geometries.push(obj.geometry.clone().applyMatrix4(obj.matrixWorld));
+        let wgeo = obj.geometry.clone().applyMatrix4(obj.matrixWorld);
+        // A big mesh from an earlier per-building merge hides its ground clutter inside the 350 m bucket: pull those pieces out into 80 m prop buckets.
+        if (SPLIT_MERGED_PROPS && !propKeys.has(key) && key === obj.material && !obj.material.transparent && !obj.material.name?.startsWith('shop_goods')) {
+          const sp = splitGroundProps(wgeo);
+          if (sp && sp.props) {
+            propGeoms.push({ material: obj.material, geo: sp.props, castShadow: obj.castShadow, receiveShadow: obj.receiveShadow });
+            wgeo = sp.rest;
+          }
+        }
+        if (wgeo) bucket.geometries.push(wgeo);
         // Remember the source mesh name while every source agrees on it, so a bucket with an unnamed material is still identifiable.
         if (bucket.srcName === undefined) bucket.srcName = obj.name || null; else if (bucket.srcName !== obj.name) bucket.srcName = null;
         bucket.castShadow = bucket.castShadow || obj.castShadow;
@@ -183,6 +251,20 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   }
 
   for (const obj of toRemove) obj.parent.remove(obj);
+
+  for (const pg of propGeoms) {
+    pg.geo.computeBoundingBox();
+    const c = pg.geo.boundingBox.getCenter(new THREE.Vector3());
+    const key = `prop:${pg.material.uuid}:${Math.floor(c.x / 100)}:${Math.floor(c.z / 100)}`;
+    keyMaterial.set(key, pg.material);
+    propKeys.add(key);
+    let bucket = buckets.get(key);
+    if (!bucket) buckets.set(key, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
+    bucket.geometries.push(pg.geo);
+    bucket.castShadow = bucket.castShadow || pg.castShadow;
+    bucket.receiveShadow = bucket.receiveShadow || pg.receiveShadow;
+  }
+  for (const [key, bucket] of [...buckets]) if (!bucket.geometries.length) { hiddenBoxes.push(...bucket.colliderBoxes); buckets.delete(key); }
 
   let i = 0;
   for (const [key, bucket] of buckets) {

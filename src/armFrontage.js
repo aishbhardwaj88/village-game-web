@@ -119,6 +119,7 @@ export function createArmFrontage(scene) {
   batchLateGroup(group, group.name);
   const info = { placed: [], skipped: [], houses: 0, shops: 0, sets: 0, drawCalls: 0 };
   if (typeof window !== 'undefined') window.__armFrontage = info;
+  if (typeof location !== 'undefined' && /[?&]noarmfront=1/.test(location.search)) return { group, update() {} }; // A/B draw-call probe
   let built = false, frames = 0, models = null;
   const clusters = [];
   let lx = 1e9, lz = 1e9;
