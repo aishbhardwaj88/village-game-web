@@ -252,8 +252,12 @@
         opacity: 0.6;
         cursor: progress;
       }
-      #start-overlay.ready #continue-btn.available {
+      #continue-btn.available {
         display: inline-flex;
+      }
+      #start-overlay:not(.ready) #continue-btn.available {
+        opacity: 0.6;
+        cursor: progress;
       }
       #start-overlay.ready #continue-btn.available ~ #play-btn {
         background: transparent;

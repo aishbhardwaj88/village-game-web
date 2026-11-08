@@ -2490,6 +2490,7 @@ async function main() {
   // impossible; if this ever fires, that guarantee has broken again. Dev-mode
   // only (isDevMode()) — cheap SAT checks against ~59 boxes, not something to run
   // for every real player.
+  let devPenTick = 0;
   function devCheckPenetration() {
     for (const v of vehicles) {
       const p = v.preset;
@@ -3088,7 +3089,7 @@ async function main() {
         }
       }
 
-      if (isDevMode()) devCheckPenetration();
+      if (isDevMode() && (devPenTick++ & 15) === 0) devCheckPenetration(); // dev guard: every 16th frame is plenty
 
       { const _q = performance.now(); camRig.update(); pAdd('camRig', performance.now() - _q); }
       if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying); // C4 sway/lag; skipped while a screenshot has frozen the rig

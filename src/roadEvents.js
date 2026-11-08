@@ -429,7 +429,7 @@ export function createRoadEvents(scene) {
       // no head-down pitch: the goat is one rigid piece, and pitching it about its middle buried the forelegs (G1).
       // Grazing reads as a slow turn of the whole goat; walking keeps a small roll and a 2 cm step lift.
       _e.set(0, g.yaw + g.graze * Math.sin(elapsed * 0.6 + g.ph) * 0.25, walking ? Math.sin(elapsed * 9 + g.ph) * 0.03 : 0);
-      const gy = groundAt(scene, g.x, g.z, g.y ?? 0); g.y = gy;
+      if (g.px === undefined || Math.abs(g.x - g.px) + Math.abs(g.z - g.pz) > 0.15) { g.y = groundAt(scene, g.x, g.z, g.y ?? 0, false); g.px = g.x; g.pz = g.z; } const gy = g.y ?? 0; // re-probe the ground only after 15 cm of travel, on the cached index
       _q.setFromEuler(_e); _p.set(g.x, gy + (walking ? Math.abs(Math.sin(elapsed * 9 + g.ph)) * 0.02 : 0), g.z); _s.setScalar(g.s);
       goats.setMatrixAt(i, _m.compose(_p, _q, _s));
     });
@@ -440,7 +440,7 @@ export function createRoadEvents(scene) {
     const h = c.herder;
     const hyaw = hs > 0.1 ? h.yaw : Math.atan2(f.nx * c.dir, f.nz * c.dir) + (grazing ? Math.sin(elapsed * 0.2) * 0.8 : 0);
     _e.set(hs > 0.1 ? Math.sin(elapsed * 4.5) * 0.05 : 0, hyaw, 0);
-    h.y = groundAt(scene, h.x, h.z, h.y ?? 0);
+    if (h.px === undefined || Math.abs(h.x - h.px) + Math.abs(h.z - h.pz) > 0.15) { h.y = groundAt(scene, h.x, h.z, h.y ?? 0, false); h.px = h.x; h.pz = h.z; }
     _q.setFromEuler(_e); _p.set(h.x, h.y + (hs > 0.1 ? Math.abs(Math.sin(elapsed * 4.5)) * 0.02 : 0), h.z); _s.set(1, 1, 1);
     herder.setMatrixAt(0, _m.compose(_p, _q, _s));
     herder.instanceMatrix.needsUpdate = true;
