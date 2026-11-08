@@ -1,3 +1,25 @@
+# MONDAY 9 NOV. She tests ONLY when the list below is DONE. Then Tripo, then ship Tuesday.
+
+The two worst lag causes are fixed (standOn settle passes, bazaarLife re-seat, camRig,
+the empty shadow pass). Finish the job, in order. When ALL of it is done, write ONE line at
+the top of docs/NEEDS_YOU.md: "READY FOR HER TEST: <date time>".
+
+## D1. Load time under 10 s (headless gate currently 16-21 s, FAILS).
+Measure what blocks Play: textures, models, shader warm-up, lazy builds. Cut until the
+headless 4G + 4x CPU gate passes, or report exactly what remains and why.
+## D2. Feet on the ground: 45 of 218 figures still off by more than 3 cm.
+Fix all 45 (arm_frontage people sunk on metal, gully_life etc.). feet-check must read 0.
+## D3. Old house textures on every remaining flat-coloured row.
+flat-wall-audit tool exists: run it, fix every hit. Missed three times; must close now.
+## D4. Mandi, gurudwara, panchayat turned to face their roads. (chaupal done.)
+## D5. Peacock on a roof.
+## D6. Final check, then the ready line:
+build passes, collision-test 0 failed, regression 22/22, feet-check 0, draw calls under
+150 in every zone, findability 0 stranded, 0 console errors, ride-through capture to
+docs/shots/ride-final-<date>/.
+
+---
+
 # STOP ALL NEW CONTENT. THE GAME IS BROKEN FOR HER. Sunday 8 Nov, afternoon.
 
 Her words: "when I click on new game, the button doesn't work. After clicking it like 4
