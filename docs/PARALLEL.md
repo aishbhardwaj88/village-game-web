@@ -1,6 +1,23 @@
-# SHE TESTS AT 10:00 IST, SUNDAY 8 NOV. Ride-through capture at 09:30, not 07:00.
-Work the list below straight through until 09:30. Then: capture, and stop starting new
-features. Anything unfinished at 09:30 is switched off, not left half on.
+# SUNDAY 8 NOV, AFTER 12:00. "Continue building." Tripo models go in Monday; ship Tuesday.
+
+Overnight landed: cycle speed/steering/collision/feel, feet-on-ground, roundabout with
+four arms, chauraha frontage, main-road scenes every 28 m, both gullies, monkeys.
+MISSED overnight, do these FIRST:
+1. **Old house textures on every remaining flat-coloured row.** Missed twice now. No flat
+   wall left anywhere a player can see.
+2. **Mandi, gurudwara, panchayat turned** to face their roads (wrong-turn audit).
+3. **Peacock** on a roof or a wall.
+Then:
+4. **The main road beyond the square still opens onto bare field** (ride shot 1_rehri).
+   Frontage, not just scenes: house rows and open shops along both sides of every arm,
+   out to at least 120 m from the ring. Scenes alone in a field are not a street.
+5. Same for the cross road arms.
+6. Ride-through capture every 6 hours to docs/shots/ride-2026-11-08-<HHMM>/.
+
+Rules unchanged: visible change only, no performance work unless broken, no half-on
+features.
+
+---
 
 # TOP OF TONIGHT: THE CYCLE AND GROUND CONTACT. She rides constantly, she feels these every second.
 
