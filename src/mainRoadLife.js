@@ -148,7 +148,7 @@ export function createMainRoadLife(scene) {
         box('metal', 0.34, 0.05, 0.2, 0.55, 1.02, 0.55, 0xb8b8b0); // hanging pan of the taraju
         person(0.1, -0.95, Math.PI, false, pick(MEN)); // vendor behind
         person(-0.4, 1.35, Math.PI + 0.3, false, pick(WOMEN)); // customer in front
-        col(1.9, 1.1, 0, 0);
+        col(3.0, 1.1, -0.55, 0); // cart plus its handle shafts
       },
       charpai() {
         const L = 1.9, W = 0.95, H = 0.42;
@@ -172,7 +172,7 @@ export function createMainRoadLife(scene) {
         box('concrete', 0.08, 0.42, 0.62, -0.71, 0.21, 1.4, 0xa0988c); box('concrete', 0.08, 0.42, 0.62, 0.71, 0.21, 1.4, 0x9e968a);
         box('concrete', 1.4, 0.05, 0.5, 0, 0.1, 1.4, 0x6e665a);
         box('wood', 1.2, 0.2, 0.4, 0, 0.3, 1.4, 0xc8ac6a, 0.05); // chopped straw heaped in the trough
-        cyl('wood', 0.05, 0.065, 0.7, 0.9, 0.33, 0.9, 0x6e5238, 0, 7);
+        cyl('wood', 0.05, 0.065, 0.7, 0.6, 0.33, 0.9, 0x6e5238, 0, 7);
         for (let i = 0; i < 5; i++) { const g = prep(new THREE.IcosahedronGeometry(0.11, 1)); g.scale(1, 0.25, 1); place(g, (rand() - 0.5) * 1.6, 0.02, -1.0 - rand() * 0.8, rand() * 6, 'concrete', i % 3 === 2 ? 0x7a6a52 : 0x3e3224); }
         const b = wl(0.1, 0, 0.1);
         animals.push({ x: b.x, z: b.z, yaw: frame.yaw + 0.05, s: [1.14, 1.1, 1.24], tint: 0x34322e, sit: false });
@@ -199,7 +199,7 @@ export function createMainRoadLife(scene) {
         cyl('wood', 0.03, 0.03, 2.1, -0.5, 1.05, -0.7, 0x7a5a3c, 0, 5);
         person(0.1, -0.7, Math.PI, true, pick(MEN), 0.04);
         person(-0.5, 1.3, Math.PI + 0.2, false, pick(WOMEN));
-        col(2.0, 1.5, 0, 0);
+        col(3.0, 1.6, 0.3, -0.1); // stall plus its far tarpaulin pole
       },
       cow() {
         const b = wl(0, 0, 0);

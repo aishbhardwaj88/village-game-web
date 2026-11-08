@@ -575,7 +575,7 @@ async function main() {
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
-  // createMainRoadLife(scene); // OFF 8 Nov 01:50: 6 scenes placed but none seen from the saddle in shots, collision-test had 1 failure with it on; see docs/handoff.md
+  // createMainRoadLife(scene); // OFF 8 Nov 04:50: scenes ARE visible (docs/shots/mainroad-2026-11-08b) but collision-test coverage gets 1 extra FAIL, main_road_life_wood cell x610.2 z-37.5, not tied to any placed scene (rehri 595.5,-35.6); see handoff
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createRoofMonkeys(scene); // 3 monkeys on kit-house roof tanks (src/roofMonkeys.js)
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
