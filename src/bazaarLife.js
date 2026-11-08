@@ -113,7 +113,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const seatedIndex = shopkeeperCount + villagerCount;
   // Same bench src/bazaar.js buildChowkPlaza() places at CHOWK_TEA_POS.x-2.6, z+1.5.
-  const seatedPos = { x: CHOWK_FURN_ORIGIN.x - 2.6, z: CHOWK_FURN_ORIGIN.z + 1.5 };
+  const seatedPos = { x: CHOWK_FURN_ORIGIN.x - 2.6, z: CHOWK_FURN_ORIGIN.z + 2.9 }; // 1.4 m clear of a plaza prop he sank 9.6 cm into
   mesh.setColorAt(seatedIndex, _color.setHex(SEATED_TINT));
   setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3); // the bench that stood here is gone from the map: he stands, on the ground
 
@@ -130,7 +130,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     gy[i] = Math.min(0.35, Math.max(0, g));
   }
   keepOnGround(mesh, (scene) => { for (let i = 0; i < total; i++) settleOne(scene, i); });
-  let rr = 0;
+  let rr = 0, seatTick = 0;
 
   function update(dt) {
     for (const s of shopkeepers) {
@@ -167,7 +167,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3);
     const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
     if (sc && villagers.length) settleOne(sc, villagers[rr++ % villagers.length].index);
-    if (sc && rr % 60 === 0) settleOne(sc, seatedIndex); // the plaza props stream in after the timed settles
+    if (sc && ++seatTick % 15 === 0) settleOne(sc, seatedIndex); // the plaza props stream in after the timed settles
 
     mesh.instanceMatrix.needsUpdate = true;
   }
