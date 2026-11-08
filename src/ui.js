@@ -112,6 +112,8 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
     started = true;
     playBtn.removeEventListener('pointerdown', startNew);
     continueBtn.removeEventListener('pointerdown', startContinue);
+    playBtn.removeEventListener('click', startNew);
+    continueBtn.removeEventListener('click', startContinue);
     overlay.classList.add('hidden');
 
     if (isTouch) {
@@ -145,4 +147,8 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
 
   playBtn.addEventListener('pointerdown', startNew);
   continueBtn.addEventListener('pointerdown', startContinue);
+  // Keyboard (Enter/Space on the focused button), assistive tech and scripted .click() only
+  // fire `click`, never pointerdown; launch() is idempotent so a mouse press that fires both is fine.
+  playBtn.addEventListener('click', startNew);
+  continueBtn.addEventListener('click', startContinue);
 }

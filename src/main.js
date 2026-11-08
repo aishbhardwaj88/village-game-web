@@ -284,6 +284,9 @@ async function main() {
   // OFF by default: real shadows at the village add 20 to 85 draw calls per view (measured 3 Nov), and the ceiling is already
   // breached. Try it with ?shadows=follow; turning it on for everyone is the art director's trade-off.
   const FOLLOW_SUN_SHADOWS = new URLSearchParams(location.search).get('shadows') === 'follow';
+  // The shadow box stays at the origin unless follow is on, 600 m from where she plays, so the
+  // pass drew nothing while every lit material still paid for shadow sampling. Off by default.
+  if (!FOLLOW_SUN_SHADOWS) sun.castShadow = false;
   const sunRig = new THREE.Group();
   sunRig.add(sun, sun.target);
   scene.add(sunRig);
