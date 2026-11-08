@@ -93,14 +93,18 @@ export class ThirdPersonCamera {
 
     let targetDistance = desiredDistance;
     if (this._obstacles.length > 0) {
-      this._raycaster.set(this._pivot, this._offsetDir);
-      this._raycaster.far = desiredDistance;
-      this._raycaster.near = 0;
-      const hits = this._raycaster.intersectObjects(this._obstacles, true);
-      const hit = hits.find((h) => !this._isExcluded(h.object));
-      if (hit) {
-        targetDistance = Math.max(OCCLUSION_MIN_DISTANCE, hit.distance - OCCLUSION_MARGIN);
+      // The mesh raycast walks every building mesh (instanced and batched ones per instance), so run it every 3rd frame and
+      // reuse the last result between; the damped distance below smooths the gap. Re-run at once if the ray length changed.
+      if ((this._rayFrame = (this._rayFrame || 0) + 1) % 3 === 1 || this._rayLen !== desiredDistance) {
+        this._raycaster.set(this._pivot, this._offsetDir);
+        this._raycaster.far = desiredDistance;
+        this._raycaster.near = 0;
+        const hits = this._raycaster.intersectObjects(this._obstacles, true);
+        const hit = hits.find((h) => !this._isExcluded(h.object));
+        this._rayHit = hit ? Math.max(OCCLUSION_MIN_DISTANCE, hit.distance - OCCLUSION_MARGIN) : desiredDistance;
+        this._rayLen = desiredDistance;
       }
+      targetDistance = Math.min(desiredDistance, this._rayHit);
     }
 
     // Streamed zone buildings (post office, chakki, gurukul...) are not in `_obstacles`; march the ray through the
