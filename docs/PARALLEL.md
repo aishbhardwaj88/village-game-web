@@ -1,3 +1,48 @@
+# STOP ALL NEW CONTENT. THE GAME IS BROKEN FOR HER. Sunday 8 Nov, afternoon.
+
+Her words: "when I click on new game, the button doesn't work. After clicking it like 4
+times, it works. When I land in the game, it is very, very, very slow. It is lagging a lot."
+
+Performance work is now REQUIRED. The overnight "no performance work" rule is CANCELLED.
+Nothing new is built until both of these are fixed and measured.
+
+## B1. The New game / Continue button. Small, do it first.
+Cause, src/ui.js `start()`: `if (!overlay.classList.contains('ready')) return;`. The button
+looks pressable at once but silently ignores presses until loading finishes, so she clicks
+until one lands after load.
+- Until ready: button visibly disabled, label "Loading..." / "लोड हो रहा है..." with progress.
+- A press before ready is REMEMBERED, and the game starts the moment it is ready.
+- One press always works. Test: press once at t=0.1 s; the game must start by itself.
+
+## P1. The lag. Measure first, then cut. Report MEASURED numbers.
+What grew since 6 Nov: screenshot-view draw calls 135 -> 165 (200 in some views, ceiling
+150), browser triangles ~750k -> ~850k+, static colliders 8,334 -> 11,149, visibility out to
+350 m, many new per-frame systems (feet re-seat every 15 frames, dog follower, cyclist
+events, NPC routines, cycle haptics).
+
+1. **Profile.** In headless Chrome AND by frame timing in-game: fps, ms per frame split into
+   render / physics+collision / game logic. Spawn view, chauraha, main road, bazaar. Save
+   to docs/perf-2026-11-08.md. Find the top 3 costs before changing anything.
+2. **Batch every scene added since 6 Nov** (main-road life, gully life, chaurahaEdges,
+   cyclist events, oddities, wall writing, nostalgia, roof monkeys, scooters) into the
+   shared per-material BatchedMesh, like the older places. Target under 150 calls in EVERY
+   view, then lower.
+3. **Clutter LOD, not place culling.** Buildings and places stay drawn to 350 m (never
+   again "the village is empty"). Small clutter (pots, charpais, crates, washing, kids,
+   vendors, props under ~2 m) fades out beyond ~80 m.
+4. **Collision broad-phase.** Only colliders in a grid cell near a moving body are tested.
+   Not all 11k per frame.
+5. **Shadows.** Only objects within ~60 m cast shadows. Check the shadow map size.
+6. **Per-frame systems.** Static seated figures snap to the ground ONCE, not every 15
+   frames. Anything that runs every frame and does not need to: make it event-driven.
+7. **Target: 60 fps at the spawn view and the chauraha, 50+ everywhere, on her MacBook.**
+   Add an fps / frame-time check to the build so this cannot creep back.
+8. **Load time**: measure Play-ready time again (ceiling 10 s). Report it.
+
+After B1 and P1 are measured and done: back to the content list below.
+
+---
+
 # SUNDAY 8 NOV, AFTER 12:00. "Continue building." Tripo models go in Monday; ship Tuesday.
 
 Overnight landed: cycle speed/steering/collision/feel, feet-on-ground, roundabout with
