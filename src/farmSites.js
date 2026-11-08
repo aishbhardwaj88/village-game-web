@@ -1868,15 +1868,15 @@ function truck(geos, x, z, body, ry = 0, metal = geos, wood = geos) {
 
 export function createMandi(position) {
   const geos = [];
-  // Paved yard slab with a kerb line, wide connecting road back to the highway.
+  // Paved yard slab with a kerb line. 9 Nov (D4): the site's -z end is the ROAD END. Turned ry 179 (src/anchors.js), it lies on
+  // the highway's north kerb, so trucks drive straight off the highway through the gantry; the +z end is the back, onto the farm loop.
   geos.push(bake(new THREE.BoxGeometry(24, 0.12, 74), at(0, 0.06, 0), 0x8f8e88));
-  geos.push(bake(new THREE.BoxGeometry(14, 0.1, 10), at(-18, 0.05, 0), 0x3d3d40));
-  // The paved yard does not stop at a crisp edge: it frays into broken concrete, then packed earth with wheel ruts, both ends (road ends believably).
-  for (const sz of [-1, 1]) {
-    geos.push(fadeStrip(0, sz * 37, sz, 34, 17, 4.5, [0x8f8e88, 0x7d7c76, 0x7a6c52, 0x6f6a48], 0.121, 11 + sz));
-    for (const rx of [-1.1, 1.1]) geos.push(fadeStrip(rx, sz * 43, sz, 28, 0.5, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.126, 13 + sz, 10));
-    for (const [bx, bz, bw, bd] of [[-6.5, 38.6, 3, 2.2], [5.8, 40.2, 2.4, 3], [-3, 41.5, 2.2, 1.6]]) geos.push(bake(new THREE.BoxGeometry(bw, 0.05, bd), at(bx, 0.135, sz * bz, 0.2 * sz), 0x66655f)); // broken slab chunks at the fray
-  }
+  // Road end: a short worn concrete apron down to the highway edge (2.8 m, stops short of the carriageway), no ruts (the highway is right there).
+  geos.push(fadeStrip(0, -37, -1, 2.8, 20, 18, [0x8f8e88, 0x7d7c76, 0x6f6e68], 0.121, 10));
+  // Back end: frays into broken concrete, then packed earth with wheel ruts, 5.5 m out to the farm loop (the back way for tractors).
+  geos.push(fadeStrip(0, 37, 1, 5.5, 17, 7, [0x8f8e88, 0x7d7c76, 0x7a6c52, 0x6f6a48], 0.121, 12));
+  for (const rx of [-1.1, 1.1]) geos.push(fadeStrip(rx, 37.5, 1, 5, 0.5, 0.3, [0x6a5c42, 0x6a5c42, 0x6f6a48], 0.126, 14, 6));
+  for (const [bx, bz, bw, bd] of [[-6.5, 38.4, 3, 1.8], [5.8, 39.4, 2.4, 2.2], [-3, 40.6, 2.2, 1.4]]) geos.push(bake(new THREE.BoxGeometry(bw, 0.05, bd), at(bx, 0.135, bz, 0.2), 0x66655f)); // broken slab chunks at the back fray
   geos.push(bake(new THREE.BoxGeometry(0.3, 0.2, 74), at(-12.1, 0.1, 0), 0xb4b0a4));
   // Grain wholesale godown: long warehouse, tin roof, big sliding doors, sacks stacked outside.
   geos.push(bake(new THREE.BoxGeometry(10, 5, 18), at(5, 2.6, -22), 0xe0d2b0));
@@ -1955,25 +1955,25 @@ export function createMandi(position) {
   // Parked trucks in plain colours (no marks).
   const truckMetal = dhabaMetal;
   dhabaWood.forEach((g) => crateWood.push(g));
-  truck(geos, 3, -2, 0xc4372f, 0.0, truckMetal, crateWood);
-  truck(geos, 9, 48, 0x3f7a5a, Math.PI, truckMetal, crateWood);
-  truck(geos, -4, 40, 0xd9a43a, 0.12, truckMetal, crateWood);
-  // Gantry over the road entrance (facing the highway) on two posts, so the mandi is named from the road.
-  for (const sz of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(-12.6, 2.3, sz * 3.9), 0x5a5a5a));
+  // Three trucks: one at the shed, one just in off the highway beside the gantry, one queued at the back for the weighbridge.
+  const TRUCKS = [[3, -2, 0xc4372f, 0.0], [-7.5, -32.5, 0x3f7a5a, 0.04], [-6, 37.5, 0xd9a43a, Math.PI + 0.04]];
+  for (const [tx, tz, tc, tr] of TRUCKS) truck(geos, tx, tz, tc, tr, truckMetal, crateWood);
+  // Gantry over the road entrance at the highway end (site -z) on two posts, so the mandi is named from the road.
+  for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.12, 0.14, 4.6, 8), at(sx * 3.9, 2.3, -36.6), 0x5a5a5a));
   const mandi = finishSite('mandi', geos, position, { roughness: 0.92, sets: { wood: crateWood, jute: sacks, metal: truckMetal }, boards: [
-    { id: 'mandi', x: -12.7, y: 4.45, z: 0, ry: -Math.PI / 2, w: 7.2 },
+    { id: 'mandi', x: 0, y: 4.45, z: -36.7, ry: Math.PI, w: 7.2 },
     { id: 'godown', x: -0.12, y: 4.1, z: -22, ry: -Math.PI / 2, w: 3.8 },
     { id: 'dhaba', x: 5, y: 3.0, z: 28.94, ry: Math.PI, w: 3.4 },
   ] });
   const truckSolid = (x, z, ry) => [x - Math.sin(ry) * 0.5, z - Math.cos(ry) * 0.5, 2.7, 8.6, ry]; // body centre sits 0.5 m behind the origin along the truck's own axis
   const rects = [
-    [-12.6, -3.9, 0.3, 0.3], [-12.6, 3.9, 0.3, 0.3], // road gantry posts
+    [-3.9, -36.6, 0.3, 0.3], [3.9, -36.6, 0.3, 0.3], // road gantry posts (highway end)
     [5, -22, 10.2, 18.2], // grain godown
     [5, 32, 9.2, 6.2], // dhaba hall
     [-11, 22, 3.6, 3.6], // weighbridge cabin
     ...[-1, 1, 0].flatMap((sx) => [-1, 1].map((sz) => [4 + sx * 5.5, 4 + sz * 6.5, 0.35, 0.35])), // vegetable shed poles
     ...[0, 1, 2].map((r) => [4, r * 3.2, 9.4, 0.9]), // crate rows
-    truckSolid(3, -2, 0), truckSolid(9, 48, Math.PI), truckSolid(-4, 40, 0.12),
+    ...TRUCKS.map(([tx, tz, , tr]) => truckSolid(tx, tz, tr)),
     ...[0, 1, 2, 3].map((i) => [1.5 + i * 2.1, 25, 1.9, 1.0, Math.PI / 2 + (i % 2 ? 0.05 : -0.04)]), // dhaba charpais
   ];
   mandi.children[0].userData.colliderBoxes = orientedSolids(position, 0, rects);

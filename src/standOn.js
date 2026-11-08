@@ -218,5 +218,6 @@ if (typeof window !== 'undefined') {
       return n;
     },
     count: () => ENTRIES.length,
+    settleDy, groundAt, // tools/feet-check diagnostics
   };
 }

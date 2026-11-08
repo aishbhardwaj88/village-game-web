@@ -1733,6 +1733,7 @@ async function main() {
     const wallCells = new Map();
     for (const entry of MAP_COMPOUND_WALLS) {
       if (entry.name === 'Village TV house' || entry.name === 'Flour mill') continue; // 3 Nov: both turned to face the Council lane; their own yard walls replace these
+      if (entry.name === 'Wholesale grain market') continue; // 9 Nov (D4): the mandi yard now runs N-S from the highway kerb to the farm loop (src/anchors.js), so her back wall at z -190 would cut across the weighbridge; the yard's back end is its own way out
       const f = entry.lines[0][0];
       const key = `${Math.floor((f[0] + 600) / 80)}_${Math.floor(f[1] / 80)}`;
       if (!wallCells.has(key)) wallCells.set(key, { name: key, lines: [] });

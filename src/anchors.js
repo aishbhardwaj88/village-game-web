@@ -44,7 +44,7 @@ export const ANCHORS = {
   pond: { x: -120.6 + MAP_SHIFT.x, z: 60.5 + MAP_SHIFT.z, ry: 0 },
   anganwadi: { x: -24.1 + MAP_SHIFT.x, z: 95.1 + MAP_SHIFT.z, ry: -168.8 * Math.PI / 180 } /* map turn 168.8 deg, applied in src/main.js via turnSiteGroup */,
   mela: { x: 187.5 + MAP_SHIFT.x, z: 146.5 + MAP_SHIFT.z, ry: -3 * Math.PI / 180 } /* map turn 3 deg, applied in src/main.js via turnSiteGroup */,
-  gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 100 * Math.PI / 180 }, // 7 Nov road-front audit: front (site +z) turned from the blind field south of it to face the corner of the outer lanes 13 m east-north-east (100 deg = straight at the lane corner); applied in src/main.js via turnSiteGroup
+  gurudwara: { x: -95.6 + MAP_SHIFT.x, z: 102.3 + MAP_SHIFT.z, ry: 88.8 * Math.PI / 180 }, // 9 Nov (D4): front (site +z, porch and steps) faces due east onto the Outer lane, west, 9 m off the porch, square to her map (map turn 1.2 deg + a quarter turn = 90 - 1.2). Was 100 deg (7 Nov), aimed at the lane corner but skewed 11 deg off her drawn footprint. Applied in src/main.js via turnSiteGroup
   cane: { x: -188 + MAP_SHIFT.x, z: 7 + MAP_SHIFT.z, ry: 0 }, // centre of the map's sugarcane outline (x -225.6..-151.6, z -106..120)
   tvhouse: onMap('yard_tvhouse'), // old code-built copy dropped; the v2 yard stands here
   health: { x: 111.7 + MAP_SHIFT.x, z: -3.3 + MAP_SHIFT.z, ry: 0 },
@@ -59,7 +59,7 @@ export const ANCHORS = {
   maidan: onMap('yard_khel'),
   gilli: { x: 69 + MAP_SHIFT.x, z: 163 + MAP_SHIFT.z, ry: -6 * Math.PI / 180 }, // the map's gilli-danda play spot (open ground centre), turned 6 deg in src/jobs/gilli.js
   highway: { x: 205 + OLD_SHIFT.x, z: 40 + OLD_SHIFT.z, ry: 0 },
-  mandi: { x: 147.7 + MAP_SHIFT.x, z: -160.3 + MAP_SHIFT.z, ry: 89 * Math.PI / 180 } /* road-front: mandi turned +90 deg to face the highway (map turn was -1 deg), applied in src/main.js via turnSiteGroup */,
+  mandi: { x: 147.7 + MAP_SHIFT.x, z: -168 + MAP_SHIFT.z, ry: 179 * Math.PI / 180 } /* 9 Nov (D4): long axis N-S as her map draws it (map turn 1 deg: ry -1 + 180), the yard's road end (site -z: gantry, apron) meets the highway's north kerb so trucks drive straight in, and its back end runs out onto the farm loop. Was ry 89 (long side parallel to the highway, 20 m of grass between the gate and the road, trucks entering from the fields). Centre moved 7.7 m north of the map centre (z -160.3) because the yard is 74 m long against her 58 m outline: the road end sits on her outline's road edge (z -131) and the back runs 12 m past her back wall, which is not built (src/main.js). Applied in src/main.js via turnSiteGroup */,
   // The v2 places stand on the 1 Nov map (src/mapPlan.js, shifted east as one piece); anything the map does not place (the material board) waits in the old staging slot.
   ...Object.fromEntries(STAGED_PLACES.map((p, n) => {
     const m = MAP_PLAN[p.id];
