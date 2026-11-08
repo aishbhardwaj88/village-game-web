@@ -121,7 +121,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   mesh.instanceColor.needsUpdate = true;
 
   const _toTarget = new THREE.Vector3();
-    const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22]];
+    const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22], [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3]];
   function settleOne(scene, i) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
     const p = i < shopkeeperCount ? shopkeepers[i] : i < seatedIndex ? villagers[i - shopkeeperCount].pos : seatedPos;
     const g0 = groundAt(scene, p.x, p.z, 0);
@@ -167,6 +167,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3);
     const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
     if (sc && villagers.length) settleOne(sc, villagers[rr++ % villagers.length].index);
+    if (sc && rr % 60 === 0) settleOne(sc, seatedIndex); // the plaza props stream in after the timed settles
 
     mesh.instanceMatrix.needsUpdate = true;
   }

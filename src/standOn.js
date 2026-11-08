@@ -148,7 +148,7 @@ export { sceneOf };
 
 // ---------------------------------------------------------------- scheduler (own rAF, so no main.js hook)
 const ENTRIES = [];
-const STAGES = [0, 2000, 6000, 15000];
+const STAGES = [0, 2000, 6000, 15000, 40000]; // 40 s: road strip chunks stream in late and sit 3 cm above the dips ground
 function sceneOf(o) { for (let q = o; q; q = q.parent) if (q.isScene) return q; return null; }
 function runEntry(e, scene, now) {
   try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); }

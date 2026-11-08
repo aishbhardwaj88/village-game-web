@@ -189,6 +189,7 @@ async function main() {
     await page.waitForTimeout(1500);
     await page.evaluate(forceZones);
     await page.waitForTimeout(5000); // zone .glb swaps arrive async
+    await page.waitForTimeout(42000); // the last settle stage (40 s) catches road strips that stream in late
     const r = await page.evaluate(inPage, { exempt: EXEMPT.map(([re, why]) => [re.source, re.flags, why]) });
     await browser.close();
 
