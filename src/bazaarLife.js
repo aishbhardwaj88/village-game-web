@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { keepOnGround, markFigure, groundAt, sceneOf } from './standOn.js';
+import { keepOnGround, markFigure, groundAt, sceneOf, sliceSpent } from './standOn.js';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
@@ -122,14 +122,20 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const _toTarget = new THREE.Vector3();
     const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22], [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3]];
-  function settleOne(scene, i) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
+  function settleOne(scene, i, quick = false) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
     const p = i < shopkeeperCount ? shopkeepers[i] : i < seatedIndex ? villagers[i - shopkeeperCount].pos : seatedPos;
-    const g0 = groundAt(scene, p.x, p.z, 0);
+    const g0 = groundAt(scene, p.x, p.z, 0, !quick);
+    if (quick) { gy[i] = Math.min(0.35, Math.max(0, g0)); return; } // per-frame walker re-seat: centre point only, on the cached index
     let g = g0; // the round foot is wider than the centre point: take the highest surface under it (road bumps, kerbs)
     for (const [dx, dz] of FOOT) g = Math.max(g, groundAt(scene, p.x + dx, p.z + dz, g0));
     gy[i] = Math.min(0.35, Math.max(0, g));
   }
-  keepOnGround(mesh, (scene) => { for (let i = 0; i < total; i++) settleOne(scene, i); });
+  let settleAt = 0;
+  keepOnGround(mesh, (scene) => { // time-sliced: 3 ms a frame, resumes where it stopped (src/standOn.js)
+    const dl = performance.now() + 3;
+    for (; settleAt < total; settleAt++) { if (sliceSpent(dl)) return; settleOne(scene, settleAt); }
+    settleAt = 0;
+  });
   let rr = 0, seatTick = 0;
 
   function update(dt) {
@@ -166,8 +172,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     }
     setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3);
     const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
-    if (sc && villagers.length) settleOne(sc, villagers[rr++ % villagers.length].index);
-    if (sc && ++seatTick % 15 === 0) settleOne(sc, seatedIndex); // the plaza props stream in after the timed settles
+    if (sc && villagers.length && ++seatTick % 6 === 0) settleOne(sc, villagers[rr++ % villagers.length].index, true); // the plaza props stream in after the timed settles
 
     mesh.instanceMatrix.needsUpdate = true;
   }

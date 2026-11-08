@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { dipHeightRaw } from './dips.js';
+import { pAdd } from './perfProbe.js';
 
 /**
  * Feet on the ground (docs/PARALLEL.md G1). Every person and animal stands ON whatever is under it: the dug ground
@@ -20,7 +21,7 @@ const SKIP = /water|ripple|grass|tuft|crop|cane|reed|flower|foliage|canopy|leaf|
 const SKIP_TOP = /^(npc_|vehicle_|player|trolley|sky|waypoint|placebatch)/;
 const NOOK = /ride_nook_\d+_[a-z]+/g;
 const BAND = 0.06; // feet = vertices within 6 cm of the lowest point (hoof soles, the round bottom of a capsule)
-const BUCKET = 0.08;
+const BUCKET = 0.2; // was 0.08: far fewer ray probes per figure (docs/perf-2026-11-08.md)
 const PROBE = 0.45; // rays start this far above the feet: steps up onto a chabutra or plinth, never a table overhead
 const CELL = 8;
 
@@ -33,6 +34,7 @@ const boxCache = new WeakMap();
 function topName(o) { let t = o; while (t.parent && !t.parent.isScene) t = t.parent; return t.name || ''; }
 function shown(o) { for (let q = o; q; q = q.parent) { if (q.visible === false) return false; if (q.isScene) return true; } return false; }
 function buildIndex(scene) {
+  const _t = performance.now();
   const cells = new Map(), big = [];
   scene.updateMatrixWorld();
   scene.traverse((o) => {
@@ -58,9 +60,11 @@ function buildIndex(scene) {
     }
   });
   index = { scene, cells, big, at: performance.now() };
+  pAdd('standOn.buildIndex', performance.now() - _t);
 }
-function getIndex(scene) {
-  if (!index || index.scene !== scene || performance.now() - index.at > 1000) buildIndex(scene);
+const INDEX_MAX_AGE = 5000; // a full-scene traverse is a visible hitch: rebuild rarely, never from a per-frame caller
+function getIndex(scene, fresh = false) {
+  if (!index || index.scene !== scene || (fresh && performance.now() - index.at > INDEX_MAX_AGE)) buildIndex(scene);
   return index;
 }
 
@@ -69,10 +73,10 @@ _ray.layers.enableAll(); // place-batched source meshes sit on a hidden layer bu
 const _down = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3();
 const _cands = [];
 /** Height of the surface at (x, z) a figure with feet at footY stands on. */
-export function groundAt(scene, x, z, footY = 0) {
+export function groundAt(scene, x, z, footY = 0, fresh = true) {
   let best = dipHeightRaw(x, z);
   if (!scene) return best;
-  const idx = getIndex(scene);
+  const idx = getIndex(scene, fresh);
   const top = footY + PROBE;
   _cands.length = 0;
   const test = (s) => {
@@ -132,9 +136,14 @@ export function settleDy(scene, mesh, i = -1) {
 }
 
 /** Settle every instance of a capsule-people InstancedMesh onto its surface; pass refresh(mesh) to re-copy a place batch. */
+let pending = false; // set when a sliced settle ran out of its time budget: the scheduler calls it again next frame
+const SLICE_MS = 3;
 export function settleInstances(scene, mesh, refresh) {
   const m = new THREE.Matrix4();
-  for (let i = 0; i < mesh.count; i++) {
+  const deadline = performance.now() + SLICE_MS;
+  let i = mesh.userData._settleAt || 0;
+  for (; i < mesh.count; i++) {
+    if (performance.now() > deadline) break;
     const dy = settleDy(scene, mesh, i);
     if (Math.abs(dy) < 0.005 || Math.abs(dy) > 0.6) continue;
     mesh.getMatrixAt(i, m);
@@ -143,31 +152,42 @@ export function settleInstances(scene, mesh, refresh) {
   }
   mesh.instanceMatrix.needsUpdate = true;
   if (refresh) refresh(mesh);
+  if (i < mesh.count) { mesh.userData._settleAt = i; pending = true; } else mesh.userData._settleAt = 0;
 }
+/** For hand-written settle loops: true when the time slice is spent; the loop resumes at the returned cursor next frame. */
+export function sliceSpent(deadline) { if (performance.now() > deadline) { pending = true; return true; } return false; }
 export { sceneOf };
 
 // ---------------------------------------------------------------- scheduler (own rAF, so no main.js hook)
 const ENTRIES = [];
-const STAGES = [0, 2000, 6000, 15000, 40000]; // 40 s: road strip chunks stream in late and sit 3 cm above the dips ground
+const STAGES = [0, 3000, 40000]; // 40 s: road strip chunks stream in late and sit 3 cm above the dips ground
 function sceneOf(o) { for (let q = o; q; q = q.parent) if (q.isScene) return q; return null; }
 function runEntry(e, scene, now) {
+  const _r = performance.now();
+  pending = false;
   try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); }
+  const _d = performance.now() - _r;
+  if (_d > 40 && typeof window !== 'undefined') (window.__standOnSlow = window.__standOnSlow || []).push([e.obj.name || e.obj.type, e.stage, Math.round(_d)]);
   e.lx = e.obj.position.x; e.lz = e.obj.position.z;
   if (!e.t0) e.t0 = now;
+  if (pending) { e.again = true; return; } // unfinished: same stage again next frame
+  e.again = false;
   e.stage++;
 }
 function tick() {
   const now = performance.now();
-  let budget = 24;
+  const _t = now;
+  let budget = 12; // runEntry cost is 4-6 units: at most 2-3 entries a frame
   for (let n = ENTRIES.length - 1; n >= 0 && budget > 0; n--) {
     const e = ENTRIES[n];
     const scene = sceneOf(e.obj);
     if (!scene) { if (e.stage > 0 && !e.obj.parent && ++e.orphan > 600) ENTRIES.splice(n, 1); continue; }
     e.orphan = 0;
-    const due = e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage];
-    const moved = e.moving && e.stage > 0 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;
-    if (due || moved) { runEntry(e, scene, now); budget--; }
+    const due = e.again || (e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage]);
+    const moved = e.moving && e.stage > 0 && now - (e.lastRun || 0) > 400 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;
+    if (due || moved) { e.lastRun = now; runEntry(e, scene, now); budget -= e.again ? 1 : due ? 4 : 6; }
   }
+  pAdd('standOn.tick', performance.now() - _t);
   if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick);
 }
 let started = false;

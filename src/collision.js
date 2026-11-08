@@ -1,3 +1,4 @@
+import { pAdd } from './perfProbe.js';
 import * as THREE from 'three';
 import { isAutoSolidMesh, deriveMeshBoxes } from './autoColliders.js';
 import { WALKABLE_RECTS } from './walkable.js';
@@ -322,6 +323,8 @@ const MAX_RESOLVE_PASSES = 6; // verified empirically (tools/trolley-corner-test
 /** Resolves `pos` (a THREE.Vector3-like, only .x/.z used) against every collider —
  * static buildings plus any extra (dynamic) boxes passed in, e.g. parked vehicles. */
 export function resolveCollisions(pos, radius, extraBoxes = []) {
+  const _t = performance.now();
+  try {
   for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
     let corrected = false;
     for (const box of staticBoxesNear(pos.x, pos.z, radius + 0.5)) {
@@ -332,6 +335,7 @@ export function resolveCollisions(pos, radius, extraBoxes = []) {
     }
     if (!corrected) break;
   }
+  } finally { pAdd('collision', performance.now() - _t); }
 }
 
 // Bugfix (defect 2 of the real playtest regression): a circle can never correctly
@@ -397,6 +401,8 @@ function resolveOrientedBoxVsBox(pos, yaw, halfW, halfD, box) {
  * fix (defect 1), applied with the exact rectangular footprint instead of a
  * circle (defect 2). Used for the trolley and the tractor body. */
 export function resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes = []) {
+  const _t = performance.now();
+  try {
   for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
     let corrected = false;
     for (const box of staticBoxesNear(pos.x, pos.z, Math.hypot(halfW, halfD) + 0.5)) {
@@ -407,6 +413,7 @@ export function resolveOrientedCollisions(pos, yaw, halfW, halfD, extraBoxes = [
     }
     if (!corrected) break;
   }
+  } finally { pAdd('collision', performance.now() - _t); }
 }
 
 /** Signed clearance between an oriented box (pos/yaw/halfW/halfD) and a single

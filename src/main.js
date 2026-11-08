@@ -31,6 +31,7 @@ import { pt, localPt, ANCHORS, OLD_SHIFT } from './anchors.js';
 import { turnSiteGroup, applyTurn } from './turn.js';
 import { MAP_COMPOUND_WALLS, createMapCompoundWall } from './mapCompoundWalls.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
+import { pAdd, perfProbe } from './perfProbe.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
@@ -2788,6 +2789,7 @@ async function main() {
 
   function tick(now) {
     requestAnimationFrame(tick);
+    const _pt0 = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
@@ -2821,7 +2823,7 @@ async function main() {
         if (sisterFollowing) sisterFollow(dt);
       }
       MAA_POSITION.copy(maaNpc.position);
-      bazaarLife.update(dt);
+      { const _q = performance.now(); bazaarLife.update(dt); pAdd('bazaarLife', performance.now() - _q); }
 
       // Idle-breathing/walk-cycle rock (src/characters.js) for the three
       // characters that actually move or stand around (halwai's own
@@ -3081,9 +3083,9 @@ async function main() {
 
       if (isDevMode()) devCheckPenetration();
 
-      camRig.update();
+      { const _q = performance.now(); camRig.update(); pAdd('camRig', performance.now() - _q); }
       if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying); // C4 sway/lag; skipped while a screenshot has frozen the rig
-      audio.update(dt);
+      { const _q = performance.now(); audio.update(dt); pAdd('audio', performance.now() - _q); }
       dust.update(dt, now / 1000);
       updateSky(sky, now / 1000, camera);
       contactShadows.update([
@@ -3110,17 +3112,17 @@ async function main() {
         }
         audio.setPlaceAmbience(bestKind, bestC);
       }
-      zoneManager.update(listenerPos.x, listenerPos.z, dt, camera);
+      { const _q = performance.now(); zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
       syncPlaceBoards();
-      syncPlaceBatches();
+      { const _q = performance.now(); syncPlaceBatches(); pAdd('syncPlaceBatches', performance.now() - _q); }
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
       if (fieldCane) fieldCane.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95; // cane blocks only draw near the khet (draw-call ceiling elsewhere)
       setPlantFocus(listenerPos.x, listenerPos.z);
       if (bgHousesGroup) bgHousesGroup.userData.updateVisibility(listenerPos.x, listenerPos.z);
       if (villageHouses) villageHouses.update(listenerPos.x, listenerPos.z);
-      freeRoam.update(dt);
-      minimap.update(dt);
-      ambientLife.update(dt, listenerPos.x, listenerPos.z);
+      { const _q = performance.now(); freeRoam.update(dt); pAdd('freeRoam', performance.now() - _q); }
+      { const _q = performance.now(); minimap.update(dt); pAdd('minimap', performance.now() - _q); }
+      { const _q = performance.now(); ambientLife.update(dt, listenerPos.x, listenerPos.z); pAdd('ambientLife', performance.now() - _q); }
       if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
@@ -3144,7 +3146,10 @@ async function main() {
     }
 
     renderer.info.reset();
+    const _pt1 = performance.now();
     composer.render();
+    const _pt2 = performance.now();
+    pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);
   }
   requestAnimationFrame(tick);
