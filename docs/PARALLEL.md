@@ -1,3 +1,9 @@
+# HARD DEADLINE 09:00 IST MONDAY 9 NOV. Her words: "must be done by 9am".
+- Work D1 to D5 in order until 07:30.
+- **07:30: stop starting anything. Start D6, the final check, whatever is left undone.**
+- Anything not finished by 07:30 is switched OFF cleanly, never left half on.
+- **By 08:45: the READY line in docs/NEEDS_YOU.md, with what landed and what did not.**
+
 # MONDAY 9 NOV. She tests ONLY when the list below is DONE. Then Tripo, then ship Tuesday.
 
 The two worst lag causes are fixed (standOn settle passes, bazaarLife re-seat, camRig,
