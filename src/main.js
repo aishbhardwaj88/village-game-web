@@ -1579,7 +1579,7 @@ async function main() {
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
-    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture', 'village_fixtures', 'village_furniture2', 'vendors2', 'milk_centre', 'life_scenes_2', 'road_events', 'cyclist_events'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
+    mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture', 'village_fixtures', 'village_furniture2', 'vendors2', 'milk_centre', 'life_scenes_2', 'road_events', 'cyclist_events', 'chauraha_edges', 'chauraha_island', 'village_furniture3', 'village_furniture4'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
       skipNames: ['game_decals', 'rangoli', 'tv_screen', 'net_cloth', 'furniture2_wall_paint', 'tyre', 'zero_milestone_flagpole', 'halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);

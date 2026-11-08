@@ -12,7 +12,7 @@ try {
   await page.click('#play-btn');
   await page.waitForTimeout(3000);
   await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
-  for (const [name, x, z, yaw] of [['chauraha', 602.9, 30, Math.PI], ['spawn', -48, 30, Math.PI]]) {
+  for (const [name, x, z, yaw] of [['mainroad', 603, -60, Math.PI], ['chauraha', 602.9, 30, Math.PI]]) {
     await page.evaluate(([x, z, yaw]) => { const d = window.__dopahar; d.teleportPlayer(x, z); d.camRig.yaw = yaw; d.camRig.pitch = -0.15; d.camRig.distance = 5; d.camRig.update(10); }, [x, z, yaw]);
     await page.waitForTimeout(8000);
     const out = await page.evaluate(() => {
