@@ -228,6 +228,7 @@ export function createGullyLife(scene) {
         person(0, -0.45, 0.2, true, pick(WOMEN), 0.0);
         person(-0.9, -0.6, 0.6, true, pick(KID), 0.0, true);
         col(0.9, 0.9, 0, 0.2);
+        col(3.0, 0.3, 0, -1.0); // the laundry line and cloths
       },
       kids() {
         const rg = new THREE.CircleGeometry(0.55, 20); rg.rotateX(-Math.PI / 2);

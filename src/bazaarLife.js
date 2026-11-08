@@ -51,7 +51,7 @@ const VILLAGER_LOOPS = [
   // village lane between the house and the school: neighbours out on errands
   [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 10.6 }], // shortened: the map's gher yard walls stand from z LH.z+12
   [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
-  [{ x: LH.x - 7, z: LH.z - 11 }, { x: LH.x - 5, z: LH.z - 5 }],
+  [{ x: LH.x - 5, z: LH.z - 3 }, { x: LH.x - 5, z: LH.z - 7 }],
   // a few more walkers so the bazaar frontage and lane are not empty
   [bazaarXZ(BAZAAR_WEST_X + 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_WEST_X + 26, BAZAAR_FRONT_Z - 2.5)], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
   [bazaarXZ(BAZAAR_EAST_X - 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_EAST_X - 26, BAZAAR_FRONT_Z - 2.5)],
