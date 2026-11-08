@@ -308,7 +308,7 @@ export function createArmFrontage(scene) {
           for (const ds of [0, 1.5, 3, 5]) {
             const f = pl.at(s + half + ds);
             const yaw = Math.atan2(-f.nx * side, -f.nz * side) + (rand() - 0.5) * 0.1;
-            const R = { x: f.x + f.nx * side * spec.off, z: f.z + f.nz * side * spec.off, yaw, x0: spec.x0, x1: spec.x1, z0: spec.z0, z1: spec.shop ? 1.9 + (SHOP_EDGE - 1.8) : spec.z1 };
+            const R = { x: f.x + f.nx * side * spec.off, z: f.z + f.nz * side * spec.off, yaw, x0: spec.x0, x1: spec.x1, z0: spec.z0, z1: spec.shop ? SHOP_EDGE - 0.4 : spec.z1 };
             if (!siteOk(R)) continue;
             taken.push(R);
             ok = true;
@@ -416,6 +416,7 @@ export function createArmFrontage(scene) {
     keepOnGround(group, (sc) => { if (pmesh) settleInstances(sc, pmesh, refreshPeopleMesh); });
     group.traverse((o) => { if (o.isMesh) info.drawCalls++; });
     info.people = people.length; info.colliders = colliders.length;
+    if (info.why) console.log('[armFrontage] why', JSON.stringify(info.why));
     console.log(`[armFrontage] placed ${info.placed.length} (${info.houses} houses, ${info.shops} shops, ${info.sets} sets), skipped ${info.skipped.length}, ${people.length} people`);
   }
 
