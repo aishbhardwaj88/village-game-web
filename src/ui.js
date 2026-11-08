@@ -38,6 +38,8 @@ const LOADING_SAFETY_TIMEOUT_MS = 9000; // never get stuck if some asset never r
  * fire before we're listening, or never fire again after.
  */
 let markReadyHook = () => {};
+let readyGate = null;
+export function setReadyGate(fn) { readyGate = fn; }
 /** Called by main.js once the models around the opening spawn are loaded: unlocks Play without waiting for the far half of the village. */
 export function markOpeningViewLoaded() { markReadyHook(); }
 
@@ -49,6 +51,11 @@ export function setupLoadingScreen() {
   const markReady = () => {
     if (ready) return;
     ready = true;
+    // Optional warm-up (shader compile) so Play only unlocks once the main thread is free again.
+    const gate = readyGate;
+    if (gate) { Promise.resolve().then(gate).catch(() => {}).then(finish); } else finish();
+  };
+  const finish = () => {
     progressFill.style.width = '100%';
     overlay.classList.add('ready');
     releaseSettling();

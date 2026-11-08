@@ -4,7 +4,7 @@ import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
-import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, isDevMode } from './ui.js';
+import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, setReadyGate, isDevMode } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, halwaiXZ, HALWAI_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
@@ -242,6 +242,8 @@ const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz
 const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
+  let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
+  setReadyGate(async () => { try { await Promise.race([renderer.compileAsync(scene, camera), new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } renderOK = true; });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
@@ -3150,7 +3152,9 @@ async function main() {
 
     renderer.info.reset();
     const _pt1 = performance.now();
-    composer.render();
+    // The opaque title overlay hides the canvas until ready: skip the 3D render (and its shader compiles) so the main
+    // thread spends the loading time on loading. The first render happens the frame after markReady, before any press.
+    if (renderOK) composer.render();
     const _pt2 = performance.now();
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);
