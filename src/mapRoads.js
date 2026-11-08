@@ -66,6 +66,8 @@ function nearestOnLines(lines, p) {
  * The chauraha: the bent main_road and cross_road each pass straight through the milestone, so cut each at the ring
  * (its two halves end on the ring's centreline, never cross the island) and add the closed ring carriageway.
  */
+// darker, cooler than the dirt around it so the four arms and the ring read as carriageway from above
+const ARM_TINT = 0x6f695f;
 function ringArms(lines) {
   const { x: cx, z: cz, ringR, ringW } = CHAURAHA;
   const out = [];
@@ -80,12 +82,12 @@ function ringArms(lines) {
     if (k < 0) { out.push(l); continue; }
     const a = l.pts[k - 1], b = l.pts[k], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
     const ux = (b[0] - a[0]) / len, uz = (b[1] - a[1]) / len;
-    out.push({ ...l, pts: [...l.pts.slice(0, k), [cx - ux * ringR, cz - uz * ringR]] });
-    out.push({ ...l, id: `${l.id}_${l.id === 'main_road' ? 's' : 'e'}`, pts: [[cx + ux * ringR, cz + uz * ringR], ...l.pts.slice(k)] });
+    out.push({ ...l, tint: ARM_TINT, pts: [...l.pts.slice(0, k), [cx - ux * ringR, cz - uz * ringR]] });
+    out.push({ ...l, tint: ARM_TINT, id: `${l.id}_${l.id === 'main_road' ? 's' : 'e'}`, pts: [[cx + ux * ringR, cz + uz * ringR], ...l.pts.slice(k)] });
   }
   const ring = [];
   for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2; ring.push([cx + Math.cos(a) * ringR, cz + Math.sin(a) * ringR]); }
-  out.push({ id: 'chauraha_ring', w: ringW, pts: ring, kind: 'road', closed: true });
+  out.push({ id: 'chauraha_ring', w: ringW, pts: ring, kind: 'road', closed: true, tint: ARM_TINT });
   return out;
 }
 
