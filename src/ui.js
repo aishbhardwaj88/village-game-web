@@ -94,8 +94,22 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
     }
   }
 
-  const start = (isContinue) => {
-    if (!overlay.classList.contains('ready')) return;
+  // B1: the button is visible from the first frame as "Loading...". A press before the
+  // overlay is ready is remembered and the game starts by itself the moment it is.
+  const enEl = playBtn.querySelector('.play-en');
+  const hiEl = playBtn.querySelector('.play-hi');
+  const readyEn = enEl.textContent, readyHi = hiEl.textContent;
+  let pending = null;
+  let started = false;
+  const isReady = () => overlay.classList.contains('ready');
+  const showLoading = () => {
+    playBtn.classList.add('loading');
+    enEl.textContent = 'Loading...';
+    hiEl.textContent = 'लोड हो रहा है...';
+  };
+  const launch = (isContinue) => {
+    if (started) return;
+    started = true;
     playBtn.removeEventListener('pointerdown', startNew);
     continueBtn.removeEventListener('pointerdown', startContinue);
     overlay.classList.add('hidden');
@@ -106,6 +120,26 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
 
     onStart(isContinue);
   };
+  const start = (isContinue) => {
+    if (!isReady()) {
+      pending = isContinue;
+      showLoading();
+      return;
+    }
+    launch(isContinue);
+  };
+  if (!isReady()) {
+    showLoading();
+    const obs = new MutationObserver(() => {
+      if (!isReady()) return;
+      obs.disconnect();
+      playBtn.classList.remove('loading');
+      enEl.textContent = readyEn;
+      hiEl.textContent = readyHi;
+      if (pending !== null) launch(pending);
+    });
+    obs.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+  }
   const startNew = () => start(false);
   const startContinue = () => start(true);
 
