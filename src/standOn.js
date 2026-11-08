@@ -174,7 +174,13 @@ function runEntry(e, scene, now) {
   e.again = false;
   e.stage++;
 }
+// Load-time (docs/perf-2026-11-08.md): the settle raycasts are ~10 s of main thread under the 4G/4x test, all before Play.
+// Nothing needs feet settled until the title is gone, so the scheduler idles until ui.js says the opening view is ready.
+let held = true;
+export function releaseSettling() { held = false; }
+export function settlingReleased() { return !held; }
 function tick() {
+  if (held) { if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick); return; }
   const now = performance.now();
   const _t = now;
   let budget = 12; // runEntry cost is 4-6 units: at most 2-3 entries a frame

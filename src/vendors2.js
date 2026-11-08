@@ -6,6 +6,7 @@ import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHits
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleInstances } from './standOn.js';
+import { settlingReleased } from './standOn.js';
 
 /**
  * Street vendors, second set: a cabin kiosk (paan shop: mirror, film posters, a bulb, glass jars of sweets; no tobacco of any kind),
@@ -221,7 +222,7 @@ export function createVendors2(scene) {
   const prev = scene.onBeforeRender;
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
-    frames++;
+    if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
     if (!built && frames > 40 && STATIC_COLLIDERS.length > 0) { built = true; build(); }
   };
   return { group };

@@ -8,6 +8,7 @@ import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHits
 import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleDy, settleInstances, groundAt } from './standOn.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
+import { settlingReleased } from './standOn.js';
 
 /**
  * The two gullies off the chauraha get the frontage treatment (docs/PARALLEL.md item 6; model: src/chaurahaEdges.js and
@@ -362,7 +363,7 @@ export function createGullyLife(scene) {
   const prev = scene.onBeforeRender;
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
-    frames++;
+    if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
     if (!built && frames > 40 && STATIC_COLLIDERS.length > 0) {
       built = true;
       try { build(); requestColliderRebuild(); } catch (err) { console.error('gullyLife build failed', err); }

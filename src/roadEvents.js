@@ -7,6 +7,7 @@ import { mapRoadLines } from './mapRoads.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { batchLateGroup } from './placeBatch.js';
 import { keepOnGround, markFigure, settleDy, groundAt } from './standOn.js';
+import { settlingReleased } from './standOn.js';
 
 /**
  * Things that happen to the cyclist, and the animals that make an afternoon (docs/VILLAGE_VOCABULARY.md sections 8 and 3):
@@ -474,7 +475,7 @@ export function createRoadEvents(scene) {
   const prev = scene.onBeforeRender;
   scene.onBeforeRender = function (...args) {
     if (prev) prev.apply(this, args);
-    frames++;
+    if (settlingReleased()) frames++; // load time: lazy builds wait for the opening view (docs/perf-2026-11-08.md)
     if (!built && frames > 30 && STATIC_COLLIDERS.length > 0) { built = true; build(); requestColliderRebuild(); }
     const now = performance.now() / 1000;
     const dt = Math.min(0.1, last ? now - last : 0); last = now;

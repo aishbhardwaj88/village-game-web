@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { releaseSettling } from './standOn.js';
 
 export function isDevMode() {
   return new URLSearchParams(window.location.search).has('dev');
@@ -50,6 +51,8 @@ export function setupLoadingScreen() {
     ready = true;
     progressFill.style.width = '100%';
     overlay.classList.add('ready');
+    releaseSettling();
+    window.__readyAt = performance.now();
   };
 
   markReadyHook = markReady;
