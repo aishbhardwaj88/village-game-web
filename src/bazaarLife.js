@@ -136,7 +136,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     for (; settleAt < total; settleAt++) { if (sliceSpent(dl)) return; settleOne(scene, settleAt); }
     settleAt = 0;
   });
-  let rr = 0, seatTick = 0;
+  let rr = 0, lastSeat = 0, seatedGy = NaN;
 
   function update(dt) {
     for (const s of shopkeepers) {
@@ -170,9 +170,11 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
       }
       setInstance(v.index, v.pos.x, NPC_HEIGHT / 2, v.pos.z, v.rotY);
     }
-    setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3);
-    const sc = sceneOf(mesh); // walkers cross kerbs and road surfaces: re-seat one per frame
-    if (sc && villagers.length && ++seatTick % 6 === 0) settleOne(sc, villagers[rr++ % villagers.length].index, true); // the plaza props stream in after the timed settles
+    // Static seated figure: written again only when the settle pass moved his ground height (event-driven, was every frame).
+    if (gy[seatedIndex] !== seatedGy) { seatedGy = gy[seatedIndex]; setInstance(seatedIndex, seatedPos.x, NPC_HEIGHT / 2, seatedPos.z, Math.PI * 0.3); }
+    const nowMs = performance.now(); // walkers cross kerbs and road surfaces: re-seat one every 250 ms (wall clock, not frame count)
+    const sc = nowMs - lastSeat > 250 ? sceneOf(mesh) : null;
+    if (sc && villagers.length && (lastSeat = nowMs)) settleOne(sc, villagers[rr++ % villagers.length].index, true); // the plaza props stream in after the timed settles
 
     mesh.instanceMatrix.needsUpdate = true;
   }
