@@ -10,7 +10,7 @@ export const MAP_PLAN = {
   yard_dharam_kanta: { x: 121.7, z: -108.3, turn: 181 }, // 1 + 180 (7 Nov road-front audit): front onto the highway, along the map's front path
   yard_petrol: { x: -43.5, z: -146.6, turn: 1 }, // exactly the map centre (her compound outline's centre). The model's origin sits here and its slab is built 4 m forward of it (build_petrol_pump_v2.py SITE_DZ), so the slab covers her open ground (-153.6..-133), the apron meets the highway's north kerb and the back clears the wheat edge track; front (+z) faces the highway
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
-  yard_chaupal: { x: 23.5, z: 28.5, turn: 5 },
+  yard_chaupal: { x: 23.5, z: 28.5, turn: 95 }, // 5 + 90 (9 Nov facing audit): front (notice board, steps) turned from the general store's back path onto the square, west toward the milestone (SPATIAL_SENSE 1: fronts face the circle); the 20 x 20 m patch keeps its square footprint
   yard_paani_tanki: { x: -44.9, z: -90.3, turn: 3 },
   yard_panchayat: { x: -50, z: 42.3, turn: 185 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
   yard_post: { x: -52.2, z: 65.4, turn: -11.2 },
