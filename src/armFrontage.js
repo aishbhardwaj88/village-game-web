@@ -188,7 +188,7 @@ export function createArmFrontage(scene) {
           for (let i = 0; i < 3; i++) box('jute', 0.5, 0.2, 0.4, -1.0 + i * 0.7, 0.3, zb + 0.5, pick([0xd0b890, 0xc8a878, 0xb89a70]), (rand() - 0.5) * 0.3);
           cyl('metal', 0.2, 0.2, 0.25, 1.1, 1.0, zf + 0.3, 0xb8b8b0, 0, 8);
         }
-        person(0.4, zb + 0.9, 0, false, pick(MEN));
+        person(0.4, zb + 0.9, 0, false, pick(MEN), 0.2); // on the 0.2 m plinth
         person(-0.4, zf + 1.1, Math.PI + 0.25, false, pick(WOMEN));
       }
       for (const s of [-1, 1]) box('wood', 0.06, 2.2, 0.06, s * (W / 2 - 0.1), 1.1, zf + 0.95, 0x7a5a3c);
@@ -234,15 +234,15 @@ export function createArmFrontage(scene) {
         col(2.2, 0.8, 0.1, 0.1);
       },
       washing() {
-        cyl('metal', 0.34, 0.28, 0.14, 0, 0.07, 0.3, 0x9a9a92, 0, 14);
-        for (let i = 0; i < 4; i++) cyl('metal', 0.1 + (i % 2) * 0.03, 0.1, 0.14, -0.9 + i * 0.22, 0.07, 0.4 + (i % 2) * 0.2, 0xc8a24a, 0, 10);
+        cyl('metal', 0.34, 0.28, 0.14, 0, 0.07, 0.75, 0x9a9a92, 0, 14);
+        for (let i = 0; i < 4; i++) cyl('metal', 0.1 + (i % 2) * 0.03, 0.1, 0.14, -0.9 + i * 0.22, 0.07, 0.95 + (i % 2) * 0.2, 0xc8a24a, 0, 10);
         for (let i = 0; i < 3; i++) cyl('metal', 0.14 - i * 0.015, 0.16 - i * 0.015, 0.1, 1.0, 0.05 + i * 0.1, 0.0, 0xc4c8c8, 0, 10);
         for (const x of [-1.5, 1.5]) cyl('wood', 0.04, 0.04, 2.0, x, 1.0, -0.7, 0x7a5a3c, 0, 6);
         box('jute', 3.0, 0.015, 0.015, 0, 1.95, -0.7, 0xc8b898);
         for (let i = 0; i < 4; i++) box('jute', 0.45 + rand() * 0.2, 0.7 + rand() * 0.3, 0.015, -1.1 + i * 0.7, 1.55, -0.7, pick([0xc8503a, 0xe8e0d0, 0x3a6a8a, 0xc8962a, 0xe8c8d0]), (rand() - 0.5) * 0.15);
         person(0, -0.15, 0.2, true, pick(WOMEN), 0.0);
         if (rand() < 0.6) person(-0.9, -0.3, 0.6, true, pick(KID), 0.0, true);
-        col(0.9, 0.9, 0, 0.3); col(3.0, 0.3, 0, -0.7);
+        col(0.9, 0.9, 0, 0.5); col(3.0, 0.3, 0, -0.7);
       },
     };
     const SET_W = [['charpai', 0.3], ['pots', 0.2], ['gobar', 0.15], ['washing', 0.2], ['cycle', 0.15]];

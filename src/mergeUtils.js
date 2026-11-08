@@ -140,6 +140,7 @@ function compatGeometries(list, material) {
 export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   const buckets = new Map();
   const keyMaterial = new Map();
+  const propKeys = new Set();
   const toRemove = [];
   const hiddenBoxes = [];
 
@@ -156,6 +157,16 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
           const c = new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
           key = `shop_goods:${Math.floor(c.x / 100)}:${Math.floor(c.z / 100)}`;
           keyMaterial.set(key, obj.material);
+        }
+        else {
+          // Small clutter (pots, charpais, crates, washing, vendors; under ~2 m) is split out per 100 m cell so it can carry a short distance gate; buildings keep the 350 m range.
+          const bb = new THREE.Box3().setFromObject(obj), sz = bb.getSize(new THREE.Vector3());
+          if (Math.max(sz.x, sz.y, sz.z) < 2 && bb.min.y < 0.5 && !obj.material.transparent) { // ground clutter only: raised bits (hanging cloth) would make a bucket whose lowest point floats
+            const c = bb.getCenter(new THREE.Vector3());
+            key = `prop:${obj.material.uuid}:${Math.floor(c.x / 100)}:${Math.floor(c.z / 100)}`;
+            keyMaterial.set(key, obj.material);
+            propKeys.add(key);
+          }
         }
         let bucket = buckets.get(key);
         if (!bucket) buckets.set(key, (bucket = { geometries: [], castShadow: false, receiveShadow: false, colliderBoxes: [] }));
@@ -187,7 +198,8 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
       // Small merged clusters (a handful of props, one patch of ground) stop drawing well past fog distance: each costs a call from anywhere in view.
       geometry.computeBoundingSphere();
       const bs = geometry.boundingSphere;
-      if (bs.radius <= 60) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 350 };
+      if (propKeys.has(key)) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 80 };
+      else if (bs.radius <= 60) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 350 };
     }
     mesh.castShadow = mayCast(material, bucket.castShadow);
     mesh.receiveShadow = bucket.receiveShadow;

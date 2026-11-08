@@ -157,7 +157,7 @@ export function createGullyLife(scene) {
       for (const s of [-1, 1]) box('wood', 0.06, 2.2, 0.06, s * (W / 2 - 0.1), 1.1, zf + 0.95, 0x7a5a3c);
       for (let i = 0; i < 6; i++) { const g = prep(new THREE.BoxGeometry(W / 6, 0.03, 1.1)); g.rotateX(0.18); place(g, -W / 2 + W / 12 + i * (W / 6), 2.28, zf + 0.5, 0, 'tarpaulin', i % 2 ? a1 : a2); }
       // customer strip in front; shopkeeper behind the counter
-      person(0.4, zb + 0.9, Math.PI, false, pick(MEN)); // shopkeeper behind counter (faces the lane, +z is toward the lane => use 0)
+      person(0.4, zb + 0.9, Math.PI, false, pick(MEN), 0.2); // shopkeeper behind counter (faces the lane, +z is toward the lane => use 0)
       people[people.length - 1].ry = frame.yaw;
       person(-0.4, zf + 1.1, Math.PI + 0.25, false, pick(WOMEN));
       signs.push({ key: kind, m: new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(0, H + 0.2 + 0.28, zf + 0.04)), w: 1.7 });

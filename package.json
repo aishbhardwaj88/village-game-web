@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
     "shrink": "node tools/shrink.js",
-    "screenshot": "node tools/screenshot.js"
+    "screenshot": "node tools/screenshot.js",
+    "perf-check": "node tools/perf-budget-check.js"
   },
   "dependencies": {
     "three": "^0.186.0",
