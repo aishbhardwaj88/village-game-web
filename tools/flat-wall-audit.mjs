@@ -59,13 +59,18 @@ try {
         // texture tiles per metre on this geometry: uv span / world span over a sample of triangles, times the map repeat
         const g = o.geometry, pos = g.attributes.position, uv = g.attributes.uv;
         let tpm = null;
+        // world scale of the geometry: node/instance scale matters (meshopt-quantised glbs store normalised positions with the real size in the node scale, so local edge lengths are meaningless on their own)
+        o.updateWorldMatrix(true, false);
+        let ws = new (o.matrixWorld.constructor)().copy(o.matrixWorld);
+        if (o.isInstancedMesh && o.count > 0) { const im = new (o.matrixWorld.constructor)(); o.getMatrixAt(0, im); ws.multiply(im); }
+        const wscale = Math.cbrt(Math.abs(ws.determinant())) || 1;
         if (uv && pos.count >= 3) {
           let su = 0, sw = 0; const idx = g.index;
           const n = Math.min(400, Math.floor((idx ? idx.count : pos.count) / 3));
           const step = Math.max(1, Math.floor((idx ? idx.count : pos.count) / 3 / n));
           for (let t = 0; t < n; t++) {
             const a = idx ? idx.getX(t * step * 3) : t * step * 3, b = idx ? idx.getX(t * step * 3 + 1) : t * step * 3 + 1;
-            const dw = Math.hypot(pos.getX(a) - pos.getX(b), pos.getY(a) - pos.getY(b), pos.getZ(a) - pos.getZ(b));
+            const dw = wscale * Math.hypot(pos.getX(a) - pos.getX(b), pos.getY(a) - pos.getY(b), pos.getZ(a) - pos.getZ(b));
             const du = Math.hypot(uv.getX(a) - uv.getX(b), uv.getY(a) - uv.getY(b));
             if (dw > 1e-4) { su += du; sw += dw; }
           }
@@ -78,10 +83,12 @@ try {
           const url = src && (src.currentSrc || src.src) ? String(src.currentSrc || src.src).replace(/^.*assets\/textures\//, '') : (m.map ? (m.map.isCanvasTexture ? 'canvas' : m.map.isDataTexture ? 'data' : 'other') : '');
           const rep = m.map ? Math.max(m.map.repeat.x, m.map.repeat.y) : 0;
           const tiles = tpm !== null && m.map ? tpm * rep : null;
-          const library = /^[a-z]+\/[a-z]+_color\.webp/.test(url);
+          const mapName = m.map && m.map.name ? m.map.name : '';
+          const library = /^[a-z]+\/[a-z]+_color\.webp/.test(url) || /^(plaster|brick|concrete|tin|terracotta|wood|thatch|metal)_color/.test(mapName);
+          const farLod = /_far_/.test(path.join('/')); // distant LOD proxies carry the embedded colour map only (no normal map: invisible at that range)
           // flat = no colour map, or a map that is not a library photo set, or no normal map, or tiling so fine (> 3 tiles/m) or so coarse (< 0.03) it reads as one colour
-          const why = !m.map ? 'no colour map' : !library ? `map not a library set (${url})` : !m.normalMap ? 'no normal map' : tiles !== null && tiles > 3 ? `tiles ${tiles.toFixed(1)}/m (averages to flat)` : tiles !== null && tiles < 0.03 ? `tiles ${tiles.toFixed(3)}/m (stretched flat)` : '';
-          const flat = !!why;
+          const why = !m.map ? 'no colour map' : !library ? `map not a library set (${url})` : !m.normalMap && !farLod ? 'no normal map' : tiles !== null && tiles > 3 ? `tiles ${tiles.toFixed(1)}/m (averages to flat)` : tiles !== null && tiles < 0.03 ? `tiles ${tiles.toFixed(3)}/m (stretched flat)` : '';
+          const flat = !!why && !/^hb_(decal|rangoli)$/.test(m.name || ''); // painted decals (durrie rug, rangoli) are artwork with their own map, not walls
           const house = HOUSE.test(pathS) && !NOT.test(pathS);
           out.push({ path: pathS, top: path[0], mat: m.name || m.type, flat, why, url, tiles, house, tris: g.index ? g.index.count / 3 : pos.count / 3 });
         }

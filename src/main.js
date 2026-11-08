@@ -157,6 +157,7 @@ import { createChaurahaEdges } from './chaurahaEdges.js'; // houses, open shops 
 import { createSmallShops } from './smallShops.js';
 import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents } from './roadEvents.js';
+import { createMainRoadFrontage } from './mainRoadFrontage.js'; // second pass: fills the gaps armFrontage left on the main road N + S arms
 import { createArmFrontage } from './armFrontage.js'; // kit houses, open shops and doorstep sets along both sides of every arm
 import { createGullyLife } from './gullyLife.js'; // open shops, vendors, people in the two gullies off the chauraha
 import { createMainRoadLife } from './mainRoadLife.js'; // something to see every ~8 s along the whole main road (src/mainRoadLife.js)
@@ -585,6 +586,7 @@ async function main() {
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
   createMainRoadLife(scene); // ON 8 Nov: scenes visible from the road (docs/shots/mainroad-2026-11-08b); collision-test 11150 solids 1 failed (signboard x324 z-208, fails at HEAD too); the wood cell x610.2 z-37.5 did not reproduce in 2 runs
   createArmFrontage(scene); // src/armFrontage.js
+  createMainRoadFrontage(scene); // src/mainRoadFrontage.js (after armFrontage: reads its placements)
   createGullyLife(scene); // the two gullies off the chauraha (src/gullyLife.js)
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
   createRoofMonkeys(scene); // 3 monkeys on kit-house roof tanks (src/roofMonkeys.js)

@@ -51,8 +51,11 @@ function flat(src, ratio = [1, 1]) {
 /** Same rule as mergeUtils.js NO_SHADOW_MATERIALS: small jute sacks cast no useful shadow and every caster costs a second draw in the shadow pass. */
 const NO_SHADOW_NAMES = new Set(['jute', 'hb_jute']);
 
+// Kept off mat.userData: Material.copy() JSON-serialises userData, and a twin pointing back at its material is circular.
+const noCastTwins = new WeakMap();
 function batchFor(mat, cast = true) {
-  const bk = mat.userData.worldBakedOnly ? (cast ? mat : mat.userData.noCastTwin || (mat.userData.noCastTwin = { mat })) : mat;
+  let bk = mat;
+  if (mat.userData.worldBakedOnly && !cast) { bk = noCastTwins.get(mat); if (!bk) noCastTwins.set(mat, bk = { mat }); }
   let b = batches.get(bk);
   if (!b) {
     b = new THREE.BatchedMesh(16, 60000, 180000, mat);
