@@ -192,9 +192,15 @@ export function syncPlaceBatches() {
     } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
   }
   syncPeople();
+  liveCount.clear();
   for (const e of entries) {
     const vis = rooted(e.src);
     if (vis === null) { e.batch.deleteInstance(e.iid); entries.delete(e); continue; }
     e.batch.setVisibleAt(e.iid, vis);
+    if (vis) liveCount.set(e.batch, (liveCount.get(e.batch) || 0) + 1);
   }
+  // A batch with no visible instance (its places are zone-hidden or torn down) is not submitted at all: three still counts an empty
+  // multi-draw as a call. No place is hidden by this, only batches that currently draw nothing.
+  for (const b of batches.values()) b.visible = (liveCount.get(b) || 0) > 0;
 }
+const liveCount = new Map();
