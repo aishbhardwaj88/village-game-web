@@ -29,7 +29,7 @@ import { buildTractorGroup } from './vehicles.js';
  * No brands, no tobacco or alcohol, no shrines.
  */
 
-const STEP = 44; // metres between scenes: 8 s at 5.5 m/s
+const STEP = 28; // metres between scenes: about 5 s at 5.5 m/s (was 44; the far main road read bare)
 const START = 62; // metres from the milestone before the first scene
 const TILE = 1.0;
 const PEOPLE_R = 0.32, PEOPLE_H = 1.7;
