@@ -1,3 +1,5 @@
+**2026-11-08 08:35 (gullies off the chauraha, game change 97dd17c):** src/gullyLife.js places open shops and street scenes along lanes 20 and 21 (7 placed: tea, charpai, washing, kids, rehri, cycle, charpai; 2 skipped: kirana, tea in lane 21), 9 draw calls. vite build ok, shots 0 console errors, tea shop seen in docs/shots/gully-2026-11-08/tea.png (gitignored), cycle repair not framed (wall in the way). Screenshot calls 154 at the tea view (ceiling 150). collision-test started, result not in yet. Watchdog banner stale. NEXT: collision-test result, then 09:30 ride capture.
+
 **2026-11-08 08:10 (chauraha E/W arms cleared, game change):** src/chaurahaEdges.js: west-row house and kirana and east-row bangle and cloth shops sat inside the 7 m arm corridor (scouted before the roads were bent); moved clear (house z 11.6, kirana z 26.6, bangle z 12.2, cloth z 8.4). docs/shots/chauraha-top-2026-11-08c/top.png: all four arms now read as carriageway into the ring, 0 console errors, 180 draw calls in the top view (over 150). Not ticked; collision-test not rerun. NEXT: 09:30 ride capture.
 
 **2026-11-08 08:10 (chauraha arm tint, game change):** src/mapRoads.js gives the four arms and ring a darker tint (ARM_TINT); docs/shots/chauraha-top-2026-11-08b/top.png (0 console errors). N and S arms and the ring now read as carriageway; E and W arms are still faint and broken up by houses/props on the line, so it still reads as a N-S road with a circle. Not ticked. NEXT: clear props off the E/W arm lines, then 09:30 ride capture.
@@ -2460,4 +2462,3 @@ Next: once push works, free hero-zone draw calls, real cattle models, Blender tr
 Next: once push works, free hero-zone draw calls, real cattle models, Blender tree rebuild.
 
 ---
-
