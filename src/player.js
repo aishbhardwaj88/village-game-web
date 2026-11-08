@@ -1,4 +1,4 @@
-import { STATIC_COLLIDERS } from './collision.js';
+import { staticBoxesNear } from './collision.js';
 import { canopyAt } from './trees.js';
 import * as THREE from 'three';
 
@@ -106,10 +106,13 @@ export class ThirdPersonCamera {
     // Streamed zone buildings (post office, chakki, gurukul...) are not in `_obstacles`; march the ray through the
     // real wall colliders so the camera never ends up inside a wall (findwalk-keys-2026-10-25 chakki/baagh shots).
     const ox = this._pivot.x, oz = this._pivot.z;
+    // Grid lookup of only the boxes near the ray (was a scan of all ~11k colliders at every step, every frame).
+    const mid = targetDistance * 0.5;
+    const nearBoxes = staticBoxesNear(ox + this._offsetDir.x * mid, oz + this._offsetDir.z * mid, mid + CAMERA_WALL_PAD + 0.5);
     for (let t = 0.5; t <= targetDistance; t += 0.25) {
       const px = ox + this._offsetDir.x * t, pz = oz + this._offsetDir.z * t;
       let inside = false;
-      for (const b of STATIC_COLLIDERS) {
+      for (const b of nearBoxes) {
         if (b.animalBox || b.auto) continue; // derived low-prop boxes never pull the camera in
         if (px > b.minX - CAMERA_WALL_PAD && px < b.maxX + CAMERA_WALL_PAD && pz > b.minZ - CAMERA_WALL_PAD && pz < b.maxZ + CAMERA_WALL_PAD) {
           if (ox > b.minX && ox < b.maxX && oz > b.minZ && oz < b.maxZ) continue; // pivot itself already inside (stairs, porch): ignore
