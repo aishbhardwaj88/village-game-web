@@ -94,7 +94,8 @@ export function createCyclistEvents(scene, { getPlayer, isOnCycle }) {
       geos.push(breakerGeometry(f, f.hw, i));
       sites.push({ x: f.x, z: f.z, dx: f.dx, dz: f.dz, nx: f.nx, nz: f.nz, hw: f.hw, prev: null });
     });
-    info.breakers = sites.length;
+    info.breakers = sites.length; info.sites = sites; // sites/dog/mainPts: read by headless ride checks
+    info.mainPts = (mapRoadLines().find((l) => l.id === 'main_road') || {}).pts;
     if (geos.length) {
       let total = 0;
       for (const g of geos) total += g.attributes.position.count;
@@ -167,7 +168,7 @@ export function createCyclistEvents(scene, { getPlayer, isOnCycle }) {
       if (d < 0.4) { dog.state = 'sleep'; dog.passes = 0; dog.near = false; }
       else { const nx = (dog.hx - dog.x) / d, nz = (dog.hz - dog.z) / d; dog.x += nx * 3.5 * dt; dog.z += nz * 3.5 * dt; dog.yaw = Math.atan2(nx, nz); moving = true; }
     }
-    info.dogState = dog.state;
+    info.dogState = dog.state; info.dog = dog;
     const trot = moving ? Math.abs(Math.sin(elapsed * 13)) * 0.05 : 0;
     const lie = dog.state === 'sleep' ? 0.55 : 1; // curled and low when asleep
     _e.set(0, dog.yaw, moving ? Math.sin(elapsed * 13) * 0.05 : 0); _q.setFromEuler(_e);

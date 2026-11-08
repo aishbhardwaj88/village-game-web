@@ -109,15 +109,23 @@ export function createMainRoadLife(scene) {
     const animals = []; // { x, z, yaw, s:[], tint, sit, idx }
     let frame = null; // current site frame
     const begin = (x, z, yaw) => { frame = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), _one); frame.yaw = yaw; };
+    let band = null; // local-frame xz bounds of this scene's props that reach the body band (0.35-1.5 m), for its own collider
     const place = (g, lx, ly, lz, ry, set, tint) => {
-      g.applyMatrix4(_m4.compose(_v.set(lx, ly, lz), _q.setFromEuler(_e.set(0, ry, 0)), _one).premultiply(frame));
+      g.applyMatrix4(_m4.compose(_v.set(lx, ly, lz), _q.setFromEuler(_e.set(0, ry, 0)), _one));
+      g.computeBoundingBox();
+      const bb = g.boundingBox;
+      if (band && bb.max.y > 0.3 && bb.min.y < 1.55) {
+        band.minX = Math.min(band.minX, bb.min.x); band.maxX = Math.max(band.maxX, bb.max.x);
+        band.minZ = Math.min(band.minZ, bb.min.z); band.maxZ = Math.max(band.maxZ, bb.max.z);
+      }
+      g.applyMatrix4(frame);
       colour(g, tint);
       if (!by.has(set)) by.set(set, []);
       by.get(set).push(g);
     };
     const prep = (g) => { g = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k); g.computeVertexNormals(); metreUV(g); return g; };
     const box = (set, w, h, d, lx, ly, lz, tint, ry = 0) => place(prep(new THREE.BoxGeometry(w, h, d)), lx, ly, lz, ry, set, tint);
-    const cyl = (set, rt, rb, h, lx, ly, lz, tint, rz = 0, seg = 8) => { const g = new THREE.CylinderGeometry(rt, rb, h, seg); if (rz) g.rotateZ(rz); place(prep(g), lx, ly, lz, 0, set, tint); };
+    const cyl = (set, rt, rb, h, lx, ly, lz, tint, rz = 0, seg = 8, alongZ = false) => { const g = new THREE.CylinderGeometry(rt, rb, h, seg); if (rz) { if (alongZ) g.rotateX(rz); else g.rotateZ(rz); } place(prep(g), lx, ly, lz, 0, set, tint); };
     const wl = (x, y, z) => _v.set(x, y, z).applyMatrix4(frame).clone();
     const person = (lx, lz, face, seated, tint, lift = 0, kid = false) => {
       const w = wl(lx, 0, lz);
@@ -134,7 +142,7 @@ export function createMainRoadLife(scene) {
       rehri() {
         box('wood', 1.7, 0.08, 0.95, 0, 0.82, 0, 0x8a6a48);
         box('wood', 1.7, 0.18, 0.05, 0, 0.95, 0.47, 0x7a5a3c); box('wood', 1.7, 0.18, 0.05, 0, 0.95, -0.47, 0x7a5a3c);
-        for (const s of [-1, 1]) { cyl('metal', 0.38, 0.38, 0.06, s * 0.6, 0.38, 0.52, 0x4a4a46, Math.PI / 2, 12); cyl('metal', 0.38, 0.38, 0.06, s * 0.6, 0.38, -0.52, 0x4a4a46, Math.PI / 2, 12); }
+        for (const s of [-1, 1]) { cyl('metal', 0.38, 0.38, 0.06, s * 0.6, 0.38, 0.52, 0x4a4a46, Math.PI / 2, 12, true); cyl('metal', 0.38, 0.38, 0.06, s * 0.6, 0.38, -0.52, 0x4a4a46, Math.PI / 2, 12, true); } // axle across the cart: wheel discs face the road
         box('wood', 0.07, 0.6, 0.07, -0.8, 0.5, 0.4, 0x6a4a30); box('wood', 0.07, 0.6, 0.07, -0.8, 0.5, -0.4, 0x6a4a30);
         box('wood', 1.1, 0.06, 0.06, -1.3, 0.78, 0.4, 0x6a4a30); box('wood', 1.1, 0.06, 0.06, -1.3, 0.78, -0.4, 0x6a4a30);
         for (let i = 0; i < 6; i++) { // crates and heaps of produce, each its own colour and tilt
@@ -149,7 +157,7 @@ export function createMainRoadLife(scene) {
         box('metal', 0.34, 0.05, 0.2, 0.55, 1.02, 0.55, 0xb8b8b0); // hanging pan of the taraju
         person(0.1, -0.95, Math.PI, false, pick(MEN)); // vendor behind
         person(-0.4, 1.35, Math.PI + 0.3, false, pick(WOMEN)); // customer in front
-        col(3.0, 1.1, -0.55, 0); // cart plus its handle shafts
+        col(3.0, 1.25, -0.55, 0); // cart plus its handle shafts and the wheels (z +-0.55)
       },
       charpai() {
         const L = 1.9, W = 0.95, H = 0.42;
@@ -165,7 +173,7 @@ export function createMainRoadLife(scene) {
         for (const a of [0, 2.1, 4.2]) box('wood', 0.04, 0.5, 0.04, -1.4 + Math.cos(a) * 0.2, 0.25, -0.3 + Math.sin(a) * 0.2, 0x7a5a3c);
         const n = 2 + Math.floor(rand() * 2);
         for (let i = 0; i < n; i++) person(-0.6 + i * 0.6 + (rand() - 0.5) * 0.1, (i % 2 ? 0.05 : -0.05), (rand() - 0.5) * 1.2 + (i % 2 ? Math.PI : 0), true, pick(MEN), H + 0.03);
-        col(2.0, 1.05, 0, 0);
+        col(3.3, 1.05, -0.12, 0); // cot plus the stool (x to 1.45) and the matka stand (x to -1.62): the 8 Nov wood cell at x610 z-37.5 was the stand's legs outside a cot-only box
       },
       buffalo() {
         // cement trough, peg, rope, dung
@@ -258,7 +266,14 @@ export function createMainRoadLife(scene) {
               group.add(tg);
               tg.traverse((o) => { if (o.isMesh) { o.userData.noAutoCollider = true; o.castShadow = true; o.receiveShadow = true; } });
               col(2.0, 3.7, 0, 0);
-            } else SCENES[spec.k]();
+            } else {
+              band = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+              SCENES[spec.k]();
+              // every prop that stands in the body band is inside a collider by construction, whatever the hand boxes say
+              // (8 Nov: a wood cell at x610.2 z-37.5 stood outside its scene's hand box in collision-test)
+              if (isFinite(band.minX)) col(band.maxX - band.minX + 0.1, band.maxZ - band.minZ + 0.1, (band.minX + band.maxX) / 2, (band.minZ + band.maxZ) / 2);
+              band = null;
+            }
             return;
           }
         }

@@ -74,12 +74,24 @@ export let lastCarves = [];
 export function buildCollidersFromScene(scene) {
   const boxes = [];
   const autoMeshes = []; // [mesh, topLevelName] - visible opaque meshes that may get a derived collider (src/autoColliders.js)
+  const boardBoxes = []; // body-height place boards (src/placeBoards.js holders), added last so they never suppress derived cells
   // Zone groups that are built but not drawn yet (src/zoneManager.js builds early, shows
   // within the zone's visible radius) carry userData.zoneHidden: no visual, so no collider.
   (function walk(obj, top, hidden) {
     if (obj.userData.zoneHidden) return;
     if (obj.parent === scene) top = obj.name;
     if (obj.visible === false) hidden = true;
+    // A place board is drawn by one shared BatchedMesh, so its holder (a plain Object3D) is the only scene node at its spot.
+    // A board standing at body height (0.35-1.5 m) is solid on its own, not only through the wall it is mounted on: the
+    // school's low board arrives before the school's .glb wall does, and stood walk-through until then (collision-test).
+    if (!hidden && Array.isArray(obj.userData.boardGeos)) {
+      obj.updateWorldMatrix(true, false);
+      for (const g of obj.userData.boardGeos) {
+        if (!g.boundingBox) g.computeBoundingBox();
+        _box3.copy(g.boundingBox).applyMatrix4(obj.matrixWorld);
+        if (_box3.max.y > 0.35 && _box3.min.y < 1.5 && isFinite(_box3.min.x)) boardBoxes.push({ minX: _box3.min.x, maxX: _box3.max.x, minZ: _box3.min.z, maxZ: _box3.max.z });
+      }
+    }
     if (obj.isMesh) {
       const tg = turnGroupOf(obj); // under a map-turned place: boxes were built square, turn them (src/turn.js)
       if (obj.userData.collider === true) {
@@ -134,6 +146,7 @@ export function buildCollidersFromScene(scene) {
     return false;
   };
   for (const [m, top] of autoMeshes) boxes.push(...deriveMeshBoxes(m, covered, top));
+  boxes.push(...boardBoxes);
   return boxes;
 }
 

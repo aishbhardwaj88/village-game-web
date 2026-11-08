@@ -136,9 +136,26 @@ export function createArmFrontage(scene) {
     const by = new Map();
     const colliders = [], people = [], signs = [];
     let frame = null;
-    const begin = (x, z, yaw) => { frame = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), _one); frame.yaw = yaw; };
+    // Every placed part at body height (0.3-1.6 m) that the unit's hand-sized collider does not already cover gets its own
+    // footprint collider when the unit ends (flushUnit), so a pole, wheel, matka or drum sticking out of a set can never be
+    // walked through (tools/collision-test.js part 5). Parts and rects are kept in the unit's local frame.
+    let unitParts = [], unitCols = [];
+    const flushUnit = () => {
+      if (frame) for (const [x0, x1, z0, z1] of unitParts) {
+        if (unitCols.some(([a0, a1, b0, b1]) => x0 >= a0 - 0.05 && x1 <= a1 + 0.05 && z0 >= b0 - 0.05 && z1 <= b1 + 0.05)) continue;
+        const w = Math.max(0.12, x1 - x0), d = Math.max(0.12, z1 - z0);
+        colliders.push(colliderBoxFromTransform(w, d, new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation((x0 + x1) / 2, 0, (z0 + z1) / 2))));
+        unitCols.push([x0, x1, z0, z1]);
+      }
+      unitParts = []; unitCols = [];
+    };
+    const begin = (x, z, yaw) => { flushUnit(); frame = new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), _one); frame.yaw = yaw; };
     const place = (g, lx_, ly, lz_, ry, set, tint) => {
-      g.applyMatrix4(_m4.compose(_v.set(lx_, ly, lz_), _q.setFromEuler(_e.set(0, ry, 0)), _one).premultiply(frame));
+      g.applyMatrix4(_m4.compose(_v.set(lx_, ly, lz_), _q.setFromEuler(_e.set(0, ry, 0)), _one));
+      g.computeBoundingBox();
+      const bb = g.boundingBox;
+      if (bb.max.y > 0.3 && bb.min.y < 1.6) unitParts.push([bb.min.x, bb.max.x, bb.min.z, bb.max.z]);
+      g.applyMatrix4(frame);
       colour(g, tint);
       if (!by.has(set)) by.set(set, []);
       by.get(set).push(g);
@@ -153,7 +170,7 @@ export function createArmFrontage(scene) {
       const w = wl(lx_, 0, lz_);
       people.push({ x: w.x, z: w.z, y: lift, ry: frame.yaw + face, sy: kid ? 0.62 : seated ? 0.6 + rand() * 0.05 : 0.95 + rand() * 0.1, sx: kid ? 0.78 : seated ? 1.15 : 1, tint });
     };
-    const col = (w, d, lx_, lz_) => colliders.push(colliderBoxFromTransform(w, d, new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(lx_, 0, lz_))));
+    const col = (w, d, lx_, lz_) => unitCols.push([lx_ - w / 2, lx_ + w / 2, lz_ - d / 2, lz_ + d / 2]) && colliders.push(colliderBoxFromTransform(w, d, new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(lx_, 0, lz_))));
     const pick = (a) => a[Math.floor(rand() * a.length)];
     const frameM = (x, y, z) => new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(x, y, z));
 
@@ -335,6 +352,7 @@ export function createArmFrontage(scene) {
       }
     });
 
+    flushUnit();
     // ------------------------------------------------------------ meshes: sets and shops
     for (const [set, list] of by) {
       const m = new THREE.Mesh(mergeGeometries(list), getTiledMaterial(set, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
