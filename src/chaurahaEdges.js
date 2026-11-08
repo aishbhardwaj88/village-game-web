@@ -40,16 +40,16 @@ const SIGN_KEYS = Object.keys(SIGNS);
 // building = { t:'house'|'shop', kind, x, z, ry (front faces +z local), w, d }
 const BUILDINGS = [
   // west row, facing east (front direction +x => ry = +pi/2)
-  { t: 'house', x: 584.8, z: 20.2, ry: Math.PI / 2 + 0.03, w: 5.6, d: 4.6 },
-  { t: 'shop', kind: 'kirana', x: 584.9, z: 25.4, ry: Math.PI / 2 - 0.02, w: 4.0, d: 3.4 },
+  { t: 'house', x: 584.8, z: 11.6, ry: Math.PI / 2 + 0.03, w: 5.6, d: 4.6 },
+  { t: 'shop', kind: 'kirana', x: 584.9, z: 26.6, ry: Math.PI / 2 - 0.02, w: 4.0, d: 3.4 },
   { t: 'house', x: 584.7, z: 30.6, ry: Math.PI / 2 + 0.05, w: 5.2, d: 4.8 },
   // north row, facing south (ry = 0), beyond the cross road verge
   { t: 'shop', kind: 'tea', x: 591.8, z: -2.6, ry: -0.02, w: 3.8, d: 3.2 },
   { t: 'shop', kind: 'tailor', x: 596.3, z: -2.4, ry: 0.03, w: 3.6, d: 3.2 },
   { t: 'shop', kind: 'cycle', x: 600.8, z: -2.7, ry: -0.04, w: 3.8, d: 3.4 },
   // east row, facing west (ry = -pi/2)
-  { t: 'shop', kind: 'bangle', x: 629.2, z: 15.4, ry: -Math.PI / 2 + 0.03, w: 3.4, d: 3.2 },
-  { t: 'shop', kind: 'cloth', x: 629.0, z: 19.2, ry: -Math.PI / 2 - 0.02, w: 3.6, d: 3.4 },
+  { t: 'shop', kind: 'bangle', x: 629.2, z: 12.2, ry: -Math.PI / 2 + 0.03, w: 3.4, d: 3.2 },
+  { t: 'shop', kind: 'cloth', x: 629.0, z: 8.4, ry: -Math.PI / 2 - 0.02, w: 3.6, d: 3.4 },
   // south row, facing north (ry = pi)
   { t: 'house', x: 591.2, z: 41.6, ry: Math.PI + 0.04, w: 5.4, d: 4.6 },
   { t: 'shop', kind: 'kirana', x: 596.6, z: 41.2, ry: Math.PI - 0.03, w: 3.6, d: 3.4 },
