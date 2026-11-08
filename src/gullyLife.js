@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildBovineGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
+import { oldHouseMaterial } from './stagingYard.js';
 import { allRoadLines } from './mapRoads.js';
 import { CHAURAHA } from './mapPlan.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
@@ -303,7 +304,7 @@ export function createGullyLife(scene) {
     // ---------------------------------------------------------------- meshes
     const meshes = {};
     for (const [set, list] of by) {
-      const m = new THREE.Mesh(mergeGeometries(list), getTiledMaterial(set, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
+      const m = new THREE.Mesh(mergeGeometries(list), oldHouseMaterial(set) || getTiledMaterial(set, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
       m.name = `gully_life_${set}`; m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true;
       group.add(m); meshes[set] = m;
     }

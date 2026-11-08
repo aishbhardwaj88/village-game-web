@@ -36,7 +36,7 @@ for (const l of MAP.lanes_and_tracks) {
 const PLUSZ = [0, 1], MINUSZ = [0, -1], PLUSX = [1, 0], MINUSX = [-1, 0];
 const NATIVE = {
   anganwadi: PLUSZ, banta: PLUSZ, chaat: PLUSZ, chemist: PLUSZ, gurudwara: PLUSZ, health: PLUSZ, jain: PLUSZ,
-  jalebi: PLUSZ, mandi: MINUSX, manihari: PLUSZ, masjid: PLUSZ, mela: PLUSZ, haveli: PLUSZ, sabzi: PLUSZ,
+  jalebi: PLUSZ, mandi: MINUSZ /* 9 Nov: createMandi road end (gantry, apron) is site -z; was -X when the yard lay along the highway */, manihari: PLUSZ, masjid: PLUSZ, mela: PLUSZ, haveli: PLUSZ, sabzi: PLUSZ,
 };
 // Hero places whose real front was read from the Blender script / main.js (7 Nov 2026) and whose in-game yaw differs from the anchor ry.
 // nat = native front in the model's own frame; ry (deg, three.js yaw) replaces the anchor ry where main.js / village.js apply their own turn.

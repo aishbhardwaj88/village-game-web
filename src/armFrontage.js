@@ -4,7 +4,7 @@ import { getTiledMaterial } from './materials.js';
 import { allRoadLines } from './mapRoads.js';
 import { CHAURAHA } from './mapPlan.js';
 import { loadKitModels, KIT_SHARES } from './houseKit.js';
-import { swapShared } from './stagingYard.js';
+import { swapShared, oldHouseMaterial } from './stagingYard.js';
 import { VILLAGE_HOUSES } from './villageHouses.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { batchLateGroup, batchPlaceModel, batchPeopleMesh } from './placeBatch.js';
@@ -355,7 +355,7 @@ export function createArmFrontage(scene) {
     flushUnit();
     // ------------------------------------------------------------ meshes: sets and shops
     for (const [set, list] of by) {
-      const m = new THREE.Mesh(mergeGeometries(list), getTiledMaterial(set, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
+      const m = new THREE.Mesh(mergeGeometries(list), oldHouseMaterial(set) || getTiledMaterial(set, { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
       m.name = `arm_frontage_${set}`; m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true;
       group.add(m);
     }

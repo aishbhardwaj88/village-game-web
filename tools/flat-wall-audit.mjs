@@ -22,7 +22,7 @@ const STOPS = [
   ['south_w', 565, 82], ['west_n', 530, -35], ['west_s', 518, 45], ['outer_w', 505, 50], ['haveli', 612, -22],
   ['gapA', 565, -31], ['gapB', 575, 50], ['gapC', 652, 12], ['chauraha', 603, 20], ['gully', 590, 30],
 ];
-const HOUSE = /house|abadi|haveli|plot|kachcha|chauraha_edge|edge_house|gully|homestead|kit_|hb_main|bg_/i;
+const HOUSE = /house|abadi|haveli|plot|kachcha|chauraha_edge|edge_house|gully|homestead|kit_|hb_main|bg_|arm_frontage|main_road_frontage/i;
 const NOT_HOUSE = /people|ambient_life|cattle|lamp|shadow|collider|solids|lanes|decal|sign|board|tree|plant|leaf/i;
 
 const wait = async (u) => { for (let i = 0; i < 120; i++) { try { await fetch(u); return; } catch { await new Promise((r) => setTimeout(r, 300)); } } throw new Error('server'); };
@@ -32,7 +32,7 @@ try {
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 640, height: 400 } });
   const start = async () => {
-    await page.goto(`${BASE}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE}?dev=1`, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 120000 }).catch(() => {});
     await page.click('#play-btn', { force: true, timeout: 8000 }).catch(() => page.evaluate(() => document.querySelector('#play-btn')?.click()));
     await page.waitForTimeout(3000);
@@ -57,7 +57,7 @@ try {
         const pathS = path.join('/');
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         // texture tiles per metre on this geometry: uv span / world span over a sample of triangles, times the map repeat
-        const g = o.geometry, pos = g.attributes.position, uv = g.attributes.uv;
+        const g = o.geometry; if (!g || !g.attributes || !g.attributes.position) return; const pos = g.attributes.position, uv = g.attributes.uv;
         let tpm = null;
         // world scale of the geometry: node/instance scale matters (meshopt-quantised glbs store normalised positions with the real size in the node scale, so local edge lengths are meaningless on their own)
         o.updateWorldMatrix(true, false);
@@ -87,7 +87,11 @@ try {
           const library = /^[a-z]+\/[a-z]+_color\.webp/.test(url) || /^(plaster|brick|concrete|tin|terracotta|wood|thatch|metal)_color/.test(mapName);
           const farLod = /_far_/.test(path.join('/')); // distant LOD proxies carry the embedded colour map only (no normal map: invisible at that range)
           // flat = no colour map, or a map that is not a library photo set, or no normal map, or tiling so fine (> 3 tiles/m) or so coarse (< 0.03) it reads as one colour
-          const why = !m.map ? 'no colour map' : !library ? `map not a library set (${url})` : !m.normalMap && !farLod ? 'no normal map' : tiles !== null && tiles > 3 ? `tiles ${tiles.toFixed(1)}/m (averages to flat)` : tiles !== null && tiles < 0.03 ? `tiles ${tiles.toFixed(3)}/m (stretched flat)` : '';
+          // the old-house look: masonry (plaster/brick/cement) must wear the shared weathered material (stagingYard addWeathering: stains,
+          // damp band, chips, sun bleach). A bare tiled library plaster passes every check above yet reads as one flat colour from the saddle.
+          const masonry = /^(plaster|brick|concrete)\//.test(url);
+          const weathered = typeof m.customProgramCacheKey === 'function' && /weather_/.test(m.customProgramCacheKey());
+          const why = !m.map ? 'no colour map' : !library ? `map not a library set (${url})` : !m.normalMap && !farLod ? 'no normal map' : masonry && !weathered && !farLod ? `masonry without the old-house weathering (${m.customProgramCacheKey ? m.customProgramCacheKey() : 'none'})` : tiles !== null && tiles > 3 ? `tiles ${tiles.toFixed(1)}/m (averages to flat)` : tiles !== null && tiles < 0.03 ? `tiles ${tiles.toFixed(3)}/m (stretched flat)` : '';
           const flat = !!why && !/^hb_(decal|rangoli)$/.test(m.name || ''); // painted decals (durrie rug, rangoli) are artwork with their own map, not walls
           const house = HOUSE.test(pathS) && !NOT.test(pathS);
           out.push({ path: pathS, top: path[0], mat: m.name || m.type, flat, why, url, tiles, house, tris: g.index ? g.index.count / 3 : pos.count / 3 });

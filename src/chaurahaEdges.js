@@ -6,6 +6,7 @@ import { mergeMeshList } from './mergeUtils.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { CHAURAHA } from './mapPlan.js';
 import { ensureUv2 } from './materials.js';
+import { oldHouseMaterial } from './stagingYard.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 
 /**
@@ -146,7 +147,9 @@ export function createChaurahaEdges(scene) {
   function add(mat, mesh) { (parts[mat] ||= []).push(mesh); }
   /** Textured box in frame-local metres: centre (x,y,z), yaw ry, pitch rx. */
   function box(mat, w, h, d, x, y, z, ry = 0, tint = null, tile = 1.0, rx = 0, rz = 0) {
-    const m = texturedBox(w, h, d, mat, { tileSize: tile, tint, tintStrength: 0.55 });
+    const oh = oldHouseMaterial(mat); // masonry wears the old-house weathered library material, UVs in metres at its own library repeat
+    const m = texturedBox(w, h, d, mat, { tileSize: oh ? 1 : tile, tint, tintStrength: 0.55 });
+    if (oh) m.material = oh;
     m.geometry.applyMatrix4(_l.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), _one).premultiply(frame));
     m.position.set(0, 0, 0); m.rotation.set(0, 0, 0);
     add(mat, m);

@@ -161,6 +161,19 @@ function addWeathering(m, set) {
   m.customProgramCacheKey = () => 'weather_' + set;
 }
 
+/**
+ * The old-house wall material for code-built rows (gullies, arm and main-road frontage, chauraha edges): the very shared, weathered
+ * library material the abadi rows and kit houses wear (same maps, same addWeathering stains, damp band, chips, sun bleach), at the
+ * library repeat from tools/blender/arch.py (plaster 0.5, brick 1.2, cement 0.5). Geometry UVs must be in metres. Masonry sets only;
+ * any other set returns null so the caller keeps its getTiledMaterial. Same material object as the staged/kit walls, so these rows
+ * join the existing place batch instead of adding a draw call.
+ */
+const OLD_HOUSE = { plaster: [0.5, 'hb_main'], brick: [1.2, 'hb_brick'], concrete: [0.5, 'hb_cmain'] };
+export function oldHouseMaterial(set) {
+  const e = OLD_HOUSE[set];
+  return e ? sharedSetMaterial(set, e[0], { name: e[1] }) : null;
+}
+
 export function swapShared(o) {
   const ud = o.material && o.material.userData;
   if (ud && ud.dopahar_set) {

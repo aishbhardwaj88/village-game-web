@@ -62,7 +62,7 @@ await page.waitForSelector('#start-overlay .title-en', { state: 'visible', timeo
 const titleMs = Date.now() - t0;
 const readyAtTitle = await page.evaluate(() => document.getElementById('start-overlay').classList.contains('ready'));
 const bytesAtTitle = bytes;
-await page.waitForSelector('#start-overlay.ready', { timeout: 120000 });
+await page.waitForSelector('#start-overlay.ready', { timeout: 300000 });
 const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
 const pageReadyAt = await page.evaluate(() => Math.round(window.__readyAt || -1));

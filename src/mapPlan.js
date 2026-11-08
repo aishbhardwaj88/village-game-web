@@ -12,7 +12,7 @@ export const MAP_PLAN = {
   yard_bhatta: { x: 240.7, z: -170.3, turn: 1 },
   yard_chaupal: { x: 23.5, z: 28.5, turn: 95 }, // 5 + 90 (9 Nov facing audit): front (notice board, steps) turned from the general store's back path onto the square, west toward the milestone (SPATIAL_SENSE 1: fronts face the circle); the 20 x 20 m patch keeps its square footprint
   yard_paani_tanki: { x: -44.9, z: -90.3, turn: 3 },
-  yard_panchayat: { x: -50, z: 42.3, turn: 185 }, // 5 + 90: front (neem platform, flag) turned from the street onto the square (3 Nov orientation pass)
+  yard_panchayat: { x: -50, z: 42.3, turn: 185 }, // 5 + 180 (3 Nov, re-checked 9 Nov D4): front (steps, verandah, the meeting ground with the neem chabutra) faces north onto the Council lane, the lane named for it; the ground's open edge meets the lane kerb. Same 22 m outline as her map, but building and ground change ends: as drawn (turn 5) the front would face south across its ground onto the back of the post office yard, which starts right where the ground ends, and the back would face the lane
   yard_post: { x: -52.2, z: 65.4, turn: -11.2 },
   yard_tvhouse: { x: -47.3, z: 21.8, turn: 5 },
   yard_dairy: { x: -95.1, z: -37.4, turn: -97 }, // -7 - 90 (7 Nov road-front audit): front turned from the back field onto the ring road, along the map's 'Front path to Milk dairy' (runs east)

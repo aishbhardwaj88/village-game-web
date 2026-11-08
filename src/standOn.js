@@ -48,7 +48,8 @@ function buildIndex(scene) {
     if (mat && mat.transparent && mat.opacity < 0.5) return;
     const e = o.matrixWorld.elements, stamp = e[12] + e[13] * 7 + e[14] * 13 + e[0] * 3;
     let c = boxCache.get(o);
-    if (!c || c.stamp !== stamp) { c = { stamp, box: new THREE.Box3().setFromObject(o) }; boxCache.set(o, c); }
+    const gp = o.geometry && o.geometry.attributes.position, gn = gp ? gp.count : 0; // streamed meshes swap or refill geometry under one transform
+    if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o) }; boxCache.set(o, c); }
     const b = c.box;
     if (!isFinite(b.min.x)) return;
     const s = { o, b };
@@ -137,7 +138,7 @@ export function settleDy(scene, mesh, i = -1) {
 
 /** Settle every instance of a capsule-people InstancedMesh onto its surface; pass refresh(mesh) to re-copy a place batch. */
 let pending = false; // set when a sliced settle ran out of its time budget: the scheduler calls it again next frame
-const SLICE_MS = 3;
+let SLICE_MS = 3;
 export function settleInstances(scene, mesh, refresh) {
   const m = new THREE.Matrix4();
   const deadline = performance.now() + SLICE_MS;
@@ -214,7 +215,8 @@ if (typeof window !== 'undefined') {
       index = null;
       const now = performance.now();
       let n = 0;
-      for (const e of ENTRIES) { const s = sceneOf(e.obj); if (s) { runEntry(e, s, now); n++; } }
+      const was = SLICE_MS; SLICE_MS = 1e9; // a test settle runs every figure to the end, not one 3 ms slice
+      try { for (const e of ENTRIES) { const s = sceneOf(e.obj); if (s) { runEntry(e, s, now); n++; } } } finally { SLICE_MS = was; }
       return n;
     },
     count: () => ENTRIES.length,
