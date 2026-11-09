@@ -18,6 +18,7 @@ import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
+import { holdModelLoads, releaseModelLoads } from './loaders.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal, distanceToCanalWater } from './canal.js';
 import { buildFieldChannel } from './fieldChannel.js';
@@ -261,6 +262,13 @@ async function main() {
   };
   setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, 4000))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
+  // D1: every model except the asset-slot buildings waits until the opening-view slots are in (released below at
+  // slotLoads.near), so the near buildings are not queued behind ~2 MB of far props on 4G. `?nohold` to compare.
+  let slotFiles = null;
+  if (!new URLSearchParams(window.location.search).has('nohold')) {
+    holdModelLoads((url) => { if (!slotFiles) return false; const f = url.split('/').pop().replace(/\.glb$/, ''); return slotFiles.has(f); });
+    setTimeout(releaseModelLoads, 9000); // same safety net as the title's timeout
+  }
 
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
   // ratio and shadow map settings at creation time, not just post-processing later.
@@ -1293,8 +1301,10 @@ async function main() {
 
   // Play unlocks once the models around the opening spawn are in (first view never pops); the far ones keep
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
+  slotFiles = new Set(Array.from(assetSlots.slots.values()).map((s) => s.file || s.name));
   const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 40 });
   slotLoads.near.then(() => {
+    releaseModelLoads();
     markOpeningViewLoaded(); // the HDRI now loads from boot (envReady above) so the warm-up compiles with it
   });
   slotLoads.all.then((results) => {
