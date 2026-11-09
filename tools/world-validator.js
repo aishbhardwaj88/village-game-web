@@ -351,6 +351,20 @@ async function main() {
         return points;
       }, materialMatch);
     }
+    // Streaming is async (7 ms build slices, .glb loads, frame-paced collider rebuilds). Sampling geometry while a zone is half
+    // built or its colliders are still pending compares two different moments of the world (check 4 flagged walls whose collider
+    // had not been derived yet, check 5 flagged colliders whose mesh had been sampled before it was placed). Wait until the zone
+    // manager reports itself settled and quiet for a while (cap 60 s), same rule tools/collision-test.js uses.
+    await page.evaluate(async () => {
+      const d = window.__dopahar;
+      const settled = () => { if (!d.zoneManager || !d.zoneManager.status) return true; const s = d.zoneManager.status(); return !s.unbuilt && !s.loads && !s.queue && !s.batch && !s.colliders; };
+      let quietSince = Date.now(), builds = d.colliderStats ? d.colliderStats.builds : 0;
+      for (const t0 = Date.now(); Date.now() - t0 < 60000 && (!settled() || Date.now() - quietSince < 2500);) {
+        await new Promise((r) => setTimeout(r, 250));
+        const b = d.colliderStats ? d.colliderStats.builds : 0;
+        if (!settled() || b !== builds) { builds = b; quietSince = Date.now(); }
+      }
+    });
     console.log('\nSampling real wall geometry for check 4 (every "plaster" mesh)...');
     const wallPoints = await sampleMaterialSurface("return name === 'plaster';");
     console.log(`${wallPoints.length / 2} real wall-surface sample points.`);

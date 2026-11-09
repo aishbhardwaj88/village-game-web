@@ -25,3 +25,9 @@ tripo_inputs/
 # local-only: the stop switch and per-machine settings, never shared
 Dopahar autopilot STOP.command
 .claude/settings.local.json
+
+# scratch build output and one-off probes
+dist-*/
+tools/_tmp*
+tools/_d2_*
+tools/_vfix_*
