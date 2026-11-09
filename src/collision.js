@@ -90,8 +90,12 @@ function* buildCollidersGen(scene, sliceMs) {
   const boardBoxes = []; // body-height place boards (src/placeBoards.js holders), added last so they never suppress derived cells
   // Zone groups that are built but not drawn yet (src/zoneManager.js builds early, shows
   // within the zone's visible radius) carry userData.zoneHidden: no visual, so no collider.
-  (function walk(obj, top, hidden) {
-    if (obj.userData.zoneHidden) return;
+  // Iterative (explicit stack) so the scene walk itself yields between slices; children are pushed reversed to keep order.
+  const stack = [[scene, '', false]];
+  while (stack.length) {
+    if (performance.now() - sliceStart > sliceMs) { yield; sliceStart = performance.now(); }
+    let [obj, top, hidden] = stack.pop();
+    if (obj.userData.zoneHidden) continue;
     if (obj.parent === scene) top = obj.name;
     if (obj.visible === false) hidden = true;
     // A place board is drawn by one shared BatchedMesh, so its holder (a plain Object3D) is the only scene node at its spot.
@@ -122,8 +126,8 @@ function* buildCollidersGen(scene, sliceMs) {
       }
       if (!hidden && isAutoSolidMesh(obj, top)) autoMeshes.push([obj, top]);
     }
-    for (const c of obj.children) walk(c, top, hidden);
-  })(scene, '', false);
+    for (let i = obj.children.length - 1; i >= 0; i--) stack.push([obj.children[i], top, hidden]);
+  }
   // Cells inside, or within 0.3 m of, a hand-tagged box need no derived collider: a hand-tagged wall already keeps the
   // 0.45 m player circle off it, so door jambs, sills, grilles and awning posts hugging a wall add nothing but
   // closing the doorways the hand-tagged walls deliberately leave open.
