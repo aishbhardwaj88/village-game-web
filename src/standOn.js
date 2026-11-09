@@ -20,8 +20,8 @@ import { pAdd } from './perfProbe.js';
 const SKIP = /water|ripple|grass|tuft|crop|cane|reed|flower|foliage|canopy|leaf|bush|hedge|plant_|laundry|cloth|bunting|garland|flag|shadow|contact|dust|steam|smoke|sky|waypoint|glow|beam|halo|fire|rangoli|decal|people|capsule/i;
 const SKIP_TOP = /^(npc_|vehicle_|player|trolley|sky|waypoint|placebatch)/;
 const NOOK = /ride_nook_\d+_[a-z]+/g;
-const BAND = 0.06; // feet = vertices within 6 cm of the lowest point (hoof soles, the round bottom of a capsule)
-const BUCKET = 0.2; // was 0.08: far fewer ray probes per figure (docs/perf-2026-11-08.md)
+const BAND = 0.12; // feet = vertices within 12 cm (same band as tools/feet-check.js; 6 cm missed plinth and charpai edges) of the lowest point (hoof soles, the round bottom of a capsule)
+const BUCKET = 0.08; // same buckets as tools/feet-check.js: 0.2 probed too few points and missed edges the check finds
 const PROBE = 0.45; // rays start this far above the feet: steps up onto a chabutra or plinth, never a table overhead
 const CELL = 8;
 
@@ -132,8 +132,39 @@ export function settleDy(scene, mesh, i = -1) {
     if (!b || pts[n + 1] < b[1]) buckets.set(key, [pts[n], pts[n + 1], pts[n + 2]]);
   }
   let clear = Infinity;
-  for (const [x, y, z] of buckets.values()) clear = Math.min(clear, y - groundAt(scene, x, z, minY));
+  const fp = _fp; fp.length = 0;
+  for (const [x, y, z] of buckets.values()) { const c = y - groundAt(scene, x, z, minY); fp.push(x, z, c); clear = Math.min(clear, c); }
   return isFinite(clear) ? -clear : 0;
+}
+const _fp = []; // last settleDy footprint: x, z, clearance per foot bucket
+
+/** A standing figure whose foot only clips the edge of a bench, plinth or charpai is slid off it (up to 30 cm), not hoisted onto
+ *  the edge. Returns true when it moved instance i in x/z; the caller re-measures. */
+const _inv = new THREE.Matrix4(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
+function slideOffEdge(scene, mesh, i, dy, m) {
+  const fp = _fp, n = fp.length / 3;
+  if (n < 3) return false;
+  let hx = 0, hz = 0, nh = 0, lx = 0, lz = 0, nl = 0;
+  for (let k = 0; k < fp.length; k += 3) {
+    if (-fp[k + 2] > dy - 0.03) { hx += fp[k]; hz += fp[k + 1]; nh++; } else { lx += fp[k]; lz += fp[k + 1]; nl++; }
+  }
+  if (!nl || nh * 2 > n) return false; // mostly on it: he stands or sits on it
+  let dx = lx / nl - hx / nh, dz = lz / nl - hz / nh;
+  const L = Math.hypot(dx, dz); if (L < 1e-4) return false;
+  dx /= L; dz /= L;
+  mesh.getMatrixAt(i, m);
+  const x0 = m.elements[12], z0 = m.elements[14];
+  _inv.copy(mesh.matrixWorld).invert();
+  for (let step = 0.06; step <= 0.3001; step += 0.06) {
+    _a.set(0, 0, 0).applyMatrix4(mesh.matrixWorld); _b.set(_a.x + dx * step, _a.y, _a.z + dz * step).applyMatrix4(_inv); _a.applyMatrix4(_inv);
+    m.elements[12] = x0 + _b.x - _a.x; m.elements[14] = z0 + _b.z - _a.z;
+    mesh.setMatrixAt(i, m);
+    const d2 = settleDy(scene, mesh, i);
+    let spread = 0; for (let k = 0; k < _fp.length; k += 3) spread = Math.max(spread, _fp[k + 2] + d2); // highest foot above its surface, once the lowest touches
+    if (d2 < dy - 0.03 && spread <= 0.03) return true;
+  }
+  m.elements[12] = x0; m.elements[14] = z0; mesh.setMatrixAt(i, m); // nothing clear within 30 cm: leave it for the lift
+  return false;
 }
 
 /** Settle every instance of a capsule-people InstancedMesh onto its surface; pass refresh(mesh) to re-copy a place batch. */
@@ -145,7 +176,8 @@ export function settleInstances(scene, mesh, refresh) {
   let i = mesh.userData._settleAt || 0;
   for (; i < mesh.count; i++) {
     if (performance.now() > deadline) break;
-    const dy = settleDy(scene, mesh, i);
+    let dy = settleDy(scene, mesh, i);
+    if (dy > 0.05 && Math.abs(dy) <= 0.6 && slideOffEdge(scene, mesh, i, dy, m)) dy = settleDy(scene, mesh, i);
     if (Math.abs(dy) < 0.005 || Math.abs(dy) > 0.6) continue;
     mesh.getMatrixAt(i, m);
     m.elements[13] += dy; // parents only turn about Y, so a world dy is a local dy
@@ -184,19 +216,27 @@ export function settlingReleased() { return !held; }
 /** True once `frames` rendered frames have passed since the opening view, OR n x 100 ms of wall clock. Lazy builds gated on
  * frames alone land ~n seconds late on a 1 fps machine (the test browser), after the collider list was last checked. */
 export function lazyDue(frames, n) { return frames > n || (!held && performance.now() - releasedAt > n * 100); }
+let rr = 0, lastTick = 0; // round-robin cursor: every entry gets its turn, early ones (npc_postmaster, bazaar_life) were starved
 function tick() {
   if (held) { if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick); return; }
   const now = performance.now();
   const _t = now;
-  let budget = 12; // runEntry cost is 4-6 units: at most 2-3 entries a frame
-  for (let n = ENTRIES.length - 1; n >= 0 && budget > 0; n--) {
+  // Time budget, scaled to the frame: 4 ms at 60 fps, up to 15% of a slow frame (a 1 fps test browser still settles everything).
+  const frame = lastTick ? Math.min(1000, now - lastTick) : 16;
+  lastTick = now;
+  const budgetMs = Math.max(4, frame * 0.15);
+  const N = ENTRIES.length;
+  for (let k = 0; k < N && ENTRIES.length; k++) {
+    if (performance.now() - _t > budgetMs) break;
+    if (rr >= ENTRIES.length) rr = 0;
+    const n = rr++;
     const e = ENTRIES[n];
     const scene = sceneOf(e.obj);
-    if (!scene) { if (e.stage > 0 && !e.obj.parent && ++e.orphan > 600) ENTRIES.splice(n, 1); continue; }
+    if (!scene) { if (e.stage > 0 && !e.obj.parent && ++e.orphan > 600) { ENTRIES.splice(n, 1); rr--; } continue; }
     e.orphan = 0;
     const due = e.again || (e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage]);
     const moved = e.moving && e.stage > 0 && now - (e.lastRun || 0) > 400 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;
-    if (due || moved) { e.lastRun = now; runEntry(e, scene, now); budget -= e.again ? 1 : due ? 4 : 6; }
+    if (due || moved) { e.lastRun = now; runEntry(e, scene, now); }
   }
   pAdd('standOn.tick', performance.now() - _t);
   if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick);

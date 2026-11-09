@@ -121,7 +121,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
   mesh.instanceColor.needsUpdate = true;
 
   const _toTarget = new THREE.Vector3();
-    const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22], [0.3, 0], [-0.3, 0], [0, 0.3], [0, -0.3]];
+    const FOOT = [[0, 0], [0.22, 0], [-0.22, 0], [0, 0.22], [0, -0.22], [0.16, 0.16], [-0.16, 0.16], [0.16, -0.16], [-0.16, -0.16]]; // the capsule's 12 cm foot band is 0.23 m across (as tools/feet-check.js measures): 0.3 m probes lifted him onto a step he does not touch
   function settleOne(scene, i, quick = false) { // absolute, not cumulative: a shelf or counter edge must not ratchet a figure upwards
     const p = i < shopkeeperCount ? shopkeepers[i] : i < seatedIndex ? villagers[i - shopkeeperCount].pos : seatedPos;
     const g0 = groundAt(scene, p.x, p.z, 0, !quick);
