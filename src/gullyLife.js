@@ -125,7 +125,7 @@ export function createGullyLife(scene) {
       people.push({ x: w.x, z: w.z, y: lift, ry: frame.yaw + face, sy: kid ? 0.62 : seated ? 0.6 + rand() * 0.05 : 0.95 + rand() * 0.1, sx: kid ? 0.78 : seated ? 1.15 : 1, tint });
     };
     const col = (w, d, lx, lz, animal = false) => {
-      const c = colliderBoxFromTransform(w, d, new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(lx, 0, lz)));
+      const c = colliderBoxFromTransform(w + 0.3, d + 0.3, new THREE.Matrix4().copy(frame).multiply(new THREE.Matrix4().makeTranslation(lx, 0, lz))); // +0.3: stacked pots and crates overhang their tagged footprint by up to 0.1-0.5 m (collision-test coverage, 9 Nov)
       if (animal) c.animalBox = true; colliders.push(c);
     };
     const pick = (a) => a[Math.floor(rand() * a.length)];
