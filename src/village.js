@@ -682,7 +682,7 @@ function furnishClassroom(group) {
   const rowsZ = []; for (let i = 0; i < 5; i++) rowsZ.push(rz - d / 2 + 4 + i * 2.5);
   for (const [r, zz] of rowsZ.entries()) {
     for (const side of [-1, 1]) {
-      const bx = rx + side * 1.15 + jit(0.06);
+      const bx = rx + side * 1.3 + jit(0.06); // 1.3 (was 1.15): the 0.8 m centre aisle closed under the -11.2 deg turn once wood colliders were derived (9 Nov), sealing the blackboard off from the door
       const yaw = jit(0.035);
       const t = WOODS[Math.floor(rnd() * WOODS.length)];
       wood(1.5, 0.045, 0.38, bx, 0.62, zz, yaw, t); // desk top
@@ -697,7 +697,7 @@ function furnishClassroom(group) {
       if (rnd() < 0.4) wood(0.2, 0.012, 0.15, bx + jit(0.5), 0.67, zz + 0.05, jit(0.4), 0x2a2e2a); // slate
       // School bag leaning/slumped beside some benches.
       if (rnd() < 0.5) {
-        const bag = wood(0.3, 0.38, 0.14, bx + side * 0.95, 0.19, zz + 0.45, jit(0.6), [0x2a4a6a, 0x8a3a2a, 0x3a5a3a, 0x6a5a2a][Math.floor(rnd() * 4)]);
+        const bag = wood(0.3, 0.38, 0.14, bx + side * 0.5, 0.19, zz + 0.45, jit(0.6), [0x2a4a6a, 0x8a3a2a, 0x3a5a3a, 0x6a5a2a][Math.floor(rnd() * 4)]);
         bag.rotation.z = jit(0.12);
       }
     }
