@@ -1,3 +1,20 @@
+# 16:05 MONDAY. THE 09:00 DEADLINE WAS MISSED. FINISH D6 AND SAY READY. NOTHING ELSE.
+
+Done since 08:45: D1 load 6.5 s (headless gate passes), D2 feet-check 0 of 348, D3 no flat
+house walls, D4 the three already face their roads. Peacock stays parked.
+Left, in order:
+1. Finish D6: build, collision-test 0, regression 22/22, feet-check 0, findability 0,
+   0 console errors.
+2. **Draw calls under 150 in EVERY validator zone.** Last reading 163/173/171 (00:58). Re-
+   measure; if still over, batch the worst offenders until under. Report the numbers.
+3. Clean the 147 uncommitted files: build-output folders (dist-*), tools/_tmp*, scratch
+   scripts. gitignore them, do not commit them.
+4. Ride-through to docs/shots/ride-final-2026-11-09/.
+5. **The READY line** at the top of docs/NEEDS_YOU.md, then commit and push.
+Target: READY by 18:00 IST.
+
+---
+
 # HARD DEADLINE 09:00 IST MONDAY 9 NOV. Her words: "must be done by 9am".
 - Work D1 to D5 in order until 07:30.
 - **07:30: stop starting anything. Start D6, the final check, whatever is left undone.**
