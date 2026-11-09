@@ -245,7 +245,21 @@ const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 async function main() {
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
   const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
-  setReadyGate(async () => { _lm.gateStart = performance.now(); try { const p = renderer.compileAsync(scene, camera); _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); renderOK = true; });
+  let envReady = null; // D1: the HDRI is set BEFORE the warm-up compile; set after it, every material recompiled in a second long freeze
+  // D1: shaders compile against the composer's render target (the variants the RenderPass actually draws), early and
+  // again at the gate; textures upload a few per frame while the title is up, so the first frame after Play is cheap.
+  const preCompile = () => { try { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(scene, camera); renderer.setRenderTarget(_rt); return p; } catch (e) { return Promise.resolve(); } };
+  const warmedTex = new WeakSet(); let warmList = [], warmScanAt = 0;
+  const warmTextures = (now) => {
+    if (now >= warmScanAt) {
+      warmScanAt = now + 400; warmList = []; const seen = new Set();
+      scene.traverse((o) => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : null; if (!ms) return;
+        for (const m of ms) { if (!m || seen.has(m)) continue; seen.add(m); for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t.version > 0 && !warmedTex.has(t)) warmList.push(t); } } });
+    }
+    const t0 = performance.now();
+    while (warmList.length && performance.now() - t0 < 25) { const t = warmList.pop(); if (warmedTex.has(t)) continue; warmedTex.add(t); try { renderer.initTexture(t); } catch (e) { /* first render uploads it instead */ } _lm.texWarmed = (_lm.texWarmed || 0) + 1; }
+  };
+  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, 4000))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
@@ -260,6 +274,8 @@ async function main() {
 
   const scene = createScene();
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
+  envReady = loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').then(() => { _lm.envSet = performance.now(); preCompile(); }).catch((err) =>
+    console.error('Failed to load environment HDRI', err)); // D1: started at boot, in parallel with the models (was after the near models)
 
   // Item 3a (real playtest report — "the village reads as desert", flat grey
   // gravel in every direction) — patchy dry-grass tint across the open ground
@@ -1279,10 +1295,7 @@ async function main() {
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
   const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 40 });
   slotLoads.near.then(() => {
-    markOpeningViewLoaded();
-    requestAnimationFrame(() => loadEnvironment(renderer, scene, 'assets/hdri/camdeboo_road_512.hdr').catch((err) =>
-      console.error('Failed to load environment HDRI', err)
-    ));
+    markOpeningViewLoaded(); // the HDRI now loads from boot (envReady above) so the warm-up compiles with it
   });
   slotLoads.all.then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
@@ -1984,6 +1997,7 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
+      renderOK = true; _lm.playPressed = performance.now(); // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
@@ -3158,10 +3172,12 @@ async function main() {
 
     renderer.info.reset();
     const _pt1 = performance.now();
-    // The opaque title overlay hides the canvas until ready: skip the 3D render (and its shader compiles) so the main
-    // thread spends the loading time on loading. The first render happens the frame after markReady, before any press.
-    if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) _lm.firstRender = performance.now(); }
+    // The opaque title overlay hides the canvas until Play: skip the 3D render so the main thread spends the loading
+    // time on loading (and uploading textures a few per frame). The first render happens on the Play press (D1).
+    if (!renderOK) warmTextures(_pt1);
+    if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) { _lm.firstRender = performance.now(); _lm.programs = renderer.info.programs.length; _lm.textures = renderer.info.memory.textures; _lm.geometries = renderer.info.memory.geometries; _lm.calls = renderer.info.render.calls; } }
     const _pt2 = performance.now();
+    if (_pt2 - _pt0 > 300) (window.__longFrames = window.__longFrames || []).push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); // D1 load-time probe: [start, logic ms, render ms]
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);
   }
