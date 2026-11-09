@@ -1,6 +1,6 @@
 /**
- * All sound is synthesised with the Web Audio API — no audio files, so no downloads
- * and no licence risk (item 5). It's a placeholder for real recordings later, but
+ * Sound: CC0 recordings in public/assets/audio (loaded after Play, see SAMPLE_FILES) with the
+ * Web Audio synthesised sounds below as the fallback for anything without a file. It
  * aims to already have the right rhythm per vehicle. Everything starts only after
  * AudioEngine.start(), which must be called from the tap-to-start gesture (browsers
  * block audio before a user interaction).
@@ -18,6 +18,15 @@ function createNoiseBuffer(ctx, seconds) {
 // never touches the slider hears exactly what every earlier item already tuned.
 const BASE_MASTER_GAIN = 0.42; // was 0.55 (9 Nov playtest: the mix was in her ear, not in the background)
 const MUTE_KEY = 'dopahar_muted';
+import { loadSavedVolume, saveVolume } from './quality.js';
+
+// Real recordings (CC0, see docs/CREDITS.md). Fetched only after start() (the Play tap), never before.
+// Every use falls back to the old synthesised sound if a file is missing or fails to decode.
+const SAMPLE_FILES = {
+  village: 'bed_village', wind: 'bed_wind', water: 'bed_water', bazaar: 'bed_bazaar', children: 'bed_children',
+  birds1: 'shot_birds1', birds2: 'shot_birds2', birds3: 'shot_birds3', crow: 'shot_crow',
+  bell: 'cycle_bell', spokes: 'cycle_spokes',
+};
 
 export class AudioEngine {
   constructor() {
@@ -44,6 +53,8 @@ export class AudioEngine {
     this._muted = false; // M key and the top-right button
     try { this._muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { /* private mode */ }
     this._vehicleStamp = -1;
+    this._samples = {};
+    this._sampGain = {};
     this._wireMuteButton();
     this._duckFactor = 1; // ducked while the dialogue panel is open (item 8)
   }
@@ -59,6 +70,82 @@ export class AudioEngine {
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.started = true;
     this._startAmbience();
+    this._loadSamples();
+  }
+
+  /** Fetch + decode the recordings after Play; beds start the moment their file is ready. */
+  _loadSamples() {
+    const base = 'assets/audio/';
+    for (const [key, file] of Object.entries(SAMPLE_FILES)) {
+      fetch(base + file + '.m4a').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+        .then((ab) => new Promise((res, rej) => this.ctx.decodeAudioData(ab, res, rej)))
+        .then((buf) => { this._samples[key] = buf; this._onSample(key); })
+        .catch(() => { /* synth stays as the fallback for this sound */ });
+    }
+  }
+
+  _startLoop(key, gainValue = 0) {
+    const src = this.ctx.createBufferSource();
+    src.buffer = this._samples[key];
+    src.loop = true;
+    const g = this.ctx.createGain();
+    g.gain.value = gainValue;
+    src.connect(g).connect(this.master);
+    src.start(0, Math.random() * this._samples[key].duration * 0.9);
+    this._sampGain[key] = g;
+    return src;
+  }
+
+  _onSample(key) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    if (key === 'village') {
+      this._startLoop('village', 0);
+      this._sampGain.village.gain.setTargetAtTime(1.0, t, 2);
+      this._windMul = 0; if (this._windGain) this._windGain.gain.setTargetAtTime(0, t, 1.5); // the recorded bed replaces the synth wind
+    } else if (key === 'wind' || key === 'water' || key === 'bazaar' || key === 'children') {
+      this._startLoop(key, 0);
+    } else if (key === 'spokes') {
+      this._spokesSrc = this._startLoop('spokes', 0);
+    }
+  }
+
+  _sampleGain(key, target, tc = 0.8) {
+    const g = this._sampGain[key];
+    if (g) g.gain.setTargetAtTime(target, this.ctx.currentTime, tc);
+    return !!g;
+  }
+
+  /** One recording through the master, quiet one-shot style. */
+  _playSample(key, vol = 1, rate = 1, pan = 0) {
+    const buf = this._samples[key];
+    if (!buf || !this.started) return false;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    src.playbackRate.value = rate;
+    const g = this.ctx.createGain();
+    g.gain.value = vol;
+    let node = g;
+    if (pan && this.ctx.createStereoPanner) { const p = this.ctx.createStereoPanner(); p.pan.value = pan; g.connect(p); node = p; }
+    src.connect(g);
+    node.connect(this.master);
+    src.start();
+    return true;
+  }
+
+  /** Cycle wheel/chain bed, called each frame while riding. onCycle false fades it out. */
+  setCycleRide(onCycle, speed, pedalling) {
+    if (!this.started || !this._sampGain.spokes) return;
+    const sp = Math.max(0, Math.min(1.3, speed / 7.5));
+    const target = onCycle && speed > 0.4 ? (pedalling ? 0.25 : 0.55) * Math.min(1, sp * 1.3) : 0;
+    this._sampGain.spokes.gain.setTargetAtTime(target, this.ctx.currentTime, 0.15);
+    const src = this._spokesSrc;
+    if (src) src.playbackRate.setTargetAtTime(0.7 + sp * 0.9, this.ctx.currentTime, 0.2);
+  }
+
+  /** The handlebar bell as a real recording; returns false if it is not loaded (caller falls back to synth). */
+  playCycleBell() {
+    return this._playSample('bell', 1, 0.97 + Math.random() * 0.06);
   }
 
   _applyMasterGain() {
@@ -104,8 +191,32 @@ export class AudioEngine {
       b.addEventListener('click', (e) => { e.stopPropagation(); this.toggleMute(); });
       b.addEventListener('pointerdown', (e) => e.stopPropagation()); // never also steers or fires a world tap
       this._syncMuteButton();
+      this._addVolumeSlider(b);
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+  }
+
+  /** Small volume slider beside the mute button; shares the saved 'dopahar_volume' with the pause menu. */
+  _addVolumeSlider(btn) {
+    if (document.getElementById('volume-mini') || !btn.parentNode) return;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:flex-end;gap:6px;pointer-events:auto;';
+    const sl = document.createElement('input');
+    sl.type = 'range'; sl.id = 'volume-mini'; sl.min = '0'; sl.max = '1'; sl.step = '0.05';
+    sl.value = String(loadSavedVolume(1));
+    sl.setAttribute('aria-label', 'Volume');
+    sl.style.cssText = 'width:64px;height:16px;margin:0;opacity:0.8;accent-color:#f8ead0;touch-action:none;';
+    const stop = (e) => e.stopPropagation();
+    sl.addEventListener('pointerdown', stop); sl.addEventListener('click', stop); sl.addEventListener('keydown', stop);
+    sl.addEventListener('input', () => {
+      const v = parseFloat(sl.value);
+      this.setMasterVolume(v); saveVolume(v);
+      const menu = document.querySelector('#volume-row input, #settings-volume-row input');
+      if (menu) menu.value = String(v);
+    });
+    btn.parentNode.insertBefore(row, btn);
+    row.appendChild(sl); row.appendChild(btn);
+    this.setMasterVolume(loadSavedVolume(1));
   }
 
   /** "Sits under dialogue" (item 8) — the whole mix ducks a bit while the dialogue
@@ -144,6 +255,7 @@ export class AudioEngine {
   setListenerDistanceToWater(distanceMetres) {
     if (!this.started || !this._waterGain || !Number.isFinite(distanceMetres)) return;
     const t = 1 - Math.min(1, Math.max(0, (distanceMetres - 4) / 26));
+    if (this._sampGain.water) { this._sampleGain('water', t * t * 1.3, 0.6); this._waterGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.6); return; }
     this._waterGain.gain.setTargetAtTime(t * t * 0.07, this.ctx.currentTime, 0.6);
   }
 
@@ -156,6 +268,15 @@ export class AudioEngine {
     const profile = { bazaar: [450, 0.03], shop: [560, 0.014], school: [1200, 0.027], field: [300, 0.02] }[kind]; // 9 Nov: ~2/3 of before, duller
     const c = Math.max(0, Math.min(1, closeness));
     const t = this.ctx.currentTime;
+    // Recorded place beds, when loaded, take over from the synth noise bed of the same kind.
+    const real = { bazaar: ['bazaar', 1.3], shop: ['bazaar', 0.7], school: ['children', 1.3], field: ['wind', 1.1] }[kind];
+    let synthOk = true;
+    for (const k of ['bazaar', 'children', 'wind']) {
+      const on = real && real[0] === k && this._sampGain[k];
+      if (this._sampGain[k]) this._sampleGain(k, on ? real[1] * Math.sqrt(c) : 0);
+      if (on) synthOk = false;
+    }
+    if (!synthOk) { this._placeGain.gain.setTargetAtTime(0, t, 0.8); return; }
     if (profile) this._placeFilter.frequency.setTargetAtTime(profile[0], t, 0.8);
     this._placeGain.gain.setTargetAtTime(profile ? profile[1] * Math.sqrt(c) : 0, t, 0.8);
   }
@@ -315,6 +436,7 @@ export class AudioEngine {
   }
 
   _playBell(t) {
+    if (this._playSample('bell', 0.7, 1.3)) return; // school / cart bell: the recorded bell, pitched up and softer
     const osc = this.ctx.createOscillator();
     osc.type = 'sine';
     osc.frequency.value = 1600;
@@ -347,12 +469,12 @@ export class AudioEngine {
   setNight(m) {
     this._night = m;
     if (!this.started || !this._windGain) return;
-    this._windGain.gain.setTargetAtTime(0.024 * (1 - 0.5 * m), this.ctx.currentTime, 0.8);
+    this._windGain.gain.setTargetAtTime(0.024 * (1 - 0.5 * m) * (this._windMul ?? 1), this.ctx.currentTime, 0.8);
   }
 
   setSitting(sitting) {
     if (!this.started || !this._windGain) return;
-    this._windGain.gain.setTargetAtTime(sitting ? 0.045 : 0.024, this.ctx.currentTime, 0.6);
+    this._windGain.gain.setTargetAtTime((sitting ? 0.045 : 0.024) * (this._windMul ?? 1), this.ctx.currentTime, 0.6);
   }
 
   /** A sizzling-oil bed for the halwai's short "packing the jalebi" wait (item 3) —
@@ -586,6 +708,19 @@ export class AudioEngine {
     this._birdLp.frequency.value = 5200 - dist * 3200;
     if (this._birdPan) this._birdPan.pan.value = (Math.random() * 2 - 1) * 0.8;
     const r = Math.random();
+    // Real recordings first (low-passed at 7 kHz when made); synth calls below are the fallback.
+    if (r < 0.7 && (this._samples.birds1 || this._samples.birds2 || this._samples.birds3)) {
+      const keys = ['birds1', 'birds2', 'birds3'].filter((k) => this._samples[k]);
+      const vol = 0.55 * (1.15 - dist);
+      this._playSample(keys[Math.floor(Math.random() * keys.length)], vol, 0.95 + Math.random() * 0.1, (Math.random() * 2 - 1) * 0.8);
+      setTimeout(() => this._playBirdChirp(), 20000 + Math.random() * 70000); // rare: 20-90 s
+      return;
+    }
+    if (r > 0.9 && this._samples.crow) {
+      this._playSample('crow', 0.5 * (1.15 - dist), 0.9 + Math.random() * 0.2, (Math.random() * 2 - 1) * 0.8);
+      setTimeout(() => this._playBirdChirp(), 20000 + Math.random() * 70000);
+      return;
+    }
     if (r < 0.3) this._playChirpNote(t, 1900 + Math.random() * 900); // sparrow, one note
     else if (r < 0.5) { // bulbul: three uneven notes
       const f = 1500 + Math.random() * 500;

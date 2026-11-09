@@ -58,15 +58,29 @@ const n=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const m=new Map();
 for(const p of plan.places){const c=p.in_code_today; if(!c||/NEW/i.test(String(c)))continue;
   for(const t of String(c).split(/[,/;]| or /)){const k=n(t); if(k)m.set(k,p);}}
-let pos=0,posBad=[],rotBad=[];
+// Turns applied in geometry code instead of anchors.ry (read from the source, so a change there is seen here).
+const GEOM={};
+const hv=fs.readFileSync('src/village.js','utf8').match(/HALWAI_TURN_DEG\s*=\s*(-?[0-9.]+)/);
+if(hv) GEOM.halwai=-parseFloat(hv[1])*Math.PI/180;
+// Largest drawn shape: is her outline square (then a quarter turn keeps the same outline)?
+const square=p=>{let best=null,ba=0;for(const s of p.shapes||[]){const c=s.corners;if(!c||c.length<3)continue;
+  const w=Math.hypot(c[1][0]-c[0][0],c[1][1]-c[0][1]),d=Math.hypot(c[2][0]-c[1][0],c[2][1]-c[1][1]);if(w*d>ba){ba=w*d;best=[w,d];}}
+  return best&&Math.abs(best[0]-best[1])/Math.max(best[0],best[1])<0.1;};
+let pos=0,posBad=[],rotBad=[],flips=[];
 for(const [id,a] of Object.entries(ANCHORS)){const p=m.get(n(id)); if(!p)continue;
   const d=Math.hypot(a.x-(p.centre[0]+MAP_SHIFT.x), a.z-(p.centre[1]+MAP_SHIFT.z));
-  const dr=Math.abs(((a.ry||0)+(p.turn_deg||0)*Math.PI/180)*180/Math.PI);
-  if(d>2) posBad.push(id+' '+d.toFixed(1)+'m'); else pos++;
-  if(d<=2&&dr>2.5) rotBad.push(id+' '+dr.toFixed(1)+'deg');}
+  if(d>2){posBad.push(id+' '+d.toFixed(1)+'m');continue;} pos++;
+  const ry=id in GEOM?GEOM[id]:(a.ry||0);
+  const diff=(ry+(p.turn_deg||0)*Math.PI/180)*180/Math.PI;          // 0 = exactly her map turn
+  const q=((Math.round(diff/90)%4)+4)%4, resid=Math.abs(diff-Math.round(diff/90)*90);
+  if(resid>2.5) rotBad.push(id+' '+resid.toFixed(1)+'deg off'+(q?' (after a '+q*90+'deg front turn)':''));
+  else if(q%2===1&&!square(p)) rotBad.push(id+' outline turned 90deg');
+  else if(q) flips.push(id+' '+q*90);
+}
 console.log('MAP POSITIONS correct:', pos, '| WRONG:', posBad.length, posBad.slice(0,8).join(', '));
 console.log('MAP TURNS wrong:', rotBad.length, rotBad.slice(0,8).join(', '));
-console.log('   (anchors.ry only. A turn applied in geometry code, e.g. HALWAI_YAW, shows here as a false positive: CHECK BEFORE EDITING.)');
+console.log('FRONT TURNS (same outline as her map, front turned onto a road; her Layout check line):', flips.length, flips.join(', '));
+console.log('   (halwai turn read from src/village.js HALWAI_TURN_DEG. A turn applied elsewhere in geometry code still shows as a false positive: CHECK BEFORE EDITING.)');
 " 2>/dev/null || echo "MAP CHECK: could not run"
 
 # 5. HER OPEN ITEMS

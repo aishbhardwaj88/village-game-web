@@ -205,7 +205,7 @@ import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
-import { ROAD_CHUNKS, createMapRoads, mapLampLegs } from './mapRoads.js';
+import { ROAD_CHUNKS, createMapRoads, mapLampLegs, allRoadLines } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
 import { createVillageSounds } from './villageSounds.js';
@@ -223,8 +223,18 @@ const CYCLE_ACCEL = CYCLE_TOP_SPEED / 1.0; // pedal to top speed in about 1 s
 const CYCLE_COAST = CYCLE_TOP_SPEED / 5; // no input: coast to a stop in about 5 s
 const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
 const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
+// Cycle handling (docs/PARALLEL.md C, 10 Nov). Kinematic bicycle: yaw rate = speed / wheelbase * tan(handlebar).
+const CYCLE_WHEELBASE = 1.1; // m
+const CYCLE_PUSH_TURN = 70 * Math.PI / 180; // rad/s: A/D at a standstill turns the cycle on the spot (walked round by hand)
+const CYCLE_REVERSE = 1.2; // m/s: S at a standstill walks the cycle backwards
+const CYCLE_BAR_IN = 0.12, CYCLE_BAR_OUT = 0.2; // s: handlebar reaches the key's angle / recentres (95 %)
+const CYCLE_CAM_LAG = 0.25; // s: camera yaw follows the heading with this time constant
+/** Tightest turning radius (m) at a speed: 2.2 m at walking pace (so a U-turn fits a 6 m gali), ~2.5 m at 2 m/s, 6 m at 7.5 m/s,
+ * 9 m sprinting. The handlebar limit is atan(wheelbase / radius). */
+const cycleTurnRadius = (v) => { v = Math.abs(v); return v <= 1.5 ? 2.2 : v <= 7.5 ? 2.2 + (v - 1.5) * (3.8 / 6) : 6 + (v - 7.5) * 1.5; };
 let onCycle = true; // the player starts on a cycle (3 Nov): C gets off / on
 let cycleSpeed = 0, cycleHeading = 0, cyclePedalling = false, bellHintShown = false; // C4 riding feel: pedalling drives the cranks/bob, B rings the bell
+let cycleBar = 0, cycleYawRate = 0, cycleLookAt = -1e9, cycleLookedAtRest = true, cycleThudAt = -1e9, cycleWallHits = 0; // handlebar (rad, + = right), last yaw rate, last mouse/drag look (ms)
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
 const SIT_CAMERA_DISTANCE = 3.2; // "camera settles" (item 5) — tighter than the normal walking distance
 const SIT_CAMERA_HEIGHT = 1.3;
@@ -1397,6 +1407,7 @@ async function main() {
     else scheduleFrameWork(deferredSteps(), 'deferredContent');
   }
   function* deferredSteps() {
+    _lm.deferredStart = performance.now();
     const fieldGroup = buildField(scene);
     fieldCane = fieldGroup.getObjectByName('field_cane');
     fieldSarson = fieldGroup.getObjectByName('field_sarson');
@@ -1653,11 +1664,13 @@ async function main() {
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
     scene.add(villageStaticGroup);
+    const _mg0 = performance.now(); // L2 boot profile
     mergeAcrossGroups([heroZoneGroup, shopsGroup, bazaarGroup, templeGroup, backgroundHousesGroup, fieldGroup, ...['small_shops', 'vendors', 'village_oddities', 'nostalgia', 'wall_writing', 'life_scenes', 'zero_milestone', 'village_furniture', 'village_fixtures', 'village_furniture2', 'vendors2', 'milk_centre', 'life_scenes_2', 'road_events', 'cyclist_events', 'chauraha_edges', 'chauraha_island', 'village_furniture3', 'village_furniture4'].map((n) => scene.getObjectByName(n)).filter(Boolean)], villageStaticGroup, {
       skipNames: ['game_decals', 'rangoli', 'tv_screen', 'net_cloth', 'furniture2_wall_paint', 'tyre', 'zero_milestone_flagpole', 'halwai_shop', 'charpai', 'hand_pump', 'pump_water', 'tulsi_water', 'house_shell_old', 'house_yard_old', 'school_old', 'tea_old', 'store_old', 'bazaar_row_old', 'bazaar_shopfronts', 'bazaar_interiors', 'tea_stall_chowk', 'chowk_plaza', 'temple_old', 'flower_stall', 'new_shops_old', 'bg_houses_old'],
     });
     cameraObstacles.push(villageStaticGroup);
     villageStaticGroup.traverse((o) => { if (o.userData.distGate) distGated.push(o); });
+    _lm.mergeMs = performance.now() - _mg0;
     yield;
 
     // Structural fix (playtest) — derive every static collider from the real,
@@ -1666,7 +1679,9 @@ async function main() {
     // src/mergeUtils.js). Nothing in this codebase hand-types a collider box
     // matched to a building's coordinates anymore; if a building moves, this
     // picks up the new position automatically because it reads the same mesh.
+    const _cl0 = performance.now();
     initStaticColliders(scene);
+    _lm.collidersMs = performance.now() - _cl0;
     yield;
 
     // Zone streaming (src/zoneManager.js, CLAUDE.md's draw-call-budget plan) — the
@@ -2046,6 +2061,7 @@ async function main() {
       },
     });
     setZoneManager(zoneManager);
+    _lm.deferredEnd = performance.now();
   }
 
   const audio = new AudioEngine();
@@ -2561,6 +2577,92 @@ async function main() {
     player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
   }
 
+  // The ONE cycle step (docs/PARALLEL.md C, 10 Nov): the per-frame loop and tools/cycle-course.mjs (window.__dopahar.stepCycle)
+  // both call this. pedal: W/stick forward (+1) .. S/stick back (-1); steer: D/stick right = +1. Never stuck: A/D turn the cycle
+  // at a standstill, S at a standstill walks it backwards, a head-on wall bounces it back a little, a glancing wall slides it along.
+  function stepCycle(dt, pedal, steerIn, sprint) {
+    const r = { wall: null };
+    // Speed (signed: negative = walked backwards).
+    if (pedal > 0.1) {
+      const top = (sprint ? CYCLE_SPRINT_SPEED : CYCLE_TOP_SPEED) * Math.min(1, pedal);
+      if (cycleSpeed < top) cycleSpeed = Math.min(top, cycleSpeed + (cycleSpeed < 0 ? CYCLE_BRAKE : CYCLE_ACCEL) * dt);
+      else cycleSpeed = Math.max(top, cycleSpeed - CYCLE_COAST * 2 * dt); // letting go of Shift eases back to cruising speed
+    } else if (pedal < -0.1) {
+      if (cycleSpeed > 0) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt); // S brakes; once stopped it walks the cycle back
+      else cycleSpeed = Math.max(-CYCLE_REVERSE * Math.min(1, -pedal), cycleSpeed - (CYCLE_REVERSE / 0.4) * dt);
+    } else if (cycleSpeed > 0) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_COAST * dt);
+    else cycleSpeed = Math.min(0, cycleSpeed + 3 * dt);
+    if (Math.abs(cycleSpeed) > 0.3) cycleLookedAtRest = false;
+
+    // Handlebar: eases to the key's angle (0.12 s) or back to centre (0.2 s); its limit shrinks with speed.
+    const barMax = Math.atan(CYCLE_WHEELBASE / cycleTurnRadius(cycleSpeed));
+    const barWant = THREE.MathUtils.clamp(steerIn, -1, 1) * barMax;
+    const turningIn = Math.abs(barWant) > 1e-3 && (Math.sign(barWant) === Math.sign(cycleBar) || Math.abs(cycleBar) < 1e-3) && Math.abs(barWant) >= Math.abs(cycleBar);
+    cycleBar += (barWant - cycleBar) * (1 - Math.exp(-3 * dt / (turningIn ? CYCLE_BAR_IN : CYCLE_BAR_OUT)));
+    cycleBar = THREE.MathUtils.clamp(cycleBar, -barMax, barMax);
+
+    // Yaw: the bicycle model, plus walking it round by hand when (nearly) stopped.
+    const push = Math.max(0, 1 - Math.abs(cycleSpeed) / 1.2);
+    cycleYawRate = (cycleSpeed / CYCLE_WHEELBASE) * Math.tan(cycleBar) + push * CYCLE_PUSH_TURN * (cycleBar / barMax);
+    if (pedal > 0.1 && Math.abs(cycleSpeed) < 0.3 && Math.abs(steerIn) < 0.1 && cycleLookedAtRest) {
+      // pulling away after looking round at rest: the bike points where the camera looks
+      const want = camRig.yaw + Math.PI;
+      cycleHeading += Math.atan2(Math.sin(want - cycleHeading), Math.cos(want - cycleHeading)) * (1 - Math.exp(-12 * dt));
+    }
+    const dYaw = -cycleYawRate * dt;
+    cycleHeading += dYaw;
+    const boxes = otherVehicleBoxes(null);
+    if (Math.abs(dYaw) > 1e-6) resolveOrientedCollisions(player.position, cycleHeading, CYCLE_HALF_W, CYCLE_HALF_L, boxes); // turning on the spot near a wall pushes it clear, never into it
+
+    const sx = Math.sin(cycleHeading), cz = Math.cos(cycleHeading);
+    const want = cycleSpeed * dt;
+    if (Math.abs(want) > 1e-6) {
+      const bx = player.position.x, bz = player.position.z;
+      resolveOrientedMove(player.position, cycleHeading, sx * want, cz * want, CYCLE_HALF_W, CYCLE_HALF_L, boxes);
+      if (((player.position.x - bx) * sx + (player.position.z - bz) * cz) / want < 0.95) {
+        // Blocked: the box resolver pushes along the shallowest axis, which for a corner touching a wall can be the cycle's own
+        // length axis (straight back), so a glancing hit used to stop it dead. Try the step's two world-axis parts too and keep
+        // whichever gets furthest along the heading: against the village's axis-aligned walls that is the slide along the face.
+        let best = { x: player.position.x, z: player.position.z }, bestP = (best.x - bx) * sx + (best.z - bz) * cz;
+        for (const [ax, az] of [[sx * want, 0], [0, cz * want]]) {
+          if (Math.abs(ax) + Math.abs(az) < 1e-6) continue;
+          const p = { x: bx, z: bz };
+          resolveOrientedMove(p, cycleHeading, ax, az, CYCLE_HALF_W, CYCLE_HALF_L, boxes);
+          const prog = (p.x - bx) * sx + (p.z - bz) * cz;
+          if (prog * Math.sign(want) > bestP * Math.sign(want) + 1e-5) { best = p; bestP = prog; }
+        }
+        player.position.x = best.x; player.position.z = best.z;
+      }
+      player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
+      player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
+      const mx = player.position.x - bx, mz = player.position.z - bz;
+      const along = (mx * sx + mz * cz) / want; // fraction of the intended step made along the heading (either direction)
+      if (along < 0.995) {
+        if (along < 0.35) {
+          // head-on: a small bounce back (never a dead stop that holding W re-sticks), a soft thud
+          r.wall = 'head-on';
+          if (cycleSpeed > 1.2) {
+            const now = performance.now();
+            if (now - cycleThudAt > 400) { cycleThudAt = now; try { if (audio.started) audio.playThump?.(Math.min(0.5, cycleSpeed * 0.06), 75); } catch (e) { /* sound never breaks riding */ } }
+            cycleSpeed = -Math.min(1.4, 0.18 * cycleSpeed);
+            cycleWallHits++;
+          } else cycleSpeed = 0;
+        } else {
+          // glancing: slides along the wall, loses a little speed, and the heading swings onto the slide line
+          r.wall = 'glancing';
+          cycleSpeed -= cycleSpeed * (1 - along) * 1.5 * dt;
+          if (cycleSpeed > 0 && mx * mx + mz * mz > 1e-8) {
+            const slide = Math.atan2(mx, mz);
+            cycleHeading += Math.atan2(Math.sin(slide - cycleHeading), Math.cos(slide - cycleHeading)) * (1 - Math.exp(-8 * dt));
+          }
+        }
+      }
+    }
+    player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
+    r.x = player.position.x; r.z = player.position.z; r.speed = cycleSpeed; r.heading = cycleHeading; r.bar = cycleBar; r.yawRate = cycleYawRate;
+    return r;
+  }
+
   // Item 4 (real playtest regression) — a permanent dev-mode guard, not a one-off
   // test: every frame, checks whether any vehicle, the trolley, or the player is
   // actually overlapping a real wall (STATIC_COLLIDERS, derived from real wall
@@ -2842,6 +2944,7 @@ async function main() {
   const toggleCycle = (auto = false) => {
     if (!onCycle && insideBuilding()) return; // no remounting indoors
     onCycle = !onCycle;
+    cycleSpeed = 0; cycleBar = 0; cycleLookedAtRest = true; // getting on: the first pedal stroke points the cycle where the camera looks
     cycleBtn?.classList.toggle('off', !onCycle);
     const key = touch ? 'the cycle button' : 'C';
     if (!auto) freeRoam.toast(onCycle ? `On the cycle. Press ${key} to get off.` : `On foot. Press ${key} to get back on the cycle.`, onCycle ? `साइकिल पर हो। उतरने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।` : `पैदल हो। साइकिल पर चढ़ने के लिए ${touch ? 'साइकिल बटन' : 'C'} दबाओ।`, 3000);
@@ -2892,6 +2995,7 @@ async function main() {
       input.update();
       const { yaw, pitch } = input.consumeLookDelta();
       camRig.addYawPitch(yaw, pitch);
+      if (yaw || pitch) { cycleLookAt = now; if (Math.abs(cycleSpeed) < 0.3) cycleLookedAtRest = true; } // the cycle camera stops auto-following while the player looks round
       const interactPressed = input.consumeInteract();
       const attachPressed = input.consumeAttach();
 
@@ -3103,43 +3207,25 @@ async function main() {
         if (onCycle && insideBuilding()) { toggleCycle(true); freeRoam.toast('You got off the cycle to go indoors.', 'अंदर जाने के लिए साइकिल से उतर गए।', 3000); }
         let walkSound = moveDir.lengthSq() > 0.01, walkMag = moveDir.length();
         if (onCycle) {
-          // Real cycle: W pedals, S brakes, A/D turn the handlebar (heading changes, never sideways); on touch the stick's forward = pedal, sideways = steer.
+          // Real cycle (stepCycle above): W pedals, S brakes then walks it back, A/D turn the handlebar (heading changes, never sideways),
+          // and turn it on the spot at a standstill; on touch the stick's forward = pedal, sideways = steer.
           const pedal = -input.moveZ, steerIn = input.moveX;
-          cyclePedalling = pedal > 0.1;
-          const cycleTop = (input.sprint ? CYCLE_SPRINT_SPEED : CYCLE_TOP_SPEED) * Math.min(1, Math.max(0, pedal));
-          if (pedal > 0.1) cycleSpeed = cycleSpeed > cycleTop ? Math.max(cycleTop, cycleSpeed - CYCLE_COAST * 2 * dt) : Math.min(cycleTop, cycleSpeed + CYCLE_ACCEL * dt); // letting go of Shift eases back to cruising speed
-          else if (pedal < -0.1) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt);
-          else cycleSpeed = Math.max(0, cycleSpeed - CYCLE_COAST * dt);
-          if (cycleSpeed < 0.3 && pedal > 0.1) {
-            // pulling away from rest: the bike points where the camera looks (A/D cannot turn it on the spot)
-            const want = camRig.yaw + Math.PI;
-            const dh = Math.atan2(Math.sin(want - cycleHeading), Math.cos(want - cycleHeading));
-            cycleHeading += dh * (1 - Math.exp(-12 * dt));
-          } else if (cycleSpeed > 0.5) {
-            // turn rate falls as speed rises: about 140 deg/s at 1 m/s, 55 deg/s at sprint speed
-            const rate = THREE.MathUtils.lerp(2.6, 0.9, Math.min(1, cycleSpeed / CYCLE_SPRINT_SPEED)); // nimbler (was 1.75 -> 0.7: 'controls are very tight'), still steadier the faster it goes
-            cycleHeading -= steerIn * rate * dt;
+          cyclePedalling = pedal > 0.1 && cycleSpeed > 0;
+          stepCycle(dt, pedal, steerIn, input.sprint);
+          // Camera: yaw follows the heading ~0.25 s late (unless the player is looking round), always from behind, even reversing.
+          if (now - cycleLookAt > 1200 && (Math.abs(cycleSpeed) > 0.3 || Math.abs(cycleYawRate) > 0.05)) {
+            const camWant = cycleHeading + Math.PI;
+            camRig.yaw += Math.atan2(Math.sin(camWant - camRig.yaw), Math.cos(camWant - camRig.yaw)) * (1 - Math.exp(-dt / CYCLE_CAM_LAG));
           }
-          const sx = Math.sin(cycleHeading), cz = Math.cos(cycleHeading);
-          const want = cycleSpeed * dt;
-          if (want > 0) {
-            const bx = player.position.x, bz = player.position.z;
-            resolveOrientedMove(player.position, cycleHeading, sx * want, cz * want, CYCLE_HALF_W, CYCLE_HALF_L, otherVehicleBoxes(null));
-            player.position.x = THREE.MathUtils.clamp(player.position.x, -GROUND_HALF_EXTENT, GROUND_HALF_X);
-            player.position.z = THREE.MathUtils.clamp(player.position.z, -GROUND_HALF_Z, GROUND_HALF_Z);
-            player.position.y = groundHeightAt(player.position.x, player.position.z, player.position.y);
-            const along = ((player.position.x - bx) * sx + (player.position.z - bz) * cz) / want;
-            if (along < 0.35) cycleSpeed = 0; // head-on: stops dead
-            else if (along < 0.95) cycleSpeed *= along; // glancing: slides along the wall, loses speed
-          }
-          moveDir.set(sx * (cycleSpeed > 0.05 ? 1 : 0), 0, cz * (cycleSpeed > 0.05 ? 1 : 0)); // the cycle model follows the heading
-          walkSound = cycleSpeed > 0.1; walkMag = cycleSpeed / MOVE_SPEED;
+          moveDir.set(Math.sin(cycleHeading), 0, Math.cos(cycleHeading)); // the cycle model follows the heading, also when turned on the spot
+          walkSound = Math.abs(cycleSpeed) > 0.1; walkMag = Math.abs(cycleSpeed) / MOVE_SPEED;
         } else {
           cycleSpeed = 0;
           movePlayerBy(moveDir.x * MOVE_SPEED * dt, moveDir.z * MOVE_SPEED * dt);
         }
         const underSurface = surfaceAt(player.position.x, player.position.z);
-        playerCycle.update(dt, onCycle, moveDir.x, moveDir.z, { pedalling: onCycle && cyclePedalling, surface: underSurface });
+        playerCycle.update(dt, onCycle, moveDir.x, moveDir.z, { pedalling: onCycle && cyclePedalling, surface: underSurface, heading: cycleHeading, speed: cycleSpeed, bar: cycleBar });
+        audio.setCycleRide?.(onCycle, Math.abs(cycleSpeed), onCycle && cyclePedalling);
         if (onCycle && !bellHintShown && !touch && playerCycle.ridingSeconds > 5) {
           bellHintShown = true;
           try { bellHintShown = localStorage.getItem('dopahar.bellHint') === '1'; localStorage.setItem('dopahar.bellHint', '1'); } catch (e) { /* private mode: show it once per session */ }
@@ -3173,7 +3259,7 @@ async function main() {
       if (isDevMode() && (devPenTick++ & 15) === 0) devCheckPenetration(); // dev guard: every 16th frame is plenty
 
       { const _q = performance.now(); camRig.update(); pAdd('camRig', performance.now() - _q); }
-      if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying); // C4 sway/lag; skipped while a screenshot has frozen the rig
+      if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying, THREE.MathUtils.clamp((camRig._effectiveDistance - camRig.distance + 1) / 0.8, 0, 1)); // C4 sway/lag + look-ahead; the sideways slide fades out when a wall has pulled the camera in, so it never pushes it into the wall; skipped while a screenshot has frozen the rig
       { const _q = performance.now(); audio.update(dt); pAdd('audio', performance.now() - _q); }
       dust.update(dt, now / 1000);
       updateSky(sky, now / 1000, camera);
@@ -3250,6 +3336,18 @@ async function main() {
       if (_pt1 >= postPressCompileAt) { postPressCompileAt = _pt1 + 800; preCompile(); }
     }
     if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) { _lm.firstRender = performance.now(); _lm.programs = renderer.info.programs.length; _lm.textures = renderer.info.memory.textures; _lm.geometries = renderer.info.memory.geometries; _lm.calls = renderer.info.render.calls; } }
+    // L1 (10 Nov): "Village in X.X s" on the F overlay = Play press to the first frame drawn after the opening view is fully
+    // built: deferred assembly done, no zone near the player waiting or half-built, no queued job, no group waiting to batch.
+    // settledAll also waits for every in-flight download (far models keep streaming, so it lands later).
+    if (renderOK && !_lm.settledAll && zoneManager) {
+      if (!_lm.zonesSeen) _lm.zonesSeen = _pt1;
+      else if (_pt1 > _lm.zonesSeen) {
+        const s = zoneManager.status();
+        let halfBuilt = false; for (const z of zoneManager.zones.values()) if (z.job) { halfBuilt = true; break; }
+        if (!_lm.villageReady && !s.unbuilt && !s.queue && !s.batch && !halfBuilt) { _lm.villageReady = performance.now(); _lm.villageCalls = renderer.info.render.calls; }
+        if (_lm.villageReady && zoneManager.settled()) _lm.settledAll = performance.now();
+      }
+    }
     const _pt2 = performance.now();
     if (_pt2 - _pt0 > 300) (window.__longFrames = window.__longFrames || []).push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); // D1 load-time probe: [start, logic ms, render ms]
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
@@ -3571,6 +3669,16 @@ async function main() {
         movePlayerBy(nx * MOVE_SPEED * dt, nz * MOVE_SPEED * dt);
         return { x: player.position.x, z: player.position.z };
       },
+      // tools/cycle-course.mjs — fixed-dt steps of the SAME stepCycle() the frame loop rides with, plus its state.
+      stepCycle: (dt, pedal, steer, sprint = false) => {
+        const r = stepCycle(dt, pedal, steer, sprint);
+        playerCycle.update(dt, true, Math.sin(cycleHeading), Math.cos(cycleHeading), { pedalling: pedal > 0.1, heading: cycleHeading, speed: cycleSpeed, bar: cycleBar }); // lean / wheel contact, as the frame loop does
+        return r;
+      },
+      setCycle: ({ x, z, heading = cycleHeading, speed = 0 } = {}) => { if (x !== undefined) player.position.set(x, groundHeightAt(x, z, 0), z); cycleHeading = heading; cycleSpeed = speed; cycleBar = 0; onCycle = true; },
+      cycleState: () => ({ x: player.position.x, z: player.position.z, heading: cycleHeading, speed: cycleSpeed, bar: cycleBar, yawRate: cycleYawRate, wallHits: cycleWallHits, lean: playerCycle.lean, camYaw: camRig.yaw }),
+      cycleHalfExtents: { halfW: CYCLE_HALF_W, halfL: CYCLE_HALF_L },
+      roadLines: () => allRoadLines().map((l) => ({ id: l.id, w: l.w, kind: l.kind, pts: l.pts })),
       // tools/collision-test.js — what the collision test needs beyond the hooks above.
       playerRadius: PLAYER_COLLISION_RADIUS,
       siteSlotInfo: slotInfo,

@@ -12,6 +12,16 @@ export function setupFpsCounter() {
   if (!el) return { update: () => {} };
   let on = isDevMode();
   el.style.display = on ? 'block' : 'none';
+  el.style.whiteSpace = 'pre';
+  // L1 (10 Nov): her load-time numbers, read off window.__loadMarks (ms since the page was opened).
+  // Ready = page open to the Play button shown; Village = Play pressed to the first frame with the opening view fully built.
+  const loadLines = () => {
+    const m = window.__loadMarks || {};
+    const ready = m.readyFrame || window.__readyAt;
+    let s = `\nReady in ${ready ? (ready / 1000).toFixed(1) + ' s' : '...'}`;
+    if (m.playPressed) s += `\nVillage in ${m.villageReady ? ((m.villageReady - m.playPressed) / 1000).toFixed(1) + ' s' : '...'}`;
+    return s;
+  };
   window.addEventListener('keydown', (e) => {
     if (e.code !== 'KeyF' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
@@ -28,7 +38,7 @@ export function setupFpsCounter() {
       frames += 1;
       const elapsed = now - lastSample;
       if (elapsed >= 500) {
-        if (on) el.textContent = `${Math.round((frames * 1000) / elapsed)} fps  ${(elapsed / frames).toFixed(1)} ms (worst ${Math.round(worst)})`;
+        if (on) el.textContent = `${Math.round((frames * 1000) / elapsed)} fps  ${(elapsed / frames).toFixed(1)} ms (worst ${Math.round(worst)})` + loadLines();
         frames = 0;
         worst = 0;
         lastSample = now;

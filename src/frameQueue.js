@@ -52,6 +52,7 @@ function pump() {
     stats.steps++; stats.ms += ds; if (ds > stats.worstStepMs) { stats.worstStepMs = ds; stats.worstStep = job.name; }
     if (r.done) { jobs.shift(); stats.done++; job.resolve(); }
   }
+  const pm = performance.now() - t0; if (!(pm <= stats.worstFrameMs)) stats.worstFrameMs = pm; // worst single frame of queue work (L4)
 }
 
 /** Queues `job` (an iterator, a generator function, or a plain function run as one step). Returns a promise for its end. */

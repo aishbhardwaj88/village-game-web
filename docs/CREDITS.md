@@ -34,3 +34,19 @@ queue item 6) — the `public/assets/textures/*/*.jpg` paths in the notes column
 | thatch_roof_angled (thatch/straw PBR) | [Poly Haven](https://polyhaven.com/a/thatch_roof_angled) | CC0 | Poly Haven | Downloaded at 4K, downscaled to 1K WebP into `public/assets/textures/thatch/`; baked into kachcha_homestead.glb (thatch roofs, haystack) via tools/blender/build_kachcha.py. |
 
 - ambientCG Rust007, Fabric030, Ground054 (CC0), 512 px WebP in public/assets/textures/{rust,burlap,dryearth}/ (material board, 27 Oct 2026)
+
+## Sound recordings (10 Nov 2026), public/assets/audio/*.m4a
+All CC0 1.0 from OpenGameArt.org, trimmed, mono-mixed, low-passed, loudnorm-ed with ffmpeg and encoded 96k AAC. Licence read from each page's licence badge.
+
+| File(s) | Source URL | Author | Licence |
+|---|---|---|---|
+| bed_village.m4a (village bed, loop) | https://opengameart.org/content/amb-morning-sounds-perfect-loop | Kresiek The Furry | CC0 |
+| bed_wind.m4a (field wind, 40 s slice looped with crossfade) | https://opengameart.org/content/park-ambiences (park_ambience_wind) | Thimras | CC0 |
+| bed_water.m4a (pond / johad / canal, 30 s slice looped) | https://opengameart.org/content/park-ambiences (park_ambience_river) | Thimras | CC0 |
+| bed_bazaar.m4a (bazaar, shop murmur, 24 s looped, low-passed 3.2 kHz) | https://opengameart.org/content/crowd-shoutingspeaking-ambience | StarNinjas | CC0 |
+| bed_children.m4a (school, 6 s looped) | https://opengameart.org/content/children-voices | Yaroslav_Novikov | CC0 |
+| shot_birds1-3.m4a (three 5 s cuts) | https://opengameart.org/content/ambient-bird-sounds | isaiah658 | CC0 |
+| shot_crow.m4a | https://opengameart.org/content/crow-caw | zeroisnotnull | CC0 |
+| cycle_bell.m4a, cycle_spokes.m4a | https://opengameart.org/content/bicycle-sounds (rotating_bicycle_bell, bicycle_spokes) | AntumDeluge | CC0 |
+
+Skipped for licence: dog_barking_mono (page also lists OGA-BY 3.0).

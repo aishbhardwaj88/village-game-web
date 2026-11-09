@@ -27,7 +27,7 @@ const MAX_STEER = 0.2;                            // rad: small, the hands sit o
 const SADDLE_TOP = 1.0, SADDLE_Z = -0.30, SEATED_HEIGHT = 0.9, SEATED_SLIM = 0.55, LEAN = 0.24;
 
 // Riding feel (C4, 8 Nov). All numbers are deliberately small: this is a village cycle, not a stunt bike.
-const MAX_LEAN = THREE.MathUtils.degToRad(12); // roll into a turn, cycle and rider together, about the tyre contact line
+const MAX_LEAN = THREE.MathUtils.degToRad(15); // roll into a turn (15 deg max, docs/PARALLEL.md C), cycle and rider together, about the tyre contact line
 const LEAN_GAIN = 0.6;                          // fraction of the physical lean atan(v * yawRate / g)
 const BOB = 0.014, SWAY = 0.03;                 // rider rise per pedal stroke (m) and torso side sway (rad), only while pedalling
 const SPRING_W = 18, SPRING_Z = 0.35;           // bump spring: ~3 Hz, settles in a few bounces
@@ -215,7 +215,7 @@ export function createPlayerCycle(playerGroup) {
       if (!audio?.started || !audio.ctx || !audio.master) return false;
       if (audio.ctx.currentTime - lastBell < 0.35) return false;
       lastBell = audio.ctx.currentTime;
-      try { ringCycleBell(audio.ctx, audio.master); } catch (e) { /* sound must never break the game */ }
+      try { if (!audio.playCycleBell?.()) ringCycleBell(audio.ctx, audio.master); } catch (e) { /* sound must never break the game */ }
       return true;
     },
     /**
@@ -245,7 +245,15 @@ export function createPlayerCycle(playerGroup) {
       if (speed > 1.5) ridingT += dt;
 
       let turnRate = 0;
-      if (moveX * moveX + moveZ * moveZ >= 1e-4) {
+      if (typeof opts.heading === 'number') {
+        // main.js's stepCycle owns the heading (bicycle model): draw it exactly, so the model and its collision box never disagree
+        let d = opts.heading - heading;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        heading += d;
+        turnRate = dt > 0 ? d / dt : 0;
+        if (Math.abs(turnRate) > 6 || teleport) turnRate = 0; // a snap (respawn, pull-away re-aim) is not a carved turn
+        holder.rotation.y = heading;
+      } else if (moveX * moveX + moveZ * moveZ >= 1e-4) {
         const target = Math.atan2(moveX, moveZ);
         let d = target - heading;
         d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -256,11 +264,13 @@ export function createPlayerCycle(playerGroup) {
         holder.rotation.y = heading;
       }
       yawRate += (turnRate - yawRate) * k1(8);
-      const steerTarget = THREE.MathUtils.clamp(turnRate * 0.06, -MAX_STEER, MAX_STEER);
+      const steerTarget = typeof opts.bar === 'number' ? THREE.MathUtils.clamp(-opts.bar * 0.6, -MAX_STEER, MAX_STEER) : THREE.MathUtils.clamp(turnRate * 0.06, -MAX_STEER, MAX_STEER);
       steer += (steerTarget - steer) * k1(10);
 
       // Lean: positive yawRate turns left (+heading swings forward toward +x); leaning left is a negative z roll.
-      const leanTarget = THREE.MathUtils.clamp(Math.atan(speed * yawRate / 9.81) * LEAN_GAIN, -MAX_LEAN, MAX_LEAN);
+      // Only rolling forward leans (walking it round or backwards stays upright). The rig pivots on the tyre contact line, so the wheels stay on the ground.
+      const leanSpeed = typeof opts.speed === 'number' ? Math.max(0, Math.min(speed, opts.speed)) : speed;
+      const leanTarget = THREE.MathUtils.clamp(Math.atan(leanSpeed * yawRate / 9.81) * LEAN_GAIN, -MAX_LEAN, MAX_LEAN);
       lean += (leanTarget - lean) * k1(5);
       camLean += (lean - camLean) * k1(2.2); // the camera follows the lean late: that lag is the turn feel
 
@@ -336,10 +346,12 @@ export function createPlayerCycle(playerGroup) {
      */
     setGroundProbe(fn) { probe = fn; }, // (x, z, y) => ground height; main.js passes groundHeightAt
     get wheelClearance() { return minWheelClear; }, // metres: lowest tyre contact above (+) or below (-) the ground, last frame
-    applyCamera(camera, active) {
+    get lean() { return lean; }, // rad, > 0 leaning left (tools/cycle-course.mjs)
+    applyCamera(camera, active, shiftScale = 1) {
       if (!active || !holder.visible) return;
       const leanLeft = camLean; // > 0 while turning left
-      camera.translateX(leanLeft / MAX_LEAN * CAM_SHIFT); // turning left, the camera sits a little to the right of the line: it has not caught up yet
+      camera.translateX(leanLeft / MAX_LEAN * CAM_SHIFT * shiftScale); // shiftScale 0 when a wall has pulled the camera in
+      camera.rotateY(THREE.MathUtils.clamp(yawRate * 0.1, -0.1, 0.1)); // look-ahead: the view turns a little into the turn (rotation only, cannot enter a wall) // turning left, the camera sits a little to the right of the line: it has not caught up yet
       camera.position.y += (bumpY + holder.position.y) * 0.35;
       camera.rotateZ(leanLeft * CAM_ROLL + pedalAmt * 0.002 * Math.sin(crank));
     },
