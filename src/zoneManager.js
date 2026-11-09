@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { initStaticColliders, colliderRequests } from './collision.js';
+import { startStaticColliderRebuild, colliderRequests } from './collision.js';
 import { modelLoads } from './loaders.js';
 import { queueBusy, frameBudget } from './frameQueue.js';
 import { placeBatchPending } from './placeBatch.js';
@@ -87,7 +87,7 @@ export function createZoneManager(scene) {
   const projView = new THREE.Matrix4();
   const sphere = new THREE.Sphere();
   let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
-  let colPending = false, colNextAt = 0;
+  let colPending = false, colNextAt = 0, colStep = null;
   let unbuilt = 0; // wanted zones left for later frames by the build budget
   let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
@@ -195,21 +195,20 @@ export function createZoneManager(scene) {
     // Full-scene rebuild (1.3 s+ on a slow phone, and it ran every frame of the warm-up while zones assembled). Coalesced:
     // never more often than ~5x its own last cost, so builds + render keep getting frames; a pending request always lands.
     if (changed) colPending = true;
-    if (colPending) {
-      const nowMs = performance.now();
-      if (nowMs >= colNextAt) {
-        colPending = false;
-        initStaticColliders(scene);
-        const end = performance.now();
-        colNextAt = end + Math.min(2500, (end - nowMs) * 4);
-      }
+    // Sliced (about 4 ms a frame) so a ride never takes the whole rebuild in one frame; a request that lands mid-run restarts it after.
+    if (colStep) {
+      if (colStep()) { colStep = null; colNextAt = performance.now() + 250; }
+    } else if (colPending && performance.now() >= colNextAt) {
+      colPending = false;
+      colStep = startStaticColliderRebuild(scene, 4);
+      if (colStep()) { colStep = null; colNextAt = performance.now() + 250; }
     }
   }
 
   /** Dev/test: what is still assembling around the player. All zeros = every wanted zone is built, no load is in flight, no
    *  queued build job, no group waiting to be batched and no collider rebuild pending: the view is in its settled state. */
   function status() {
-    return { unbuilt, loads: loadsInFlight.n, queue: queueBusy() ? 1 : 0, batch: placeBatchPending(), colliders: colPending || rebuildAt >= 0 || lateRebuildAt >= 0 ? 1 : 0, modelLoads: modelLoads.count };
+    return { unbuilt, loads: loadsInFlight.n, queue: queueBusy() ? 1 : 0, batch: placeBatchPending(), colliders: colPending || colStep || rebuildAt >= 0 || lateRebuildAt >= 0 ? 1 : 0, modelLoads: modelLoads.count };
   }
   function settled() { const s = status(); return !s.unbuilt && !s.loads && !s.queue && !s.batch && !s.colliders; }
 

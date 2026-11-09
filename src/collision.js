@@ -74,6 +74,17 @@ export let lastCarves = [];
 const TAGGED_MARGIN = 0.15;
 
 export function buildCollidersFromScene(scene) {
+  const g = buildCollidersGen(scene, Infinity);
+  let r;
+  while (!(r = g.next()).done);
+  return r.value;
+}
+
+/** The same derivation as a generator: yields whenever `sliceMs` of one slice is spent, so the ride never takes the whole
+ * rebuild in one frame (src/zoneManager.js drives it). The walk and the doorway pass are one slice; the derived-cell loop is
+ * what yields. */
+function* buildCollidersGen(scene, sliceMs) {
+  let sliceStart = performance.now();
   const boxes = [];
   const autoMeshes = []; // [mesh, topLevelName] - visible opaque meshes that may get a derived collider (src/autoColliders.js)
   const boardBoxes = []; // body-height place boards (src/placeBoards.js holders), added last so they never suppress derived cells
@@ -147,7 +158,10 @@ export function buildCollidersFromScene(scene) {
     for (const b of tagged(x, z)) if (x >= b.minX - TAGGED_MARGIN && x <= b.maxX + TAGGED_MARGIN && z >= b.minZ - TAGGED_MARGIN && z <= b.maxZ + TAGGED_MARGIN) return true;
     return false;
   };
-  for (const [m, top] of autoMeshes) boxes.push(...deriveMeshBoxes(m, covered, top));
+  for (const [m, top] of autoMeshes) {
+    boxes.push(...deriveMeshBoxes(m, covered, top));
+    if (performance.now() - sliceStart > sliceMs) { yield; sliceStart = performance.now(); }
+  }
   boxes.push(...boardBoxes);
   return boxes;
 }
@@ -252,6 +266,25 @@ export const colliderStats = { builds: 0, ms: 0, worstMs: 0 };
  * calls this; src/zoneManager.js rebuilds the collider list shortly after the counter changes. */
 export const colliderRequests = { n: 0 };
 export function requestColliderRebuild() { colliderRequests.n++; }
+
+/** Sliced rebuild: returns a stepper; call it once per frame until it returns true (list swapped in at the end). */
+export function startStaticColliderRebuild(scene, sliceMs = 4) {
+  const t0 = performance.now();
+  scene.updateMatrixWorld(true);
+  const gen = buildCollidersGen(scene, sliceMs);
+  let spent = performance.now() - t0;
+  return function step() {
+    const s0 = performance.now();
+    const r = gen.next();
+    spent += performance.now() - s0;
+    if (!r.done) return false;
+    STATIC_COLLIDERS = r.value;
+    rebuildStaticGrid();
+    colliderStats.builds++;
+    colliderStats.ms += spent;
+    return true;
+  };
+}
 
 export function initStaticColliders(scene) {
   const t0 = performance.now();
