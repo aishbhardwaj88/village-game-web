@@ -114,7 +114,7 @@ function buildPair(o) {
   o.tris = a.tris + b.tris;
   return {
     w: 7.4, d: 5.4, cx: -3.6, cz: 0,
-    extra: [{ w: 4.9, d: 4.3, x: 6.2, z: 0.3 }],
+    extra: [{ w: 5.2, d: 4.6, x: 6.2, z: 0.3, ry: 0.07 }], // the old house is drawn turned 0.07 rad with eaves: 4.9 x 4.3 left its plaster 0.2 m outside the box (validator check 4, 9 Nov)
   };
 }
 
@@ -131,7 +131,7 @@ export function createVillageFixtures(scene) {
     const o = new Obj(batch, world, seed, { dirt: 0.2, dust: 0.12 });
     const fp = build(o);
     colliders.push(colliderBoxFromTransform(fp.w, fp.d, world.clone().multiply(new THREE.Matrix4().makeTranslation(fp.cx || 0, 0, fp.cz || 0))));
-    for (const e of fp.extra || []) colliders.push(colliderBoxFromTransform(e.w, e.d, world.clone().multiply(new THREE.Matrix4().makeTranslation(e.x, 0, e.z))));
+    for (const e of fp.extra || []) colliders.push(colliderBoxFromTransform(e.w, e.d, world.clone().multiply(new THREE.Matrix4().makeTranslation(e.x, 0, e.z)).multiply(new THREE.Matrix4().makeRotationY(e.ry || 0))));
     const p = new THREE.Vector3().setFromMatrixPosition(world);
     report.push({ kind, x: +p.x.toFixed(2), z: +p.z.toFixed(2), tris: Math.round(o.tris), fp: { w: fp.w, d: fp.d } });
     seed += 7;
