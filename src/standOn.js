@@ -51,7 +51,7 @@ function buildIndex(scene) {
     const e = o.matrixWorld.elements; let stamp = 0; for (let q = 0; q < 16; q++) stamp += e[q] * (q * 2 + 1); // any move, turn or scale rebuilds its box and triangle grid
     let c = boxCache.get(o);
     const gp = o.geometry && o.geometry.attributes.position, gn = gp ? gp.count : 0; // streamed meshes swap or refill geometry under one transform
-    if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o) }; boxCache.set(o, c); }
+    if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o), seen: performance.now() }; boxCache.set(o, c); }
     const b = c.box;
     if (!isFinite(b.min.x)) return;
     if (c.gen !== indexGen) fresh.push(b); // not in the last index: a new or changed surface (a zone .glb swapped in, a house shown again), so figures over it settle again
@@ -377,6 +377,10 @@ if (typeof window !== 'undefined') {
     },
     count: () => ENTRIES.length,
     state: () => ENTRIES.map((e) => [e.obj.name || e.obj.type, e.stage, !!e.again, e.t0 ? Math.round(performance.now() - e.t0) : -1, !!sceneOf(e.obj)]),
+    /** tools/feet-check diagnostics: the settle entries whose feet box covers (x, z), and when the surface o was last (re)indexed. */
+    entriesAt: (x, z) => ENTRIES.filter((e) => e.fb && x >= e.fb[0] - 0.3 && x <= e.fb[1] + 0.3 && z >= e.fb[2] - 0.3 && z <= e.fb[3] + 0.3).map((e) => ({ name: e.obj.name || e.obj.type, stage: e.stage, again: !!e.again, redo: !!e.redo, runAgo: e.lastRun ? Math.round(performance.now() - e.lastRun) : -1 })),
+    surfaceAgo: (o) => { const c = boxCache.get(o); return c ? Math.round(performance.now() - c.seen) : -1; },
+    indexAgo: () => (index ? Math.round(performance.now() - index.at) : -1),
     settleDy, groundAt, // tools/feet-check diagnostics
     lastHit: () => lastHit,
     indexed(o) { const idx = index; if (!idx) return 'no index'; for (const a of idx.cells.values()) for (const s of a) if (s.o === o) return 'cell'; for (const s of idx.big) if (s.o === o) return 'big'; return FIGURES.has(o) ? 'figure' : 'absent'; },

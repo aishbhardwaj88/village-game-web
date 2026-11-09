@@ -171,7 +171,7 @@ function inPage(cfg) {
     const res = { label: f.label, kind: f.kind, clear: +clear.toFixed(3), minY: +minY.toFixed(3), at: at.map((n) => +n.toFixed(2)), on, feet: buckets.size };
     if (Math.abs(clear) > 0.03 && window.__standOn) { // what the game's own settle saw under the same foot, for diagnosis
       const so = window.__standOn, gy = so.groundAt(d.scene, at[0], at[1], minY, true), lh = so.lastHit();
-      res.game = { y: +gy.toFixed(3), hit: lh ? pathOf(lh) : null };
+      res.game = { y: +gy.toFixed(3), hit: lh ? pathOf(lh) : null, surfaceAgo: lh && so.surfaceAgo ? so.surfaceAgo(lh) : null, entries: so.entriesAt ? so.entriesAt(at[0], at[1]) : null, indexAgo: so.indexAgo ? so.indexAgo() : null };
     }
     results.push(res);
   }
