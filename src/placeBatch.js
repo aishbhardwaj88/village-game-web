@@ -55,9 +55,12 @@ const NO_SHADOW_NAMES = new Set(['jute', 'hb_jute']);
 // One batch per (material, shadow flag): the material's natural flag uses the material itself as key, the other flag a twin key.
 const castTwins = new WeakMap();
 const naturalCast = (mat) => !mat.userData.batchNoShadow && !NO_SHADOW_NAMES.has(mat.name);
+// Sun shadows are off unless ?shadows=follow (src/main.js FOLLOW_SUN_SHADOWS): no shadow pass runs, so a cast / no-cast twin of the
+// same material only splits one draw into two. With shadows off every material keeps ONE batch (9 Nov, P1 zone draw calls).
+const SHADOWS_ON = typeof location !== 'undefined' && new URLSearchParams(location.search).get('shadows') === 'follow';
 function batchFor(mat, cast = true, exact = false) {
   const nat = naturalCast(mat);
-  const want = exact ? !!cast : nat && (mat.userData.worldBakedOnly ? cast : true);
+  const want = !SHADOWS_ON ? nat : exact ? !!cast : nat && (mat.userData.worldBakedOnly ? cast : true);
   let bk = mat;
   if (want !== nat) { let t = castTwins.get(mat); if (!t) castTwins.set(mat, t = {}); bk = t[want] || (t[want] = { mat, want }); }
   let b = batches.get(bk);
@@ -115,7 +118,31 @@ export function batchPlaceModelWhenRooted(model, key, late = false) { pending.pu
 /** The village-wide static merge (src/mergeUtils.js mergeAcrossGroups): its per-material meshes whose material is a place-batch material
  *  join that material's batch instead of costing a call of their own. Each keeps its own shadow flag (exact), its distance gate (the
  *  source mesh's .visible is mirrored every frame) and its colliders (the source stays in the graph on the hidden layer). */
-export function batchStaticGroup(group, key) { pending.push({ model: group, key, age: 0, late: false, rooted: false, exact: true }); }
+export function batchStaticGroup(group, key) { pending.push({ model: group, key, age: 0, late: false, rooted: false, exact: true, tiled: true, live: true }); }
+
+/** After a static group is batched: its leftover merged meshes whose material can live in a shared live batch (tree foliage and leaf
+ *  cards, whose wind is vertex-local) join that batch as still instances, so the village merge's tree cells and the trees' own batch
+ *  are one draw, not two (9 Nov, P1 zone draw calls). */
+function batchStaticLive(group) {
+  group.traverse((o) => {
+    if (!o.isMesh || o.isInstancedMesh || o.isBatchedMesh || o.userData.placeBatched || o.layers.mask === 1 << HIDDEN_LAYER) return;
+    const m = o.material;
+    if (Array.isArray(m) || !m.isMeshStandardMaterial || !m.userData.liveBatchable && !/^tree_/.test(m.name || '')) return;
+    if (!liveEligible(o)) return;
+    o.userData.placeBatched = true;
+    batchLiveMesh(o, { static: true });
+  });
+}
+
+/** Double-sided transparent materials (decals, nets, posters) draw twice in three (back faces, then front). Flat cards gain nothing
+ *  from the second pass, so they draw once: one call instead of two per decal mesh, same look (9 Nov, P1 zone draw calls). */
+function singlePassCards(root) {
+  root.traverse((o) => {
+    const m = o.material;
+    if (!o.isMesh || !m || Array.isArray(m)) return;
+    if (m.transparent && m.side === THREE.DoubleSide && !m.forceSinglePass && !m.userData.twoPass) m.forceSinglePass = true;
+  });
+}
 
 /** World-baked static groups built after the village merge (road events, vendors2, life scenes 2, cyclist events): their code-built tiled meshes
  *  (geometry already in world space, so the world-space mottling shaders stay correct) join one batch per material and shadow flag. */
@@ -214,7 +241,7 @@ function liveBatchFor(m, cast) {
   const sig = liveSig(m);
   const plain = !m.map && !m.normalMap && !m.bumpMap && !m.roughnessMap && !m.vertexColors && m.roughness === 0.85 && m.metalness === 0 && m.color.getHex() === 0xffffff && m.side === THREE.FrontSide && m.emissive.getHex() === 0;
   if (plain) return { b: peopleBatchGet(), names: SHARED_ATTRS, sig: 'people' };
-  const key = sig + '|' + cast;
+  const key = sig + '|' + (SHADOWS_ON ? cast : 'any');
   let b = liveBatches.get(key);
   if (!b) {
     b = new THREE.BatchedMesh(32, 6000, 24000, m);
@@ -285,14 +312,17 @@ function rooted(o) {
 }
 
 /** Once a frame: mirrors each source mesh's visibility (zone / distance hiding) into its batch instance; frees instances of torn-down places. */
+let cardSweep = 0;
 export function syncPlaceBatches() {
+  // Late-built scenes keep arriving for the first minute or so; sweep the scene for two-pass cards every ~5 s (one traverse, cheap).
+  if (root.parent && cardSweep++ % 300 === 30) singlePassCards(root.parent);
   for (let i = pending.length - 1; i >= 0; i--) {
     const p = pending[i];
     if (p.tiled) markTiled(p.model);
     if (p.rooted) { // `late` groups get meshes added after the first frame (async model loads): sweep again for a few seconds
       if (++p.age < 240 || p.age % 30 === 0) batchPlaceModel(p.model, p.key);
       if (p.age > 3000 || rooted(p.model) === null) pending.splice(i, 1);
-    } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key, !!p.exact); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
+    } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key, !!p.exact); if (p.live) batchStaticLive(p.model); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
   }
   syncPeople();
   syncLive();

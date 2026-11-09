@@ -133,6 +133,7 @@ function gridOf(o, stamp) {
   g = { stamp, geo, n: pos.count, ver, v: new Float32Array(verts), cells };
   gridCache.set(o, g);
   pAdd('standOn.grid', performance.now() - _t);
+  if (typeof window !== 'undefined' && window.__standOnGridLog) { const L = window.__standOnGridLog, k = topName(o) + '/' + o.name; const r = L[k] || (L[k] = [0, 0, 0]); r[0]++; r[1] += performance.now() - _t; r[2] = verts.length / 9; }
   return g;
 }
 /** Highest y of o's downward-facing-ray triangles at (x, z) within [lo, hi], or -Infinity. */

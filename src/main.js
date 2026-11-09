@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
