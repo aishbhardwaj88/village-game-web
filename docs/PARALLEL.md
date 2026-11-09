@@ -1,3 +1,74 @@
+# 10 NOV 01:30. HER ASK: LOAD TIME, SOUND, CYCLE HANDLING. Outranks everything below.
+
+Her words (10 Nov): "The main things are still an issue, which is the game loading time and the
+sound and maneuvering of cycle." She plays when this is done. Do L, then C, then A, in turns
+(one commit each, run the build after each). Finish the road-chunk slicing already in progress
+(src/mapRoads.js) first as L0.
+
+## L. Loading time. Measure first, then cut the biggest costs.
+Facts checked 10 Nov: models are ALREADY meshopt + webp (do not recompress). public/ is 42 MB.
+Headless Play-ready was 6.5 s. Her real Mac has never been measured.
+- **L1 Show her the numbers.** On the F overlay add two lines: "Ready in X.X s" (page open to Play
+  button ready) and "Village in X.X s" (Play pressed to first frame with the starting view fully
+  built). Use window.__loadMarks. She reads these to us.
+- **L2 Boot profile table** in docs/perf-2026-11-10.md: every boot step with ms (download, model
+  parse, village generators, mergeAcrossGroups, collider build, shader compile, first frame) and
+  MB downloaded before Play. Measure with Playwright network throttled to 20 Mbit/s, 40 ms
+  latency, cold cache, on `vite preview` of the production build.
+- **L3 Cut the top 3 rows of that table.** Likely candidates, check against the table:
+  (a) **pre-bake** the static village (what mergeAcrossGroups produces) offline into
+  meshopt GLBs with a tools/bake-village.mjs script run at build time, so boot downloads and
+  decodes instead of generating; (b) **shader warm-up** with renderer.compileAsync behind the
+  loading screen so the first ride frames do not stall; (c) start only the opening view before
+  Play, everything else after, nearest first.
+- **L4 No hitch while riding.** Every zone build and road chunk split so no frame spends more
+  than 8 ms building. Report the worst single frame (CPU ms) in a 90 s scripted ride
+  through bazaar, chowk, school, haveli, before and after.
+- Targets: Play ready <= 4 s and village <= 2 s after Play in the throttled headless test;
+  downloaded before Play <= 8 MB.
+
+## C. Cycle handling ("maneuvering"). Make it feel like a real cycle, never stuck.
+Current: src/main.js ~line 3106. Turning only works above 0.5 m/s; S only brakes.
+- **Never stuck**: at standstill A/D still turn the cycle (pushing it, ~70 deg/s); S at
+  standstill walks it backwards at 1.2 m/s. A head-on wall must be escapable in under 2 s.
+- **Real bicycle turning**: handlebar angle eases to the key in ~0.12 s and recentres in
+  ~0.2 s (no snap). Turn rate = speed / 1.1 m wheelbase x tan(handlebar), handlebar limit
+  shrinking with speed, so turning circle is ~2.5 m slow, ~6 m at 7.5 m/s, ~9 m sprinting. A
+  U-turn in a 6 m gali must be possible at low speed.
+- **Lean into turns** (visual), up to 15 deg, smoothed. Wheels stay on the ground while leaning.
+- **Camera**: follows behind with ~0.25 s yaw lag and a little look-ahead into the turn, no
+  jitter, never inside a wall.
+- **Walls**: glancing hits slide along and keep most speed; head-on gives a small bounce back,
+  soft thud, no dead lock.
+- Test: tools/cycle-course.mjs scripted ride: figure-8 round the chowk roundabout, U-turn in
+  the narrowest gali, ride into a wall and back out. Report turning circle at 3 speeds, time
+  to escape the wall, and whether any step got stuck.
+
+## A. Sound. Every sound is synthesised from oscillators today (src/audio.js), which is why
+birds are shrill. Replace with real recordings and mix them gently.
+- **Licence rule (she has no lawyer): CC0 only, or Pixabay Content Licence. Nothing CC-BY-NC,
+  nothing from BBC, YouTube or games.** Each file gets source URL, author and licence in
+  docs/CREDITS.md. If a file's licence is unclear, do not use it.
+- **Layers**: (1) one afternoon village bed, 60-90 s seamless loop: far voices, a dog far off,
+  wind in leaves; (2) place beds faded in by distance: bazaar chatter (bazaar row, chowk), cattle
+  and cowbells (gaushala, dairy), water and hand pump (pond, johad), children murmur (school,
+  daytime); (3) rare one-shots at random 20-90 s gaps: koel, sparrows, a distant crow, a
+  pressure-cooker whistle from a house, a far bicycle bell; (4) cycle: soft chain whirr when
+  pedalling, freewheel tick when coasting, tyre crunch on dirt scaled by speed, a real bell on B.
+- **No loud religious calls** (no azaan or loudspeaker bhajan). A soft temple bell near the
+  mandir, rarely, is fine.
+- **Mix**: beds at about -26 LUFS, one-shots peak no higher than -14 dBFS, birds low-passed
+  at 7 kHz, nothing sharp. Normalise every file with ffmpeg loudnorm and report the measured
+  loudness of each. Mono AAC .m4a 96 kbps, total audio <= 3 MB, loaded after Play.
+- Keep the mute button. Add a small volume slider next to it, remembered.
+- She is the only one who can hear it: put a line in docs/NEEDS_YOU.md asking her to listen.
+
+## Report
+After each of L, C, A: one line at the top of docs/NEEDS_YOU.md with the measured numbers.
+The claim-checker agent checks each claim before it is written.
+
+---
+
 # 9 NOV 21:00. HER PLAYTEST. Lag, sound, cycle. Everything below outranks all other work.
 
 Her words: "game is lagging a lot. Things load by the time I have already reached the place
