@@ -96,6 +96,11 @@ function* buildCollidersGen(scene, sliceMs) {
     if (performance.now() - sliceStart > sliceMs) { yield; sliceStart = performance.now(); }
     let [obj, top, hidden] = stack.pop();
     if (obj.userData.zoneHidden) continue;
+    // World matrices are refreshed here, parent before child, instead of one scene.updateMatrixWorld(true) block up front.
+    if (obj !== scene) {
+      if (obj.matrixAutoUpdate) obj.updateMatrix();
+      obj.matrixWorld.multiplyMatrices(obj.parent.matrixWorld, obj.matrix);
+    }
     if (obj.parent === scene) top = obj.name;
     if (obj.visible === false) hidden = true;
     // A place board is drawn by one shared BatchedMesh, so its holder (a plain Object3D) is the only scene node at its spot.
@@ -274,7 +279,6 @@ export function requestColliderRebuild() { colliderRequests.n++; }
 /** Sliced rebuild: returns a stepper; call it once per frame until it returns true (list swapped in at the end). */
 export function startStaticColliderRebuild(scene, sliceMs = 4) {
   const t0 = performance.now();
-  scene.updateMatrixWorld(true);
   const gen = buildCollidersGen(scene, sliceMs);
   let spent = performance.now() - t0;
   return function step() {
