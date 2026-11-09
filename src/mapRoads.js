@@ -120,11 +120,13 @@ export function mapRoadNetwork() {
 }
 
 /** One merged mesh of the road surface inside `chunkId`'s quadrant. */
-export function createMapRoads(chunkId) {
+export function* createMapRoads(chunkId) {
   const group = new THREE.Group();
   group.name = chunkId;
   const chunk = ROAD_CHUNKS.find((c) => c.id === chunkId);
-  const mesh = chunk && networkMesh(mapRoadNetwork(), chunk.rect, `${chunkId}_strips`);
+  const net = mapRoadNetwork();
+  yield; // the shared network build (first chunk only) and the mesh build land on separate frames (10 Nov, S1)
+  const mesh = chunk && networkMesh(net, chunk.rect, `${chunkId}_strips`);
   if (mesh) group.add(mesh);
   return group;
 }

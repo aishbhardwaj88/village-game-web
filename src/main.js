@@ -1712,8 +1712,8 @@ async function main() {
           detail: true,
           x: (from.x + to.x) / 2,
           z: (from.z + to.z) / 2,
-          buildRadius: 8 + half,
-          teardownRadius: 9 + half,
+          buildRadius: 8 + Math.max(half, 20),
+          teardownRadius: 9 + Math.max(half, 20),
           build: () => {
             const g = new THREE.Group();
             g.name = `gali_${id}_${i}_zone`;
@@ -1732,8 +1732,8 @@ async function main() {
         detail: true,
         x: (leg.a.x + leg.b.x) / 2,
         z: (leg.a.z + leg.b.z) / 2,
-        buildRadius: 8 + half,
-        teardownRadius: 9 + half,
+        buildRadius: 8 + Math.max(half, 20),
+        teardownRadius: 9 + Math.max(half, 20),
         build: () => createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w }], { type: 'solar', everyMetres: 24 }),
       });
     }
