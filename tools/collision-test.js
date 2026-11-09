@@ -444,7 +444,11 @@ async function main() {
         // frames. The old rule (2.5 s AND 10 frames, guessing at the 4-frame rebuild latency) cost 10-20 s per stop at the
         // ~0.5-1 fps of headless software GL, 83 stops = 15+ min, and the test timed out before reaching its checks. settled()
         // reads the debounce state directly, so the frame count only has to cover the first update after the teleport.
-        const settled = () => (d.zoneManager.settled ? d.zoneManager.settled() : true);
+        // Draw batching (status().batch, src/placeBatch.js) is excluded: batching only moves DRAWING into a BatchedMesh, the source
+        // meshes stay in the scene where the collider builder reads them, and its pending count is frame-based (a group counts for
+        // its first 240 frames, an unrooted one up to 1800), which at headless ~1-10 fps held stops at the 30 s cap (9 Nov: 16 of
+        // the first 16 stops took 13-30 s, the whole walk ~25 min). Everything a collider depends on is still waited for.
+        const settled = () => { if (!d.zoneManager.status) return true; const s = d.zoneManager.status(); return !s.unbuilt && !s.loads && !s.queue && !s.colliders; };
         for (const t0 = Date.now(); Date.now() - t0 < 30000 && (!settled() || Date.now() - quietSince < 1500 || frames - quietFrame < 3);) {
           await new Promise((r) => setTimeout(r, 100));
           // a model that finished loading adds meshes now and its collider rebuild follows ~250 ms later, so a changing mesh

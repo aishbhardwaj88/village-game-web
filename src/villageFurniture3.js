@@ -383,6 +383,7 @@ export function createVillageFurniture3(scene) {
   repaint();
   Promise.all([document.fonts.load(hiFont(40), 'क'), document.fonts.load(enFont(40), 'H'), document.fonts.ready]).then(repaint, () => {});
   const decalMat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.92, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  decalMat.name = 'wall_writing'; // wall-hung decals (ruin scrawl, notices): elevated fixtures like src/wallWriting.js's; unnamed they merged into a 'merged_N' bucket the ground-contact check read as floating at 1.08 m
 
   // 1. bhootiya ghar
   const rw = ANCHORS.pond && spotMatrix(FURNITURE3_SPOTS.ruin);
@@ -420,7 +421,10 @@ export function createVillageFurniture3(scene) {
     notices = new THREE.Mesh(merged, decalMat);
     notices.name = 'panchayat_notices_decal'; notices.receiveShadow = true;
     group.add(notices);
-    const at = new THREE.Vector3(4.1, 0, -1.4).applyMatrix4(pw);
+    // Stand point on the open ground just in front of the plinth (plinth edge local z +0.3, solid to ~+0.45 in the body band):
+    // the verandah itself is solid to the 2D resolver, so the old point (local z -1.4, on the verandah) sat 1.9 m inside the
+    // building's collider and the validator's walk could never stand within reach (9 Nov, check 6). 4 m from the board.
+    const at = new THREE.Vector3(4.1, 0, 1.2).applyMatrix4(pw);
     let n = 0;
     registerInteraction({
       id: 'panchayat_notices', position: new THREE.Vector3(at.x, 0, at.z), radius: 2.6,
