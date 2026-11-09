@@ -1,5 +1,6 @@
 # Needs you
 
+- NOT READY, nearly (9 Nov 17:00): draw calls now 101-128 in all 8 zones, feet-check 0 of 348, findability 0 of 40, 0 console errors, ride-through in docs/shots/ride-final-2026-11-09 (11 views). Still failing: build checks 2, 4, 5 (wall cells without a collider, 2 orphan colliders, figures standing on plinths read as floating), collision-test 4 (245 'wood_3' cells with no collider; npc_child leg 3 stops 6 m short), regression 21/22 (npc_teacher, npc_dadi stand 6-12 cm up on a plinth). Load time and real-Mac fps not measured. Peacock needs a model from you. - status: open
 - NOT READY for her test (9 Nov 08:45): D3 audit finds 0 flat house walls (done; only site walls/merged brick remain flat, say if you want them too). D4 mandi/gurudwara/panchayat already face their roads (done). D2 feet-check still 74 of 268 off by >3 cm (extra settle passes did not help; cause is specific meshes like gully jute and kit-house roofs). D1 load time not fixed (headless 16-24 s), draw calls 160-173 in bazaar/school/haveli/temple, build 12/22, collision-test timed out before checks. Peacock needs a model from you. - status: open
 
 Plain-language list of anything blocked on you. No jargon. The dashboard shows this at
