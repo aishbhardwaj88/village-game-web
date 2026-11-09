@@ -19,7 +19,7 @@
  */
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { statSync, readdirSync } from 'node:fs';
+import { statSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -298,8 +298,8 @@ async function main() {
     // CC0-texture set except 'ground'/'lane'/'crop', which are terrain/
     // decoration, never tagged as colliders in this codebase).
     // -------------------------------------------------------------------
-    async function sampleMaterialSurface(materialMatch) {
-      return page.evaluate((materialMatchStr) => {
+    async function sampleMaterialSurface(materialMatch, visibleOnly = false) {
+      return page.evaluate(([materialMatchStr, visibleOnly]) => {
         const d = window.__dopahar;
         const match = new Function('name', materialMatchStr);
         const STEP = 0.2;
@@ -321,18 +321,33 @@ async function main() {
           if (!o.isMesh || o.isInstancedMesh) return;
           const mat = o.material;
           if (!mat || !match(mat.name)) return;
+          if (visibleOnly) for (let a = o; a; a = a.parent) if (a.visible === false || a.userData.zoneHidden) return; // switched-off or not-yet-drawn meshes (bazaar_row_old, bg_houses_old) are not walls the player can meet; src/collision.js gives them no derived collider either
           const geo = o.geometry;
           const pos = geo.attributes.position;
           const index = geo.index;
-          const triCount = index ? index.count / 3 : pos.count / 3;
           o.updateWorldMatrix(true, false);
-          for (let t = 0; t < triCount; t++) {
-            const i0 = index ? index.getX(t * 3) : t * 3;
-            const i1 = index ? index.getX(t * 3 + 1) : t * 3 + 1;
-            const i2 = index ? index.getX(t * 3 + 2) : t * 3 + 2;
-            p0.fromBufferAttribute(pos, i0).applyMatrix4(o.matrixWorld);
-            p1.fromBufferAttribute(pos, i1).applyMatrix4(o.matrixWorld);
-            p2.fromBufferAttribute(pos, i2).applyMatrix4(o.matrixWorld);
+          // A BatchedMesh (src/placeBatch.js) holds every place's walls as shared geometry plus one matrix per instance: its raw
+          // vertices are NOT where the walls stand, so sample each active, visible instance through its own matrix.
+          const parts = [];
+          if (o.isBatchedMesh) {
+            const rng = {}, im = new d.Matrix4();
+            for (let i = 0; i < o._instanceInfo.length; i++) {
+              if (o._instanceInfo[i].active === false || !o.getVisibleAt(i)) continue;
+              o.getGeometryRangeAt(o.getGeometryIdAt(i), rng);
+              o.getMatrixAt(i, im);
+              parts.push({ m: o.matrixWorld.clone().multiply(im), vStart: rng.vertexStart || 0, iStart: rng.start || 0, n: (index ? rng.count : rng.vertexCount) / 3 });
+            }
+          } else parts.push({ m: o.matrixWorld, vStart: 0, iStart: 0, n: (index ? index.count : pos.count) / 3 });
+          for (const part of parts) {
+          for (let t = 0; t < part.n; t++) {
+            const i0 = index ? index.getX(part.iStart + t * 3) + part.vStart : t * 3 + part.vStart;
+            const i1 = index ? index.getX(part.iStart + t * 3 + 1) + part.vStart : t * 3 + 1 + part.vStart;
+            const i2 = index ? index.getX(part.iStart + t * 3 + 2) + part.vStart : t * 3 + 2 + part.vStart;
+            p0.fromBufferAttribute(pos, i0).applyMatrix4(part.m);
+            p1.fromBufferAttribute(pos, i1).applyMatrix4(part.m);
+            p2.fromBufferAttribute(pos, i2).applyMatrix4(part.m);
+            if (visibleOnly && (Math.max(p0.y, p1.y, p2.y) < 0.35 || Math.min(p0.y, p1.y, p2.y) > 1.5)) continue; // wall check: only surface in the player's body band (knee to chest, as src/autoColliders.js) can block a walker; floors, rubble below it and roof slabs above it cannot
+            if (!isFinite(p0.x + p1.x + p2.x + p0.z + p1.z + p2.z)) continue;
             push(p0);
             push(p1);
             push(p2);
@@ -347,9 +362,10 @@ async function main() {
               }
             }
           }
+          }
         });
         return points;
-      }, materialMatch);
+      }, [materialMatch, visibleOnly]);
     }
     // Streaming is async (7 ms build slices, .glb loads, frame-paced collider rebuilds). Sampling geometry while a zone is half
     // built or its colliders are still pending compares two different moments of the world (check 4 flagged walls whose collider
@@ -366,7 +382,7 @@ async function main() {
       }
     });
     console.log('\nSampling real wall geometry for check 4 (every "plaster" mesh)...');
-    const wallPoints = await sampleMaterialSurface("return name === 'plaster';");
+    const wallPoints = await sampleMaterialSurface("return name === 'plaster';", true);
     console.log(`${wallPoints.length / 2} real wall-surface sample points.`);
     console.log('Sampling real solid geometry for check 5 (every structural-material mesh)...');
     // 'brick' (docs/FINISH_LINE.md Step C, the chowk chabutra kerb) added
@@ -382,7 +398,7 @@ async function main() {
       const d = window.__dopahar;
       const pts = [];
       d.scene.traverse((o) => {
-        if (!o.isInstancedMesh || (o.name !== 'cattle_herd' && o.name !== 'dog_pack')) return;
+        if (!o.isInstancedMesh || !/^(cattle_herd|dog_pack|road_events_bovine)/.test(o.name)) return; // road_events_bovine*: the road cow (src/roadEvents.js) is an animal instance with an explicit box
         for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, new d.Matrix4()); const m = new d.Matrix4(); o.getMatrixAt(i, m); pts.push(m.elements[12], m.elements[14]); }
       });
       return pts;
@@ -417,9 +433,11 @@ async function main() {
           const [cx, cz] = k.split(',').map(Number);
           return { x: (cx + 0.5) * CELL, z: (cz + 0.5) * CELL };
         });
-        return { totalCells, uncoveredCount: uncoveredCells.size, uncoveredSample: uncoveredList.slice(0, 20) };
+        const clusters = {}; for (const u of uncoveredList) { const k = `${Math.floor(u.x / 4) * 4},${Math.floor(u.z / 4) * 4}`; clusters[k] = (clusters[k] || 0) + 1; }
+        return { totalCells, uncoveredCount: uncoveredCells.size, uncoveredSample: uncoveredList.slice(0, 20), clusters, all: uncoveredList };
       }, wallPoints);
-      record('check 4 — every wall footprint cell has collider coverage', out.uncoveredCount === 0, out.uncoveredCount === 0 ? `${out.totalCells} occupied 0.3m cells, all covered` : `${out.uncoveredCount}/${out.totalCells} cells uncovered, sample: ${JSON.stringify(out.uncoveredSample)}`);
+      if (process.env.VALIDATOR_DUMP) writeFileSync(process.env.VALIDATOR_DUMP, JSON.stringify(out.all));
+      record('check 4 — every wall footprint cell has collider coverage', out.uncoveredCount === 0, out.uncoveredCount === 0 ? `${out.totalCells} occupied 0.3m cells, all covered` : `${out.uncoveredCount}/${out.totalCells} cells uncovered, sample: ${JSON.stringify(out.uncoveredSample)}, 4 m clusters (x,z:count): ${JSON.stringify(out.clusters)}`);
     }
 
     // -------------------------------------------------------------------

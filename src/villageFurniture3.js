@@ -296,11 +296,12 @@ function buildRuin(o) {
   // a cracked clay chulha still in the east corner where the kitchen was, soot on the wall above it
   o.box('plaster', 0.6, 0.28, 0.45, 2.3, 0.31, 1.7, 0x8a6c50, 0, 0.1, 0, { dirt: 0.5 });
   o.box('plaster', 0.5, 1.1, 0.02, 2.3, 1.0, Z1 - 0.315, 0x3a3430, 0, 0, 0, { dirt: 0 });
+  const DR0 = 0.7, DR1 = 1.5;
   // walls only are solid: the door is open and the inside under the tree is walkable
   return {
     walls: [
       { w: W, d: 0.32, x: 0, z: Z0 + 0.15 }, { w: W - 1.6, d: 0.32, x: 0.8, z: Z1 - 0.15 }, { w: 0.32, d: D - 0.6, x: X1 - 0.15, z: 0 },
-      { w: 0.32, d: DZ0 - (Z0 + 0.3), x: X0 + 0.15, z: (Z0 + 0.3 + DZ0) / 2 }, { w: 0.32, d: Z1 - 0.3 - DZ1, x: X0 + 0.15, z: (DZ1 + Z1 - 0.3) / 2 },
+      { w: 0.32, d: DR0 - (Z0 + 0.3), x: X0 + 0.15, z: (Z0 + 0.3 + DR0) / 2 }, { w: 0.32, d: Z1 - 0.3 - DR1, x: X0 + 0.15, z: (DR1 + Z1 - 0.3) / 2 }, // door jambs at the drawn brick columns' edges (0.4 m columns: the opening is drawn 0.7..1.5, was tagged 0.55..1.65, 0.15 m of drawn brick walk-through)
     ],
     scrawl: { x: X0 - 0.036, y: 1.32, z: -1.05 },
   };

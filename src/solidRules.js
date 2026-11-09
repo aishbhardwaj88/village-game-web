@@ -12,7 +12,7 @@ export const NON_SOLID_RULES = [
   // Hanging cloth, bunting, garlands: soft and overhead-ish, never a wall.
   [/laundry|cloth|bunting|garland|flag/i, 'soft hanging cloth'],
   // Ground-shaped surfaces that happen to rise through the body band: banks, mounds, ramps, tracks, water.
-  [/\/ground$|\/dirt$|\/earth$|\/mud$|\/sand$|water|ripple|canal_bank_road|\/kerb|\/drain|stepping|\/path/i, 'walkable ground surface'],
+  [/\/ground$|\/dirt$|\/earth$|\/mud$|\/sand$|water|ripple|canal_bank_road|\/kerb|\/drain|stepping|\/path|\/lane$/i, 'walkable ground surface (the lane strip material: its 0.12 m edge slivers backed no solid geometry, check 5 orphan lane_20 9 Nov)'],
   // Everyday-scene people (capsule placeholders that sit, crouch, hop and roll a tyre), the tyre, rangoli, game decals, TV screen and
   // mosquito net (src/lifeScenes2.js): they move or lie flat, so they are soft like the village's other idle figures.
   [/life_scenes_2\/(life_scenes_2_people|tyre|game_decals|rangoli|tv_screen|net_cloth)/, 'moving or flat everyday-scene figures'],
