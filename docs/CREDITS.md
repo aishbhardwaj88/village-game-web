@@ -50,3 +50,17 @@ All CC0 1.0 from OpenGameArt.org, trimmed, mono-mixed, low-passed, loudnorm-ed w
 | cycle_bell.m4a, cycle_spokes.m4a | https://opengameart.org/content/bicycle-sounds (rotating_bicycle_bell, bicycle_spokes) | AntumDeluge | CC0 |
 
 Skipped for licence: dog_barking_mono (page also lists OGA-BY 3.0).
+
+### A-gaps sound pass (10 Nov 2026), public/assets/audio/*.m4a
+All CC0 1.0 from freesound.org (licence read from each sound page: creativecommons.org/publicdomain/zero/1.0). Freesound HQ previews, sliced, mono, filtered, loops crossfaded, loudnorm-ed with ffmpeg, 96k AAC. Script: tmp/sndscripts/make_gaps.py.
+
+| File(s) | Source URL | Author | Licence |
+|---|---|---|---|
+| bed_children.m4a (school, 31 s loop, replaces the 6 s one; LP 5 kHz) | https://freesound.org/people/myserval/sounds/274988/ | myserval | CC0 |
+| bed_cattle.m4a (gaushala / dairy cowbells, 20 s loop, LP 3.5 kHz) | https://freesound.org/people/Astounded/sounds/517468/ | Astounded | CC0 |
+| shot_moo1.m4a, shot_moo2.m4a (two moos) | https://freesound.org/people/JosephSardin/sounds/177253/ | JosephSardin | CC0 |
+| shot_koel.m4a (Asian koel, two calls, LP 7 kHz) | https://freesound.org/people/ramblinglibrarian/sounds/460466/ | ramblinglibrarian | CC0 |
+| shot_cooker.m4a (pressure-cooker whistle, LP 4.5 kHz) | https://freesound.org/people/Jibanshil/sounds/536520/ | Jibanshil | CC0 |
+| cycle_chain.m4a (pedalling chain whirr, 4.2 s loop) | https://freesound.org/people/AngryAdam/sounds/130367/ | AngryAdam | CC0 |
+| cycle_freewheel.m4a (freewheel ticks, 4 s loop) | https://freesound.org/people/donkpow/sounds/156996/ | donkpow | CC0 |
+| cycle_crunch.m4a (tyre on dirt road, 6 s loop) | https://freesound.org/people/SpliceSound/sounds/218301/ | SpliceSound | CC0 |

@@ -3280,12 +3280,15 @@ async function main() {
       audio.setListenerDistanceToRadio(listenerPos.distanceTo(HALWAI_NPC_POSITION));
       audio.setListenerDistanceToWater(distanceToCanalWater(listenerPos.x, listenerPos.z));
       {
-        let bestKind = null, bestC = 0;
+        let bestKind = null, bestC = 0, cattleD = Infinity;
         for (const pl of PLACES) {
-          const c = 1 - Math.hypot(listenerPos.x - pl.x, listenerPos.z - pl.z) / pl.radius;
+          const d = Math.hypot(listenerPos.x - pl.x, listenerPos.z - pl.z);
+          const c = 1 - d / pl.radius;
           if (c > bestC) { bestC = c; bestKind = pl.kind; }
+          if (pl.id === 'gaushala') cattleD = Math.min(cattleD, d); else if (pl.id === 'dairy') cattleD = Math.min(cattleD, d + 12); // fewer animals at the dairy: heard as if farther
         }
         audio.setPlaceAmbience(bestKind, bestC);
+        audio.setListenerDistanceToCattle?.(cattleD);
       }
       { const _q = performance.now(); if (zoneManager) zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
       syncPlaceBoards();

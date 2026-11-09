@@ -26,7 +26,12 @@ const SAMPLE_FILES = {
   village: 'bed_village', wind: 'bed_wind', water: 'bed_water', bazaar: 'bed_bazaar', children: 'bed_children',
   birds1: 'shot_birds1', birds2: 'shot_birds2', birds3: 'shot_birds3', crow: 'shot_crow',
   bell: 'cycle_bell', spokes: 'cycle_spokes',
+  // A-gaps (10 Nov): cattle + cowbells bed, moos, koel, pressure-cooker whistle, cycle chain / freewheel / tyre crunch.
+  cattle: 'bed_cattle', moo1: 'shot_moo1', moo2: 'shot_moo2', koel: 'shot_koel', cooker: 'shot_cooker',
+  chain: 'cycle_chain', freewheel: 'cycle_freewheel', crunch: 'cycle_crunch',
 };
+// Place kinds where a pressure cooker can be heard whistling from a nearby house (not out in the khet or by the water).
+const COOKER_KINDS = new Set(['house', 'lane', 'shop', 'bazaar', 'tree', 'school', 'temple']);
 
 export class AudioEngine {
   constructor() {
@@ -57,6 +62,14 @@ export class AudioEngine {
     this._sampGain = {};
     this._wireMuteButton();
     this._duckFactor = 1; // ducked while the dialogue panel is open (item 8)
+
+    this._cattleNear = 0; // 0..1, from setListenerDistanceToCattle
+    this._mooTimer = 0;
+    this._nextMooAt = 4 + Math.random() * 8;
+    this._placeKind = null; // last kind passed to setPlaceAmbience
+    this._cookerTimer = 0;
+    this._nextCookerAt = 45 + Math.random() * 60; // rare: first one after a while, then 60-150 s apart
+    this._loopSrc = {};
   }
 
   start() {
@@ -105,6 +118,8 @@ export class AudioEngine {
       this._windMul = 0; if (this._windGain) this._windGain.gain.setTargetAtTime(0, t, 1.5); // the recorded bed replaces the synth wind
     } else if (key === 'wind' || key === 'water' || key === 'bazaar' || key === 'children') {
       this._startLoop(key, 0);
+    } else if (key === 'cattle' || key === 'chain' || key === 'freewheel' || key === 'crunch') {
+      this._loopSrc[key] = this._startLoop(key, 0); // silent until setListenerDistanceToCattle / setCycleRide raise it
     } else if (key === 'spokes') {
       this._spokesSrc = this._startLoop('spokes', 0);
     }
@@ -135,8 +150,30 @@ export class AudioEngine {
 
   /** Cycle wheel/chain bed, called each frame while riding. onCycle false fades it out. */
   setCycleRide(onCycle, speed, pedalling) {
-    if (!this.started || !this._sampGain.spokes) return;
+    if (!this.started) return;
     const sp = Math.max(0, Math.min(1.3, speed / 7.5));
+    const t = this.ctx.currentTime;
+    const moving = onCycle && speed > 0.4;
+    // Real recordings (A-gaps): soft chain whirr while pedalling, freewheel ticks while coasting, tyre crunch on dirt.
+    if (this._sampGain.chain || this._sampGain.freewheel) {
+      const rate = (k, r) => { const s = this._loopSrc[k]; if (s) s.playbackRate.setTargetAtTime(r, t, 0.2); };
+      if (this._sampGain.chain) {
+        this._sampGain.chain.gain.setTargetAtTime(moving && pedalling ? 0.85 * Math.min(1, 0.35 + sp * 0.8) : 0, t, 0.12);
+        rate('chain', 0.75 + Math.min(1.1, sp) * 0.45); // stroke rhythm follows cadence
+      }
+      if (this._sampGain.freewheel) {
+        this._sampGain.freewheel.gain.setTargetAtTime(moving && !pedalling ? 1.5 * Math.min(1, 0.25 + sp * 1.2) : 0, t, 0.1);
+        rate('freewheel', Math.min(2.2, 0.7 + sp * 1.3)); // ticks speed up with the wheel
+      }
+      if (this._sampGain.crunch) {
+        const soft = this.surface === 'dirt' || this.surface === 'soil';
+        this._sampGain.crunch.gain.setTargetAtTime(moving ? (soft ? 0.95 : 0.12) * Math.pow(Math.min(1, sp), 1.2) : 0, t, 0.15);
+        rate('crunch', 0.8 + Math.min(1.2, sp) * 0.4);
+      }
+      if (this._sampGain.spokes) this._sampGain.spokes.gain.setTargetAtTime(0, t, 0.15); // the old spokes loop stands down
+      return;
+    }
+    if (!this._sampGain.spokes) return;
     const target = onCycle && speed > 0.4 ? (pedalling ? 0.25 : 0.55) * Math.min(1, sp * 1.3) : 0;
     this._sampGain.spokes.gain.setTargetAtTime(target, this.ctx.currentTime, 0.15);
     const src = this._spokesSrc;
@@ -259,12 +296,23 @@ export class AudioEngine {
     this._waterGain.gain.setTargetAtTime(t * t * 0.07, this.ctx.currentTime, 0.6);
   }
 
+  /** Distance (metres) to the nearest cattle (gaushala; the dairy is passed in a little farther
+   * so it is quieter): the cowbell bed fades in from ~50 m, and moos come at random 9-28 s gaps
+   * while it is audible (see update()). Harmless before start() or before the files load. */
+  setListenerDistanceToCattle(distanceMetres) {
+    if (!this.started || !Number.isFinite(distanceMetres)) return;
+    const c = 1 - Math.min(1, Math.max(0, (distanceMetres - 8) / 42));
+    this._cattleNear = c;
+    this._sampleGain('cattle', c * c * 1.15, 0.8);
+  }
+
   /** Per-place ambience: a single noise bed whose tone and level follow the kind of
    * place the listener is inside (`closeness` 0 at the rim of its radius, 1 at the
    * centre). Bazaar kinds get a low crowd murmur, schools a brighter chatter, fields a
    * touch more wind; anything else fades to silence. Harmless before start(). */
   setPlaceAmbience(kind, closeness) {
     if (!this.started || !this._placeGain) return;
+    this._placeKind = kind;
     const profile = { bazaar: [450, 0.03], shop: [560, 0.014], school: [1200, 0.027], field: [300, 0.02] }[kind]; // 9 Nov: ~2/3 of before, duller
     const c = Math.max(0, Math.min(1, closeness));
     const t = this.ctx.currentTime;
@@ -313,6 +361,27 @@ export class AudioEngine {
       this._dogTimer = 0;
       this._nextDogAt = 18 + Math.random() * 30;
       this._playDistantDog(t);
+    }
+
+    // Cattle: a moo now and then while the gaushala / dairy bed is audible, louder the nearer you are.
+    this._mooTimer += dt;
+    if (this._mooTimer >= this._nextMooAt) {
+      this._mooTimer = 0;
+      this._nextMooAt = 9 + Math.random() * 19;
+      if (this._cattleNear > 0.08) {
+        const v = 0.25 + 0.75 * this._cattleNear;
+        this._playSample(Math.random() < 0.5 ? 'moo1' : 'moo2', v, 0.9 + Math.random() * 0.18, (Math.random() * 2 - 1) * 0.6);
+      }
+    }
+
+    // Pressure-cooker whistle from somebody's kitchen: rare (60-150 s), only among houses and shops, always a little distant.
+    this._cookerTimer += dt;
+    if (this._cookerTimer >= this._nextCookerAt) {
+      this._cookerTimer = 0;
+      this._nextCookerAt = 60 + Math.random() * 90;
+      if (COOKER_KINDS.has(this._placeKind) && !this.vehicleKind) {
+        this._playSample('cooker', 0.35 + Math.random() * 0.35, 0.96 + Math.random() * 0.08, (Math.random() * 2 - 1) * 0.85);
+      }
     }
 
     if (this.vehicleKind === 'tractor') {
@@ -708,6 +777,14 @@ export class AudioEngine {
     this._birdLp.frequency.value = 5200 - dist * 3200;
     if (this._birdPan) this._birdPan.pan.value = (Math.random() * 2 - 1) * 0.8;
     const r = Math.random();
+    // Koel (real recording, low-passed at 7 kHz): ~1 call in 6, and often answered by a second "ku-oo" a few seconds later.
+    if (r >= 0.7 && r < 0.88 && this._samples.koel) {
+      const kv = 0.6 * (1.15 - dist), kp = (Math.random() * 2 - 1) * 0.8;
+      this._playSample('koel', kv, 0.97 + Math.random() * 0.06, kp);
+      if (Math.random() < 0.45) setTimeout(() => this._playSample('koel', kv * 0.9, 1.0 + Math.random() * 0.05, kp), 4000 + Math.random() * 3000);
+      setTimeout(() => this._playBirdChirp(), 20000 + Math.random() * 70000);
+      return;
+    }
     // Real recordings first (low-passed at 7 kHz when made); synth calls below are the fallback.
     if (r < 0.7 && (this._samples.birds1 || this._samples.birds2 || this._samples.birds3)) {
       const keys = ['birds1', 'birds2', 'birds3'].filter((k) => this._samples[k]);
