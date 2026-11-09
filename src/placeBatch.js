@@ -29,7 +29,7 @@ const eligible = (o) => o.isMesh && o.name !== 'tyre' && !o.isInstancedMesh && !
 function setKey(mat) {
   const t = mat.map;
   if (!t || !t.source || mat.aoMap || mat.vertexColors !== true && mat.userData.worldBakedOnly || mat.userData.noRepeatFold || t.rotation || mat.alphaMap) return null;
-  return mat.name + '|' + t.source.uuid + '|off' + t.offset.x + ',' + t.offset.y + '|' + (mat.normalMap ? mat.normalMap.source.uuid + ':' + mat.normalMap.offset.x + ',' + mat.normalMap.offset.y + ',' + mat.normalMap.repeat.x + ',' + mat.normalMap.repeat.y : '') + '|' + (mat.roughnessMap ? mat.roughnessMap.source.uuid : '') + '|' + mat.roughness + '|' + mat.metalness + '|' + mat.color.getHex() + '|' + mat.vertexColors + '|' + mat.side + '|' + (mat.onBeforeCompile === Material.prototype.onBeforeCompile ? 'p' : mat.customProgramCacheKey());
+  return (naturalCast(mat) ? 'c' : 'n:' + mat.name) + (mat.userData.worldBakedOnly ? 'wb' : '') + '|' + t.source.uuid + '|off' + t.offset.x + ',' + t.offset.y + '|' + (mat.normalMap ? mat.normalMap.source.uuid + ':' + mat.normalMap.offset.x + ',' + mat.normalMap.offset.y + ',' + mat.normalMap.repeat.x + ',' + mat.normalMap.repeat.y : '') + '|' + (mat.roughnessMap ? mat.roughnessMap.source.uuid : '') + '|' + Math.round(mat.roughness * 20) / 20 + '|' + mat.metalness + '|' + mat.color.getHex() + '|' + mat.vertexColors + '|' + mat.side + '|' + (mat.onBeforeCompile === Material.prototype.onBeforeCompile ? 'p' : mat.customProgramCacheKey());
 }
 const Material = THREE.Material;
 const leaders = new Map(); // setKey -> leader material

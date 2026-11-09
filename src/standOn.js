@@ -325,7 +325,6 @@ let rr = 0, lastTick = 0; // round-robin cursor: every entry gets its turn, earl
 function tick() {
   if (held) { if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick); return; }
   const now = performance.now();
-  const _t = now;
   // Time budget, scaled to the frame: 4 ms at 60 fps, up to 15% of a slow frame (a 1 fps test browser still settles everything).
   const frame = lastTick ? Math.min(1000, now - lastTick) : 16;
   lastTick = now;
@@ -333,6 +332,7 @@ function tick() {
   // Surfaces that stream in after a figure's last timed stage (a house zone built when the player rides near) were never seen:
   // refresh the index every few seconds; buildIndex flags the entries whose feet a new surface covers (e.redo).
   if (index && index.scene && now - index.at > REFRESH_MS) buildIndex(index.scene);
+  const _t = performance.now(); // the ~150 ms index rebuild above is not part of the settle budget: counted, it ate the whole slice on slow frames and entries sat at stage 2-4 after 60 s (feet-check 2-5 sunk)
   const N = ENTRIES.length;
   for (let k = 0; k < N && ENTRIES.length; k++) {
     if (performance.now() - _t > budgetMs) break;
