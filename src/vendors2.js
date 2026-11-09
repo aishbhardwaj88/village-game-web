@@ -204,11 +204,11 @@ export function createVendors2(scene) {
     if (signs.length) {
       const atlas = createWideSignAtlas(SIGNS, { cellW: 512, cellH: 116 });
       signs.forEach((g) => mapFrontFaceToRow(g, 0, atlas.rows));
-      const sm = new THREE.Mesh(mergeGeometries(signs.map((g) => g.toNonIndexed())), Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'vendors2_sign' }));
+      const sm = new THREE.Mesh(mergeGeometries(signs.map((g) => g.toNonIndexed())), Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'vendor_sign_2' }));
       sm.name = 'vendors2_sign'; sm.castShadow = true; group.add(sm);
     }
     const pm = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.3, 1.1, 4, 8), new THREE.MeshStandardMaterial({ roughness: 0.85 }), Math.max(1, people.length));
-    pm.name = 'vendors2_people'; pm.castShadow = true; pm.frustumCulled = false; batchPeopleMesh(pm); markFigure(pm); keepOnGround(pm, (sc) => settleInstances(sc, pm, refreshPeopleMesh));
+    pm.name = 'vendors2_people'; pm.castShadow = true; pm.userData.noAutoCollider = true; pm.frustumCulled = false; batchPeopleMesh(pm); markFigure(pm); keepOnGround(pm, (sc) => settleInstances(sc, pm, refreshPeopleMesh));
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), col = new THREE.Color(), up = new THREE.Vector3(0, 1, 0);
     people.forEach((pp, i) => {
       const k = pp.h / 1.7, sy = pp.sit ? k * 0.62 : k, sn = Math.sin(pp.site.ry), cs = Math.cos(pp.site.ry), baseY = pp.sit ? 0.42 : 0.18;

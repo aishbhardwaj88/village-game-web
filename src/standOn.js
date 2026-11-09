@@ -97,6 +97,8 @@ function gridOf(o, stamp) {
   const ver = (o.isInstancedMesh ? o.instanceMatrix.version * 1e6 + o.count : 0) + pos.version * 7 + (index ? index.version * 13 : 0);
   let g = gridCache.get(o);
   if (g && g.stamp === stamp && g.geo === geo && g.n === pos.count && g.ver === ver) return g;
+  const _why = !g ? 'new' : g.stamp !== stamp ? 'stamp' : g.geo !== geo ? 'geo' : g.n !== pos.count ? 'n' : 'ver';
+  if (typeof window !== 'undefined' && window.__standOnGridWhy) { const W = window.__standOnGridWhy, k = topName(o) + '/' + o.name + ':' + _why; W[k] = (W[k] || 0) + 1; }
   const _t = performance.now();
   const mats = o.material;
   const ranges = []; // [start, end, side] in index (or vertex) units
@@ -346,7 +348,7 @@ function tick() {
     const stageDue = e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage];
     // Stages past 10 s only matter if a surface landed under the feet since the last run, and buildIndex already flags that (e.redo):
     // re-running ~110 entries x 7 late stages starved the scheduler on slow frames (entries still at stage 2 after 50 s, feet-check 5-74 off).
-    if (stageDue && !e.again && !e.redo && e.stage >= 3 && !e.moving) { e.stage++; continue; }
+    if (stageDue && !e.again && !e.redo && e.stage >= 3 && e.stage !== 5 && !e.moving) { e.stage++; continue; } // stage 5 (40 s) always runs: a surface that landed under the feet unflagged (feet-check: 4 stale) is caught here
     const due = e.again || stageDue || e.redo;
     if (due && !e.again && !stageDue) e.redoRun = true; // a new surface under its feet, outside the timed stages
     const moved = e.moving && e.stage > 0 && now - (e.lastRun || 0) > 400 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;

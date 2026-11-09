@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { frameBudget } from './frameQueue.js';
 
 /**
  * Village-wide BatchedMesh per shared place material (spike, 4 Nov). Every staged place model already has one mesh per material;
@@ -34,17 +35,25 @@ function setKey(mat) {
 const Material = THREE.Material;
 const leaders = new Map(); // setKey -> leader material
 
+/** One attribute as plain Float32 (`scale` per component, or null). Plain Float32 arrays copy in one go; quantised/normalised
+ *  or interleaved attributes go through getComponent (the per-vertex getX/getY/getZ .call loop cost ~170 ms per big place). */
+function plainFloat(a, size, scale) {
+  const n = a.count, f = new Float32Array(n * size);
+  if (!a.isInterleavedBufferAttribute && a.array instanceof Float32Array && !a.normalized && a.itemSize === size) f.set(a.array.subarray(0, n * size));
+  else for (let i = 0; i < n; i++) for (let k = 0; k < size; k++) f[i * size + k] = a.getComponent(i, k);
+  if (scale && (scale[0] !== 1 || scale[1] !== 1)) for (let i = 0; i < n; i++) for (let k = 0; k < size; k++) f[i * size + k] *= scale[k];
+  return f;
+}
+function plainIndex(src) {
+  if (src.index) { const ia = src.index.array; return ia instanceof Uint32Array ? ia.slice() : Uint32Array.from(ia); }
+  const n = src.attributes.position.count, out = new Uint32Array(n);
+  for (let i = 0; i < n; i++) out[i] = i;
+  return out;
+}
 function flat(src, ratio = [1, 1]) {
   const g = new THREE.BufferGeometry();
-  for (const [name, size] of [['position', 3], ['normal', 3], ['uv', 2], ['color', 3]]) {
-    const a = src.attributes[name];
-    const f = new Float32Array(a.count * size);
-    const get = [a.getX, a.getY, a.getZ];
-    for (let i = 0; i < a.count; i++) for (let k = 0; k < size; k++) f[i * size + k] = get[k].call(a, i) * (name === 'uv' ? ratio[k] : 1);
-    g.setAttribute(name, new THREE.BufferAttribute(f, size));
-  }
-  if (src.index) g.setIndex(new THREE.BufferAttribute(Uint32Array.from(src.index.array), 1));
-  else g.setIndex(new THREE.BufferAttribute(Uint32Array.from({ length: src.attributes.position.count }, (_, i) => i), 1));
+  for (const [name, size] of [['position', 3], ['normal', 3], ['uv', 2], ['color', 3]]) g.setAttribute(name, new THREE.BufferAttribute(plainFloat(src.attributes[name], size, name === 'uv' ? ratio : null), size));
+  g.setIndex(new THREE.BufferAttribute(plainIndex(src), 1));
   return g;
 }
 
@@ -77,11 +86,23 @@ function batchFor(mat, cast = true, exact = false) {
   return b;
 }
 
-/** Moves the drawing of `model`'s eligible meshes into the shared batches; call once, after the model (and any folded-in lanterns) is final. */
-export function batchPlaceModel(model, key, exactCast = false) {
+/** Moves the drawing of `model`'s eligible meshes into the shared batches; call once, after the model (and any folded-in lanterns) is final.
+ *  `deadline` (performance.now() ms): stop after the mesh that passes it and return false; calling again resumes (batched meshes carry
+ *  placeBatched). A part-batched model looks exactly like a whole one: each mesh is drawn either by its source or by its batch instance. */
+const _todo = [];
+export function batchPlaceModel(model, key, exactCast = false, deadline = Infinity) {
   model.updateWorldMatrix(true, true);
-  model.traverse((o) => {
-    if (!eligible(o) || o.userData.placeBatched) return;
+  _todo.length = 0;
+  model.traverse((o) => { if (eligible(o) && !o.userData.placeBatched) _todo.push(o); });
+  for (let n = 0; n < _todo.length; n++) {
+    const o = _todo[n];
+    batchOne(o, key, exactCast);
+    if (n + 1 < _todo.length && performance.now() > deadline) { _todo.length = 0; return false; }
+  }
+  _todo.length = 0;
+  return true;
+}
+function batchOne(o, key, exactCast) {
     let mat = o.material, ratio = [1, 1];
     const sk = setKey(mat);
     if (sk) {
@@ -100,7 +121,7 @@ export function batchPlaceModel(model, key, exactCast = false) {
       gid = b.addGeometry(geo);
       geoCache.set(ck, gid);
     }
-    if (b._instanceInfo.filter((x) => x.active).length >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
+    if (b.instanceCount >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
     const iid = b.addInstance(gid);
     o.updateWorldMatrix(true, false);
     b.setMatrixAt(iid, o.matrixWorld);
@@ -108,10 +129,13 @@ export function batchPlaceModel(model, key, exactCast = false) {
     o.layers.set(HIDDEN_LAYER);
     o.userData.placeBatched = true;
     entries.add({ src: o, batch: b, gid, iid });
-  });
 }
 
 const pending = []; // { model, key, age }
+let pCursor = 0;
+const syncWork = { deadline: Infinity, folds: 0 }; // this frame's batching deadline, shared by the people/live first-time folds
+/** People / live first-time folds: two a frame always (so they progress while place batching is busy), more while the frame's budget lasts. */
+function foldAllowed() { return syncWork.folds++ < 2 || performance.now() < syncWork.deadline; }
 /** Like batchPlaceModel, for builders that return a group before the zone manager has added it to the scene: batches once the group is rooted. */
 export function batchPlaceModelWhenRooted(model, key, late = false) { pending.push({ model, key, age: 0, late, rooted: false }); }
 
@@ -185,6 +209,7 @@ function syncPeople() {
     const e = peopleSrc[i], m = e.mesh, vis = rooted(m);
     if (!e.iids) {
       if (vis === null) { if (++e.age > 1800) peopleSrc.splice(i, 1); continue; }
+      if (!foldAllowed()) continue; // time-sliced: the mesh draws as itself until its turn
       const g = m.geometry, pr = g.parameters;
       if (!pr || pr.radius === undefined || !pr.capSegments) { peopleSrc.splice(i, 1); continue; } // only capsule placeholders
       const b = peopleBatchGet();
@@ -195,7 +220,7 @@ function syncPeople() {
       const mm = new THREE.Matrix4(), c = new THREE.Color();
       e.iids = [];
       for (let k = 0; k < m.count; k++) {
-        if (b._instanceInfo.filter((x) => x.active).length >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
+        if (b.instanceCount >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
         const iid = b.addInstance(gid); peopleCount++;
         m.getMatrixAt(k, mm); mm.premultiply(m.matrixWorld); b.setMatrixAt(iid, mm);
         if (m.instanceColor) { m.getColorAt(k, c); b.setColorAt(iid, c); } else b.setColorAt(iid, c.set(0xffffff));
@@ -266,6 +291,7 @@ function syncLive() {
     const e = liveSrc[i], m = e.mesh, vis = rooted(m);
     if (!e.iids) {
       if (vis === null) { if (++e.age > 3600) liveSrc.splice(i, 1); continue; }
+      if (!foldAllowed()) continue; // time-sliced: the mesh draws as itself until its turn
       if (!liveEligible(m)) { liveSrc.splice(i, 1); continue; }
       const { b, names, sig } = liveBatchFor(m.material, m.castShadow);
       const gk = b.uuid + '|' + m.geometry.uuid;
@@ -280,7 +306,7 @@ function syncLive() {
       const cnt = m.isInstancedMesh ? m.count : 1;
       e.iids = []; e.batch = b; e.geoKey = gk; e.sig = sig;
       for (let k = 0; k < cnt; k++) {
-        if (b._instanceInfo.filter((x) => x.active).length >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
+        if (b.instanceCount >= b.maxInstanceCount) b.setInstanceCount(b.maxInstanceCount * 2);
         const iid = b.addInstance(rec.gid);
         b.setColorAt(iid, _lc.setRGB(1, 1, 1)); b.setVisibleAt(iid, false); e.iids.push(iid);
       }
@@ -316,13 +342,28 @@ let cardSweep = 0;
 export function syncPlaceBatches() {
   // Late-built scenes keep arriving for the first minute or so; sweep the scene for two-pass cards every ~5 s (one traverse, cheap).
   if (root.parent && cardSweep++ % 300 === 30) singlePassCards(root.parent);
-  for (let i = pending.length - 1; i >= 0; i--) {
+  // Batching work is time-sliced (load-play, 9 Nov: one frame folded whole house rows, 300-900 ms): at most frameBudget() ms a frame,
+  // resuming mid-model; a round-robin cursor gives every waiting group its turn. Unbatched meshes keep drawing as themselves meanwhile.
+  const deadline = performance.now() + frameBudget();
+  syncWork.deadline = deadline; syncWork.folds = 0;
+  const nP = pending.length;
+  for (let step = 0; step < nP && pending.length; step++) {
+    if (step > 0 && performance.now() > deadline) break;
+    if (pCursor >= pending.length) pCursor = 0;
+    const i = pCursor;
     const p = pending[i];
-    if (p.tiled) markTiled(p.model);
+    let keep = true;
     if (p.rooted) { // `late` groups get meshes added after the first frame (async model loads): sweep again for a few seconds
-      if (++p.age < 240 || p.age % 30 === 0) batchPlaceModel(p.model, p.key);
-      if (p.age > 3000 || rooted(p.model) === null) pending.splice(i, 1);
-    } else if (rooted(p.model) !== null) { batchPlaceModel(p.model, p.key, !!p.exact); if (p.live) batchStaticLive(p.model); if (p.late) { p.rooted = true; p.age = 0; } else pending.splice(i, 1); } else if (++p.age > 1800) pending.splice(i, 1);
+      if (++p.age < 240 || p.age % 30 === 0) { if (p.tiled) markTiled(p.model); batchPlaceModel(p.model, p.key, false, deadline); }
+      if (p.age > 3000 || rooted(p.model) === null) keep = false;
+    } else if (rooted(p.model) !== null) {
+      if (p.tiled) markTiled(p.model);
+      if (batchPlaceModel(p.model, p.key, !!p.exact, deadline)) {
+        if (p.live) batchStaticLive(p.model);
+        if (p.late) { p.rooted = true; p.age = 0; } else keep = false;
+      }
+    } else if (++p.age > 1800) keep = false;
+    if (keep) pCursor = i + 1; else pending.splice(i, 1);
   }
   syncPeople();
   syncLive();

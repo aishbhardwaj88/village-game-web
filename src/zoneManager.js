@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { initStaticColliders, colliderRequests } from './collision.js';
 import { modelLoads } from './loaders.js';
-import { queueBusy } from './frameQueue.js';
+import { queueBusy, frameBudget } from './frameQueue.js';
 import { placeBatchPending } from './placeBatch.js';
 
 // In-flight loads (glb, textures, files) through three's default manager. Its counters are private and ui.js owns its
@@ -30,9 +30,9 @@ const TEARDOWN_EXTRA = 200;
 // walls, lamps: small things that are a few pixels at that range) keep their original radius. Built-but-hidden zones cost nothing per frame, so the reveal is a flip
 // at fog distance, never a visible assembly or a frame hitch.
 const VIS_EXTRA = 80;
-const FRAME_BUDGET_MS = 7;
-const WARMUP_BUDGET_MS = 45; // first seconds after Play: assemble the surroundings fast, behind the loading fade
-const WARMUP_S = 4;
+// Build budget per frame: frameBudget() (src/frameQueue.js, ~4 ms, up to 8 ms on a slow frame), nearest zone first, always at
+// least one zone a frame. The old 45 ms warm-up budget chained several 40-190 ms builds into one frame right after Play
+// (load-play, 9 Nov: 0.5-1.8 s tasks); the surroundings now assemble one zone a frame, which is still well ahead of sight.
 
 /**
  * Zone streaming (CLAUDE.md: "zone streaming plus distance and frustum culling...
@@ -144,7 +144,7 @@ export function createZoneManager(scene) {
     unbuilt = wanted.length;
     if (wanted.length) {
       wanted.sort((a, b) => a[0] - b[0]);
-      const budget = age < WARMUP_S ? WARMUP_BUDGET_MS : FRAME_BUDGET_MS;
+      const budget = frameBudget();
       const t0 = performance.now();
       for (const [, zone] of wanted) {
         unbuilt--;

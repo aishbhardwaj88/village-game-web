@@ -16,6 +16,8 @@ export const NON_SOLID_RULES = [
   // Everyday-scene people (capsule placeholders that sit, crouch, hop and roll a tyre), the tyre, rangoli, game decals, TV screen and
   // mosquito net (src/lifeScenes2.js): they move or lie flat, so they are soft like the village's other idle figures.
   [/life_scenes_2\/(life_scenes_2_people|tyre|game_decals|rangoli|tv_screen|net_cloth)/, 'moving or flat everyday-scene figures'],
+  // Bazaar vendors' idle capsule people (src/vendors.js, src/vendors2.js): soft like the other idle figures; their capsule tessellation made 0.12 m sliver colliders that backed no solid geometry.
+  [/vendors2?\/vendors2?_people/, 'idle vendor figures are soft'],
   // Dev-only staging boxes (hidden outside ?dev=1).
   [/^tripo_[a-z_]+_placeholder\//, 'dev-only staging boxes'],
   // Animals carry their own boxes (src/animals.js), the herds' meshes are not walls.

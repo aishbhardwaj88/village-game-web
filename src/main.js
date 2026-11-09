@@ -1383,12 +1383,21 @@ async function main() {
   let fieldCane = null;
   let fieldSarson = null;
   let zoneManager; // src/zoneManager.js — registered once field/background content exists, see loadDeferredContent()
+  const setZoneManager = (zm) => { zoneManager = zm; };
+  // The deferred assembly is a frameQueue job (src/frameQueue.js): each `yield` lets a frame through, so the ~1 s of building
+  // after Play no longer lands as one long task (load-play, 9 Nov). ?nodefer runs it to the end synchronously, as before.
+  // Order and content are unchanged; the zone manager is published only once every zone is registered.
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
+    if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());
+    else scheduleFrameWork(deferredSteps(), 'deferredContent');
+  }
+  function* deferredSteps() {
     const fieldGroup = buildField(scene);
     fieldCane = fieldGroup.getObjectByName('field_cane');
     fieldSarson = fieldGroup.getObjectByName('field_sarson');
+    yield;
 
     // Wave 4 item 1 — the nahar (canal), MAP.md: "between the village and the
     // family's own fields... a crossing". Standalone (not folded into any of the
@@ -1396,6 +1405,7 @@ async function main() {
     // own ~4 draw calls locally (src/canal.js) — scene.traverse() for colliders
     // still finds it regardless of where it's parented.
     scene.add(buildCanal());
+    yield;
 
     // Item 3c (real playtest report — "the village reads as desert", "a village
     // called Amrai Khera has no plants in it") — 3 simple placeholder tree
@@ -1409,6 +1419,7 @@ async function main() {
     // past that); babool trees sit just outside the field track loop's own
     // corners (TRACK_CORNERS), offset outward from FIELD_CENTER.
     templeGroup.add(buildTrees([{ kind: 'peepal', ...templeXZ(PEEPAL_PLATFORM_POS.x, PEEPAL_PLATFORM_POS.z), rotationY: 0.4, seed: 5 }]));
+    yield;
     // Step E (2026-10-20, art director — "the village still reads as a
     // desert... instanced trees in clusters along lanes, around houses and the
     // chowk") — several more neem trees in real clusters (2-3 trees close
@@ -1433,6 +1444,7 @@ async function main() {
         { kind: 'neem', x: HALWAI_CENTER.x + 3, z: HALWAI_CENTER.z - 5, rotationY: 1.8, seed: 15 },
       ])
     );
+    yield;
     bazaarGroup.add(
       buildTrees([
         { kind: 'neem', x: CHOWK_PLAZA.x - 3, z: CHOWK_PLAZA.z + 6, rotationY: 0.9, seed: 16 },
@@ -1449,6 +1461,7 @@ async function main() {
       ]));
     // The mango baagh is zone-streamed (trees_baagh, below) so its tree LODs are not folded away by the static merge.
     MANGO_KNOCK_POSITIONS.forEach((pos, i) => registerMangoKnock(String(i), pos));
+    yield;
 
     // Item 3b — low vegetation (grass tufts + scrub bushes), instanced (one
     // draw call per kind regardless of instance count — src/vegetation.js),
@@ -1496,8 +1509,10 @@ async function main() {
       { ...schoolPt(-15, +8), radius: 1.5, count: 4 },
     ];
     scene.add(buildVegetation(vegAnchors, scrubAnchors));
+    yield;
     // Abadi house fronts: creepers, tulsi, marigold, banana (own mesh, only drawn when the abadi is in view).
     scene.add(buildGardenPlants(abadiGardenPlants()));
+    yield;
 
     // Step E — "a few flowering plants (marigold, bougainvillea on walls)".
     // Marigold at the temple and its own flower stall (the single most obvious
@@ -1547,12 +1562,16 @@ async function main() {
       ])
     );
 
+    yield;
     const backgroundHousesGroup = buildBackgroundHouses(scene, buildingKit);
     bgHousesGroup = backgroundHousesGroup;
     cameraObstacles.push(backgroundHousesGroup); // camRig already holds this array by reference
+    yield;
     villageHouses = createVillageHouses(scene); // src/villageHouses.js, distance-gated per cluster in the frame loop
     cameraObstacles.push(villageHouses.group);
+    yield;
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
+    yield;
 
     // Headroom pass (docs/parked.md) — one village-wide merge across every static
     // building group now that everything (hero zone, shops, bazaar/chowk,
@@ -1626,6 +1645,7 @@ async function main() {
         if (Array.isArray(obj.userData.colliderBoxes)) preMergeColliderCount += obj.userData.colliderBoxes.length;
       });
     }
+    yield;
 
     const villageStaticGroup = new THREE.Group();
     villageStaticGroup.name = 'village_static_merged';
@@ -1635,6 +1655,7 @@ async function main() {
     });
     cameraObstacles.push(villageStaticGroup);
     villageStaticGroup.traverse((o) => { if (o.userData.distGate) distGated.push(o); });
+    yield;
 
     // Structural fix (playtest) — derive every static collider from the real,
     // now-fully-built scene graph, once, here (after the merges above, which
@@ -1643,6 +1664,7 @@ async function main() {
     // matched to a building's coordinates anymore; if a building moves, this
     // picks up the new position automatically because it reads the same mesh.
     initStaticColliders(scene);
+    yield;
 
     // Zone streaming (src/zoneManager.js, CLAUDE.md's draw-call-budget plan) — the
     // first real zone-streamed content: a stationary cattle herd + a few street
@@ -1653,7 +1675,7 @@ async function main() {
     // z=25), clear of both. Decorative/static only this pass (no roaming, no
     // vehicle-blocking collision) — a real moving herd is a bigger feature than
     // this pass's "recognisable, present in the world" bar.
-    zoneManager = createZoneManager(scene);
+    const zoneManager = createZoneManager(scene); // local until every zone is registered; published at the end (setZoneManager)
     // Every streamed place has a drop-in model slot: public/assets/models/<zone name>.glb replaces its placeholder (src/siteSlots.js).
     zoneManager.hooks.onBuild = (name, group) => wireSiteSlot(assetSlots, name, group);
     // Big far landmarks are drawn from much further out (they stand in open ground, well past the hero-zone cameras); small detail zones keep their own radius (src/zoneManager.js).
@@ -1743,6 +1765,7 @@ async function main() {
     zoneManager.register('map_haystacks', { ...MAP_HAY, buildRadius: 50, teardownRadius: 65, build: () => createMapHaystacks(MAP_HAY) }); // the map's three 6 m stacks (1 Nov plan)
     const DUNG_YARD = { x: -128 + 600, z: 131.5 };
     zoneManager.register('dung_cake_yard', { ...DUNG_YARD, buildRadius: 50, teardownRadius: 65, build: () => createDungCakeYard(DUNG_YARD) }); // the map's uple drying yard (1 Nov plan)
+    yield;
     registerRideNooks(zoneManager); // everyday scenes on every bare road/lane stretch (src/rideNooks.js, docs/ride-nooks-2026-11-07.md)
     registerLongWalks(zoneManager); // wells, shrines, gates, haystacks, buffalo, pumps along every walk over 20 s (src/longWalks.js)
     const FP = (n, x, z, items, r = 40) => zoneManager.register(n, { x: x + 600, z, buildRadius: r, teardownRadius: r + 15, build: () => createFieldPropSite(n, { x: x + 600, z }, items.map((i) => ({ ...i, x: i.x + 600 }))) });
@@ -1927,7 +1950,9 @@ async function main() {
     zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => turnSiteGroup(createMelaGround(pt('mela')), ANCHORS.mela.ry) });
     // 'gurukul' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
+    yield;
     registerStagingYard(zoneManager, LANDMARK_VIS);
+    yield;
     // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
     // Dirt tracks to the places the map left without a way in (src/dirtTracks.js), one merged draw call.
@@ -2017,6 +2042,7 @@ async function main() {
         };
       },
     });
+    setZoneManager(zoneManager);
   }
 
   const audio = new AudioEngine();

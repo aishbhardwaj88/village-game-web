@@ -7,9 +7,9 @@ import * as THREE from 'three';
  * budget is spent, always at least one step, so a job of many small steps never takes the page below a few frames a
  * second, and a job of one long step is no worse than before.
  *
- * Budget: ~4 ms on a frame that is already fast; on a slow frame (a throttled phone, SwiftShader in the tests) it grows to
- * a quarter of the measured frame interval (cap 30 ms), so the queue still finishes in a sensible number of frames there.
- * It is driven by its own requestAnimationFrame, so callers need no hook in the render loop.
+ * Budget: frameBudget(), ~4 ms on a fast frame, up to 8 ms on a slow one (load-play, 9 Nov: the old quarter-of-a-frame budget,
+ * cap 30 ms, fed back on itself: work made the frame slow, the slow frame raised the budget). It is driven by its own
+ * requestAnimationFrame, so callers need no hook in the render loop.
  *
  * Also here (load-play D1, 9 Nov): THREE.TextureLoader is switched to decode into an ImageBitmap off the main thread.
  * An <img> texture is decoded and flipped on the main thread inside texSubImage2D (~80 ms per 1K map at 4x CPU, ~3 s of
@@ -17,18 +17,28 @@ import * as THREE from 'three';
  */
 
 const jobs = [];
-let rafOn = false, lastT = 0, frameDt = 16;
+let rafOn = false;
 const stats = { jobs: 0, steps: 0, ms: 0, worstStepMs: 0, done: 0 };
-if (typeof window !== 'undefined') window.__frameQueue = { stats, get pending() { return jobs.length; } };
+if (typeof window !== 'undefined') window.__frameQueue = { stats, get pending() { return jobs.length; }, budget: () => frameBudget() };
 
-function frameBudget() {
-  return Math.min(30, Math.max(4, frameDt * 0.25));
-}
-
-function pump(t) {
+// One frame clock for every time-sliced system (this queue, src/zoneManager.js zone builds, src/placeBatch.js batching): a smoothed
+// rAF interval, kept by its own always-on rAF (one tiny callback a frame), so the budget is right even when the queue is idle.
+let lastT = 0, frameDt = 16;
+function clock(t) {
   if (lastT) frameDt = frameDt * 0.7 + Math.min(1000, t - lastT) * 0.3;
   lastT = t;
-  if (!jobs.length) { rafOn = false; lastT = 0; return; }
+  requestAnimationFrame(clock);
+}
+if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(clock);
+
+/** Per-frame work budget in ms for ONE time-sliced system: 4 ms on a fast frame, up to 10% of a slow frame (cap 8 ms), so a
+ *  throttled phone still makes progress without the work itself stretching the frame it is measured from. */
+export function frameBudget() {
+  return Math.min(8, Math.max(4, frameDt * 0.1));
+}
+
+function pump() {
+  if (!jobs.length) { rafOn = false; return; }
   requestAnimationFrame(pump);
   const t0 = performance.now(), budget = frameBudget();
   let first = true;
@@ -39,7 +49,7 @@ function pump(t) {
     let r;
     try { r = job.it.next(); } catch (err) { console.error(`frameQueue job "${job.name}" failed`, err); r = { done: true }; }
     const ds = performance.now() - s0;
-    stats.steps++; stats.ms += ds; if (ds > stats.worstStepMs) stats.worstStepMs = ds;
+    stats.steps++; stats.ms += ds; if (ds > stats.worstStepMs) { stats.worstStepMs = ds; stats.worstStep = job.name; }
     if (r.done) { jobs.shift(); stats.done++; job.resolve(); }
   }
 }

@@ -538,7 +538,7 @@ export function createVendors(scene) {
 
   // people: capsule placeholders (characters are parked), one InstancedMesh
   const pm = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.3, 1.1, 4, 8), new THREE.MeshStandardMaterial({ roughness: 0.85 }), people.length);
-  pm.name = 'vendors_people'; pm.castShadow = true;
+  pm.name = 'vendors_people'; pm.castShadow = true; pm.userData.noAutoCollider = true;
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), col = new THREE.Color();
   people.forEach((pp, i) => {
     const k = pp.h / 1.7, sy = pp.sit === 1 ? k * 0.62 : pp.sit === 2 ? k * 0.45 : k;

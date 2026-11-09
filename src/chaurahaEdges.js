@@ -96,11 +96,12 @@ export function createChaurahaIsland(scene) {
   ensureUv2(kg);
   root.add(kerb);
   // grass top (soil edge under the kerb), UVs in metres
-  const tg = new THREE.CircleGeometry(R - kerbW + 0.02, 48).rotateX(-Math.PI / 2);
+  // a short soil drum from the ground up to topY (hidden behind the kerb), not a floating disc: it stands on the ground
+  const tg = new THREE.CylinderGeometry(R - kerbW + 0.02, R - kerbW + 0.02, topY, 48).translate(0, topY / 2, 0);
   { const p = tg.attributes.position, uv = tg.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3, p.getZ(i) / 3); }
   ensureUv2(tg);
   const top = new THREE.Mesh(tg, getTiledMaterial('grass', { repeatX: 1, repeatY: 1, roughness: 1 }));
-  top.position.y = topY;
+  top.position.y = 0;
   top.name = 'chauraha_island_top';
   top.receiveShadow = true;
   root.add(top);
@@ -311,11 +312,11 @@ export function createChaurahaEdges(scene) {
       let k; do { k = pick(props); } while (used.has(k)); used.add(k);
       const side = i % 2 ? 1 : -1;
       const px = side * (w / 2 - 0.5 + t(-0.15, 0.1)), pz = d / 2 + 1.0 + t(0, 0.3);
-      if (k === 'pots') { box('terracotta', 0.34, 0.3, 0.34, px, 0.1 + 0.15, pz, t(0, 3), 0xc08060, 0.5); box('terracotta', 0.3, 0.26, 0.3, px, 0.1 + 0.43, pz, t(0, 3), 0xb87858, 0.5); }
-      else if (k === 'sack') box('jute', 0.5, 0.75, 0.32, px, 0.1 + 0.37, pz, t(-0.3, 0.3), pick(sackCols), 0.5);
-      else if (k === 'wood') for (let j = 0; j < 6; j++) box('wood', 0.8, 0.09, 0.09, px, 0.1 + 0.05 + (j >> 1) * 0.09, pz - 0.1 + (j % 2) * 0.1 + (j >> 1) * 0.03, t(-0.1, 0.1), 0x8a6a48, 0.4);
-      else if (k === 'matka') { box('wood', 0.5, 0.05, 0.5, px, 0.1 + 0.55, pz, 0, 0x7a5a3c); for (const [a, c2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box('wood', 0.05, 0.55, 0.05, px + a * 0.22, 0.1 + 0.27, pz + c2 * 0.22, 0, 0x7a5a3c); box('terracotta', 0.4, 0.4, 0.4, px, 0.1 + 0.78, pz, 0, 0xb87858, 0.5); }
-      else box('wood', 0.06, 1.8, 1.0, px, 0.1 + 0.9, pz, t(-0.05, 0.05), 0x8a6a48, 0.8, 0, 0.18); // charpai standing on its side against the wall
+      if (k === 'pots') { box('terracotta', 0.34, 0.3, 0.34, px, 0 + 0.15, pz, t(0, 3), 0xc08060, 0.5); box('terracotta', 0.3, 0.26, 0.3, px, 0 + 0.43, pz, t(0, 3), 0xb87858, 0.5); }
+      else if (k === 'sack') box('jute', 0.5, 0.75, 0.32, px, 0 + 0.37, pz, t(-0.3, 0.3), pick(sackCols), 0.5);
+      else if (k === 'wood') for (let j = 0; j < 6; j++) box('wood', 0.8, 0.09, 0.09, px, 0 + 0.05 + (j >> 1) * 0.09, pz - 0 + (j % 2) * 0 + (j >> 1) * 0.03, t(-0.1, 0.1), 0x8a6a48, 0.4);
+      else if (k === 'matka') { box('wood', 0.5, 0.05, 0.5, px, 0 + 0.55, pz, 0, 0x7a5a3c); for (const [a, c2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box('wood', 0.05, 0.55, 0.05, px + a * 0.22, 0 + 0.27, pz + c2 * 0.22, 0, 0x7a5a3c); box('terracotta', 0.4, 0.4, 0.4, px, 0 + 0.78, pz, 0, 0xb87858, 0.5); }
+      else box('wood', 0.06, 1.8, 1.0, px, 0 + 0.9, pz, t(-0.05, 0.05), 0x8a6a48, 0.8, 0, 0.18); // charpai standing on its side against the wall
     }
     if (rand() < 0.7) person(t(-1.2, 1.2), d / 2 + 1.8, Math.PI + t(-0.5, 0.5), false, null); // a neighbour standing in the lane
   }
