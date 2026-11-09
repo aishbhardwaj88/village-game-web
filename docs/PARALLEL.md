@@ -63,6 +63,16 @@ birds are shrill. Replace with real recordings and mix them gently.
 - Keep the mute button. Add a small volume slider next to it, remembered.
 - She is the only one who can hear it: put a line in docs/NEEDS_YOU.md asking her to listen.
 
+## After L, C, A (overnight backlog, small)
+- **B1** collision-test reported 1 failure on 290c6ae ("unidentified, rerun needed"): rerun,
+  name it, fix it.
+- **B2** truth.sh flags 10 map turns (halwai, banta, chaat, gaushala, gurudwara, bus adda,
+  chaupal, puncture): for each, check whether the turn is applied in geometry code (false
+  positive) or really wrong; fix the real ones, make truth.sh stop flagging the false ones.
+- **B3** docs/NEEDS_YOU.md has 103 open lines, most from October and already settled. Move every
+  line that is done, superseded or no longer needs her into docs/needs_you_archive.md. Keep
+  only live asks, newest first, at most 10. She will not read 103 lines.
+
 ## Report
 After each of L, C, A: one line at the top of docs/NEEDS_YOU.md with the measured numbers.
 The claim-checker agent checks each claim before it is written.
