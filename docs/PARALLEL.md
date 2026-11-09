@@ -1,3 +1,22 @@
+# 17:15. THREE THINGS LEFT, THEN READY. Target READY 19:00 IST.
+
+Passing: draw calls 101-128 in all 8 zones, feet-check 0/348, findability 0/40, 0 console
+errors, ride-final captured.
+
+1. **The sabzi rehris stand IN the west arm.** ride-final 5_west_out_0-120.png was taken
+   from under a cart awning on the road centreline. After the roundabout re-bend, the west
+   arm runs through the carts. Move the carts onto the roadside frontage, fronting the
+   road. Then check every arm: nothing may sit on any carriageway. Add it to the build checks.
+2. **Collision-test 4: 245 'wood_3' cells with no collider.** The player can ride through
+   those wooden things, which she has complained about before. Give them colliders. Also
+   npc_child leg 3 stops 6 m short: re-route it.
+3. **Teacher and dadi stand 6-12 cm above their plinths** (regression 21/22, check 5). Seat
+   them on the plinth top. Also clear checks 2 (wall cells without a collider) and the 2
+   orphan colliders.
+4. Re-run everything. All green -> the READY line, re-capture 5_west_out, push.
+
+---
+
 # 16:05 MONDAY. THE 09:00 DEADLINE WAS MISSED. FINISH D6 AND SAY READY. NOTHING ELSE.
 
 Done since 08:45: D1 load 6.5 s (headless gate passes), D2 feet-check 0 of 348, D3 no flat
