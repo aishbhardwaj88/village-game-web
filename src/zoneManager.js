@@ -23,7 +23,7 @@ const loadsInFlight = { n: 0 };
 // Builds are time-sliced so a crossing never freezes the frame; teardown only happens well
 // beyond the sight radius. Frustum culling keeps draw calls to what is actually in view.
 const ALWAYS_EXTRA = 70;
-const SIGHT_EXTRA = 170;
+const SIGHT_EXTRA = 230; // 170 -> 230 (9 Nov playtest S1): any zone ahead of the player is built at least 250 m out, 33 s ahead at the cycle's 7.5 m/s
 const TEARDOWN_EXTRA = 200;
 // Built early does not mean drawn early: a built zone is only DRAWN within buildRadius + VIS_EXTRA
 // (draw-call ceiling 150); `detail` zones (doorstep props, rooftop clutter, lane vignettes, boundary
@@ -92,6 +92,22 @@ export function createZoneManager(scene) {
   let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
   /** Call once per frame with the player's x/z and (optionally) the camera. */
+  const buildStats = { worstMs: 0, worstName: '', over16: [], count: 0 };
+  if (typeof window !== 'undefined') window.__zoneBuildStats = buildStats;
+  function finishBuild(zone, built, playerX, playerZ, ms) {
+    buildStats.count++;
+    if (ms > buildStats.worstMs) { buildStats.worstMs = ms; buildStats.worstName = zone.name; }
+    if (ms > 16) buildStats.over16.push([zone.name, Math.round(ms)]);
+    const isPlain = built.isObject3D;
+    zone.group = isPlain ? built : built.group;
+    zone.onFrame = isPlain ? null : built.onFrame || null;
+    scene.add(zone.group);
+    zone.group.visible = Math.hypot(zone.x - playerX, zone.z - playerZ) <= zone.visibleRadius;
+    zone.group.userData.zoneHidden = !zone.group.visible;
+    zone.active = true;
+    if (hooks.onBuild) hooks.onBuild(zone.name, zone.group, playerX, playerZ);
+  }
+
   function update(playerX, playerZ, dt = 0, camera = null) {
     age += dt;
     if (lastX !== null && dt > 0) {
@@ -125,7 +141,12 @@ export function createZoneManager(scene) {
           }
           if (!want && heading > 0.3 && (dx * travelX + dz * travelZ) / (d || 1) > 0.35) want = true; // prefetch ahead
         }
-        if (want) wanted.push([d, zone]);
+        if (want) {
+          // Build order: what the player is standing in or beside first, then whatever lies ahead of the heading, then the rest
+          // (plain nearest-first built things behind the player before the road in front of the cycle).
+          const ahead = heading > 0.3 ? (dx * travelX + dz * travelZ) / (d || 1) : 0;
+          wanted.push([d <= zone.buildRadius + 30 ? d - 1000 : d - 150 * Math.max(0, ahead), zone]);
+        }
       } else if (d > Math.max(zone.teardownRadius, zone.buildRadius + SIGHT_EXTRA + 30, TEARDOWN_EXTRA)) {
         scene.remove(zone.group);
         disposeObject(zone.group);
@@ -148,17 +169,22 @@ export function createZoneManager(scene) {
       const t0 = performance.now();
       for (const [, zone] of wanted) {
         unbuilt--;
-        const built = zone.build();
-        const isPlain = built.isObject3D;
-        zone.group = isPlain ? built : built.group;
-        zone.onFrame = isPlain ? null : built.onFrame || null;
-        scene.add(zone.group);
-        zone.group.visible = Math.hypot(zone.x - playerX, zone.z - playerZ) <= zone.visibleRadius;
-        zone.group.userData.zoneHidden = !zone.group.visible;
-        zone.active = true;
-        changed = true;
-        if (hooks.onBuild) hooks.onBuild(zone.name, zone.group, playerX, playerZ);
-        if (performance.now() - t0 > budget) break; // the rest build on the next frames, nearest first
+        // A build may be a generator function's iterator (each `yield` a point where it can pause): it is stepped inside the frame
+        // budget and finishes on later frames, so one big zone no longer lands as one long task (9 Nov playtest S1).
+        if (!zone.job) {
+          const b0 = performance.now();
+          const r = zone.build();
+          if (r && typeof r.next === 'function' && typeof r[Symbol.iterator] === 'function' && !r.isObject3D) zone.job = r;
+          else { finishBuild(zone, r, playerX, playerZ, performance.now() - b0); changed = true; if (performance.now() - t0 > budget) break; continue; }
+        }
+        for (;;) {
+          const s0 = performance.now();
+          const step = zone.job.next();
+          zone.jobMs = (zone.jobMs || 0) + (performance.now() - s0);
+          if (step.done) { const job = zone.job; zone.job = null; finishBuild(zone, step.value, playerX, playerZ, zone.jobMs); zone.jobMs = 0; changed = true; break; }
+          if (performance.now() - t0 > budget) break;
+        }
+        if (performance.now() - t0 > budget) break; // the rest build on the next frames, best first
       }
     }
     const loadSig = modelLoads.count + colliderRequests.n;

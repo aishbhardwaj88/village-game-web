@@ -13,6 +13,7 @@ export class InputController {
 
     this.moveX = 0; // strafe, -1..1
     this.moveZ = 0; // forward, -1..1 (negative = forward)
+    this.sprint = false; // Shift held (desktop)
     this.yawDelta = 0;
     this.pitchDelta = 0;
     this._interactPressed = false; // edge-triggered, consumed via consumeInteract()
@@ -225,5 +226,6 @@ export class InputController {
   /** Must be called once per frame for desktop keyboard state to update moveX/moveZ. */
   update() {
     if (!this.touch && this._updateDesktopMove) this._updateDesktopMove();
+    this.sprint = !this.touch && (this._keys.has('ShiftLeft') || this._keys.has('ShiftRight')); // held Shift: the cycle's sprint (9 Nov)
   }
 }

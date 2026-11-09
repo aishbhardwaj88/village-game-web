@@ -1,0 +1,352 @@
+<title>Amrai Kheda map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one full-bleed survey sheet (canvas) with a slim tool rail on top and a side ledger for layers, selection and proposed moves. */
+:root {
+  --paper: #e9ebe3;      /* open ground between objects */
+  --ink: #23302a;        /* text, outlines */
+  --ink-2: #5a665f;      /* secondary text */
+  --rail: #f6f7f2;       /* toolbar and ledger surface */
+  --line: #c9cec2;       /* hairlines */
+  --accent: #1f7a4d;     /* fronts, active tool */
+  --warn: #c2412d;       /* collision boxes, move arrows */
+  --grid: rgba(35,48,42,.10);
+  --grid-major: rgba(35,48,42,.22);
+  --label-halo: rgba(246,247,242,.92);
+  --font-ui: "Hind", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #1d2420; --ink: #e4e8df; --ink-2: #a3ada5; --rail: #262e29; --line: #3a453e; --accent: #4fc488; --warn: #ff7a5c;
+  --grid: rgba(228,232,223,.07); --grid-major: rgba(228,232,223,.16); --label-halo: rgba(29,36,32,.9); color-scheme: dark } }
+:root[data-theme="dark"] { --paper: #1d2420; --ink: #e4e8df; --ink-2: #a3ada5; --rail: #262e29; --line: #3a453e; --accent: #4fc488; --warn: #ff7a5c;
+  --grid: rgba(228,232,223,.07); --grid-major: rgba(228,232,223,.16); --label-halo: rgba(29,36,32,.9); color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 14px; overflow: hidden; }
+.app { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; grid-template-columns: 1fr 300px; }
+.rail { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: var(--rail); border-bottom: 1px solid var(--line);
+  padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-top: calc(8px + env(safe-area-inset-top, 0px)); }
+.rail h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: .01em; white-space: nowrap; }
+.rail h1 span { font-weight: 400; color: var(--ink-2); margin-left: 6px; }
+.search { flex: 1 1 180px; min-width: 0; max-width: 300px; }
+.search input { width: 100%; box-sizing: border-box; font: inherit; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+.tools { display: flex; gap: 4px; flex-wrap: wrap; }
+button { font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button:hover { border-color: var(--ink-2); }
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.stage { position: relative; min-width: 0; min-height: 0; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+canvas.dragging { cursor: grabbing; }
+canvas.tool { cursor: crosshair; }
+.ledger { background: var(--rail); border-left: 1px solid var(--line); overflow-y: auto; padding: 12px 14px; padding-right: max(14px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.ledger h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-2); margin: 0 0 6px; font-weight: 600; }
+.layers { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+.layers label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+.sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.sel { font-size: 13px; line-height: 1.45; }
+.sel .t { font-size: 16px; font-weight: 600; }
+.sel .hi { color: var(--ink-2); }
+.num { font-family: var(--font-num); font-size: 12px; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; margin-top: 6px; }
+.kv dt { color: var(--ink-2); }
+.kv dd { margin: 0; }
+.moves ol { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.moves li button { padding: 0 6px; font-size: 11px; margin-left: 4px; }
+.hint { font-size: 12px; color: var(--ink-2); line-height: 1.45; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.hud { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+.hud .box { background: var(--label-halo); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+.tip { position: absolute; pointer-events: none; background: var(--rail); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 12px; max-width: 260px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.zoom { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.zoom button { background: var(--rail); width: 34px; height: 34px; padding: 0; font-size: 18px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-2); }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .ledger { border-left: 0; border-top: 1px solid var(--line); max-height: 34vh; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .hud { bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="rail">
+    <h1>Amrai Kheda <span>as built, top view</span></h1>
+    <div class="search"><input id="q" list="placelist" placeholder="Find a place: masjid, halwai, bus adda" aria-label="Find a place"><datalist id="placelist"></datalist></div>
+    <div class="tools" role="group" aria-label="Tool">
+      <button id="t-look" aria-pressed="true">Look</button>
+      <button id="t-measure" aria-pressed="false">Measure</button>
+      <button id="t-move" aria-pressed="false">Propose move</button>
+      <button id="t-fit">Whole village</button>
+    </div>
+  </header>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Zoomable top-down map of the village"></canvas>
+    <div class="loading" id="loading">Reading 28,000 objects from the game&hellip;</div>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">&minus;</button></div>
+    <div class="hud"><div class="box num" id="scale"></div><div class="box num" id="coord">x &ndash;, z &ndash;</div></div>
+    <div class="tip" id="tip" hidden></div>
+  </div>
+  <aside class="ledger">
+    <section>
+      <h2>Show</h2>
+      <div class="layers" id="layers"></div>
+    </section>
+    <section class="sel" id="sel"><h2>Selected</h2><div class="hint">Tap or hover anything on the map to see what it is, how big it is and exactly where it stands.</div></section>
+    <section id="measure" hidden><h2>Measure</h2><div class="hint">Tap points on the map. Each leg and the total show in metres.</div><div class="num" id="mout"></div><div class="row"><button id="mclear">Clear</button></div></section>
+    <section class="moves"><h2>Proposed moves</h2>
+      <div class="hint" id="movehint">Choose <b>Propose move</b>, tap a place name, then tap where it should go. Your list stays in this browser; copy it and paste it to Claude.</div>
+      <ol id="movelist"></ol>
+      <div class="row"><button id="mcopy">Copy list</button><button id="mwipe">Clear list</button></div>
+    </section>
+    <section class="hint" id="about"></section>
+  </aside>
+</div>
+
+<script>
+(() => {
+const $ = (id) => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+let D = null;
+// view: screen = (world - c) * s + centre ; north (-z) is up
+const view = { cx: 640, cz: 40, s: 2 };
+const LAYERS = [
+  ['ground', 'Roads and ground', '#cbb592', true],
+  ['crops', 'Crops', '#a8b866', true],
+  ['solids', 'Buildings and things', '#d9c7a6', true],
+  ['trees', 'Trees', '#5f8f5a', true],
+  ['moving', 'Vehicles, people', '#b5503f', false],
+  ['colliders', 'Collision boxes', 'var(--warn)', false],
+  ['names', 'Place names', 'var(--ink)', true],
+  ['fronts', 'Fronts', 'var(--accent)', true],
+  ['grid', 'Grid', 'var(--ink-2)', true],
+];
+const on = {}; LAYERS.forEach(([k, , , v]) => on[k] = v);
+try { const s = JSON.parse(localStorage.getItem('ak-layers') || 'null'); if (s) Object.assign(on, s); } catch (e) {}
+const lw = $('layers');
+for (const [k, label, col] of LAYERS) {
+  const id = 'ly-' + k;
+  const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox" id="${id}" ${on[k] ? 'checked' : ''}><span class="sw" style="background:${col}"></span>${label}`;
+  l.querySelector('input').addEventListener('change', (e) => { on[k] = e.target.checked; try { localStorage.setItem('ak-layers', JSON.stringify(on)); } catch (er) {} draw(); });
+  lw.appendChild(l);
+}
+
+// ---------- decode ----------
+const objs = []; // {kind, layer, col, lab, mn, y0, y1, rings:[[x,z,...]], bb}
+function readPoly(a, i) { const n = a[i++]; const r = new Float32Array(n * 2); for (let k = 0; k < n * 2; k++) r[k] = a[i++] / 10; return [r, i]; }
+function bbOf(rings) { let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9; for (const r of rings) for (let k = 0; k < r.length; k += 2) { if (r[k] < x0) x0 = r[k]; if (r[k] > x1) x1 = r[k]; if (r[k + 1] < z0) z0 = r[k + 1]; if (r[k + 1] > z1) z1 = r[k + 1]; } return [x0, z0, x1, z1]; }
+function decode() {
+  const f = D.flats; let i = 0;
+  while (i < f.length) { const col = f[i++], lab = f[i++], y = f[i++] / 10, nr = f[i++]; const rings = []; for (let r = 0; r < nr; r++) { let ring; [ring, i] = readPoly(f, i); rings.push(ring); } objs.push({ kind: 'ground', col, lab, y0: y, y1: y, rings }); }
+  const c = D.crops; i = 0;
+  while (i < c.length) { const lab = c[i++], col = c[i++]; let ring; [ring, i] = readPoly(c, i); objs.push({ kind: 'crops', col, lab, y0: 0, y1: 1.5, rings: [ring] }); }
+  const s = D.solids; i = 0;
+  while (i < s.length) { const layer = s[i++], col = s[i++], lab = s[i++], mn = s[i++], y0 = s[i++] / 10, y1 = s[i++] / 10; let ring; [ring, i] = readPoly(s, i); objs.push({ kind: layer ? 'moving' : 'solids', col, lab, mn, y0, y1, rings: [ring] }); }
+  const t = D.trees; i = 0;
+  while (i < t.length) { const y1 = t[i++] / 10, lab = t[i++]; let ring; [ring, i] = readPoly(t, i); objs.push({ kind: 'trees', col: -1, lab, y0: 0, y1, rings: [ring] }); }
+  for (const o of objs) o.bb = bbOf(o.rings);
+}
+// Path2D per (kind, band, colour) in world units
+const paths = {};
+function band(y1) { return y1 < 0.6 ? 0 : y1 < 2.2 ? 1 : y1 < 4.5 ? 2 : 3; }
+function buildPaths() {
+  const order = [];
+  const sorted = objs.slice().sort((a, b) => a.y1 - b.y1);
+  for (const o of sorted) {
+    const key = o.kind + '|' + (o.kind === 'solids' || o.kind === 'moving' ? band(o.y1) : 0) + '|' + o.col;
+    if (!paths[key]) { paths[key] = { p: new Path2D(), kind: o.kind, band: band(o.y1), col: o.col }; order.push(key); }
+    const P = paths[key].p;
+    for (const r of o.rings) { P.moveTo(r[0], r[1]); for (let k = 2; k < r.length; k += 2) P.lineTo(r[k], r[k + 1]); P.closePath(); }
+  }
+  const rank = { ground: 0, crops: 1, solids: 2, moving: 3, trees: 4 };
+  paths._order = order.sort((a, b) => { const A = paths[a], B = paths[b]; return (rank[A.kind] - rank[B.kind]) || (A.band - B.band); });
+  const C = D.colliders, cp = new Path2D();
+  for (let k = 0; k < C.length; k += 4) cp.rect(C[k] / 10, C[k + 1] / 10, (C[k + 2] - C[k]) / 10, (C[k + 3] - C[k + 1]) / 10);
+  paths._col = cp;
+}
+// spatial index, 10 m cells
+const CELL = 10, grid = new Map();
+function index() {
+  objs.forEach((o, n) => { const [x0, z0, x1, z1] = o.bb; if ((x1 - x0) * (z1 - z0) > 40000) { (grid.get('big') || grid.set('big', []).get('big')).push(n); return; }
+    for (let gx = Math.floor(x0 / CELL); gx <= Math.floor(x1 / CELL); gx++) for (let gz = Math.floor(z0 / CELL); gz <= Math.floor(z1 / CELL); gz++) { const k = gx + ',' + gz; let a = grid.get(k); if (!a) grid.set(k, a = []); a.push(n); } });
+}
+function inRing(r, x, z) { let c = false; for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) { const xi = r[i], zi = r[i + 1], xj = r[j], zj = r[j + 1]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; }
+function pick(x, z) {
+  const cand = (grid.get(Math.floor(x / CELL) + ',' + Math.floor(z / CELL)) || []).concat(grid.get('big') || []);
+  let best = null, bestScore = -1e9; const pri = { solids: 3, moving: 4, trees: 2, crops: 1, ground: 0 };
+  for (const n of cand) { const o = objs[n]; if (!on[o.kind === 'ground' ? 'ground' : o.kind]) continue; const [x0, z0, x1, z1] = o.bb; if (x < x0 || x > x1 || z < z0 || z > z1) continue;
+    let inside = false; for (const r of o.rings) if (inRing(r, x, z)) inside = !inside; if (!inside) continue;
+    const sc = pri[o.kind] * 100 + o.y1 - ((x1 - x0) * (z1 - z0)) * 1e-6; if (sc > bestScore) { bestScore = sc; best = o; } }
+  return best;
+}
+
+// ---------- drawing ----------
+let W = 0, H = 0, dpr = 1;
+function resize() { const r = cv.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); draw(); }
+const toS = (x, z) => [(x - view.cx) * view.s + W / 2, (z - view.cz) * view.s + H / 2];
+const toW = (sx, sy) => [(sx - W / 2) / view.s + view.cx, (sy - H / 2) / view.s + view.cz];
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; r = Math.round(r * f); g = Math.round(g * f); b = Math.round(b * f); return `rgb(${r},${g},${b})`; }
+let raf = 0; function draw() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; paint(); }); }
+let selected = null, hover = null, measurePts = [], moveFrom = null;
+let moves = []; try { moves = JSON.parse(localStorage.getItem('ak-moves') || '[]'); } catch (e) {}
+function paint() {
+  const ink = css('--ink'), ink2 = css('--ink-2'), accent = css('--accent'), warn = css('--warn'), halo = css('--label-halo');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = css('--paper'); ctx.fillRect(0, 0, W, H);
+  if (!D) return;
+  const s = view.s;
+  ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * (W / 2 - view.cx * s), dpr * (H / 2 - view.cz * s));
+  ctx.lineJoin = 'round';
+  // ground shadows for taller things, then fills
+  for (const key of paths._order) {
+    const P = paths[key]; if (!on[P.kind === 'ground' ? 'ground' : P.kind]) continue;
+    const col = P.col < 0 ? '#5f8f5a' : D.colors[P.col];
+    if ((P.kind === 'solids' && P.band >= 2) || P.kind === 'trees') { ctx.save(); ctx.translate(P.band === 3 || P.kind === 'trees' ? 0.9 : 0.5, 0.9); ctx.fillStyle = 'rgba(20,30,25,.16)'; ctx.fill(P.p, 'evenodd'); ctx.restore(); }
+    ctx.globalAlpha = P.kind === 'trees' ? 0.42 : 1;
+    ctx.fillStyle = P.kind === 'solids' ? shade(col, 1 - P.band * 0.05) : col;
+    ctx.fill(P.p, 'evenodd');
+    ctx.globalAlpha = 1;
+    if ((P.kind === 'solids' || P.kind === 'moving') && s > 2.5) { ctx.lineWidth = Math.min(1.1, 0.7 + s / 40) / s; ctx.strokeStyle = 'rgba(30,38,34,.55)'; ctx.stroke(P.p); }
+    if (P.kind === 'trees') { ctx.lineWidth = 1 / s; ctx.strokeStyle = 'rgba(40,80,45,.6)'; ctx.stroke(P.p); }
+  }
+  if (on.colliders) { ctx.lineWidth = 1 / s; ctx.strokeStyle = warn; ctx.globalAlpha = .75; ctx.stroke(paths._col); ctx.globalAlpha = 1; }
+  // selection outline
+  const outline = (o, c, w) => { if (!o) return; ctx.lineWidth = w / s; ctx.strokeStyle = c; ctx.beginPath(); for (const r of o.rings) { ctx.moveTo(r[0], r[1]); for (let k = 2; k < r.length; k += 2) ctx.lineTo(r[k], r[k + 1]); ctx.closePath(); } ctx.stroke(); };
+  outline(hover, accent, 1.5); outline(selected, accent, 3);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (on.grid) drawGrid(ink2);
+  // proposed moves
+  for (const m of moves) { const [ax, ay] = toS(m.fx, m.fz), [bx, by] = toS(m.tx, m.tz); arrow(ax, ay, bx, by, warn, 2); ctx.beginPath(); ctx.arc(bx, by, 5, 0, 7); ctx.strokeStyle = warn; ctx.lineWidth = 2; ctx.stroke(); }
+  if (moveFrom) { const [ax, ay] = toS(moveFrom.x, moveFrom.z); ctx.beginPath(); ctx.arc(ax, ay, 9, 0, 7); ctx.strokeStyle = warn; ctx.lineWidth = 2; ctx.stroke(); }
+  // fronts and names
+  const placed = [];
+  const lab = on.names; const fr = on.fronts;
+  const vis = D.places.filter((p) => !p.minor || s > 3.2);
+  if (fr) for (const p of vis) { const [x, y] = toS(p.x, p.z); if (x < -50 || y < -50 || x > W + 50 || y > H + 50) continue; const L = Math.max(16, 7 * s); arrow(x, y, x + p.fx * L, y + p.fz * L, accent, 2.2); }
+  if (lab) {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const p of vis.slice().sort((a, b) => (a.minor || 0) - (b.minor || 0))) {
+      const [x, y] = toS(p.x, p.z); if (x < -80 || y < -40 || x > W + 80 || y > H + 40) continue;
+      const big = !p.minor; ctx.font = `${big ? 600 : 500} ${big ? 13 : 11.5}px Hind, sans-serif`;
+      const tw = ctx.measureText(p.en).width; const showHi = p.hi && s > 2.2; const h = showHi ? 30 : 16;
+      const box = [x - tw / 2 - 4, y - 9 - (showHi ? 0 : 0), x + tw / 2 + 4, y - 9 + h];
+      if (placed.some((b) => !(box[2] < b[0] || box[0] > b[2] || box[3] < b[1] || box[1] > b[3]))) { ctx.beginPath(); ctx.arc(x, y, 2.5, 0, 7); ctx.fillStyle = ink; ctx.fill(); continue; }
+      placed.push(box);
+      ctx.fillStyle = halo; roundRect(box[0], box[1], box[2] - box[0], box[3] - box[1], 4); ctx.fill();
+      ctx.fillStyle = ink; ctx.fillText(p.en, x, y - 1);
+      if (showHi) { ctx.font = '500 11px Hind, sans-serif'; ctx.fillStyle = ink2; ctx.fillText(p.hi, x, y + 13); }
+    }
+  }
+  // measure
+  if (measurePts.length) { ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); measurePts.forEach((q, n) => { const [x, y] = toS(q[0], q[1]); n ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '500 12px "IBM Plex Mono", monospace'; for (let n = 1; n < measurePts.length; n++) { const a = measurePts[n - 1], b = measurePts[n]; const [x1, y1] = toS(...a), [x2, y2] = toS(...b); const d = Math.hypot(b[0] - a[0], b[1] - a[1]); const t = d.toFixed(1) + ' m'; const tw = ctx.measureText(t).width; ctx.fillStyle = halo; ctx.fillRect((x1 + x2) / 2 - tw / 2 - 4, (y1 + y2) / 2 - 9, tw + 8, 18); ctx.fillStyle = ink; ctx.fillText(t, (x1 + x2) / 2, (y1 + y2) / 2); }
+    for (const q of measurePts) { const [x, y] = toS(...q); ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); } }
+  north(ink, halo);
+  scaleBar();
+}
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function arrow(x1, y1, x2, y2, c, w) { const a = Math.atan2(y2 - y1, x2 - x1), hl = 7 + w * 1.5; ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); }
+const STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500];
+function drawGrid(c) {
+  const step = STEPS.find((v) => v * view.s >= 56) || 500; const major = STEPS.find((v) => v >= step * 5) || step * 5;
+  const [x0, z0] = toW(0, 0), [x1, z1] = toW(W, H);
+  ctx.lineWidth = 1; ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = c; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  for (let x = Math.floor(x0 / step) * step; x <= x1; x += step) { const [sx] = toS(x, 0); ctx.strokeStyle = x % major === 0 ? css('--grid-major') : css('--grid'); ctx.beginPath(); ctx.moveTo(Math.round(sx) + .5, 0); ctx.lineTo(Math.round(sx) + .5, H); ctx.stroke(); if (x % major === 0 || step >= 20) ctx.fillText('x ' + x, sx + 3, 4); }
+  for (let z = Math.floor(z0 / step) * step; z <= z1; z += step) { const [, sy] = toS(0, z); ctx.strokeStyle = z % major === 0 ? css('--grid-major') : css('--grid'); ctx.beginPath(); ctx.moveTo(0, Math.round(sy) + .5); ctx.lineTo(W, Math.round(sy) + .5); ctx.stroke(); if (z % major === 0 || step >= 20) ctx.fillText('z ' + z, 4, sy + 3); }
+  $('scale').dataset.grid = step;
+}
+function north(ink, halo) { const x = 30, y = 46; ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.fill(); ctx.fillStyle = ink; ctx.beginPath(); ctx.moveTo(x, y - 15); ctx.lineTo(x - 7, y + 7); ctx.lineTo(x, y + 2); ctx.lineTo(x + 7, y + 7); ctx.closePath(); ctx.fill(); ctx.font = '600 11px Hind, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('N', x + 30, y); }
+function scaleBar() { const target = 120 / view.s; const nice = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500].find((v) => v >= target * 0.6) || 500; const px = nice * view.s;
+  $('scale').innerHTML = `<span style="display:inline-block;width:${px.toFixed(0)}px;height:6px;border:2px solid currentColor;border-top:0;vertical-align:middle;margin-right:8px"></span>${nice} m &middot; grid ${$('scale').dataset.grid || '-'} m`; }
+
+// ---------- interaction ----------
+let mode = 'look';
+function setMode(m) { mode = m; for (const k of ['look', 'measure', 'move']) $('t-' + k).setAttribute('aria-pressed', String(k === m)); $('measure').hidden = m !== 'measure'; cv.classList.toggle('tool', m !== 'look'); moveFrom = null; draw(); }
+$('t-look').onclick = () => setMode('look'); $('t-measure').onclick = () => setMode('measure'); $('t-move').onclick = () => setMode('move');
+$('t-fit').onclick = () => fit(); $('zin').onclick = () => zoomAt(W / 2, H / 2, 1.6); $('zout').onclick = () => zoomAt(W / 2, H / 2, 1 / 1.6);
+$('mclear').onclick = () => { measurePts = []; $('mout').textContent = ''; draw(); };
+function zoomAt(sx, sy, f) { const [wx, wz] = toW(sx, sy); view.s = Math.max(0.15, Math.min(80, view.s * f)); const [nx, nz] = toW(sx, sy); view.cx += wx - nx; view.cz += wz - nz; draw(); }
+function fit() { const ps = D.places.filter((p) => !p.minor); const xs = ps.map((p) => p.x), zs = ps.map((p) => p.z); const x0 = Math.min(...xs) - 40, x1 = Math.max(...xs) + 40, z0 = Math.min(...zs) - 40, z1 = Math.max(...zs) + 40; view.cx = (x0 + x1) / 2; view.cz = (z0 + z1) / 2; view.s = Math.min(W / (x1 - x0), H / (z1 - z0)); draw(); }
+cv.addEventListener('wheel', (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018))); }, { passive: false });
+const ptrs = new Map(); let dragged = false, pinch0 = null;
+cv.addEventListener('pointerdown', (e) => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); dragged = false; if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), s: view.s }; } });
+cv.addEventListener('pointermove', (e) => {
+  const r = cv.getBoundingClientRect(); const sx = e.clientX - r.left, sy = e.clientY - r.top;
+  const [wx, wz] = toW(sx, sy); $('coord').textContent = `x ${wx.toFixed(1)}, z ${wz.toFixed(1)}`;
+  if (ptrs.has(e.pointerId)) {
+    const prev = ptrs.get(e.pointerId); const dx = e.clientX - prev[0], dy = e.clientY - prev[1]; ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 2 && pinch0) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); const mx = (a[0] + b[0]) / 2 - r.left, my = (a[1] + b[1]) / 2 - r.top; zoomAt(mx, my, (pinch0.s * d / pinch0.d) / view.s); dragged = true; return; }
+    if (Math.abs(dx) + Math.abs(dy) > 0 && (dragged || Math.hypot(dx, dy) > 2)) { dragged = true; cv.classList.add('dragging'); view.cx -= dx / view.s; view.cz -= dy / view.s; draw(); }
+    return;
+  }
+  if (e.pointerType === 'mouse' && D) { const o = pick(wx, wz); if (o !== hover) { hover = o; draw(); } const tip = $('tip'); if (o) { tip.hidden = false; tip.innerHTML = describeShort(o); tip.style.left = Math.min(sx + 14, W - 270) + 'px'; tip.style.top = (sy + 14) + 'px'; } else tip.hidden = true; }
+});
+const end = (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null; cv.classList.remove('dragging'); };
+cv.addEventListener('pointerup', (e) => { const was = dragged; end(e); if (was || !D) return; const r = cv.getBoundingClientRect(); click(e.clientX - r.left, e.clientY - r.top); });
+cv.addEventListener('pointercancel', end);
+cv.addEventListener('pointerleave', () => { $('tip').hidden = true; if (hover) { hover = null; draw(); } });
+cv.addEventListener('dblclick', (e) => { const r = cv.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, 2); });
+function nearestPlace(sx, sy, maxPx) { let best = null, bd = maxPx; for (const p of D.places) { if (p.minor && view.s <= 3.2) continue; const [x, y] = toS(p.x, p.z); const d = Math.hypot(x - sx, y - sy); if (d < bd) { bd = d; best = p; } } return best; }
+function click(sx, sy) {
+  const [wx, wz] = toW(sx, sy);
+  if (mode === 'measure') { measurePts.push([wx, wz]); let tot = 0; for (let n = 1; n < measurePts.length; n++) tot += Math.hypot(measurePts[n][0] - measurePts[n - 1][0], measurePts[n][1] - measurePts[n - 1][1]); $('mout').textContent = measurePts.length > 1 ? `Total ${tot.toFixed(1)} m over ${measurePts.length - 1} leg${measurePts.length > 2 ? 's' : ''}` : 'Tap the next point'; draw(); return; }
+  if (mode === 'move') {
+    if (!moveFrom) { const p = nearestPlace(sx, sy, 40); if (p) { moveFrom = p; $('movehint').innerHTML = `Now tap where <b>${p.en}</b> should go.`; draw(); } return; }
+    const p = moveFrom; moves.push({ id: p.id, en: p.en, fx: p.x, fz: p.z, tx: +wx.toFixed(1), tz: +wz.toFixed(1) }); moveFrom = null; saveMoves(); $('movehint').innerHTML = 'Tap another place name to add a move, or copy the list.'; draw(); return;
+  }
+  const p = nearestPlace(sx, sy, 14);
+  if (p) { selected = null; showPlace(p); draw(); return; }
+  selected = pick(wx, wz); showObj(selected, wx, wz); draw();
+}
+function compass(dx, dz) { const a = (Math.atan2(dx, -dz) * 180 / Math.PI + 360) % 360; return ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(a / 45) % 8]; }
+function pretty(lab) { const [z, p] = lab.split(' | '); const name = (z || '').replace(/_v2$/, '').replace(/_/g, ' ').trim(); return { name: name || (p || '').split('/')[0].replace(/_/g, ' '), path: p || '' }; }
+const KIND = { solids: 'Building or object', moving: 'Vehicle, cart or person (moves in game)', trees: 'Tree canopy', crops: 'Crop patch', ground: 'Ground surface' };
+function size(o) { const [x0, z0, x1, z1] = o.bb; return [x1 - x0, z1 - z0]; }
+function describeShort(o) { const l = pretty(D.labels[o.lab]); const [w, d] = size(o); return `<b>${l.name || KIND[o.kind]}</b><br><span class="num">${w.toFixed(1)} &times; ${d.toFixed(1)} m${o.y1 > 0.3 ? ', ' + o.y1.toFixed(1) + ' m tall' : ''}</span>`; }
+function showObj(o, wx, wz) {
+  const el = $('sel');
+  if (!o) { el.innerHTML = `<h2>Selected</h2><div class="hint">Open ground at <span class="num">x ${wx.toFixed(1)}, z ${wz.toFixed(1)}</span>.</div>`; return; }
+  const l = pretty(D.labels[o.lab]); const [w, d] = size(o); const cx = (o.bb[0] + o.bb[2]) / 2, cz = (o.bb[1] + o.bb[3]) / 2;
+  let near = null, nd = 1e9; for (const p of D.places) { const q = Math.hypot(p.x - cx, p.z - cz); if (q < nd) { nd = q; near = p; } }
+  el.innerHTML = `<h2>Selected</h2><div class="t">${esc(l.name || KIND[o.kind])}</div><div class="hint">${KIND[o.kind]}${o.mn !== undefined ? ', ' + esc(D.labels[o.mn] || '') : ''}</div>
+  <dl class="kv num"><dt>Size</dt><dd>${w.toFixed(1)} &times; ${d.toFixed(1)} m</dd><dt>Height</dt><dd>${o.y0.toFixed(1)} to ${o.y1.toFixed(1)} m</dd><dt>Centre</dt><dd>x ${cx.toFixed(1)}, z ${cz.toFixed(1)}</dd>
+  ${near ? `<dt>Nearest</dt><dd>${esc(near.en)}, ${nd.toFixed(0)} m ${compass(cx - near.x, cz - near.z)}</dd>` : ''}</dl>
+  <div class="hint" style="margin-top:4px;word-break:break-all">${esc(l.path)}</div>
+  <div class="row"><button id="cp1">Copy reference</button></div>`;
+  $('cp1').onclick = () => copy(`${l.name || KIND[o.kind]} (${l.path}) at x ${cx.toFixed(1)}, z ${cz.toFixed(1)}, ${w.toFixed(1)} x ${d.toFixed(1)} m, near ${near ? near.en : ''}`, $('cp1'));
+}
+function showPlace(p) {
+  const deg = (Math.atan2(p.fx, -p.fz) * 180 / Math.PI + 360) % 360;
+  $('sel').innerHTML = `<h2>Selected place</h2><div class="t">${esc(p.en)}</div><div class="hi">${esc(p.hi || '')}</div>
+  <dl class="kv num"><dt>Position</dt><dd>x ${p.x.toFixed(1)}, z ${p.z.toFixed(1)}</dd><dt>Front faces</dt><dd>${compass(p.fx, p.fz)} (${deg.toFixed(0)}&deg;)</dd><dt>Game id</dt><dd>${esc(p.id)}</dd></dl>
+  <div class="row"><button id="cp2">Copy reference</button></div>`;
+  $('cp2').onclick = () => copy(`${p.en} [${p.id}] at x ${p.x.toFixed(1)}, z ${p.z.toFixed(1)}, front faces ${compass(p.fx, p.fz)}`, $('cp2'));
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function copy(text, btn) { const done = () => { const t = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = t, 1400); }; try { navigator.clipboard.writeText(text).then(done, () => fallback(text, done)); } catch (e) { fallback(text, done); } }
+function fallback(text, done) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove(); }
+function saveMoves() { try { localStorage.setItem('ak-moves', JSON.stringify(moves)); } catch (e) {} renderMoves(); }
+function moveText(m) { const dx = m.tx - m.fx, dz = m.tz - m.fz; return `${m.en}: move ${Math.hypot(dx, dz).toFixed(1)} m ${compass(dx, dz)}, from (x ${m.fx}, z ${m.fz}) to (x ${m.tx}, z ${m.tz})`; }
+function renderMoves() { const ol = $('movelist'); ol.innerHTML = ''; moves.forEach((m, n) => { const li = document.createElement('li'); li.textContent = moveText(m); const b = document.createElement('button'); b.textContent = 'Remove'; b.onclick = () => { moves.splice(n, 1); saveMoves(); draw(); }; li.appendChild(b); ol.appendChild(li); }); }
+$('mcopy').onclick = () => copy(moves.length ? 'Map moves for Amrai Kheda:\n' + moves.map((m, n) => `${n + 1}. ${moveText(m)}`).join('\n') : 'No moves yet', $('mcopy'));
+$('mwipe').onclick = () => { moves = []; saveMoves(); draw(); };
+$('q').addEventListener('change', go); $('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+function go() { const v = $('q').value.trim().toLowerCase(); if (!v || !D) return; const p = D.places.find((p) => p.en.toLowerCase() === v) || D.places.find((p) => p.en.toLowerCase().includes(v) || p.id.includes(v) || (p.hi || '').includes(v)); if (!p) return; view.cx = p.x; view.cz = p.z; view.s = Math.max(view.s, 6); showPlace(p); draw(); }
+window.addEventListener('resize', resize);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+fetch('map-data.json').then((r) => r.json()).then((d) => {
+  D = d; for (const p of D.places) p.en = p.en.charAt(0).toUpperCase() + p.en.slice(1);
+  decode(); buildPaths(); index(); renderMoves();
+  $('placelist').innerHTML = D.places.filter((p) => !p.minor).map((p) => `<option value="${esc(p.en)}">`).join('');
+  $('about').innerHTML = `Read from the running game on 9 Nov evening: ${D.stats.solids.toLocaleString()} buildings and objects, ${D.stats.trees} tree groups, ${D.stats.crops} crop patches, ${D.stats.colliders.toLocaleString()} collision boxes. Every shape is the real footprint seen from above, 1 grid square = the size shown at bottom left. North is up. Green arrows show which way each place's front is set to face.`;
+  $('loading').remove(); resize(); fit();
+}).catch(() => { $('loading').textContent = 'The map data did not load. Reload the page.'; });
+resize();
+})();
+</script>

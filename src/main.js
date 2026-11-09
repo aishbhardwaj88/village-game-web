@@ -217,9 +217,10 @@ const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metr
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
 const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
 const MOVE_SPEED = 4.2; // m/s, walking pace
-const CYCLE_TOP_SPEED = 5.5; // m/s, about 20 km/h; a fixed cycle speed, not a walking multiple (7 Nov), so a motorbike can get its own
-const CYCLE_ACCEL = CYCLE_TOP_SPEED / 1.5; // pedal to top speed in about 1.5 s
-const CYCLE_COAST = CYCLE_TOP_SPEED / 3; // no input: coast to a stop in about 3 s
+const CYCLE_TOP_SPEED = 7.5; // m/s, 27 km/h (9 Nov playtest: 5.5 felt like a punctured tyre); a fixed cycle speed, not a walking multiple (7 Nov), so a motorbike can get its own
+const CYCLE_SPRINT_SPEED = 9.5; // m/s, Shift held
+const CYCLE_ACCEL = CYCLE_TOP_SPEED / 1.0; // pedal to top speed in about 1 s
+const CYCLE_COAST = CYCLE_TOP_SPEED / 5; // no input: coast to a stop in about 5 s
 const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
 const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
 let onCycle = true; // the player starts on a cycle (3 Nov): C gets off / on
@@ -732,6 +733,7 @@ async function main() {
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
   const playerCycle = createPlayerCycle(player);
+  playerCycle.setGroundProbe((x, z, y) => groundHeightAt(x, z, y)); // wheels sit on the ground, never in it (9 Nov playtest S3)
 
   // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
   // in src/interactions.js. Maa/halwai are now the real code-built characters
@@ -3104,7 +3106,8 @@ async function main() {
           // Real cycle: W pedals, S brakes, A/D turn the handlebar (heading changes, never sideways); on touch the stick's forward = pedal, sideways = steer.
           const pedal = -input.moveZ, steerIn = input.moveX;
           cyclePedalling = pedal > 0.1;
-          if (pedal > 0.1) cycleSpeed = Math.min(CYCLE_TOP_SPEED * Math.min(1, pedal), cycleSpeed + CYCLE_ACCEL * dt);
+          const cycleTop = (input.sprint ? CYCLE_SPRINT_SPEED : CYCLE_TOP_SPEED) * Math.min(1, Math.max(0, pedal));
+          if (pedal > 0.1) cycleSpeed = cycleSpeed > cycleTop ? Math.max(cycleTop, cycleSpeed - CYCLE_COAST * 2 * dt) : Math.min(cycleTop, cycleSpeed + CYCLE_ACCEL * dt); // letting go of Shift eases back to cruising speed
           else if (pedal < -0.1) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt);
           else cycleSpeed = Math.max(0, cycleSpeed - CYCLE_COAST * dt);
           if (cycleSpeed < 0.3 && pedal > 0.1) {
@@ -3113,8 +3116,8 @@ async function main() {
             const dh = Math.atan2(Math.sin(want - cycleHeading), Math.cos(want - cycleHeading));
             cycleHeading += dh * (1 - Math.exp(-12 * dt));
           } else if (cycleSpeed > 0.5) {
-            // turn rate falls as speed rises: about 100 deg/s at 1 m/s, 40 deg/s at top speed
-            const rate = THREE.MathUtils.lerp(1.75, 0.7, Math.min(1, cycleSpeed / CYCLE_TOP_SPEED));
+            // turn rate falls as speed rises: about 140 deg/s at 1 m/s, 55 deg/s at sprint speed
+            const rate = THREE.MathUtils.lerp(2.6, 0.9, Math.min(1, cycleSpeed / CYCLE_SPRINT_SPEED)); // nimbler (was 1.75 -> 0.7: 'controls are very tight'), still steadier the faster it goes
             cycleHeading -= steerIn * rate * dt;
           }
           const sx = Math.sin(cycleHeading), cz = Math.cos(cycleHeading);

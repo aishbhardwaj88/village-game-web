@@ -646,6 +646,28 @@
       }
 
       /* --- Pause button (touch only) --- */
+      /* Mute button: always visible, first in the top-right stack (src/audio.js wires it; M key shares the state) */
+      #mute-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(20, 14, 10, 0.55);
+        border: 1.5px solid rgba(255, 255, 255, 0.28);
+        color: #f8ead0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: manipulation;
+      }
+      #mute-btn svg { width: 24px; height: 24px; fill: currentColor; }
+      #mute-btn .wave { stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
+      #mute-btn .cross { display: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+      #mute-btn.muted .wave { display: none; }
+      #mute-btn.muted .cross { display: block; }
+      #mute-btn:active { transform: scale(0.94); }
       #pause-btn-touch {
         width: 44px;
         height: 44px;
@@ -1166,6 +1188,7 @@
         <p id="objective-hi"></p>
       </div>
       <div id="top-right-stack">
+        <button id="mute-btn" type="button" aria-label="Sound on, tap to mute" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3z"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/><path class="cross" d="M16 9l6 6M22 9l-6 6"/></svg></button>
         <button id="pause-btn-touch" type="button" aria-label="Pause">&#10073;&#10073;</button>
         <button id="cycle-btn-touch" type="button" aria-label="Get off or on the cycle">&#128690;</button>
         <div id="minimap-wrap" role="button" aria-label="Open map"><canvas id="minimap-canvas"></canvas></div>

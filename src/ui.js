@@ -5,22 +5,32 @@ export function isDevMode() {
   return new URLSearchParams(window.location.search).has('dev');
 }
 
+/** F toggles a small readout, top-left: fps and frame ms (worst frame of the last half second). `?dev=1` shows it from the start.
+ *  Her machine is the only one with a GPU, so this is how she reads the real number back to us (9 Nov playtest, S2). */
 export function setupFpsCounter() {
   const el = document.getElementById('fps-counter');
-  if (!isDevMode()) return { update: () => {} };
-
-  el.style.display = 'block';
-  let frames = 0;
+  if (!el) return { update: () => {} };
+  let on = isDevMode();
+  el.style.display = on ? 'block' : 'none';
+  window.addEventListener('keydown', (e) => {
+    if (e.code !== 'KeyF' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+    on = !on;
+    el.style.display = on ? 'block' : 'none';
+  });
+  let frames = 0, worst = 0, last = 0;
   let lastSample = performance.now();
 
   return {
     update(now) {
+      if (last) worst = Math.max(worst, now - last);
+      last = now;
       frames += 1;
       const elapsed = now - lastSample;
       if (elapsed >= 500) {
-        const fps = Math.round((frames * 1000) / elapsed);
-        el.textContent = `${fps} fps`;
+        if (on) el.textContent = `${Math.round((frames * 1000) / elapsed)} fps  ${(elapsed / frames).toFixed(1)} ms (worst ${Math.round(worst)})`;
         frames = 0;
+        worst = 0;
         lastSample = now;
       }
     },

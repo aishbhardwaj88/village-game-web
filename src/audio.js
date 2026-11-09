@@ -16,7 +16,8 @@ function createNoiseBuffer(ctx, seconds) {
 // Item 8 (queue) — the pre-mix-pass level; the pause menu's master volume slider and
 // the dialogue-open duck both multiply this, they don't replace it, so a user who
 // never touches the slider hears exactly what every earlier item already tuned.
-const BASE_MASTER_GAIN = 0.55;
+const BASE_MASTER_GAIN = 0.42; // was 0.55 (9 Nov playtest: the mix was in her ear, not in the background)
+const MUTE_KEY = 'dopahar_muted';
 
 export class AudioEngine {
   constructor() {
@@ -40,7 +41,10 @@ export class AudioEngine {
     this._dogTimer = 0;
 
     this._masterVolume = 1; // pause menu slider, 0-1 (item 8)
-    this._muted = false; // M key
+    this._muted = false; // M key and the top-right button
+    try { this._muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { /* private mode */ }
+    this._vehicleStamp = -1;
+    this._wireMuteButton();
     this._duckFactor = 1; // ducked while the dialogue panel is open (item 8)
   }
 
@@ -70,10 +74,38 @@ export class AudioEngine {
   }
 
   /** M key: silences everything without touching the saved slider volume. Returns the new state. */
-  toggleMute() {
-    this._muted = !this._muted;
+  toggleMute() { return this.setMuted(!this._muted); }
+
+  isMuted() { return this._muted; }
+
+  /** Sets, saves and shows the mute state (button + M key share this). Returns the new state. */
+  setMuted(m) {
+    this._muted = !!m;
+    try { localStorage.setItem(MUTE_KEY, this._muted ? '1' : '0'); } catch (e) { /* private mode */ }
     this._applyMasterGain();
+    this._syncMuteButton();
     return this._muted;
+  }
+
+  _syncMuteButton() {
+    const b = typeof document !== 'undefined' && document.getElementById('mute-btn');
+    if (!b) return;
+    b.classList.toggle('muted', this._muted);
+    b.setAttribute('aria-pressed', this._muted ? 'true' : 'false');
+    b.setAttribute('aria-label', this._muted ? 'Sound off, tap to turn on' : 'Sound on, tap to mute');
+  }
+
+  _wireMuteButton() {
+    if (typeof document === 'undefined') return;
+    const wire = () => {
+      const b = document.getElementById('mute-btn');
+      if (!b || b._wired) return;
+      b._wired = true;
+      b.addEventListener('click', (e) => { e.stopPropagation(); this.toggleMute(); });
+      b.addEventListener('pointerdown', (e) => e.stopPropagation()); // never also steers or fires a world tap
+      this._syncMuteButton();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
   }
 
   /** "Sits under dialogue" (item 8) — the whole mix ducks a bit while the dialogue
@@ -121,7 +153,7 @@ export class AudioEngine {
    * touch more wind; anything else fades to silence. Harmless before start(). */
   setPlaceAmbience(kind, closeness) {
     if (!this.started || !this._placeGain) return;
-    const profile = { bazaar: [520, 0.045], shop: [650, 0.02], school: [1500, 0.04], field: [330, 0.03] }[kind];
+    const profile = { bazaar: [450, 0.03], shop: [560, 0.014], school: [1200, 0.027], field: [300, 0.02] }[kind]; // 9 Nov: ~2/3 of before, duller
     const c = Math.max(0, Math.min(1, closeness));
     const t = this.ctx.currentTime;
     if (profile) this._placeFilter.frequency.setTargetAtTime(profile[0], t, 0.8);
@@ -130,6 +162,7 @@ export class AudioEngine {
 
   setVehicle(kind, speedRatio) {
     this.vehicleKind = kind;
+    this._vehicleStamp = this.ctx ? this.ctx.currentTime : 0;
     this.vehicleSpeedRatio = kind ? Math.abs(speedRatio) : 0;
     if (!kind && this._creakGain) this._creakGain.gain.value = 0;
   }
@@ -138,6 +171,10 @@ export class AudioEngine {
   update(dt) {
     if (!this.started) return;
     const t = this.ctx.currentTime;
+
+    // setVehicle() is called every frame while a vehicle is driven. If it has not been for a moment (the player stepped off,
+    // or took the cycle, without the stop call reaching us) the engine must not keep chugging: 9 Nov, tractor sound on the cycle.
+    if (this.vehicleKind && t - this._vehicleStamp > 0.25) { this.vehicleKind = null; this.vehicleSpeedRatio = 0; }
 
     if (this.walking && !this.vehicleKind) {
       const rate = 1.6 + this.walkSpeedRatio * 1.2; // steps/sec
@@ -310,12 +347,12 @@ export class AudioEngine {
   setNight(m) {
     this._night = m;
     if (!this.started || !this._windGain) return;
-    this._windGain.gain.setTargetAtTime(0.035 * (1 - 0.5 * m), this.ctx.currentTime, 0.8);
+    this._windGain.gain.setTargetAtTime(0.024 * (1 - 0.5 * m), this.ctx.currentTime, 0.8);
   }
 
   setSitting(sitting) {
     if (!this.started || !this._windGain) return;
-    this._windGain.gain.setTargetAtTime(sitting ? 0.065 : 0.035, this.ctx.currentTime, 0.6);
+    this._windGain.gain.setTargetAtTime(sitting ? 0.045 : 0.024, this.ctx.currentTime, 0.6);
   }
 
   /** A sizzling-oil bed for the halwai's short "packing the jalebi" wait (item 3) —
@@ -536,16 +573,33 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Mostly sparrow chirps, now and then a koel's rising two-note whistle or a distant
     // crow's caw, so the afternoon bed does not repeat one identical call.
+    // Distance: every call is far or very far (soft and dulled), never in the ear. Own gain + lowpass per call, panned off-centre.
+    if (!this._birdOut) {
+      this._birdLp = this.ctx.createBiquadFilter(); this._birdLp.type = 'lowpass';
+      this._birdOut = this.ctx.createGain();
+      this._birdPan = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+      this._birdLp.connect(this._birdOut);
+      if (this._birdPan) { this._birdOut.connect(this._birdPan); this._birdPan.connect(this.master); } else this._birdOut.connect(this.master);
+    }
+    const dist = 0.3 + Math.random() * 0.7; // 0.3 near .. 1 far
+    this._birdOut.gain.value = 0.55 * (1.15 - dist);
+    this._birdLp.frequency.value = 5200 - dist * 3200;
+    if (this._birdPan) this._birdPan.pan.value = (Math.random() * 2 - 1) * 0.8;
     const r = Math.random();
-    if (r < 0.6) this._playChirpNote(t, 2200 + Math.random() * 800);
-    else if (r < 0.8) {
-      const f = 2300 + Math.random() * 500;
+    if (r < 0.3) this._playChirpNote(t, 1900 + Math.random() * 900); // sparrow, one note
+    else if (r < 0.5) { // bulbul: three uneven notes
+      const f = 1500 + Math.random() * 500;
       this._playChirpNote(t, f);
-      this._playChirpNote(t + 0.2, f * 1.08); // quick answering second chirp
-    } else if (r < 0.92) this._playKoel(t);
-    else this._playCaw(t);
+      this._playChirpNote(t + 0.17 + Math.random() * 0.1, f * 1.12);
+      this._playChirpNote(t + 0.42 + Math.random() * 0.2, f * 0.95);
+    } else if (r < 0.65) { // myna / babbler: a rough run of low chirps
+      const n = 3 + Math.floor(Math.random() * 3), f = 1100 + Math.random() * 400;
+      for (let i = 0; i < n; i++) this._playChirpNote(t + i * (0.11 + Math.random() * 0.08), f * (0.9 + Math.random() * 0.25));
+    } else if (r < 0.82) this._playKoel(t);
+    else if (r < 0.92) this._playCaw(t);
+    else this._playChirpNote(t, 2600 + Math.random() * 700); // a lone high call
 
-    setTimeout(() => this._playBirdChirp(), 4000 + Math.random() * 8000);
+    setTimeout(() => this._playBirdChirp(), 8000 + Math.random() * 32000); // 8-40 s apart, never on a beat
   }
 
   _playChirpNote(t, startFreq) {
@@ -556,9 +610,9 @@ export class AudioEngine {
     osc.frequency.exponentialRampToValueAtTime(startFreq * 0.9, t + 0.14);
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.045, t + 0.03);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
-    osc.connect(gain).connect(this.master);
+    osc.connect(gain).connect(this._birdLp || this.master);
     osc.start(t);
     osc.stop(t + 0.18);
   }
@@ -576,7 +630,7 @@ export class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.012, t + 0.2);
     gain.gain.exponentialRampToValueAtTime(0.04, t + 0.3);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-    osc.connect(gain).connect(this.master);
+    osc.connect(gain).connect(this._birdLp || this.master);
     osc.start(t);
     osc.stop(t + 0.75);
   }
@@ -597,7 +651,7 @@ export class AudioEngine {
       gain.gain.setValueAtTime(0.0001, s);
       gain.gain.exponentialRampToValueAtTime(0.03, s + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.0001, s + 0.22);
-      osc.connect(filter).connect(gain).connect(this.master);
+      osc.connect(filter).connect(gain).connect(this._birdLp || this.master);
       osc.start(s);
       osc.stop(s + 0.25);
     }
@@ -612,9 +666,9 @@ export class AudioEngine {
     wind.loop = true;
     const windFilter = this.ctx.createBiquadFilter();
     windFilter.type = 'lowpass';
-    windFilter.frequency.value = 500;
+    windFilter.frequency.value = 380; // duller = further away
     const windGain = this.ctx.createGain();
-    windGain.gain.value = 0.035;
+    windGain.gain.value = 0.024;
     wind.connect(windFilter).connect(windGain).connect(this.master);
     wind.start();
     this._windGain = windGain; // adjustable target for setSitting()
@@ -633,7 +687,7 @@ export class AudioEngine {
     creak.connect(creakFilter).connect(this._creakGain).connect(this.master);
     creak.start();
 
-    setTimeout(() => this._playBirdChirp(), 2000 + Math.random() * 5000);
+    setTimeout(() => this._playBirdChirp(), 8000 + Math.random() * 12000);
 
     // Crickets: band-passed noise gated by a ~14 Hz square LFO; silent until dusk.
     const cr = this.ctx.createBufferSource();

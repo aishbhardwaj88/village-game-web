@@ -143,6 +143,9 @@ export function createPlayerCycle(playerGroup) {
   let lastX = playerGroup.position.x, lastZ = playerGroup.position.z, lastY = playerGroup.position.y;
   let speed = 0, yawRate = 0, lean = 0, camLean = 0, crank = 0, pedalAmt = 0, ridingT = 0;
   let bumpY = 0, bumpV = 0, pitch = 0, pitchV = 0, roughT = 0;
+  // Ground contact (9 Nov, her playtest: wheels went into the ground). probe(x, z, y) = main.js groundHeightAt. The rig is pitched to the
+  // slope between the two tyre contact points and lifted so neither tyre goes under the ground; rises are taken at once, falls eased.
+  let probe = null, slopePitch = 0, groundLift = 0, minWheelClear = 0;
   let lastBell = -1;
   const body = playerGroup.children.find((c) => c.isMesh && c.geometry?.type === 'CapsuleGeometry');
   const standY = body?.position.y ?? 1;
@@ -284,7 +287,7 @@ export function createPlayerCycle(playerGroup) {
         roughT -= dt;
         if (roughT <= 0) {
           roughT = 0.09 + Math.random() * 0.16;
-          const v = Math.min(1, speed / 5.5) * rough;
+          const v = Math.min(1, speed / 7.5) * rough;
           kick((Math.random() * 0.06 + 0.02) * v, (Math.random() - 0.5) * 0.12 * v);
         }
       }
@@ -295,8 +298,20 @@ export function createPlayerCycle(playerGroup) {
         pitchV += (-SPRING_W * SPRING_W * pitch - 2 * SPRING_Z * SPRING_W * pitchV) * h; pitch += pitchV * h;
       }
       bumpY = THREE.MathUtils.clamp(bumpY, -0.03, 0.06); pitch = THREE.MathUtils.clamp(pitch, -0.05, 0.05);
-      rig.position.set(0, bumpY, 0);
-      rig.rotation.set(pitch, 0, -lean, 'ZXY');
+      if (probe && !teleport) {
+        // Tyre contact heights under both wheels, relative to the player's own ground height (py).
+        const sh = Math.sin(heading), ch = Math.cos(heading);
+        const gF = probe(px + sh * FZ, pz + ch * FZ, py) - py, gR = probe(px + sh * RZ, pz + ch * RZ, py) - py;
+        const slope = THREE.MathUtils.clamp(Math.atan2(gF - gR, FZ - RZ), -0.35, 0.35);
+        slopePitch += (-slope - slopePitch) * k1(20); // positive rotation.x tips the front down, so a rising front is negative
+        // Lift so BOTH tyres clear the ground at the pitch actually drawn (the pitch is eased, so a plain average sagged a tyre on a kerb).
+        const pit = pitch + slopePitch;
+        const want = Math.max(gF + FZ * Math.sin(pit), gR + RZ * Math.sin(pit)) - Math.max(0, bumpY);
+        groundLift = want > groundLift ? want : groundLift + (want - groundLift) * k1(25); // a rise lifts at once, a drop is followed
+        minWheelClear = Math.min(groundLift + Math.max(0, bumpY) - FZ * Math.sin(pit) - gF, groundLift + Math.max(0, bumpY) - RZ * Math.sin(pit) - gR);
+      } else if (teleport) { slopePitch = 0; groundLift = 0; }
+      rig.position.set(0, groundLift + Math.max(0, bumpY), 0); // the suspension dip is never drawn below the ground
+      rig.rotation.set(pitch + slopePitch, 0, -lean, 'ZXY');
 
       if (body) {
         // The seated torso rides on the same chain as the cycle: jolt, heading, lean, bump, then the seat offset, bob and sway.
@@ -304,9 +319,9 @@ export function createPlayerCycle(playerGroup) {
         body.scale.set(SEATED_SLIM, k, SEATED_SLIM);
         const bob = pedalAmt * BOB * Math.sin(crank * 2) ** 2;
         const sway = pedalAmt * SWAY * Math.sin(crank);
-        _m.makeTranslation(0, holder.position.y + bumpY, 0);
+        _m.makeTranslation(0, holder.position.y + groundLift + Math.max(0, bumpY), 0);
         _m.multiply(_m2.makeRotationY(heading));
-        _m.multiply(_m2.makeRotationFromEuler(_e.set(pitch, 0, -lean + sway, 'ZXY')));
+        _m.multiply(_m2.makeRotationFromEuler(_e.set(pitch + slopePitch, 0, -lean + sway, 'ZXY')));
         _m.multiply(_m2.makeTranslation(0, SADDLE_TOP + bob, SADDLE_Z));
         _m.multiply(_m2.makeRotationX(LEAN));
         _m.multiply(_m2.makeTranslation(0, SEATED_HEIGHT / 2, 0));
@@ -319,6 +334,8 @@ export function createPlayerCycle(playerGroup) {
      * accumulates). Rolls the view a little into the turn, slides it outward as the lean builds (the late camLean is the
      * lag), and passes a fraction of each bump through. Never call it when the rig is frozen.
      */
+    setGroundProbe(fn) { probe = fn; }, // (x, z, y) => ground height; main.js passes groundHeightAt
+    get wheelClearance() { return minWheelClear; }, // metres: lowest tyre contact above (+) or below (-) the ground, last frame
     applyCamera(camera, active) {
       if (!active || !holder.visible) return;
       const leanLeft = camLean; // > 0 while turning left
