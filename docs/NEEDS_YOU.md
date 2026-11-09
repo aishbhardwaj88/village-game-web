@@ -137,3 +137,4 @@ The halwai shop is now turned 95 degrees to match the map - status: done
 - Performance (9 Nov): I cannot measure real fps or load time without your Mac; please open the live build, press F3 or tell me the fps you see at the start and at the chauraha. - status: open
 - Collision test (9 Nov): npc_child leg 2 (612,55)->(600,90) still stops 0.4 m short after one waypoint attempt, and wood_3 has 250 wall cells with no collider; I parked both, the colliders near (600-606, 60-90) need a look. - status: open
 - Peacock on a roof: peacocks are organic and no CC0 model is in the repo, so none is built in code; needs a Tripo model or a CC0 pick from you. - status: open
+- Peacock D5 (9 Nov): rechecked, Poly Pizza still has no peacock (only other birds) and nothing usable is in the game files, so no peacock was put on a kit-house roof; please download one of the two free Sketchfab peacocks named above (needs a free login) or say if you want a paid model. - status: open

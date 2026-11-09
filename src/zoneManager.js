@@ -1,6 +1,19 @@
 import * as THREE from 'three';
 import { initStaticColliders, colliderRequests } from './collision.js';
 import { modelLoads } from './loaders.js';
+import { queueBusy } from './frameQueue.js';
+import { placeBatchPending } from './placeBatch.js';
+
+// In-flight loads (glb, textures, files) through three's default manager. Its counters are private and ui.js owns its
+// callbacks, so the item hooks are wrapped (counting only, behaviour unchanged).
+const loadsInFlight = { n: 0 };
+{
+  const m = THREE.DefaultLoadingManager;
+  const start = m.itemStart.bind(m), end = m.itemEnd.bind(m), err = m.itemError.bind(m);
+  m.itemStart = (url) => { loadsInFlight.n++; start(url); };
+  m.itemEnd = (url) => { loadsInFlight.n = Math.max(0, loadsInFlight.n - 1); end(url); };
+  m.itemError = (url) => { err(url); }; // three calls itemEnd after itemError itself
+}
 
 // Anti-pop-in (FEEDBACK 24 Oct item 0b): a zone must exist BEFORE it enters the line of
 // sight, not when the player is on top of it. Fog hides things beyond ~250 m, so:
@@ -75,6 +88,7 @@ export function createZoneManager(scene) {
   const sphere = new THREE.Sphere();
   let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
   let colPending = false, colNextAt = 0;
+  let unbuilt = 0; // wanted zones left for later frames by the build budget
   let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
   /** Call once per frame with the player's x/z and (optionally) the camera. */
@@ -127,11 +141,13 @@ export function createZoneManager(scene) {
         if (zone.onFrame && zone.group.visible) zone.onFrame(dt);
       }
     }
+    unbuilt = wanted.length;
     if (wanted.length) {
       wanted.sort((a, b) => a[0] - b[0]);
       const budget = age < WARMUP_S ? WARMUP_BUDGET_MS : FRAME_BUDGET_MS;
       const t0 = performance.now();
       for (const [, zone] of wanted) {
+        unbuilt--;
         const built = zone.build();
         const isPlain = built.isObject3D;
         zone.group = isPlain ? built : built.group;
@@ -164,5 +180,12 @@ export function createZoneManager(scene) {
     }
   }
 
-  return { register, update, zones, hooks };
+  /** Dev/test: what is still assembling around the player. All zeros = every wanted zone is built, no load is in flight, no
+   *  queued build job, no group waiting to be batched and no collider rebuild pending: the view is in its settled state. */
+  function status() {
+    return { unbuilt, loads: loadsInFlight.n, queue: queueBusy() ? 1 : 0, batch: placeBatchPending(), colliders: colPending || rebuildAt >= 0 || lateRebuildAt >= 0 ? 1 : 0, modelLoads: modelLoads.count };
+  }
+  function settled() { const s = status(); return !s.unbuilt && !s.loads && !s.queue && !s.batch && !s.colliders; }
+
+  return { register, update, zones, hooks, status, settled };
 }

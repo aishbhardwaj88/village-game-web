@@ -338,3 +338,13 @@ export function syncPlaceBatches() {
   for (const b of batches.values()) b.visible = (liveCount.get(b) || 0) > 0;
 }
 const liveCount = new Map();
+
+/** How much batching work is still outstanding (validator check 8a waits for 0 so its draw-call read is the assembled state):
+ *  groups waiting to be rooted or still in their first-seconds sweep, and people / live sources not yet folded into a batch. */
+export function placeBatchPending() {
+  let n = 0;
+  for (const p of pending) if (!p.rooted || p.age < 240) n++;
+  for (const e of peopleSrc) if (!e.iids && rooted(e.mesh) !== null) n++;
+  for (const e of liveSrc) if (!e.iids && rooted(e.mesh) !== null) n++;
+  return n;
+}
