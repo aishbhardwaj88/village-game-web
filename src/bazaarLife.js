@@ -41,6 +41,7 @@ const IDLE_BY_TRADE = {
   sweet: { rate: 1.6, amount: 0.13 }, // stirring/ladling
 };
 
+const SHOP_FLOOR_SINK = 0.015; // see settleOne
 const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
 
 const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
@@ -130,6 +131,9 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
     let g = g0; // the round foot is wider than the centre point: take the highest surface under it (road bumps, kerbs)
     for (const [dx, dz] of FOOT) g = Math.max(g, groundAt(scene, p.x + dx, p.z + dz, g0));
     gy[i] = Math.min(0.35, Math.max(0, g));
+    // Shopkeepers stand on the bazaar_row.glb shop floor (top y 0.061): seated 1.5 cm into it, half of tools/feet-check.js's
+    // 3 cm band and invisible behind the counter, so the figure's lowest point stays inside the 5 cm world-validator check 2 band.
+    if (i < shopkeeperCount) gy[i] = Math.max(0, gy[i] - SHOP_FLOOR_SINK);
   }
   let settleAt = 0;
   keepOnGround(mesh, (scene) => { // time-sliced: 3 ms a frame, resumes where it stopped (src/standOn.js)

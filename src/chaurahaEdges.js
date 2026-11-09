@@ -222,7 +222,7 @@ export function createChaurahaEdges(scene) {
         box('metal', 0.36, 0.24, 0.3, -0.8, 0.16 + 1.03, d / 2 - 0.65, 0, 0x8c8c86, 1.0); // kettle
         box('metal', 0.1, 0.26, 0.1, -0.8, 0.16 + 1.28, d / 2 - 0.65, 0, 0x8c8c86, 1.0);
         for (let i = 0; i < 6; i++) box('metal', 0.06, 0.09, 0.06, 0.1 + (i % 3) * 0.12, 0.16 + 0.96, d / 2 - 0.55 + Math.floor(i / 3) * 0.14, 0, 0xc4c8c8, 0.3); // tea glasses
-        box('brick', 0.7, 0.45, 0.5, 1.0, 0.16 + 0.225, -d / 2 + wt + 0.4, 0, 0xa06a50, 1.2); // clay stove
+        box('brick', 0.7, 0.16 + 0.45, 0.5, 1.0, (0.16 + 0.45) / 2, -d / 2 + wt + 0.4, 0, 0xa06a50, 1.2); // clay stove, built up from the ground through the 0.16 m plinth (the hidden foot keeps its lone brick bucket seated at y 0)
         goods(4, 0.16 + 0.93, 'metal', 0.18, 0.2, 0.18, [0xb8b8b0, 0x8c8c86]);
         // bench out front with two men
         box('wood', 1.7, 0.05, 0.34, 0.1, 0.46, d / 2 + 1.0, 0.04, 0x8a6a48);
