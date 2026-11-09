@@ -163,7 +163,7 @@ export const CHARPAI_POSITION = (() => { const p = halwaiXZ(HALWAI_CENTER.x, HAL
 
 // --- task 4: second errand — the teacher and the school bell (already above) are the
 // two alternate ways to hand over the tiffin and collect the sister. ---
-export const TEACHER_POSITION = schoolV(2, 4); // opposite side of the same yard-facing wall as the bell, in the open yard
+export const TEACHER_POSITION = schoolV(0.2, 2.6); // opposite side of the same yard-facing wall as the bell, in the open yard. 9 Nov: moved 2.3 m off the 12 cm paved slab that schoolV(2, 4) now lands on, onto bare yard ground (probed groundAt 0.00 for 0.5 m round her), so her feet sit at y 0 (regression/world-validator grounding check)
 export const SISTER_SCHOOL_POSITION = schoolV(2, 1); // beside the teacher, inside the yard — until collected
 
 /** Shared by both alternate triggers below — advances the quest and tells main.js to

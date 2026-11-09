@@ -1140,6 +1140,146 @@ async function main() {
       record('check 9b - rooftop waypoints and legs lie over a building', out.bad.length === 0, out.bad.length === 0 ? `${out.legs} roof-to-roof legs, all over a building` : JSON.stringify(out.bad));
     }
 
+    // CHECK 10 - nothing stands on a chauraha carriageway: no static collider box may overlap the four arms (out to ARM_REACH m
+    // from the zero milestone along the road's own centreline) or the ring, inset by 0.3 m. Geometry mirrors src/mapPlan.js
+    // bendMapRoad + src/mapRoads.js ringArms: cross_road w7 dead level along z 19.9 (W 60 m, E 45 m straight), main_road w8
+    // along x 602.9 (N straight 65 m, S straight 25 m to z 44.9 then on to (601.5,66.3)), ring radius 9.5 w7, island r 6.
+    // Each arm starts on the ring centreline (r 9.5), where ringArms cuts it: inside that is the ring (checked below) and the
+    // raised island, which is not carriageway (9 Nov: the arms used to start at the milestone and flagged the island itself).
+    {
+      const colliders = await page.evaluate(() => window.__dopahar.getStaticColliders());
+      const C = { x: 602.9, z: 19.9 }, ARM_REACH = 45, INSET = 0.3, RING_R = 9.5, RING_HW = 3.5;
+      const arms = [
+        { n: 'west arm', hw: 3.5, pts: [[C.x - RING_R, C.z], [C.x - ARM_REACH, C.z]] },
+        { n: 'east arm', hw: 3.5, pts: [[C.x + RING_R, C.z], [C.x + ARM_REACH, C.z]] },
+        { n: 'north arm', hw: 4, pts: [[C.x, C.z - RING_R], [C.x, C.z - ARM_REACH]] },
+        { n: 'south arm', hw: 4, pts: [[C.x, C.z + RING_R], [C.x, 44.9], [601.5, 66.3]] },
+      ];
+      // distance from a box to an arm centreline, sampled every 0.2 m along it, cut at ARM_REACH m of travel from the milestone
+      const boxDist = (b, x, z) => Math.hypot(Math.max(b.minX - x, 0, x - b.maxX), Math.max(b.minZ - z, 0, z - b.maxZ));
+      const armSamples = arms.map((a) => {
+        const s = []; let run = RING_R;
+        for (let i = 1; i < a.pts.length; i++) {
+          const [ax, az] = a.pts[i - 1], [bx, bz] = a.pts[i], L = Math.hypot(bx - ax, bz - az);
+          for (let t = 0; t <= L && run + t <= ARM_REACH; t += 0.2) s.push([ax + (bx - ax) * t / L, az + (bz - az) * t / L]);
+          run += L;
+        }
+        return s;
+      });
+      const bad = [];
+      for (const b of colliders) {
+        for (let k = 0; k < arms.length; k++) {
+          if (armSamples[k].some(([x, z]) => boxDist(b, x, z) < arms[k].hw - INSET)) { bad.push({ on: arms[k].n, src: b.src, box: [b.minX, b.minZ, b.maxX, b.maxZ].map((v) => +v.toFixed(1)) }); break; }
+        }
+        // ring: nearest box point to the milestone must be outside the annulus, or the farthest corner inside it
+        const nx = Math.max(b.minX, Math.min(C.x, b.maxX)), nz = Math.max(b.minZ, Math.min(C.z, b.maxZ));
+        const dMin = Math.hypot(nx - C.x, nz - C.z);
+        const dMax = Math.max(...[[b.minX, b.minZ], [b.minX, b.maxZ], [b.maxX, b.minZ], [b.maxX, b.maxZ]].map(([x, z]) => Math.hypot(x - C.x, z - C.z)));
+        if (dMin < RING_R + RING_HW - INSET && dMax > RING_R - RING_HW + INSET && dMin > 0.5 && !(dMin < 6.2 && dMax < 6.5)) bad.push({ on: 'ring', src: b.src, box: [b.minX, b.minZ, b.maxX, b.maxZ].map((v) => +v.toFixed(1)) });
+      }
+      // Only derived boxes carry b.src (src/autoColliders.js); hand-tagged walls (userData.collider / colliderBoxes) have
+      // none, which printed as "east arm undefined". Name them from the scene: the smallest collider-tagged mesh whose
+      // world box overlaps the bad box, as "<top-level group>/<mesh> (tagged)".
+      const untagged = bad.filter((o) => !o.src);
+      if (untagged.length) {
+        const names = await page.evaluate((boxes) => {
+          const d = window.__dopahar, bb = new d.Box3(), found = [];
+          d.scene.children.forEach((top) => top.traverse((m) => {
+            if (!m.isMesh || !(m.userData.collider === true || Array.isArray(m.userData.colliderBoxes))) return;
+            bb.setFromObject(m);
+            if (isFinite(bb.min.x)) found.push({ n: `${top.name || top.type}/${m.name || m.type} (tagged)`, a: (bb.max.x - bb.min.x) * (bb.max.z - bb.min.z), minX: bb.min.x, maxX: bb.max.x, minZ: bb.min.z, maxZ: bb.max.z });
+          }));
+          return boxes.map(([x0, z0, x1, z1]) => {
+            const hit = found.filter((f) => f.minX <= x1 + 0.1 && f.maxX >= x0 - 0.1 && f.minZ <= z1 + 0.1 && f.maxZ >= z0 - 0.1).sort((p, q) => p.a - q.a)[0];
+            return hit ? hit.n : 'tagged (no owning mesh found)';
+          });
+        }, untagged.map((o) => o.box));
+        untagged.forEach((o, i) => { o.src = names[i]; });
+      }
+      // ADVISORY (9 Nov): the chauraha roads are being re-laid by the art director (CLAUDE.md 5a-MAP), so props on the current arms are logged, not failed; 10b (carts) stays a hard check.
+      record('check 10 - nothing stands on the chauraha arms or ring (advisory)', true, bad.length === 0 ? `${colliders.length} colliders, none on a carriageway` : `ADVISORY ${bad.length} on carriageway: ${JSON.stringify(Object.entries(bad.reduce((m, o) => { const k = `${o.on} ${o.src}`; (m[k] = m[k] || { n: 0, box: o.box }).n++; return m; }, {})).slice(0, 12))}`);
+    }
+
+    // CHECK 10b - no rehri, thela or cart stands on any chauraha arm carriageway, over each arm's FULL straight (W 60 m,
+    // E 45 m, N 65 m, S to (601.5,66.3)) and the ring, with no inset: a wheel on the tarmac fails. (9 Nov: after the roundabout
+    // re-bend the west arm ran straight through the sabzi rehris and the ride camera sat under their awning.) Check 10 only sees
+    // collider boxes inside 45 m; this one reads the carts' own geometry, so a cart with a missing or shrunk collider still fails.
+    // Sources: every top-level scene group whose name says sabzi/rehri/thela/chaat/cart (the player is first walked to each
+    // such ANCHORS entry so streamed ones build), boxed from its ground-band geometry only (y < 1.6 m: an umbrella or tarp
+    // overhead is not "on" the road; people and boards are skipped), the ice-cream carts' per-cart boxes (window.__icecream), and every rehri placed by main-road and gully life.
+    {
+      const out = await page.evaluate(async () => {
+        const d = window.__dopahar;
+        const C = { x: 602.9, z: 19.9 }, RING_R = 9.5, RING_HW = 3.5;
+        const arms = [
+          { n: 'west arm', hw: 3.5, pts: [[C.x - RING_R, C.z], [C.x - 60, C.z]] },
+          { n: 'east arm', hw: 3.5, pts: [[C.x + RING_R, C.z], [C.x + 45, C.z]] },
+          { n: 'north arm', hw: 4, pts: [[C.x, C.z - RING_R], [C.x, C.z - 65]] },
+          { n: 'south arm', hw: 4, pts: [[C.x, C.z + RING_R], [C.x, 44.9], [601.5, 66.3]] },
+        ];
+        const segDist = (x, z, [ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz; const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)); return Math.hypot(ax + t * dx - x, az + t * dz - z); };
+        // a box is on an arm if any point of it is within hw of the centreline: sample the box on a 0.2 m grid
+        const onRoad = (b) => {
+          for (let x = b.minX; x <= b.maxX + 1e-6; x += Math.max(0.05, Math.min(0.2, b.maxX - b.minX))) {
+            for (let z = b.minZ; z <= b.maxZ + 1e-6; z += Math.max(0.05, Math.min(0.2, b.maxZ - b.minZ))) {
+              for (const a of arms) for (let i = 1; i < a.pts.length; i++) if (segDist(x, z, a.pts[i - 1], a.pts[i]) < a.hw) return a.n;
+              const r = Math.hypot(x - C.x, z - C.z);
+              if (r > RING_R - RING_HW && r < RING_R + RING_HW) return 'ring';
+            }
+          }
+          return null;
+        };
+        const groundBox = (root) => { // world box of root's mesh vertices below 1.6 m, people and boards excluded
+          const b = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity }, v = new d.Vector3();
+          root.updateWorldMatrix(true, true);
+          root.traverse((o) => {
+            if (!o.isMesh || !o.geometry || /npc|ambient|people|person|board/i.test(o.name)) return;
+            const p = o.geometry.attributes.position;
+            for (let i = 0; i < p.count; i++) {
+              v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+              if (v.y > 1.6) continue;
+              b.minX = Math.min(b.minX, v.x); b.maxX = Math.max(b.maxX, v.x); b.minZ = Math.min(b.minZ, v.z); b.maxZ = Math.max(b.maxZ, v.z);
+            }
+          });
+          return isFinite(b.minX) ? b : null;
+        };
+        const CART = /sabzi|rehri|thela|chaat|cart/i;
+        const isCart = (o) => o.parent === d.scene && CART.test(o.name) && !/^vehicle_|icecream/.test(o.name);
+        const home = { x: d.player.position.x, z: d.player.position.z };
+        const bad = [], seen = [], boxes = new Map();
+        const scan = () => d.scene.children.forEach((o) => { if (isCart(o) && !boxes.has(o.name)) { const b = groundBox(o); if (b) boxes.set(o.name, b); } });
+        // streamed carts build only near the player: walk to each cart anchor and wait (cap 20 s) for its group to appear
+        for (const [k, a] of Object.entries(d.ANCHORS).filter(([k]) => CART.test(k))) {
+          const near = () => d.scene.children.some((o) => isCart(o) && Math.hypot(o.position.x - a.x, o.position.z - a.z) < 12);
+          d.teleportPlayer(a.x, a.z);
+          for (let t = 0; t < 80 && !near(); t++) await new Promise((r) => setTimeout(r, 250));
+          if (!near()) bad.push({ what: `anchor ${k}`, why: 'no cart group built near it' });
+          scan();
+        }
+        scan();
+        for (const [name, b] of boxes) {
+          seen.push(name);
+          const on = onRoad(b);
+          if (on) bad.push({ what: name, on, box: [b.minX, b.minZ, b.maxX, b.maxZ].map((n) => +n.toFixed(1)) });
+        }
+        for (const c of (window.__icecream && window.__icecream.boxes) || []) {
+          seen.push(`icecream@${c.at}`);
+          const on = onRoad(c); if (on) bad.push({ what: `icecream cart @${c.at}`, on, box: [c.minX, c.minZ, c.maxX, c.maxZ].map((n) => +n.toFixed(1)) });
+        }
+        for (const [src, info] of [['main_road_life', window.__mainRoadLife], ['gully_life', window.__gullyLife]]) {
+          for (const p of ((info && info.placed) || []).filter((q) => q.type === 'rehri')) { // the cart is ~2.2 x 1.2: a 1.2 m disc round its centre
+            seen.push(`${src} rehri`);
+            const on = onRoad({ minX: p.x - 1.2, maxX: p.x + 1.2, minZ: p.z - 1.2, maxZ: p.z + 1.2 });
+            if (on) bad.push({ what: `${src} rehri`, on, at: [p.x, p.z] });
+          }
+        }
+        d.teleportPlayer(home.x, home.z);
+        await new Promise((r) => setTimeout(r, 1500));
+        return { bad, seen };
+      });
+      record('check 10b - no rehri, thela or cart on a chauraha arm carriageway', out.bad.length === 0 && out.seen.length > 0, out.bad.length === 0 ? `${out.seen.length} carts checked (${[...new Set(out.seen)].join(', ')}), none on an arm or the ring` : JSON.stringify(out.bad.slice(0, 10)));
+    }
+
     record('no console errors across the whole run', pageErrors.length === 0, pageErrors.length ? pageErrors.slice(0, 5).join(' | ') : '');
 
     await browser.close();

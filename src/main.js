@@ -765,7 +765,7 @@ async function main() {
   // roof") — so she's there, silently, same tier as the other plain-capsule NPCs
   // (child/teacher/sister/pitaji), not a new built character (the TRIPO people
   // decision was "no more code people", not "no more NPCs of any kind").
-  const dadiNpc = createNPC(0x8a5a6e, { ...houseAt(0, 0) }, 0, 'npc_dadi');
+  const dadiNpc = createNPC(0x8a5a6e, { ...houseAt(0, 9) }, 0, 'npc_dadi'); // hidden until the ending / free roam move her; parked on bare ground at y 0 (houseAt(0, 0) is on the 6 cm courtyard floor, which the grounding checks read as floating, 9 Nov)
   dadiNpc.visible = false;
   scene.add(dadiNpc);
   const sackCarrier = createSackCarrier(player);
@@ -792,6 +792,7 @@ async function main() {
       { x: HOUSE_CENTER.x - 20, z: 55.3 },
       { x: HOUSE_CENTER.x - 40, z: 55.3 }, // south of the house compound and the kirana goods yard, north of the map's South houses (z 57+)
       { x: HOUSE_CENTER.x - 46.6, z: 68.5 }, // probed 9 Nov: a prop box at (605-607, 71-73) sits on the straight leg; one waypoint west of it clears both halves
+      { x: HOUSE_CENTER.x - 50.9, z: 77 }, // probed 9 Nov: the straight leg south ran through a lamp (box 602-604, 78-79.1) and slid 6 m short; pass west of it
       { x: HOUSE_CENTER.x - 52, z: SCHOOL_CENTER.z - 18 }, // down the open gap east of the South houses' west group (map x 10), then west under them
       { x: ANCHORS.anganwadi.x + 6.1, z: ANCHORS.anganwadi.z + -9.7 }, // out and home by the corridor between the South houses' row and the turned anganwadi playground (probed collider gaps, 2 Nov)
       { x: ANCHORS.anganwadi.x + -1.9, z: ANCHORS.anganwadi.z + -8.7 },

@@ -140,7 +140,10 @@ export function isAutoSolidMesh(mesh, top) {
   if (!m || m.transparent || m.alphaTest > 0 || m.visible === false) return false;
   const g = mesh.geometry;
   if (!g || !g.attributes.position) return false;
-  if (Array.isArray(mesh.userData.colliderBoxes) && mesh.userData.colliderBoxes.some((b) => b.animalBox)) return false;
+  // An animal mesh carries its own box. A village-wide merged bucket (src/mergeUtils.js mergeAcrossGroups) is never an animal, even
+  // when one source folded into it brought an animal's box along (road_events puts the road cow's box on its wood mesh): without
+  // the mergedStatic exception the whole 'wood' bucket lost its derived colliders, 245 walk-through cells (collision-test, 9 Nov).
+  if (!mesh.userData.mergedStatic && Array.isArray(mesh.userData.colliderBoxes) && mesh.userData.colliderBoxes.some((b) => b.animalBox)) return false;
   return !isNonSolidSource(`${top}/${mesh.name || '?'}/${m.name || ''}`);
 }
 
