@@ -119,7 +119,7 @@ if (RIDE) {
   // route ignores walls: it measures streaming and build work, not handling).
   const route = await page.evaluate(() => { const A = window.__dopahar.ANCHORS; return ['bazaar', 'chowk', 'school', 'haveli', 'bazaar'].map((k) => A[k] ? [A[k].x, A[k].z, k] : null).filter(Boolean); });
   console.log('ride route', JSON.stringify(route.map(([x, z, k]) => [k, Math.round(x), Math.round(z)])));
-  await page.evaluate(() => { window.__perfReset(); const s = window.__frameQueue.stats; s.worstFrameMs = 0; s.worstStepMs = 0; const z = window.__zoneBuildStats; z.worstMs = 0; z.over16.length = 0; window.__lt.length = 0; window.__longFrames = []; });
+  await page.evaluate(() => { window.__perfReset(); const s = window.__frameQueue.stats; s.worstFrameMs = 0; s.worstStepMs = 0; const z = window.__zoneBuildStats; z.worstMs = 0; z.over16.length = 0; window.__lt.length = 0; window.__longFrames = []; const cs = window.__dopahar.colliderStats; if (cs) { cs.worstMs = 0; cs.builds = 0; } });
   const r = await page.evaluate(async ([route, secs]) => {
     const d = window.__dopahar; const p = d.player.position;
     let seg = 0, segT = 0; const SPEED = 7.5; const frames = []; let last = performance.now();
@@ -136,13 +136,13 @@ if (RIDE) {
       };
       requestAnimationFrame(step);
     });
-    const pp = window.__perfProbe; const fq = window.__frameQueue.stats; const zb = window.__zoneBuildStats;
-    return { secs: Math.round((performance.now() - t0) / 1000), frames: frames.length, worstGap: Math.round(Math.max(...frames)),
+    const cs = window.__dopahar.colliderStats || {}; const pp = window.__perfProbe; const fq = window.__frameQueue.stats; const zb = window.__zoneBuildStats;
+    return { colWorst: Math.round(cs.worstMs || 0), colBuilds: cs.builds || 0, secs: Math.round((performance.now() - t0) / 1000), frames: frames.length, worstGap: Math.round(Math.max(...frames)),
       worstLogic: Math.round(pp.max.logic || 0), worstZone: Math.round(pp.max.zoneManager || 0), worstQueueFrame: Math.round(fq.worstFrameMs || 0),
       worstRender: Math.round(pp.max.render || 0), worstZoneBuild: Math.round(zb.worstMs), worstZoneName: zb.worstName, over16: zb.over16.slice(0, 10),
       longFrames: (window.__longFrames || []).slice(0, 10), lt: window.__lt.filter((x) => x[1] > 100).length };
   }, [route, RIDE]);
-  console.log(`RIDE ${r.secs} s, ${r.frames} frames: worst CPU frame logic ${r.worstLogic} ms (zoneManager ${r.worstZone} ms, frameQueue ${r.worstQueueFrame} ms); worst single zone build ${r.worstZoneBuild} ms (${r.worstZoneName}); worst render ${r.worstRender} ms (software GL); worst rAF gap ${r.worstGap} ms; long tasks >100 ms: ${r.lt}`);
+  console.log(`RIDE ${r.secs} s, ${r.frames} frames: worst CPU frame logic ${r.worstLogic} ms (zoneManager ${r.worstZone} ms, frameQueue ${r.worstQueueFrame} ms); worst single zone build ${r.worstZoneBuild} ms (${r.worstZoneName}); worst render ${r.worstRender} ms (software GL); worst rAF gap ${r.worstGap} ms; long tasks >100 ms: ${r.lt}; collider rebuilds ${r.colBuilds}, worst ${r.colWorst} ms`);
   console.log('zone builds > 16 ms', JSON.stringify(r.over16));
 }
 console.log(`page errors: ${errors.length}${errors.length ? ' ' + errors.slice(0, 3).join(' | ') : ''}`);
