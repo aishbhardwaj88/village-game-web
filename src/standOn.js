@@ -97,6 +97,11 @@ function gridOf(o, stamp) {
   const ver = (o.isInstancedMesh ? o.instanceMatrix.version * 1e6 + o.count : 0) + pos.version * 7 + (index ? index.version * 13 : 0);
   let g = gridCache.get(o);
   if (g && g.stamp === stamp && g.geo === geo && g.n === pos.count && g.ver === ver) return g;
+  // A version bump is not a change: the abadi rows re-upload their instance matrices on every visibility refresh and the
+  // staged place models re-flag their buffers, so version-keyed grids were rebuilt ~4000 times in 45 s (11 s of the settle
+  // budget on the far abadi rows alone, D2 9 Nov) and the crowds never finished a stage. Same contents: keep the grid.
+  const sum = contentSum(o, pos, index);
+  if (g && g.stamp === stamp && g.geo === geo && g.n === pos.count && g.sum === sum) { g.ver = ver; return g; }
   const _why = !g ? 'new' : g.stamp !== stamp ? 'stamp' : g.geo !== geo ? 'geo' : g.n !== pos.count ? 'n' : 'ver';
   if (typeof window !== 'undefined' && window.__standOnGridWhy) { const W = window.__standOnGridWhy, k = topName(o) + '/' + o.name + ':' + _why; W[k] = (W[k] || 0) + 1; }
   const _t = performance.now();
@@ -132,11 +137,20 @@ function gridOf(o, stamp) {
       }
     }
   }
-  g = { stamp, geo, n: pos.count, ver, v: new Float32Array(verts), cells };
+  g = { stamp, geo, n: pos.count, ver, sum, v: new Float32Array(verts), cells };
   gridCache.set(o, g);
   pAdd('standOn.grid', performance.now() - _t);
   if (typeof window !== 'undefined' && window.__standOnGridLog) { const L = window.__standOnGridLog, k = topName(o) + '/' + o.name; const r = L[k] || (L[k] = [0, 0, 0]); r[0]++; r[1] += performance.now() - _t; r[2] = verts.length / 9; }
   return g;
+}
+/** Cheap fingerprint of what a grid was built from: every live instance matrix in full, ~512 sampled position / index values. */
+function contentSum(o, pos, index) {
+  let s = 0;
+  if (o.isInstancedMesh) { const a = o.instanceMatrix.array, n = o.count * 16; for (let k = 0; k < n; k++) s += a[k] * ((k % 61) + 1); s += o.count * 1e-3; }
+  const pa = pos.array, ps = Math.max(1, Math.floor(pa.length / 512));
+  for (let k = 0; k < pa.length; k += ps) s += pa[k] * ((k % 53) + 1) * 1e-2;
+  if (index) { const ia = index.array, is = Math.max(1, Math.floor(ia.length / 512)); for (let k = 0; k < ia.length; k += is) s += ia[k] * ((k % 47) + 1) * 1e-4; }
+  return s;
 }
 /** Highest y of o's downward-facing-ray triangles at (x, z) within [lo, hi], or -Infinity. */
 function gridHit(o, stamp, x, z, lo, hi) {
@@ -352,7 +366,7 @@ function tick() {
     const due = e.again || stageDue || e.redo;
     if (due && !e.again && !stageDue) e.redoRun = true; // a new surface under its feet, outside the timed stages
     const moved = e.moving && e.stage > 0 && now - (e.lastRun || 0) > 400 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;
-    if (due || moved) { e.lastRun = now; runEntry(e, scene, now); }
+    if (due || moved) { e.lastRun = now; SLICE_MS = Math.max(3, budgetMs / 4); runEntry(e, scene, now); SLICE_MS = 3; } // a 1 fps browser gives each entry a quarter of its 15% budget, not 3 ms: 60 frames x 3 ms never finished a 50-person mesh (feet-check 9 stuck at stage 3, again)
   }
   pAdd('standOn.tick', performance.now() - _t);
   if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick);
@@ -381,6 +395,8 @@ if (typeof window !== 'undefined') {
     entriesAt: (x, z) => ENTRIES.filter((e) => e.fb && x >= e.fb[0] - 0.3 && x <= e.fb[1] + 0.3 && z >= e.fb[2] - 0.3 && z <= e.fb[3] + 0.3).map((e) => ({ name: e.obj.name || e.obj.type, stage: e.stage, again: !!e.again, redo: !!e.redo, runAgo: e.lastRun ? Math.round(performance.now() - e.lastRun) : -1 })),
     surfaceAgo: (o) => { const c = boxCache.get(o); return c ? Math.round(performance.now() - c.seen) : -1; },
     indexAgo: () => (index ? Math.round(performance.now() - index.at) : -1),
+    /** tools/feet-check diagnostics: the settle entry that owns o (o itself or a parent), its stage and feet box. */
+    entryOf: (o) => { for (let q = o; q; q = q.parent) { const e = ENTRIES.find((x) => x.obj === q); if (e) return { name: q.name || q.type, stage: e.stage, again: !!e.again, redo: !!e.redo, fb: e.fb ? e.fb.map((n) => +n.toFixed(2)) : null, runAgo: e.lastRun ? Math.round(performance.now() - e.lastRun) : -1, ageMs: e.t0 ? Math.round(performance.now() - e.t0) : -1, settleAt: o.userData._settleAt || 0 }; } return null; },
     settleDy, groundAt, // tools/feet-check diagnostics
     lastHit: () => lastHit,
     indexed(o) { const idx = index; if (!idx) return 'no index'; for (const a of idx.cells.values()) for (const s of a) if (s.o === o) return 'cell'; for (const s of idx.big) if (s.o === o) return 'big'; return FIGURES.has(o) ? 'figure' : 'absent'; },

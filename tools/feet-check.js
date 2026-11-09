@@ -171,7 +171,7 @@ function inPage(cfg) {
     const res = { label: f.label, kind: f.kind, clear: +clear.toFixed(3), minY: +minY.toFixed(3), at: at.map((n) => +n.toFixed(2)), on, feet: buckets.size };
     if (Math.abs(clear) > 0.03 && window.__standOn) { // what the game's own settle saw under the same foot, for diagnosis
       const so = window.__standOn, gy = so.groundAt(d.scene, at[0], at[1], minY, true), lh = so.lastHit();
-      res.game = { y: +gy.toFixed(3), hit: lh ? pathOf(lh) : null, surfaceAgo: lh && so.surfaceAgo ? so.surfaceAgo(lh) : null, entries: so.entriesAt ? so.entriesAt(at[0], at[1]) : null, indexAgo: so.indexAgo ? so.indexAgo() : null };
+      res.game = { y: +gy.toFixed(3), hit: lh ? pathOf(lh) : null, surfaceAgo: lh && so.surfaceAgo ? so.surfaceAgo(lh) : null, entries: so.entriesAt ? so.entriesAt(at[0], at[1]) : null, indexAgo: so.indexAgo ? so.indexAgo() : null, owner: so.entryOf ? so.entryOf(f.mesh) : null, gameDy: +so.settleDy(d.scene, f.mesh, f.i).toFixed(3) };
     }
     results.push(res);
   }
@@ -204,12 +204,13 @@ async function main() {
     await page.waitForTimeout(5000); // zone .glb swaps arrive async
     await page.waitForTimeout(+(process.env.FEET_WAIT || 42000)); // the 40 s settle stage catches road strips that stream in late; the check measures the game's OWN settle; FEET_SETTLE=n forces n test-side settleAll passes first (diagnosis only, it hides scheduler bugs)
     if (+(process.env.FEET_SETTLE ?? 0)) for (let k = 0; k < +(process.env.FEET_SETTLE ?? 0); k++) console.log('settleAll', await page.evaluate(() => window.__standOn.settleAll()));
+    if (process.env.FEET_STATE) console.log('standOn entries [name, stage, again, ageMs, inScene]', JSON.stringify(await page.evaluate(() => window.__standOn.state())));
     console.log('standOn index', JSON.stringify(await page.evaluate(() => window.__standOnIdx || null)));
     const r = await page.evaluate(inPage, { exempt: EXEMPT.map(([re, why]) => [re.source, re.flags, why]) });
     await browser.close();
 
     mkdirSync(`${ROOT}tmp`, { recursive: true });
-    writeFileSync(`${ROOT}tmp/feet-check-result.json`, JSON.stringify(r, null, 1));
+    writeFileSync(process.env.FEET_RESULT || `${ROOT}tmp/feet-check-result.json`, JSON.stringify(r, null, 1)); // FEET_RESULT: parallel runs keep their own file
     const measured = r.figures.filter((f) => !f.exempt);
     const bad = measured.filter((f) => Math.abs(f.clear) > TOL);
     console.log(`feet-check: ${r.zones} zones built, ${r.surfaces} surface meshes, dips hook ${r.dips ? 'on' : 'MISSING'}`);

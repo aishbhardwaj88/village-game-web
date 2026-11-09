@@ -408,7 +408,7 @@ async function main() {
   try {
     await waitForServer(BASE_URL);
     const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
-    const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+    const page = await browser.newPage({ viewport: { width: 480, height: 300 } }); // small: nothing here reads pixels, and headless software GL renders faster, so the live-stream stops settle sooner
     page.setDefaultTimeout(0);
     page.on('pageerror', (e) => console.error('pageerror:', e.message));
     page.on('console', (m) => { if (m.text().startsWith('[collision-test]')) console.log(m.text()); });
@@ -439,9 +439,13 @@ async function main() {
         // zones build nearest-first within a frame budget and .glb swaps arrive async: wait until no collider rebuild has
         // happened for 2.5 s (cap 20 s), which in the game means the streaming around this spot has finished
         let lastBuilds = -1, lastMeshes = -1, quietSince = Date.now(), quietFrame = frames;
-        // quiet = 2.5 s AND 10 rendered frames with no change: at ~1 fps headless 2.5 s is only 2-3 frames, less than the
-        // 4-frame rebuild latency, so a wall-clock-only wait could check a collider list that is still one debounce behind
-        for (const t0 = Date.now(); Date.now() - t0 < 30000 && (Date.now() - quietSince < 2500 || frames - quietFrame < 10);) {
+        // quiet = the zone manager reports itself settled (no unbuilt wanted zone, no .glb in flight, no queued build, no batch
+        // waiting and NO collider rebuild pending, src/zoneManager.js status()) AND nothing changed for 1.5 s and 3 rendered
+        // frames. The old rule (2.5 s AND 10 frames, guessing at the 4-frame rebuild latency) cost 10-20 s per stop at the
+        // ~0.5-1 fps of headless software GL, 83 stops = 15+ min, and the test timed out before reaching its checks. settled()
+        // reads the debounce state directly, so the frame count only has to cover the first update after the teleport.
+        const settled = () => (d.zoneManager.settled ? d.zoneManager.settled() : true);
+        for (const t0 = Date.now(); Date.now() - t0 < 30000 && (!settled() || Date.now() - quietSince < 1500 || frames - quietFrame < 3);) {
           await new Promise((r) => setTimeout(r, 100));
           // a model that finished loading adds meshes now and its collider rebuild follows ~250 ms later, so a changing mesh
           // count also counts as "still streaming" (otherwise a slow .glb landing at the 2.5 s boundary is checked mid-debounce)
@@ -454,7 +458,7 @@ async function main() {
             pendingSince = 0;
           }
           curMeshes = meshes; curBuilds = d.colliderStats.builds;
-          if (d.colliderStats.builds !== lastBuilds || meshes !== lastMeshes) { lastBuilds = d.colliderStats.builds; lastMeshes = meshes; quietSince = Date.now(); quietFrame = frames; }
+          if (d.colliderStats.builds !== lastBuilds || meshes !== lastMeshes || !settled()) { lastBuilds = d.colliderStats.builds; lastMeshes = meshes; quietSince = Date.now(); quietFrame = frames; }
         }
         const before = new Set(d.getStaticColliders().map(keyOf));
         d.rebuildColliders();

@@ -70,6 +70,8 @@ export function colliderBoxFromTransform(width, depth, matrix) {
  * something solid is added to the scene afterward. */
 /** The doorway rectangles of the last collider build (the test reads them: nothing derived stands in a doorway by design). */
 export let lastCarves = [];
+/** A derived cell this close to a hand-tagged box is dropped. 0.15 m, not 0.3: world-validator check 4 counts a wall cell covered only within 0.15 m of a collider, and the cells 0.15-0.3 m out (thick plaster behind a thin tagged box) were left walk-through. */
+const TAGGED_MARGIN = 0.15;
 
 export function buildCollidersFromScene(scene) {
   const boxes = [];
@@ -142,7 +144,7 @@ export function buildCollidersFromScene(scene) {
       else if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
     }
     for (const c of WALKABLE_RECTS) if (x >= c.minX && x <= c.maxX && z >= c.minZ && z <= c.maxZ) return true;
-    for (const b of tagged(x, z)) if (x >= b.minX - 0.3 && x <= b.maxX + 0.3 && z >= b.minZ - 0.3 && z <= b.maxZ + 0.3) return true;
+    for (const b of tagged(x, z)) if (x >= b.minX - TAGGED_MARGIN && x <= b.maxX + TAGGED_MARGIN && z >= b.minZ - TAGGED_MARGIN && z <= b.maxZ + TAGGED_MARGIN) return true;
     return false;
   };
   for (const [m, top] of autoMeshes) boxes.push(...deriveMeshBoxes(m, covered, top));
