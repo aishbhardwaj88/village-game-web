@@ -63,6 +63,7 @@ export function setupLoadingScreen() {
     // released on the Play press (launch below), not here: run here they froze the title screen for 20-150 s right after
     // the button appeared (D1, tools/load-time-test.mjs), so a press did nothing until they finished.
     window.__readyAt = performance.now();
+    requestAnimationFrame(() => { (window.__loadMarks = window.__loadMarks || {}).readyFrame = performance.now(); }); // first frame that can show the button
   };
 
   markReadyHook = markReady;

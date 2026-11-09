@@ -21,7 +21,8 @@
  * the shared per-material batches (src/placeBatch.js); the capsule people are one small InstancedMesh per site. Solid parts carry
  * explicit collider boxes; src/autoColliders.js fills the rest from the visible mesh.
  */
-import { batchPeopleMesh } from './placeBatch.js';
+import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { markFigure, keepOnGround, settleInstances } from './standOn.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
@@ -415,7 +416,7 @@ export function buildRideNook(site, name) {
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     mesh.computeBoundingSphere();
-    pg.add(mesh); batchPeopleMesh(mesh);
+    pg.add(mesh); batchPeopleMesh(mesh); markFigure(mesh); keepOnGround(mesh, (sc) => settleInstances(sc, mesh, refreshPeopleMesh)); // sitters rest on the charpai / well apron / ground under them (tools/feet-check.js FEET_NOOKS=1)
     group.add(pg);
   }
   return group;

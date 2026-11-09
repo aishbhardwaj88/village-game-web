@@ -4,8 +4,14 @@
 import * as THREE from 'three';
 import { ANCHORS, localPt } from './anchors.js';
 import { registerInteraction } from './interactions.js';
+import { CHAURAHA } from './mapPlan.js';
 
 const V = (p) => new THREE.Vector3(p.x, 0, p.z);
+// The chowk offset can land inside the solid roundabout island (unreachable on foot): push it out to the carriageway, same bearing.
+function outsideIsland(p) {
+  const dx = p.x - CHAURAHA.x, dz = p.z - CHAURAHA.z, d = Math.hypot(dx, dz), r = CHAURAHA.islandR + 1.6;
+  return d >= r || d < 1e-6 ? p : { x: CHAURAHA.x + dx / d * r, z: CHAURAHA.z + dz / d * r };
+}
 
 const NOTICES = [
   [{ en: 'NOTICE: Polio drops for children under five, Sunday at the school.', hi: 'सूचना: रविवार को स्कूल में पाँच साल तक के बच्चों को पोलियो की बूँदें।' }],
@@ -98,7 +104,7 @@ export function createInteractionsExtra(scene, ctx) {
   // ---- panchayat notice board at the chowk ----
   let ni = 0;
   registerInteraction({
-    id: 'notice_board', position: V(localPt('chowk', 4, 4)), radius: 3,
+    id: 'notice_board', position: V(outsideIsland(localPt('chowk', 4, 4))), radius: 3,
     label: { hi: 'सूचना पढ़ें', en: 'Read the notice board' },
     onInteract: () => { ctx.dialogue.say(NOTICES[ni % NOTICES.length]); ni++; },
   });

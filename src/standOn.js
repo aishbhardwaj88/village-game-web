@@ -33,9 +33,11 @@ let index = null;
 const boxCache = new WeakMap();
 function topName(o) { let t = o; while (t.parent && !t.parent.isScene) t = t.parent; return t.name || ''; }
 function shown(o) { for (let q = o; q; q = q.parent) { if (q.visible === false) return false; if (q.isScene) return true; } return false; }
+let indexGen = 0;
 function buildIndex(scene) {
   const _t = performance.now();
   const cells = new Map(), big = [];
+  const first = !index || index.scene !== scene, fresh = [];
   scene.updateMatrixWorld();
   scene.traverse((o) => {
     if (!o.isMesh || o.isBatchedMesh || FIGURES.has(o)) return;
@@ -46,13 +48,15 @@ function buildIndex(scene) {
     const nm = o.name.replace(NOOK, 'nook'), tn = top.replace(NOOK, 'nook'); // a nook's own name (laundry...) must not hide its charpai
     if (SKIP.test(nm) || SKIP.test(tn) || (mat && SKIP.test(mat.name || ''))) return;
     if (mat && mat.transparent && mat.opacity < 0.5) return;
-    const e = o.matrixWorld.elements, stamp = e[12] + e[13] * 7 + e[14] * 13 + e[0] * 3;
+    const e = o.matrixWorld.elements; let stamp = 0; for (let q = 0; q < 16; q++) stamp += e[q] * (q * 2 + 1); // any move, turn or scale rebuilds its box and triangle grid
     let c = boxCache.get(o);
     const gp = o.geometry && o.geometry.attributes.position, gn = gp ? gp.count : 0; // streamed meshes swap or refill geometry under one transform
     if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o) }; boxCache.set(o, c); }
     const b = c.box;
     if (!isFinite(b.min.x)) return;
-    const s = { o, b };
+    if (c.gen !== indexGen) fresh.push(b); // not in the last index: a new or changed surface (a zone .glb swapped in, a house shown again), so figures over it settle again
+    c.gen = indexGen + 1;
+    const s = { o, b, stamp };
     const x0 = Math.floor(b.min.x / CELL), x1 = Math.floor(b.max.x / CELL), z0 = Math.floor(b.min.z / CELL), z1 = Math.floor(b.max.z / CELL);
     if ((x1 - x0 + 1) * (z1 - z0 + 1) > 64) { big.push(s); return; }
     for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) {
@@ -61,6 +65,12 @@ function buildIndex(scene) {
     }
   });
   index = { scene, cells, big, at: performance.now() };
+  if (!first) for (const e of ENTRIES) if (e.fb && e.stage > 0) for (const b of fresh) {
+    if (b.max.x < e.fb[0] - 0.3 || b.min.x > e.fb[1] + 0.3 || b.max.z < e.fb[2] - 0.3 || b.min.z > e.fb[3] + 0.3) continue;
+    e.redo = true; break;
+  }
+  if (typeof window !== 'undefined') { const w = (window.__standOnIdx = window.__standOnIdx || { n: 0, ms: 0, fresh: 0 }); w.n++; w.ms += performance.now() - _t; w.fresh += first ? 0 : fresh.length; }
+  indexGen++;
   pAdd('standOn.buildIndex', performance.now() - _t);
 }
 const INDEX_MAX_AGE = 5000; // a full-scene traverse is a visible hitch: rebuild rarely, never from a per-frame caller
@@ -71,32 +81,111 @@ function getIndex(scene, fresh = false) {
   return index;
 }
 
-const _ray = new THREE.Raycaster();
-_ray.layers.enableAll(); // place-batched source meshes sit on a hidden layer but are still the real geometry
-const _down = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3();
+// ---------------------------------------------------------------- vertical-ray triangle grid (D2, 9 Nov)
+// A THREE.Raycaster ray tests every triangle of a mesh: 25-50 ms per ray against the merged village / place meshes, ~1 s per
+// capsule (20 foot buckets), so the settle scheduler never left stage 0 for most entries (feet-check 74-78 fails, all
+// "again" at stage 0 after 200 s). Every ray here is straight down, so each surface mesh gets a lazily built world-space
+// xz grid of its triangles (1 m cells) and a ray tests only the few triangles in its cell. Same answer as the raycaster:
+// same material side culling (front faces only for FrontSide), same groups / draw range, instances included.
+const GCELL = 1;
+const gridCache = new WeakMap();
+const _gm = new THREE.Matrix4(), _gi = new THREE.Matrix4(), _ga = new THREE.Vector3(), _gb = new THREE.Vector3(), _gc = new THREE.Vector3();
+function gridOf(o, stamp) {
+  const geo = o.geometry, pos = geo && geo.attributes.position;
+  if (!pos) return null;
+  const index = geo.index;
+  const ver = (o.isInstancedMesh ? o.instanceMatrix.version * 1e6 + o.count : 0) + pos.version * 7 + (index ? index.version * 13 : 0);
+  let g = gridCache.get(o);
+  if (g && g.stamp === stamp && g.geo === geo && g.n === pos.count && g.ver === ver) return g;
+  const _t = performance.now();
+  const mats = o.material;
+  const ranges = []; // [start, end, side] in index (or vertex) units
+  const cnt = index ? index.count : pos.count, dr = geo.drawRange;
+  if (Array.isArray(mats)) {
+    for (const gr of geo.groups) {
+      const m = mats[gr.materialIndex]; if (!m) continue;
+      ranges.push([Math.max(gr.start, dr.start), Math.min(cnt, gr.start + gr.count, dr.start + dr.count), m.side]);
+    }
+  } else if (mats) ranges.push([Math.max(0, dr.start), Math.min(cnt, dr.start + dr.count), mats.side]);
+  const verts = [], cells = new Map();
+  const ninst = o.isInstancedMesh ? o.count : 1;
+  for (let k = 0; k < ninst; k++) {
+    _gm.copy(o.matrixWorld);
+    if (o.isInstancedMesh) { o.getMatrixAt(k, _gi); _gm.multiply(_gi); }
+    const flip = _gm.determinant() < 0 ? -1 : 1;
+    for (const [s, e, side] of ranges) {
+      for (let j = s; j + 2 < e; j += 3) {
+        const ia = index ? index.getX(j) : j, ib = index ? index.getX(j + 1) : j + 1, ic = index ? index.getX(j + 2) : j + 2;
+        _ga.fromBufferAttribute(pos, ia).applyMatrix4(_gm); _gb.fromBufferAttribute(pos, ib).applyMatrix4(_gm); _gc.fromBufferAttribute(pos, ic).applyMatrix4(_gm);
+        const ny = ((_gb.z - _ga.z) * (_gc.x - _ga.x) - (_gb.x - _ga.x) * (_gc.z - _ga.z)) * flip; // (b-a)x(c-a).y, in the mesh's own winding
+        if (ny === 0 || (side === THREE.FrontSide && ny < 0) || (side === THREE.BackSide && ny > 0)) continue; // a ray straight down only hits these faces
+        const id = verts.length / 9;
+        verts.push(_ga.x, _ga.y, _ga.z, _gb.x, _gb.y, _gb.z, _gc.x, _gc.y, _gc.z);
+        const x0 = Math.floor(Math.min(_ga.x, _gb.x, _gc.x) / GCELL), x1 = Math.floor(Math.max(_ga.x, _gb.x, _gc.x) / GCELL);
+        const z0 = Math.floor(Math.min(_ga.z, _gb.z, _gc.z) / GCELL), z1 = Math.floor(Math.max(_ga.z, _gb.z, _gc.z) / GCELL);
+        for (let i = x0; i <= x1; i++) for (let q = z0; q <= z1; q++) {
+          const key = i * 100003 + q;
+          let a = cells.get(key); if (!a) cells.set(key, (a = [])); a.push(id);
+        }
+      }
+    }
+  }
+  g = { stamp, geo, n: pos.count, ver, v: new Float32Array(verts), cells };
+  gridCache.set(o, g);
+  pAdd('standOn.grid', performance.now() - _t);
+  return g;
+}
+/** Highest y of o's downward-facing-ray triangles at (x, z) within [lo, hi], or -Infinity. */
+function gridHit(o, stamp, x, z, lo, hi) {
+  const g = gridOf(o, stamp);
+  if (!g) return -Infinity;
+  const ids = g.cells.get(Math.floor(x / GCELL) * 100003 + Math.floor(z / GCELL));
+  if (!ids) return -Infinity;
+  const v = g.v;
+  let best = -Infinity;
+  for (const id of ids) {
+    const p = id * 9;
+    const ax = v[p], ay = v[p + 1], az = v[p + 2], bx = v[p + 3], by = v[p + 4], bz = v[p + 5], cx = v[p + 6], cy = v[p + 7], cz = v[p + 8];
+    if (Math.max(ay, by, cy) < lo || Math.min(ay, by, cy) > hi) continue;
+    const d = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
+    if (d === 0) continue;
+    const l1 = ((bz - cz) * (x - cx) + (cx - bx) * (z - cz)) / d;
+    if (l1 < -1e-7) continue;
+    const l2 = ((cz - az) * (x - cx) + (ax - cx) * (z - cz)) / d;
+    if (l2 < -1e-7 || l1 + l2 > 1 + 1e-7) continue;
+    const y = l1 * ay + l2 * by + (1 - l1 - l2) * cy;
+    if (y >= lo && y <= hi && y > best) best = y;
+  }
+  return best;
+}
+
 const _cands = [];
 let lastHit = null; // tools/feet-check diagnostics: the mesh groundAt last stood on
 /** Height of the surface at (x, z) a figure with feet at footY stands on. */
 export function groundAt(scene, x, z, footY = 0, fresh = true) {
   let best = dipHeightRaw(x, z);
   if (!scene) return best;
+  const fb = curEntry && curEntry.fb; // inside a scheduled settle: grow that entry's feet box (src/standOn.js redo)
+  if (fb) { if (x < fb[0]) fb[0] = x; if (x > fb[1]) fb[1] = x; if (z < fb[2]) fb[2] = z; if (z > fb[3]) fb[3] = z; }
   const idx = getIndex(scene, fresh);
   const top = footY + PROBE;
   _cands.length = 0;
   const test = (s) => {
     const b = s.b;
     if (x < b.min.x || x > b.max.x || z < b.min.z || z > b.max.z || b.min.y > top || b.max.y < best - 0.01) return;
-    _cands.push(s.o);
+    _cands.push(s);
   };
   const a = idx.cells.get(Math.floor(x / CELL) * 100003 + Math.floor(z / CELL));
   if (a) for (const s of a) test(s);
   for (const s of idx.big) test(s);
-  if (_cands.length) {
-    _ray.set(_o.set(x, top, z), _down);
-    _ray.far = top - best + 0.01;
-    const hits = _ray.intersectObjects(_cands, false);
-    if (hits.length && hits[0].point.y > best) { best = hits[0].point.y; lastHit = hits[0].object; } else lastHit = null;
-  } else lastHit = null;
+  lastHit = null;
+  const lo = best - 0.01; // the raycaster's far limit: top - best + 0.01 below the probe
+  let hit = -Infinity;
+  for (const s of _cands) {
+    const y = gridHit(s.o, s.stamp, x, z, lo, top);
+    if (y > hit) { hit = y; if (y > best) lastHit = s.o; }
+  }
+  if (hit > best) best = hit;
   return best;
 }
 
@@ -185,6 +274,12 @@ export function settleInstances(scene, mesh, refresh) {
     mesh.getMatrixAt(i, m);
     m.elements[13] += dy; // parents only turn about Y, so a world dy is a local dy
     mesh.setMatrixAt(i, m);
+    // A foot on a sloped or lumpy surface (hay, tyre, pump base) only sees 45 cm above it per probe: settle again until it stops moving.
+    for (let it = 0; it < 4; it++) {
+      const d2 = settleDy(scene, mesh, i);
+      if (Math.abs(d2) < 0.005 || Math.abs(d2) > 0.6) break;
+      mesh.getMatrixAt(i, m); m.elements[13] += d2; mesh.setMatrixAt(i, m);
+    }
   }
   mesh.instanceMatrix.needsUpdate = true;
   if (refresh) refresh(mesh);
@@ -203,17 +298,19 @@ function runEntry(e, scene, now) {
   pending = false;
   // One index refresh per stage, here, never per ray: on a slow frame (1 fps test browser) every ray found the index >5 s old
   // and re-traversed the whole scene, so each 3 ms slice settled ONE figure and most entries never left stage 0 (feet-check 73 fails).
-  if (!e.again) getIndex(scene, true);
-  inRun = true;
-  try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); } finally { inRun = false; }
+  if (!e.again) { getIndex(scene, true); e.fb = [Infinity, -Infinity, Infinity, -Infinity]; e.redo = false; }
+  inRun = true; curEntry = e; // settleDy grows e.fb (the feet's xz box): a surface that later lands inside it re-runs this entry
+  try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); } finally { inRun = false; curEntry = null; }
   const _d = performance.now() - _r;
   if (_d > 40 && typeof window !== 'undefined') (window.__standOnSlow = window.__standOnSlow || []).push([e.obj.name || e.obj.type, e.stage, Math.round(_d)]);
   e.lx = e.obj.position.x; e.lz = e.obj.position.z;
   if (!e.t0) e.t0 = now;
   if (pending) { e.again = true; return; } // unfinished: same stage again next frame
   e.again = false;
-  e.stage++;
+  if (!e.redoRun) e.stage++;
+  e.redoRun = false;
 }
+let curEntry = null;
 // Load-time (docs/perf-2026-11-08.md): the settle raycasts are ~10 s of main thread under the 4G/4x test, all before Play.
 // Nothing needs feet settled until the title is gone, so the scheduler idles until ui.js says the opening view is ready.
 let held = true;
@@ -223,6 +320,7 @@ export function settlingReleased() { return !held; }
 /** True once `frames` rendered frames have passed since the opening view, OR n x 100 ms of wall clock. Lazy builds gated on
  * frames alone land ~n seconds late on a 1 fps machine (the test browser), after the collider list was last checked. */
 export function lazyDue(frames, n) { return frames > n || (!held && performance.now() - releasedAt > n * 100); }
+const REFRESH_MS = 4000;
 let rr = 0, lastTick = 0; // round-robin cursor: every entry gets its turn, early ones (npc_postmaster, bazaar_life) were starved
 function tick() {
   if (held) { if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(tick); return; }
@@ -232,6 +330,9 @@ function tick() {
   const frame = lastTick ? Math.min(1000, now - lastTick) : 16;
   lastTick = now;
   const budgetMs = Math.max(4, frame * 0.15);
+  // Surfaces that stream in after a figure's last timed stage (a house zone built when the player rides near) were never seen:
+  // refresh the index every few seconds; buildIndex flags the entries whose feet a new surface covers (e.redo).
+  if (index && index.scene && now - index.at > REFRESH_MS) buildIndex(index.scene);
   const N = ENTRIES.length;
   for (let k = 0; k < N && ENTRIES.length; k++) {
     if (performance.now() - _t > budgetMs) break;
@@ -241,7 +342,12 @@ function tick() {
     const scene = sceneOf(e.obj);
     if (!scene) { if (e.stage > 0 && !e.obj.parent && ++e.orphan > 600) { ENTRIES.splice(n, 1); rr--; } continue; }
     e.orphan = 0;
-    const due = e.again || (e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage]);
+    const stageDue = e.stage < STAGES.length && now - (e.t0 || now) >= STAGES[e.stage];
+    // Stages past 10 s only matter if a surface landed under the feet since the last run, and buildIndex already flags that (e.redo):
+    // re-running ~110 entries x 7 late stages starved the scheduler on slow frames (entries still at stage 2 after 50 s, feet-check 5-74 off).
+    if (stageDue && !e.again && !e.redo && e.stage >= 3 && !e.moving) { e.stage++; continue; }
+    const due = e.again || stageDue || e.redo;
+    if (due && !e.again && !stageDue) e.redoRun = true; // a new surface under its feet, outside the timed stages
     const moved = e.moving && e.stage > 0 && now - (e.lastRun || 0) > 400 && Math.hypot(e.obj.position.x - e.lx, e.obj.position.z - e.lz) > 0.25;
     if (due || moved) { e.lastRun = now; runEntry(e, scene, now); }
   }

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { signPageMaterial } from './signAtlasHub.js';
+import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial } from './materials.js';
 import { allRoadLines } from './mapRoads.js';
@@ -260,7 +262,24 @@ export function createMainRoadFrontage(scene) {
     // ---------------------------------------------------------------- site search
     const avoid = VILLAGE_HOUSES.map((h) => [h.x, h.z]);
     const first = ((typeof window !== 'undefined' && window.__armFrontage && window.__armFrontage.placed) || []).map((p) => [p.x, p.z]);
-    const roadClear = (x, z, m) => lines.every((l) => l.id === 'chauraha_ring' || distToLine(l.pts, x, z) > l.w / 2 + m);
+    // precomputed per-segment boxes: a segment whose box (grown by the threshold) misses the point cannot be within the threshold
+    const rcSegs = lines.filter((l) => l.id !== 'chauraha_ring').map((l) => {
+      const segs = [];
+      for (let i = 1; i < l.pts.length; i++) { const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i]; segs.push([ax, az, bx, bz, Math.min(ax, bx), Math.max(ax, bx), Math.min(az, bz), Math.max(az, bz)]); }
+      return { w2: l.w / 2, segs };
+    });
+    const roadClear = (x, z, m) => {
+      for (const l of rcSegs) {
+        const th = l.w2 + m;
+        for (const s of l.segs) {
+          if (x < s[4] - th || x > s[5] + th || z < s[6] - th || z > s[7] + th) continue;
+          const dx = s[2] - s[0], dz = s[3] - s[1], L = dx * dx + dz * dz || 1;
+          const t = Math.max(0, Math.min(1, ((x - s[0]) * dx + (z - s[1]) * dz) / L));
+          if (!(Math.hypot(s[0] + t * dx - x, s[1] + t * dz - z) > th)) return false;
+        }
+      }
+      return true;
+    };
     const rectPts = (R) => {
       const c = Math.cos(R.yaw), s = Math.sin(R.yaw), out = [];
       for (let i = 0; i <= 4; i++) for (let j = 0; j <= 4; j++) {
@@ -358,8 +377,10 @@ export function createMainRoadFrontage(scene) {
         g.applyMatrix4(sg.m);
         return g;
       });
-      const sm = new THREE.Mesh(mergeGeometries(boards), Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' }));
+      const smGeo = mergeGeometries(boards);
+      const sm = new THREE.Mesh(smGeo, signPageMaterial(atlas, smGeo));
       sm.name = 'main_road_frontage_signs'; sm.castShadow = true; sm.userData.noAutoCollider = true;
+      batchLiveMesh(sm, { static: true });
       group.add(sm);
     }
 
@@ -448,7 +469,7 @@ export function createMainRoadFrontage(scene) {
     const armDone = typeof window === 'undefined' || (window.__armFrontage && window.__armFrontage.placed.length > 0) || lazyDue(frames, 600);
     if (!built && lazyDue(frames, 60) && STATIC_COLLIDERS.length > 0 && models && armDone) {
       built = true;
-      try { build(); requestColliderRebuild(); } catch (err) { console.error('mainRoadFrontage build failed', err); }
+      try { const t0 = performance.now(); build(); info.buildMs = Math.round(performance.now() - t0); requestColliderRebuild(); } catch (err) { console.error('mainRoadFrontage build failed', err); }
     }
     if (built && camera && camera.position) update(camera.position.x, camera.position.z);
   };

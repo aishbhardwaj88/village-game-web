@@ -29,7 +29,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { NON_SOLID_RULES, SKIP_TOP } from '../src/solidRules.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PORT = 5199;
+const PORT = +(process.env.PORT || 5199); // PORT / DIST env: lets parallel runs use their own build folder and port
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
 
 function waitForServer(url, timeoutMs = 30000) {
@@ -402,8 +402,9 @@ function inPage(cfg) {
 }
 
 async function main() {
-  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'pipe' });
+  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort', ...(process.env.DIST ? ['--outDir', process.env.DIST] : [])], { cwd: ROOT, stdio: 'pipe' });
   let failures = 0;
+  const T = Date.now(); const stage = (n) => console.log(`[collision-test] ${n} at ${((Date.now() - T) / 1000).toFixed(0)} s`); // where the time goes
   try {
     await waitForServer(BASE_URL);
     const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
@@ -418,6 +419,7 @@ async function main() {
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(2000);
+    stage('game started, live-stream walk begins');
     // [6] LIVE STREAM: before any zone is forced, walk the real frame loop (zone manager running) to every zone and
     // after each stop (plus a wait for .glb swaps) compare the live collider list with a fresh full rebuild. Any
     // difference is a collider that registered late or never (the A0a "registered late during streaming" cause).
@@ -433,6 +435,7 @@ async function main() {
       const tick = () => { frames++; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
       for (const s of stops) {
         d.teleportPlayer(s.x + 3, s.z + 3);
+        const tStop = Date.now();
         // zones build nearest-first within a frame budget and .glb swaps arrive async: wait until no collider rebuild has
         // happened for 2.5 s (cap 20 s), which in the game means the streaming around this spot has finished
         let lastBuilds = -1, lastMeshes = -1, quietSince = Date.now(), quietFrame = frames;
@@ -457,6 +460,7 @@ async function main() {
         d.rebuildColliders();
         const missing = d.getStaticColliders().filter((b) => !before.has(keyOf(b)));
         checked++;
+        console.log(`[collision-test] stop ${checked} ${s.name} settled in ${((Date.now() - tStop) / 1000).toFixed(1)} s`);
         if (missing.length) fails.push({ zone: s.name, at: [s.x, s.z], missing: missing.length, sample: keyOf(missing[0]) + ' src=' + missing[0].src + ' auto=' + missing[0].auto });
       }
       return { checked, fails, maxLatency, worstZone };
@@ -465,7 +469,9 @@ async function main() {
     if (live.maxLatency > 30) { console.log(`  FAIL collider rebuild lagged ${live.maxLatency} frames behind new geometry in ${live.worstZone}`); failures++; }
     for (const f of live.fails) console.log(`  FAIL zone ${f.zone} at (${f.at.map((n) => n.toFixed(0))}): ${f.missing} colliders not registered until a manual rebuild, e.g. ${f.sample}`);
     failures += live.fails.length;
+    stage('live-stream walk done');
     await page.evaluate(forceZones);
+    stage('all zones forced');
     await page.waitForTimeout(6000); // let zone-streamed .glb models arrive
     const t0 = Date.now();
     const r = await page.evaluate(inPage, { nonSolid: NON_SOLID.map(([re]) => [re.source, re.flags]), skipTop: [SKIP_TOP_RE.source, SKIP_TOP_RE.flags], skipVehicles: !!process.env.SKIP_VEHICLES });

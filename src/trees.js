@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -55,7 +56,7 @@ let LEAF_MATERIAL = null;
 function leafMaterial() {
   if (!LEAF_MATERIAL) {
     LEAF_MATERIAL = new THREE.MeshStandardMaterial({ map: makeLeafAtlas(), vertexColors: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 });
-    LEAF_MATERIAL.name = 'tree_leaf_cards';
+    LEAF_MATERIAL.name = 'tree_leaf_cards'; LEAF_MATERIAL.userData.liveBatchable = true; // wind is vertex-local, so it reads the same inside a BatchedMesh (src/placeBatch.js batchLiveMesh)
     // Gentle wind sway: crown moves more with height and a per-position phase, so
     // neighbouring trees do not move in lockstep. Vertex-only, no extra draw calls.
     const uTime = { value: 0 };
@@ -306,6 +307,7 @@ function buildSpeciesTree(spec, seed, name) {
   // Extra LOD levels are flagged so the static merges (src/mergeUtils.js) drop them: a merged
   // tree has no distance switching, and folding every level in drew each tree three times.
   for (const m of [midTrunk, midLeaves, farLeaves, imp]) m.userData.lodExtra = true;
+  for (const m of [trunk, leaves, midTrunk, midLeaves, farLeaves]) batchLiveMesh(m, { static: true });
   const lod = new THREE.LOD();
   lod.name = name;
   lod.addLevel(group, 0);

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { batchLiveMesh } from './placeBatch.js';
 import { buildDogGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
 import { mapRoadLines } from './mapRoads.js';
@@ -118,7 +119,7 @@ export function createCyclistEvents(scene, { getPlayer, isOnCycle }) {
       dogMesh.name = 'cyclist_events_dog';
       dogMesh.setColorAt(0, _c.setHex(0xb08a5c));
       dogMesh.frustumCulled = false;
-      group.add(dogMesh);
+      group.add(dogMesh); batchLiveMesh(dogMesh);
     }
   }
 

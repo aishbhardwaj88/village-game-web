@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { signPageMaterial } from './signAtlasHub.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, texturedBox } from './materials.js';
 import { colliderBoxFromTransform } from './collision.js';
@@ -142,7 +143,7 @@ export function createMilkCentre(scene) {
   const sw = 2.9, sg = new THREE.BoxGeometry(sw, sw / 4.41, 0.04);
   mapFrontFaceToRow(sg, 0, atlas.rows);
   sg.translate(0, 2.0, D / 2 + 0.55); sg.rotateX(0.07); sg.rotateY(SITE.ry); sg.translate(SITE.x, 0, SITE.z);
-  const signMesh = new THREE.Mesh(sg, Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' }));
+  const signMesh = new THREE.Mesh(sg, signPageMaterial(atlas, sg));
   signMesh.name = 'milk_centre_sign'; signMesh.castShadow = true;
   group.add(signMesh);
 

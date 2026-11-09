@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { turnGroupOf, turnBox, preTurnLeafBox } from './turn.js';
+import { batchStaticGroup } from './placeBatch.js';
 
 /**
  * Draw-call reduction (task 2, docs/parked.md): merges static, non-animated meshes
@@ -296,6 +297,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
     dest.add(mesh);
   }
   addHiddenColliderCarrier(dest, hiddenBoxes);
+  batchStaticGroup(dest, 'static:' + (dest.name || 'merged')); // place-batch materials draw through their shared batch, not a call each (src/placeBatch.js)
 }
 
 /** Merges a flat list of already-positioned, unparented Meshes (e.g. several

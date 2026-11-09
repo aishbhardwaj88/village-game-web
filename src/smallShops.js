@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { signPageMaterial } from './signAtlasHub.js';
 import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -493,15 +494,15 @@ export function createSmallShops(scene) {
 
   // signboards: one atlas (Hindi bold line 1, English line 2, same dark paint), boards on wooden battens
   const atlas = createWideSignAtlas([SIGNS.book, SIGNS.cd, SIGNS.mithai]);
-  const signMat = Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' });
-  const boards = signs.map((sg) => {
+    const boards = signs.map((sg) => {
     const h = sg.w / 4.41;
     const g = new THREE.BoxGeometry(sg.w, h, 0.03);
     mapFrontFaceToRow(g, sg.row, atlas.rows);
     g.translate(sg.lx, sg.ly, sg.lz); g.rotateY(sg.site.ry); g.translate(sg.site.x, 0, sg.site.z);
     return g;
   });
-  const signMesh = new THREE.Mesh(mergeGeometries(boards), signMat);
+  const signGeo = mergeGeometries(boards);
+  const signMesh = new THREE.Mesh(signGeo, signPageMaterial(atlas, signGeo));
   signMesh.name = 'small_shops_signs'; signMesh.castShadow = true; group.add(signMesh);
 
   // shopkeepers: capsule placeholders (characters are parked), one InstancedMesh

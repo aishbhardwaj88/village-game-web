@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = 5197;
-const URL_ = `http://localhost:${PORT}/village-game-web/`;
+const URL_ = `http://localhost:${PORT}/village-game-web/`; const QUERY = process.env.QUERY ? `?${process.env.QUERY}` : "";
 
 // Own static server that mimics the host: Pages gzips js/css/html/json but not .glb/.webp.
 // vite preview does not compress at all, so using it counted the JS bundle ~3x too big.
@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
 const GZ = new Set(['.html', '.js', '.css', '.json', '.svg']);
-const DIST = path.join(ROOT, 'dist');
+const DIST = path.join(ROOT, process.env.DIST || 'dist'); // DIST=dist-x to test a side build
 const srv = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]).replace('/village-game-web', '') || '/';
   if (p.endsWith('/')) p += 'index.html';
@@ -41,7 +41,7 @@ for (let i = 0; i < 100; i++) {
   try { await fetch(URL_); break; } catch { await new Promise(r => setTimeout(r, 300)); }
 }
 
-const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await chromium.launch({ args: process.env.GL === 'metal' ? ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] }) /* GL=metal: this Mac's real GPU */;
 const page = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 const cdp = await page.context().newCDPSession(page);
 await cdp.send('Network.enable');
@@ -57,7 +57,7 @@ page.on('pageerror', e => errors.push(String(e)));
 
 await page.addInitScript(() => { window.__lt = []; new PerformanceObserver(l => l.getEntries().forEach(e => window.__lt.push([Math.round(e.startTime), Math.round(e.duration)]))).observe({ entryTypes: ['longtask'] }); });
 const t0 = Date.now();
-await page.goto(URL_, { waitUntil: 'commit' });
+await page.goto(URL_ + QUERY, { waitUntil: 'commit' });
 await page.waitForSelector('#start-overlay .title-en', { state: 'visible', timeout: 60000 });
 const titleMs = Date.now() - t0;
 const readyAtTitle = await page.evaluate(() => document.getElementById('start-overlay').classList.contains('ready'));
@@ -67,6 +67,7 @@ const readyMs = Date.now() - t0;
 const bytesAtReady = bytes;
 const pageReadyAt = await page.evaluate(() => Math.round(window.__readyAt || -1));
 if (process.env.LT) console.log('longtasks >300ms', JSON.stringify((await page.evaluate(() => window.__lt)).filter(x => x[1] > 300)));
+if (process.env.MARKS) console.log('load marks', JSON.stringify(await page.evaluate(() => Object.fromEntries(Object.entries(window.__loadMarks || {}).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v) : v])))));
 console.log('page-side markReady at', pageReadyAt, 'ms after navigation start');
 if (process.env.LIST) { sizes.sort((a, b) => b[0] - a[0]).slice(0, Number(process.env.LISTN||25)).forEach(([n, u]) => console.log((n / 1048576).toFixed(2), u && u.replace(URL_, ''))); }
 if (process.env.TIMELINE) tl.forEach(([t,n,u]) => console.log(String(t).padStart(6), (n/1024).toFixed(0).padStart(6)+'K', u));
@@ -79,7 +80,7 @@ if (process.env.PROFILE) {
   if (process.env.INCL) {
     const incl = new Map(), selfT = new Map(); profile.samples.forEach((id, i) => selfT.set(id, (selfT.get(id) || 0) + (dt[i] || 0)));
     const tot = id => { const n = byId.get(id); let t = selfT.get(id) || 0; for (const c of n.children || []) t += tot(c); return t; };
-    const walk = (id, depth) => { const n = byId.get(id), f = n.callFrame; const t = tot(id); if (t > 400000 && depth < 14) { console.log(' '.repeat(depth) + (t / 1000).toFixed(0) + ' ms ' + (f.functionName || '(anon)') + ' ' + f.url.replace(URL_, '') + ':' + f.lineNumber + ':' + f.columnNumber); for (const c of n.children || []) walk(c, depth + 1); } };
+    const walk = (id, depth) => { const n = byId.get(id), f = n.callFrame; const t = tot(id); if (t > Number(process.env.INCL_MIN || 400) * 1000 && depth < 14) { console.log(' '.repeat(depth) + (t / 1000).toFixed(0) + ' ms ' + (f.functionName || '(anon)') + ' ' + f.url.replace(URL_, '') + ':' + f.lineNumber + ':' + f.columnNumber); for (const c of n.children || []) walk(c, depth + 1); } };
     walk(profile.nodes[0].id, 0);
   }
   [...agg].sort((a, b) => b[1] - a[1]).slice(0, 25).forEach(([k, us]) => console.log((us / 1000).toFixed(0).padStart(6) + ' ms', k));

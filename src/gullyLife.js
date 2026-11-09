@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { signPageMaterial } from './signAtlasHub.js';
+import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildBovineGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
@@ -320,8 +322,10 @@ export function createGullyLife(scene) {
         g.applyMatrix4(sg.m);
         return g;
       });
-      const sm = new THREE.Mesh(mergeGeometries(boards), Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' }));
+      const smGeo = mergeGeometries(boards);
+      const sm = new THREE.Mesh(smGeo, signPageMaterial(atlas, smGeo));
       sm.name = 'gully_life_signs'; sm.castShadow = true; sm.userData.noAutoCollider = true;
+      batchLiveMesh(sm, { static: true });
       group.add(sm);
     }
 

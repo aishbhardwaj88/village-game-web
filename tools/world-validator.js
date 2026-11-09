@@ -24,7 +24,7 @@ import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PORT = 5235;
+const PORT = +(process.env.PORT || 5235); // PORT / DIST env: lets parallel runs use their own build folder and port
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
 
 function waitForServer(url, timeoutMs = 30000) {
@@ -50,7 +50,7 @@ function record(name, pass, detail) {
 
 async function main() {
   console.log('Starting `vite preview` against dist/...');
-  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'pipe' });
+  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort', ...(process.env.DIST ? ['--outDir', process.env.DIST] : [])], { cwd: ROOT, stdio: 'pipe' });
   server.stderr.on('data', (d) => process.stderr.write(`[vite preview] ${d}`));
 
   try {

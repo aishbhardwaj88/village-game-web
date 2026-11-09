@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGroupByMaterial } from './mergeUtils.js';
+import { batchLiveMesh } from './placeBatch.js';
 
 /**
  * Finish-line Step 2 — code-built stylised people, replacing the flat capsule
@@ -112,6 +113,7 @@ function assemble(partsFn) {
   partsFn(parts);
   for (const p of parts) bodyPivot.add(p);
   mergeGroupByMaterial(bodyPivot);
+  for (const c of bodyPivot.children) if (c.isMesh) batchLiveMesh(c);
   return { root, bodyPivot };
 }
 

@@ -246,21 +246,39 @@ const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 async function main() {
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
   const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
+  _lm.mainStart = performance.now();
   let envReady = null; // D1: the HDRI is set BEFORE the warm-up compile; set after it, every material recompiled in a second long freeze
   // D1: shaders compile against the composer's render target (the variants the RenderPass actually draws), early and
   // again at the gate; textures upload a few per frame while the title is up, so the first frame after Play is cheap.
   const preCompile = () => { try { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(scene, camera); renderer.setRenderTarget(_rt); return p; } catch (e) { return Promise.resolve(); } };
   const warmedTex = new WeakSet(); let warmList = [], warmScanAt = 0;
-  const warmTextures = (now) => {
+  let postPressWarmUntil = 0, postPressCompileAt = 0; // set at Play
+  const _noWarm = new URLSearchParams(window.location.search).has('nowarm'); // D1 experiment switch: no texture uploads behind the title
+  const _noDecode = new URLSearchParams(window.location.search).has('nodecode'); // D1 A/B switch: upload without the off-thread decode
+  const decodedImg = new WeakSet(), decodingImg = new WeakSet();
+  let _lastTickAt = 0; const _warmBurst = new URLSearchParams(window.location.search).has('warmburst'); // D1 A/B: the old 25 ms burst per frame
+  const warmTextures = (now, budgetMs = 25) => {
     if (now >= warmScanAt) {
       warmScanAt = now + 400; warmList = []; const seen = new Set();
       scene.traverse((o) => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : null; if (!ms) return;
         for (const m of ms) { if (!m || seen.has(m)) continue; seen.add(m); for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t.version > 0 && !warmedTex.has(t)) warmList.push(t); } } });
     }
     const t0 = performance.now();
-    while (warmList.length && performance.now() - t0 < 25) { const t = warmList.pop(); if (warmedTex.has(t)) continue; warmedTex.add(t); try { renderer.initTexture(t); } catch (e) { /* first render uploads it instead */ } _lm.texWarmed = (_lm.texWarmed || 0) + 1; }
+    // An <img> texture (THREE.TextureLoader) is decoded lazily on the main thread inside texImage2D. img.decode() does
+    // that work off the main thread first, so the upload below only copies pixels (D1: ~1 s of the 4x-CPU title time).
+    const decoded = (t) => { const im = t.image; if (_noDecode || !(typeof HTMLImageElement !== 'undefined' && im instanceof HTMLImageElement) || decodedImg.has(im)) return true;
+      if (!decodingImg.has(im)) { decodingImg.add(im); (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(() => { decodedImg.add(im); }); }
+      return false; };
+    const later = [];
+    let up = 0; // always at least one upload per call, then more while inside the budget
+    while (warmList.length && (up === 0 || performance.now() - t0 < budgetMs)) { const t = warmList.pop(); if (warmedTex.has(t)) continue; if (!decoded(t)) { later.push(t); continue; } warmedTex.add(t); up++; try { renderer.initTexture(t); } catch (e) { /* first render uploads it instead */ } _lm.texWarmed = (_lm.texWarmed || 0) + 1; }
+    if (later.length) warmList.unshift(...later);
   };
-  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, 4000))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); });
+  // The gate's waits are capped by one deadline (~9.5 s after navigation, never less than 0.3 s each): a late markReady
+  // (the 9 s safety timeout in ui.js on a slow link) used to add up to 4 s + 3 s on top, which is where 16 s readings came from.
+  // An unfinished compile is not a broken frame, only a slower first one after Play.
+  const gateLeft = (cap) => Math.max(300, Math.min(cap, 9500 - performance.now()));
+  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, gateLeft(4000)))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, gateLeft(3000)))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
   // D1: every model except the asset-slot buildings waits until the opening-view slots are in (released below at
   // slotLoads.near), so the near buildings are not queued behind ~2 MB of far props on 4G. `?nohold` to compare.
@@ -966,7 +984,7 @@ async function main() {
   const tractorForShadows = vehicles.find((v) => v.preset.kind === 'tractor');
   const trolleyForShadows = tractorForShadows.trolley;
 
-  const camRig = new ThirdPersonCamera(camera, player);
+  const camRig = new ThirdPersonCamera(camera, player); camRig._raycaster.layers.enable(1); // meshes drawn through src/placeBatch.js sit on its hidden layer 1 but stay camera obstacles
   camRig.yaw = OPENING_YAW; // see OPENING_SPAWN above — the camera's default yaw (Math.PI in the constructor) is what pointed the opening frame at the house's blind wall
   // Buildings the camera should never clip through (item 1) — raycast against the
   // actual visual meshes (walls, roofs, pilasters), not the simplified collision
@@ -1302,8 +1320,11 @@ async function main() {
   // Play unlocks once the models around the opening spawn are in (first view never pops); the far ones keep
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
   slotFiles = new Set(Array.from(assetSlots.slots.values()).map((s) => s.file || s.name));
+  _lm.slotsStart = performance.now();
   const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 40 });
+  window.__slotNearDbg = () => Array.from(assetSlots.slots.values()).map((s) => [s.file || s.name, Math.round(Math.min(...s.placements.map((p) => (p.container.isScene !== true ? -1 : Math.hypot(p.position.x - OPENING_SPAWN.x, p.position.z - OPENING_SPAWN.z)))))]); // D1 debug: [file, nearest m, -1 = not in scene root]
   slotLoads.near.then(() => {
+    _lm.nearLoaded = performance.now();
     releaseModelLoads();
     markOpeningViewLoaded(); // the HDRI now loads from boot (envReady above) so the warm-up compiles with it
   });
@@ -2007,11 +2028,13 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
-      renderOK = true; _lm.playPressed = performance.now(); // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
+      renderOK = true; _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();
-      loadDeferredContent();
+      // The ~1 s synchronous assembly runs one frame later so the first 3D frame is not queued behind it (tools: ?nodefer keeps it synchronous).
+      if (new URLSearchParams(window.location.search).has('nodefer')) loadDeferredContent();
+      else requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(loadDeferredContent, 0)));
 
       if (isContinue) {
         // Continue (item 7) — resumes quest progress, skips the new-player tutorial.
@@ -3147,7 +3170,7 @@ async function main() {
         }
         audio.setPlaceAmbience(bestKind, bestC);
       }
-      { const _q = performance.now(); zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
+      { const _q = performance.now(); if (zoneManager) zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
       syncPlaceBoards();
       { const _q = performance.now(); syncPlaceBatches(); pAdd('syncPlaceBatches', performance.now() - _q); }
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
@@ -3184,7 +3207,17 @@ async function main() {
     const _pt1 = performance.now();
     // The opaque title overlay hides the canvas until Play: skip the 3D render so the main thread spends the loading
     // time on loading (and uploading textures a few per frame). The first render happens on the Play press (D1).
-    if (!renderOK) warmTextures(_pt1);
+    // Paused from markReady until the Play button has been on screen for a moment: an upload in that window delayed the
+    // button's own paint by ~0.5 s (D1). Uploads resume behind the visible button while the player reads the title.
+    const _gateQuiet = _lm.markReady && !(window.__readyAt && _pt1 > window.__readyAt + 300);
+    // One upload per frame, and only while frames are flowing (the last frame interval under 60 ms): a burst of uploads
+    // queues mip generation in the GPU process and the page stops presenting frames, Play button included.
+    const _flowing = _pt0 - _lastTickAt < 60; _lastTickAt = _pt0;
+    if (!renderOK) { if (!_noWarm && !_gateQuiet && _flowing) warmTextures(_pt1, _warmBurst ? 25 : 0); }
+    else if (_pt1 < postPressWarmUntil) { // load-play: zones that stream in after Play get their shaders submitted and textures uploaded a slice per frame, not all inside one render()
+      warmTextures(_pt1, 8);
+      if (_pt1 >= postPressCompileAt) { postPressCompileAt = _pt1 + 800; preCompile(); }
+    }
     if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) { _lm.firstRender = performance.now(); _lm.programs = renderer.info.programs.length; _lm.textures = renderer.info.memory.textures; _lm.geometries = renderer.info.memory.geometries; _lm.calls = renderer.info.render.calls; } }
     const _pt2 = performance.now();
     if (_pt2 - _pt0 > 300) (window.__longFrames = window.__longFrames || []).push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); // D1 load-time probe: [start, logic ms, render ms]
@@ -3192,6 +3225,7 @@ async function main() {
     fps.update(now);
   }
   requestAnimationFrame(tick);
+  _lm.mainSyncEnd = performance.now();
 
   // `?proof=1` exposes the same scripted-positioning hook as `?dev=1` but turns on NONE of
   // dev mode's visible extras (no fps counter, no staging boxes, no penetration logging) —

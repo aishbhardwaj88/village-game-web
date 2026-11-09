@@ -6,8 +6,8 @@ import { getTiledMaterial, texturedBox } from './materials.js';
 import { STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox } from './collision.js';
 import { addHandPumps } from './handPumps.js';
 import { addPots, flushMerged } from './pots.js';
-import { batchLateGroup } from './placeBatch.js';
-import { settlingReleased, lazyDue } from './standOn.js';
+import { batchLateGroup, batchLiveMesh } from './placeBatch.js';
+import { settlingReleased, lazyDue, groundAt } from './standOn.js';
 
 /**
  * Life scenes, second set (docs/PARALLEL.md section D): mosquito net over a charpai in an angan, rangoli at doorways,
@@ -346,13 +346,22 @@ export function createLifeScenes2(scene) {
     mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, people.length));
     mesh.name = 'life_scenes_2_people'; mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
     people.forEach((p, i) => { mesh.setColorAt(i, _c.setHex(p.tint)); });
-    group.add(mesh);
+    group.add(mesh); batchLiveMesh(mesh);
+    mesh.userData.footExempt = people.map((p, i) => (p.tyre || p.hop || p.pump || p.lying ? i : -1)).filter((i) => i >= 0); // bouncing / rolling poses, and the sleeper lying on his charpai (authored on the bed, not on a foot): feet leave the ground by design (tools/feet-check.js)
     group.userData.placed = placed; group.userData.rangoli = rg;
     if (typeof window !== 'undefined') window.__lifeScenes2 = { placed, rangoli: rg, people: people.length };
   }
 
+  let gyAt = -1; // elapsed time of the last ground read; late .glb floors arrive for ~45 s
+  const GY_STAGES = [0, 2, 8, 25, 45];
   function animate(dt) {
     elapsed += dt;
+    const stg = GY_STAGES.filter((t) => elapsed >= t).length;
+    if (stg !== gyAt) { // feet follow the surface under them (a plinth, a step): the authored poses all assume flat ground at y = 0
+      gyAt = stg;
+      const sc = group.parent;
+      if (sc) for (const p of people) if (!p.tyre && !p.lying) p.gy = Math.max(0, groundAt(sc, p.x, p.z, 0.02, true) - 0);
+    }
     people.forEach((p, i) => {
       const sc = p.h / NPC_H;
       let y = p.h / 2, lean = 0, ox = 0, oz = 0, yaw = p.yaw, sy = sc, sxz = sc * (p.r / NPC_R);
@@ -371,7 +380,7 @@ export function createLifeScenes2(scene) {
         p.tyre.rotation.order = 'YXZ'; p.tyre.rotation.x = -(elapsed * 1.5 / 0.34) * dir; p.tyre.rotation.y = yaw;
         lean = 0.12;
       }
-      _p.set(p.x + ox, y, p.z + oz);
+      _p.set(p.x + ox, y + (p.gy || 0), p.z + oz);
       if (p.lying) { _e.set(0, yaw, Math.PI / 2, 'YXZ'); _s.set(sc * 0.75, sc, sc * 0.75); }
       else { _e.set(lean, yaw, 0, 'YXZ'); _s.set(sxz, sy, sxz); }
       _q.setFromEuler(_e); _m.compose(_p, _q, _s); mesh.setMatrixAt(i, _m);

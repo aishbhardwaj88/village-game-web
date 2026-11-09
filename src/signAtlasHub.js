@@ -50,3 +50,41 @@ export function addToSignHub(slot, sourceTexture) {
   sourceTexture.dispose();
   return { material, remap };
 }
+
+/**
+ * Shared sign page for the code-built frontage / shop boards (arm frontage, main road, gully, chauraha, small shops, milk centre).
+ * Each builder still paints its own wide atlas (createWideSignAtlas); this copies that atlas into one shared canvas (and again once
+ * the fonts land and the source repaints), remaps the merged board geometry's UVs, and hands back ONE shared 'signboard' material,
+ * so every such board shares one texture source and the placeBatch live batcher folds them into a single draw.
+ * Falls back to a private material if a page is full. Two 1024-wide columns per page, strips stacked downward.
+ */
+const PAGE_W = 2048, PAGE_H = 3072, COL_W = 1024;
+const pages = [];
+function newPage() {
+  const canvas = document.createElement('canvas');
+  canvas.width = PAGE_W; canvas.height = PAGE_H;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85 });
+  material.name = 'signboard';
+  const p = { canvas, ctx: canvas.getContext('2d'), texture, material, colY: [0, 0] };
+  pages.push(p);
+  return p;
+}
+export function signPageMaterial(atlas, geometry) {
+  const src = atlas.texture.image, sw = src.width, sh = src.height;
+  if (sw > COL_W || sh > PAGE_H) return Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' });
+  let page = null, col = 0;
+  for (const p of pages) { col = p.colY[0] <= p.colY[1] ? 0 : 1; if (p.colY[col] + sh <= PAGE_H) { page = p; break; } }
+  if (!page) { page = newPage(); col = 0; }
+  const x = col * COL_W, y = page.colY[col];
+  page.colY[col] += sh;
+  const copy = () => { page.ctx.drawImage(src, x, y); page.texture.needsUpdate = true; };
+  copy();
+  if (atlas.ready && atlas.ready.then) atlas.ready.then(copy, copy);
+  const uv = geometry.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x + uv.getX(i) * sw) / PAGE_W, 1 - (y + (1 - uv.getY(i)) * sh) / PAGE_H);
+  uv.needsUpdate = true;
+  return page.material;
+}

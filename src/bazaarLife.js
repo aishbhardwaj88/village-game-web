@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { batchLiveMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, groundAt, sceneOf, sliceSpent } from './standOn.js';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
@@ -71,7 +72,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
 
   const mesh = new THREE.InstancedMesh(geometry, material, total);
   mesh.name = 'bazaar_life';
-  markFigure(mesh);
+  markFigure(mesh); batchLiveMesh(mesh);
   const gy = new Float32Array(total); // per-figure lift onto the surface under its feet (src/standOn.js)
   mesh.castShadow = true;
   mesh.receiveShadow = true;

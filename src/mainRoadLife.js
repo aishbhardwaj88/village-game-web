@@ -5,7 +5,7 @@ import { getTiledMaterial } from './materials.js';
 import { mapRoadLines, allRoadLines } from './mapRoads.js';
 import { CHAURAHA } from './mapPlan.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
-import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
+import { batchLateGroup, batchPeopleMesh, batchLiveMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleDy, settleInstances, groundAt } from './standOn.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildTractorGroup } from './vehicles.js';
@@ -301,7 +301,7 @@ export function createMainRoadLife(scene) {
         list.forEach((a, i) => { a.mesh = mesh; a.idx = i; a.y = 0; mesh.setMatrixAt(i, _m4.compose(_v.set(a.x, 0, a.z), _q.setFromEuler(_e.set(0, a.yaw, 0)), new THREE.Vector3(...a.s))); mesh.setColorAt(i, c.setHex(a.tint)); });
         mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
         mesh.castShadow = true; mesh.receiveShadow = true; mesh.userData.noAutoCollider = true;
-        markFigure(mesh); group.add(mesh);
+        markFigure(mesh); batchLiveMesh(mesh); group.add(mesh);
       }
     }
     let pm = null;

@@ -35,8 +35,8 @@ const EXEMPT = [
   [/rider|cyclist/i, 'riders sit on a moving cycle seat, not on the ground'],
   [/^player\//i, 'the player rides the cycle: feet on the pedals, not the ground'],
   [/nostalgia_animals/i, 'one merged mesh of roof monkeys and a parapet peacock whose train hangs 1.1 m down a wall: its lowest vertex is the hanging tail, the feet stand on a roof'],
-  [/vehicle_cart\/.*bullock/i, 'bullock cart: legs swing +-5 cm on their stride and the cart keeps one parked height across lane-edge strips (G1 leftover, KNOWN)'],
-  [/ride_nook_\d+_[a-z]+_people/i, 'ride-nook sitters: authored seat heights, a raise-only settle made the well nooks worse (G1 leftover, KNOWN, 14 of them 5-15 cm)'],
+  ...(process.env.FEET_CART ? [] : [[/vehicle_cart\/.*bullock/i, 'bullock cart: legs swing +-5 cm on their stride and the cart keeps one parked height across lane-edge strips (G1 leftover, KNOWN; FEET_CART=1 measures them)']]),
+  // ride-nook sitters were exempt until 9 Nov (D2): src/rideNooks.js now settles them like every other capsule crowd (0 of 64 off).
 ];
 
 function waitForServer(url, timeoutMs = 30000) {
@@ -140,7 +140,7 @@ function inPage(cfg) {
   const v = new Vector3(), mw = new Matrix4(), mi = new Matrix4();
   const results = [];
   for (const f of figures) {
-    const ex = exempt.find(([re]) => re.test(f.label));
+    const ex = exempt.find(([re]) => re.test(f.label)) || (f.i >= 0 && f.mesh.userData.footExempt && f.mesh.userData.footExempt.includes(f.i) ? [0, 'animated or lying pose (hop / pump / rolling tyre / sleeper on a charpai): feet leave the ground by design'] : null);
     if (ex) { results.push({ label: f.label, kind: f.kind, exempt: ex[1] }); continue; }
     mw.copy(f.mesh.matrixWorld);
     if (f.i >= 0) { f.mesh.getMatrixAt(f.i, mi); mw.multiply(mi); }
@@ -168,7 +168,12 @@ function inPage(cfg) {
       const c = y - s.y;
       if (c < clear) { clear = c; at = [x, z]; on = s.what; }
     }
-    results.push({ label: f.label, kind: f.kind, clear: +clear.toFixed(3), minY: +minY.toFixed(3), at: at.map((n) => +n.toFixed(2)), on, feet: buckets.size });
+    const res = { label: f.label, kind: f.kind, clear: +clear.toFixed(3), minY: +minY.toFixed(3), at: at.map((n) => +n.toFixed(2)), on, feet: buckets.size };
+    if (Math.abs(clear) > 0.03 && window.__standOn) { // what the game's own settle saw under the same foot, for diagnosis
+      const so = window.__standOn, gy = so.groundAt(d.scene, at[0], at[1], minY, true), lh = so.lastHit();
+      res.game = { y: +gy.toFixed(3), hit: lh ? pathOf(lh) : null };
+    }
+    results.push(res);
   }
   return { figures: results, surfaces: surfaces.length, zones: d.zoneManager.zones.size, dips: !!window.__dips };
 }
@@ -197,7 +202,9 @@ async function main() {
     await page.waitForTimeout(1500);
     await page.evaluate(forceZones);
     await page.waitForTimeout(5000); // zone .glb swaps arrive async
-    await page.waitForTimeout(42000); // the last settle stage (40 s) catches road strips that stream in late
+    await page.waitForTimeout(+(process.env.FEET_WAIT || 42000)); // the 40 s settle stage catches road strips that stream in late; the check measures the game's OWN settle; FEET_SETTLE=n forces n test-side settleAll passes first (diagnosis only, it hides scheduler bugs)
+    if (+(process.env.FEET_SETTLE ?? 0)) for (let k = 0; k < +(process.env.FEET_SETTLE ?? 0); k++) console.log('settleAll', await page.evaluate(() => window.__standOn.settleAll()));
+    console.log('standOn index', JSON.stringify(await page.evaluate(() => window.__standOnIdx || null)));
     const r = await page.evaluate(inPage, { exempt: EXEMPT.map(([re, why]) => [re.source, re.flags, why]) });
     await browser.close();
 
@@ -212,7 +219,7 @@ async function main() {
     const show = process.env.FEET_VERBOSE ? measured : bad;
     for (const f of show) {
       const tag = Math.abs(f.clear) <= TOL ? 'ok  ' : f.clear < 0 ? 'SUNK' : 'FLOAT';
-      console.log(`  ${tag} ${f.label}: ${(f.clear * 100).toFixed(1)} cm at (${f.at.join(', ')}) on ${f.on}`);
+      console.log(`  ${tag} ${f.label}: ${(f.clear * 100).toFixed(1)} cm at (${f.at.join(', ')}) on ${f.on}${f.game ? `  [game surface y=${f.game.y} ${f.game.hit}, foot y=${(f.clear + 0).toFixed(3)} rel]` : ''}`);
     }
     failures = bad.length;
     if (!r.dips) { console.log('  FAIL window.__dips missing: dug ground cannot be measured'); failures++; }

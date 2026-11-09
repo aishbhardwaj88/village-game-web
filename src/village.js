@@ -218,7 +218,7 @@ export const HOUSE_STAIRS = {
 // layout shared with src/collision.js the same way HOUSE_* is.
 export const SCHOOL_ROOM = { w: 6, h: 3.4, d: 18, cx: SCHOOL_CENTER.x - 12, cz: SCHOOL_CENTER.z };
 export const SCHOOL_ROOM_DOOR_X = SCHOOL_ROOM.cx + SCHOOL_ROOM.w / 2; // east face, toward the yard
-export const SCHOOL_ROOM_DOOR_WIDTH = 1.1;
+export const SCHOOL_ROOM_DOOR_WIDTH = 1.4; // was 1.1: after the map turn the stepped collider boxes closed it to under the player's 0.9 m, walling in the blackboard and bench
 
 // Item 5's new interaction points need these same positions — exported once here
 // (not recomputed) so buildHouseInteriorProps/buildSchoolClassroom and

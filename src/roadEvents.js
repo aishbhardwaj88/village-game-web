@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildBovineGeometry, buildDogGeometry, createHideMaterial } from './animals.js';
 import { getTiledMaterial } from './materials.js';
@@ -363,7 +364,7 @@ export function createRoadEvents(scene) {
       herder.setColorAt(0, _c.setHex(0xcfc4a8)); // faded off-white kurta
       group.add(herder);
     }
-    for (const m of [bovine, lying, dogs, goats, herder]) if (m) { markFigure(m); m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+    for (const m of [bovine, lying, dogs, goats, herder]) if (m) { markFigure(m); batchLiveMesh(m); m.castShadow = true; m.receiveShadow = true; m.userData.noAutoCollider = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
     (meshes.wood || meshes.concrete || group.children[0]).userData.colliderBoxes = colliders;
     animate(0);
     // feet on the road / verge surface (src/standOn.js): standing and lying cattle and the sleeping dogs settle once their

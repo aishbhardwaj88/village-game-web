@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { signPageMaterial } from './signAtlasHub.js';
 import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { texturedBox, getTiledMaterial, bakeFlatTintColors } from './materials.js';
@@ -380,8 +381,7 @@ export function createChaurahaEdges(scene) {
   // signboards: one atlas, Hindi bold on top, English below, one dark paint
   const keys = [...new Set(signList.map((s) => s.key))];
   const atlas = createWideSignAtlas(keys.map((k) => SIGNS[k]));
-  const signMat = Object.assign(new THREE.MeshStandardMaterial({ map: atlas.texture, roughness: 0.85 }), { name: 'signboard' });
-  const boards = signList.map((sg) => {
+    const boards = signList.map((sg) => {
     const g = new THREE.BoxGeometry(sg.w, sg.w / 4.41, 0.04);
     mapFrontFaceToRow(g, keys.indexOf(sg.key), keys.length);
     g.translate(sg.lx, sg.ly, sg.lz);
@@ -394,7 +394,8 @@ export function createChaurahaEdges(scene) {
     boards[i].rotateY(sg.ry); boards[i].translate(bld.x, 0, bld.z);
     bPlaced.push(boards[i]);
   });
-  const signMesh = new THREE.Mesh(mergeGeometries(bPlaced), signMat);
+  const signGeo = mergeGeometries(bPlaced);
+  const signMesh = new THREE.Mesh(signGeo, signPageMaterial(atlas, signGeo));
   signMesh.name = 'chauraha_edges_signs';
   signMesh.castShadow = true;
   root.add(signMesh);
