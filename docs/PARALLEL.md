@@ -1,3 +1,15 @@
+# 10 NOV 04:00 CHECK (tech lead). Two misses against the order. Do these first.
+- **C-fix. Turning circle is double the order.** Measured 12 m at 7.5 m/s and 18 m sprinting;
+  the order said ~6 m and ~9 m (4.7 m slow is fine). Her complaint is "controls are very
+  tight", so this is the main point. Raise the handlebar limit at speed until the cycle-course
+  measures 5.5-6.5 m at 7.5 m/s and 8-10 m at 9.5, stays stable (no wobble, no spin-out), and
+  the U-turn and figure-8 still pass. Report the new numbers in NEEDS_YOU.
+- **A-gaps.** Still missing from the sound order: cattle and cowbells (gaushala, dairy), koel,
+  pressure-cooker whistle, soft chain whirr when pedalling, freewheel tick when coasting, tyre
+  crunch on dirt. Search OpenGameArt CC0 and Pixabay (Pixabay Content Licence is allowed) for
+  each; if none exists, say which ones in one line. Same licence rule, same CREDITS table.
+  The children bed is a 6 s loop: find a longer one (30 s+) or it will sound like a stuck record.
+
 # 10 NOV 01:30. HER ASK: LOAD TIME, SOUND, CYCLE HANDLING. Outranks everything below.
 
 Her words (10 Nov): "The main things are still an issue, which is the game loading time and the
