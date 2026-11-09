@@ -7,7 +7,7 @@ import { STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox } from './collision
 import { addHandPumps } from './handPumps.js';
 import { addPots, flushMerged } from './pots.js';
 import { batchLateGroup, batchLiveMesh } from './placeBatch.js';
-import { settlingReleased, lazyDue, groundAt } from './standOn.js';
+import { settlingReleased, lazyDue, groundAt, keepOnGround, settleDy, markFigure } from './standOn.js';
 
 /**
  * Life scenes, second set (docs/PARALLEL.md section D): mosquito net over a charpai in an angan, rangoli at doorways,
@@ -348,20 +348,24 @@ export function createLifeScenes2(scene) {
     people.forEach((p, i) => { mesh.setColorAt(i, _c.setHex(p.tint)); });
     group.add(mesh); batchLiveMesh(mesh);
     mesh.userData.footExempt = people.map((p, i) => (p.tyre || p.hop || p.pump || p.lying ? i : -1)).filter((i) => i >= 0); // bouncing / rolling poses, and the sleeper lying on his charpai (authored on the bed, not on a foot): feet leave the ground by design (tools/feet-check.js)
+    // Feet on the real surface (D2, 9 Nov): one centre read missed a plinth edge under the foot (feet-check: 2 people 3.6 cm sunk
+    // into the panchayat step), and the old timer ran on capped game time, so a 1 fps browser never reached its late stages.
+    // The shared scheduler measures the whole foot band of the posed capsule, and re-runs whenever a surface lands under it.
+    markFigure(mesh);
+    for (const p of people) if (!p.tyre && !p.lying) p.gy = Math.max(0, groundAt(scene, p.x, p.z, 0.02, true));
+    animate(0); // instance matrices posed before the first settle (they start as identity)
+    keepOnGround(mesh, (s) => {
+      people.forEach((p, i) => {
+        if (p.tyre || p.lying || p.hop || p.pump) return;
+        for (let it = 0; it < 3; it++) { const dy = settleDy(s, mesh, i); if (Math.abs(dy) < 0.004 || Math.abs(dy) > 0.6) break; p.gy = (p.gy || 0) + dy; animate(0); }
+      });
+    });
     group.userData.placed = placed; group.userData.rangoli = rg;
     if (typeof window !== 'undefined') window.__lifeScenes2 = { placed, rangoli: rg, people: people.length };
   }
 
-  let gyAt = -1; // elapsed time of the last ground read; late .glb floors arrive for ~45 s
-  const GY_STAGES = [0, 2, 8, 25, 45];
-  function animate(dt) {
+  function animate(dt) { // p.gy: feet on the surface under them (a plinth, a step), set by the keepOnGround settle in build()
     elapsed += dt;
-    const stg = GY_STAGES.filter((t) => elapsed >= t).length;
-    if (stg !== gyAt) { // feet follow the surface under them (a plinth, a step): the authored poses all assume flat ground at y = 0
-      gyAt = stg;
-      const sc = group.parent;
-      if (sc) for (const p of people) if (!p.tyre && !p.lying) p.gy = Math.max(0, groundAt(sc, p.x, p.z, 0.02, true) - 0);
-    }
     people.forEach((p, i) => {
       const sc = p.h / NPC_H;
       let y = p.h / 2, lean = 0, ox = 0, oz = 0, yaw = p.yaw, sy = sc, sxz = sc * (p.r / NPC_R);
