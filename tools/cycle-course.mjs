@@ -196,18 +196,18 @@ function course() {
     const res = { lane: g.id, mapWidth: g.w, at: [+cx0.toFixed(1), +cz0.toFixed(1)], clearWidth: +g.clear.toFixed(2), how: mode };
     if (mode === 'ride') {
       // start against the right-hand edge (keep left: a U-turn to the left then has the full width), slow, full left lock
-      const off = g.clear / 2 - halfW - 0.15;
+      const off = g.clear / 2 - halfW - 1.2;
       // the lane normal (nx, nz) points left of travel when ux,uz is forward? right of travel = (cz, -sx) for heading h0
       const rx = Math.cos(h0), rz = -Math.sin(h0);
-      d.setCycle({ x: cx0 + rx * off, z: cz0 + rz * off, heading: h0, speed: 1.5 });
+      d.setCycle({ x: cx0 + rx * off, z: cz0 + rz * off, heading: h0, speed: 1.0 });
     } else d.setCycle({ x: cx0, z: cz0, heading: h0, speed: 0 });
     let backs = 0, phase = 'go', backT = 0;
     const t = run(label, 15, (s) => {
       if (Math.abs(wrap(s.heading - h0)) > Math.PI * 0.95) return 'stop';
       if (mode === 'spot') return { steer: -1 };
       if (phase === 'go') {
-        const nose = halfL + 0.3;
-        if (!free(s.x + Math.sin(s.heading) * nose, s.z + Math.cos(s.heading) * nose, 0.25)) { phase = 'back'; backT = 0; backs++; }
+        const nose = halfL + 0.1;
+        if (!free(s.x + Math.sin(s.heading) * nose, s.z + Math.cos(s.heading) * nose, 0.1)) { phase = 'back'; backT = 0; backs++; }
         return { pedal: 1.5 / 7.5, steer: -1 };
       }
       backT += DT; if (backT > 0.8) phase = 'go';
