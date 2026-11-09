@@ -51,6 +51,7 @@ export function setupLoadingScreen() {
   const markReady = () => {
     if (ready) return;
     ready = true;
+    (window.__loadMarks = window.__loadMarks || {}).markReady = performance.now();
     // Optional warm-up (shader compile) so Play only unlocks once the main thread is free again.
     const gate = readyGate;
     if (gate) { Promise.resolve().then(gate).catch(() => {}).then(finish); } else finish();
@@ -58,7 +59,9 @@ export function setupLoadingScreen() {
   const finish = () => {
     progressFill.style.width = '100%';
     overlay.classList.add('ready');
-    releaseSettling();
+    // Feet settling and the lazy builds keyed to it (armFrontage, mainRoadFrontage, gullyLife... via standOn.lazyDue) are
+    // released on the Play press (launch below), not here: run here they froze the title screen for 20-150 s right after
+    // the button appeared (D1, tools/load-time-test.mjs), so a press did nothing until they finished.
     window.__readyAt = performance.now();
   };
 
@@ -125,6 +128,7 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
     playBtn.removeEventListener('click', startNew);
     continueBtn.removeEventListener('click', startContinue);
     overlay.classList.add('hidden');
+    releaseSettling(); // see finish() in setupLoadingScreen: post-title work starts once the player is in
 
     if (isTouch) {
       touchControls.classList.add('active');

@@ -174,6 +174,27 @@ export function oldHouseMaterial(set) {
   return e ? sharedSetMaterial(set, e[0], { name: e[1] }) : null;
 }
 
+/**
+ * Older Blender buildings loaded through the relink plugin (src/sharedTextures.js: house_compound, temple, bazaar, kachcha homestead...)
+ * carry their masonry as a relinked plaster/brick/concrete material with only the light dpVar/dpWallGrime hooks, which reads as one flat
+ * colour from the saddle (tools/flat-wall-audit.mjs). This puts such a mesh on the shared old-house material by name (oldHouseMaterial),
+ * only when its exported repeat IS the library repeat and the geometry carries the vertex colours the shared material needs.
+ * Returns true when it swapped. Non-masonry, transparent, multi-material and off-repeat meshes are left alone.
+ */
+export function useOldHouseMasonry(o) {
+  if (!o || !o.isMesh || Array.isArray(o.material) || !o.material) return false;
+  const m = o.material, ud = m.userData || {};
+  if (m.transparent || !o.geometry || !o.geometry.attributes.color) return false;
+  const rl = ud.dopahar_relink;
+  const set = ud.dopahar_set || (rl && rl.set);
+  const e = OLD_HOUSE[set];
+  if (!e) return false;
+  const rep = ud.dopahar_repeat ?? (rl && rl.c && rl.c.s ? rl.c.s[0] : null);
+  if (rep == null || Math.abs(rep - e[0]) > 1e-3) return false;
+  o.material = oldHouseMaterial(set);
+  return true;
+}
+
 export function swapShared(o) {
   const ud = o.material && o.material.userData;
   if (ud && ud.dopahar_set) {

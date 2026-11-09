@@ -6,6 +6,7 @@ import { getGLTFLoader } from './loaders.js';
 import { requestColliderRebuild } from './collision.js';
 import { createCattleHerd } from './animals.js';
 import { applyTurn } from './turn.js';
+import { useOldHouseMasonry } from './stagingYard.js';
 
 // The abadi (docs/bg-houses-checklist.md, ART_REVIEW review 3): dense continuous ROWS of attached houses along a lane
 // network, not lonely single houses. Three Blender row models (tools/blender/build_abadi.py, modelled from Characters V1/
@@ -316,6 +317,7 @@ export function buildBackgroundHouses(scene, kit) {
         const set = { variantPlacements: mine, isNear, meshes: [] };
         gltf.scene.traverse((m) => {
           if (!m.isMesh) return;
+          useOldHouseMasonry(m); // the row's relinked plaster/brick/cement goes onto the shared weathered old-house material by name (stains, damp band, chips); per-house variation comes from the instance tint
           const inst = new THREE.InstancedMesh(m.geometry, m.material, mine.length);
           inst.count = 0;
           inst.visible = false;
@@ -340,7 +342,7 @@ export function buildBackgroundHouses(scene, kit) {
     kachcha = gltf.scene;
     kachcha.name = 'kachcha_homestead';
     kachcha.position.set(KACHCHA.x, 0, KACHCHA.z);
-    kachcha.traverse((m) => { if (m.isMesh) { m.userData.mergedStatic = true; m.receiveShadow = true; m.castShadow = m.material?.name !== 'hb_props'; } });
+    kachcha.traverse((m) => { if (m.isMesh) { useOldHouseMasonry(m); m.userData.mergedStatic = true; m.receiveShadow = true; m.castShadow = m.material?.name !== 'hb_props'; } });
     group.add(kachcha);
     kachcha2 = kachcha.clone(true);
     kachcha2.name = 'kachcha_homestead_2';

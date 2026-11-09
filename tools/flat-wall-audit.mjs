@@ -15,7 +15,10 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 
-const PORT = 5291, BASE = `http://localhost:${PORT}/`;
+// STATIC=1: build once into tmp/flat-audit-dist and serve it with vite preview, so concurrent edits by other builders cannot
+// trigger a dev-server reload mid-walk (which destroyed the page context and killed the run, 9 Nov)
+const STATIC = !!process.env.STATIC;
+const PORT = 5291, BASE = STATIC ? `http://localhost:${PORT}/village-game-web/` : `http://localhost:${PORT}/`;
 // stops: every house area (kit-house areas, abadi rows N/E/S/W, haveli plots, chauraha, gullies)
 const STOPS = [
   ['north_w', 545, -60], ['north_e', 630, -62], ['east', 685, -35], ['east_rich', 712, -45], ['south_e', 650, 62],
@@ -23,10 +26,19 @@ const STOPS = [
   ['gapA', 565, -31], ['gapB', 575, 50], ['gapC', 652, 12], ['chauraha', 603, 20], ['gully', 590, 30],
 ];
 const HOUSE = /house|abadi|haveli|plot|kachcha|chauraha_edge|edge_house|gully|homestead|kit_|hb_main|bg_|arm_frontage|main_road_frontage/i;
-const NOT_HOUSE = /people|ambient_life|cattle|lamp|shadow|collider|solids|lanes|decal|sign|board|tree|plant|leaf/i;
+// vehicles (jeep, scooters, ice-cream carts, the player's cycle) reuse the Blender kit's material NAME hb_main for painted body parts,
+// which matched /hb_main/ above; they are not house walls and must not wear the house damp band and plinth chips (9 Nov, D3)
+const NOT_HOUSE = /people|ambient_life|cattle|lamp|shadow|collider|solids|lanes|decal|sign|board|tree|plant|leaf|^jeep\/|^scooters\/|^icecream_carts\/|^player\//i;
 
 const wait = async (u) => { for (let i = 0; i < 120; i++) { try { await fetch(u); return; } catch { await new Promise((r) => setTimeout(r, 300)); } } throw new Error('server'); };
-const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+if (STATIC) {
+  const { spawnSync } = await import('node:child_process');
+  const b = spawnSync('npx', ['vite', 'build', '--outDir', 'tmp/flat-audit-dist', '--emptyOutDir'], { stdio: 'inherit' });
+  if (b.status !== 0) throw new Error('vite build failed');
+}
+const server = STATIC
+  ? spawn('npx', ['vite', 'preview', '--outDir', 'tmp/flat-audit-dist', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' })
+  : spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 try {
   await wait(BASE);
   const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });

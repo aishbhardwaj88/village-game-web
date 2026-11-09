@@ -107,7 +107,7 @@ function addHiddenColliderCarrier(group, boxes) {
 /** Geometries of one material can differ in indexing or attribute set (small prop modules vs Blender models); mergeGeometries needs them identical.
  * Leaves an already-compatible list untouched; otherwise makes all non-indexed with position/normal/uv (+ white colour if the material reads it). */
 function compatGeometries(list, material) {
-  const sig = (g) => (g.index ? 'i' : 'n') + Object.keys(g.attributes).sort().join(',');
+  const sig = (g) => (g.index ? 'i' : 'n') + Object.keys(g.attributes).sort().map((k) => k + g.attributes[k].itemSize).join(',');
   if (list.every((g) => sig(g) === sig(list[0]))) return list;
   return list.map((g0) => {
     const g = g0.index ? g0.toNonIndexed() : g0;
@@ -116,6 +116,12 @@ function compatGeometries(list, material) {
     if (!g.attributes.normal) g.computeVertexNormals();
     if (material.vertexColors && !g.attributes.color) g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
     else if (!material.vertexColors && g.attributes.color) g.deleteAttribute('color');
+    const col = g.attributes.color;
+    if (col && col.itemSize !== 3) { // a glb's RGBA colour beside code-built RGB: mergeGeometries returns null on mixed item sizes
+      const rgb = new Float32Array(col.count * 3);
+      for (let i = 0; i < col.count; i++) { rgb[i * 3] = col.getX(i); rgb[i * 3 + 1] = col.getY(i); rgb[i * 3 + 2] = col.itemSize > 2 ? col.getZ(i) : 1; }
+      g.setAttribute('color', new THREE.BufferAttribute(rgb, 3));
+    }
     return g;
   });
 }

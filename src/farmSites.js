@@ -8,6 +8,7 @@ import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { getTiledMaterial } from './materials.js';
 import { addLaundryLine, LAUNDRY_HALF_SPAN } from './laundryLine.js';
 import { getGLTFLoader } from './loaders.js';
+import { oldHouseMaterial, useOldHouseMasonry } from './stagingYard.js';
 import { addPots, flushMerged } from './pots.js';
 import { addHandPumps } from './handPumps.js';
 import { addTaps } from './taps.js';
@@ -913,7 +914,8 @@ function orientedSolids(position, ry, rects) {
 }
 
 function finishSite(name, geos, position, opts = {}) {
-  const mesh = new THREE.Mesh(mergeGeometries(geos), vcMat(opts));
+  // opts.oldHouse: a dwelling's plaster wears the shared weathered old-house material by name (src/stagingYard.js oldHouseMaterial), not a site clone
+  const mesh = new THREE.Mesh(mergeGeometries(geos), (opts.oldHouse && oldHouseMaterial('plaster')) || vcMat(opts));
   if (opts.solids) mesh.userData.colliderBoxes = solidBoxes(position, opts.solids);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -1749,7 +1751,7 @@ export function createOldHaveli(position) {
   // Low boundary wall and gate approach.
   for (const sx of [-1, 1]) geos.push(bake(new THREE.BoxGeometry(10, 1.2, 0.3), at(sx * 11, 0.6, 14), 0xd8c9a4));
   geos.push(bake(new THREE.BoxGeometry(12, 0.06, 4), at(0, 0.03, 12), 0xb09a78));
-  return finishSite('old_haveli', geos, position, { solids: ranges.map(([w, d, x, z]) => [x, z, w, d]), boards: [{ id: 'haveli', x: 0, y: 7.1, z: 10.12, w: 5.2 }] });
+  return finishSite('old_haveli', geos, position, { oldHouse: true, solids: ranges.map(([w, d, x, z]) => [x, z, w, d]), boards: [{ id: 'haveli', x: 0, y: 7.1, z: 10.12, w: 5.2 }] });
 }
 
 /** Gaushala (MAP.md, village edge). Rebuilt 25 Oct 2026 from the art director's approved
@@ -1810,6 +1812,7 @@ export function createGaushala(position) {
     const model = gltf.scene;
     model.traverse((o) => {
       if (!o.isMesh) return;
+      useOldHouseMasonry(o); // masonry at the library repeat wears the shared weathered old-house material (src/stagingYard.js)
       o.castShadow = true;
       o.receiveShadow = true;
     });

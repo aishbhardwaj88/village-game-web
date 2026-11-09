@@ -244,7 +244,8 @@ const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
-  setReadyGate(async () => { try { await Promise.race([renderer.compileAsync(scene, camera), new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } renderOK = true; });
+  const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
+  setReadyGate(async () => { _lm.gateStart = performance.now(); try { const p = renderer.compileAsync(scene, camera); _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, 3000))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); renderOK = true; });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
 
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
@@ -3159,7 +3160,7 @@ async function main() {
     const _pt1 = performance.now();
     // The opaque title overlay hides the canvas until ready: skip the 3D render (and its shader compiles) so the main
     // thread spends the loading time on loading. The first render happens the frame after markReady, before any press.
-    if (renderOK) composer.render();
+    if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) _lm.firstRender = performance.now(); }
     const _pt2 = performance.now();
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);

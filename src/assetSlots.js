@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { applyWallBaseGrime } from './materials.js';
 import { batchPlaceModel } from './placeBatch.js';
+import { useOldHouseMasonry } from './stagingYard.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -173,6 +174,8 @@ export function createAssetSlotRegistry() {
         if (Array.isArray(o.material)) o.material.forEach(enforceMatteMaterial);
         else enforceMatteMaterial(o.material);
         if (slot.exact) {
+          // masonry at the library repeat wears the shared old-house wall material (src/stagingYard.js), the rest keeps the base grime
+          if (useOldHouseMasonry(o)) return;
           if (Array.isArray(o.material)) o.material.forEach(applyWallBaseGrime);
           else applyWallBaseGrime(o.material);
         }

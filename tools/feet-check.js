@@ -24,7 +24,8 @@ import { fileURLToPath } from 'node:url';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PORT = 5197;
+const PORT = +(process.env.FEET_PORT || 5197);
+const OUTDIR = process.env.FEET_OUTDIR || 'dist'; // a private build dir, so a parallel `vite build` cannot swap dist/ mid-run
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
 const TOL = 0.03;
 
@@ -174,18 +175,25 @@ function inPage(cfg) {
 
 async function main() {
   const t0 = Date.now();
-  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'pipe' });
+  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort', '--outDir', OUTDIR], { cwd: ROOT, stdio: 'pipe' });
   let failures = 0;
   try {
     await waitForServer(BASE_URL);
     const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
     const page = await browser.newPage({ viewport: { width: 640, height: 400 } });
     page.setDefaultTimeout(0);
-    page.on('pageerror', (e) => console.error('pageerror:', e.message));
+    let errs = 0;
+    page.on('pageerror', (e) => { if (errs++ < 3) console.error('pageerror:', e.stack || e.message); });
     await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await page.waitForSelector('#start-overlay.ready', { timeout: 30000 }).catch(() => {});
-    await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
-    await page.waitForFunction(() => window.__dopahar && window.__dopahar.zoneManager && window.__dopahar.dialogue, null, { timeout: 120000 });
+    // press Play until the game is up: the listener may be attached after the overlay first shows (load sequencing)
+    await page.waitForFunction(() => {
+      const d = window.__dopahar;
+      if (d && d.zoneManager && d.dialogue) return true;
+      const b = document.getElementById('play-btn');
+      if (b) { b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); b.click(); }
+      return false;
+    }, null, { timeout: 180000, polling: 1000 });
     await page.waitForTimeout(1500);
     await page.evaluate(forceZones);
     await page.waitForTimeout(5000); // zone .glb swaps arrive async

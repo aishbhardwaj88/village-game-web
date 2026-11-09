@@ -220,6 +220,7 @@ if (typeof window !== 'undefined') {
       return n;
     },
     count: () => ENTRIES.length,
+    state: () => ENTRIES.map((e) => [e.obj.name || e.obj.type, e.stage, !!e.again, e.t0 ? Math.round(performance.now() - e.t0) : -1, !!sceneOf(e.obj)]),
     settleDy, groundAt, // tools/feet-check diagnostics
   };
 }
