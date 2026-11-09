@@ -64,7 +64,9 @@ function buildIndex(scene) {
   pAdd('standOn.buildIndex', performance.now() - _t);
 }
 const INDEX_MAX_AGE = 5000; // a full-scene traverse is a visible hitch: rebuild rarely, never from a per-frame caller
+let inRun = false; // inside a scheduled settle run: runEntry already refreshed the index once, never again per ray
 function getIndex(scene, fresh = false) {
+  if (inRun) fresh = false;
   if (!index || index.scene !== scene || (fresh && performance.now() - index.at > INDEX_MAX_AGE)) buildIndex(scene);
   return index;
 }
@@ -73,6 +75,7 @@ const _ray = new THREE.Raycaster();
 _ray.layers.enableAll(); // place-batched source meshes sit on a hidden layer but are still the real geometry
 const _down = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3();
 const _cands = [];
+let lastHit = null; // tools/feet-check diagnostics: the mesh groundAt last stood on
 /** Height of the surface at (x, z) a figure with feet at footY stands on. */
 export function groundAt(scene, x, z, footY = 0, fresh = true) {
   let best = dipHeightRaw(x, z);
@@ -92,8 +95,8 @@ export function groundAt(scene, x, z, footY = 0, fresh = true) {
     _ray.set(_o.set(x, top, z), _down);
     _ray.far = top - best + 0.01;
     const hits = _ray.intersectObjects(_cands, false);
-    if (hits.length && hits[0].point.y > best) best = hits[0].point.y;
-  }
+    if (hits.length && hits[0].point.y > best) { best = hits[0].point.y; lastHit = hits[0].object; } else lastHit = null;
+  } else lastHit = null;
   return best;
 }
 
@@ -193,12 +196,16 @@ export { sceneOf };
 
 // ---------------------------------------------------------------- scheduler (own rAF, so no main.js hook)
 const ENTRIES = [];
-const STAGES = [0, 3000, 40000]; // 40 s: road strip chunks stream in late and sit 3 cm above the dips ground
+const STAGES = [0, 3000, 10000, 20000, 30000, 40000, 50000, 60000, 75000, 90000]; // re-settle every ~10 s for 90 s as zone models stream in; 40 s: road strip chunks stream in late and sit 3 cm above the dips ground
 function sceneOf(o) { for (let q = o; q; q = q.parent) if (q.isScene) return q; return null; }
 function runEntry(e, scene, now) {
   const _r = performance.now();
   pending = false;
-  try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); }
+  // One index refresh per stage, here, never per ray: on a slow frame (1 fps test browser) every ray found the index >5 s old
+  // and re-traversed the whole scene, so each 3 ms slice settled ONE figure and most entries never left stage 0 (feet-check 73 fails).
+  if (!e.again) getIndex(scene, true);
+  inRun = true;
+  try { e.fn(scene); } catch (err) { console.error('standOn settle failed', err); } finally { inRun = false; }
   const _d = performance.now() - _r;
   if (_d > 40 && typeof window !== 'undefined') (window.__standOnSlow = window.__standOnSlow || []).push([e.obj.name || e.obj.type, e.stage, Math.round(_d)]);
   e.lx = e.obj.position.x; e.lz = e.obj.position.z;
@@ -262,5 +269,7 @@ if (typeof window !== 'undefined') {
     count: () => ENTRIES.length,
     state: () => ENTRIES.map((e) => [e.obj.name || e.obj.type, e.stage, !!e.again, e.t0 ? Math.round(performance.now() - e.t0) : -1, !!sceneOf(e.obj)]),
     settleDy, groundAt, // tools/feet-check diagnostics
+    lastHit: () => lastHit,
+    indexed(o) { const idx = index; if (!idx) return 'no index'; for (const a of idx.cells.values()) for (const s of a) if (s.o === o) return 'cell'; for (const s of idx.big) if (s.o === o) return 'big'; return FIGURES.has(o) ? 'figure' : 'absent'; },
   };
 }

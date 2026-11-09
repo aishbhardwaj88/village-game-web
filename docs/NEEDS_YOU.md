@@ -1,6 +1,6 @@
 # Needs you
 
-- NOT READY for her test (9 Nov 08:05): D1-D4 builders returned no changes by 07:56. Only a D2 feet edit landed (feet-check now 73 of 258 figures off by >3 cm, worse than the 45 of 218 before, mostly figures on jute/kit-house roofs). Build 12/22 as before, draw calls 160-173 in bazaar/school/haveli/temple, load time, flat walls, mandi/gurudwara/panchayat facing not done. Peacock needs a model from you. - status: open
+- NOT READY for her test (9 Nov 08:45): D3 audit finds 0 flat house walls (done; only site walls/merged brick remain flat, say if you want them too). D4 mandi/gurudwara/panchayat already face their roads (done). D2 feet-check still 74 of 268 off by >3 cm (extra settle passes did not help; cause is specific meshes like gully jute and kit-house roofs). D1 load time not fixed (headless 16-24 s), draw calls 160-173 in bazaar/school/haveli/temple, build 12/22, collision-test timed out before checks. Peacock needs a model from you. - status: open
 
 Plain-language list of anything blocked on you. No jargon. The dashboard shows this at
 the top. Mark an item done from the dashboard, or edit this file directly. Keep each
