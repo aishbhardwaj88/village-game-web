@@ -1,3 +1,47 @@
+# 9 NOV 21:00. HER PLAYTEST. Lag, sound, cycle. Everything below outranks all other work.
+
+Her words: "game is lagging a lot. Things load by the time I have already reached the place
+... cycle is also moving too slow now ... seems like I'm riding a cycle which is punctured.
+Even the cycle controls are very tight ... why is the cycle wheel going inside the ground ...
+why do I hear a constant tractor sound ... bird shrill ... need to be an option on top right
+to mute the sound."
+
+## S1. Things load after she arrives (pop-in) and the frame stalls when they do.
+Cause: zones build at runtime only within 50-90 m (src/main.js zoneManager.register,
+buildRadius 50-90), on the main thread, in one go. At cycle speed that is 7-15 s ahead, and
+each build is a visible stall.
+- Raise build radii so everything along a road is built at least 250 m ahead.
+- **Time-slice every zone build**: no single frame spends more than ~4 ms building.
+- Build AHEAD in the direction of travel first.
+- Report: largest single-frame stall during a ride, before and after.
+
+## S2. FPS counter on the F key, top-left, small. Shows fps and frame ms.
+Claude's test machine has no GPU (software rendering, 1-2 fps), so ONLY she can measure the
+real thing. This lets her read a number to us.
+
+## S3. Cycle.
+- Top speed 5.5 -> **7.5 m/s** (27 km/h). **Shift = sprint to 9.5 m/s.**
+- Reach top speed in ~1 s, not a slow crawl. Coasting decay ~5 s.
+- Steering: more responsive ("controls are very tight"). Raise the steering rate, keep it
+  speed-dependent so it is stable fast and nimble slow.
+- **Wheels sit ON the ground, never in it.** Snap the cycle model so the wheel bottoms touch
+  ground height every frame, on slopes and the dug dips too.
+
+## S4. Sound. "Instead of adding delight, are making it very difficult."
+- **No tractor/engine sound while on the cycle.** src/audio.js vehicleKind === 'tractor'
+  engine loop: find why it plays when riding and stop it. Engine sound only when actually
+  driving the tractor.
+- **Birds: rarer, softer, irregular.** Random gaps 8-40 s, lower volume, distance-based, a
+  mix of species, never the same sharp chirp on a beat.
+- **Overall ambience quieter and further away.** It should read as a village in the
+  background, not as effects in your ear.
+- **Mute button TOP RIGHT**, always visible, speaker icon, toggles all sound, remembers its
+  state. (The M key stays as well.)
+
+Then the earlier list.
+
+---
+
 # 17:15. THREE THINGS LEFT, THEN READY. Target READY 19:00 IST.
 
 Passing: draw calls 101-128 in all 8 zones, feet-check 0/348, findability 0/40, 0 console
