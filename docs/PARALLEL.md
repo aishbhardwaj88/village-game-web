@@ -1,3 +1,40 @@
+# 10 NOV 18:15. HER TEST MOVED TO ~20:00 IST. Freeze lifted until 19:45.
+Do now, in order: G2 and G3 (nothing sinks into the ground: fix the dairy, khalihan, bhatta,
+gurukul parts, the ride-nook props, carts, vehicles and the 3 floating people first, worst
+first), get the build green, commit. **New freeze 19:45**: last commit before then must be green
+and pushed. After 19:45 docs only.
+
+# 10 NOV 18:00. NEXT IN THE QUEUE: L1, MOVE THE VILLAGE TO HER FINAL MAP. Positions only.
+**When:** she is rearranging this map herself tonight (10 Nov). Start L1 only when a newer layout
+file `docs/layout/village-plan-2026-11-10*.json` exists (the art director will add it); until then
+keep working the rest of this file, do not wait. Also not before her 18:30 test is over. Once the
+new file is there, L1 outranks everything else in this file and uses THAT file, not the 1 Nov one.
+
+Source of truth: the NEWEST `docs/layout/village-plan-*.png` + `village-plan-positions-*.json` pair (by date in the
+name). It replaces every earlier layout file. Metres, +x east, +z south, 1:2000.
+
+Do this:
+1. Every entry in "places" whose "in_code_today" names something already built: move it to
+   "centre" and turn it to "turn_deg". Use its "shapes", "house_footprints" or "units_in_order"
+   for the exact footprint. Bazaar units follow "bazaar_units_west_to_east".
+2. Move the already-built roads and lanes to match "roads" and "lanes_and_tracks", so every
+   place's front touches its lane exactly as on the map.
+3. Move only what is already built. Build nothing new. Every place marked "NEW, not built yet",
+   and every lane, farm track or wall the game does not have yet, stays unbuilt: list them in
+   `docs/NEEDS_YOU.md` under "From the final map, not built yet" (one line each).
+4. Keep every place's size, art and behaviour as it is. Do not change vehicle speeds, missions,
+   NPCs or anything else.
+5. Keep relative positions exact. You may shift the whole layout as one piece to sit in the world.
+6. Anything that would overlap or cannot move cleanly: do not guess. One line in NEEDS_YOU, then
+   carry on with the rest.
+7. Re-point everything that uses old coordinates: side-job markers (src/jobs/data.js, gate.js,
+   gilli), NPC routes, door routing, minimap, lane graph, anchors.
+8. Every build/test under `timeout 1500`, as usual.
+
+Done when: in a real playthrough every built place stands where the map shows it and faces its
+lane; nothing overlaps; the on-foot findability walk reaches every place; no new console errors;
+build green. Commit, update handoff.
+
 # 10 NOV 16:50. NOTHING GOES INTO THE GROUND. Her words: "Be it people, be it vehicles, be it
 things, nothing should go inside the ground. Some pots were sunken, a cart was sunken, cycle was
 being run inside the ground, people's feet were inside the ground."
