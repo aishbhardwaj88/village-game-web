@@ -112,7 +112,8 @@ function install(cfg) {
 
   // ---------- classification (once) ----------
   const staticObjs = [], figures = [], figureMeshes = new Set(), surfaceList = [], propSurf = new Set();
-  let surfIsProp = null;
+  let surfIsProp = null, surfRoot = [];
+  const placeRootOf = (path) => { const m = /^(.*?[a-z0-9]_v2)(?:_wrap)?\//.exec(path); return m ? m[1].replace(/_wrap$/, '') : ''; };
   function classify() {
     d.scene.updateMatrixWorld(true);
     const vehicleGroups = new Set((d.vehicles || []).map((x) => x.group).filter(Boolean));
@@ -150,6 +151,7 @@ function install(cfg) {
     });
     const vehicles = (d.vehicles || []).filter((x) => x.group && shown(x.group)).length;
     surfIsProp = surfaceList.map((o) => propSurf.has(o));
+    surfRoot = surfaceList.map((o) => placeRootOf(pathOf(o)));
     return { props: staticObjs.length, figures: figures.length, surfaces: surfaceList.length - staticObjs.length, vehicles };
   }
 
@@ -200,16 +202,18 @@ function install(cfg) {
     if (l1 < -1e-6 || l2 < -1e-6 || l3 < -1e-6) return null;
     return l1 * tris[o + 1] + l2 * tris[o + 4] + l3 * tris[o + 7];
   }
-  function surfaceAt(x, z, footY, probe = 0.3, props = false) {
+  /** own = place-model root of the piece being measured: that model's own upward faces (plinth, deck, step) count as ground for it,
+   *  but only faces no higher than the piece's own point (+2 cm), so a piece never stands on its own top. */
+  function surfaceAt(x, z, footY, probe = 0.3, props = false, own = '', ptY = 0) {
     let best = dipH(x, z), bt = -1;
     const top = footY + probe;
-    const scan = (arr) => { if (!arr) return; for (const t of arr) { if (!props && surfIsProp[tris[t * 10 + 9]]) continue; const y = triY(t, x, z); if (y !== null && y <= top && y > best) { best = y; bt = t; } } };
+    const scan = (arr) => { if (!arr) return; for (const t of arr) { const si = tris[t * 10 + 9]; const isOwn = own && surfRoot[si] === own; if (!props && surfIsProp[si] && !isOwn) continue; const y = triY(t, x, z); if (y !== null && y <= (isOwn ? Math.min(top, ptY + 0.02) : top) && y > best) { best = y; bt = t; } } };
     scan(cells.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL)))); scan(big);
     return { y: best, what: bt < 0 ? (best < -0.005 ? 'dug ground' : 'ground') : pathOf(surfaceList[tris[bt * 10 + 9]]) };
   }
 
   /** pts flat [x,y,z,...]. Clearance over the 12 cm bottom band, 8 cm buckets. */
-  function clearanceOf(pts, n, probe, props = false) {
+  function clearanceOf(pts, n, probe, props = false, own = '') {
     let minY = Infinity;
     for (let k = 0; k < n; k++) if (pts[k * 3 + 1] < minY) minY = pts[k * 3 + 1];
     if (!isFinite(minY)) return null;
@@ -224,7 +228,7 @@ function install(cfg) {
     let clear = Infinity, at = null, on = '', cnt = 0;
     for (const [x, y, z] of buckets.values()) {
       if (++cnt > 32) break;
-      const s = surfaceAt(x, z, minY, probe, props);
+      const s = surfaceAt(x, z, minY, probe, props, own, y);
       const c = y - s.y;
       if (c < clear) { clear = c; at = [x, z]; on = s.what; }
     }
@@ -287,7 +291,7 @@ function install(cfg) {
       for (const part of parts) {
         const pts = new Float32Array(part.length * 3);
         for (let k = 0; k < part.length; k++) { v.fromBufferAttribute(pos, part[k]).applyMatrix4(mw); pts[k * 3] = v.x; pts[k * 3 + 1] = v.y; pts[k * 3 + 2] = v.z; }
-        const c = clearanceOf(pts, part.length);
+        const c = clearanceOf(pts, part.length, 0.3, false, placeRootOf(path));
         if (!c) continue;
         if (c.clear > 0.25 || c.clear < -0.6) { elevated++; continue; }
         staticOut.push(rec(type, sub, 'static', path, c, { verts: part.length }));
