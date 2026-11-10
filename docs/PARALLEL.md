@@ -1,3 +1,21 @@
+# 10 NOV 16:50. NOTHING GOES INTO THE GROUND. Her words: "Be it people, be it vehicles, be it
+things, nothing should go inside the ground. Some pots were sunken, a cart was sunken, cycle was
+being run inside the ground, people's feet were inside the ground."
+feet-check (348 figures) only covers people standing still. Widen it to EVERYTHING.
+- **G1 tools/ground-check.js**: for every placed object (props, pots, carts, vehicles, animals,
+  people, the player cycle) compare its lowest point with the ground height under it (terrain,
+  dips, roads, plinths). Fail if more than 2 cm below or 3 cm above. Run it standing still AND
+  sampled during a 90 s scripted ride (moving NPCs, carts, the player cycle every frame).
+  Report the count by type and the 20 worst with names and positions.
+- **G2 static things**: settle every prop at placement onto the real ground height (the shared
+  settle scheduler, time-sliced). Sunk pots and the sunk cart first.
+- **G3 moving things**: walking people, carts, vehicles and the player cycle take the ground
+  height under their feet / each wheel every frame (cheap height lookup, not a raycast per
+  frame), so they never dip into slopes or the dug dips. Wheels: both wheel bottoms on the
+  ground, body pitched to match.
+- Target: ground-check 0 failures, standing and riding. Add it to npm run build so it stays 0.
+- Fits the 18:00 freeze: commit only green parts before 18:00; after her test continue to 0.
+
 # 10 NOV 16:35. SHE TESTS AT 18:30 IST.
 1. Finish the camera-raycast slicing (src/player.js) and find the 53 ms frame. Commit only if green.
 2. **Freeze at 18:00:** no game-code commits after 18:00 unless they fix a breakage. Last commit
