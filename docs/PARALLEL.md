@@ -1,3 +1,7 @@
+# 10 NOV 16:00 RULE. Run 597 sat 10 hours (05:58 to 15:53) waiting on a build that never ended.
+Every build, test or profile command runs under `timeout 1500` (25 min). If it times out,
+note it in the handoff and move on. Then: commit the 6 uncommitted files if the build passes.
+
 # 10 NOV 04:00 CHECK (tech lead). Two misses against the order. Do these first.
 - **C-fix. Turning circle is double the order.** Measured 12 m at 7.5 m/s and 18 m sprinting;
   the order said ~6 m and ~9 m (4.7 m slow is fine). Her complaint is "controls are very
