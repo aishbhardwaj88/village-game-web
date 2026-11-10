@@ -57,6 +57,7 @@ function buildIndex(scene) {
     if (c.gen !== indexGen) fresh.push(b); // not in the last index: a new or changed surface (a zone .glb swapped in, a house shown again), so figures over it settle again
     c.gen = indexGen + 1;
     const s = { o, b, stamp };
+    noteStatic(o, top);
     const x0 = Math.floor(b.min.x / CELL), x1 = Math.floor(b.max.x / CELL), z0 = Math.floor(b.min.z / CELL), z1 = Math.floor(b.max.z / CELL);
     if ((x1 - x0 + 1) * (z1 - z0 + 1) > 64) { big.push(s); return; }
     for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) {
@@ -114,7 +115,7 @@ function gridOf(o, stamp) {
       ranges.push([Math.max(gr.start, dr.start), Math.min(cnt, gr.start + gr.count, dr.start + dr.count), m.side]);
     }
   } else if (mats) ranges.push([Math.max(0, dr.start), Math.min(cnt, dr.start + dr.count), mats.side]);
-  const verts = [], cells = new Map();
+  const verts = [], cells = new Map(), srcv = []; // srcv: first vertex index of each triangle (static settle masks its own prop's faces)
   const ninst = o.isInstancedMesh ? o.count : 1;
   for (let k = 0; k < ninst; k++) {
     _gm.copy(o.matrixWorld);
@@ -127,6 +128,7 @@ function gridOf(o, stamp) {
         const ny = ((_gb.z - _ga.z) * (_gc.x - _ga.x) - (_gb.x - _ga.x) * (_gc.z - _ga.z)) * flip; // (b-a)x(c-a).y, in the mesh's own winding
         if (ny === 0 || (side === THREE.FrontSide && ny < 0) || (side === THREE.BackSide && ny > 0)) continue; // a ray straight down only hits these faces
         const id = verts.length / 9;
+        srcv.push(ia);
         verts.push(_ga.x, _ga.y, _ga.z, _gb.x, _gb.y, _gb.z, _gc.x, _gc.y, _gc.z);
         const x0 = Math.floor(Math.min(_ga.x, _gb.x, _gc.x) / GCELL), x1 = Math.floor(Math.max(_ga.x, _gb.x, _gc.x) / GCELL);
         const z0 = Math.floor(Math.min(_ga.z, _gb.z, _gc.z) / GCELL), z1 = Math.floor(Math.max(_ga.z, _gb.z, _gc.z) / GCELL);
@@ -137,7 +139,7 @@ function gridOf(o, stamp) {
       }
     }
   }
-  g = { stamp, geo, n: pos.count, ver, sum, v: new Float32Array(verts), cells };
+  g = { stamp, geo, n: pos.count, ver, sum, v: new Float32Array(verts), cells, src: o.isInstancedMesh ? null : Int32Array.from(srcv) };
   gridCache.set(o, g);
   pAdd('standOn.grid', performance.now() - _t);
   if (typeof window !== 'undefined' && window.__standOnGridLog) { const L = window.__standOnGridLog, k = topName(o) + '/' + o.name; const r = L[k] || (L[k] = [0, 0, 0]); r[0]++; r[1] += performance.now() - _t; r[2] = verts.length / 9; }
@@ -159,8 +161,10 @@ function gridHit(o, stamp, x, z, lo, hi) {
   const ids = g.cells.get(Math.floor(x / GCELL) * 100003 + Math.floor(z / GCELL));
   if (!ids) return -Infinity;
   const v = g.v;
+  const mask = SELF && g.src ? SELF.get(o) : null; // a static prop being settled never stands on its own faces
   let best = -Infinity;
   for (const id of ids) {
+    if (mask && mask[g.src[id]] === SELF_ID) continue;
     const p = id * 9;
     const ax = v[p], ay = v[p + 1], az = v[p + 2], bx = v[p + 3], by = v[p + 4], bz = v[p + 5], cx = v[p + 6], cy = v[p + 7], cz = v[p + 8];
     if (Math.max(ay, by, cy) < lo || Math.min(ay, by, cy) > hi) continue;
@@ -378,6 +382,226 @@ export function keepOnGround(obj, fn, moving = false) {
   if (!started && typeof requestAnimationFrame !== 'undefined') { started = true; requestAnimationFrame(tick); }
 }
 
+// ---------------------------------------------------------------- static props (G2, 10 Nov: "some pots were sunken, a cart was sunken")
+// Props are built at y = 0 (or a hand-typed height), but the surface under them is not always 0: road and lane strips sit 1-8 cm
+// proud of the ground plane, chabutras and plinths more, and the pond / johad / canal banks are dug below it (src/dips.js). Every
+// static prop mesh (the same set tools/ground-check.js measures) is split into connected pieces, touching pieces are grouped into one
+// rigid prop (a cart and its wheels, a matka stack and its plank), and each group is moved straight up or down onto the surface
+// under its lowest points, on the same time-sliced scheduler (and the same re-runs as zone .glb floors stream in) as the figures.
+// Only the prop's own faces are ignored as ground; everything else (a plinth, a stool in another mesh, the road) is a surface.
+const STATIC_SKIP_TOP = /^(ground|sky|npc_|vehicle_|player|trolley|jeep|waypoint|placebatch|place_batches|place_boards_batch|contact_shadows|hero_zone|shops$|bazaar_row|arm_frontage_houses|main_road_frontage_houses|map_wall|background_houses|village_kit_houses|village_static_merged|blender_|canal|pond|johad|roof_|field|vegetation|trees|flowering_plants|place_|trim|material_board|ration_shop|tv_house|panchayat|temple_area|chaupal|banta_shop|tripo_|switchboard|wayfinding|map_gates|mapCompound|sugarcane|houses_kit|ambient_life)/i;
+const PORTABLE = /pot|matka|ghada|surahi|kulhad|terracotta|ceramic|cart|thela|rehri|icecream|sack|jute|crate|drum|bucket|charpai|stool|bench|cycle|scooter|trough|basket/i;
+const ISLAND_MAX = 3.2, CLUSTER_MAX = 4.2; // bigger pieces are buildings, roads, platforms: surfaces, never moved
+const SINK_ANY = 0.12, SINK_PORTABLE = 0.2, FLOAT_MAX = 0.08, DIP_FLOAT_MAX = 1.6, DIP_WATERLINE = -0.33;
+const STATIC_TOPS = new WeakSet(), STATIC_LIST = [];
+let SELF = null, SELF_ID = 0; // groundAt ignores triangles whose vertex mask === SELF_ID (the prop being settled)
+const staticStats = { tops: 0, clusters: 0, moved: 0, lifted: 0, lowered: 0, maxLift: 0, maxDrop: 0, skippedShared: 0, log: [] };
+function staticMesh(o, top) {
+  if (!o.isMesh || o.isInstancedMesh || o.isBatchedMesh || FIGURES.has(o) || o.userData.noSettle) return false;
+  if (o.userData.propBucket) return true; // the village merge's ground-clutter buckets (src/mergeUtils.js): pots, charpais, crates
+  if (STATIC_SKIP_TOP.test(top)) return false;
+  const g = o.geometry, p = g && g.attributes.position;
+  return !!p && p.count <= 200000 && g.type !== 'CapsuleGeometry';
+}
+function noteStatic(o, top) {
+  if (!staticMesh(o, top) || (typeof window !== 'undefined' && window.__noStaticSettle)) return; // __noStaticSettle: before/after proof shots
+  let t = o; while (t.parent && !t.parent.isScene) t = t.parent;
+  if (STATIC_TOPS.has(t)) return;
+  STATIC_TOPS.add(t); staticStats.tops++; STATIC_LIST.push(new WeakRef(t));
+  keepOnGround(t, (sc) => settleStatic(sc, t));
+}
+/** Connected pieces of a geometry by its index (no weld: flat-shaded faces come out as separate pieces and are joined again by the
+ *  touching-box grouping below). Cached per geometry. */
+const pieceCache = new WeakMap();
+function piecesOf(geo) {
+  const pos = geo.attributes.position, n = pos.count;
+  let c = pieceCache.get(geo);
+  if (c && c.n === n) return c.list;
+  const parent = new Int32Array(n); for (let i = 0; i < n; i++) parent[i] = i;
+  const find = (a) => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+  const ix = geo.index ? geo.index.array : null, m = ix ? ix.length : n - (n % 3);
+  for (let i = 0; i + 2 < m; i += 3) {
+    const a = find(ix ? ix[i] : i), b = find(ix ? ix[i + 1] : i + 1), d = find(ix ? ix[i + 2] : i + 2);
+    if (a !== b) parent[a] = b;
+    const r = find(b); if (r !== d) parent[d] = r;
+  }
+  const map = new Map(), cnt = new Int32Array(n);
+  for (let i = 0; i < n; i++) { const r = find(i); parent[i] = r; cnt[r]++; }
+  const list = [];
+  for (let i = 0; i < n; i++) { const r = parent[i]; let a = map.get(r); if (!a) { a = new Int32Array(cnt[r]); a.k = 0; map.set(r, a); list.push(a); } a[a.k++] = i; }
+  pieceCache.set(geo, (c = { n, list }));
+  return list;
+}
+const geoOwner = new WeakMap(); // geometry -> the one mesh allowed to edit it (shared geometry moves the mesh instead, or not at all)
+const sstate = new WeakMap(); // top -> resumable run state
+const _sv = new THREE.Vector3();
+function settleStatic(scene, top) {
+  const deadline = performance.now() + SLICE_MS;
+  let st = sstate.get(top);
+  if (!st || !curEntry || !curEntry.again) { // a fresh run: list the prop meshes again (pots and models arrive late, zones re-stream)
+    const meshes = [];
+    top.updateWorldMatrix(true, true);
+    top.traverse((o) => {
+      if (!staticMesh(o, top.name || '') || !shown(o)) return;
+      const nm = o.name.replace(NOOK, 'nook'), mat = Array.isArray(o.material) ? o.material[0] : o.material;
+      if (SKIP.test(nm) || (mat && (SKIP.test(mat.name || '') || (mat.transparent && mat.opacity < 0.5)))) return;
+      const e = o.matrixWorld.elements;
+      if (Math.abs(e[4]) > 1e-3 * Math.abs(e[5]) || Math.abs(e[6]) > 1e-3 * Math.abs(e[5])) return; // tilted frame: a world dy is not a local dy
+      const own = geoOwner.get(o.geometry);
+      if (own && own !== o) { o.userData._sharedGeo = true; }
+      else geoOwner.set(o.geometry, o);
+      meshes.push(o);
+    });
+    st = { meshes, mi: 0, pieces: [], clusters: null, ci: 0, dirty: new Set() };
+    sstate.set(top, st);
+  }
+  // 1. small pieces near the ground, with world boxes
+  for (; st.mi < st.meshes.length; st.mi++) {
+    if (st.mi > 0 && sliceSpent(deadline)) return;
+    const o = st.meshes[st.mi], pos = o.geometry.attributes.position, e = o.matrixWorld.elements;
+    for (const vs of piecesOf(o.geometry)) {
+      let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+      for (let k = 0; k < vs.length; k++) {
+        _sv.fromBufferAttribute(pos, vs[k]).applyMatrix4(o.matrixWorld);
+        if (_sv.x < x0) x0 = _sv.x; if (_sv.x > x1) x1 = _sv.x; if (_sv.y < y0) y0 = _sv.y; if (_sv.y > y1) y1 = _sv.y; if (_sv.z < z0) z0 = _sv.z; if (_sv.z > z1) z1 = _sv.z;
+      }
+      if (y0 > 1.0 || y0 < -1.7 || x1 - x0 > ISLAND_MAX || z1 - z0 > ISLAND_MAX || y1 - y0 > ISLAND_MAX) continue;
+      st.pieces.push({ o, vs, b: [x0, y0, z0, x1, y1, z1], e5: e[5] });
+    }
+  }
+  // 2. touching pieces (boxes within 1 cm, any mesh of this top) are one rigid prop
+  if (!st.clusters) {
+    const P = st.pieces, n = P.length, parent = new Int32Array(n); for (let i = 0; i < n; i++) parent[i] = i;
+    const find = (a) => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+    const grid = new Map(), E = 0.01;
+    P.forEach((p, i) => {
+      const b = p.b;
+      for (let gx = Math.floor((b[0] - E)); gx <= Math.floor(b[3] + E); gx++) for (let gz = Math.floor(b[2] - E); gz <= Math.floor(b[5] + E); gz++) {
+        const key = gx * 100003 + gz; let a = grid.get(key); if (!a) grid.set(key, (a = []));
+        for (const j of a) { const c = P[j].b; if (b[0] - E <= c[3] && b[3] + E >= c[0] && b[1] - E <= c[4] && b[4] + E >= c[1] && b[2] - E <= c[5] && b[5] + E >= c[2]) { const ra = find(i), rb = find(j); if (ra !== rb) parent[ra] = rb; } }
+        a.push(i);
+      }
+    });
+    const by = new Map();
+    for (let i = 0; i < n; i++) { const r = find(i); let a = by.get(r); if (!a) by.set(r, (a = [])); a.push(P[i]); }
+    st.clusters = [];
+    for (const list of by.values()) {
+      let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+      for (const p of list) { x0 = Math.min(x0, p.b[0]); y0 = Math.min(y0, p.b[1]); z0 = Math.min(z0, p.b[2]); x1 = Math.max(x1, p.b[3]); z1 = Math.max(z1, p.b[5]); }
+      if (x1 - x0 > CLUSTER_MAX || z1 - z0 > CLUSTER_MAX || y0 > 0.6) continue;
+      st.clusters.push({ list, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2 });
+    }
+    staticStats.clusters += st.clusters.length;
+  }
+  // 3. each prop onto the surface under its lowest points
+  for (; st.ci < st.clusters.length; st.ci++) {
+    if (st.ci > 0 && sliceSpent(deadline)) return;
+    settleCluster(scene, st.clusters[st.ci], st.dirty);
+  }
+  for (const o of st.dirty) {
+    const g = o.geometry;
+    if (!o.userData._movedWhole) { g.attributes.position.needsUpdate = true; g.computeBoundingBox(); g.computeBoundingSphere(); }
+    gridCache.delete(o); boxCache.delete(o);
+    if (o.userData.placeBatched && refreshBatched) refreshBatched(o);
+  }
+  st.dirty.clear();
+}
+let refreshBatched = null;
+/** src/placeBatch.js hands in its re-upload, so a settled prop that draws through a shared batch shows its new height (no import cycle). */
+export function setBatchedRefresh(fn) { refreshBatched = fn; }
+const _cfp = [];
+function clusterClear(scene, c) {
+  let minY = Infinity;
+  for (const p of c.list) if (p.b[1] < minY) minY = p.b[1];
+  const buckets = new Map();
+  for (const p of c.list) {
+    if (p.b[1] > minY + BAND) continue;
+    const pos = p.o.geometry.attributes.position, mw = p.o.matrixWorld;
+    for (let k = 0; k < p.vs.length; k++) {
+      _sv.fromBufferAttribute(pos, p.vs[k]).applyMatrix4(mw);
+      if (_sv.y > minY + BAND) continue;
+      const key = Math.round(_sv.x / BUCKET) * 100003 + Math.round(_sv.z / BUCKET);
+      const b = buckets.get(key);
+      if (!b || _sv.y < b[1]) buckets.set(key, [_sv.x, _sv.y, _sv.z]);
+    }
+  }
+  let all = [...buckets.values()];
+  if (all.length > 32) { const step = all.length / 32; all = Array.from({ length: 32 }, (_, i) => all[Math.floor(i * step)]); }
+  let clear = Infinity; _cfp.length = 0;
+  for (const [x, y, z] of all) { const c2 = y - groundAt(scene, x, z, minY, false); _cfp.push(c2); if (c2 < clear) clear = c2; }
+  return isFinite(clear) ? clear : 0;
+}
+function settleCluster(scene, c, dirty) {
+  const masks = new Map();
+  SELF_ID++; // a fresh id per prop: marks left by earlier props never match (Int32, never wraps in a session)
+  for (const p of c.list) {
+    let m = p.o.userData._selfMask;
+    const n = p.o.geometry.attributes.position.count;
+    if (!m || m.length !== n) m = p.o.userData._selfMask = new Int32Array(n);
+    for (let k = 0; k < p.vs.length; k++) m[p.vs[k]] = SELF_ID;
+    masks.set(p.o, m);
+  }
+  SELF = masks;
+  try {
+    const portable = c.list.some((p) => { const mat = Array.isArray(p.o.material) ? p.o.material[0] : p.o.material; return PORTABLE.test(p.o.name) || PORTABLE.test((mat && mat.name) || '') || PORTABLE.test(topName(p.o)); });
+    const inDip = dipHeightRaw(c.cx, c.cz) < -0.02;
+    let total = 0;
+    for (let it = 0; it < 3; it++) {
+      const clear = clusterClear(scene, c);
+      let dy = 0;
+      if (clear < -0.005 && -clear <= (portable ? SINK_PORTABLE : SINK_ANY) && -clear < PROBE - 0.02) dy = -clear; // a hit at the probe limit is a shelf or plinth over the prop, not the ground it sinks into
+      else if (clear > 0.005 && (clear <= FLOAT_MAX || (inDip && clear <= DIP_FLOAT_MAX && (Math.min(...c.list.map((p) => p.b[1])) - clear) > DIP_WATERLINE))) dy = -clear;
+      if (!dy || (dy > 0 && total + dy > SINK_PORTABLE)) break; // stacked lifts mean a ledge above, not ground
+      if (!moveCluster(c, dy, dirty)) break;
+      if (dy > 0) total += dy;
+      if (it === 0) { staticStats.moved++; if (dy > 0) staticStats.lifted++; else staticStats.lowered++; if (staticStats.log.length < 400) staticStats.log.push([topName(c.list[0].o), c.list[0].o.name, +c.cx.toFixed(2), +c.cz.toFixed(2), +dy.toFixed(3)]); }
+      if (dy > staticStats.maxLift) staticStats.maxLift = dy; if (-dy > staticStats.maxDrop) staticStats.maxDrop = -dy;
+    }
+  } finally { SELF = null; }
+}
+/** Shift every piece of a prop by world dy (vertices; a mesh whose geometry is shared moves as a whole object, only if the prop is all of it). */
+function moveCluster(c, dy, dirty) {
+  for (const p of c.list) if (p.o.userData._sharedGeo) {
+    const whole = c.list.filter((q) => q.o === p.o).reduce((s, q) => s + q.vs.length, 0) === p.o.geometry.attributes.position.count;
+    if (!whole) { staticStats.skippedShared++; return false; }
+  }
+  const done = new Set();
+  for (const p of c.list) {
+    if (p.o.userData._sharedGeo) {
+      if (!done.has(p.o)) { done.add(p.o); const s = p.o.parent ? p.o.parent.matrixWorld.elements[5] : 1; p.o.position.y += dy / (s || 1); p.o.updateMatrixWorld(true); p.o.userData._movedWhole = true; dirty.add(p.o); }
+    } else {
+      const pos = p.o.geometry.attributes.position, ly = dy / (p.e5 || 1);
+      for (let k = 0; k < p.vs.length; k++) pos.setY(p.vs[k], pos.getY(p.vs[k]) + ly);
+      p.o.userData._movedWhole = false; dirty.add(p.o);
+    }
+    p.b[1] += dy; p.b[4] += dy;
+  }
+  return true; // grids and boxes of the moved meshes are dropped once, at the end of the run (rebuilding a big grid per prop is the hitch)
+}
+export function staticSettleStats() { return staticStats; }
+/** Diagnostics: every grouped prop of every settled top whose lowest points are > 2 cm under or > 3 cm over the surface. */
+function staticAudit() {
+  const out = []; let n = 0;
+  for (const r of STATIC_LIST) {
+    const t = r.deref(), st = t && sstate.get(t), scene = t && sceneOf(t);
+    if (!st || !st.clusters || !scene) continue;
+    for (const c of st.clusters) {
+      SELF_ID++; const masks = new Map();
+      for (const p of c.list) { const m = p.o.userData._selfMask; if (!m) continue; for (let k = 0; k < p.vs.length; k++) m[p.vs[k]] = SELF_ID; masks.set(p.o, m); }
+      SELF = masks;
+      let clear; try { clear = clusterClear(scene, c); } finally { SELF = null; }
+      n++;
+      if (clear < -0.02 || (clear > 0.03 && clear < 0.25)) {
+        const o = c.list[0].o, mat = Array.isArray(o.material) ? o.material[0] : o.material;
+        let y0 = Infinity, y1 = -Infinity; for (const p of c.list) { y0 = Math.min(y0, p.b[1]); y1 = Math.max(y1, p.b[4]); }
+        const lh = lastHit; out.push([t.name, o.name, mat && mat.name, +c.cx.toFixed(2), +c.cz.toFixed(2), +clear.toFixed(3), c.list.length, +y0.toFixed(2), +y1.toFixed(2), lh ? topName(lh) + '/' + lh.name + '/' + ((Array.isArray(lh.material) ? lh.material[0] : lh.material)?.name || '') : 'ground/dip']);
+      }
+    }
+  }
+  out.sort((a, b) => a[5] - b[5]);
+  return { props: n, off: out.length, worst: out.slice(0, 40) };
+}
+
 // tools/feet-check.js settles everything at once (same code path as the timers, without waiting for them).
 if (typeof window !== 'undefined') {
   window.__standOn = {
@@ -390,6 +614,7 @@ if (typeof window !== 'undefined') {
       return n;
     },
     count: () => ENTRIES.length,
+    staticStats: () => staticStats,
     state: () => ENTRIES.map((e) => [e.obj.name || e.obj.type, e.stage, !!e.again, e.t0 ? Math.round(performance.now() - e.t0) : -1, !!sceneOf(e.obj)]),
     /** tools/feet-check diagnostics: the settle entries whose feet box covers (x, z), and when the surface o was last (re)indexed. */
     entriesAt: (x, z) => ENTRIES.filter((e) => e.fb && x >= e.fb[0] - 0.3 && x <= e.fb[1] + 0.3 && z >= e.fb[2] - 0.3 && z <= e.fb[3] + 0.3).map((e) => ({ name: e.obj.name || e.obj.type, stage: e.stage, again: !!e.again, redo: !!e.redo, runAgo: e.lastRun ? Math.round(performance.now() - e.lastRun) : -1 })),
@@ -398,6 +623,7 @@ if (typeof window !== 'undefined') {
     /** tools/feet-check diagnostics: the settle entry that owns o (o itself or a parent), its stage and feet box. */
     entryOf: (o) => { for (let q = o; q; q = q.parent) { const e = ENTRIES.find((x) => x.obj === q); if (e) return { name: q.name || q.type, stage: e.stage, again: !!e.again, redo: !!e.redo, fb: e.fb ? e.fb.map((n) => +n.toFixed(2)) : null, runAgo: e.lastRun ? Math.round(performance.now() - e.lastRun) : -1, ageMs: e.t0 ? Math.round(performance.now() - e.t0) : -1, settleAt: o.userData._settleAt || 0 }; } return null; },
     settleDy, groundAt, // tools/feet-check diagnostics
+    staticStats: () => staticStats, staticAudit, // G2 static props: how many props were moved, and the first 400 (top, mesh, x, z, dy)
     lastHit: () => lastHit,
     indexed(o) { const idx = index; if (!idx) return 'no index'; for (const a of idx.cells.values()) for (const s of a) if (s.o === o) return 'cell'; for (const s of idx.big) if (s.o === o) return 'big'; return FIGURES.has(o) ? 'figure' : 'absent'; },
   };

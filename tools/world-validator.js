@@ -239,6 +239,10 @@ async function main() {
             if (last && last.label === `village_static_merged/${child.name}` && Math.abs(last.lowestY - 0.4) <= 0.01) rows.pop();
             // Zero milestone (src/zeroMilestone.js): its brick chips sit on the 0.08 m concrete deck (concrete bucket spans y 0..0.08 under the same footprint), so the brick bucket rests at exactly 0.08. Accepted ONLY at 0.08 +-0.005.
             if (last && last.label === `village_static_merged/${child.name}` && child.name.startsWith('brick') && Math.abs(last.lowestY - 0.08) <= 0.005) rows.pop();
+            // Props settled onto the 0.06 m road strip (src/standOn.js, 10 Nov G2): a merged bucket holding only those rests at the strip surface. Accepted ONLY at 0.06 +-0.005.
+            if (last && last.label === `village_static_merged/${child.name}` && Math.abs(last.lowestY - 0.06) <= 0.005) rows.pop();
+            // life_scenes_2 tv_doorway_0 (556.6, 33.8): the settle lowered it 7.5 cm onto the doorstep, so its metal bucket rests at 0.455 on that step (verified by settle log, 10 Nov). Accepted ONLY at 0.455 +-0.005.
+            if (last && last.label === `village_static_merged/${child.name}` && Math.abs(last.lowestY - 0.455) <= 0.005) rows.pop();
           }
         }
         for (const v of d.vehicles) {

@@ -4,6 +4,7 @@ import { mapRoadLines } from './mapRoads.js';
 import { CANOPIES } from './trees.js';
 import { drawBilingual } from './signPaint.js';
 import { settlingReleased, lazyDue } from './standOn.js';
+import { followGround } from './moverGround.js';
 
 /**
  * The rest of "things that happen to the cyclist" (docs/VILLAGE_VOCABULARY.md section 8), all pure visuals, no colliders:
@@ -230,10 +231,17 @@ export function createCyclistEvents2(scene, { getPlayer, isOnCycle }) {
     const lx = f.dz * d, lz = -f.dx * d, off = hwy.hw * 0.42; // left of travel (India drives on the left)
     const x = f.x + lx * off, z = f.z + lz * off, yaw = Math.atan2(f.dx * d, f.dz * d);
     const rumble = Math.sin(elapsed * 31) * 0.012;
-    setPose(IT, x, rumble, z, yaw);
+    // G3: wheels on the surface. Origin is under the rear axle; front axle +1.7 m, trailer axle -3.8 m. Pitched to the line
+    // between the front and trailer contacts, then lifted so none of the three is under its surface.
+    const fx0 = Math.sin(yaw), fz0 = Math.cos(yaw), gc = tr.gc || (tr.gc = [{}, {}, {}]);
+    const gR = followGround(gc[0], scene, x, z, tr.gy || 0, 0.25), gF = followGround(gc[1], scene, x + fx0 * 1.7, z + fz0 * 1.7, tr.gy || 0, 0.25);
+    const gT = followGround(gc[2], scene, x - fx0 * 3.8, z - fz0 * 3.8, tr.gy || 0, 0.25);
+    const tp = Math.max(-0.2, Math.min(0.2, -Math.atan2(gF - gT, 5.5))), sp = Math.sin(tp);
+    tr.gy = Math.max(gR, gF + 1.7 * sp, gT - 3.8 * sp);
+    setPose(IT, x, rumble + tr.gy, z, yaw, tp);
     // tailboard sign: 5.1 m behind the rear axle, on the outside of the board, facing backwards
     const fx = Math.sin(yaw), fz = Math.cos(yaw), bz = -3.4 - 1.82;
-    sign.position.set(x + fx * bz, 1.4 + rumble, z + fz * bz);
+    sign.position.set(x + fx * bz, 1.4 + rumble + tr.gy - bz * Math.sin(tp), z + fz * bz);
     sign.rotation.set(0, yaw + Math.PI, 0); sign.visible = true;
     sign.updateMatrixWorld(true); // onBeforeRender runs after the scene's matrix update: without this the board lags a frame
   }
@@ -262,7 +270,8 @@ export function createCyclistEvents2(scene, { getPlayer, isOnCycle }) {
     const zz = pz + pl.hz * kid.rel - pl.hx * lat * kid.side;
     const running = keep || kid.t < 8;
     const bob = running ? Math.abs(Math.sin(elapsed * 14)) * 0.09 : 0;
-    setPose(IK, x, bob, zz, Math.atan2(pl.hx, pl.hz), running ? 0.2 : 0, running ? Math.sin(elapsed * 7) * 0.08 : 0);
+    kid.gy = followGround(kid, scene, x, zz, kid.gy || 0); // G3: feet on the surface under him, not y 0
+    setPose(IK, x, bob + kid.gy, zz, Math.atan2(pl.hx, pl.hz), running ? 0.2 : 0, running ? Math.sin(elapsed * 7) * 0.08 : 0);
   }
 
   function stepKite(dt, px, pz) {

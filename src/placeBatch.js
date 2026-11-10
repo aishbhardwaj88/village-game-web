@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { frameBudget } from './frameQueue.js';
+import { setBatchedRefresh } from './standOn.js';
 
 /**
  * Village-wide BatchedMesh per shared place material (spike, 4 Nov). Every staged place model already has one mesh per material;
@@ -128,8 +129,15 @@ function batchOne(o, key, exactCast) {
     b.setVisibleAt(iid, false);
     o.layers.set(HIDDEN_LAYER);
     o.userData.placeBatched = true;
-    entries.add({ src: o, batch: b, gid, iid });
+    entries.add({ src: o, batch: b, gid, iid, ratio });
 }
+/** A batched source whose vertices were edited after batching (src/standOn.js settles static props onto the ground): re-upload its geometry. */
+setBatchedRefresh((o) => {
+  for (const e of entries) if (e.src === o) {
+    const geo = flat(o.geometry, e.ratio);
+    try { e.batch.setGeometryAt(e.gid, geo); } catch (err) { console.warn('placeBatch: re-upload failed', o.name, err); }
+  }
+});
 
 const pending = []; // { model, key, age }
 let pCursor = 0;

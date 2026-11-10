@@ -3,6 +3,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildBovineGeometry, createHideMaterial } from './animals.js';
 import { STATIC_COLLIDERS, orientedBoxOverlapsAnyBox } from './collision.js';
+import { followGround, sceneOfObj } from './moverGround.js';
+import { pAdd } from './perfProbe.js';
 
 /**
  * Kitbash vehicles built to Places V1/vehicles/LAYOUT.md's exact measurements (queue
@@ -537,6 +539,7 @@ export class Trolley {
 
   addToScene(scene) {
     scene.add(this.group);
+    trackGround(this, scene); // wheels on the surface every frame (GROUND CONTACT, below)
   }
 
   /** Position is rigid (drawbar eye exactly at the tractor's hitch point every
@@ -1009,6 +1012,7 @@ export class Vehicle {
 
   addToScene(scene) {
     scene.add(this.group);
+    trackGround(this, scene); // wheels on the surface every frame (GROUND CONTACT, below)
   }
 
   /** Attaches a (currently unattached) Trolley instance to this tractor — item 2.
@@ -1144,6 +1148,78 @@ export class Vehicle {
     return this.group.localToWorld(new THREE.Vector3(0, T.hitchY, T.hitchZ));
   }
 }
+
+// ---------------------------------------------------------------------------
+// GROUND CONTACT (docs/PARALLEL.md G3, her order 10 Nov: "a cart was sunken, cycle was being run inside the ground").
+// Every vehicle and trolley reads the surface height under each wheel (src/moverGround.js: the settle scheduler's cached
+// triangle grid, no raycast, re-probed only after 12 cm of travel), fits a plane through the contact points, and is
+// pitched / rolled to it and lifted so no wheel is under the surface. Rises are taken at once, drops eased. The group's
+// Euler order is YXZ so rotation.y stays the yaw every collision/hitch routine reads.
+// ---------------------------------------------------------------------------
+const CONTACTS = {
+  // local (x, z) of each wheel's (or hoof group's) ground contact
+  tractor: [[-T.rearTrack / 2, T.rearAxleZ], [T.rearTrack / 2, T.rearAxleZ], [-T.frontTrack / 2, T.frontAxleZ], [T.frontTrack / 2, T.frontAxleZ]],
+  cart: [[-(C.platformW + 0.1) / 2, -0.15], [(C.platformW + 0.1) / 2, -0.15], [-0.42, -3.9], [0.42, -3.9]], // two wheels, two bullocks
+  bike: [[0, B.length / 2 - 0.25], [0, -B.length / 2 + 0.25]],
+  trolley: [[-TR.track / 2, 0], [TR.track / 2, 0], [0, TR.hitchLocalZ]], // one axle; the drawbar eye rides at the hitch
+};
+const MAX_TILT = 0.3;
+const RISE = 0.25; // a wheel climbs a kerb or a road lip, never a plinth or a charpai (those are colliders anyway)
+const GROUNDED = new Set();
+let groundHooked = false, lastGroundT = 0;
+
+function groundObject(o, pts, scene, dt) {
+  const g = o.group;
+  if (!o._gs) { o._gs = pts.map(() => ({})); g.rotation.order = 'YXZ'; o._gy = g.position.y; o._gp = 0; o._gr = 0; }
+  const yaw = g.rotation.y, c = Math.cos(yaw), s = Math.sin(yaw), px = g.position.x, pz = g.position.z, fy = o._gy;
+  const now = performance.now();
+  let n = 0, sx = 0, sz = 0, sg = 0, sxx = 0, szz = 0, sxz = 0, sxg = 0, szg = 0;
+  const h = o._gh || (o._gh = new Float32Array(pts.length));
+  for (let i = 0; i < pts.length; i++) {
+    const [lx, lz] = pts[i], st = o._gs[i];
+    if (st._t && now - st._t > 3000) st._gx = undefined; // a road chunk or plinth that streamed in under a parked cart
+    if (st._gx === undefined) st._t = now;
+    const y = followGround(st, scene, px + lx * c + lz * s, pz - lx * s + lz * c, fy, RISE);
+    h[i] = y; n++; sx += lx; sz += lz; sg += y; sxx += lx * lx; szz += lz * lz; sxz += lx * lz; sxg += lx * y; szg += lz * y;
+  }
+  // Least-squares plane y = a + b x + c z through the contacts (centred), x dropped when every contact is on the centre line (bike).
+  const mx = sx / n, mz = sz / n, mg = sg / n;
+  const vxx = sxx / n - mx * mx, vzz = szz / n - mz * mz, vxz = sxz / n - mx * mz, vxg = sxg / n - mx * mg, vzg = szg / n - mz * mg;
+  let b = 0, cz = 0;
+  if (vxx > 1e-4) { const det = vxx * vzz - vxz * vxz; if (Math.abs(det) > 1e-8) { b = (vxg * vzz - vzg * vxz) / det; cz = (vzg * vxx - vxg * vxz) / det; } }
+  else if (vzz > 1e-4) cz = vzg / vzz;
+  const pitch = THREE.MathUtils.clamp(Math.atan(-cz), -MAX_TILT, MAX_TILT), roll = THREE.MathUtils.clamp(Math.atan(b), -MAX_TILT, MAX_TILT);
+  const k = dt > 0 ? 1 - Math.exp(-dt * 14) : 1;
+  o._gp += (pitch - o._gp) * k; o._gr += (roll - o._gr) * k;
+  // Lift: the lowest contact, at the tilt actually drawn, sits exactly on its surface; every other contact on or above it.
+  const sp = Math.sin(o._gp), cp = Math.cos(o._gp), sr = Math.sin(o._gr);
+  let want = -Infinity;
+  for (let i = 0; i < pts.length; i++) { const [lx, lz] = pts[i]; want = Math.max(want, h[i] - (lx * sr * cp - lz * sp)); }
+  o._gy = want > o._gy || dt <= 0 ? want : o._gy + (want - o._gy) * (1 - Math.exp(-dt * 18));
+  g.position.y = o._gy; g.rotation.x = o._gp; g.rotation.z = o._gr;
+}
+
+/** Called once per frame (scene.onBeforeRender, after main.js has moved everything): every vehicle and trolley in the scene. */
+function groundAll(scene) {
+  const now = performance.now();
+  if (now - lastGroundT < 2) return; // the composer may render the scene more than once a frame
+  const dt = lastGroundT ? Math.min(0.1, (now - lastGroundT) / 1000) : 0;
+  lastGroundT = now;
+  const t0 = now;
+  for (const o of GROUNDED) {
+    if (sceneOfObj(o.group) !== scene) continue;
+    groundObject(o, o instanceof Trolley ? CONTACTS.trolley : CONTACTS[o.preset.kind], scene, dt);
+  }
+  pAdd('vehicleGround', performance.now() - t0);
+}
+function trackGround(o, scene) {
+  GROUNDED.add(o);
+  if (groundHooked || !scene) return;
+  groundHooked = true;
+  const prev = scene.onBeforeRender;
+  scene.onBeforeRender = function (...args) { if (prev) prev.apply(this, args); groundAll(scene); };
+}
+if (typeof window !== 'undefined') window.__vehicleGround = { list: () => [...GROUNDED].map((o) => ({ name: o.group.name, y: o.group.position.y, pitch: o.group.rotation.x, roll: o.group.rotation.z })) };
 
 /** Spawns the hero-zone vehicle set near the player's house, per
  * WorldData/vehicles.json positions (Tractor_M1, Bicycle_PlayersHouse,

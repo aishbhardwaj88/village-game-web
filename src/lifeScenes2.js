@@ -8,6 +8,7 @@ import { addHandPumps } from './handPumps.js';
 import { addPots, flushMerged } from './pots.js';
 import { batchLateGroup, batchLiveMesh } from './placeBatch.js';
 import { settlingReleased, lazyDue, groundAt, keepOnGround, settleDy, markFigure } from './standOn.js';
+import { followGround } from './moverGround.js';
 
 /**
  * Life scenes, second set (docs/PARALLEL.md section D): mosquito net over a charpai in an angan, rangoli at doorways,
@@ -235,7 +236,7 @@ function buildGame(site, group) {
   person(site, 0.7, 2.2, 1.15, -Math.PI / 2, 7, { hop: true });
   // the tyre roller: kid + tyre travel one lane
   const tyre = new THREE.TorusGeometry(0.27, 0.07, 8, 16);
-  tyre.rotateY(Math.PI / 2); tyre.translate(0, 0.34, 0);
+  tyre.rotateY(Math.PI / 2); // centred on its hub: it spins about the hub (it was lifted 0.34 into the geometry, so the roll swung it round its contact point and half of every turn went under the ground)
   const tn = tyre.attributes.position.count, tc = new Float32Array(tn * 3); tc.fill(0.55);
   tyre.setAttribute('color', new THREE.BufferAttribute(tc, 3));
   const tyreMat = getTiledMaterial('metal', { repeatX: 3, repeatY: 3, roughness: 1, tint: '#2a2a2a', vertexColors: true });
@@ -380,7 +381,9 @@ export function createLifeScenes2(scene) {
         const lx = L.x0 + u, dir = fwd ? 1 : -1;
         const w = localToWorld(p.site, lx, L.z), tw = localToWorld(p.site, lx + dir * 0.6, L.z);
         p.x = w.x; p.z = w.z; yaw = Math.atan2(tw.x - w.x, tw.z - w.z);
-        p.tyre.position.set(tw.x, 0, tw.z); p.tyre.rotation.set(0, yaw, 0);
+        p.gy = followGround(p, scene, p.x, p.z, p.gy || 0); // G3: rolls along the lane on its surface, not at y 0
+        const tg = followGround(p.tyreG || (p.tyreG = {}), scene, tw.x, tw.z, p.gy);
+        p.tyre.position.set(tw.x, tg + 0.34, tw.z); p.tyre.rotation.set(0, yaw, 0);
         p.tyre.rotation.order = 'YXZ'; p.tyre.rotation.x = -(elapsed * 1.5 / 0.34) * dir; p.tyre.rotation.y = yaw;
         lean = 0.12;
       }

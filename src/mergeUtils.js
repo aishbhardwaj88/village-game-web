@@ -287,7 +287,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
       // Small merged clusters (a handful of props, one patch of ground) stop drawing well past fog distance: each costs a call from anywhere in view.
       geometry.computeBoundingSphere();
       const bs = geometry.boundingSphere;
-      if (propKeys.has(key)) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 80 };
+      if (propKeys.has(key)) { mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 80 }; mesh.userData.propBucket = true; } // propBucket: src/standOn.js settles these props onto the surface under them
       else if (bs.radius <= 60) mesh.userData.distGate = { x: bs.center.x, z: bs.center.z, r: bs.radius, range: 350 };
     }
     mesh.castShadow = mayCast(material, bucket.castShadow);

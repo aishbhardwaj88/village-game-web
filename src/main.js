@@ -145,7 +145,9 @@ import { buildSackPile, createSackCarrier, PITAJI_POSITION, SACK_PILE_POSITION, 
 import { surfaceAt } from './surfaces.js';
 import { registerStagingYard } from './stagingYard.js';
 import { createYardSite } from './yardModels.js';
-import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js'; // pond, johad, canal dug for real (local dips)
+import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js';
+import { surfaceAt as moverSurfaceAt } from './moverGround.js'; // G3: cycle wheels and walkers on the real surface (road lips, kerbs, dug banks)
+import { markFigure } from './standOn.js'; // pond, johad, canal dug for real (local dips)
 import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { registerLongWalks } from './longWalks.js';
@@ -743,7 +745,9 @@ async function main() {
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   scene.add(player);
   const playerCycle = createPlayerCycle(player);
-  playerCycle.setGroundProbe((x, z, y) => groundHeightAt(x, z, y)); // wheels sit on the ground, never in it (9 Nov playtest S3)
+  // Wheels sit on the ground, never in it (9 Nov playtest S3). G3 (10 Nov): also on the road / lane surfaces, which stand 1-8 cm
+  // proud of the ground plane with bumps, read from the settle scheduler's cached grid (no raycast); a kerb is climbed, a plinth is not.
+  playerCycle.setGroundProbe((x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y, 0.25)));
 
   // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
   // in src/interactions.js. Maa/halwai are now the real code-built characters
@@ -1904,6 +1908,7 @@ async function main() {
           const bike = buildBikeGroup();
           bike.group.rotation.y = Math.PI; // bike front is -Z, routines face +Z
           rider.add(bike.group);
+          bike.group.traverse((o) => { if (o.isMesh) markFigure(o); }); // the bike is never the surface its own rider stands on (G3 walker ground)
           group.add(rider);
           const ride = createWaypointLoop(rider, (() => {
             const out = []; for (let s = s0; s <= s1; s += 10) out.push(edge(s)); // follow the road's bends, not a straight chord

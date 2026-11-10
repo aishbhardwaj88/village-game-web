@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { resolveMove } from './movement.js';
-import { NPC_RADIUS } from './npc.js';
+import { NPC_RADIUS, NPC_HEIGHT } from './npc.js';
+import { followGround, sceneOfObj } from './moverGround.js';
 
 /**
  * Simple waypoint-loop routines for the placeholder NPCs (queue item 8) — no
@@ -10,6 +11,26 @@ import { NPC_RADIUS } from './npc.js';
  */
 
 const _toTarget = new THREE.Vector3();
+
+/**
+ * Feet on the surface while walking (docs/PARALLEL.md G3): the group's own y follows the surface under its centre every
+ * frame (src/moverGround.js, cached index, re-probed after 12 cm), so a walker crossing a road lip, a kerb or a dug bank
+ * never dips into it between the settle scheduler's 0.25 m re-runs. The first time, the capsule's settle offset inside the
+ * group (src/npc.js) is folded back to its rest height, so the lift is owned here and the scheduler only trims what is left.
+ */
+function walkGround(npcGroup, set = true) {
+  const scene = sceneOfObj(npcGroup);
+  if (!scene) return npcGroup.position.y;
+  const st = npcGroup.userData.ground || (npcGroup.userData.ground = {});
+  const y = followGround(st, scene, npcGroup.position.x, npcGroup.position.z, npcGroup.position.y);
+  if (!st.owned) {
+    st.owned = true;
+    const mesh = npcGroup.userData.mesh;
+    if (mesh && Math.abs(mesh.position.y - NPC_HEIGHT / 2) < 1.2) mesh.position.y = NPC_HEIGHT / 2;
+  }
+  if (set) npcGroup.position.y = y;
+  return y;
+}
 
 /** Every waypoint route created, for the build-time path check (tools/world-validator.js
  * check 9). `scripted` routes start at a runtime position (waypoint 0 is the player), so the
@@ -48,6 +69,7 @@ export function createWaypointLoop(npcGroup, waypoints, { speed = 1.1, pauseSeco
     // through the one resolver now regardless — see CLAUDE.md).
     const step = Math.min(speed * dt, dist);
     resolveMove(npcGroup.position, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
+    walkGround(npcGroup);
     const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
     // Shortest-path yaw damp so it doesn't spin the long way round.
     let diff = targetYaw - npcGroup.rotation.y;
@@ -93,7 +115,12 @@ export function createWaypointRun(npcGroup, waypoints, { speed = 1.6, pauseSecon
     const target = waypoints[index];
     _toTarget.set(target.x - npcGroup.position.x, 0, target.z - npcGroup.position.z);
     const dist = _toTarget.length();
-    npcGroup.position.y += ((target.y ?? 0) - npcGroup.position.y) * Math.min(1, dt * 1.5);
+    let ty = target.y ?? 0;
+    if (ty === 0 && npcGroup.position.y < 0.5) { // a ground leg near the ground: the surface under it (from a roof: eased down to 0 first)
+      ty = walkGround(npcGroup, false);
+      npcGroup.position.y = ty;
+    }
+    npcGroup.position.y += (ty - npcGroup.position.y) * Math.min(1, dt * 1.5);
 
     if (dist < 0.2) {
       if (index >= waypoints.length - 1) {
@@ -182,6 +209,7 @@ export function createFollowRoutine(npcGroup, getTargetPosition, { stopDistance 
       }
       const bx = npcGroup.position.x, bz = npcGroup.position.z;
       resolveMove(npcGroup.position, dx * step, dz * step, NPC_RADIUS, getExtraBoxes());
+      walkGround(npcGroup);
       const moved = Math.hypot(npcGroup.position.x - bx, npcGroup.position.z - bz);
       if (moved < step * 0.35 && sidestepTime <= 0) {
         stuckTime += dt;

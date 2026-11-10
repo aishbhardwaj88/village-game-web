@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { batchLiveMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, groundAt, sceneOf, sliceSpent } from './standOn.js';
+import { followGround } from './moverGround.js';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
@@ -150,6 +151,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
       setInstance(s.index, s.x, NPC_HEIGHT / 2, s.z, Math.PI + BAZAAR_YAW + wobble);
     }
 
+    const scW = sceneOf(mesh); // G3: each walker's feet follow the surface under it every frame (cached index, re-probed after 12 cm)
     for (const v of villagers) {
       const target = v.waypoints[v.waypointIndex];
       _toTarget.set(target.x - v.pos.x, 0, target.z - v.pos.z);
@@ -168,6 +170,7 @@ export function createBazaarLife({ getExtraBoxes = () => [] } = {}) {
         // hand-picked waypoints already route clear of counters/kerbs, this is
         // the same safety net src/npcRoutines.js's own routines rely on.
         resolveMove(v.pos, _toTarget.x * step, _toTarget.z * step, NPC_RADIUS, getExtraBoxes());
+        if (scW) gy[v.index] = Math.min(0.35, Math.max(0, followGround(v, scW, v.pos.x, v.pos.z, gy[v.index])));
         const targetYaw = Math.atan2(_toTarget.x, _toTarget.z);
         let diff = targetYaw - v.rotY;
         diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
