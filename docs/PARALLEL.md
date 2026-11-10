@@ -1,3 +1,10 @@
+# 10 NOV 19:55. AFTER HER ~20:00 TEST (freeze lifts at 21:30 or when she reports, whichever first)
+- G4: rerun ground-check after 8c9c7bd and report the real counts.
+- G5: checker change: a place model's own upward faces count as ground for its own pieces (no
+  tolerance change). Then check the remaining floating rows one by one.
+- G6: find the dairy hb_metal (-44 cm) and lanterns_0 (-34 cm) runtime sink.
+- G7: sunk to 0, floating to 0 (real ones), then add ground-check to npm run build.
+
 # 10 NOV 18:15. HER TEST MOVED TO ~20:00 IST. Freeze lifted until 19:45.
 Do now, in order: G2 and G3 (nothing sinks into the ground: fix the dairy, khalihan, bhatta,
 gurukul parts, the ride-nook props, carts, vehicles and the 3 floating people first, worst
