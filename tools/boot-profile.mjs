@@ -140,9 +140,10 @@ if (RIDE) {
     return { colWorst: Math.round(cs.worstMs || 0), colBuilds: cs.builds || 0, secs: Math.round((performance.now() - t0) / 1000), frames: frames.length, worstGap: Math.round(Math.max(...frames)),
       worstLogic: Math.round(pp.max.logic || 0), worstZone: Math.round(pp.max.zoneManager || 0), worstQueueFrame: Math.round(fq.worstFrameMs || 0),
       worstRender: Math.round(pp.max.render || 0), worstZoneBuild: Math.round(zb.worstMs), worstZoneName: zb.worstName, over16: zb.over16.slice(0, 10),
-      longFrames: (window.__longFrames || []).slice(0, 10), lt: window.__lt.filter((x) => x[1] > 100).length };
+      worstFrame: Object.fromEntries(Object.entries(pp.worstFrame || {}).map(([k, v]) => [k, Math.round(v * 10) / 10])), longFrames: (window.__longFrames || []).slice(0, 10), lt: window.__lt.filter((x) => x[1] > 100).length };
   }, [route, RIDE]);
   console.log(`RIDE ${r.secs} s, ${r.frames} frames: worst CPU frame logic ${r.worstLogic} ms (zoneManager ${r.worstZone} ms, frameQueue ${r.worstQueueFrame} ms); worst single zone build ${r.worstZoneBuild} ms (${r.worstZoneName}); worst render ${r.worstRender} ms (software GL); worst rAF gap ${r.worstGap} ms; long tasks >100 ms: ${r.lt}; collider rebuilds ${r.colBuilds}, worst ${r.colWorst} ms`);
+  console.log('sections of the worst logic frame', JSON.stringify(r.worstFrame));
   console.log('zone builds > 16 ms', JSON.stringify(r.over16));
 }
 console.log(`page errors: ${errors.length}${errors.length ? ' ' + errors.slice(0, 3).join(' | ') : ''}`);

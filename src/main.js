@@ -3015,6 +3015,8 @@ async function main() {
         if (sisterFollowing) sisterFollow(dt);
       }
       MAA_POSITION.copy(maaNpc.position);
+      pAdd('npcLifeHead', performance.now() - _pt0);
+      const _qm = performance.now();
       { const _q = performance.now(); bazaarLife.update(dt); pAdd('bazaarLife', performance.now() - _q); }
 
       // Idle-breathing/walk-cycle rock (src/characters.js) for the three
@@ -3258,15 +3260,18 @@ async function main() {
 
       if (isDevMode() && (devPenTick++ & 15) === 0) devCheckPenetration(); // dev guard: every 16th frame is plenty
 
+      pAdd('midPlayer', performance.now() - _qm);
       { const _q = performance.now(); camRig.update(); pAdd('camRig', performance.now() - _q); }
       if (!Object.prototype.hasOwnProperty.call(camRig, 'update')) playerCycle.applyCamera(camera, onCycle && !mountedVehicle && !sitting && !lying, THREE.MathUtils.clamp((camRig._effectiveDistance - camRig.distance + 1) / 0.8, 0, 1)); // C4 sway/lag + look-ahead; the sideways slide fades out when a wall has pulled the camera in, so it never pushes it into the wall; skipped while a screenshot has frozen the rig
       { const _q = performance.now(); audio.update(dt); pAdd('audio', performance.now() - _q); }
+      const _qd = performance.now();
       dust.update(dt, now / 1000);
       updateSky(sky, now / 1000, camera);
       contactShadows.update([
         ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
         { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },
       ]);
+      pAdd('dustSkyShadow', performance.now() - _qd);
       updateDayline(dayProgressForQuestStep(quest.step), dt);
       night.update(dt);
       lampNight.value = night.mix;
@@ -3290,6 +3295,7 @@ async function main() {
         audio.setPlaceAmbience(bestKind, bestC);
         audio.setListenerDistanceToCattle?.(cattleD);
       }
+      const _qp = performance.now();
       { const _q = performance.now(); if (zoneManager) zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
       syncPlaceBoards();
       { const _q = performance.now(); syncPlaceBatches(); pAdd('syncPlaceBatches', performance.now() - _q); }
@@ -3321,6 +3327,7 @@ async function main() {
         width: window.innerWidth,
         height: window.innerHeight,
       });
+      pAdd('fromZoneToEnd', performance.now() - _qp);
     }
 
     renderer.info.reset();

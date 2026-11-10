@@ -40,6 +40,7 @@ export function createPlayer() {
  * first obstruction (walls, buildings) so it never clips inside geometry, down to
  * OCCLUSION_MIN_DISTANCE, easing back out once the obstruction clears.
  */
+const _rayO = new THREE.Vector3(), _rayD = new THREE.Vector3();
 export class ThirdPersonCamera {
   constructor(camera, target) {
     this.camera = camera;
@@ -95,16 +96,29 @@ export class ThirdPersonCamera {
     if (this._obstacles.length > 0) {
       // The mesh raycast walks every building mesh (instanced and batched ones per instance), so run it every 3rd frame and
       // reuse the last result between; the damped distance below smooths the gap. Re-run at once if the ray length changed.
-      if ((this._rayFrame = (this._rayFrame || 0) + 1) % 3 === 1 || this._rayLen !== desiredDistance) {
-        this._raycaster.set(this._pivot, this._offsetDir);
+      // Time-sliced (L4, 10 Nov): the walk is the 40+ ms camRig spike of the ride. It now runs in <= ~4 ms slices over the
+      // obstacle list from a ray fixed at the start of a pass; the result is committed when the pass ends, and a new pass
+      // starts at once. A changed ray length restarts the pass (and the first pass runs whole, so there is always a result).
+      const sl = this._slice;
+      if (!sl || this._rayLen !== desiredDistance || this._rayObs !== this._obstacles) {
+        this._slice = { i: 0, best: desiredDistance, ox: this._pivot.x, oy: this._pivot.y, oz: this._pivot.z, dx: this._offsetDir.x, dy: this._offsetDir.y, dz: this._offsetDir.z };
+        this._rayLen = desiredDistance; this._rayObs = this._obstacles;
+        if (this._rayHit === undefined) this._sliceBudget = Infinity;
+      }
+      {
+        const S = this._slice, obs = this._obstacles;
+        const t0 = performance.now(), budget = this._sliceBudget || 4;
+        this._raycaster.set(_rayO.set(S.ox, S.oy, S.oz), _rayD.set(S.dx, S.dy, S.dz));
         this._raycaster.far = desiredDistance;
         this._raycaster.near = 0;
-        const hits = this._raycaster.intersectObjects(this._obstacles, true);
-        const hit = hits.find((h) => !this._isExcluded(h.object));
-        this._rayHit = hit ? Math.max(OCCLUSION_MIN_DISTANCE, hit.distance - OCCLUSION_MARGIN) : desiredDistance;
-        this._rayLen = desiredDistance;
+        while (S.i < obs.length) {
+          const hits = this._raycaster.intersectObject(obs[S.i++], true);
+          for (const h of hits) { if (!this._isExcluded(h.object)) { const d = Math.max(OCCLUSION_MIN_DISTANCE, h.distance - OCCLUSION_MARGIN); if (d < S.best) S.best = d; break; } }
+          if (performance.now() - t0 > budget) break;
+        }
+        if (S.i >= obs.length) { this._rayHit = S.best; this._sliceBudget = 4; this._slice = null; }
       }
-      targetDistance = Math.min(desiredDistance, this._rayHit);
+      targetDistance = Math.min(desiredDistance, this._rayHit ?? desiredDistance);
     }
 
     // Streamed zone buildings (post office, chakki, gurukul...) are not in `_obstacles`; march the ray through the
