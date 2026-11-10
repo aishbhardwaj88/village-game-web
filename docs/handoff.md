@@ -1,3 +1,7 @@
+# 10 Nov 21:10 - G6 done
+- Dairy hb_metal -44 cm / lanterns_0 -34 cm: cause was the 'hanging' lantern placed at y 0 in stagedPlaces.js (its origin is the hook, body hangs 44 cm below). Now a standing 'hurricane' lantern. Rerun: sunk 177 -> 175, both dairy rows gone. 
+- Still open: G7 (175 sunk props, mostly props standing inside house footprints = layout overlaps; 189 floating; cycle wheels on field tracks; vehicle float 14). ground-check NOT in npm run build yet.
+
 # 10 Nov 20:50 - G4/G5 ground-check
 - G4 rerun after 8c9c7bd: standing prop sunk 177 / floating 391, pot 1/1, vehicle float 14, person float 3; riding 9 off (cycle front wheel +33 cm on 28_Field edge track, rear -18 cm on 22_Farm loop).
 - G5 done (tools/ground-check.js): a place model's own upward faces count as ground for its own pieces (never above the piece's own point +2 cm; no tolerance change). Standing prop floating 391 -> 188. Sunk unchanged 177.

@@ -16,7 +16,7 @@ export const STAGED_PLACES = [
   { id: 'yard_gurukul', zone: 'gurukul_v2', model: 'gurukul_v2', en: 'Yard 2: Gurukul', hi: 'यार्ड 2: गुरुकुल', kind: 'school', radius: 40, build: 80, front: 22.5,
     boards: [{ id: 'gurukul_v2', x: 0, y: 4.93, z: 22.66, w: 4.8 }] },
   { id: 'yard_dairy', zone: 'dudh_dairy_v2', model: 'dudh_dairy_v2', en: 'Yard 3: Dudh dairy', hi: 'यार्ड 3: दूध डेयरी', kind: 'shop', radius: 20, build: 50, front: 6,
-    lanterns: [{ type: 'hanging', x: 2.2, y: 0, z: 4.1, ry: 0.4, s: 1, tint: 0xeee4d0 }, { type: 'tin', x: -2.6, y: 0, z: 4.3, ry: 2.6, s: 1, tint: 0xe8ddc9 }],
+    lanterns: [{ type: 'hurricane', x: 2.2, y: 0, z: 4.1, ry: 0.4, s: 1, tint: 0xeee4d0 }, { type: 'tin', x: -2.6, y: 0, z: 4.3, ry: 2.6, s: 1, tint: 0xe8ddc9 }],
     cattle: [{ x: 4.6, z: -3.4, rotationY: Math.PI }, { x: 7.2, z: -3.4, rotationY: Math.PI - 0.15, buffalo: true }],
     boards: [{ id: 'dairy', x: -5.0, y: 3.3, z: -0.4, w: 4.4 }, { id: 'dairy_slogan', x: -8.56, y: 2.3, z: -3.68, w: 2.55, ry: -Math.PI / 2 }] },
   { id: 'yard_bus_adda', zone: 'bus_adda_v2', model: 'bus_adda_v2', en: 'Yard 4: Bus adda', hi: 'यार्ड 4: बस अड्डा', kind: 'bazaar', radius: 16, build: 45, front: 5,
