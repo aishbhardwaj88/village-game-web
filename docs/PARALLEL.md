@@ -1,3 +1,10 @@
+# 10 NOV 16:35. SHE TESTS AT 18:30 IST.
+1. Finish the camera-raycast slicing (src/player.js) and find the 53 ms frame. Commit only if green.
+2. **Freeze at 18:00:** no game-code commits after 18:00 unless they fix a breakage. Last commit
+   must be a green build, pushed.
+3. After 18:00: docs only. Put her test checklist as the top line of NEEDS_YOU: F numbers, cycle
+   feel, sound loudness.
+
 # 10 NOV 16:00 RULE. Run 597 sat 10 hours (05:58 to 15:53) waiting on a build that never ended.
 Every build, test or profile command runs under `timeout 1500` (25 min). If it times out,
 note it in the handoff and move on. Then: commit the 6 uncommitted files if the build passes.
