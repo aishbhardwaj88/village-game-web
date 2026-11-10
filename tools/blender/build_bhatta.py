@@ -19,7 +19,7 @@ add = kit.add
 rnd = random.Random(61)
 EARTH = 0xA8643F
 
-add('paint', wb('patch', -40, 40, -25, 25, -0.4, 0.03, 0.0), EARTH)
+add('paint', wb('patch', -40, 40, -25, 25, -0.02, 0.03, 0.0), EARTH)
 for (x, z, w, d, c) in ((-30, 12, 20, 14, 0x9A5A3A), (22, -3, 16, 10, 0xB06E48), (0, 20, 30, 8, 0x9F6040), (-10, -22, 30, 4, 0xB06E48)):
     add('paint', wb('patch_tone', x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.03, 0.036, 0.0), c)
 # ---- kiln: stadium 50 x 18, 2 m mound, brick sides, ash top with iron lids

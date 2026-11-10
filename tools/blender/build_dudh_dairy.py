@@ -40,6 +40,10 @@ T = 0.25
 
 
 def add(kind, o, c=None):
+    if kind == 'earth':   # heaps / dung / fodder are half-sunk spheres (rh up to 0.48): flatten whatever lies below -2 cm, it is buried anyway (ground-check 10 Nov: hb_jute sank 54 cm)
+        for v in o.data.vertices:
+            if v.co.z < -0.02:
+                v.co.z = -0.02
     kit.add(kind, o, c)
     return o
 

@@ -402,7 +402,7 @@ def build_front_and_gate():
         add('metal', limb('gate_free', (hx, ze, 0.1), (hx, ze, 4.0), 0.08), IRON)
         for hh in (0.2, 1.4, 2.7, 3.7):
             add('metal', limb('gate_rail', (hx, zs, hh), (hx, ze, hh), 0.08, 0.05), IRON)
-        add('metal', limb('gate_sheet', (hx, zs, 0.25), (hx, ze, 0.25), 0.03, 1.1), 0x24362B)
+        add('metal', limb('gate_sheet', (hx, zs, 0.8), (hx, ze, 0.8), 0.03, 1.1), 0x24362B)
         nb = 12
         for i in range(1, nb):
             z = zs + (ze - zs) * i / nb

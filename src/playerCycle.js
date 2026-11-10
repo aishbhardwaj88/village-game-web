@@ -311,13 +311,27 @@ export function createPlayerCycle(playerGroup) {
       if (probe && !teleport) {
         // Tyre contact heights under both wheels, relative to the player's own ground height (py).
         const sh = Math.sin(heading), ch = Math.cos(heading);
-        const gF = probe(px + sh * FZ, pz + ch * FZ, py) - py, gR = probe(px + sh * RZ, pz + ch * RZ, py) - py;
+        // 10 Nov (ground-check: rear wheel -17.9 cm, front +13.9 cm): one probe at each axle missed a lip just ahead of / behind the
+        // tyre (the wheel is 71 cm across, it rests on the lip's edge, not on the point under its axle), and the eased pitch left
+        // one wheel hanging while the other sat on a step. Each wheel now reads 5 points across its own tread (a circle of radius
+        // HY rolling over the surface: a point d along the tread counts for its height minus the circle's drop at d), and the
+        // pitch follows the two contact heights exactly (no easing: a rigid cycle tips the instant a wheel meets a lip).
+        const wheel = (az) => {
+          let g = -Infinity;
+          for (let q = -2; q <= 2; q++) {
+            const d = q * 0.14, wz = az + d;
+            const y = probe(px + sh * wz, pz + ch * wz, py) - py - (HY - Math.sqrt(HY * HY - d * d));
+            if (y > g) g = y;
+          }
+          return g;
+        };
+        const gF = wheel(FZ), gR = wheel(RZ);
         const slope = THREE.MathUtils.clamp(Math.atan2(gF - gR, FZ - RZ), -0.35, 0.35);
-        slopePitch += (-slope - slopePitch) * k1(20); // positive rotation.x tips the front down, so a rising front is negative
+        slopePitch = -slope; // positive rotation.x tips the front down, so a rising front is negative
         // Lift so BOTH tyres clear the ground at the pitch actually drawn (the pitch is eased, so a plain average sagged a tyre on a kerb).
         const pit = pitch + slopePitch;
         const want = Math.max(gF + FZ * Math.sin(pit), gR + RZ * Math.sin(pit)) - Math.max(0, bumpY);
-        groundLift = want > groundLift ? want : groundLift + (want - groundLift) * k1(25); // a rise lifts at once, a drop is followed
+        groundLift = want; // rises and drops both at once: a tyre is on the surface under it, never above or in it
         minWheelClear = Math.min(groundLift + Math.max(0, bumpY) - FZ * Math.sin(pit) - gF, groundLift + Math.max(0, bumpY) - RZ * Math.sin(pit) - gR);
       } else if (teleport) { slopePitch = 0; groundLift = 0; }
       rig.position.set(0, groundLift + Math.max(0, bumpY), 0); // the suspension dip is never drawn below the ground

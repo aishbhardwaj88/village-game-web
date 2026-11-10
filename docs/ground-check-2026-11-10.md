@@ -1,5 +1,22 @@
 # Ground check, 2026-11-10
 
+## Triage note (10 Nov, after the run below; nothing rebuilt or re-measured yet)
+
+**Worst four place-model sinks: cause found in the Blender builders, data fixed, glb patched.**
+- khalihan_v2 hb_main (-50 cm) and bhatta_v2 hb_main (-40 cm): the yard ground box (`wb('block'/'patch', ..., -0.5 / -0.4, 0.04 / 0.03)`) had a 40-50 cm buried skirt. Only its bottom face was below ground (top +3/4 cm), so it is a buried slab, not a sunk object, but it read as a sink. Bottom is now -2 cm (`build_khalihan.py`, `build_bhatta.py`).
+- dudh_dairy_v2 hb_jute (-54 cm): the "earth" kind carries every half-sunk sphere (fodder piles rh up to 0.48 m, bhusa, straw, dung) centred on ground height; their lower halves went to -0.54. `add()` in `build_dudh_dairy.py` now flattens anything under -2 cm for kind 'earth'.
+- gurukul_v2 hb_metal (-30 cm): the open gate sheets (`gate_sheet`) were centred at h 0.25 with half-height 0.55, so they hung 30 cm into the ground. Centre moved to 0.80 (bottom 0.25, top 1.35, just under the bars that start at 1.4). `build_gurukul.py`.
+- Blender is not installed here, so the four .glb files were patched directly with the same vertex change (originals in tmp/glb_backup/). Re-read with gltf-transform after patching: khalihan/bhatta/dairy hb_jute lowest vertex -1.5 cm, gurukul hb_metal lowest 9.8 cm (gate sheet raised +0.55). Sizes within 25 KB of the originals. NOT yet re-measured by tools/ground-check.js (needs a vite build); the next full run will confirm.
+- Not explained: dudh_dairy_v2 hb_metal (-44 cm, 3300-vert piece) and dairy lanterns_0 (-34 cm) at 508.9, -40.2. The glb's hb_metal has no vertex below -1.2 cm, so something at runtime (placement or static settle, not the model) pushed that piece down. Check settle/anchor of yard_dairy next.
+
+**Floating 5-32 cm place-model parts: almost all deliberate plinths, a checker blind spot rather than a bug.**
+- The checker splits each model's merged mesh into pieces (a mill, a weighbridge, a bench) and counts a place model's other parts as props, never as ground. So a piece standing on the same model's own raised floor reads "floating over ground".
+- Evidence: heights of the floating pieces match upward faces of the same glb: atta_chakki floats 12 / 20 / 25 cm vs plinth tops at 0.12, 0.20, 0.25 m; dharam_kanta 12 cm vs a 0.12 m deck; school 6-22 cm vs tops at 0.06, 0.11-0.22 m; gurukul 18 cm vs 0.18 m; bus_adda 10 cm vs 0.10 m. In the glb the lowest metal/props vertex of those models is at 0, so nothing is lifted by placement.
+- Only 53 of the ~253 are in the saved list (tmp/ground-check.json keeps the worst 400). Compared those 53 by model and height only (not piece by piece): all but the following have a matching plinth top in their glb. Not matched: khel_maidan_v2 hb_main (3 pieces, 8-16 cm; no upward face near 0.08/0.155 in the glb) and possibly post_office 23 cm (nearest top 0.20-0.30 m), akhada 12 cm and volleyball 9 cm (not inspected). Look at those four models by eye.
+- Suggested checker change (not made): treat the same place model's upward faces as ground for its own pieces. That would remove the false floating rows; do not loosen the tolerance.
+- Dairy hb_jute pieces floating 14-20 cm (24 verts each) are 'earth' sprinkles (straw bits) lying on heaps, also deliberate.
+
+
 Tool: tools/ground-check.js (docs/PARALLEL.md G1). Run: complete. Rule: fail if lowest point > 2 cm below or > 3 cm above the surface under it.
 Raw data: tmp/ground-check.json. Elevated static pieces (shelf, roof, on another prop, or deliberate pit) not counted: 2021. Figures with no surface within 1 m under them: 0. Exempt figures: 7.
 

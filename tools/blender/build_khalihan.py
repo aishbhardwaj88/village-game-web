@@ -17,7 +17,7 @@ kit = Kit(split_props=False, own=('metal',), wood_slot='props')
 add = kit.add
 rnd = random.Random(71)
 RED = 0xB8522F
-add('paint', wb('block', -12, 12, -15, 15, -0.5, 0.04, 0.0), 0xC8AE8A)
+add('paint', wb('block', -12, 12, -15, 15, -0.02, 0.04, 0.0), 0xC8AE8A)
 add('paint', wb('floor_ring', -0.1, 0.1, -0.1, 0.1, 0.04, 0.041, 0.0), 0xBFA27A)
 add('paint', cyl('gobar_floor', -2.0, 0.0, 0.04, 0.09, 7.0, 7.0, 40), 0xAA9170)
 for k in range(8):
