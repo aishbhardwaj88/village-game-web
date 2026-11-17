@@ -20,6 +20,7 @@ import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { updateCharacterAnims } from './characterAnim.js';
+import { setupGather } from './gatherScene.js';
 import { holdModelLoads, releaseModelLoads } from './loaders.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal, distanceToCanalWater } from './canal.js';
@@ -1189,6 +1190,8 @@ async function main() {
     placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
   });
   }
+  // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
+  const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => groundHeightAt(x, z, y), getCenter: () => player.position.clone() }) : null;
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
@@ -2992,6 +2995,7 @@ async function main() {
     const _pt0 = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
+    if (gatherUpdate) gatherUpdate(started && paused ? 0 : dt);
     updateCharacterAnims(started && paused ? 0 : dt);
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
