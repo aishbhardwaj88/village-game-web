@@ -1171,10 +1171,13 @@ async function main() {
   // not rigged yet, so she glides in her A-pose). Her A-pose arms make her wide, so the fit box is
   // widened; height 1.70 m (5'7", CHARACTER_BIBLE). Checked live: no turn needed, she already faces the walking direction.
   const PLAY_AS = new URLSearchParams(window.location.search).get('play');
-  if (PLAY_AS === 'didi') {
+  // 17 Nov: realistic Tripo cast. ?play=maa / ?play=pitaji etc. walk the village as that character for review.
+  // Heights from reference-from-unity/CHARACTER_BIBLE.md; w/d are wide so the A-pose arms never shrink them.
+  const PLAY_FILES = { didi: ['parlour_didi', 1.7], maa: ['maa', 1.65], pitaji: ['pitaji', 1.85], dada: ['dada', 1.73], dadi: ['dadi', 1.57], brother: ['brother', 1.12] };
+  if (PLAY_FILES[PLAY_AS]) {
     assetSlots.register('player', {
-      file: 'parlour_didi',
-      dimensions: { w: 1.2, h: 1.7, d: 1.2 },
+      file: PLAY_FILES[PLAY_AS][0],
+      dimensions: { w: 1.4, h: PLAY_FILES[PLAY_AS][1], d: 1.4 },
       hide: [player.children[0]],
       placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
@@ -1186,13 +1189,13 @@ async function main() {
   });
   }
   for (const [name, npc, dims] of [
-    ['maa', maaNpc],
+    ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
     ['dada', dadaNpc],
     ['postman', postmanNpc],
     ['teacher', teacherNpc],
     ['sister', sisterNpc],
-    ['pitaji', pitajiNpc],
+    ['pitaji', pitajiNpc, { w: 1.4, h: 1.85, d: 1.4 }],
     ['dadi', dadiNpc, { w: 0.62, h: 1.5, d: 0.62 }],
     ['monkey', monkeyNpc, { w: 0.35, h: 0.6, d: 0.35 }],
   ]) {
