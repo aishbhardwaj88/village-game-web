@@ -19,7 +19,12 @@ export function attachCharacterAnim(root, clips, follow) {
   const walk = walkClip ? mixer.clipAction(walkClip) : null;
   if (idle) { idle.play(); idle.time = Math.random() * idleClip.duration; } // villagers don't breathe in sync
   if (walk) { walk.play(); walk.setEffectiveWeight(0); }
-  animators.push({ mixer, idle, walk, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0 });
+  // 18 Nov: faces. Free shape keys made in Blender (tools/face_keys.py): "blink" closes the eyelids, "smile" lifts the
+  // mouth corners. Blinks every 2-6 s (sometimes double), gentle smiles come and go while standing.
+  const face = [];
+  root.traverse((o) => { if (o.morphTargetDictionary && o.morphTargetDictionary.blink !== undefined) face.push(o); });
+  animators.push({ mixer, idle, walk, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
+    face, blinkIn: 1 + Math.random() * 4, blinkT: -1, doubleBlink: false, smile: 0, smileWant: 0, smileIn: 2 + Math.random() * 5 });
 }
 
 export function updateCharacterAnims(dt) {
@@ -39,5 +44,27 @@ export function updateCharacterAnims(dt) {
       a.walk.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / 1.4, 0.7, 2.2));
     }
     a.mixer.update(dt);
+    if (a.face.length) {
+      // blink: 0.09 s close, 0.11 s open
+      if (a.blinkT < 0) { a.blinkIn -= dt; if (a.blinkIn <= 0) { a.blinkT = 0; } }
+      let b = 0;
+      if (a.blinkT >= 0) {
+        a.blinkT += dt;
+        b = a.blinkT < 0.09 ? a.blinkT / 0.09 : Math.max(0, 1 - (a.blinkT - 0.09) / 0.11);
+        if (a.blinkT > 0.2) {
+          a.blinkT = -1;
+          if (!a.doubleBlink && Math.random() < 0.2) { a.doubleBlink = true; a.blinkIn = 0.12; }
+          else { a.doubleBlink = false; a.blinkIn = 2 + Math.random() * 4; }
+        }
+      }
+      // smile: drifts between a soft resting smile and a warmer one, less while walking
+      a.smileIn -= dt;
+      if (a.smileIn <= 0) { a.smileWant = Math.random() < 0.55 ? 0.35 + Math.random() * 0.35 : 0.1; a.smileIn = 2 + Math.random() * 5; }
+      a.smile += ((a.w > 0.5 ? Math.min(a.smileWant, 0.2) : a.smileWant) - a.smile) * Math.min(1, dt * 3);
+      for (const m of a.face) {
+        m.morphTargetInfluences[m.morphTargetDictionary.blink] = b;
+        if (m.morphTargetDictionary.smile !== undefined) m.morphTargetInfluences[m.morphTargetDictionary.smile] = a.smile;
+      }
+    }
   }
 }
