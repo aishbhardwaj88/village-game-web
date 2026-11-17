@@ -19,6 +19,7 @@ import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
+import { updateCharacterAnims } from './characterAnim.js';
 import { holdModelLoads, releaseModelLoads } from './loaders.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal, distanceToCanalWater } from './canal.js';
@@ -2991,6 +2992,7 @@ async function main() {
     const _pt0 = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
+    updateCharacterAnims(started && paused ? 0 : dt);
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
     if (started && paused) {
