@@ -1,6 +1,5 @@
 /**
- * 18 Nov: ?gather=1 puts the realistic Tripo cast together at the village square (around where the
- * player spawns), walking and standing in small groups facing each other. Review scene only:
+ * 18 Nov: ?gather=1 puts the realistic Tripo cast together round the chauraha island (zero milestone), walking and standing in small groups facing each other. Review scene only:
  * the models carry idle + walk clips (src/characterAnim.js), so "interacting" here is blocking:
  * who stands with whom, who walks up to whom. Faces don't animate (Tripo has no face rig).
  */
@@ -26,19 +25,19 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   function init() {
   const c = getCenter(); cx = c.x; cz = c.z;
   // Women chatting: Maa and Dadi, face to face
-  put(actors.maa, -3.0, 1.0); put(actors.dadi, -1.9, 1.7);
-  face(actors.maa, -1.9, 1.7); face(actors.dadi, -3.0, 1.0);
+  put(actors.maa, -7.0, 10.6); put(actors.dadi, -5.8, 11.2);
+  face(actors.maa, -5.8, 11.2); face(actors.dadi, -7.0, 10.6);
   // Men's huddle: Pitaji, Sarpanch, Dada in a loose triangle
-  put(actors.pitaji, 2.6, -0.6); put(actors.sarpanch, 3.8, 0.2); put(actors.dada, 2.5, 0.8);
-  face(actors.pitaji, 3.3, 0.2); face(actors.sarpanch, 2.5, 0.0); face(actors.dada, 3.3, -0.1);
+  put(actors.pitaji, 11.6, 3.0); put(actors.sarpanch, 12.9, 3.7); put(actors.dada, 11.7, 4.5);
+  face(actors.pitaji, 12.4, 4.0); face(actors.sarpanch, 11.6, 3.7); face(actors.dada, 12.3, 3.3);
   }
 
   // Postman: walks in from the road, stops at Pitaji with the letter, walks back out
-  const postPath = [[9, -6], [3.4, -1.6]];
+  const postPath = [[21, -4], [12.3, 1.7]];
   let postT = 0;
   // Sister and Brother: walk a loop round the square side by side
   let loopA = 0;
-  const R = 6.5;
+  const R = 10; // round the chauraha island (radius about 7.5 m)
 
   return function update(dt) {
     if (!(dt > 0)) return;
@@ -54,11 +53,11 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     else { x = a[0]; z = a[1]; walking = false; dir = -1; }
     put(p, x, z);
     if (walking) turnTo(p, Math.atan2((b[0] - a[0]) * dir, (b[1] - a[1]) * dir), dt);
-    else if (postT < 20) turnTo(p, Math.atan2(cx + 2.6 - p.position.x, cz - 0.6 - p.position.z), dt);
+    else if (postT < 20) turnTo(p, Math.atan2(cx + 11.6 - p.position.x, cz + 3.0 - p.position.z), dt);
     // Pitaji turns to the postman while he's there, back to the huddle when he leaves
     const pit = actors.pitaji;
     const atPit = postT > 6 && postT < 13.5;
-    turnTo(pit, atPit ? Math.atan2(cx + x - pit.position.x, cz + z - pit.position.z) : Math.atan2(cx + 3.3 - pit.position.x, cz + 0.2 - pit.position.z), dt);
+    turnTo(pit, atPit ? Math.atan2(cx + x - pit.position.x, cz + z - pit.position.z) : Math.atan2(cx + 12.4 - pit.position.x, cz + 4.0 - pit.position.z), dt);
     // siblings' loop (about 1.1 m/s), Brother on the inside
     loopA += dt * 1.1 / R;
     for (const [g, r, lag] of [[actors.sister, R, 0], [actors.brother, R - 0.8, 0.06]]) {

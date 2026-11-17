@@ -1191,7 +1191,7 @@ async function main() {
   });
   }
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
-  const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => groundHeightAt(x, z, y), getCenter: () => player.position.clone() }) : null;
+  const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => groundHeightAt(x, z, y), getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
