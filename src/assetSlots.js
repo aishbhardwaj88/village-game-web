@@ -140,7 +140,11 @@ export function createAssetSlotRegistry() {
     // facing the wrong way (as opposed to correct mesh data wrapped in a bad
     // transform) — there is no bounding-box-only way to tell those apart; see
     // docs/asset-slots.md's "Orientation" note and this task's own report.
-    source.traverse((o) => o.rotation.set(0, 0, 0));
+    // 17 Nov: rigged Tripo characters keep every rotation: their bones' rest pose IS the rotations
+    // (zeroing them threw Maa's arms straight up). Only unrigged models get the reset.
+    let rigged = false;
+    source.traverse((o) => { if (o.isSkinnedMesh) rigged = true; });
+    if (!rigged) source.traverse((o) => o.rotation.set(0, 0, 0));
     source.updateMatrixWorld(true);
 
     // Ground + centre in local space, then uniformly scale to fit the slot's real-
