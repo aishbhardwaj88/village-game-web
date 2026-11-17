@@ -235,7 +235,7 @@ const CYCLE_CAM_LAG = 0.25; // s: camera yaw follows the heading with this time 
 /** Tightest turning radius (m) at a speed: 2.2 m at walking pace (so a U-turn fits a 6 m gali), 3 m at 7.5 m/s (a ~6 m circle across),
  * 4.5 m sprinting (~9 m across). The handlebar limit is atan(wheelbase / radius). */
 const cycleTurnRadius = (v) => { v = Math.abs(v); return v <= 1.5 ? 2.2 : v <= 7.5 ? 2.2 + (v - 1.5) * (0.8 / 6) : 3 + (v - 7.5) * 0.75; };
-let onCycle = true; // the player starts on a cycle (3 Nov): C gets off / on
+let onCycle = !new URLSearchParams(window.location.search).get('play'); // the player starts on a cycle (3 Nov): C gets off / on. ?play=<character> reviews start on foot (18 Nov: the cycle's placeholder rider arms showed on the real models)
 let cycleSpeed = 0, cycleHeading = 0, cyclePedalling = false, bellHintShown = false; // C4 riding feel: pedalling drives the cranks/bob, B rings the bell
 let cycleBar = 0, cycleYawRate = 0, cycleLookAt = -1e9, cycleLookedAtRest = true, cycleThudAt = -1e9, cycleWallHits = 0; // handlebar (rad, + = right), last yaw rate, last mouse/drag look (ms)
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
