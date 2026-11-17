@@ -14,7 +14,7 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     const g = new THREE.Group();
     g.name = `gather_${key}`;
     scene.add(g);
-    assetSlots.register(`gather_${key}`, { file: key, dimensions: { w: 1.4, h, d: 1.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
+    assetSlots.register(`gather_${key}`, { file: key, dimensions: { w: 2.4, h, d: 2.4 } /* wide box: height alone sets the scale (Sarpanch's depth is 1.45 m and shrank him to 1.42 m, 18 Nov) */, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
     assetSlots.resolveOne(`gather_${key}`).catch(() => {});
     actors[key] = g;
   }

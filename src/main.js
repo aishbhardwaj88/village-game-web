@@ -1179,7 +1179,7 @@ async function main() {
   if (PLAY_FILES[PLAY_AS]) {
     assetSlots.register('player', {
       file: PLAY_FILES[PLAY_AS][0],
-      dimensions: { w: 1.4, h: PLAY_FILES[PLAY_AS][1], d: 1.4 },
+      dimensions: { w: 2.4, h: PLAY_FILES[PLAY_AS][1], d: 2.4 }, // wide: height alone sets the scale (Sarpanch is 1.45 m deep)
       hide: [player.children[0]],
       placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
     });
