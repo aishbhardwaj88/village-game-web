@@ -1174,7 +1174,7 @@ async function main() {
   const PLAY_AS = new URLSearchParams(window.location.search).get('play');
   // 17 Nov: realistic Tripo cast. ?play=maa / ?play=pitaji etc. walk the village as that character for review.
   // Heights from reference-from-unity/CHARACTER_BIBLE.md; w/d are wide so the A-pose arms never shrink them.
-  const PLAY_FILES = { didi: ['parlour_didi', 1.7], sister: ['sister', 1.47], maa: ['maa', 1.65], pitaji: ['pitaji', 1.85], dada: ['dada', 1.73], dadi: ['dadi', 1.57], brother: ['brother', 1.12] };
+  const PLAY_FILES = { didi: ['parlour_didi', 1.7], sister: ['sister', 1.47], maa: ['maa', 1.65], pitaji: ['pitaji', 1.85], dada: ['dada', 1.73], dadi: ['dadi', 1.57], brother: ['brother', 1.12], sarpanch: ['sarpanch', 1.73], postman: ['postman', 1.88], teacher: ['teacher', 1.68] };
   if (PLAY_FILES[PLAY_AS]) {
     assetSlots.register('player', {
       file: PLAY_FILES[PLAY_AS][0],
@@ -1192,12 +1192,12 @@ async function main() {
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
-    ['dada', dadaNpc],
-    ['postman', postmanNpc],
-    ['teacher', teacherNpc],
+    ['dada', dadaNpc, { w: 1.4, h: 1.73, d: 1.4 }],
+    ['postman', postmanNpc, { w: 1.4, h: 1.88, d: 1.4 }],
+    ['teacher', teacherNpc, { w: 1.4, h: 1.68, d: 1.4 }],
     ['sister', sisterNpc, { w: 1.4, h: 1.47, d: 1.4 }],
     ['pitaji', pitajiNpc, { w: 1.4, h: 1.85, d: 1.4 }],
-    ['dadi', dadiNpc, { w: 0.62, h: 1.5, d: 0.62 }],
+    ['dadi', dadiNpc, { w: 1.4, h: 1.57, d: 1.4 }],
     ['monkey', monkeyNpc, { w: 0.35, h: 0.6, d: 0.35 }],
   ]) {
     assetSlots.register(name, {
