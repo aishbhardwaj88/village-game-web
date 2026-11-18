@@ -100,6 +100,14 @@ export function createAssetSlotRegistry() {
   }
 
   async function resolveSlot(slot) {
+    // 18 Nov: a slot registered before resolveAll() and also resolved by resolveOne() loaded twice into the same container
+    // (two out-of-step copies of each ?gather=1 character: the 'double body'). Each slot now resolves once.
+    if (slot.resolvePromise) return slot.resolvePromise;
+    slot.resolvePromise = resolveSlotOnce(slot);
+    return slot.resolvePromise;
+  }
+
+  async function resolveSlotOnce(slot) {
     const url = `${MODEL_BASE}${slot.file || slot.name}.glb`;
     if (!(await urlExists(url))) return { name: slot.name, replaced: false };
 
