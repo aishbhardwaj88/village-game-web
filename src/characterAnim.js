@@ -59,7 +59,7 @@ export function updateCharacterAnims(dt) {
       }
       // smile: drifts between a soft resting smile and a warmer one, less while walking
       a.smileIn -= dt;
-      if (a.smileIn <= 0) { a.smileWant = Math.random() < 0.55 ? 0.35 + Math.random() * 0.35 : 0.1; a.smileIn = 2 + Math.random() * 5; }
+      if (a.smileIn <= 0) { a.smileWant = Math.random() < 0.55 ? 0.25 + Math.random() * 0.2 : 0.08; /* above ~0.5 the lips pucker (18 Nov live check) */ a.smileIn = 2 + Math.random() * 5; }
       a.smile += ((a.w > 0.5 ? Math.min(a.smileWant, 0.2) : a.smileWant) - a.smile) * Math.min(1, dt * 3);
       for (const m of a.face) {
         m.morphTargetInfluences[m.morphTargetDictionary.blink] = b;
