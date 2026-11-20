@@ -212,7 +212,7 @@ export function createAssetSlotRegistry() {
 
     for (const obj of slot.hide) obj.visible = false;
     // rigged characters with baked idle/walk clips come alive (src/characterAnim.js)
-    if (rigged && gltf.animations && gltf.animations.length) attachCharacterAnim(source, gltf.animations, slot.placements[0].container);
+    if (rigged && gltf.animations && gltf.animations.length) attachCharacterAnim(source, gltf.animations, slot.placements[0].container, slot.name);
 
     return { name: slot.name, replaced: true };
   }

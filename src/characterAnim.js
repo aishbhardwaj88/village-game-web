@@ -9,16 +9,57 @@ import * as THREE from 'three';
 const animators = [];
 const tmp = new THREE.Vector3();
 
-export function attachCharacterAnim(root, clips, follow) {
+// 21 Nov: personality. Each character file now carries its own curated clips: idle, walk, (kids) run, and 1-2
+// gesture_<name> clips (nod, point, wave, bless, ...). Walks were reshaped per character (graceful Maa, heavy
+// Pitaji, slow stooped Dada/Dadi, dignified Sarpanch, hurrying Postman), so each walk has its own natural speed:
+// `walkRef` is the ground speed (m/s) at which that clip's feet don't slide. Elders keep their stoop: no neck fix.
+// walkRef = measured natural ground speed of each reshaped walk at in-game height (planted-foot speed, 21 Nov
+// render check). `maxRate` caps how much faster than natural a walk may play (1.3x) so nobody scurries or slides
+// much; the hurrying Postman and the player may go faster.
+const PROFILE = {
+  maa: { walkRef: 0.96 },
+  pitaji: { walkRef: 0.99 },
+  dada: { walkRef: 0.56, keepStoop: true },
+  dadi: { walkRef: 0.38, keepStoop: true },
+  darzi: { keepStoop: true },
+  sarpanch: { walkRef: 0.58 },
+  postman: { walkRef: 1.38, maxRate: 2.2 },
+  brother: { walkRef: 0.66, kid: true, runRef: 1.07 },
+  sister: { walkRef: 0.99, kid: true, runRef: 1.55 },
+  player: { walkRef: 0.66, kid: true, runRef: 1.07, maxRate: 2.2 },
+};
+/** comfortable ground speed (m/s) for each character's walking routines (<= 1.3x natural) */
+export const WALK_SPEED = { maa: 1.25, pitaji: 1.25, dada: 0.55, dadi: 0.4, sarpanch: 0.72, postman: 1.8, brother: 0.85, sister: 1.25 };
+// kids switch from walk to run once walking would play faster than ~1.25x (feet would start to slide)
+const RUN_SWITCH = 1.25;
+const GESTURE_EVERY = [10, 20]; // seconds of standing between gestures
+const GESTURE_FADE = 0.4;
+
+function profileFor(slotName) {
+  const key = String(slotName || '').replace(/^(npc|gather)_/, '').replace(/_\d+$/, '');
+  return PROFILE[key] || {};
+}
+
+export function attachCharacterAnim(root, clips, follow, slotName) {
   const idleClip = clips.find((c) => /idle/i.test(c.name));
   const walkClip = clips.find((c) => /walk/i.test(c.name));
+  const runClip = clips.find((c) => /(^|_)run/i.test(c.name));
+  const gestureClips = clips.filter((c) => /^gesture_/i.test(c.name));
   if (!idleClip && !walkClip) return;
+  const prof = profileFor(slotName);
   root.traverse((o) => { if (o.isSkinnedMesh) o.frustumCulled = false; }); // bind-pose bounds don't follow the animated limbs
   const mixer = new THREE.AnimationMixer(root);
   const idle = idleClip ? mixer.clipAction(idleClip) : null;
   const walk = walkClip ? mixer.clipAction(walkClip) : null;
   if (idle) { idle.play(); idle.time = Math.random() * idleClip.duration; } // villagers don't breathe in sync
   if (walk) { walk.play(); walk.setEffectiveWeight(0); }
+  const run = runClip && prof.kid ? mixer.clipAction(runClip) : null;
+  if (run) { run.play(); run.setEffectiveWeight(0); }
+  const gestures = gestureClips.map((c) => {
+    const act = mixer.clipAction(c);
+    act.setLoop(THREE.LoopOnce, 1); act.clampWhenFinished = true; act.setEffectiveWeight(0);
+    return act;
+  });
   // 18 Nov: faces. Free shape keys made in Blender (tools/face_keys.py): "blink" closes the eyelids, "smile" lifts the
   // mouth corners. Blinks every 2-6 s (sometimes double), gentle smiles come and go while standing.
   const face = [];
@@ -32,7 +73,9 @@ export function attachCharacterAnim(root, clips, follow) {
     if (!neck && /(^|rig|:)neck$/i.test(o.name)) neck = o;
     if (!head && /(^|rig|:)head$/i.test(o.name)) head = o;
   });
-  animators.push({ root, neck, head, mixer, idle, walk, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
+  if (prof.keepStoop) { neck = null; head = null; } // elders and the darzi are meant to stoop
+  animators.push({ root, neck, head, mixer, idle, walk, run, gestures, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
+    walkRef: prof.walkRef || 1.4, maxRate: prof.maxRate || 1.3, runRef: prof.runRef || 1.5, r: 0, g: null, gw: 0, gLast: -1, gIn: GESTURE_EVERY[0] * 0.5 + Math.random() * GESTURE_EVERY[1],
     face, blinkIn: 1 + Math.random() * 4, blinkT: -1, doubleBlink: false, smile: 0, smileWant: 0, smileIn: 2 + Math.random() * 5 });
 }
 
@@ -69,6 +112,32 @@ function straightenNeck(a) {
   rotateBoneWorld(a.head, qh.multiply(qh2.invert())); // keep the face looking where it was
 }
 
+// one gesture now and then while standing: fade in over idle, play once, fade back out; never while walking
+function updateGesture(a, dt) {
+  if (!a.gestures.length) return;
+  const standing = a.w < 0.05 && a.speed < 0.2;
+  if (a.g) {
+    a.gT += dt;
+    const dur = a.g.getClip().duration;
+    let target = Math.min(1, a.gT / GESTURE_FADE, Math.max(0, (dur - a.gT) / GESTURE_FADE));
+    if (!standing) target = 0; // started walking: let go quickly
+    a.gw += (target - a.gw) * Math.min(1, dt * (standing ? 12 : 8));
+    a.g.setEffectiveWeight(a.gw);
+    if (a.gT >= dur || (!standing && a.gw < 0.02)) {
+      a.g.stop(); a.g.setEffectiveWeight(0); a.g = null; a.gw = 0;
+      a.gIn = GESTURE_EVERY[0] + Math.random() * (GESTURE_EVERY[1] - GESTURE_EVERY[0]);
+    }
+    return;
+  }
+  if (!standing) return;
+  a.gIn -= dt;
+  if (a.gIn > 0) return;
+  let i = Math.floor(Math.random() * a.gestures.length);
+  if (a.gestures.length > 1 && i === a.gLast) i = (i + 1) % a.gestures.length;
+  a.gLast = i; a.g = a.gestures[i]; a.gT = 0; a.gw = 0;
+  a.g.reset(); a.g.setEffectiveWeight(0); a.g.play();
+}
+
 export function updateCharacterAnims(dt) {
   if (!(dt > 0)) return;
   for (const a of animators) {
@@ -80,10 +149,19 @@ export function updateCharacterAnims(dt) {
     // walking pace only: standing still, or riding something fast (cycle, tractor), uses idle
     const want = a.speed > 0.35 && a.speed < 7 ? 1 : 0;
     a.w += (want - a.w) * Math.min(1, dt * 6);
-    if (a.idle) a.idle.setEffectiveWeight(a.walk ? 1 - a.w : 1);
+    // kids: walk -> run once the walk would play faster than RUN_SWITCH x natural
+    const runWant = a.run && a.speed > a.walkRef * RUN_SWITCH ? 1 : 0;
+    a.r += (runWant - a.r) * Math.min(1, dt * 5);
+    updateGesture(a, dt);
+    const keep = 1 - a.gw; // a gesture borrows weight from idle only (it never plays while walking)
+    if (a.idle) a.idle.setEffectiveWeight((a.walk ? 1 - a.w : 1) * keep);
     if (a.walk) {
-      a.walk.setEffectiveWeight(a.idle ? a.w : 1);
-      a.walk.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / 1.4, 0.7, 2.2));
+      a.walk.setEffectiveWeight((a.idle ? a.w : 1) * (1 - a.r) * keep);
+      a.walk.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / a.walkRef, 0.6, a.maxRate));
+    }
+    if (a.run) {
+      a.run.setEffectiveWeight(a.w * a.r * keep);
+      a.run.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / a.runRef, 0.8, a.maxRate));
     }
     a.mixer.update(dt);
     if (a.neck && a.head) straightenNeck(a);

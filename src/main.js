@@ -798,7 +798,7 @@ async function main() {
   const maaWalk = createWaypointLoop(maaNpc, [
     { x: MAA_POSITION.x, z: MAA_POSITION.z },
     { ...houseAt(-3, 5) }, // square-frame offset from her spot, turned with the house
-  ], { getExtraBoxes: () => otherVehicleBoxes(null) });
+  ], { speed: 0.96, getExtraBoxes: () => otherVehicleBoxes(null) }); // 21 Nov: her graceful walk's natural pace
   const halwaiStir = createStirLoop(halwaiNpc.userData.mesh);
 
   const childNpc = createNPC(0x6d8a9c, { ...houseAt(0, 9) }, 0, 'npc_child');
@@ -858,7 +858,7 @@ async function main() {
   let sisterFollowing = false;
   // Side job 9 (ration run): Maa walks with the player instead of her usual loop while this flag is set (src/jobs/ration.js).
   let maaFollowing = false;
-  const maaFollow = createFollowRoutine(maaNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2.4, speed: 2.2, getExtraBoxes: () => otherVehicleBoxes(null), buildings: BUILDING_ROUTES });
+  const maaFollow = createFollowRoutine(maaNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2.4, speed: 1.25, getExtraBoxes: () => otherVehicleBoxes(null), buildings: BUILDING_ROUTES }); // 21 Nov: her graceful walk (natural 0.96 m/s) stays within 1.3x
   const sisterFollow = createFollowRoutine(sisterNpc, () => (mountedVehicle ? mountedVehicle.group.position : player.position), { stopDistance: 2, getExtraBoxes: () => otherVehicleBoxes(null), buildings: BUILDING_ROUTES });
 
   // M4 (docs/STORY.md) — the postman, cycling the same proven-clear hero-zone lane
@@ -877,7 +877,7 @@ async function main() {
       { ...houseAt(0, 9) },
       { ...houseAt(-6, 13) },
     ],
-    { speed: 1.5, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) }
+    { speed: 1.8, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) } // 21 Nov: always in a hurry
   );
   linkPostmanPosition(postmanNpc.position);
 
