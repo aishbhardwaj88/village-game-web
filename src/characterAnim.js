@@ -23,8 +23,50 @@ export function attachCharacterAnim(root, clips, follow) {
   // mouth corners. Blinks every 2-6 s (sometimes double), gentle smiles come and go while standing.
   const face = [];
   root.traverse((o) => { if (o.morphTargetDictionary && o.morphTargetDictionary.blink !== undefined) face.push(o); });
-  animators.push({ mixer, idle, walk, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
+  // 20 Nov: posture. Tripo's idle/walk presets push the head forward 15-27 degrees (hunched, chin poking out).
+  // Every frame after the clip plays, the neck is tilted back so it stands ~5 degrees off vertical, and the head
+  // is counter-turned so the gaze stays level. Checked live on Sister and Postman.
+  let neck = null, head = null;
+  root.traverse((o) => {
+    if (!o.isBone) return;
+    if (!neck && /(^|rig|:)neck$/i.test(o.name)) neck = o;
+    if (!head && /(^|rig|:)head$/i.test(o.name)) head = o;
+  });
+  animators.push({ root, neck, head, mixer, idle, walk, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
     face, blinkIn: 1 + Math.random() * 4, blinkT: -1, doubleBlink: false, smile: 0, smileWant: 0, smileIn: 2 + Math.random() * 5 });
+}
+
+const UP = new THREE.Vector3(0, 1, 0);
+const fwd = new THREE.Vector3(), side = new THREE.Vector3(), pa = new THREE.Vector3(), pb = new THREE.Vector3();
+const qw = new THREE.Quaternion(), qp = new THREE.Quaternion(), qh = new THREE.Quaternion(), qh2 = new THREE.Quaternion();
+const NECK_WANT = THREE.MathUtils.degToRad(5);
+const NECK_MAX = THREE.MathUtils.degToRad(30);
+
+// rotate a bone by a world-space rotation q, keeping its parent untouched
+function rotateBoneWorld(bone, q) {
+  bone.parent.getWorldQuaternion(qp);
+  const local = qp.clone().invert().multiply(q).multiply(qp);
+  bone.quaternion.premultiply(local);
+  bone.updateWorldMatrix(false, true);
+}
+
+function straightenNeck(a) {
+  a.root.updateWorldMatrix(true, true);
+  fwd.set(0, 0, 1).transformDirection(a.root.matrixWorld);
+  fwd.y = 0;
+  if (fwd.lengthSq() < 1e-6) return;
+  fwd.normalize();
+  side.crossVectors(UP, fwd).normalize();
+  a.neck.getWorldPosition(pa);
+  a.head.getWorldPosition(pb);
+  pb.sub(pa);
+  const lean = Math.atan2(pb.dot(fwd), pb.y); // + = head pushed forward
+  const delta = THREE.MathUtils.clamp(NECK_WANT - lean, -NECK_MAX, NECK_MAX);
+  if (Math.abs(delta) < 0.01) return;
+  a.head.getWorldQuaternion(qh);
+  rotateBoneWorld(a.neck, qw.setFromAxisAngle(side, delta));
+  a.head.getWorldQuaternion(qh2);
+  rotateBoneWorld(a.head, qh.multiply(qh2.invert())); // keep the face looking where it was
 }
 
 export function updateCharacterAnims(dt) {
@@ -44,6 +86,7 @@ export function updateCharacterAnims(dt) {
       a.walk.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / 1.4, 0.7, 2.2));
     }
     a.mixer.update(dt);
+    if (a.neck && a.head) straightenNeck(a);
     if (a.face.length) {
       // blink: 0.09 s close, 0.11 s open
       if (a.blinkT < 0) { a.blinkIn -= dt; if (a.blinkIn <= 0) { a.blinkT = 0; } }
