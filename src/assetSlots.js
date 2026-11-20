@@ -27,7 +27,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 const MODEL_BASE = 'assets/models/';
 // Props (pots, flowers, utensils: the Blender kit's 'paint' kind), decals and the rangoli never cast shadows — they are
 // most of a building's triangles and invisible in the sun's shadow map.
-const NO_SHADOW_MATERIALS = ['hb_props', 'hb_decal', 'hb_rangoli'];
+const NO_SHADOW_MATERIALS = ['hb_props', 'hb_decal', 'hb_rangoli', 'tripo_hair']; // tripo_hair: loose hair cards cast striped shadows on foreheads (20 Nov)
 
 // Non-metal, non-glass floor: the highest of docs/art-rules-characters.md's own
 // per-category minimums (skin 0.75, cloth/hair 0.8, leather 0.6, plaster/wood
