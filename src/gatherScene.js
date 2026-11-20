@@ -38,9 +38,53 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   // Sister and Brother: walk a loop round the square side by side
   let loopA = 0;
 
+  // 20 Nov: ?gather=1&lineup=1&proof=1 - everyone stands still in one line facing the camera, with
+  // Previous / Next / Whole line buttons that zoom on each face (her face review).
+  const LINEUP = new URLSearchParams(window.location.search).has('lineup');
+  const ORDER = ['sister', 'brother', 'maa', 'dadi', 'dada', 'pitaji', 'sarpanch', 'postman'];
+  const yaw = {};
+  let sel = -1, ui = null, label = null;
+  const tmpV = new THREE.Vector3();
+  function lineupUI() {
+    ui = document.createElement('div');
+    ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;font:600 16px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
+    label = document.createElement('span'); label.style.cssText = 'min-width:170px;text-align:center';
+    const name = () => { label.textContent = sel < 0 ? 'Whole line' : `${sel + 1} / ${ORDER.length}: ${ORDER[sel][0].toUpperCase()}${ORDER[sel].slice(1)}`; };
+    const btn = (t, fn) => {
+      const b = document.createElement('button'); b.textContent = t;
+      b.style.cssText = 'font:600 16px system-ui;padding:8px 14px;border-radius:8px;border:0;cursor:pointer';
+      for (const ev of ['pointerdown', 'mousedown', 'click']) b.addEventListener(ev, (e) => { e.stopPropagation(); if (ev === 'click') { fn(); name(); } });
+      return b;
+    };
+    ui.append(btn('Previous', () => { sel = sel <= 0 ? ORDER.length - 1 : sel - 1; }), label,
+      btn('Next', () => { sel = (sel + 1) % ORDER.length; }), btn('Whole line', () => { sel = -1; }));
+    document.body.appendChild(ui); name();
+  }
+  function lineupUpdate() {
+    if (!ui) lineupUI();
+    ORDER.forEach((k, i) => {
+      const g = actors[k];
+      put(g, -4.0 + i * 1.15, 0);
+      if (yaw[k] === undefined) {
+        const m = g.getObjectByName(`gather_${k}_model`);
+        if (m) { g.rotation.y = 0; g.updateMatrixWorld(true); tmpV.set(0, 0, 1).transformDirection(m.matrixWorld); yaw[k] = -Math.atan2(tmpV.x, tmpV.z); }
+      }
+      g.rotation.y = yaw[k] || 0;
+    });
+    const cam = window.__dopahar && window.__dopahar.photoCamera;
+    if (!cam) return;
+    if (sel < 0) { cam({ pos: [cx, 1.3, cz + 8.8], target: [cx, 0.95, cz], fov: 50 }); return; }
+    const g = actors[ORDER[sel]]; let head = null;
+    g.traverse((b) => { if (!head && b.isBone && /(^|rig|:)head$/i.test(b.name)) head = b; });
+    const x = cx - 4.0 + sel * 1.15;
+    const y = head ? head.getWorldPosition(tmpV).y + 0.09 : 1.5;
+    cam({ pos: [x, y, cz + 0.85], target: [x, y, cz], fov: 30 });
+  }
+
   return function update(dt) {
     if (!(dt > 0)) return;
     if (!ready) { init(); ready = true; }
+    if (LINEUP) { lineupUpdate(); return; }
     // postman cycle: 7 s in, 6 s at Pitaji, 7 s out, 3 s off-stage pause
     postT = (postT + dt) % 23;
     const p = actors.postman;
