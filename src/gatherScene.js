@@ -5,7 +5,8 @@
  */
 import * as THREE from 'three';
 
-const CAST = { maa: 1.65, dadi: 1.57, pitaji: 1.85, sarpanch: 1.73, dada: 1.73, postman: 1.88, sister: 1.47, brother: 1.12 };
+const CAST = { maa: 1.65, dadi: 1.57, pitaji: 1.85, sarpanch: 1.73, dada: 1.73, postman: 1.88, sister: 1.47, brother: 1.12, teacher: 1.68, didi: 1.70 };
+const FILE = { didi: 'parlour_didi' }; // 21 Nov: cast key -> model file when they differ
 
 export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   let cx = 0, cz = 0, ready = false;
@@ -14,7 +15,7 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     const g = new THREE.Group();
     g.name = `gather_${key}`;
     scene.add(g);
-    assetSlots.register(`gather_${key}`, { file: key, dimensions: { w: 2.4, h, d: 2.4 } /* wide box: height alone sets the scale (Sarpanch's depth is 1.45 m and shrank him to 1.42 m, 18 Nov) */, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
+    assetSlots.register(`gather_${key}`, { file: FILE[key] || key, dimensions: { w: 2.4, h, d: 2.4 } /* wide box: height alone sets the scale (Sarpanch's depth is 1.45 m and shrank him to 1.42 m, 18 Nov) */, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
     assetSlots.resolveOne(`gather_${key}`).catch(() => {});
     actors[key] = g;
   }
@@ -30,6 +31,9 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   // Men's huddle: Pitaji, Sarpanch, Dada in a loose triangle
   put(actors.pitaji, 2.2, -1.2); put(actors.sarpanch, 3.4, -0.6); put(actors.dada, 2.3, 0.1);
   face(actors.pitaji, 3.0, -0.4); face(actors.sarpanch, 2.2, -0.6); face(actors.dada, 3.0, -0.9);
+  // 21 Nov: Teacher and Didi chatting off to the left
+  put(actors.teacher, -4.2, -1.4); put(actors.didi, -3.3, -1.9);
+  face(actors.teacher, -3.3, -1.9); face(actors.didi, -4.2, -1.4);
   }
 
   // Postman: walks in from the road, stops at Pitaji with the letter, walks back out
@@ -41,9 +45,10 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   // 20 Nov: ?gather=1&lineup=1&proof=1 - everyone stands still in one line facing the camera, with
   // Previous / Next / Whole line buttons that zoom on each face (her face review).
   const LINEUP = new URLSearchParams(window.location.search).has('lineup');
-  const ORDER = ['sister', 'brother', 'maa', 'dadi', 'dada', 'pitaji', 'sarpanch', 'postman'];
+  const ORDER = ['sister', 'brother', 'maa', 'dadi', 'dada', 'pitaji', 'sarpanch', 'postman', 'teacher', 'didi'];
+  const X0 = -5.2; // left end of the line (10 people, 1.15 m apart, centred)
   const yaw = {};
-  let sel = -1, ui = null, label = null;
+  let sel = Math.max(-1, ORDER.indexOf(new URLSearchParams(window.location.search).get('face') || '')), ui = null, label = null;
   const tmpV = new THREE.Vector3();
   function lineupUI() {
     ui = document.createElement('div');
@@ -64,7 +69,7 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     if (!ui) lineupUI();
     ORDER.forEach((k, i) => {
       const g = actors[k];
-      put(g, -4.0 + i * 1.15, 0);
+      put(g, X0 + i * 1.15, 0);
       if (yaw[k] === undefined) {
         const m = g.getObjectByName(`gather_${k}_model`);
         if (m) { g.rotation.y = 0; g.updateMatrixWorld(true); tmpV.set(0, 0, 1).transformDirection(m.matrixWorld); yaw[k] = -Math.atan2(tmpV.x, tmpV.z); }
@@ -76,7 +81,7 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     if (sel < 0) { cam({ pos: [cx, 1.3, cz + 8.8], target: [cx, 0.95, cz], fov: 50 }); return; }
     const g = actors[ORDER[sel]]; let head = null;
     g.traverse((b) => { if (!head && b.isBone && /(^|rig|:)head$/i.test(b.name)) head = b; });
-    const x = cx - 4.0 + sel * 1.15;
+    const x = cx + X0 + sel * 1.15;
     const y = head ? head.getWorldPosition(tmpV).y + 0.09 : 1.5;
     cam({ pos: [x, y, cz + 0.85], target: [x, y, cz], fov: 30 });
   }
