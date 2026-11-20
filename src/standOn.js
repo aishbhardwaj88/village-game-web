@@ -389,7 +389,7 @@ export function keepOnGround(obj, fn, moving = false) {
 // rigid prop (a cart and its wheels, a matka stack and its plank), and each group is moved straight up or down onto the surface
 // under its lowest points, on the same time-sliced scheduler (and the same re-runs as zone .glb floors stream in) as the figures.
 // Only the prop's own faces are ignored as ground; everything else (a plinth, a stool in another mesh, the road) is a surface.
-const STATIC_SKIP_TOP = /^(ground|sky|npc_|vehicle_|player|trolley|jeep|waypoint|placebatch|place_batches|place_boards_batch|contact_shadows|hero_zone|shops$|bazaar_row|arm_frontage_houses|main_road_frontage_houses|map_wall|background_houses|village_kit_houses|village_static_merged|blender_|canal|pond|johad|roof_|field|vegetation|trees|flowering_plants|place_|trim|material_board|ration_shop|tv_house|panchayat|temple_area|chaupal|banta_shop|tripo_|switchboard|wayfinding|map_gates|mapCompound|sugarcane|houses_kit|ambient_life)/i;
+const STATIC_SKIP_TOP = /^(ground|sky|npc_|gather_|vehicle_|player|trolley|jeep|waypoint|placebatch|place_batches|place_boards_batch|contact_shadows|hero_zone|shops$|bazaar_row|arm_frontage_houses|main_road_frontage_houses|map_wall|background_houses|village_kit_houses|village_static_merged|blender_|canal|pond|johad|roof_|field|vegetation|trees|flowering_plants|place_|trim|material_board|ration_shop|tv_house|panchayat|temple_area|chaupal|banta_shop|tripo_|switchboard|wayfinding|map_gates|mapCompound|sugarcane|houses_kit|ambient_life)/i;
 const PORTABLE = /pot|matka|ghada|surahi|kulhad|terracotta|ceramic|cart|thela|rehri|icecream|sack|jute|crate|drum|bucket|charpai|stool|bench|cycle|scooter|trough|basket/i;
 const ISLAND_MAX = 3.2, CLUSTER_MAX = 4.2; // bigger pieces are buildings, roads, platforms: surfaces, never moved
 const SINK_ANY = 0.12, SINK_PORTABLE = 0.2, FLOAT_MAX = 0.08, DIP_FLOAT_MAX = 1.6, DIP_WATERLINE = -0.33;
@@ -397,7 +397,7 @@ const STATIC_TOPS = new WeakSet(), STATIC_LIST = [];
 let SELF = null, SELF_ID = 0; // groundAt ignores triangles whose vertex mask === SELF_ID (the prop being settled)
 const staticStats = { tops: 0, clusters: 0, moved: 0, lifted: 0, lowered: 0, maxLift: 0, maxDrop: 0, skippedShared: 0, log: [] };
 function staticMesh(o, top) {
-  if (!o.isMesh || o.isInstancedMesh || o.isBatchedMesh || FIGURES.has(o) || o.userData.noSettle) return false;
+  if (!o.isMesh || o.isSkinnedMesh || o.isInstancedMesh || o.isBatchedMesh || FIGURES.has(o) || o.userData.noSettle) return false; // 20 Nov: never settle rigged characters (it tore Brother's hair and eyes in ?gather=1)
   if (o.userData.propBucket) return true; // the village merge's ground-clutter buckets (src/mergeUtils.js): pots, charpais, crates
   if (STATIC_SKIP_TOP.test(top)) return false;
   const g = o.geometry, p = g && g.attributes.position;
