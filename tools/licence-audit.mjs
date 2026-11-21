@@ -103,8 +103,8 @@ function glbInfo(file) {
 const gitInfo = new Map();
 let shallow = false;
 try {
-  shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], { cwd: ROOT }).toString().trim() === 'true';
-  const log = execFileSync('git', ['log', '--format=@@%ad|%h|%s', '--date=short', '--name-only', '--', 'public'], { cwd: ROOT, maxBuffer: 64 << 20 }).toString();
+  shallow = execFileSync('git', ['rev-parse', '--is-shallow-repository'], { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() === 'true';
+  const log = execFileSync('git', ['log', '--format=@@%ad|%h|%s', '--date=short', '--name-only', '--', 'public'], { cwd: ROOT, maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'ignore'] }).toString();
   let cur = null;
   for (const line of log.split('\n')) {
     if (line.startsWith('@@')) {
