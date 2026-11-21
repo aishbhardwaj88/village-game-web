@@ -57,3 +57,20 @@ peepal), same leaves, same three distance tiers, same 3 draw calls, trunk collid
 - Pictures: `barber_tree.jpg`, `rest_tree.jpg` (a bench, from eye height), `rest_peepal.jpg`, `rest_top.jpg` (straight down).
 - Cost: 12 more trees in the same 3 batches: 0 new draw calls; about 3-6k triangles per near tree.
 - Questions for her (looks): are the shade trees the right size? Should resting spot 7 keep its peepal?
+
+## 3. Minimap and free-roam water - done
+
+- New `src/kit/waterMap.js` reads the approved map's water from the layout loader (already in the game's main file, so
+  nothing new downloads): the canal (x 824, z -340..350, 6 m), the canal bridge on the east road (824, 32.5), the 10 field
+  channels, the buffalo, cattle and clay pit ponds, and the temple tank (water and its stepped rim).
+- **Minimap** (`src/minimap.js`), under `?layout=new` only: the canal is drawn at its real width (6 m, at least 3 px),
+  plus the channels as thin blue lines, the ponds and the tank as blue shapes (the tank's stepped rim in earth colour).
+  The old village's pond and johad keep their place icons as before. `?layout=old`: exactly today's single canal line.
+- **Notebook map** (`src/freeRoam.js`), under `?layout=new` only: the old east-west wavy canal is replaced by the new
+  north-south canal (kept below the heading and inside the page), with the channels, ponds and tank inked in. The
+  "Nahar and bridge" place (its icon, label and tap-to-travel) moves from the old canal spot (771, 33.8), which is now the
+  weekly market ground, to the new canal's bridge on the east road (824, 32.5). `?layout=old`: unchanged.
+- Checked in the real game (headless, `docs/s7/fixes/game-smoke.mjs`, player at (790, 75)): `minimap-new.jpg` (canal
+  band and the buffalo pond), `notebook-new.jpg` (whole page), `minimap-old.jpg` / `notebook-old.jpg` (unchanged).
+- Not done (main.js, integrator): the canal **water sound** still measures from the old canal under new
+  (`distanceToCanalWater` in main.js; sound is off until ?sound=1). See "Wiring left".

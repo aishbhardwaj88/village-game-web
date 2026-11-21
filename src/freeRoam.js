@@ -14,6 +14,13 @@ import { STAGED_PLACES } from './stagedPlaces.js';
 import { QUEST_STEPS as S, OBJECTIVE_TEXT } from './quest.js';
 import { SPURS, ROAD_PTS } from './eastRoad.js';
 import { JOBS } from './jobs/data.js';
+import { isNewLayout } from './layout/layout.js';
+import { newWaterShapes } from './kit/waterMap.js';
+
+// S7 fixes: under ?layout=new the old east-west canal spot (pt('canal')) is the weekly market ground; the notebook's
+// "Nahar and bridge" is the new canal's bridge on the east road. ?layout=old: unchanged.
+const NEW_WATER = isNewLayout() ? newWaterShapes() : null;
+const canalPt = () => (NEW_WATER ? { x: NEW_WATER.bridge.x, z: NEW_WATER.bridge.z, ry: 0 } : pt('canal'));
 
 // World positions (1 unit = 1 m; +x east, +z south, so north is up on the map). Same numbers as the places' own source files.
 export const PLACES = [
@@ -29,7 +36,7 @@ export const PLACES = [
   { id: 'chakki', en: 'Atta chakki', hi: 'आटा चक्की', ...pt('chakki'), kind: 'shop', radius: 12 },
   { id: 'temple', en: 'Village mandir', hi: 'गाँव का मंदिर', ...pt('temple'), kind: 'temple', radius: 22 },
   { id: 'baagh', en: 'Mango baagh', hi: 'आम का बाग', ...pt('baagh'), kind: 'tree', radius: 22 },
-  { id: 'canal', en: 'Nahar and bridge', hi: 'नहर और पुल', ...pt('canal'), kind: 'bridge', radius: 16 },
+  { id: 'canal', en: 'Nahar and bridge', hi: 'नहर और पुल', ...canalPt(), kind: 'bridge', radius: 16 },
   { id: 'field', en: 'Our khet', hi: 'हमारा खेत', ...pt('field'), kind: 'field', radius: 30 },
   { id: 'banta', en: 'Banta shop', hi: 'बंटा की दुकान', ...pt('banta'), kind: 'shop', radius: 12 },
   { id: 'chaat', en: 'Chaat thela', hi: 'चाट का ठेला', ...pt('chaat'), kind: 'shop', radius: 12 },
@@ -244,6 +251,27 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
   let mapWarn = '';
   const HIT_CSS_PX = 44; // a finger needs a 44 px target
 
+  // S7 fixes (?layout=new): the north-south canal as a wavy blue band, the field channels as thin blue lines, the ponds and
+  // the temple tank as blue blobs, all kept below the heading and inside the page.
+  function drawNewWater(ctx) {
+    const NW = NEW_WATER, top = 96, bottom = H - 50;
+    const inPage = ([x, y]) => y > top && y < bottom && x > 32 && x < W - 4;
+    const wave = [];
+    for (let z = NW.canal.z0; z <= NW.canal.z1; z += 2) { const p = [sx(NW.canal.x) + Math.sin(z * 0.9) * 1.5, sy(z)]; if (inPage(p)) wave.push(p); }
+    if (wave.length > 1) pencil(ctx, wave, 'rgba(45,127,141,0.8)', 4);
+    for (const c of NW.channels) {
+      const a = [sx(c.a[0]), sy(c.a[1])], b = [sx(c.b[0]), sy(c.b[1])];
+      if (inPage(a) && inPage(b)) pencil(ctx, [a, b], 'rgba(45,127,141,0.7)', 2);
+    }
+    for (const w of [...NW.ponds, ...NW.tanks]) {
+      const pts = w.ring.map(([x, z]) => [sx(x), sy(z)]);
+      if (!pts.every(inPage)) continue;
+      ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath();
+      ctx.fillStyle = 'rgba(45,127,141,0.55)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(30,95,110,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+  }
+
   function drawNotebook() {
     mapHits = [];
     const ctx = canvas.getContext('2d');
@@ -273,10 +301,13 @@ export function createFreeRoam({ quest, getPlayerPos, onChange, onVisit, onPinTa
     ctx.fillText('अमराई खेड़ा का मेरा नक्शा', 48, 74);
     // faint lanes
     for (const lane of LANES) pencil(ctx, lane.map(([x, z]) => [sx(x), sy(z)]), 'rgba(110,90,70,0.32)', 5);
-    // the canal, drawn as a wavy blue line in the north
-    const wave = [];
-    for (let x = CANAL_MIN_X; x <= CANAL_MAX_X; x += 2) wave.push([sx(x), sy(CANAL_Z) + Math.sin(x * 0.9) * 1.5]);
-    pencil(ctx, wave, 'rgba(45,127,141,0.8)', 3);
+    if (NEW_WATER) drawNewWater(ctx);
+    else {
+      // the canal, drawn as a wavy blue line in the north
+      const wave = [];
+      for (let x = CANAL_MIN_X; x <= CANAL_MAX_X; x += 2) wave.push([sx(x), sy(CANAL_Z) + Math.sin(x * 0.9) * 1.5]);
+      pencil(ctx, wave, 'rgba(45,127,141,0.8)', 3);
+    }
     // discovered places
     const labelled = []; // label anchors already inked; a label that would overprint one of them is skipped (icon only)
     const clear = (x, y) => labelled.every(([lx, ly]) => Math.abs(lx - x) > 96 || Math.abs(ly - y) > 40);
