@@ -46,7 +46,20 @@ Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind 
 
 ## Numbers
 
-(filled in from the headless runs; see the end of this file)
+Measured headless (SwiftShader) with all 492 houses built exactly as the game builds them (`docs/s7/houses/preview.html?mode=village`), renderer.info with the houses shown minus hidden, same camera:
+
+| View | Houses draw calls | Houses triangles | Near-detail houses | Far boxes |
+|---|---|---|---|---|
+| gali, eye height (west mohalla) | **1** | 90k | 61 | 431 |
+| gali, 45 m above | **1** | 51k | 33 | 459 |
+| east block gali, eye height | **1** | ~55k | 55 | 437 |
+
+- Draw calls: the whole village of houses is **1 draw call** in the main pass (+1 in the shadow pass when shadows are on). Target was <= 30.
+- Triangles on screen from houses: 50k to 90k (budget for everything is 450k). A near house is ~1,800 triangles on average (A 1,350, B 3,000, C 2,000, D 2,500, E 1,600, F 1,500, G 3,300, H 550); a far box ~95.
+- Memory: 115 shapes (8 designs x 6 footprint sizes x mirrored doors, far boxes, clutter), 281k vertices, **9 MB** of geometry (28 bytes a vertex). Textures: **0 MB added** (the atlas is made in the browser from the existing sets: 2048 x 1024 x 3 maps).
+- Download added under `?layout=new`: the plan file, 26 KB. Nothing is downloaded under `?layout=old`.
+- Build time after Play (node, this loaded box): planning is precomputed; making the shapes ~0.7-2 s, spread over frames in 8 ms slices so no frame stalls.
+- Colliders: 3,948 boxes for 492 houses.
 
 ## Screenshots
 
@@ -54,6 +67,7 @@ Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind 
 - `docs/s7/houses/gali_eye.png`: two facing rows across a 4 m gali, from eye height (1.6 m).
 - `docs/s7/houses/gali_above.png`: the same gali and the back-to-back rows behind, from above.
 - `docs/s7/houses/gali_eye_shadows.png`: eye height with sun shadows on (`?shadows=follow` in the game).
+- `docs/s7/houses/village_gali_eye.png`, `village_gali_above.png`, `village_east_block.png`: the REAL map houses (all 492, fronts, LOD and clutter as in the game) in a west mohalla gali, from above, and an east gali.
 - Remake them: `flock /tmp/s7-browser.lock node docs/s7/houses/shoot.mjs` (page: `docs/s7/houses/preview.html`).
 
 ## Files
