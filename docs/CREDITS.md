@@ -26,14 +26,17 @@ queue item 6) — the `public/assets/textures/*/*.jpg` paths in the notes column
 | Fabric066 (tarpaulin/canvas texture) | [ambientCG](https://ambientcg.com/view?id=Fabric066) | CC0 | ambientCG | Downloaded fresh via `ambientcg.com/get?file=...`, resized 512 (prop-scale) into `public/assets/textures/tarpaulin/`. A finer woven canvas, tinted per use for market-stall awning cloth. |
 | aerial_grass_rock (photoscanned grass, colour 4K downscaled to 1K WebP) | [Poly Haven](https://polyhaven.com/a/aerial_grass_rock) | CC0 | Poly Haven | Ground grass-patch albedo in `public/assets/textures/grass/` (src/materials.js applyGroundNoiseDetail). |
 
-| Doorstep props: wooden_bucket_01/02, wicker_basket_01/02, planter_pot_clay, brass_pot_01, jug_01, metal_jug, wooden_stool_01, painted_wooden_stool, wooden_crate_01/02, old_tyre, ceramic_vase_01, plastic_monobloc_chair_01, painted_wooden_bench | [Poly Haven](https://polyhaven.com/models) (by asset name) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com, shrunk with tools/shrink.js to `public/assets/props/`, instanced by src/villageProps.js. |
+| Doorstep props: wooden_bucket_01, wooden_bucket_02, wicker_basket_01, wicker_basket_02, planter_pot_clay, brass_pot_01, jug_01, metal_jug, wooden_stool_01, painted_wooden_stool, wooden_crate_01, wooden_crate_02, old_tyre, ceramic_vase_01, plastic_monobloc_chair_01, painted_wooden_bench | [Poly Haven](https://polyhaven.com/models) (by asset name, e.g. polyhaven.com/a/wooden_bucket_01) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com, shrunk with tools/shrink.js to `public/assets/props/`, instanced by src/villageProps.js. |
 
-- Plant/tree leaf atlases (public/assets/plants/*.webp): leaves cut from ambientCG CC0 sets LeafSet002, 003, 004, 022, 023, 024, 025 and Foliage008, arranged by tools/build-plant-atlas.mjs. Stems and the marigold/bougainvillea flower heads are drawn (no CC0 flower sheet exists on ambientCG).
 | Carrom scene props: round_wooden_table_01, wooden_stool_02, painted_wooden_chair_01 | [Poly Haven](https://polyhaven.com/models) (by asset name) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com, shrunk with tools/shrink.js to `public/assets/props/`, merged and instanced in `createCarromScene` (src/farmSites.js). |
-| Plants (24 Oct 2026): Flower Gazania (`flower_gazania`), Grass Medium 02 (`grass_medium_02`), Shrub 01 (`shrub_01`), Celandine 01, Shrub 04, Potted Plant 01/02/04 | [Poly Haven](https://polyhaven.com/models) (by asset name; authors James Ray Cock, Rico Cilliers, Jenelle van Heerden) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com (tools/fetch-polyhaven-model.mjs), shrunk with tools/shrink.js to `public/assets/plants3d/` (+ potted plants in `public/assets/props/`), instanced by src/realPlants.js and src/villageProps.js. |
+| Small Wooden Table 01 (`small_wooden_table_01`) | [Poly Haven](https://polyhaven.com/a/small_wooden_table_01) | CC0 | Ulan Cabanilla | Added 21 Nov 2026 by the licence audit (file was shipped without a row). 1K glTF shrunk to `public/assets/props/small_wooden_table_01.glb`. Not found in the game code (maybe unused). |
+| Plants (24 Oct 2026): Flower Gazania (`flower_gazania`), Grass Medium 02 (`grass_medium_02`), Shrub 01 (`shrub_01`), Celandine 01, Shrub 04, Potted Plant 01 (`potted_plant_01`), Potted Plant 02 (`potted_plant_02`), Potted Plant 04 (`potted_plant_04`) | [Poly Haven](https://polyhaven.com/models) (by asset name; authors James Ray Cock, Rico Cilliers, Jenelle van Heerden) | CC0 | Poly Haven | 1K glTF via api.polyhaven.com (tools/fetch-polyhaven-model.mjs), shrunk with tools/shrink.js to `public/assets/plants3d/` (+ potted plants in `public/assets/props/`), instanced by src/realPlants.js and src/villageProps.js. |
 | thatch_roof_angled (thatch/straw PBR) | [Poly Haven](https://polyhaven.com/a/thatch_roof_angled) | CC0 | Poly Haven | Downloaded at 4K, downscaled to 1K WebP into `public/assets/textures/thatch/`; baked into kachcha_homestead.glb (thatch roofs, haystack) via tools/blender/build_kachcha.py. |
 
-- ambientCG Rust007, Fabric030, Ground054 (CC0), 512 px WebP in public/assets/textures/{rust,burlap,dryearth}/ (material board, 27 Oct 2026)
+| Rust007 (rust texture) | [ambientCG](https://ambientcg.com/view?id=Rust007) | CC0 | ambientCG | 512 px WebP in `public/assets/textures/rust/` (material board, 27 Oct 2026). |
+| Fabric030 (burlap texture) | [ambientCG](https://ambientcg.com/view?id=Fabric030) | CC0 | ambientCG | 512 px WebP in `public/assets/textures/burlap/` (material board, 27 Oct 2026). |
+| Ground054 (dry earth texture) | [ambientCG](https://ambientcg.com/view?id=Ground054) | CC0 | ambientCG | 512 px WebP in `public/assets/textures/dryearth/` (material board, 27 Oct 2026). |
+| Leaf photos LeafSet002, LeafSet003, LeafSet004, LeafSet022, LeafSet023, LeafSet024, LeafSet025, Foliage008 | [ambientCG](https://ambientcg.com/list?q=LeafSet) | CC0 | ambientCG | Cut and arranged by tools/build-plant-atlas.mjs into `public/assets/plants/garden_atlas.webp` and `tree_atlas.webp` (made in this repo from these CC0 photos). Stems and the marigold/bougainvillea flower heads are drawn in code (no CC0 flower sheet exists on ambientCG). |
 
 ## Sound recordings (10 Nov 2026), public/assets/audio/*.m4a
 All CC0 1.0 from OpenGameArt.org, trimmed, mono-mixed, low-passed, loudnorm-ed with ffmpeg and encoded 96k AAC. Licence read from each page's licence badge.
@@ -44,7 +47,7 @@ All CC0 1.0 from OpenGameArt.org, trimmed, mono-mixed, low-passed, loudnorm-ed w
 | bed_wind.m4a (field wind, 40 s slice looped with crossfade) | https://opengameart.org/content/park-ambiences (park_ambience_wind) | Thimras | CC0 |
 | bed_water.m4a (pond / johad / canal, 30 s slice looped) | https://opengameart.org/content/park-ambiences (park_ambience_river) | Thimras | CC0 |
 | bed_bazaar.m4a (bazaar, shop murmur, 24 s looped, low-passed 3.2 kHz) | https://opengameart.org/content/crowd-shoutingspeaking-ambience | StarNinjas | CC0 |
-| bed_children.m4a (school, 6 s looped) | https://opengameart.org/content/children-voices | Yaroslav_Novikov | CC0 |
+| ~~bed_children.m4a (school, 6 s looped)~~ replaced 10 Nov by the Freesound one below; no longer shipped | https://opengameart.org/content/children-voices | Yaroslav_Novikov | CC0 |
 | shot_birds1-3.m4a (three 5 s cuts) | https://opengameart.org/content/ambient-bird-sounds | isaiah658 | CC0 |
 | shot_crow.m4a | https://opengameart.org/content/crow-caw | zeroisnotnull | CC0 |
 | cycle_bell.m4a, cycle_spokes.m4a | https://opengameart.org/content/bicycle-sounds (rotating_bicycle_bell, bicycle_spokes) | AntumDeluge | CC0 |
@@ -64,3 +67,33 @@ All CC0 1.0 from freesound.org (licence read from each sound page: creativecommo
 | cycle_chain.m4a (pedalling chain whirr, 4.2 s loop) | https://freesound.org/people/AngryAdam/sounds/130367/ | AngryAdam | CC0 |
 | cycle_freewheel.m4a (freewheel ticks, 4 s loop) | https://freesound.org/people/donkpow/sounds/156996/ | donkpow | CC0 |
 | cycle_crunch.m4a (tyre on dirt road, 6 s loop) | https://freesound.org/people/SpliceSound/sounds/218301/ | SpliceSound | CC0 |
+
+## Fonts (added 21 Nov 2026, licence audit)
+
+| Font | Source | Licence | Author | Notes |
+|---|---|---|---|---|
+| Noto Sans Devanagari (600, 700) | [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari) | OFL-1.1 (SIL Open Font License 1.1) | The Noto Project Authors (Google) | Loaded at runtime from fonts.googleapis.com by index.html and people.html; used for all Hindi UI and painted sign text. No font file is in the repo. The desktop edition must bundle the font files WITH the OFL text (OFL allows selling a game that bundles the font; the font itself may not be sold on its own). |
+
+English sign and UI text uses the player's own system font (-apple-system, Segoe UI, Helvetica, Arial): nothing ships.
+
+## Code shipped inside the game (npm runtime packages, added 21 Nov 2026)
+
+| Package | Source | Licence | Author | Notes |
+|---|---|---|---|---|
+| three (0.186) | [threejs.org](https://threejs.org) | MIT | three.js authors | Bundled. MIT text shown in the in-game credits screen. |
+| postprocessing (6.39) | [npm](https://www.npmjs.com/package/postprocessing) | Zlib | Raoul van Rüschen | Bundled. Zlib text shown in the in-game credits screen. |
+| meshopt decoder (three/examples/jsm/libs/meshopt_decoder.module.js) | [meshoptimizer](https://github.com/zeux/meshoptimizer) | MIT | Arseny Kapoulkine | Bundled via three's examples. |
+
+Build-only tools (vite, gltf-transform, sharp, playwright, meshoptimizer CLI, Blender) never ship.
+
+## Characters (added 21 Nov 2026)
+
+| Asset | Source | Licence | Author | Notes |
+|---|---|---|---|---|
+| The 10 people: brother, dada, dadi, maa, parlour_didi, pitaji, postman, sarpanch, sister, teacher (`public/assets/models/<name>.glb`) | [Tripo AI](https://www.tripo3d.ai), made from Gemini reference pictures (pictures used only as inputs, never shipped) | Tripo terms: paid plan = private models, commercial use; free plan = public models under CC BY 4.0 | Made by the owner with Tripo AI; faces, eyes, teeth and moves edited in this repo (tools/eye_patch.py, tools/face_keys.py, tools/teeth_fix.py) | **Plan not yet confirmed by the owner** (see docs/LICENCES.md, "Needs the owner"). In-game credit line: "Characters made with Tripo AI". |
+
+## Made in this repo
+
+Everything else under `public/` (126 files: all Blender-built buildings and props, the far-tree pictures, data files) is made here.
+`docs/LICENCES.md` lists each one with the script that makes it. It is generated by `node tools/licence-audit.mjs`
+from `tools/licence-records.json`; every new file under `public/` needs a record there in the same commit.

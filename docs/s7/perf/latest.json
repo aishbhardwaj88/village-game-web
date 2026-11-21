@@ -1,0 +1,60 @@
+{
+ "date": "2026-11-21T16:36:41.270Z",
+ "tag": "baseline: main b5bd781 (before any S7 change), characters not drawn (memory)",
+ "query": null,
+ "noChars": true,
+ "commit": "cee36c2",
+ "machine": "Linux x64 Intel(R) Xeon(R) Processor @ 2.10GHz x2",
+ "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+ "softwareGL": true,
+ "secs": 90,
+ "net": "20 Mbit/s, 40 ms, cold cache (Chromium)",
+ "runs": [
+  {
+   "browser": "chromium",
+   "layout": "old",
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "partial": true,
+   "crashed": "page.evaluate: Target crashed ",
+   "summary": {
+    "playReadyMs": 7116,
+    "playReadyWallMs": 8339,
+    "beforePlayMB": 11.35,
+    "beforePlayRequests": 133,
+    "errors": 7
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  {
+   "browser": "chromium",
+   "layout": "new",
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "partial": true,
+   "crashed": "page.evaluate: Target crashed ",
+   "summary": {
+    "playReadyMs": 7163,
+    "playReadyWallMs": 10093,
+    "beforePlayMB": 13.01,
+    "beforePlayRequests": 139,
+    "errors": 7
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ ]
+}

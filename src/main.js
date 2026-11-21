@@ -205,6 +205,7 @@ import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 import { applyQuality, loadSavedQuality, saveQuality, loadSavedVolume, saveVolume } from './quality.js';
 import { loadSavedGame, saveGame } from './save.js';
+import { initLayoutWiring } from './layout/layout-wiring-entry.js'; // S7 WIRING (layout): the approved map behind ?layout=new, docs/s7/layout.md
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
@@ -218,6 +219,8 @@ import { createVillageSounds } from './villageSounds.js';
 import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
+import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
+import { initEdition } from './edition.js'; // S7 WIRING (desktop)
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -262,6 +265,8 @@ const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz
 const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
+  // S7 WIRING (desktop): which edition is running (web 'light' / desktop 'full'), published on window.__dopaharEdition (docs/s7/desktop.md)
+  initEdition();
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
   const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
   _lm.mainStart = performance.now();
@@ -737,6 +742,8 @@ async function main() {
   }
 
   const player = createPlayer();
+  // S7 WIRING (perf): distance shadows + world growing east under ?layout=new (docs/s7/perf.md)
+  initPerfS7({ scene, sun, player });
   // Opening spawn + camera facing — chosen (not the original (-48,25) facing north,
   // which pointed the chase camera straight at the house block's solid, gapless
   // south wall from 7m away, filling most of the opening frame with one flat
@@ -1195,7 +1202,7 @@ async function main() {
   // S7 WIRING (characters): tiers for every rigged character (?charlod=0 turns them off); characters download only after Play, nearest first
   initCharacterLOD({ camera, assetSlots });
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
-  const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => groundHeightAt(x, z, y), getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
+  const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)), /* 21 Nov: stand ON the road and lane strips (they sit 3-4 cm above the ground plane; feet sank into them) */ getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
@@ -2076,6 +2083,7 @@ async function main() {
         };
       },
     });
+    initLayoutWiring({ zoneManager, scene, player }); // S7 WIRING (layout): no-op under ?layout=old
     setZoneManager(zoneManager);
     _lm.deferredEnd = performance.now();
   }

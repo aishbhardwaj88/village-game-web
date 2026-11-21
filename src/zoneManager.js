@@ -57,6 +57,34 @@ const VIS_EXTRA = 80;
  * always correct and cheap enough to do on every (infrequent) activate/deactivate —
  * no separate collider bookkeeping needed per zone.
  */
+// ---------------------------------------------------------------------------------------------
+// S7 (perf): which layout is running, and how far the world reaches in it.
+// ---------------------------------------------------------------------------------------------
+/** 'new' or 'old'. Reads window.__dopaharLayout if the layout loader set it (src/layout/*), else ?layout=, else 'old'.
+ *  When the integrator flips the default to new, only the last fallback here changes. */
+export function currentLayout() {
+  if (typeof window === 'undefined') return 'old';
+  const g = window.__dopaharLayout;
+  if (g === 'new' || g === 'old') return g;
+  const q = new URLSearchParams(window.location.search).get('layout');
+  return q === 'new' ? 'new' : 'old';
+}
+
+/**
+ * Where the player may go (minX..maxX, minZ..maxZ) and how far the drawn ground reaches (ground), in world metres
+ * (x east, z south). old = today's numbers in src/main.js (GROUND_HALF_EXTENT 238, GROUND_HALF_X 880, GROUND_HALF_Z 280)
+ * and src/scene.js (ground plane 1824 m square at the origin). new = the approved map (21 Nov): canal north-south at
+ * x ~824, fields east of it to x ~1090, the field band z -345..350. The ground reaches past the furthest point the
+ * player can stand by more than the camera's far plane (500 m), so the world's edge is never in view.
+ */
+export const WORLD_BOUNDS = {
+  old: { minX: -238, maxX: 880, minZ: -280, maxZ: 280, ground: { minX: -912, maxX: 912, minZ: -912, maxZ: 912 } },
+  new: { minX: -238, maxX: 1120, minZ: -380, maxZ: 380, canalX: 824, fieldsMaxX: 1090, fieldBandZ: [-345, 350], ground: { minX: -912, maxX: 1680, minZ: -912, maxZ: 912 } },
+};
+export function worldBounds(layout = currentLayout()) {
+  return WORLD_BOUNDS[layout] || WORLD_BOUNDS.old;
+}
+
 export function createZoneManager(scene) {
   const zones = new Map();
   const hooks = { onBuild: null, onShow: null }; // dev/test: onBuild(name, group, playerX, playerZ) after each zone is added
@@ -70,6 +98,8 @@ export function createZoneManager(scene) {
    * build/dispose every frame) deactivates it again.
    */
   function register(name, { x, z, buildRadius, teardownRadius = buildRadius * 1.5, build, detail = false, visibleRadius }) {
+    const wb = worldBounds();
+    if (x < wb.ground.minX || x > wb.ground.maxX || z < wb.ground.minZ || z > wb.ground.maxZ) console.warn(`zoneManager: zone ${name} at (${Math.round(x)}, ${Math.round(z)}) is off the ground for layout=${currentLayout()}`);
     zones.set(name, { name, detail, visibleRadius: visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA), x, z, buildRadius, teardownRadius, build, group: null, active: false, onFrame: null });
   }
 

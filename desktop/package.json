@@ -1,0 +1,89 @@
+{
+  "name": "dopahar-desktop",
+  "productName": "Dopahar",
+  "version": "0.1.0",
+  "description": "Dopahar, a cozy North Indian village game (desktop edition)",
+  "author": "Aishwarya Bhardwaj",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "build:game": "node scripts/build-game.mjs",
+    "start": "electron .",
+    "smoke": "sh scripts/smoke.sh",
+    "dist:linux": "electron-builder --linux dir",
+    "dist:mac": "electron-builder --mac zip dmg --arm64 --x64",
+    "dist:win": "electron-builder --win nsis zip --x64",
+    "dist:win-from-linux": "electron-builder --win zip portable --x64"
+  },
+  "devDependencies": {
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.aishbhardwaj.dopahar",
+    "productName": "Dopahar",
+    "copyright": "Copyright (c) 2026 Aishwarya Bhardwaj",
+    "directories": {
+      "output": "out",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "build/icon.png"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist-desktop",
+        "to": "game",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "mac": {
+      "category": "public.app-category.games",
+      "icon": "build/icon.png",
+      "target": [
+        "zip",
+        "dmg"
+      ],
+      "darkModeSupport": true,
+      "identity": "-",
+      "hardenedRuntime": false
+    },
+    "dmg": {
+      "title": "Dopahar"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Dopahar",
+      "artifactName": "${productName}-${version}-windows-setup.${ext}"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        "dir"
+      ],
+      "category": "Game",
+      "executableName": "dopahar"
+    },
+    "publish": null,
+    "portable": {
+      "artifactName": "${productName}-${version}-windows-portable.${ext}"
+    }
+  }
+}
