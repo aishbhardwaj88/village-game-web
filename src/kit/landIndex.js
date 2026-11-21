@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { loadLandMap, isNewLayoutParam } from './landLayout.js';
+import { loadLandMap } from './landLayout.js';
 import { buildShops } from './shopsPlace.js';
+import { frameHook } from './landInstancing.js';
 
 /**
  * Shops-land entry point (?layout=new only). One call builds every layer this agent owns from the approved map and adds
@@ -31,6 +32,10 @@ export async function buildShopsLand(scene, { map = null, camera = null, only = 
     add(name, obj);
     if (obj?.userData.heightAt) heightFns.push(obj.userData.heightAt);
   }
+  // one per-frame hook drives every layer's distance packing that is not tied to its own BatchedMesh
+  const ups = Object.values(layers).map((l) => l.userData.update).filter(Boolean);
+  group.add(frameHook((cam) => { for (const u of ups) u(cam); }));
+  if (camera) for (const u of ups) u(camera);
   group.userData.landHeightAt = (x, z) => { let y = 0; for (const f of heightFns) y = Math.max(y, f(x, z)); return y; };
   group.userData.report = report;
   if (scene) scene.add(group);
@@ -39,8 +44,4 @@ export async function buildShopsLand(scene, { map = null, camera = null, only = 
 
 const MODULES = import.meta.glob(['./landTrees.js', './landFields.js', './landCanal.js', './landProps.js']);
 
-/** Game hook: builds only under ?layout=new; resolves to null otherwise. */
-export function initShopsLand(scene, opts = {}) {
-  if (!isNewLayoutParam()) return Promise.resolve(null);
-  return buildShopsLand(scene, opts).catch((e) => { console.warn('shops-land did not build', e); return null; });
-}
+// The game calls src/kit/landInit.js (a tiny lazy loader), never this file directly.

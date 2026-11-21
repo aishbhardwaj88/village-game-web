@@ -19,7 +19,7 @@ export const VIEWS = {
   square_eye: { cam: [602.6, 1.6, -38], look: [602.6, 2.6, -10] },
   square_above: { cam: [640, 34, -62], look: [600, 0, -12] },
   kiosks_eye: { cam: [606, 1.6, 34], look: [596, 2.0, 48] },
-  smallshop_eye: { cam: [608, 1.6, -64.5], look: [622, 2.2, -76] },
+  smallshop_eye: { cam: [613, 1.6, -88.5], look: [621, 2.4, -77] },
   orchard_eye: { cam: [846, 1.6, -137], look: [866, 3, -165] },
   orchard_above: { cam: [820, 30, -120], look: [865, 0, -165] },
   field_eye: { cam: [606, 1.6, -132], look: [585, 1.2, -170] },
@@ -40,26 +40,30 @@ for (let i = 0; i < 100; i++) { try { await fetch(base); break; } catch { await 
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const results = {};
 try {
+  // one page, one build; the camera moves between views (the layers re-pick their detail tiers on the move)
+  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (process.env.VERBOSE) console.log('  [' + m.type() + ']', m.text().slice(0, 300)); });
+  page.on('pageerror', (e) => errors.push(String(e)));
+  const first = VIEWS[(names[0] || Object.keys(VIEWS)[0])];
+  await page.goto(`${base}?cam=${first.cam.join(',')}&look=${first.look.join(',')}${only ? '&only=' + only : ''}`);
+  await page.waitForFunction(() => window.__ready || window.__error, null, { timeout: 280000 });
+  const err = await page.evaluate(() => window.__error);
+  if (err) errors.push(err);
   for (const name of names.length ? names : Object.keys(VIEWS)) {
     const v = VIEWS[name];
-    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-    const errors = [];
-    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); if (process.env.VERBOSE) console.log('  [' + m.type() + ']', m.text().slice(0, 300)); });
-    page.on('pageerror', (e) => errors.push(String(e)));
-    await page.goto(`${base}?cam=${v.cam.join(',')}&look=${v.look.join(',')}${only ? '&only=' + only : ''}`);
-    await page.waitForFunction(() => window.__ready || window.__error, null, { timeout: 180000 });
-    const err = await page.evaluate(() => window.__error);
-    if (err) { console.log(name, 'ERROR', err); errors.push(err); }
+    await page.evaluate(([c, l]) => { const { camera } = window.__dbg; camera.position.set(...c); camera.lookAt(...l); camera.updateMatrixWorld(); }, [v.cam, v.look]);
     await page.evaluate(() => window.__snap());
+    await page.waitForTimeout(300);
     const url = await page.evaluate(() => window.__snap());
     fs.writeFileSync(path.join(OUT, `${name}.png`), Buffer.from(url.split(',')[1], 'base64'));
     const layers = await page.evaluate(() => window.__layerInfo && window.__layerInfo());
-    const report = await page.evaluate(() => window.__land && JSON.stringify(window.__land.report));
-    results[name] = { layers, errors };
-    console.log(name, JSON.stringify(layers), errors.length ? 'ERRORS: ' + errors.join(' | ').slice(0, 600) : 'no errors');
-    if (name === (names[0] || Object.keys(VIEWS)[0])) console.log('REPORT', report);
-    await page.close();
+    results[name] = layers;
+    console.log(name, JSON.stringify(layers));
   }
+  console.log('REPORT', await page.evaluate(() => JSON.stringify(window.__land.report)));
+  console.log(errors.length ? 'ERRORS: ' + errors.join(' | ').slice(0, 1500) : 'console errors: 0');
+  fs.writeFileSync(path.join(OUT, 'last-run.json'), JSON.stringify({ results, errors }, null, 1));
 } finally {
   await browser.close();
   vite.kill();

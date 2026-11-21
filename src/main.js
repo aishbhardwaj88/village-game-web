@@ -216,6 +216,8 @@ import { createVillageSounds } from './villageSounds.js';
 import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
+// S7 WIRING (shops-land)
+import { initShopsLand } from './kit/landInit.js';
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -375,6 +377,8 @@ async function main() {
   const sky = createSky(sun.position, atmosphere);
   scene.add(sky);
   applyFog(scene, atmosphere);
+  // S7 WIRING (shops-land): shops, trees, fields, canal, flag island, props of the approved map; ?layout=new only (no-op otherwise)
+  initShopsLand(scene, { camera }).then((land) => { if (land) requestColliderRebuild(); });
 
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.

@@ -3,10 +3,7 @@ import * as THREE from 'three';
 /**
  * Shops-land instancing helpers.
  *
- * 1. createChunkedInstances({ geometry, material, items, chunkSize, castShadow, name }) - the SAME signature the perf agent's
- *    shared helper (src/kit/instancing.js) is being written with. That file did not exist yet on 21 Nov, so this is a minimal
- *    stand-in: one InstancedMesh per chunkSize x chunkSize square, each with its own bounds so the camera culls whole chunks.
- *    items: [{ x, z, y?, ry?, sx?, sy?, sz?, color? }]. Swap the import to src/kit/instancing.js once it lands (same call).
+ * 1. createChunkedInstances / createChunkedLOD: re-exported from the perf agent's shared helper (src/kit/instancing.js).
  *
  * 2. BatchKit - many different designs, one draw call per MATERIAL for the whole village. Every design is a set of
  *    per-material geometries (built in local space, front = +z); every placed copy is an instance in one THREE.BatchedMesh per
@@ -16,35 +13,8 @@ import * as THREE from 'three';
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const _c = new THREE.Color();
 
-export function createChunkedInstances({ geometry, material, items, chunkSize = 100, castShadow = false, name = 'chunked' }) {
-  const group = new THREE.Group();
-  group.name = name;
-  const chunks = new Map();
-  for (const it of items) {
-    const k = Math.floor(it.x / chunkSize) + ',' + Math.floor(it.z / chunkSize);
-    if (!chunks.has(k)) chunks.set(k, []);
-    chunks.get(k).push(it);
-  }
-  for (const [k, list] of chunks) {
-    const mesh = new THREE.InstancedMesh(geometry, material, list.length);
-    mesh.name = `${name}_${k}`;
-    mesh.castShadow = castShadow;
-    mesh.receiveShadow = true;
-    const anyColor = list.some((i) => i.color != null);
-    list.forEach((it, i) => {
-      _p.set(it.x, it.y || 0, it.z);
-      _q.setFromAxisAngle(_up, it.ry || 0);
-      _s.set(it.sx ?? 1, it.sy ?? it.sx ?? 1, it.sz ?? it.sx ?? 1);
-      mesh.setMatrixAt(i, _m.compose(_p, _q, _s));
-      if (anyColor) mesh.setColorAt(i, _c.set(it.color ?? 0xffffff));
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    mesh.computeBoundingSphere();
-    group.add(mesh);
-  }
-  return group;
-}
+// The real shared helper (perf agent, src/kit/instancing.js) replaced the stand-in that lived here; re-exported for callers.
+export { createChunkedInstances, createChunkedLOD } from './instancing.js';
 
 /** Part builder: per-material indexed geometry with position / normal / uv (in texture tiles) / color. */
 export class Parts {
@@ -220,4 +190,49 @@ export function orientedBoxes(x, z, ry, w, d, step = 1.0) {
     out.push({ minX, maxX, minZ, maxZ });
   }
   return out;
+}
+
+/**
+ * Distance packing for an InstancedMesh whose instances are spread over the whole village: keeps the full list in master
+ * arrays and draws only the instances within `radius` of the camera (re-packed when the camera has moved `step` m).
+ * Returns update(camera). The mesh is frustum-culling-free (its drawn set is always near), and hides when empty.
+ */
+export function nearPacker(mesh, radius, step = 6) {
+  const total = mesh.count;
+  const M = mesh.instanceMatrix.array.slice(0, total * 16);
+  const C = mesh.instanceColor ? mesh.instanceColor.array.slice(0, total * 3) : null;
+  let lx = 1e9, lz = 1e9;
+  mesh.frustumCulled = false;
+  mesh.count = 0;
+  mesh.visible = false;
+  return (cam) => {
+    const p = cam.position;
+    if (Math.abs(p.x - lx) + Math.abs(p.z - lz) < step) return;
+    lx = p.x; lz = p.z;
+    let n = 0;
+    for (let i = 0; i < total; i++) {
+      const dx = M[i * 16 + 12] - p.x, dz = M[i * 16 + 14] - p.z;
+      if (dx * dx + dz * dz > radius * radius) continue;
+      mesh.instanceMatrix.array.set(M.subarray(i * 16, i * 16 + 16), n * 16);
+      if (C) mesh.instanceColor.array.set(C.subarray(i * 3, i * 3 + 3), n * 3);
+      n++;
+    }
+    mesh.count = n;
+    mesh.visible = n > 0;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (C) mesh.instanceColor.needsUpdate = true;
+  };
+}
+
+/** An empty, never-culled mesh whose onBeforeRender runs `fn(camera)` once per frame without costing a draw call. */
+export function frameHook(fn) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
+  g.setDrawRange(0, 0);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ visible: true, colorWrite: false, depthWrite: false }));
+  m.name = 's7_frame_hook';
+  m.frustumCulled = false;
+  m.userData.noAutoCollider = true;
+  m.onBeforeRender = (renderer, scene, cam) => fn(cam);
+  return m;
 }

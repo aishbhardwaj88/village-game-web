@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { LAND_QUALITY } from './landQuality.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
 import { shopHouse, shop, kiosk, cart, shed, farBlock } from './shopsKit.js';
@@ -16,7 +17,7 @@ import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
  * Draw calls: one BatchedMesh per material (plaster, brick, concrete, wood, rust) for every body, near and far, + one merged
  * mesh for every board = 6. Near/far switch per shop at NEAR_M from the camera.
  */
-const NEAR_M = 35, MID_M = 100; // full detail / no stock on the shelves / plain block
+const NEAR_M = LAND_QUALITY.shopNearM, MID_M = LAND_QUALITY.shopMidM; // full detail / no stock on the shelves / plain block
 const WALLS = [PALETTE.cream, PALETTE.mustard, PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue, PALETTE.schoolYellow, PALETTE.greyGreen, PALETTE.cream];
 const paint = (hex) => new THREE.Color(1, 1, 1).lerp(new THREE.Color(hex), WALL_TINT_STRENGTH).getHex();
 
