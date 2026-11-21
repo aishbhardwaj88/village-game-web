@@ -232,6 +232,14 @@ for (const page of ['index.html', 'people.html'].filter(exists)) {
   }
 }
 
+// S7 (desktop, 21 Nov): fonts bundled as files under public/fonts (self-hosted, so the desktop app works offline)
+for (const r of rows.filter((x) => x.category === 'credited' && /\.(woff2?|ttf|otf)$/i.test(x.file))) {
+  const name = r.creditsKey || Object.keys(KNOWN_FONTS).find((k) => (r.title || '').startsWith(k)) || r.title;
+  if (fonts.some((x) => x.name === name)) continue;
+  const k = KNOWN_FONTS[name];
+  fonts.push({ name, licence: r.licence, author: r.author, url: (k && k.url) || r.url, from: `Bundled with the game (${r.file.replace(/^public\//, '')})` });
+}
+
 // ---------- npm runtime dependencies (they are bundled into the game's JS) ----------
 const pkg = JSON.parse(read('package.json'));
 const code = [];
@@ -397,6 +405,7 @@ const credited = rows.filter((r) => r.category === 'credited');
 const byBy = new Map(); // CC BY: every author named, required
 const by0 = new Map(); // CC0: thanks per source, authors listed when known
 for (const r of credited) {
+  if (r.licence === 'OFL-1.1') continue; // S7 (desktop): bundled fonts (+ their OFL text) are credited in the fonts list, not as CC0 media
   const isBy = /^CC BY/.test(r.licence);
   const key = isBy ? `${r.title}|${r.author}` : r.source;
   const m = isBy ? byBy : by0;

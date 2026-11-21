@@ -72,7 +72,7 @@ All CC0 1.0 from freesound.org (licence read from each sound page: creativecommo
 
 | Font | Source | Licence | Author | Notes |
 |---|---|---|---|---|
-| Noto Sans Devanagari (600, 700) | [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari) | OFL-1.1 (SIL Open Font License 1.1) | The Noto Project Authors (Google) | Loaded at runtime from fonts.googleapis.com by index.html and people.html; used for all Hindi UI and painted sign text. No font file is in the repo. The desktop edition must bundle the font files WITH the OFL text (OFL allows selling a game that bundles the font; the font itself may not be sold on its own). |
+| Noto Sans Devanagari (600, 700) | [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari) | OFL-1.1 (SIL Open Font License 1.1) | The Noto Project Authors (Google) | Self-hosted since 21 Nov (S7 desktop): `public/fonts/noto-sans-devanagari/NotoSansDevanagari-600-700.woff2`, cut from the variable TTF in github.com/google/fonts (ofl/notosansdevanagari) to weights 600-700, width 100, WOFF2, with fontTools; the OFL text ships beside it as `OFL.txt`. Used by index.html and people.html for all Hindi UI and painted sign text, on the web and in the desktop app (works offline). OFL allows selling a game that bundles the font; the font itself may not be sold on its own. |
 
 English sign and UI text uses the player's own system font (-apple-system, Segoe UI, Helvetica, Arial): nothing ships.
 

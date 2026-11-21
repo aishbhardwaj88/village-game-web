@@ -4,9 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Dopahar</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
+    <!-- Hindi font, self-hosted (S7 desktop, 21 Nov): Noto Sans Devanagari, SIL OFL 1.1 (licence text beside the file), weights 600-700 in one file. Works offline in the desktop app. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/noto-sans-devanagari/NotoSansDevanagari-600-700.woff2" />
+    <style>
+      @font-face {
+        font-family: 'Noto Sans Devanagari';
+        font-style: normal;
+        font-weight: 600 700;
+        font-display: swap;
+        src: url('/fonts/noto-sans-devanagari/NotoSansDevanagari-600-700.woff2') format('woff2');
+      }
+    </style>
     <!-- load time (docs/perf-2026-11-08.md): start the opening-view downloads now so they overlap the ~3 s main-thread build instead of waiting for it -->
     <link rel="preload" as="image" crossorigin href="/assets/textures/jute/jute_color.webp" fetchpriority="low" />
     <link rel="preload" as="image" crossorigin href="/assets/textures/jute/jute_normal.webp" fetchpriority="low" />

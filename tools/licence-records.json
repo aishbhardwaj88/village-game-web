@@ -1917,6 +1917,19 @@
     "tools/teeth_fix.py"
    ],
    "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+  },
+  {
+   "match": [
+    "public/fonts/noto-sans-devanagari/*"
+   ],
+   "category": "credited",
+   "title": "Noto Sans Devanagari (Hindi font, weights 600-700) + its OFL licence text",
+   "source": "Google Fonts (github.com/google/fonts, ofl/notosansdevanagari)",
+   "url": "https://github.com/google/fonts/tree/main/ofl/notosansdevanagari",
+   "author": "The Noto Project Authors (Google)",
+   "licence": "OFL-1.1",
+   "creditsKey": "Noto Sans Devanagari",
+   "evidence": "CREDITS.md Fonts row; variable TTF cut to weights 600-700, width 100 and saved as WOFF2 with fontTools (allowed by OFL; family name kept, no Reserved Font Name); OFL.txt ships beside it"
   }
  ],
  "worthKnowing": [
