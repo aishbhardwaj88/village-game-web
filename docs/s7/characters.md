@@ -65,9 +65,13 @@ Measured on every clip, at 12 moments each, with the game's own three.js loader.
 - A quarter of a millimetre on a 1.7 m person is far below one screen pixel.
 - One thing tried and dropped: removing "unneeded" animation keys moved finger tips and the top of the head by 2-5 mm and did not make the files smaller, so it is off.
 
-### In the browser (production build, before vs after)
+### In the browser (production build, headless, software graphics)
 
-PROOF_RESULTS
+This shared machine could not run the full before/after browser comparison: the game alone takes 3.5-4 GB in software graphics, other agents' browsers share the same memory, and pages ran at under 1 frame a second, so most runs were killed or ran out of time (each run is now kept under 5 minutes under the shared browser lock). What the runs did prove:
+- **Nothing character-related downloads before Play** (docs/s7/characters/smoke-full.json, `node tools/char-smoke.mjs`): 0 character requests before Play; after Play the nearest came first (Halwai and Pitaji at once, Maa next). That run used the original 4096 files (desktop configuration); the page was then killed for memory as the big skins arrived (see Risks: graphics memory).
+- **The packed files load and draw correctly in the real game** (web/light packing, the smallest and most changed version): Dadi, Dada, Pitaji and Sarpanch in the ?gather=1 lineup, skinned, animated, textured, faces sharp at 2048 (docs/s7/characters/lineup_after.png, dada_body_after.png, dada_face_after.png, pitaji_body_after.png). The rest of the line still showed the simple stand-ins because the page was too slow to finish loading inside 5 minutes.
+- The tiers ran live: `window.__charLOD` reported the full preset (quality 'full') and the loaded people in the near tier.
+- **Not proven in a browser here** (needs a real graphics card or a quiet machine): all 10 faces side by side before vs after, console errors over a whole lineup, live blink. Numerically proven instead: every clip, bone, blink and smile above (`tools/char-verify.mjs`). To run the full proof on a normal computer: `npm run build:unchecked && node tools/char-diet.mjs`, `vite build --outDir dist-before`, then `node tools/char-proof.mjs` (writes before/after body and face pictures for everyone plus side-by-side sheets).
 
 ### Character CPU per frame (tiers on vs off)
 
@@ -84,9 +88,14 @@ Measured without a browser (`node tools/char-lod-bench.mjs`): the game's own ani
 - Not in these numbers (drawing): hidden people are not drawn at all, no skinning and no shadow, about 4 draw calls saved per hidden person (about 90 in the 40-person scene).
 - What is left (~0.5 ms for 40) is three.js updating the bone positions of everyone still in the scene graph; hidden people would have to be taken out of the scene to save that, which other code (lineup, missions) does not expect, so it is left alone.
 
-## Screenshots (docs/s7/characters/)
+## Screenshots and data (docs/s7/characters/)
 
-SHOTS_LIST
+- lineup_after.png: the ?gather=1 line after Play, four packed characters in, the rest still stand-ins (loading after Play, nearest first)
+- dada_body_after.png, pitaji_body_after.png: whole body, packed file
+- dada_face_after.png: face close-up, packed file (2048 skin): no blur, no blotches
+- verify-full.json, verify-light.json: per character, every clip, bone drift, body drift, blink and smile, original vs packed
+- lod-bench.jsonl: character CPU per frame, tiers on/off
+- smoke-full.json: when each character file was requested (none before Play)
 
 ## Edition switch (one switch for everything: `WEB_QUALITY` in src/edition.js)
 
@@ -125,7 +134,7 @@ Command for later ones: `git log --diff-filter=A --follow --format='%ad %h' --da
    - web build only; it follows `WEB_QUALITY` by itself. The desktop build does not run it (it ships the originals).
    - optional: `"char-diet": "node tools/char-diet.mjs"`, `"char-verify": "node tools/char-verify.mjs"`
    - No new packages: `@gltf-transform/*`, `meshoptimizer`, `sharp` are already devDependencies.
-2. **Budget check (perf agent)**: the per-character limit (1.5 MB / 2.5 MB) is a web-version budget: measure it on `dist/assets/models/` after `CHAR_PROFILE=light` packing, not on `public/`, and not on the full build (full characters are 4-6 MB each on purpose).
+2. **Budget check (perf agent, tools/check-budget.js)**: it already measures dist/ (good). Its 1.5 / 2.5 MB character limit is the LIGHT web budget; while `WEB_QUALITY` is 'full' the packed characters are 3.9-5.7 MB each on purpose and will always show as breaches. Suggest: only apply that limit when `getQualityPreset(WEB_QUALITY).charTextures === 'slim'`. Today (without the packing step wired) it reports the 6.5-8.7 MB originals; with it wired, 3.9-5.7 MB.
 3. **Edition**: done. src/characterLOD.js reads `getQuality()` itself (merged main with src/edition.js); my main.js block is unchanged.
 4. deploy.yml: nothing required (the packing step takes ~7-12 s now, under a minute at 40 characters, well inside 15 min). Optional speed-up: cache `node_modules/.cache/char-diet` between runs.
 5. **src/characterAnim.js** (no owner in the sprint list; three small lines, measured above): skip people the tiers have paused or hidden, and skip the neck fix and the face when nothing moved:

@@ -83,17 +83,18 @@ async function run(v, browser) {
     await page.click('#play-btn', { timeout: 120000 }).catch(() => {});
     res.playClickedAtS = Math.round((Date.now() - t0) / 1000);
     // all ten in the line
-    try {
-      await page.waitForFunction((order) => {
-        const d = window.__dopahar; if (!d) return false;
-        return order.every((k) => d.scene.getObjectByName(`gather_${k}_model`));
-      }, ORDER, { timeout: Number(get('--wait', '600')) * 1000, polling: 2000 });
-      res.castLoadedAtS = Math.round((Date.now() - t0) / 1000);
-    } catch (e) {
-      const why = await page.evaluate(() => ({ overlay: document.getElementById('start-overlay')?.className, lod: window.__charLOD && { ...window.__charLOD.stats, waiting: window.__charLOD.waiting() } })).catch(() => 'page gone');
-      console.log(`${v.name}: cast did not appear:`, JSON.stringify(why));
-      throw e;
+    // wait for the cast, at most --wait seconds (keeps the shared browser lock short); shoot whoever has arrived
+    const tW = Date.now();
+    let have = [];
+    while (Date.now() - tW < Number(get('--wait', '150')) * 1000) {
+      have = await page.evaluate((order) => order.filter((k) => window.__dopahar && window.__dopahar.scene.getObjectByName(`gather_${k}_model`)), ORDER);
+      if (have.length === ORDER.length) break;
+      await page.waitForTimeout(3000);
     }
+    res.loaded = have; res.castLoadedAtS = Math.round((Date.now() - t0) / 1000);
+    res.lod = await page.evaluate(() => window.__charLOD && { ...window.__charLOD.stats, waiting: window.__charLOD.waiting(), quality: window.__charLOD.quality });
+    console.log(`${v.name}: ${have.length}/${ORDER.length} in the line after ${res.castLoadedAtS} s`, JSON.stringify(res.lod));
+    if (!have.length) throw new Error('no character loaded');
     await page.waitForTimeout(4000);
     // dismiss any opening dialogue so it never covers a shot
     await page.evaluate(() => { try { const d = window.__dopahar; if (d.dialogue && d.dialogue.isOpen) d.dialogue._advanceFromInput(); } catch (e) { /* none */ } });
@@ -137,14 +138,14 @@ async function run(v, browser) {
         requestAnimationFrame(step);
       });
       return out;
-    }, ORDER);
+    }, have);
     res.blink = live.blink; res.moves = live.moves; res.gpuTexMB = live.gpuTexMB;
     // per character: pause the game (Escape: the lineup stops steering the camera, everyone holds still), hide the
     // pause panel, then frame each person ourselves: whole body, then a face close-up from the head bone.
     await page.keyboard.press('Escape');
     await page.addStyleTag({ content: '#pause-overlay{display:none!important}' });
     await page.waitForTimeout(500);
-    for (const k of ORDER) {
+    for (const k of have) {
       if (ONLY && !ONLY.includes(k)) continue;
       for (const shot of ['body', 'face']) {
         await page.evaluate(({ k, shot }) => {

@@ -1,0 +1,30 @@
+{
+  "url": "?proof=1",
+  "errors": [
+    "PAGE CRASHED"
+  ],
+  "requests": [
+    {
+      "file": "halwai",
+      "method": "HEAD",
+      "atS": 23,
+      "afterPlay": true
+    },
+    {
+      "file": "pitaji",
+      "method": "HEAD",
+      "atS": 23,
+      "afterPlay": true
+    },
+    {
+      "file": "maa",
+      "method": "HEAD",
+      "atS": 62,
+      "afterPlay": true
+    }
+  ],
+  "playAtS": 4,
+  "readyAtS": 4,
+  "requestsBeforePlay": 0,
+  "lod": "evaluate failed: page.evaluate: Target crashed "
+}
