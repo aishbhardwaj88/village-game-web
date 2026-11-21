@@ -1,0 +1,165 @@
+{
+ "layout": "new",
+ "failed": [
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/tractor.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/trolley.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/cart.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/bullock.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/bike.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/player.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/monkey.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/charpai.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/hand_pump.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/cow.glb",
+   "phase": "boot"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/halwai.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/chemist.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/dog.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/mandi.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/manihari.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/old_haveli.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/banta_shop.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/jalebi_stall.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/chaat_thela.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/sabzi_rehris.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/health_subcentre.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/mela_ground.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/anganwadi.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/gurudwara.glb",
+   "phase": "walk"
+  },
+  {
+   "status": 404,
+   "url": "/village-game-web/assets/models/jain_mandir.glb",
+   "phase": "walk"
+  }
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "result": {
+  "minimap": true,
+  "notebook": true,
+  "at": [
+   612,
+   -128
+  ]
+ }
+}

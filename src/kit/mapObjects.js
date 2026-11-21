@@ -36,17 +36,19 @@ const CLOTHS = [0xf2f0ea, 0xe8ecf2, 0xc8d8e8, 0xd84a3a, 0xe0b040, 0x4a8a6a, 0xd8
 class ObjBatch {
   constructor(name) { this.name = name; this.designs = new Map(); this.inst = []; this.mats = new Map(); }
   design(key, build) { if (!this.designs.has(key)) this.designs.set(key, build()); return this.designs.get(key); }
-  add(key, matrix, color, reach) { this.inst.push({ key, matrix, color, reach, x: matrix.elements[12], z: matrix.elements[14], ids: {}, vis: true }); }
+  /** lod (optional, S7 fixes): { key, near } = draw design `key` instead of this one beyond `near` metres (up to `reach`) */
+  add(key, matrix, color, reach, lod = null) { this.inst.push({ key, matrix, color, reach, lod, x: matrix.elements[12], z: matrix.elements[14], ids: {}, lowIds: {}, vis: true, tier: 0 }); }
   finalize(materialFor) {
     const group = new THREE.Group();
     group.name = this.name;
     const per = new Map();
-    for (const it of this.inst) for (const mat in this.designs.get(it.key)) {
+    const count = (key) => { for (const mat in this.designs.get(key)) {
       if (!per.has(mat)) per.set(mat, { count: 0, verts: 0, idx: 0, keys: new Set() });
-      const e = per.get(mat), g = this.designs.get(it.key)[mat];
+      const e = per.get(mat), g = this.designs.get(key)[mat];
       e.count++;
-      if (!e.keys.has(it.key)) { e.keys.add(it.key); e.verts += g.attributes.position.count; e.idx += g.index ? g.index.count : g.attributes.position.count; }
-    }
+      if (!e.keys.has(key)) { e.keys.add(key); e.verts += g.attributes.position.count; e.idx += g.index ? g.index.count : g.attributes.position.count; }
+    } };
+    for (const it of this.inst) { count(it.key); if (it.lod) count(it.lod.key); }
     this.batches = new Map();
     for (const [mat, e] of per) {
       const bm = new THREE.BatchedMesh(e.count, e.verts, e.idx, materialFor(mat));
@@ -60,28 +62,40 @@ class ObjBatch {
       group.add(bm);
     }
     const c = new THREE.Color();
-    for (const it of this.inst) for (const mat in this.designs.get(it.key)) {
+    const place = (it, key, ids, visible) => { for (const mat in this.designs.get(key)) {
       const b = this.batches.get(mat);
-      const id = b.bm.addInstance(b.gids.get(it.key));
+      const id = b.bm.addInstance(b.gids.get(key));
       b.bm.setMatrixAt(id, it.matrix);
       b.bm.setColorAt(id, c.set(it.color));
-      it.ids[mat] = id;
-    }
+      if (!visible) b.bm.setVisibleAt(id, false);
+      ids[mat] = id;
+    } };
+    for (const it of this.inst) { place(it, it.key, it.ids, true); if (it.lod) place(it, it.lod.key, it.lowIds, false); }
     return group;
   }
   /** hide instances past their reach; returns how many are drawn */
   update(cam) {
     let n = 0;
     for (const it of this.inst) {
-      const dx = it.x - cam.position.x, dz = it.z - cam.position.z, v = dx * dx + dz * dz < it.reach * it.reach;
-      if (v) n++;
-      if (v === it.vis) continue;
-      it.vis = v;
-      for (const mat in it.ids) this.batches.get(mat).bm.setVisibleAt(it.ids[mat], v);
+      const dx = it.x - cam.position.x, dz = it.z - cam.position.z, d2 = dx * dx + dz * dz;
+      // tier 0 = full model, 1 = low-poly stand-in (only when the instance has one), 2 = hidden
+      const tier = d2 >= it.reach * it.reach ? 2 : it.lod && d2 >= it.lod.near * it.lod.near ? 1 : 0;
+      if (tier < 2) n++;
+      if (tier === it.tier) continue;
+      it.tier = tier;
+      for (const mat in it.ids) this.batches.get(mat).bm.setVisibleAt(it.ids[mat], tier === 0);
+      for (const mat in it.lowIds) this.batches.get(mat).bm.setVisibleAt(it.lowIds[mat], tier === 1);
     }
     return n;
   }
   tris() { let t = 0; for (const it of this.inst) { const d = this.designs.get(it.key); for (const m in d) t += (d[m].index ? d[m].index.count : d[m].attributes.position.count) / 3; } return t; }
+  /** triangles drawn right now (after update), full and low-poly stand-ins counted separately */
+  drawnTris() {
+    const tri = (key) => { let t = 0; const d = this.designs.get(key); for (const m in d) t += (d[m].index ? d[m].index.count : d[m].attributes.position.count) / 3; return t; };
+    let full = 0, low = 0;
+    for (const it of this.inst) { if (it.tier === 0) full += tri(it.key); else if (it.tier === 1) low += tri(it.lod.key); }
+    return { full, low };
+  }
 }
 
 const _q = new THREE.Quaternion(), _e = new THREE.Euler();
@@ -125,6 +139,37 @@ async function loadModel(file) {
   if (!g.index) g.setIndex([...Array(g.attributes.position.count).keys()]);
   return { geo: g, mat: mesh.material };
 }
+
+/**
+ * Low-poly stand-in for a turned pot (S7 fixes): a lathe of the model's own outline (widest radius per height band, plus the
+ * rim turning in at the mouth), same material and UV/colour attributes, so it joins the same batch. Pots 9 bands x 8 sides
+ * = 192 triangles, kulhads 5 x 6 = 108, instead of the full models'; used beyond POT_LOD_M (kulhads beyond KULHAD_LOD_M).
+ */
+export function latheStandIn(src, { bands = 12, sides = 10 } = {}) {
+  const pos = src.attributes.position;
+  src.computeBoundingBox();
+  const bb = src.boundingBox, cx = (bb.min.x + bb.max.x) / 2, cz = (bb.min.z + bb.max.z) / 2, y0 = bb.min.y, H = bb.max.y - bb.min.y || 0.01;
+  const rMax = new Array(bands).fill(0);
+  for (let i = 0; i < pos.count; i++) {
+    const b = Math.min(bands - 1, Math.floor(((pos.getY(i) - y0) / H) * bands));
+    rMax[b] = Math.max(rMax[b], Math.hypot(pos.getX(i) - cx, pos.getZ(i) - cz));
+  }
+  for (let b = 0; b < bands; b++) if (!rMax[b]) rMax[b] = rMax[b - 1] || 0.01; // empty band: carry the one below
+  const pts = [new THREE.Vector2(0, y0), new THREE.Vector2(rMax[0] * 0.92, y0)];
+  for (let b = 0; b < bands; b++) pts.push(new THREE.Vector2(rMax[b], y0 + ((b + 0.5) / bands) * H));
+  const rTop = rMax[bands - 1];
+  pts.push(new THREE.Vector2(rTop, y0 + H), new THREE.Vector2(rTop * 0.8, y0 + H), new THREE.Vector2(rTop * 0.72, y0 + H - Math.min(0.06, H * 0.15)));
+  const g = new THREE.LatheGeometry(pts, sides).translate(cx, 0, cz);
+  // the same attribute set as the full model (BatchedMesh needs it): colour = the model's mean vertex colour
+  const col = src.attributes.color, mean = [0, 0, 0];
+  for (let i = 0; i < col.count; i++) { mean[0] += col.getX(i); mean[1] += col.getY(i); mean[2] += col.getZ(i); }
+  const n = g.attributes.position.count, arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { arr[i * 3] = mean[0] / col.count; arr[i * 3 + 1] = mean[1] / col.count; arr[i * 3 + 2] = mean[2] / col.count; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  for (const k of Object.keys(g.attributes)) if (!src.attributes[k]) g.deleteAttribute(k);
+  return g;
+}
+const POT_LOD_M = 25, KULHAD_LOD_M = 12; // switch to the lathe stand-in beyond these (a kulhad is a 10 cm cup)
 
 export async function buildMapObjects(scene, { map = null, camera = null } = {}) {
   // always the game's own map data (rects, centres, trimmed galis); shops-land's loader may hand back the raw export
@@ -213,19 +258,22 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
     const msFiles = ['milestone_v2', 'milestone_v2_b', 'milestone_v2_c'];
     const loaded = await Promise.all([...potFiles, ...msFiles].map((f) => loadModel(f).then((r) => [f, r])));
     const matOf = new Map();
-    for (const [f, r] of loaded) { models.design(f, () => ({ [r.mat.uuid]: r.geo })); matOf.set(r.mat.uuid, r.mat); }
+    for (const [f, r] of loaded) {
+      models.design(f, () => ({ [r.mat.uuid]: r.geo })); matOf.set(r.mat.uuid, r.mat);
+      if (f.startsWith('pot_')) models.design(f + '|low', () => ({ [r.mat.uuid]: latheStandIn(r.geo, f.includes('kulhad') ? { bands: 5, sides: 6 } : { bands: 9, sides: 8 }) })); // S7 fixes: distance stand-in
+    }
     // the potter's stock: matkas and surahis at the game's own size (0.45-0.7 m), and about one spot in four a little
     // group of kulhads (tea cups) set out to dry
     plan.pots.forEach((p, i) => {
       const fired = hash01(i, 8) < 0.7; // most fired red, some still drying grey-brown
       const c = fired ? tint(p.id, 0.08) : new THREE.Color(0.86, 0.8, 0.74);
       if (hash01(p.x * 1.3, p.z * 2.9) < 0.25) {
-        for (let k = 0; k < 5; k++) { const a = k * 1.26 + i, r = k ? 0.16 : 0; models.add('pot_kulhad_v2', mat4(p.x + Math.cos(a) * r, 0, p.z + Math.sin(a) * r, a, 0.9 + 0.2 * hash01(i, k)), c, PROP * 0.6); }
+        for (let k = 0; k < 5; k++) { const a = k * 1.26 + i, r = k ? 0.16 : 0; models.add('pot_kulhad_v2', mat4(p.x + Math.cos(a) * r, 0, p.z + Math.sin(a) * r, a, 0.9 + 0.2 * hash01(i, k)), c, PROP * 0.6, { key: 'pot_kulhad_v2|low', near: KULHAD_LOD_M }); }
         return;
       }
       const f = potFiles[Math.floor(hash01(p.x * 3.1, p.z * 1.7) * (potFiles.length - 1))];
       const s = 0.8 + 0.2 * hash01(i, 7);
-      models.add(f, mat4(p.x, 0, p.z, hash01(i, 9) * 6.28, s, s, s, s, (hash01(i, 3) - 0.5) * 0.06, (hash01(i, 4) - 0.5) * 0.06), c, PROP);
+      models.add(f, mat4(p.x, 0, p.z, hash01(i, 9) * 6.28, s, s, s, s, (hash01(i, 3) - 0.5) * 0.06, (hash01(i, 4) - 0.5) * 0.06), c, PROP, { key: f + '|low', near: POT_LOD_M });
       colliders.push({ minX: p.x - 0.22, maxX: p.x + 0.22, minZ: p.z - 0.22, maxZ: p.z + 0.22 });
     });
     plan.milestones.forEach((m, i) => {
@@ -256,9 +304,12 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
     if (Math.abs(cam.position.x - lx) + Math.abs(cam.position.z - lz) < 3) return;
     lx = cam.position.x; lz = cam.position.z;
     report.drawn = kit.update(cam) + models.update(cam);
+    report.modelTris = models.drawnTris();
   };
   group.add(frameHook(update));
   if (camera) update(camera);
+  // S7 fixes: switch the pot distance stand-ins off / on (measuring, comparing); the next camera move re-picks the tiers
+  group.userData.setPotLod = (on, nearM = null) => { for (const it of models.inst) if (it.lod) { it.lod.base ??= it.lod.near; it.lod.near = !on ? 1e9 : nearM ? Math.min(nearM, it.lod.base) : it.lod.base; } lx = 1e9; };
   group.traverse((o) => { if (o.isMesh) o.userData.noAutoCollider = true; });
   group.userData.heightAt = (x, z) => { let y = 0; for (const f of heightFns) { const h = f(x, z); if (h > y) y = h; } return y; };
   report.colliders = colliders.length;

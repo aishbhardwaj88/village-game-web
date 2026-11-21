@@ -8,6 +8,7 @@
 import { PLACES } from './freeRoam.js';
 import * as canalMod from './canal.js';
 import { currentLayout, worldBounds } from './zoneManager.js';
+import { newWaterShapes } from './kit/waterMap.js';
 
 // The canal line drawn on the minimap: ?layout=old = today's east-west feeder (canal.js constants); ?layout=new = the
 // north-south canal at x ~824 along the field band, or canal.js's own CANAL_PATH ([[x, z], ...]) once it exports one.
@@ -15,10 +16,32 @@ function canalLine() {
   if (currentLayout() === 'new') {
     const path = Reflect.get(canalMod, 'CANAL_PATH'); // optional export (shops-land may add it); read loosely so the build does not warn
     if (Array.isArray(path) && path.length > 1) return path;
+    const w = newWaterShapes(); // S7 fixes: the map's own canal water (x 824, z -340..350)
+    if (w && w.canal) return [[w.canal.x, w.canal.z0], [w.canal.x, w.canal.z1]];
     const b = worldBounds('new');
     return [[b.canalX, b.fieldBandZ[0]], [b.canalX, b.fieldBandZ[1]]];
   }
   return [[canalMod.CANAL_MIN_X, canalMod.CANAL_Z], [canalMod.CANAL_MAX_X, canalMod.CANAL_Z]];
+}
+
+/** S7 fixes (?layout=new): channels as thin blue lines, ponds and the temple tank as filled water shapes. */
+function drawWater(ctx, W, wx, wy, k, S) {
+  const vis = (pts) => pts.some(([x, z]) => { const px = wx(x), py = wy(z); return px > -40 && py > -40 && px < S + 40 && py < S + 40; });
+  ctx.strokeStyle = 'rgba(45,127,141,0.75)';
+  ctx.lineWidth = Math.max(1.5, 1.2 * k);
+  for (const c of W.channels) {
+    if (!vis([c.a, c.b, [(c.a[0] + c.b[0]) / 2, (c.a[1] + c.b[1]) / 2]])) continue;
+    ctx.beginPath(); ctx.moveTo(wx(c.a[0]), wy(c.a[1])); ctx.lineTo(wx(c.b[0]), wy(c.b[1])); ctx.stroke();
+  }
+  const fill = (ring, col, line) => {
+    if (!vis(ring)) return;
+    ctx.beginPath(); ring.forEach(([x, z], i) => (i ? ctx.lineTo(wx(x), wy(z)) : ctx.moveTo(wx(x), wy(z)))); ctx.closePath();
+    if (col) { ctx.fillStyle = col; ctx.fill(); }
+    if (line) { ctx.strokeStyle = line; ctx.lineWidth = 1.2; ctx.stroke(); }
+  };
+  for (const t of W.tanks) if (t.steps) fill(t.steps, 'rgba(150,120,90,0.45)', 'rgba(110,90,70,0.7)');
+  for (const p of W.ponds) fill(p.ring, 'rgba(45,127,141,0.7)', 'rgba(30,95,110,0.8)');
+  for (const t of W.tanks) fill(t.ring, 'rgba(45,127,141,0.75)', null);
 }
 
 const HIDE_KEY = 'dopahar.minimapHidden';
@@ -68,6 +91,9 @@ function glyph(ctx, kind, x, y) {
  */
 export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes, onOpen }) {
   const CANAL_LINE = canalLine();
+  // S7 fixes: under ?layout=new the minimap also shows the canal at its true width, the 10 field channels, the ponds and the
+  // temple tank (src/kit/waterMap.js). ?layout=old keeps today's single canal line.
+  const WATER = currentLayout() === 'new' ? newWaterShapes() : null;
   const canvas = document.getElementById('minimap-canvas');
   if (!canvas) return { update() {}, setHidden() {}, isHidden: () => true, setActive() {} };
   const wrap = document.getElementById('minimap-wrap');
@@ -133,8 +159,9 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
       ctx.stroke();
     }
     ctx.strokeStyle = 'rgba(45,127,141,0.8)'; // canal
-    ctx.lineWidth = 3;
+    ctx.lineWidth = WATER ? Math.max(3, WATER.canal.width * k) : 3;
     ctx.beginPath(); CANAL_LINE.forEach(([x, z], i) => (i ? ctx.lineTo(wx(x), wy(z)) : ctx.moveTo(wx(x), wy(z)))); ctx.stroke();
+    if (WATER) drawWater(ctx, WATER, wx, wy, k, S);
     ctx.font = '700 9px "Segoe Print","Comic Sans MS",cursive,sans-serif';
     ctx.textAlign = 'center';
     for (const pl of PLACES) {

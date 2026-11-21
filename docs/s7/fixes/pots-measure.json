@@ -1,0 +1,85 @@
+{
+ "res": {
+  "potter": {
+   "before": {
+    "calls": 2,
+    "triangles": 81132,
+    "tiers": {
+     "full": 106540,
+     "low": 0
+    }
+   },
+   "after": {
+    "calls": 2,
+    "triangles": 73180,
+    "tiers": {
+     "full": 95564,
+     "low": 3024
+    }
+   },
+   "at12m": {
+    "calls": 2,
+    "triangles": 31912,
+    "tiers": {
+     "full": 49412,
+     "low": 7908
+    }
+   }
+  },
+  "potter_lane_30m": {
+   "before": {
+    "calls": 2,
+    "triangles": 85383,
+    "tiers": {
+     "full": 102289,
+     "low": 0
+    }
+   },
+   "after": {
+    "calls": 2,
+    "triangles": 17627,
+    "tiers": {
+     "full": 23557,
+     "low": 10976
+    }
+   }
+  },
+  "potter_45m": {
+   "before": {
+    "calls": 2,
+    "triangles": 85383,
+    "tiers": {
+     "full": 102289,
+     "low": 0
+    }
+   },
+   "after": {
+    "calls": 2,
+    "triangles": 15435,
+    "tiers": {
+     "full": 21157,
+     "low": 11184
+    }
+   }
+  },
+  "potter_70m": {
+   "before": {
+    "calls": 2,
+    "triangles": 77825,
+    "tiers": {
+     "full": 90529,
+     "low": 0
+    }
+   },
+   "after": {
+    "calls": 2,
+    "triangles": 16397,
+    "tiers": {
+     "full": 21157,
+     "low": 7944
+    }
+   }
+  }
+ },
+ "errors": []
+}
