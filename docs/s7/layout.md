@@ -66,8 +66,10 @@ Coordinates: metres, x east, z south. `rotation.y = ry` puts local +z on `(sin r
 - The map's "before" front, however, is NOT the true front for the 6 old models built facing another way (school, halwai,
   tea stall, general store, temple, mandi): it was worked out as if every model faced +z. The 10 Nov road-front audit and the
   build scripts give the real ones; that is what `frontOffsets.js` records.
-- In the running game (headless boot of both layouts, `tools/layout-smoke.mjs`), each probed place is drawn at its anchor:
-  see "Test numbers" below.
+- In the running game (headless boot, `tools/layout-smoke.mjs`, 21 Nov 17:50): under `?layout=old` the anganwadi, gurudwara,
+  old haveli, post office and health centre are drawn exactly at the map's "before" spot and yaw (0.0 m, 0.0 deg off); under
+  `?layout=new` the same five are drawn exactly at their new anchors (gurudwara (443.9, 95.5) yaw 2.6, haveli (657.6, -36.7)
+  yaw 85.3, health centre (588.0, 57.7) turned 11.2 by my wiring).
 - Conclusion: x east, z south, metres, yaw = three.js rotation.y with front = (sin ry, cos ry). Same frame as the game.
 
 ## Two things in the approved map I corrected (and why)
@@ -130,6 +132,13 @@ lane, canal bank track), the roundabout ring as today; the old kachcha tracks, f
 | Old haveli | 4 | 0 | 1 | 0 | 1 |
 | West mohalla | 3 | 0 | 0 | 0 | 0 |
 | Schools and sports (untouched) | 1 | 1 | 0 | 0 | 0 |
+
+Headless boot (`tools/layout-smoke.mjs`, both layouts, Play pressed, character models skipped for memory): old boots in 85 s
+with 330 streamed zones, new in 91 s with 236 (the dropped old-spot zones), **zero errors under `?layout=new` that `?layout=old`
+does not also show** (the only red lines on both are 404s for the skipped character models and model-slot probes). Note: this
+shared machine crashes the 3D page whenever several agents run browsers at once; run it under `flock /tmp/s7-browser.lock`.
+`tools/collision-test.js` and `tools/regression-check.js` were not run: each is a long full-world browser run this machine
+could not hold today; they test `?layout=old`, which my changes leave byte-for-byte the same in behaviour.
 
 Houses facing a road or gali within 3 m and 3 deg: 449 of 492 (reported, not failed: each house's front is the side nearest
 its gali by construction). Coordinate check: pass. Map pack fresh: pass.
