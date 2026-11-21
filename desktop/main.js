@@ -196,6 +196,12 @@ async function runSmoke(win, reportPath) {
       .then((v) => { report.playClicked = v; });
     report.firstRender = await waitFor(`!!(window.__loadMarks && window.__loadMarks.firstRender)`, 60000);
     await new Promise((r) => setTimeout(r, Number(argValue('smoke-play-ms') || 5000)));
+    try { // a picture of the first seconds of play, next to the report, so a person can look at it
+      const img = await win.webContents.capturePage();
+      const shot = reportPath.replace(/\.json$/, '') + '.png';
+      fs.writeFileSync(shot, img.toPNG());
+      report.screenshot = shot;
+    } catch (e) { report.screenshotError = String(e); }
     report.renderer = await js(`(() => { const m = window.__loadMarks || {}; return { firstRenderMs: m.firstRender && Math.round(m.firstRender), calls: m.calls, programs: m.programs,
       canvas: (() => { const c = document.querySelector('canvas'); return c ? [c.width, c.height] : null; })(), dpr: window.devicePixelRatio }; })()`);
   }

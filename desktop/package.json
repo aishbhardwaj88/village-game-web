@@ -13,7 +13,7 @@
     "dist:linux": "electron-builder --linux dir",
     "dist:mac": "electron-builder --mac zip dmg --arm64 --x64",
     "dist:win": "electron-builder --win nsis zip --x64",
-    "dist:all-from-linux": "node scripts/package-all.mjs"
+    "dist:win-from-linux": "electron-builder --win zip portable --x64"
   },
   "devDependencies": {
     "electron": "45.4.1",
@@ -51,7 +51,9 @@
         "zip",
         "dmg"
       ],
-      "darkModeSupport": true
+      "darkModeSupport": true,
+      "identity": "-",
+      "hardenedRuntime": false
     },
     "dmg": {
       "title": "Dopahar"
@@ -79,6 +81,9 @@
       "category": "Game",
       "executableName": "dopahar"
     },
-    "publish": null
+    "publish": null,
+    "portable": {
+      "artifactName": "${productName}-${version}-windows-portable.${ext}"
+    }
   }
 }
