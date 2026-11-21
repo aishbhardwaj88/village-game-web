@@ -77,7 +77,7 @@ let built;
 const VIEWS = {
   gali_eye: { pos: [438, 1.6, -79.2], target: [478, 2.6, -79.8] },
   gali_above: { pos: [430, 45, -20], target: [470, 0, -62] },
-  east_block: { pos: [705, 1.7, -24.5], target: [745, 2.6, -28.3] },
+  east_block: { pos: [706, 1.6, -34.4], target: [746, 2.6, -30.6] },
   overview: { pos: [600, 160, 260], target: [610, 0, 0] },
 };
 if (mode === 'village') {

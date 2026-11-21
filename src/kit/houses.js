@@ -273,6 +273,7 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
  */
 export function initNewMapHouses(scene) {
   if (!isNewLayout()) return null;
+  if (typeof location !== 'undefined' && /[?&]nohouses=1/.test(location.search)) return null; // A/B switch for audits
   const h = createNewMapHouses(scene, { loadMap: loadPlannedHouses, groundAt: dipHeightRaw, onBuilt: () => requestColliderRebuild() });
   if (typeof window !== 'undefined') window.__newHouses = h;
   h.ready.catch((err) => console.warn('new-map houses did not build', err));

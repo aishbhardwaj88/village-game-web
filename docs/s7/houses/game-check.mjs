@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 
 const layout = process.argv[2] || 'new';
+const extra = process.argv[3] || ''; // e.g. '&nohouses=1'
 const PORT = +(process.env.PORT || 5398);
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--outDir', 'tmp/dist-houses', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 server.stderr.on('data', () => {});
@@ -23,11 +24,11 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
   const isCharErr = (t) => /Failed to load resource: the server responded with a status of 404/.test(t);
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-  await page.goto(`http://localhost:${PORT}/village-game-web/?dev=1&layout=${layout}`, { waitUntil: 'load', timeout: 300000 });
+  await page.goto(`http://localhost:${PORT}/village-game-web/?dev=1&layout=${layout}${extra}`, { waitUntil: 'load', timeout: 300000 });
   await page.waitForSelector('#start-overlay.ready', { timeout: 400000 }).catch(() => {});
   log('title ready'); await page.click('#play-btn').catch(() => {}); log('play clicked');
   const t0 = Date.now();
-  if (layout === 'new') {
+  if (layout === 'new' && !extra.includes('nohouses')) {
     await page.waitForFunction(() => window.__newHouses && window.__newHouses.report && window.__newHouses.report.houses, null, { timeout: 600000, polling: 2000 });
     out.buildSeconds = (Date.now() - t0) / 1000; log('houses built');
     out.report = await page.evaluate(() => window.__newHouses.report);
