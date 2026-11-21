@@ -109,6 +109,19 @@ async function run(v, browser) {
         out.blink[k] = 0; out.moves[k] = 0;
         p0[k] = hands[k] ? hands[k].getWorldPosition(new d.camera.position.constructor()).clone() : null;
       }
+      // texture memory on the graphics card per character (RGBA + mipmaps), from the images actually loaded
+      out.gpuTexMB = {};
+      for (const k of order) {
+        const seen = new Set(); let bytes = 0;
+        d.scene.getObjectByName(`gather_${k}_model`).traverse((o) => {
+          if (!o.material) return;
+          for (const t of Object.values(o.material)) {
+            if (!t || !t.isTexture || seen.has(t)) continue; seen.add(t);
+            const im = t.image; if (im && im.width) bytes += im.width * im.height * 4 * 1.33;
+          }
+        });
+        out.gpuTexMB[k] = +(bytes / 1048576).toFixed(1);
+      }
       const t0 = performance.now();
       await new Promise((done) => {
         const step = () => {
@@ -125,7 +138,7 @@ async function run(v, browser) {
       });
       return out;
     }, ORDER);
-    res.blink = live.blink; res.moves = live.moves;
+    res.blink = live.blink; res.moves = live.moves; res.gpuTexMB = live.gpuTexMB;
     // per character: pause the game (Escape: the lineup stops steering the camera, everyone holds still), hide the
     // pause panel, then frame each person ourselves: whole body, then a face close-up from the head bone.
     await page.keyboard.press('Escape');

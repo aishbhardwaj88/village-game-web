@@ -22,7 +22,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const a = process.argv.slice(2);
 const get = (k, d) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : d; };
 const OFF = a.includes('--off');
-const PROFILE = get('--profile', 'full');
+const PROFILE = get('--profile', 'full'); // a quality preset name from src/edition.js
 const DIR = resolve(ROOT, get('--dir', 'dist/assets/models'));
 
 let rafFn = null;
@@ -49,7 +49,7 @@ function bench(label, layout, camPos) {
     if (walking) walkers.push({ g, dir: Math.random() * Math.PI * 2 });
   }
   scene.updateMatrixWorld(true);
-  initCharacterLOD({ camera, profile: PROFILE }); // once per process; later scenes reuse it with the new camera below
+  initCharacterLOD({ camera, quality: PROFILE }); // once per process; later scenes reuse it with the new camera below
   const dt = 1 / 60, N = 600;
   const part = { anim: [], tiers: [], matrices: [] };
   const step = (rec) => {

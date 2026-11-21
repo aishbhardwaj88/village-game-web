@@ -1,7 +1,7 @@
 /**
  * S7 (21 Nov): distance tiers for the rigged Tripo characters (docs/s7/characters.md, budget in docs/s7/SPRINT.md).
  *
- * Limits come from LOD_PROFILES below (full = default: 40 m / 24 people / 90 m; light web edition: 25 m / 12 / 50 m).
+ * Limits come from getQuality() in src/edition.js (full, in use: 40 m / 24 people / 80 m; light web edition later: 25 m / 12 / 50 m).
  *   near  (<= NEAR, on screen)   fully animated, blink + smile. At most MAX_FULL at once, nearest first; the rest drop to mid.
  *   mid   (NEAR-FAR, on screen)  animation stepped MID_HZ times a second instead of every frame; blink/smile switched off.
  *   off screen (<= FAR)          animation paused (still drawn, so a shadow at the screen edge is never missing).
@@ -24,15 +24,21 @@
  * `?charlod=0` turns the tiers off (for before/after measurements). window.__charLOD exposes counts for tests.
  */
 import * as THREE from 'three';
+import { getQuality, getQualityPreset } from './edition.js';
 
-// ONE config for every limit. 'full' = the full-quality game (default, built first); 'light' = the later web edition
-// (docs/s7/SPRINT.md budget).
-// The edition is passed by main.js (initCharacterLOD({ ..., profile })); `?charprofile=light` (or full) overrides it for testing.
-export const LOD_PROFILES = {
-  light: { NEAR: 25, FAR: 50, MAX_FULL: 12, MID_HZ: 12, HYST: 2, LOAD_RADIUS: 55, LOAD_AT_ONCE: 2 },
-  full: { NEAR: 40, FAR: 90, MAX_FULL: 24, MID_HZ: 20, HYST: 2, LOAD_RADIUS: 95, LOAD_AT_ONCE: 3 },
-};
-export const LOD = { ...LOD_PROFILES.full }; // the live values (filled from the chosen profile at init)
+// ONE config for every limit: getQuality() in src/edition.js (keys charNear, charMaxFull, charFar, charMidHz,
+// charLoadRadius). 'full' (in use everywhere today): 40 m / 24 / 80 m / 20 Hz / load within 90 m. 'light' (the later web
+// edition): 25 m / 12 / 50 m / 12 Hz / 55 m. `?quality=light` in the address switches, for testing (edition.js).
+// HYST (boundary margin) and LOAD_AT_ONCE (parallel downloads) are this module's own.
+export const LOD = { NEAR: 40, FAR: 80, MAX_FULL: 24, MID_HZ: 20, HYST: 2, LOAD_RADIUS: 90, LOAD_AT_ONCE: 2 };
+function applyQuality(q) {
+  if (!q) return;
+  if (q.charNear) LOD.NEAR = q.charNear;
+  if (q.charFar) LOD.FAR = q.charFar;
+  if (q.charMaxFull) LOD.MAX_FULL = q.charMaxFull;
+  if (q.charMidHz) LOD.MID_HZ = q.charMidHz;
+  if (q.charLoadRadius) LOD.LOAD_RADIUS = q.charLoadRadius;
+}
 // Character model files (public/assets/models/<file>.glb). Slots named gather_* or <key>#<n> count as characters too.
 // A new Tripo character wired some other way: add its file name here so it waits for Play instead of loading at boot.
 export const CHARACTER_FILES = new Set(['maa', 'dadi', 'pitaji', 'sarpanch', 'dada', 'postman', 'sister', 'brother', 'teacher', 'parlour_didi',
@@ -160,11 +166,13 @@ function loadNearest(assetSlots, radius) {
   assetSlots.resolveOne(name).catch(() => {}).finally(() => { loadingNow--; stats.loading = loadingNow; stats.loaded++; });
 }
 
-export function initCharacterLOD({ camera, assetSlots, profile = 'full' }) { // 22 Nov owner: full-quality game first
+/** `quality`: a preset name ('full' | 'light') for tools/benchmarks; the game passes nothing and gets getQuality(). */
+export function initCharacterLOD({ camera, assetSlots, quality }) {
   if (installed) return;
   installed = true;
+  const preset = (quality && getQualityPreset(quality)) || getQuality();
+  applyQuality(preset);
   const q = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  Object.assign(LOD, LOD_PROFILES[q.get('charprofile') || profile] || LOD_PROFILES.full);
   const tiersOn = q.get('charlod') !== '0';
   if (assetSlots) deferCharacterLoads(assetSlots);
   const loop = () => {
@@ -177,7 +185,7 @@ export function initCharacterLOD({ camera, assetSlots, profile = 'full' }) { // 
     stats.waiting = pending.length;
   };
   requestAnimationFrame(loop);
-  if (typeof window !== 'undefined') window.__charLOD = { LOD, profile: q.get('charprofile') || profile, stats, entries: () => entries.map((e) => ({ name: e.root.name, dist: +e.dist.toFixed(1), tier: NAMES[e.tier] })), waiting: () => pending.map((p) => p.name) };
+  if (typeof window !== 'undefined') window.__charLOD = { LOD, quality: preset && preset.name, stats, entries: () => entries.map((e) => ({ name: e.root.name, dist: +e.dist.toFixed(1), tier: NAMES[e.tier] })), waiting: () => pending.map((p) => p.name) };
   if (!tiersOn) return;
   const update = THREE.AnimationMixer.prototype.update;
   THREE.AnimationMixer.prototype.update = function (dt) {

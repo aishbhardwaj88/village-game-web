@@ -30,10 +30,12 @@
  *   node tools/char-diet.mjs --json <file>         # also write a size report
  *   node tools/char-diet.mjs --profile light       # web edition, later (same as CHAR_PROFILE=light)
  *
- * Profiles (22 Nov: one codebase, two editions; the owner builds the FULL game first, so full is the default):
- *   light (CHAR_PROFILE=light, the free web edition, later): skin 1024, heroes 2048, WebP. Budget 1.5 MB / heroes 2.5 MB.
- *   full  (default, the desktop edition):        skins untouched (original 4096 JPEG / PNG), only geometry and animation
- *                                          are meshopt-compressed (same check as light). No size budget.
+ * Runs in the WEB build only (the desktop build ships the untouched originals, desktop/scripts/build-game.mjs).
+ * Profile: follows WEB_QUALITY in src/edition.js (one switch for the whole game); CHAR_PROFILE / --profile override.
+ * Profiles (22 Nov: the owner builds the FULL game first, so the web is 'full' today):
+ *   full  (web today, WEB_QUALITY 'full'): skins untouched (original 4096 JPEG / PNG, byte for byte); geometry and
+ *         animation packed with meshopt, lossless animation, 12-bit normals. No size budget.
+ *   light (web later, WEB_QUALITY 'light'): skin 1024, heroes 2048, WebP. Budget 1.5 MB / heroes 2.5 MB.
  */
 import { NodeIO, PropertyType, Logger } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
@@ -44,6 +46,7 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, statSync, openSync, readSync, closeSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WEB_QUALITY, getQualityPreset } from '../src/edition.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -70,7 +73,8 @@ function args() {
     force: a.includes('--force'),
     json: get('--json', null),
     quiet: a.includes('--quiet'),
-    profile: get('--profile', process.env.CHAR_PROFILE || 'full'), // 22 Nov owner: full-quality game first; web 'light' later
+    // default follows the web edition's quality (WEB_QUALITY in src/edition.js): charTextures 'slim' -> light, else full
+    profile: get('--profile', process.env.CHAR_PROFILE || (getQualityPreset(WEB_QUALITY)?.charTextures === 'slim' ? 'light' : 'full')),
   };
 }
 
