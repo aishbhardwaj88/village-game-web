@@ -20,7 +20,7 @@ export const VIEWS = {
   square_above: { cam: [640, 34, -62], look: [600, 0, -12] },
   kiosks_eye: { cam: [606, 1.6, 34], look: [596, 2.0, 48] },
   smallshop_eye: { cam: [613, 1.6, -88.5], look: [621, 2.4, -77] },
-  orchard_eye: { cam: [641, 1.6, -142], look: [672, 3.5, -176] },
+  orchard_eye: { cam: [672, 1.6, -146], look: [684, 3.5, -200] },
   orchard_above: { cam: [622, 34, -122], look: [680, 0, -200] },
   orchard_east: { cam: [842, 1.6, -134], look: [866, 3, -165] },
   field_eye: { cam: [846, 1.6, 127], look: [872, 1.0, 152] },

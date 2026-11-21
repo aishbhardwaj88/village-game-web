@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { LAND_QUALITY } from './landQuality.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { cropTuftParts, buildCaneClumps, buildSarsonBloom, FIELD_CENTER, FIELD_SIZE } from '../field.js';
+import { cropTuftParts, buildCaneClumps, FIELD_CENTER, FIELD_SIZE } from '../field.js';
 import { labelKey, labelName, inRing, makeRoadIndex, hash01 } from './landLayout.js';
 
 /**
@@ -13,8 +13,8 @@ import { labelKey, labelName, inRing, makeRoadIndex, hash01 } from './landLayout
  * same shader with grass instead of rows. All of it is ONE mesh, ONE draw call.
  *
  * Real crop plants only near the roads, where the player actually walks: a band 1.5-14 m from a road edge gets wheat /
- * stubble tufts, sugarcane clumps or mustard in flower (the field kit's own instanced plants, src/field.js), packed each time
- * the camera moves 6 m so only plants within PLANT_M are ever drawn: 3 more draw calls.
+ * stubble or mustard tufts, or sugarcane clumps (the field kit's own instanced plants, src/field.js), packed each time
+ * the camera moves 6 m so only plants within PLANT_M are ever drawn: 2 more draw calls.
  */
 const PLANT_M = LAND_QUALITY.plantM;
 const D2R = Math.PI / 180;
@@ -207,7 +207,7 @@ export async function build(map, { camera = null } = {}) {
     // real plants only in the band beside a road
     if (key === 'new_field' && look.plant) {
       const xs = ring.map((p) => p[0]), zs = ring.map((p) => p[1]);
-      const step = look.plant === 'cane' ? 0.95 : look.plant === 'sarson' ? 0.55 : 0.75;
+      const step = look.plant === 'cane' ? 0.95 : look.plant === 'sarson' ? 0.6 : 0.75;
       const ca = Math.cos(angle), sa = Math.sin(angle);
       for (let x = Math.min(...xs); x < Math.max(...xs); x += step) {
         for (let z = Math.min(...zs); z < Math.max(...zs); z += step) {
@@ -235,7 +235,8 @@ export async function build(map, { camera = null } = {}) {
   group.add(ground);
 
   // tufts: wheat (green), young fodder (lush green), paddy stubble (short, straw) in one InstancedMesh
-  const tuftSpots = [...spots.wheat.map((s) => [...s, 'wheat']), ...spots.wheat_young.map((s) => [...s, 'young']), ...spots.stubble.map((s) => [...s, 'stubble'])];
+  // mustard joins the tufts: leafy blades with yellow flower spikes (the field kit's mustard cards read as lollipop trees at eye height)
+  const tuftSpots = [...spots.wheat.map((s) => [...s, 'wheat']), ...spots.wheat_young.map((s) => [...s, 'young']), ...spots.stubble.map((s) => [...s, 'stubble']), ...spots.sarson.map((s) => [...s, 'mustard'])];
   if (tuftSpots.length) {
     const { geometry, material } = cropTuftParts();
     const mesh = new THREE.InstancedMesh(geometry, material, tuftSpots.length);
@@ -247,24 +248,16 @@ export async function build(map, { camera = null } = {}) {
     tuftSpots.forEach(([x, z, k], i) => {
       const j = Math.sin(x * 12.9 + z * 7.1), sc = 0.6 + 0.65 * hash01(x * 2.7, z * 3.1);
       d.position.set(x, 0, z); d.rotation.set(0, j * 3, 0);
-      d.scale.set(sc, sc * (k === 'stubble' ? 0.25 : k === 'young' ? 0.6 : 0.7), sc);
+      d.scale.set(sc * (k === 'mustard' ? 1.5 : 1), sc * (k === 'stubble' ? 0.25 : k === 'young' ? 0.6 : k === 'mustard' ? 1.35 : 0.7), sc * (k === 'mustard' ? 1.5 : 1));
       d.updateMatrix();
       mesh.setMatrixAt(i, d.matrix);
-      if (k === 'stubble') c.setRGB(1.0, 0.88, 0.55); else c.setRGB(0.48 + 0.06 * j, 0.72, 0.38); // dusty field greens, never lime
+      if (k === 'stubble') c.setRGB(1.0, 0.88, 0.55); else if (k === 'mustard') c.setRGB(0.95 + 0.05 * j, 0.95, 0.42); else c.setRGB(0.48 + 0.06 * j, 0.72, 0.38); // dusty field greens, never lime
       mesh.setColorAt(i, c);
     });
     nearPack(mesh, tuftSpots.length);
     group.add(mesh);
   }
   if (spots.cane.length) { const m = buildCaneClumps(spots.cane); m.name = 's7_field_cane'; m.userData.noAutoCollider = true; nearPack(m, spots.cane.length); group.add(m); }
-  if (spots.sarson.length) {
-    const m = buildSarsonBloom(spots.sarson);
-    // the field kit's stems read near-black against the light at eye height: lift them to the green of a real mustard stalk
-    const col = m.geometry.attributes.color, n = col.count;
-    for (let i = n - 9; i < n; i++) col.setXYZ(i, 0.36, 0.46, 0.17);
-    col.needsUpdate = true;
-    m.name = 's7_field_sarson'; m.userData.noAutoCollider = true; nearPack(m, spots.sarson.length); group.add(m);
-  }
   for (const k in spots) report.plants[k] = spots[k].length;
   report.triangles = merged.index.count / 3;
   group.userData.report = report;

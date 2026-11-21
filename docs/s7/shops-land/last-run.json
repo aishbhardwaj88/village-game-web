@@ -1,0 +1,49 @@
+{
+ "results": {
+  "orchard_eye": {
+   "shops": {
+    "calls": 1,
+    "triangles": 1848
+   },
+   "trees": {
+    "calls": 3,
+    "triangles": 152044
+   },
+   "fields": {
+    "calls": 3,
+    "triangles": 18001
+   },
+   "canal": {
+    "calls": 3,
+    "triangles": 1520
+   },
+   "props": {
+    "calls": 4,
+    "triangles": 4856
+   }
+  },
+  "field_eye": {
+   "shops": {
+    "calls": 0,
+    "triangles": 0
+   },
+   "trees": {
+    "calls": 2,
+    "triangles": 8120
+   },
+   "fields": {
+    "calls": 3,
+    "triangles": 74157
+   },
+   "canal": {
+    "calls": 3,
+    "triangles": 1520
+   },
+   "props": {
+    "calls": 2,
+    "triangles": 12148
+   }
+  }
+ },
+ "errors": []
+}

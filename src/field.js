@@ -422,7 +422,7 @@ function sarsonBloomTexture() {
 /** Mustard in flower: a dense canopy of alpha-cut flower-head cards (racemes of yellow florets, see sarsonBloomTexture) over the sarson
  * plots (one InstancedMesh, 2 triangles per card) so the plot reads as a yellow carpet from a distance, not isolated sprigs. Stems below
  * are dark green. */
-export function buildSarsonBloom(spots) {
+function buildSarsonBloom(spots) {
   const pos = [], col = [], uv = [];
   const stem = new THREE.Color(0x4a6420);
   const push = (pts, cols, uvs) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); uvs.forEach((q) => uv.push(...q)); };
