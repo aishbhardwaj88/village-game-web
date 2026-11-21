@@ -31,8 +31,9 @@ import { FRONT_OFFSETS } from './frontOffsets.js';
 export const DEFAULT_LAYOUT = 'old';
 
 function readMode() {
-  const g = globalThis.__DOPAHAR_LAYOUT; // Node tools set this before importing the game's modules
-  if (g === 'new' || g === 'old') return g;
+  // Node tools set __DOPAHAR_LAYOUT before importing the game's modules; __dopaharLayout is the same override the perf branch's
+  // zoneManager.currentLayout() reads, so both answer alike
+  for (const g of [globalThis.__DOPAHAR_LAYOUT, globalThis.__dopaharLayout]) if (g === 'new' || g === 'old') return g;
   try {
     const q = new URLSearchParams((globalThis.location && globalThis.location.search) || '').get('layout');
     if (q === 'new' || q === 'old') return q;

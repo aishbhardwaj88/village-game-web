@@ -203,6 +203,7 @@ import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 import { applyQuality, loadSavedQuality, saveQuality, loadSavedVolume, saveVolume } from './quality.js';
 import { loadSavedGame, saveGame } from './save.js';
+import { initLayoutWiring } from './layout/layout-wiring-entry.js'; // S7 WIRING (layout): the approved map behind ?layout=new, docs/s7/layout.md
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
@@ -2075,6 +2076,7 @@ async function main() {
         };
       },
     });
+    initLayoutWiring({ zoneManager, scene, player }); // S7 WIRING (layout): no-op under ?layout=old
     setZoneManager(zoneManager);
     _lm.deferredEnd = performance.now();
   }

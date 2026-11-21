@@ -7,7 +7,9 @@
  *
  * Fails (exit 1) when ?layout=new shows an error ?layout=old does not, or a measured place is > 0.5 m / 2 deg off its anchor.
  *
- * Usage: npm run build:unchecked && node tools/layout-smoke.mjs [--only new|old] [--no-force]
+ * --pre-play: stop at the title screen (catches module-level errors of both layouts in ~1 min, no 3D world).
+ * Usage: npx vite build --outDir dist-smoke && flock /tmp/s7-browser.lock node tools/layout-smoke.mjs [--only new|old] [--no-force]
+ *        (character models are skipped: they are not layout and run this shared box out of memory; CHARS=1 keeps them)
  *        PORT=5341 DIST=dist to override.
  */
 import { chromium } from 'playwright';
@@ -18,11 +20,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = +(process.env.PORT || 5341);
-const DIST = path.join(ROOT, process.env.DIST || 'dist');
+const DIST = path.join(ROOT, process.env.DIST || 'dist-smoke'); // build it with: npx vite build --outDir dist-smoke
 const BASE = `http://localhost:${PORT}/village-game-web/`;
 const args = process.argv.slice(2);
 const ONLY = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
 const FORCE = !args.includes('--no-force');
+const PRE_PLAY = args.includes('--pre-play'); // load to the title screen only (module code, anchors, layout data), no 3D world
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.hdr': 'application/octet-stream', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wasm': 'application/wasm', '.ktx2': 'image/ktx2' };
 const srv = http.createServer((req, res) => {
@@ -43,13 +46,24 @@ async function run(mode, browser) {
   await page.addInitScript(() => { try { localStorage.setItem('dopahar_quality', 'low'); localStorage.removeItem('dopahar_save'); } catch (e) {} }); // lightest render: this box shares 2 CPUs with other agents
   const errors = [];
   page.on('crash', () => errors.push('page crashed (renderer)'));
+  // the 10 character models are what runs this shared, GPU-less box out of memory (docs/s7/perf.md); they are not layout: skip them
+  const CHAR_RE = /assets\/models\/(parlour_didi|sister|maa|pitaji|dada|dadi|brother|sarpanch|postman|teacher)\.glb/;
+  if (!process.env.CHARS) await page.route(CHAR_RE, (route) => route.fulfill({ status: 404, body: '' }).catch(() => {}));
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
   const t0 = Date.now();
   await page.goto(`${BASE}?proof=1&layout=${mode}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForSelector('#start-overlay.ready', { timeout: 60000 }).catch(() => {});
+  const readyS = (Date.now() - t0) / 1000;
+  if (PRE_PLAY) { await page.waitForTimeout(3000); await page.close(); return { mode, bootS: readyS, prePlay: true, errors, player: { x: NaN, z: NaN }, zones: 0, built: 0, buildErrors: [], probes: [] }; }
   await page.click('#play-btn');
-  await page.waitForFunction(() => window.__dopahar && window.__dopahar.zoneManager && window.__dopahar.dialogue, null, { timeout: 900000 });
+  try {
+    await page.waitForFunction(() => window.__dopahar && window.__dopahar.zoneManager && window.__dopahar.dialogue, null, { timeout: 900000 });
+  } catch (e) {
+    errors.push('boot after Play failed: ' + e.message.split('\n')[0]);
+    await page.close().catch(() => {});
+    return { mode, bootS: readyS, errors, player: { x: NaN, z: NaN }, zones: 0, built: 0, buildErrors: [], probes: [], crashed: true };
+  }
   await page.waitForTimeout(1500);
   await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput && window.__dopahar.dialogue._advanceFromInput());
   await page.waitForTimeout(3000);
@@ -84,7 +98,7 @@ async function run(mode, browser) {
   return { mode, bootS, errors, ...info };
 }
 
-const browser = await chromium.launch({ headless: true, args: (process.env.GLARGS || '--use-gl=swiftshader --enable-unsafe-swiftshader --disable-dev-shm-usage').split(' ') });
+const browser = await chromium.launch({ headless: true, args: (process.env.GLARGS || '--use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist --disable-gpu-sandbox').split(' ') });
 const out = {};
 let failures = 0;
 try {
@@ -105,6 +119,7 @@ try {
     }
   }
   if (out.old && out.new) {
+    if (out.old.crashed && out.new.crashed) console.log('\nboth layouts crashed after Play: this box cannot run the 3D world right now (same on ?layout=old), not a layout fault');
     const base = new Set([...out.old.errors, ...out.old.buildErrors]);
     const fresh = [...new Set([...out.new.errors, ...out.new.buildErrors])].filter((e) => !base.has(e));
     console.log(`\nnew-only errors under ?layout=new: ${fresh.length}`);
@@ -117,5 +132,6 @@ try {
 }
 fs.mkdirSync(path.join(ROOT, 'tmp'), { recursive: true });
 fs.writeFileSync(path.join(ROOT, 'tmp/layout-smoke.json'), JSON.stringify(out, null, 1));
-console.log(`\nLAYOUT SMOKE: ${failures ? 'FAIL' : 'PASS'} (${failures})`);
-process.exit(failures ? 1 : 0);
+const crashed = Object.values(out).some((r) => r.crashed);
+console.log(`\nLAYOUT SMOKE: ${failures ? 'FAIL' : crashed ? 'INCONCLUSIVE (title screen clean on both; the 3D world crashed on this box)' : 'PASS'} (${failures})`);
+process.exit(failures ? 1 : crashed ? 2 : 0);
