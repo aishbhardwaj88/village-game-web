@@ -21,7 +21,7 @@ export const CLUTTER = {
     g.box(L / 2 - t, L / 2, 0.05, B, -0.03, 0.03, lw);
     // legs stick out toward +z: build as bars
     for (const x of [-L / 2 + 0.03, L / 2 - 0.03]) for (const y of [0.08, B - 0.03]) g.bar([x, y, 0.03], [x, y, 0.38], 0.06, lw);
-    const tape = { cell: CELL.wood, col: [0.95, 0.9, 0.8] }; // cotton nawar, greyed with use
+    const tape = { cell: CELL.plaster, col: [0.7, 0.66, 0.58] }; // cotton nawar, greyed with use
     for (let x = -L / 2 + 0.12; x < L / 2 - 0.08; x += 0.075) g.box(x - 0.014, x + 0.014, 0.1, B - 0.05, -0.012, 0.004 + (Math.round(x * 14) % 2) * 0.006, tape);
     for (let y = 0.14; y < B - 0.06; y += 0.075) g.box(-L / 2 + 0.07, L / 2 - 0.07, y - 0.014, y + 0.014, -0.006, 0.01 - (Math.round(y * 14) % 2) * 0.006, tape);
   },

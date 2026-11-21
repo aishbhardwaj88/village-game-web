@@ -1,0 +1,76 @@
+# Houses (S7 sprint, houses agent)
+
+Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind `?layout=new`; `?layout=old` (and no flag) is unchanged.
+
+## What was built
+
+**A house kit of 8 designs**, all real geometry (parapets, chajjas, steps, sills, grilles, door panels, stairs, rafters, tiles are shapes, not paint):
+
+| | Design | What makes it |
+|---|---|---|
+| A | Single storey, limewashed | door and windows under thin concrete chajjas, otla with two steps, stepped parapet, black tank on a steel stand, meter box and wire |
+| B | Two storeys, stacked | first-floor slab runs out as a balcony with a steel railing, stair room (mumty) on the roof with the black tank on top |
+| C | Exposed brick | old lime whitewash in big ragged patches over the brick, rusted tin-sheet verandah on two steel posts, brick otla |
+| D | Two storeys, upper in bare brick | plastered ground floor, upper floor added later in brick, bare concrete lintels, column stubs with rusted rebar, tin shed on the roof |
+| E | Outside stair | concrete stair along the front up to the roof with a plastered side wall, honeycomb (jali) brick parapet |
+| F | Walled angan | front courtyard behind a plastered boundary wall with pillars and a painted steel gate |
+| G | Mud house, tile roof | mud plaster on a brick plinth, country-tile roof (each course a real lapped row of half-round tiles), rafters under the eave, plank door, niche |
+| H | Mud house, flat roof | mud walls, beam ends (kadi) out of the front wall, low rounded mud parapet, wooden ladder to the roof |
+
+- Storeys are **stacked** (each storey is its own band with its own openings and slab edge), never stretched.
+- **One texture atlas, 0 MB added**: it is put together in the browser from the approved texture sets the game already ships (brick, plaster, concrete, wood, rusted steel, terracotta, dry earth). Wall colours come from a palette per house: off-white, pale yellow, pale blue, pink, faded green, cream, bare cement, peach. Door and window paint is picked per house (green, blue, brown, maroon, grey, ochre...).
+- Wear is drawn in world space, so no two walls match: faded patches, damp stains, rain streaks under the parapet, dust splash at the bottom, darker bottom metre, per-brick tone, whitewash patches.
+- **Front clutter only on fronts**: charpai stood against the wall, gas cylinder, black bicycle, tulsi chaura (planter), clay matkas on a stand, steel bucket and patla. 1 to 3 per house, never in front of the door.
+- Kachcha (mud) houses go on the outer edge: a 'Mud house' footprint whose back looks onto open ground is mud about half the time (elsewhere 6%).
+- Neighbours never share both design and colour; doors swap sides (mirror) per house.
+
+## The new-map houses (?layout=new)
+
+- **492 footprints** from the approved map (`new_house` objects). Front = the side that walks straight out onto a road or gali before meeting another house; a corner house faces the same way as its row. Each house is then turned parallel to that road (62 turned, a few made up to 20% smaller to fit) and trimmed off any road it touched.
+- Built on the ground height of the game (flat 0 except pond/johad/canal dips): nothing floats or sinks.
+- **Drawn as ONE batch** (a three.js BatchedMesh): every house, far box and clutter piece is one instance; the batch skips each instance that is off screen (and off the shadow box). Near detail within 55 m, a simple box with the same atlas beyond, nothing past 420 m; clutter within 40 m.
+- **Colliders**: simple boxes per house (a turned house is sliced into a few boxes so the corners are right), added the way the game does it (`userData.colliderBoxes`), rebuilt once when the houses stand.
+- Old houses removed under `?layout=new` only: the abadi rows (scenery.js) with their collider shells, garden plants, doorstep props, roof fittings and chulha smoke, and the kit gap houses (villageHouses.js).
+
+## Checks (node src/kit/housesCheck.js)
+
+| Check | Result |
+|---|---|
+| houses | 492 |
+| on a road | **0** |
+| overlapping another house | **0** |
+| overlapping another map object | **0** |
+| a map place inside a house | **0** |
+| front not parallel to its road (> 3 deg) | **2**: #76 (19 deg) and #84 (27 deg) on the bending tractor route; turning them would hit their neighbours. Drawn that way on the map. |
+| no road in front | **3**: #305 (501, -17), #472 and #473 (684, -63 / -58): enclosed plots; they face the nearest road. |
+
+## Numbers
+
+(filled in from the headless runs; see the end of this file)
+
+## Screenshots
+
+- `docs/s7/houses/design_A.png` ... `design_H.png`: each design alone, game lighting (sky, sun, HDRI, fog, colour grade), sun shadows off as in the game.
+- `docs/s7/houses/gali_eye.png`: two facing rows across a 4 m gali, from eye height (1.6 m).
+- `docs/s7/houses/gali_above.png`: the same gali and the back-to-back rows behind, from above.
+- `docs/s7/houses/gali_eye_shadows.png`: eye height with sun shadows on (`?shadows=follow` in the game).
+- Remake them: `flock /tmp/s7-browser.lock node docs/s7/houses/shoot.mjs` (page: `docs/s7/houses/preview.html`).
+
+## Files
+
+- `src/kit/housesKit.js` the 8 designs; `src/kit/housesGeom.js` geometry builder; `src/kit/housesClutter.js` front clutter
+- `src/kit/housesMaterial.js` the atlas and the one shared material
+- `src/kit/houses.js` designs per house, the batch, LOD, colliders, game entry `initNewMapHouses`
+- `src/kit/housesPlan.js` fronts and road alignment; `src/kit/housesPlanData.json` the result (26 KB, made by `node src/kit/housesCheck.js --write-plan`)
+- `src/kit/housesLayout.js` map adapter (`isNewLayout`, map reader); `src/kit/housesInstancing.js` the batch helper
+- `src/kit/instancing.js` copied unchanged from s7-perf (not used by the houses: one batch is fewer draw calls than per-chunk instancing for 8 designs x 6 sizes)
+
+## Wiring needed
+
+1. **main.js** (done in my branch, marked `// S7 WIRING (houses)`): one import line and one call `initNewMapHouses(scene)` right after `createVillageHouses(scene)`. It does nothing unless `?layout=new`.
+2. **Layout agent**: when `src/layout/layout.js` lands, the house plan can be re-made from it: `node src/kit/housesCheck.js --write-plan` reads the approved map; if the layout agent moves or edits house footprints, re-run it and commit `housesPlanData.json`. `isNewLayout()` in `src/kit/housesLayout.js` can then call the layout module's.
+3. **Milk round** (`src/jobs/milk.js`) still uses the old abadi doorsteps (`abadiDoorstep`), which stand in empty ground under `?layout=new`. New doorsteps: `NEW_HOUSES[i].door` (x, z) from `src/kit/houses.js`.
+4. **Roof monkeys** (`src/roofMonkeys.js`) read `ROOF_TANK_TOPS` from villageHouses.js (empty under `?layout=new`); the new tanks are `NEW_HOUSE_TANK_TOPS` in `src/kit/houses.js` (same fields).
+5. **Camera**: the new houses are not in `cameraObstacles` (raycasting the batch every frame is costly). If the camera clips into walls in galis, push `window.__newHouses.group` into `cameraObstacles` or give the camera the collider boxes.
+6. **Tulsi plant** on the chaura: the game has no real tulsi model (vegetation.js draws none), so the chaura shows bare soil. If a real model arrives, chaura tops are clutter items of kind `tulsi` (house-local, see `clutterFor`).
+7. The 'Mud house' label is on 400 of the 492 footprints (all the new mohallas), not just the outer edge; I treated it as "may be mud" and kept mud to backs-on-open-ground. Decision for Aishwarya if she wants more or fewer mud houses.
