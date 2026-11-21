@@ -146,3 +146,15 @@ see the same shapes. **Check result: on a road 8 -> 0**; overlaps with houses 0,
 - Pictures: `pond_cattle_top.jpg`, `pond_cattle_eye.jpg`, `pond_buffalo_top.jpg`, `play_patch_top.jpg`, `milestone_eye.jpg`.
 - Question for her (look): the cattle pond now has soft bays where its four lanes arrive. Keep, or should the lanes stop
   short of the pond instead (that would move roads, so it is the layout agent's job)?
+
+## Final game boot (headless, 21 Nov)
+- `?layout=new`: builds clean; shopkeeper homes 1, shop-houses 44, trees 599 (12 shade), map-object colliders 521 (was 550:
+  the squeezed ponds lost 29 water cells); only the 11 model-slot 404s, 0 other console errors.
+- `?layout=old`: the last re-run timed out on this shared machine (browser run killed at 5 min); the earlier old boots
+  in this branch (items 3 and 5) showed the same 11 / 20 slot probes and 0 other errors. Old code paths are unchanged.
+
+## Wiring left (integrator)
+1. Canal water sound under new: `distanceToCanalWater` in main.js should measure from x 824, z -340..350 (shops-land item 4).
+2. Optional: a models list written at build time so the slot probes stop asking for missing files (both layouts).
+3. Pot LOD switch distance: 25 m as asked; 12 m would bring the in-yard view from 73k to 32k triangles.
+No main.js edits were made by this branch.

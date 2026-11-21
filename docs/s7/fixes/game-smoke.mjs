@@ -55,7 +55,13 @@ try {
     await page.waitForTimeout(1500);
     const nb = await page.evaluate(() => { const c = document.getElementById('notebook-canvas'); return c && c.width ? c.toDataURL('image/jpeg', 0.85) : null; });
     if (nb) fs.writeFileSync(path.join(OUT, `notebook-${layout}${TAG}.jpg`), Buffer.from(nb.split(',')[1], 'base64'));
-    result = { minimap: !!mm, notebook: !!nb, at };
+    const kits = await page.evaluate(() => {
+      const sc = window.__dopahar?.scene; if (!sc) return null;
+      const shops = sc.getObjectByName('s7_shops')?.userData.report, trees = sc.getObjectByName('s7_trees')?.userData.report;
+      const mo = sc.getObjectByName('s7_mapobjects')?.userData.report;
+      return { shopkeeperHomes: shops?.shopkeeperHomes ?? null, shopHouses: shops?.shopHouses ?? null, trees: trees?.trees ?? null, shadeTrees: trees?.shadeTrees ?? null, mapObjectColliders: mo?.colliders ?? null, calls: window.__dopahar.renderer.info.render.calls, triangles: window.__dopahar.renderer.info.render.triangles };
+    });
+    result = { minimap: !!mm, notebook: !!nb, at, kits };
   }
   await page.close();
 } catch (e) { result.crashed = String(e).slice(0, 300); }
