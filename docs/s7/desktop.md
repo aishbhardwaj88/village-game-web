@@ -91,6 +91,7 @@ xattr -cr ~/Downloads/Dopahar.app && codesign --force --deep -s - ~/Downloads/Do
 | Saves kept after closing and reopening | yes (value written in run 1 read back in run 2) |
 | Console errors | 0 (run 1), 0 (run 2) |
 
+- Third run (rebuilt app, 8 s of play, 0 errors, 127 draw calls) saved a picture of the game running inside the app: desktop/smoke/shot/run3.png (village street, Kirana store board, minimap, the Hindi line drawn with the computer's own Devanagari font).
 - Not errors, noted: 10 "file not found" answers for optional model slots (tractor, trolley, cart, bullock, bike, player, halwai, monkey, charpai, hand_pump). The game asks whether a real model exists and keeps its placeholder when not; same on the web. The Google font request was blocked (Wiring 6).
 - Could not be tested here: real GPU speed, pixel ratio 2 (the test screen is 1x), F11 / Cmd+Ctrl+F fullscreen and link opening (need a person at a real screen). First thing to try on the MacBook.
 - `npm run build:unchecked` passes (budget report unchanged from the perf baseline: same 11 known breaches, none new).
