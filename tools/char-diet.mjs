@@ -11,7 +11,7 @@
  * What it keeps, always: the skin and every joint, every morph target (blink, smile), every animation clip,
  * every mesh (eye patches, lids, glasses), every material. Skinned geometry is never simplified.
  * What it changes: textures -> WebP, resized (1024, heroes 2048; textures already smaller keep their size),
- * duplicate animation time tracks shared, redundant animation keys dropped (lossless tolerance), geometry
+ * duplicate animation time tracks shared, animation rotations stored as 16-bit (meshopt filter), geometry
  * quantized (KHR_mesh_quantization) and meshopt-compressed (EXT_meshopt_compression).
  * Every slim file is re-opened and checked against its original (joints, morph names, clip names + channel counts,
  * meshes, materials). If anything is missing, the ORIGINAL is shipped instead and the run prints a warning.
@@ -31,7 +31,7 @@
  */
 import { NodeIO, PropertyType, Logger } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
-import { dedup, resample, reorder, quantize, textureCompress } from '@gltf-transform/functions';
+import { dedup, reorder, quantize, textureCompress } from '@gltf-transform/functions';
 import { MeshoptEncoder, MeshoptDecoder } from 'meshoptimizer';
 import sharp from 'sharp';
 import { createHash } from 'node:crypto';
@@ -46,7 +46,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const HEROES = new Set(['brother', 'dada', 'dadi', 'maa', 'pitaji', 'postman', 'sarpanch', 'teacher']);
 const BUDGET = { hero: 2.5 * 1024 * 1024, other: 1.5 * 1024 * 1024 };
 // Bump when the recipe below changes, so cached slim files are rebuilt.
-const RECIPE = 'char-diet-v1:webp88:q-scene:pos14:nrm8oct:uv12:resample1e-4';
+const RECIPE = 'char-diet-v2:webp88:q-scene:pos14:nrm8oct:uv12';
 const WEBP_QUALITY = 88;
 
 function args() {
@@ -98,8 +98,8 @@ async function slim(io, input, size) {
   const doc = await io.readBinary(new Uint8Array(input));
   const before = fingerprint(doc);
   await doc.transform(
-    // animation: drop keys that a straight line between neighbours already gives (tolerance 1e-4, invisible)
-    resample({ tolerance: 1e-4 }),
+    // animation: NO resample. Dropping "redundant" keys (tolerance 1e-4) moved finger tips and head tops 2-5 mm and made
+    // the file no smaller (every clip then needs its own time track instead of one shared one). Measured 21 Nov.
     // share identical accessors (each clip repeats the same time track for every bone)
     dedup({ propertyTypes: [PropertyType.ACCESSOR], keepUniqueNames: true }),
     // skin: WebP, never bigger than `size`; small textures (eye patches, lid atlas) keep their own size
