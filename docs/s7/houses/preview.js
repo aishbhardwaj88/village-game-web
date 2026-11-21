@@ -6,12 +6,12 @@
 import * as THREE from 'three';
 import { createRenderer } from '../../../src/renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog } from '../../../src/scene.js';
-import { createSky } from '../../../src/sky.js';
+import { createSky, updateSky } from '../../../src/sky.js';
 import { createComposer } from '../../../src/postfx.js';
 import { getActiveAtmosphere } from '../../../src/atmosphere.js';
 import { buildStripSegment } from '../../../src/paths.js';
 import { houseMaterialReady } from '../../../src/kit/housesMaterial.js';
-import { buildHouseBatch, WASHES } from '../../../src/kit/houses.js';
+import { buildHouseBatch, WASHES, assignHouses, loadPlannedHouses, prebuildGeometries } from '../../../src/kit/houses.js';
 import { DESIGN_INFO } from '../../../src/kit/housesKit.js';
 
 const qs = new URLSearchParams(location.search);
@@ -35,7 +35,8 @@ scene.add(new THREE.HemisphereLight(0x6f96c2, 0x8a6a45, 0.9));
 const bounce = new THREE.DirectionalLight(0xffe2b8, 0.55);
 bounce.position.set(-20, 14, -60);
 scene.add(bounce);
-scene.add(createSky(sun.position, atmosphere));
+const sky = createSky(sun.position, atmosphere);
+scene.add(sky);
 applyFog(scene, atmosphere);
 const composer = createComposer(renderer, scene, camera, { enableBloom: true, enableGrain: true });
 
@@ -72,9 +73,27 @@ if (mode === 'design') {
   look = qs.get('view') === 'above' ? { pos: [-26, 30, 34], target: [2, 0, -2] } : { pos: [-20, 1.6, 0.6], target: [12, 2.3, -0.4] };
 }
 
-const built = buildHouseBatch(entries, { withFar: mode === 'gali', clutterDist: 60, nearDist: qs.get('view') === 'above' ? 200 : 45 });
+let built;
+const VIEWS = {
+  gali_eye: { pos: [438, 1.6, -79.2], target: [478, 2.6, -79.8] },
+  gali_above: { pos: [430, 45, -20], target: [470, 0, -62] },
+  east_block: { pos: [705, 1.7, -24.5], target: [745, 2.6, -28.3] },
+  overview: { pos: [600, 160, 260], target: [610, 0, 0] },
+};
+if (mode === 'village') {
+  // the real 492 houses of the approved map, as the game builds them (plan, designs, LOD, clutter)
+  const { plan } = await loadPlannedHouses();
+  const all = assignHouses(plan);
+  const cache = await prebuildGeometries(all);
+  built = buildHouseBatch(all, { cache });
+  look = VIEWS[qs.get('view') || 'gali_eye'];
+  scene.remove(ground); // the game's ground is 1.8 km wide and centred on the origin; a plain one under the village instead
+  const g2 = createGround({ grassTint: 0x7b8a4a, grassCoverage: 0.7 }); g2.position.set(600, 0, 0); scene.add(g2);
+  for (const z of [-62.5, -79.5, -45.5]) scene.add(buildStripSegment(new THREE.Vector3(430, 0, z), new THREE.Vector3(520, 0, z), 4, { seed: 7, tint: 0xb9a37c }));
+} else built = buildHouseBatch(entries, { withFar: mode === 'gali', clutterDist: 60, nearDist: qs.get('view') === 'above' ? 200 : 45 });
 scene.add(built.group);
 camera.position.set(...look.pos);
+updateSky(sky, 0, camera); // the dome follows the camera, as in the game
 camera.lookAt(new THREE.Vector3(...look.target));
 built.update(camera.position.x, camera.position.z, true);
 if (shadows) { sun.position.add(new THREE.Vector3(...look.target)); sun.target.position.set(...look.target); }
@@ -87,7 +106,11 @@ Promise.all([houseMaterialReady(), loadEnvironment(renderer, scene, 'assets/hdri
       renderer.info.autoReset = false;
       renderer.info.reset();
       renderer.render(scene, camera);
-      window.__houseStats = { ...built.stats, calls: renderer.info.render.calls, triangles: renderer.info.render.triangles };
+      const withH = { calls: renderer.info.render.calls, triangles: renderer.info.render.triangles };
+      built.group.visible = false; renderer.info.reset(); renderer.render(scene, camera);
+      const without = { calls: renderer.info.render.calls, triangles: renderer.info.render.triangles };
+      built.group.visible = true;
+      window.__houseStats = { ...built.stats, calls: withH.calls, triangles: withH.triangles, houseCalls: withH.calls - without.calls, houseTriangles: withH.triangles - without.triangles, colliders: built.colliderBoxes.length, multiDraw: !!renderer.extensions.get('WEBGL_multi_draw') };
       composer.render();
       window.__ready = true;
     }

@@ -662,14 +662,27 @@ export function buildFar(design, w, d, mirror = false) {
   const s = mirror ? -1 : 1;
   const dx = design === 'E' ? -s * (w / 2 - 1.05) : design === 'G' ? -s * (w / 2 - 1.2) : design === 'H' ? s * (w / 2 - 1.4) : s * (w < 7.2 ? -w / 2 + 1.35 : -0.35);
   g.quad([dx - 0.5, k ? 0.4 : PL, zf + 0.01], [dx + 0.5, k ? 0.4 : PL, zf + 0.01], [dx + 0.5, 2.5, zf + 0.01], [dx - 0.5, 2.5, zf + 0.01], { cell: CELL.wood, paint: k ? 0 : 2, col: [0.5, 0.45, 0.4] });
+  for (const wx of (w < 7.2 ? [-dx] : [-dx - 2.2 * s, -dx + 2.2 * s])) { // window shapes: a dark opening under a grey sill
+    if (Math.abs(wx) > w / 2 - 0.6) continue;
+    g.quad([wx - 0.55, 1.35, zf + 0.01], [wx + 0.55, 1.35, zf + 0.01], [wx + 0.55, 2.5, zf + 0.01], [wx - 0.55, 2.5, zf + 0.01], { cell: CELL.concrete, col: C_DARK });
+    g.box(wx - 0.62, wx + 0.62, 1.29, 1.35, zf, zf + 0.06, { cell: CELL.concrete, col: C_CONC, skip: 'nz ny' });
+  }
+  if (storeys > 1) for (const wx of [-dx, w / 2 - 1.55]) if (Math.abs(wx) < w / 2 - 0.5) g.quad([wx - 0.55, PL + H + 0.9, zf + 0.01], [wx + 0.55, PL + H + 0.9, zf + 0.01], [wx + 0.55, PL + H + 2.1, zf + 0.01], [wx - 0.55, PL + H + 2.1, zf + 0.01], { cell: CELL.concrete, col: C_DARK });
   if (k && design === 'G') {
     const zr = (-d / 2 + zf) / 2;
     g.quad([-w / 2 - 0.25, 2.5, zf + 1.0], [w / 2 + 0.25, 2.5, zf + 1.0], [w / 2 + 0.25, 3.8, zr], [-w / 2 - 0.25, 3.8, zr], { cell: CELL.terracotta, col: [0.9, 0.86, 0.82] });
     g.quad([w / 2 + 0.25, 2.6, -d / 2 - 0.3], [-w / 2 - 0.25, 2.6, -d / 2 - 0.3], [-w / 2 - 0.25, 3.8, zr], [w / 2 + 0.25, 3.8, zr], { cell: CELL.terracotta, col: [0.9, 0.86, 0.82] });
     for (const sx of [-1, 1]) { const x = sx * w / 2; const tri = sx > 0 ? [[x, 2.75, zf], [x, 2.75, -d / 2], [x, 3.75, zr]] : [[x, 2.75, -d / 2], [x, 2.75, zf], [x, 3.75, zr]]; g.quad(tri[0], tri[1], tri[2], tri[2], wall); }
   } else {
-    // the parapet as a solid rim block (the roof inside it is never seen from the ground at far range), coping on top
-    g.box(-w / 2, w / 2, yr - 0.01, yr + (k ? 0.45 : PAR), -d / 2, zf, { ...wall, skip: 'ny', colTop: C_CONC });
+    // the parapet as a solid rim block (the roof inside it is never seen from the ground at far range): walls in the wall
+    // finish, a concrete roof face, a dark coping line, the black tank for the skyline
+    const yt = yr + (k ? 0.45 : PAR);
+    g.box(-w / 2, w / 2, yr - 0.01, yt, -d / 2, zf, { ...wall, skip: 'ny py' });
+    g.box(-w / 2 - 0.03, w / 2 + 0.03, yt, yt + 0.06, -d / 2 - 0.03, zf + 0.03, { cell: k ? CELL.mud : CELL.concrete, col: k ? C_MUD : C_CONC_D, skip: 'ny' });
+    if (!k) {
+      const tx = (w / 2 - 1.0), tz = -d / 2 + 1.0;
+      g.lathe(tx, tz, [[0.56, yt], [0.56, yt + 1.0], [0.24, yt + 1.12], [0, yt + 1.14]], 6, { cell: CELL.concrete, col: C_BLACK });
+    }
     g.box(-w / 2, w / 2, yr - 0.16, yr, zf, zf + 0.04, { cell: CELL.concrete, col: C_CONC, skip: 'nz' });
   }
   // front strip: a low slab (otla) so the far house keeps its step line

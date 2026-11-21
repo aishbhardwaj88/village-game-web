@@ -10,6 +10,10 @@ const SHOTS = [
   ['gali_eye', 'mode=gali&view=eye'],
   ['gali_above', 'mode=gali&view=above'],
   ['gali_eye_shadows', 'mode=gali&view=eye&shadows=1'],
+  ['village_gali_eye', 'mode=village&view=gali_eye'],
+  ['village_gali_above', 'mode=village&view=gali_above'],
+  ['village_east_block', 'mode=village&view=east_block'],
+  ['village_overview', 'mode=village&view=overview'],
 ];
 const only = process.argv.slice(2);
 let server = null;
