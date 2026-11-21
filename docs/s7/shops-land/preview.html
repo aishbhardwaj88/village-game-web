@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <base href="/village-game-web/" />
+    <title>shops-land preview</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+      canvas { width: 100%; height: 100%; display: block; }
+      /* local copy of the game's Devanagari webfont for headless shots (the game loads it from Google Fonts) */
+      @font-face { font-family: 'Noto Sans Devanagari'; font-weight: 700; src: url('tmp/fonts/package/files/noto-sans-devanagari-devanagari-700-normal.woff2') format('woff2'); }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <script type="module" src="/src/kit/landPreview.js"></script>
+  </body>
+</html>

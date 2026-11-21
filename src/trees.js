@@ -141,7 +141,8 @@ function rotateToward(dir, r, spread, upBias) {
   return out.normalize();
 }
 
-function buildSpeciesTree(spec, seed, name) {
+/** The geometry of one tree of `spec` (trunk + branches, leaf cards); shared by the placed trees below and the s7 kit. */
+function speciesGeometry(spec, seed) {
   const rand = mulberry32(seed);
   const H = spec.height * (0.93 + 0.14 * rand());
   const bark = { pos: [], nor: [], col: [] };
@@ -271,6 +272,11 @@ function buildSpeciesTree(spec, seed, name) {
   leafGeo.setAttribute('normal', new THREE.Float32BufferAttribute(NR, 3));
   leafGeo.setIndex(I);
 
+  return { trunkGeo, leafGeo, I };
+}
+
+function buildSpeciesTree(spec, seed, name) {
+  const { trunkGeo, leafGeo, I } = speciesGeometry(spec, seed);
   const group = new THREE.Group();
   group.name = name;
   const trunk = new THREE.Mesh(trunkGeo, TREE_MATERIAL);
@@ -375,7 +381,29 @@ const SPECS = {
     crownY: 0.78, crownFlat: 1.4, primary: 8, branchFrom: 0.55, branchTo: 1.0, spread: 32 * D, branchLen: 2.0, branchR: 0.4, secondary: 2, depth: 1,
     fork: 30 * D, droop: 0.9, upBias: 0.15, cards: 8, clusterR: 0.6, cardSize: 1.5, tint: [0.9, 0.98, 0.9], hang: true, leaderCluster: true,
   },
+  // s7 (?layout=new): shisham - taller, open, airy crown of small round leaflets (neem cell, paler yellow-green)
+  shisham: {
+    species: 'neem', height: 6.2, trunkFrac: 0.5, trunkR: 0.22, topTaper: 0.5, lean: 0.45, bark: BARK_COLOR_LIGHT, barkBranch: BARK_COLOR_LIGHT,
+    crownY: 0.74, crownFlat: 0.9, primary: 5, branchFrom: 0.55, branchTo: 1.0, spread: 48 * D, branchLen: 2.4, branchR: 0.45, secondary: 2, depth: 1,
+    fork: 34 * D, droop: 0.7, upBias: 0.06, cards: 12, clusterR: 0.95, cardSize: 1.3, tint: [0.95, 1.02, 0.74], leaderCluster: true,
+  },
+  // s7: guava - short, low-branching, spreading, pale bark, lighter broad leaves (mango cell, lighter tint)
+  guava: {
+    species: 'mango', height: 3.4, trunkFrac: 0.3, trunkR: 0.14, topTaper: 0.6, lean: 0.5, bark: 0x6a5a4a, barkBranch: 0x7a6a58,
+    crownY: 0.66, crownFlat: 0.75, primary: 5, branchFrom: 0.4, branchTo: 1.0, spread: 60 * D, branchLen: 1.8, branchR: 0.55, secondary: 3, depth: 1,
+    fork: 40 * D, droop: 0.4, upBias: 0.06, cards: 12, clusterR: 0.7, cardSize: 1.0, tint: [0.92, 1.02, 0.8], leaderCluster: true,
+  },
 };
+
+/** s7 kit hook: raw geometry of one tree (trunk: position/normal/color; leaves: indexed position/uv/color/normal), the leaf
+ * card index list, and the shared materials, so the kit can instance trees in BatchedMeshes instead of one mesh each. */
+export function treeParts(kind, seed = 0) {
+  const spec = SPECS[kind];
+  if (!spec) throw new Error(`unknown tree ${kind}`);
+  const { trunkGeo, leafGeo, I } = speciesGeometry(spec, seed);
+  return { trunkGeo, leafGeo, cardIndex: I, spec, impostor: spec.species };
+}
+export const treeMaterials = () => ({ trunk: TREE_MATERIAL, leaves: leafMaterial() });
 
 export const buildNeemTree = (seed = 0) => buildSpeciesTree(SPECS.neem, seed, 'tree_neem');
 export const buildPeepalTree = (seed = 1) => buildSpeciesTree(SPECS.peepal, seed, 'tree_peepal');

@@ -1,0 +1,49 @@
+{
+ "results": {
+  "smallshop_eye": {
+   "shops": {
+    "calls": 6,
+    "triangles": 40088
+   },
+   "trees": {
+    "calls": 1,
+    "triangles": 600
+   },
+   "fields": {
+    "calls": 2,
+    "triangles": 15627
+   },
+   "canal": {
+    "calls": 3,
+    "triangles": 1520
+   },
+   "props": {
+    "calls": 11,
+    "triangles": 27306
+   }
+  },
+  "kiosks_eye": {
+   "shops": {
+    "calls": 6,
+    "triangles": 27956
+   },
+   "trees": {
+    "calls": 3,
+    "triangles": 36282
+   },
+   "fields": {
+    "calls": 1,
+    "triangles": 13417
+   },
+   "canal": {
+    "calls": 3,
+    "triangles": 1520
+   },
+   "props": {
+    "calls": 9,
+    "triangles": 22302
+   }
+  }
+ },
+ "errors": []
+}
