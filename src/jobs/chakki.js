@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 import { part, mergeProp } from './props.js';
 import { pt, localPt, ANCHORS } from '../anchors.js';
 
@@ -8,7 +9,8 @@ import { pt, localPt, ANCHORS } from '../anchors.js';
  */
 const _d = localPt('chakki', 0, 3.2); // 1 Nov map move: the map-placed v2 chakki yard; the door is on its front
 const CHAKKI_DOOR = new THREE.Vector3(_d.x, 0, _d.z);
-const DADI = new THREE.Vector3(-43.3, 0, 41.8);
+const _dadi = spot('dadi', { x: -43.3, z: 41.8 }); // S7 (missions): Dadi at the house gate under ?layout=new
+const DADI = new THREE.Vector3(_dadi.x, 0, _dadi.z);
 
 function sackOnCart(colour) {
   const parts = [

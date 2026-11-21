@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
+import { getRoads } from '../layout/layout.js';
+import { roadUnder } from '../layout/layoutCore.js';
 import { buildMilkCans } from './props.js';
 import { abadiDoorstep } from '../scenery.js';
 import { halwaiXZ, HALWAI_CENTER } from '../village.js';
@@ -22,22 +25,32 @@ const STOP_ROWS = [
 ];
 const TIME_LIMIT = 220; // seconds
 
+/** Where the doodhwala stands. S7 (missions): under ?layout=new the old spot (6.5 m in front of the halwai's counter) is inside
+ * a kiosk on the approved map, so he stands on the nearest open ground (src/missionsLayout.js); ?layout=old unchanged. */
+const doodhAt = () => spot('doodh', halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 6.5));
+// Under ?layout=new the old abadi rows are gone: the five stops are the new-map houses nearest the doodh counter,
+// picked when a round starts (the houses build after Play). Each stop stands just outside its door, facing out.
+function newMapStops(DOODH = doodhAt()) {
+  if (!NEW_HOUSES.length) return null;
+  const near = [...NEW_HOUSES].sort((a, b) => Math.hypot(a.door.x - DOODH.x, a.door.z - DOODH.z) - Math.hypot(b.door.x - DOODH.x, b.door.z - DOODH.z));
+  const picked = [];
+  // S7 (missions): a house whose door opens straight onto a lane or road (no doorstep to stand on) is not a stop
+  const onLane = (h) => { const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1; const r = roadUnder(getRoads(), h.door.x + ox / l * 0.25, h.door.z + oz / l * 0.25, 0); return !!r && r.r.kind !== 'back' && r.r.kind !== 'track'; };
+  for (const h of near) { if (onLane(h)) continue; if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
+  if (picked.length < STOP_ROWS.length) return null;
+  return picked.map((h, i) => {
+    const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1, ux = ox / l, uz = oz / l;
+    // S7 (missions): she stands on her doorstep, never out on the lane in front of it (some doors open straight onto a lane)
+    const k = [0.8, 0.5, 0.25].find((d) => !roadUnder(getRoads(), h.door.x + ux * d, h.door.z + uz * d, 0.1)) ?? 0.25;
+    return { ...STOP_ROWS[i], door: { ...h.door }, stand: { x: h.door.x + ux * k, z: h.door.z + uz * k }, ry: Math.atan2(ux, uz) };
+  });
+}
+/** tools/missions-check.mjs: the five stops a round would use right now (null until the new-map houses are built). */
+export const milkStopsForCheck = () => newMapStops();
+
 export function registerMilkJob(api, env) {
-  const DOODH = halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 6.5);
+  const DOODH = doodhAt();
   let STOPS = STOP_ROWS.map((s) => ({ ...s, ...abadiDoorstep(s.row, s.along) }));
-  // Under ?layout=new the old abadi rows are gone: the five stops are the new-map houses nearest the doodh counter,
-  // picked when a round starts (the houses build after Play). Each stop stands just outside its door, facing out.
-  function newMapStops() {
-    if (!NEW_HOUSES.length) return null;
-    const near = [...NEW_HOUSES].sort((a, b) => Math.hypot(a.door.x - DOODH.x, a.door.z - DOODH.z) - Math.hypot(b.door.x - DOODH.x, b.door.z - DOODH.z));
-    const picked = [];
-    for (const h of near) { if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
-    if (picked.length < STOP_ROWS.length) return null;
-    return picked.map((h, i) => {
-      const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1, ux = ox / l, uz = oz / l;
-      return { ...STOP_ROWS[i], door: { ...h.door }, stand: { x: h.door.x + ux * 0.8, z: h.door.z + uz * 0.8 }, ry: Math.atan2(ux, uz) };
-    });
-  }
   const st = { stage: 'idle', idx: 0, timeLeft: 0 };
   const dood = api.npc('doodhwala', DOODH, Math.PI / 2, 'npc_doodhwala');
   const aunty = api.npc('villager_aunty', { x: 0, z: 0 }, 0, 'npc_milk_aunty');

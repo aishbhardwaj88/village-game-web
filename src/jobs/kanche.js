@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 import { buildKancheGround } from './props.js';
 import { powerMeter, rhythmBar } from './minigames.js';
 
@@ -8,7 +9,7 @@ import { powerMeter, rhythmBar } from './minigames.js';
  *   Kanche: three shots against a kid — set the aim, then the power; a clean shot knocks a marble out of the ring.
  *   Stapu:  hop through five squares, each press timed to the beat.
  */
-const CENTRE = { x: -46, z: 12 };
+const CENTRE = spot('kanche', { x: -46, z: 12 }); // S7 (missions): open ground by the square under ?layout=new
 
 export function registerKancheJob(api, env) {
   const ground = buildKancheGround();

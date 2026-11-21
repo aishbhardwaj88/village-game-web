@@ -1,4 +1,5 @@
 import { pt } from './anchors.js';
+import { spot } from './missionsLayout.js';
 import * as THREE from 'three';
 
 /**
@@ -15,7 +16,9 @@ import * as THREE from 'three';
  * (BAAGH_CLEARING_RADIUS) so the wheat crop tufts don't visually clip through the
  * mango trees.
  */
-export const BAAGH_CENTER = pt('baagh');
+// S7 (missions): under ?layout=new the baagh is the approved map's 'Mango baagh' ground (empty on the map, so the six trees
+// below stand on it); the old spot is now inside the new houses. ?layout=old: exactly pt('baagh') as before.
+export const BAAGH_CENTER = (() => { const old = pt('baagh'); const n = spot('baagh', null); return n ? { x: n.x, z: n.z, ry: old.ry } : old; })();
 export const BAAGH_CLEARING_RADIUS = 11; // covers the tree spread below (max |dx|/|dz| = 9) plus margin
 
 // A loose cluster of mango trees (src/trees.js's 'mango' species) around the

@@ -2,6 +2,7 @@
  * Static data for the side jobs: map markers, the order the postman hands postcards out in, and the texts (postcard + gossip).
  */
 import { pt } from '../anchors.js';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 
 /** A job marker standing at a fixed offset from a place's anchor, so it moves with the place. */
 const off = (id, dx, dz) => { const a = pt(id); return { x: a.x + dx, z: a.z + dz }; };
@@ -18,6 +19,19 @@ export const JOBS = {
   patang: { n: 1, en: 'Patang loot', hi: 'पतंग लूट', ...off('halwai', -20, -2) },
   mango: { n: 8, en: 'Mango varieties', hi: 'आम की किस्में', ...pt('baagh') },
 };
+// S7 (missions): under ?layout=new each notebook star sits where its job starts on the approved map (several old markers were
+// off the village since the 1 Nov shift). ?layout=old: unchanged.
+{
+  const set = (id, p) => { if (p) { JOBS[id].x = p.x; JOBS[id].z = p.z; } };
+  const pj = spot('pump_job', null); set('pump', pj && pj.at);
+  const kr = spot('kulfi_route', null); set('kulfi', kr && kr[0]);
+  set('kanche', spot('kanche', null));
+  set('gilli', spot('gilli_marker', null));
+  set('milk', spot('doodh', null));
+  set('gate', spot('gate', null));
+  const pa = spot('patang', null); set('patang', pa && pa.starter);
+  set('mango', spot('baagh', null));
+}
 // The postman hands these out in this order (the postcard names one new job each time he is passed).
 export const POSTCARD_ORDER = ['pump', 'ration', 'kulfi', 'milk', 'kanche', 'chakki', 'gate', 'mango', 'gilli', 'patang'];
 export const POSTCARD_TEXT = {

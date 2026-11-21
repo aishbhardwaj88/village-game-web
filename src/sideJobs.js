@@ -14,6 +14,7 @@ import { registerChakkiJob } from './jobs/chakki.js';
 import { registerGateJob } from './jobs/gate.js';
 import { registerPatangJob } from './jobs/patang.js';
 import { registerMangoJob } from './jobs/mango.js';
+import { spot } from './missionsLayout.js';
 
 /**
  * Side jobs (docs/MISSIONS_PLAN.md sections 3 and 4): ten 3-8 minute jobs, each with its own NPC, dialogue, a small reward and
@@ -171,10 +172,12 @@ export function createSideJobs(env) {
   };
 
   // ---------------------------------------------------------------- Dadi: one interaction shared by every job that involves her
-  const DADI_POS = new THREE.Vector3(-43.3, 0, 41.8);
+  // S7 (missions): under ?layout=new Dadi waits at the house gate (the old spot was off the village since the 1 Nov shift)
+  const DADI_AT = spot('dadi', { x: -43.3, z: 41.8, yaw: -Math.PI / 2 });
+  const DADI_POS = new THREE.Vector3(DADI_AT.x, 0, DADI_AT.z);
   const dadiNpc = env.npcs.dadi;
   dadiNpc.position.set(DADI_POS.x, 0, DADI_POS.z);
-  dadiNpc.rotation.y = -Math.PI / 2;
+  dadiNpc.rotation.y = DADI_AT.yaw;
   dadiNpc.visible = true;
   const dadiOffers = []; // { id, label:{en,hi}, active(), handle(), canStart(), start() }
   addInteraction({
@@ -227,7 +230,7 @@ export function createSideJobs(env) {
   // Peepal poster board at the chowk: posters for gilli-danda and the kite match.
   addInteraction({
     id: 'peepal_posters',
-    position: new THREE.Vector3(-56, 0, 15),
+    position: (({ x, z }) => new THREE.Vector3(x, 0, z))(spot('posters', { x: -56, z: 15 })), // S7: the map's peepal (by the chaupal) under ?layout=new
     radius: 2.6,
     label: { hi: 'पीपल पर लगे पोस्टर देखें', en: 'Read the posters on the peepal' },
     onInteract: () => {

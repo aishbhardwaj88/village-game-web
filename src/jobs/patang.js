@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 import { part, mergeProp, buildKiteGeometryParts } from './props.js';
 import { pt } from '../anchors.js';
 
@@ -7,11 +8,14 @@ import { pt } from '../anchors.js';
  * landing spot first and the kite joins your collection (+Rs 10). The kids run at a slightly slower pace than you.
  * Start: talk to the kid with the charkhi near the chowk (or any kid there) once the kite match is on.
  */
-const STARTER = { x: -58.5, z: 18.5 };
-const SPOTS = [
+// S7 (missions): under ?layout=new the charkhi kid stands by the square, the rivals beside him (the store moved to the highway)
+// and the kite comes down on the map's play grounds; ?layout=old exactly as before.
+const PJ = spot('patang', null);
+const STARTER = PJ ? PJ.starter : { x: -58.5, z: 18.5 };
+const SPOTS = PJ ? PJ.spots : [
   { x: 2, z: 30 }, { x: -22, z: 25 }, { x: 24, z: 34 }, { x: -30, z: 60 }, { x: 18, z: 20 },
 ];
-const KID_START = [{ x: -4, z: 0 }, { x: -8, z: 4 }, { x: 0, z: 6 }].map((o) => ({ x: pt('store').x + o.x, z: pt('store').z + o.z })); // offsets from the store anchor
+const KID_START = PJ ? PJ.kids : [{ x: -4, z: 0 }, { x: -8, z: 4 }, { x: 0, z: 6 }].map((o) => ({ x: pt('store').x + o.x, z: pt('store').z + o.z })); // offsets from the store anchor
 
 export function registerPatangJob(api, env) {
   const st = { stage: 'idle', t: 0, from: null, to: null, spot: null, runners: [] };
