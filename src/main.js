@@ -21,6 +21,8 @@ import { buildContactShadows } from './contactShadows.js';
 import { createAssetSlotRegistry } from './assetSlots.js';
 import { updateCharacterAnims } from './characterAnim.js';
 import { setupGather } from './gatherScene.js';
+// S7 WIRING (characters): distance tiers for the Tripo characters (src/characterLOD.js)
+import { initCharacterLOD } from './characterLOD.js';
 import { holdModelLoads, releaseModelLoads } from './loaders.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal, distanceToCanalWater } from './canal.js';
@@ -1200,6 +1202,8 @@ async function main() {
   }
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
   const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)), /* 21 Nov: stand ON the road and lane strips (they sit 3-4 cm above the ground plane; feet sank into them) */ getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
+  // S7 WIRING (characters): near/mid/far tiers for every rigged character (?charlod=0 turns it off)
+  initCharacterLOD({ camera });
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],
