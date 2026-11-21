@@ -18,6 +18,8 @@ function createNoiseBuffer(ctx, seconds) {
 // never touches the slider hears exactly what every earlier item already tuned.
 const BASE_MASTER_GAIN = 0.42; // was 0.55 (9 Nov playtest: the mix was in her ear, not in the background)
 const MUTE_KEY = 'dopahar_muted';
+// Sound is OFF for the whole game until the final polish (her call, 21 Nov). Add ?sound=1 to the address to hear it.
+const SOUND_ENABLED = (() => { try { return new URLSearchParams(location.search).has('sound'); } catch (e) { return false; } })();
 import { loadSavedVolume, saveVolume } from './quality.js';
 
 // Real recordings (CC0, see docs/CREDITS.md). Fetched only after start() (the Play tap), never before.
@@ -57,6 +59,12 @@ export class AudioEngine {
     this._masterVolume = 1; // pause menu slider, 0-1 (item 8)
     this._muted = false; // M key and the top-right button
     try { this._muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { /* private mode */ }
+    // Test and review pages (lineup, face close-ups, automated runs) always start silent, without changing her saved setting.
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.has('mute') || q.has('gather') || q.has('face') || q.has('lineup') || (typeof navigator !== 'undefined' && navigator.webdriver)) this._muted = true;
+    } catch (e) { /* no location */ }
+    try { window.__dopaharMuted = this._muted; } catch (e) { /* no window */ }
     this._vehicleStamp = -1;
     this._samples = {};
     this._sampGain = {};
@@ -74,6 +82,7 @@ export class AudioEngine {
 
   start() {
     if (this.started) return;
+    if (!SOUND_ENABLED) { try { window.__dopaharMuted = true; } catch (e) { /* no window */ } return; }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     this.ctx = new Ctx();
@@ -205,6 +214,7 @@ export class AudioEngine {
   /** Sets, saves and shows the mute state (button + M key share this). Returns the new state. */
   setMuted(m) {
     this._muted = !!m;
+    try { window.__dopaharMuted = this._muted; } catch (e) { /* no window */ }
     try { localStorage.setItem(MUTE_KEY, this._muted ? '1' : '0'); } catch (e) { /* private mode */ }
     this._applyMasterGain();
     this._syncMuteButton();
