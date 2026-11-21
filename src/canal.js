@@ -45,6 +45,13 @@ export const CANAL_MAX_X = 0 + CANAL_DX;
 
 /** Distance (m) from a point to the water channel rectangle; 0 above the water. */
 export function distanceToCanalWater(x, z) {
+  // S7 WIRING (fixes): under ?layout=new the canal is the shops-land one at x 824, not this old east-west feeder.
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layout') === 'new') {
+    const NEW_X = 824, NEW_Z_MIN = -340, NEW_Z_MAX = 350, NEW_HALF_W = 3;
+    const dz = Math.max(NEW_Z_MIN - z, 0, z - NEW_Z_MAX);
+    const dx = Math.max(x - NEW_X - NEW_HALF_W, 0, NEW_X - NEW_HALF_W - x);
+    return Math.hypot(dx, dz);
+  }
   const dx = Math.max(CANAL_MIN_X - x, 0, x - CANAL_MAX_X);
   const dz = Math.max(CANAL_Z - CANAL_HALF_WIDTH - z, 0, z - (CANAL_Z + CANAL_HALF_WIDTH));
   return Math.hypot(dx, dz);
