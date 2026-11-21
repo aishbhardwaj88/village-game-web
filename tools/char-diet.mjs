@@ -28,11 +28,11 @@
  *   node tools/char-diet.mjs --only maa,dada       # just these
  *   node tools/char-diet.mjs --force               # ignore the cache
  *   node tools/char-diet.mjs --json <file>         # also write a size report
- *   node tools/char-diet.mjs --profile full        # desktop edition (same as CHAR_PROFILE=full)
+ *   node tools/char-diet.mjs --profile light       # web edition, later (same as CHAR_PROFILE=light)
  *
- * Profiles (22 Nov: one codebase, two editions):
- *   light (default, the free web edition): skin 1024, heroes 2048, WebP. Budget 1.5 MB / heroes 2.5 MB.
- *   full  (the paid desktop edition):      skins untouched (original 4096 JPEG / PNG), only geometry and animation
+ * Profiles (22 Nov: one codebase, two editions; the owner builds the FULL game first, so full is the default):
+ *   light (CHAR_PROFILE=light, the free web edition, later): skin 1024, heroes 2048, WebP. Budget 1.5 MB / heroes 2.5 MB.
+ *   full  (default, the desktop edition):        skins untouched (original 4096 JPEG / PNG), only geometry and animation
  *                                          are meshopt-compressed (same check as light). No size budget.
  */
 import { NodeIO, PropertyType, Logger } from '@gltf-transform/core';
@@ -69,7 +69,7 @@ function args() {
     force: a.includes('--force'),
     json: get('--json', null),
     quiet: a.includes('--quiet'),
-    profile: get('--profile', process.env.CHAR_PROFILE || 'light'),
+    profile: get('--profile', process.env.CHAR_PROFILE || 'full'), // 22 Nov owner: full-quality game first; web 'light' later
   };
 }
 
