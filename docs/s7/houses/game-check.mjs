@@ -15,7 +15,7 @@ for (let i = 0; i < 200; i++) { try { await fetch(`http://localhost:${PORT}/vill
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
 const out = { layout };
 try {
-  const page = await browser.newPage({ viewport: { width: 640, height: 400 } });
+  const page = await browser.newPage({ viewport: { width: 480, height: 300 } });
   const T = Date.now(); const log = (m) => console.error(`[${((Date.now() - T) / 1000).toFixed(0)}s] ${m}`);
   page.on('crash', () => log('PAGE CRASHED'));
   await page.addInitScript(() => { try { localStorage.setItem('dopahar_quality', 'low'); localStorage.removeItem('dopahar_save'); } catch (e) {} });
@@ -24,7 +24,7 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
   const isCharErr = (t) => /Failed to load resource: the server responded with a status of 404/.test(t);
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-  await page.goto(`http://localhost:${PORT}/village-game-web/?dev=1&layout=${layout}${extra}`, { waitUntil: 'load', timeout: 300000 });
+  await page.goto(`http://localhost:${PORT}/village-game-web/?proof=1&layout=${layout}${extra}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForSelector('#start-overlay.ready', { timeout: 400000 }).catch(() => {});
   log('title ready'); await page.click('#play-btn').catch(() => {}); log('play clicked');
   const t0 = Date.now();
@@ -34,7 +34,8 @@ try {
     out.report = await page.evaluate(() => window.__newHouses.report);
   }
   await page.waitForTimeout(8000);
-  const views = {
+  const QUICK = process.env.QUICK === '1';
+  const views = QUICK ? { gali_eye: { pos: [438, 1.6, -79.2], target: [478, 2.6, -79.8] } } : {
     gali_eye: { pos: [455, 1.6, -61.9], target: [490, 2.4, -62.6] },
     gali_above: { pos: [430, 45, -20], target: [470, 0, -62] },
     square_east: { pos: [700, 1.7, -24.5], target: [740, 2.6, -28.3] },
@@ -55,7 +56,7 @@ try {
     }));
     out[name] = m;
     await page.waitForTimeout(1500);
-    await page.screenshot({ timeout: 240000, path: `docs/s7/houses/ingame_${layout}_${name}.png` });
+    if (!QUICK) await page.screenshot({ timeout: 240000, path: `docs/s7/houses/ingame_${layout}_${name}.png` });
   }
   out.colliders = await page.evaluate(() => { const m = window.__dopahar.scene.getObjectByName('houses_s7_colliders'); return m ? m.userData.colliderBoxes.length : 0; });
   out.oldRowsDrawn = await page.evaluate(() => { let n = 0; window.__dopahar.scene.traverse((o) => { if (/^abadi_row_/.test(o.name) && o.visible && o.count) n += o.count; }); return n; });

@@ -28,18 +28,19 @@ Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind 
 
 - **492 footprints** from the approved map (`new_house` objects). Front = the side that walks straight out onto a road or gali before meeting another house; a corner house faces the same way as its row. Each house is then turned parallel to that road (62 turned, a few made up to 20% smaller to fit) and trimmed off any road it touched.
 - Built on the ground height of the game (flat 0 except pond/johad/canal dips): nothing floats or sinks.
-- **Drawn as ONE batch** (a three.js BatchedMesh): every house, far box and clutter piece is one instance; the batch skips each instance that is off screen (and off the shadow box). Near detail within 55 m, a simple box with the same atlas beyond, nothing past 420 m; clutter within 40 m.
+- **Drawn as ONE batch** (a three.js BatchedMesh): every house, far box and clutter piece is one instance; the batch skips each instance that is off screen (and off the shadow box). Near detail within 60 m, a simple box with the same atlas beyond (concrete roof, coping, black tank, dark window shapes), nothing past 460 m; clutter within 45 m (desktop/full preset; light preset 45 / 380 / 30 m).
 - **Colliders**: simple boxes per house (a turned house is sliced into a few boxes so the corners are right), added the way the game does it (`userData.colliderBoxes`), rebuilt once when the houses stand.
 - Old houses removed under `?layout=new` only: the abadi rows (scenery.js) with their collider shells, garden plants, doorstep props, roof fittings and chulha smoke, and the kit gap houses (villageHouses.js).
 
-## Checks (node src/kit/housesCheck.js)
+## Checks (node src/kit/housesCheck.js, on the game's own map data src/layout/mapData.json after merging main)
 
 | Check | Result |
 |---|---|
 | houses | 492 |
 | on a road | **0** |
 | overlapping another house | **0** |
-| overlapping another map object | **0** |
+| overlapping another map object (incl. every shops-land shop, kiosk, cart, well, pump, haystack) | **0** |
+| a tree trunk inside or within 0.3 m of a house (587 trees: map trees + shops-land orchard rows) | **0** |
 | a map place inside a house | **0** |
 | front not parallel to its road (> 3 deg) | **2**: #76 (19 deg) and #84 (27 deg) on the bending tractor route; turning them would hit their neighbours. Drawn that way on the map. |
 | no road in front | **3**: #305 (501, -17), #472 and #473 (684, -63 / -58): enclosed plots; they face the nearest road. |
@@ -82,14 +83,37 @@ Measured headless (SwiftShader) with all 492 houses built exactly as the game bu
 ## Wiring needed
 
 1. **main.js** (done in my branch, marked `// S7 WIRING (houses)`): one import line and one call `initNewMapHouses(scene)` right after `createVillageHouses(scene)`. It does nothing unless `?layout=new`.
-2. **Layout agent**: when `src/layout/layout.js` lands, the house plan can be re-made from it: `node src/kit/housesCheck.js --write-plan` reads the approved map; if the layout agent moves or edits house footprints, re-run it and commit `housesPlanData.json`. `isNewLayout()` in `src/kit/housesLayout.js` can then call the layout module's.
+2. **Layout**: done. The on/off switch is the layout module's `isNewLayout()`; the house plan is made from `src/layout/mapData.json`. If house footprints or galis change there, run `node src/kit/housesCheck.js --write-plan` and commit `src/kit/housesPlanData.json`.
 3. **Milk round** (`src/jobs/milk.js`) still uses the old abadi doorsteps (`abadiDoorstep`), which stand in empty ground under `?layout=new`. New doorsteps: `NEW_HOUSES[i].door` (x, z) from `src/kit/houses.js`.
 4. **Roof monkeys** (`src/roofMonkeys.js`) read `ROOF_TANK_TOPS` from villageHouses.js (empty under `?layout=new`); the new tanks are `NEW_HOUSE_TANK_TOPS` in `src/kit/houses.js` (same fields).
 5. **Camera**: the new houses are not in `cameraObstacles` (raycasting the batch every frame is costly). If the camera clips into walls in galis, push `window.__newHouses.group` into `cameraObstacles` or give the camera the collider boxes.
 6. **Tulsi plant** on the chaura: the game has no real tulsi model (vegetation.js draws none), so the chaura shows bare soil. If a real model arrives, chaura tops are clutter items of kind `tulsi` (house-local, see `clutterFor`).
 7. The 'Mud house' label is on 400 of the 492 footprints (all the new mohallas), not just the outer edge; I treated it as "may be mud" and kept mud to backs-on-open-ground. Decision for Aishwarya if she wants more or fewer mud houses.
 
+## Game boot (headless, after merging main with shops-land)
+
+- The layout agent's smoke (`tools/layout-smoke.mjs`) on my merged build, `?layout=new`: **PASS**, 0 new console errors (only the skipped character files 404), the 5 probed places drawn exactly at their anchors.
+- Later boots on this shared box crashed the browser's renderer about a minute after Play, also with the houses switched off (`?nohouses=1`) and under `?layout=old`, so it is the box, not the houses. The draw-call and triangle numbers above come from the preview page, which uses the game's own renderer, lighting and the real 492-house build.
+
+## Merge with main (21 Nov evening)
+
+- Merged origin/main and the integrator's main (8c8b77c, shops-land). One conflict in main.js (two wiring imports side by side), kept both.
+- The repo is shallow at d9374e4, so `git merge origin/main` says "unrelated histories"; I merged with the sprint base b5bd781 as the merge base (git merge-tree). Clean.
+
 ## Selling rules and editions
 
 - Licences: the kit adds **no third-party file**. Geometry is self-built; the atlas is composed at runtime from texture sets already in the game and already credited (Poly Haven / ambientCG, CC0). Nothing new for CREDITS.md.
-- Quality knobs are in one place, `src/kit/housesQuality.js`: atlas cell size (512 light / 1024 full), anisotropy, near-detail distance (55 / 90 m), clutter distance (40 / 70 m), far cut-off (420 / 600 m). `houseQuality()` should read `getQuality()` from `src/edition.js` when it lands (one line).
+- Quality knobs are in one place, `src/kit/housesQuality.js`, and follow `getQualityName()` from `src/edition.js`: near-detail distance (light 45 / full 60 m), clutter distance (30 / 45 m), far cut-off (380 / 460 m), anisotropy (4 / 8). Atlas cells stay 512 px in both (~33 MB GPU; 1024 px would be ~134 MB for little gain since the scans are 1K).
+
+## Found while checking (for the integrator)
+
+- **shops-land trees under the real game**: `src/kit/landTrees.js` reads tree markers from `o.rings`, but the layout module's map data (`getLayout().objects`, which `loadLandMap()` prefers) gives trees as `cx, cz, r` with no rings. So in the game only the orchard fill rows would draw, none of the 584 map trees. Their preview reads the raw export (with rings), so it looks right there. One-line fix on their side: use `o.cx/o.cz/o.r` when there are no rings.
+- **2 houses not parallel to their road** (#76, #84, on the bends of the east tractor route) and **3 enclosed plots** with no road in front; listed above. They face their nearest road.
+
+## Looks to ask her (one message, with the pictures)
+
+1. The 8 designs (`design_A.png` ... `design_H.png`): keep all 8? Any to drop?
+2. Whitewash patches on brick (design C): too strong or right?
+3. Mud houses (G, H): colour and how many (now about 1 in 7 houses, at the outer edges).
+4. Door and window paint colours (green, blue, brown, maroon, grey, ochre): OK?
+5. The tulsi chaura is empty (there is no real tulsi plant model): keep empty, or drop the chaura?
