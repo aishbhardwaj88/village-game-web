@@ -1,15 +1,16 @@
 /**
  * S7 (21 Nov): distance tiers for the rigged Tripo characters (docs/s7/characters.md, budget in docs/s7/SPRINT.md).
  *
- *   near  (<= 25 m, on screen)   fully animated, blink + smile. At most 12 at once, nearest first; the rest drop to mid.
- *   mid   (25-50 m, on screen)   animation stepped at 12 per second instead of every frame; blink/smile switched off.
- *   off screen (<= 50 m)         animation paused (still drawn, so a shadow at the screen edge is never missing).
- *   far   (> 50 m)               hidden and paused; its bones are not even updated.
+ * Limits come from LOD_PROFILES below (full = default: 40 m / 24 people / 90 m; light web edition: 25 m / 12 / 50 m).
+ *   near  (<= NEAR, on screen)   fully animated, blink + smile. At most MAX_FULL at once, nearest first; the rest drop to mid.
+ *   mid   (NEAR-FAR, on screen)  animation stepped MID_HZ times a second instead of every frame; blink/smile switched off.
+ *   off screen (<= FAR)          animation paused (still drawn, so a shadow at the screen edge is never missing).
+ *   far   (> FAR)                hidden and paused (not drawn, no shadow).
  *
  * How it hooks in without touching other files: src/characterAnim.js gives every character its own
  * THREE.AnimationMixer and calls mixer.update(dt) once per frame. initCharacterLOD() wraps AnimationMixer.update ONCE:
  * a mixer whose root holds a SkinnedMesh is registered as a character on its first update, and from then on its update
- * is passed through, stepped at 12 Hz, or skipped, by tier. Mixers without a skinned mesh are untouched. Tiers are worked
+ * is passed through, stepped at MID_HZ, or skipped, by tier. Mixers without a skinned mesh are untouched. Tiers are worked
  * out once per frame from the camera (distance + view frustum). A small hysteresis (2 m) stops anyone flickering at a
  * boundary. Visibility: a character is hidden only by this module and only shown again by this module, so any other
  * code that hides a model keeps control of it.
@@ -63,7 +64,7 @@ function register(mixer) {
   // height from the (bind pose) box, in the root's own scale; used for the on-screen sphere
   root.updateWorldMatrix(true, true);
   const box = new THREE.Box3().setFromObject(root);
-  const e = { mixer, root, faces, height: Math.max(0.5, box.max.y - box.min.y), base: box.min.y - (root.parent || root).getWorldPosition(pos).y, tier: FULL, acc: 0, hiddenByLod: false, dist: 0 };
+  const e = { mixer, root, faces, height: Math.max(0.5, box.max.y - box.min.y), base: box.min.y - (root.parent || root).getWorldPosition(pos).y, tier: FULL, acc: 0, hiddenByLod: false, dist: 0, stepped: true };
   // blink/smile off below the near tier: zeroed right before this mesh is drawn (characterAnim writes them every frame)
   for (const m of faces) {
     const prev = m.onBeforeRender;
@@ -86,9 +87,9 @@ function live(root) {
 
 function setHidden(e, hide) {
   if (hide) {
-    if (e.root.visible) { e.root.visible = false; e.hiddenByLod = true; e.root.matrixWorldAutoUpdate = false; }
+    if (e.root.visible) { e.root.visible = false; e.hiddenByLod = true; }
   } else if (e.hiddenByLod) {
-    e.root.visible = true; e.hiddenByLod = false; e.root.matrixWorldAutoUpdate = true;
+    e.root.visible = true; e.hiddenByLod = false;
   }
 }
 
@@ -103,7 +104,7 @@ function assign(camera) {
     const e = entries[i];
     if (!e.root.parent) { entries.splice(i, 1); continue; } // model taken out of the scene for good
     if (!live(e.root)) { e.tier = PAUSED; continue; } // a hidden container (missions, interiors) draws nothing anyway
-    e.root.parent.getWorldPosition(pos); // the parent: a hidden root's own matrix is frozen (matrixWorldAutoUpdate off)
+    e.root.parent.getWorldPosition(pos); // the container that moves (the model root itself only carries its centring offset)
     const d = pos.distanceTo(camPos);
     e.dist = d;
     const wasHidden = e.tier === HIDDEN, wasNear = e.tier === FULL;
@@ -186,10 +187,11 @@ export function initCharacterLOD({ camera, assetSlots, profile = 'full' }) { // 
       else e = null;
     }
     if (!e) return update.call(this, dt);
-    if (e.tier === FULL) { const t = dt + e.acc; e.acc = 0; stats.mixerUpdates++; return update.call(this, t); }
+    e.stepped = false; // read by characterAnim (see "Wiring needed" in docs/s7/characters.md): skip the neck fix when the pose did not change
+    if (e.tier === FULL) { const t = dt + e.acc; e.acc = 0; e.stepped = true; stats.mixerUpdates++; return update.call(this, t); }
     if (e.tier === MID) {
       e.acc += dt;
-      if (e.acc >= 1 / LOD.MID_HZ) { const t = e.acc; e.acc = 0; stats.mixerUpdates++; return update.call(this, t); }
+      if (e.acc >= 1 / LOD.MID_HZ) { const t = e.acc; e.acc = 0; e.stepped = true; stats.mixerUpdates++; return update.call(this, t); }
       stats.mixerSkips++; return this;
     }
     // paused / hidden: time stands still for this character (it is not seen), no catch-up when it comes back

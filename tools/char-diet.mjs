@@ -199,4 +199,5 @@ async function main() {
 }
 
 // Never break the build: dist already holds the full-size originals, so the game still works if this step fails.
-main().catch((e) => { console.error('char-diet: WARNING, step failed, the full-size characters ship instead:', e); });
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]); // not when imported (char-verify uses isRiggedGlb)
+if (isMain) main().catch((e) => { console.error('char-diet: WARNING, step failed, the full-size characters ship instead:', e); });
