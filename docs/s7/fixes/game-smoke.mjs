@@ -17,6 +17,8 @@ const PORT = 5900 + Math.floor(Math.random() * 300);
 const layout = process.argv[2] || 'new';
 const at = (process.argv.find((a) => /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(a)) || '790,75').split(',').map(Number);
 const noPlay = process.argv.includes('--no-play');
+const WAIT = +(process.argv.find((a) => a.startsWith('--wait='))?.slice(7) || 15000);
+const TAG = process.argv.find((a) => a.startsWith('--tag='))?.slice(6) || '';
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.png': 'image/png', '.hdr': 'application/octet-stream', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ktx2': 'image/ktx2', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg' };
 const srv = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]).replace('/village-game-web', '') || '/';
@@ -29,7 +31,7 @@ const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable
 const killer = setTimeout(() => { console.log('TIMEOUT'); dump(); process.exit(2); }, 280000);
 const failed = [], errors = [], phase = { now: 'boot' };
 let result = {};
-function dump() { fs.writeFileSync(path.join(OUT, `smoke-${layout}.json`), JSON.stringify({ layout, failed, errors, result }, null, 1)); }
+function dump() { fs.writeFileSync(path.join(OUT, `smoke-${layout}${TAG}.json`), JSON.stringify({ layout, failed, errors, result }, null, 1)); }
 try {
   const page = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
   page.on('response', (r) => { if (r.status() >= 400) failed.push({ status: r.status(), url: r.url().replace(/^http:\/\/localhost:\d+/, ''), phase: phase.now }); });
@@ -44,14 +46,15 @@ try {
     phase.now = 'play';
     await page.evaluate(() => document.getElementById('play-btn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(12000);
+    phase.now = 'walk';
     await page.evaluate(([x, z]) => window.__dopahar?.teleportPlayer?.(x, z), at);
-    await page.waitForTimeout(15000);
+    await page.waitForTimeout(WAIT);
     const mm = await page.evaluate(() => { const c = document.getElementById('minimap-canvas'); return c && c.width ? c.toDataURL('image/jpeg', 0.92) : null; });
-    if (mm) fs.writeFileSync(path.join(OUT, `minimap-${layout}.jpg`), Buffer.from(mm.split(',')[1], 'base64'));
+    if (mm) fs.writeFileSync(path.join(OUT, `minimap-${layout}${TAG}.jpg`), Buffer.from(mm.split(',')[1], 'base64'));
     await page.evaluate(() => document.getElementById('minimap-wrap')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
     await page.waitForTimeout(1500);
     const nb = await page.evaluate(() => { const c = document.getElementById('notebook-canvas'); return c && c.width ? c.toDataURL('image/jpeg', 0.85) : null; });
-    if (nb) fs.writeFileSync(path.join(OUT, `notebook-${layout}.jpg`), Buffer.from(nb.split(',')[1], 'base64'));
+    if (nb) fs.writeFileSync(path.join(OUT, `notebook-${layout}${TAG}.jpg`), Buffer.from(nb.split(',')[1], 'base64'));
     result = { minimap: !!mm, notebook: !!nb, at };
   }
   await page.close();

@@ -101,3 +101,26 @@ peepal), same leaves, same three distance tiers, same 3 draw calls, trunk collid
   hold; the texture grain is a little coarser), `potter_lod.jpg` (as shipped, inside the yard), `potter_lane_30m.jpg`.
 - Remake the numbers: `flock /tmp/s7-browser.lock node docs/s7/fixes/pots-measure.mjs` (`pots-measure.json`).
   In the game, `__s7mapobjects`'s group has `userData.setPotLod(on, metres)` for comparing.
+
+## 5. The extra 404s under new - explained (nothing broken; no change made)
+
+Found with `docs/s7/fixes/game-smoke.mjs` (headless, every failed request logged with its URL and the moment it happened;
+results in `smoke-old*.json` / `smoke-new*.json`).
+
+- **Every 404 in both layouts is a model-slot probe**, not a broken file: when a place's zone streams in, the game asks
+  (a HEAD request) whether a drop-in model `assets/models/<place>.glb` exists (`src/siteSlots.js` + `src/assetSlots.js`,
+  docs/asset-slots.md). For most places none exists yet, so the answer is 404 and the game keeps its own built place. The
+  browser prints each 404 as a red line, which is why they look like errors. There are **0 other console errors** in
+  either layout.
+- Title screen and the first seconds after Play: the same 9-10 probes in both (tractor, trolley, cart, bullock, bike,
+  player, monkey, charpai, hand pump, cow, halwai). Player at (790, 75) for 15 s: **11 vs 11**.
+- Player at the gate (612, -128) for 60 s, the map objects agent's spot: **old 20, new 25**.
+  - Only under new: `chemist.glb`, `manihari.glb` (**always**: on the approved map the chemist and the manihari stand on
+    their own again, built by the layout wiring, so each is a place with its own slot; under old they are folded into the
+    bazaar row and never probe). This is the steady "+2".
+  - Also only in this new run: `mela_ground.glb`, `anganwadi.glb`, `gurudwara.glb`, `jain_mandir.glb`; only in the old
+    run: `masjid.glb`. These depend on which zones happen to stream in near the player in that minute (the places
+    stand elsewhere under new), not on the layout being wrong.
+- Why not "fixed": silencing them means giving the game a list of the model files that exist so it never asks for a
+  missing one. That changes `?layout=old` too (fewer requests), so it is the integrator's call: e.g. the build writes
+  `assets/models/index.json` and `urlExists()` in src/assetSlots.js checks that list first. Listed under "Wiring left".
