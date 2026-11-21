@@ -55,7 +55,7 @@ peepal), same leaves, same three distance tiers, same 3 draw calls, trunk collid
   even then misses the seat at the carrom, barber 1 and resting 2, 3, 4, 6 and 8: their sun side is blocked by a wall
   or a road within 2 m. Their crown is still overhead.
 - Pictures: `barber_tree.jpg`, `rest_tree.jpg` (a bench, from eye height), `rest_peepal.jpg`, `rest_top.jpg` (straight down).
-- Cost: 12 more trees in the same 3 batches: 0 new draw calls; about 3-6k triangles per near tree.
+- Cost: 12 more trees in the same 3 batches: 0 new draw calls; a near neem is 2,060 triangles, a near peepal 2,382 (fewer at the thinned and impostor tiers).
 - Questions for her (looks): are the shade trees the right size? Should resting spot 7 keep its peepal?
 
 ## 3. Minimap and free-roam water - done
@@ -142,7 +142,7 @@ see the same shapes. **Check result: on a road 8 -> 0**; overlaps with houses 0,
   ends at the road edge and the water stops a 0.6 m earth lip short of it, eased over the neighbouring ~30 degrees so the
   bank recedes in a soft curve where a lane meets it (a square notch looked like a cog). The rest of each pond keeps its
   drawn size. The bund, mud bed, water, walk height and the water's collision all follow the same shape. Largest pull-back
-  3.5 m (cattle pond, where the lanes end at it).
+  of the bank: 3.6 m (cattle pond, where its lanes end) and 3.7 m (buffalo pond, where gali n29 ends at it).
 - Pictures: `pond_cattle_top.jpg`, `pond_cattle_eye.jpg`, `pond_buffalo_top.jpg`, `play_patch_top.jpg`, `milestone_eye.jpg`.
 - Question for her (look): the cattle pond now has soft bays where its four lanes arrive. Keep, or should the lanes stop
   short of the pond instead (that would move roads, so it is the layout agent's job)?
