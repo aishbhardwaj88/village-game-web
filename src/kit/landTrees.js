@@ -3,6 +3,7 @@ import { LAND_QUALITY } from './landQuality.js';
 import { treeParts, treeMaterials, CANOPIES } from '../trees.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
 import { labelKey, labelName, ringCentre, ringRadius, hash01, inRing, makeRoadIndex } from './landLayout.js';
+import SHADE_TREES from './landShadeTrees.json'; // S7 fixes: one neem / peepal per "under a tree" spot (planned by src/kit/landShadeTrees.js)
 
 /**
  * Every tree of the approved map (?layout=new), ~585: mango (orchards), guava / jamun (orchard + village), eucalyptus rows
@@ -115,6 +116,10 @@ export async function build(map, { camera = null } = {}) {
     trees.push({ kind: pick(h), x: c.x, z: c.z, d: r * 2, h: o.y1 || 9, seed: Math.floor(hash01(c.z, c.x) * VARIANTS), ry: hash01(c.x * 3.1, c.z) * Math.PI * 2 });
   }
 
+  // S7 fixes: the map's "under a tree" spots (2 barbers, the carrom, 9 resting spots) draw no tree of their own; each gets one
+  // shade tree, trunk on the sun side of the seat and clear of the seat, roads and buildings (rule: docs/s7/fixes.md).
+  for (const t of SHADE_TREES) trees.push({ kind: t.kind, x: t.x, z: t.z, d: t.d, h: t.h, seed: Math.floor(hash01(t.z, t.x) * VARIANTS), ry: hash01(t.x * 3.1, t.z) * Math.PI * 2, shade: true });
+
   // Orchards in rows: the map draws orchard trees mostly along the orchard edges (the east mango orchard has 12 trees on
   // 3,600 m2), so every orchard's empty middle is filled with rows of its own species at ~10.5 m, the spacing the map uses
   // where it is full, never within 8 m of a drawn tree or 4 m of a road.
@@ -167,7 +172,7 @@ export async function build(map, { camera = null } = {}) {
     const nat = box.getSize(new THREE.Vector3());
     const wide = Math.max(nat.x, nat.z);
     let s = THREE.MathUtils.clamp(t.d / wide, 0.6, 2.2);
-    if (t.kind === 'peepal') s = Math.max(s, 1.45); // the chaupal peepal is the biggest tree in the village: its crown spreads well past the chabutra
+    if (t.kind === 'peepal' && !t.shade) s = Math.max(s, 1.45); // the chaupal peepal is the biggest tree in the village: its crown spreads well past the chabutra
     // the map's canopy height wins where the natural crown would be too short (eucalyptus rows): stretch up to 1.35x
     const sy = THREE.MathUtils.clamp(t.h / nat.y, s * 0.9, s * 1.35);
     const leafTint = new THREE.Color(LEAF_TINT[t.kind]).multiplyScalar(0.92 + 0.16 * hash01(t.x, 7));
@@ -219,7 +224,7 @@ export async function build(map, { camera = null } = {}) {
 
   const counts = {};
   for (const t of trees) counts[t.kind] = (counts[t.kind] || 0) + 1;
-  group.userData.report = { trees: trees.length, orchardRowsAdded: filled, bySpecies: counts, kit: kit.stats() };
+  group.userData.report = { trees: trees.length, orchardRowsAdded: filled, shadeTrees: SHADE_TREES.length, bySpecies: counts, kit: kit.stats() };
   group.userData.update = update;
   return group;
 }
