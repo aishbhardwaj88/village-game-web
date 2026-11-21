@@ -84,9 +84,8 @@ const PRESETS = {
     zoneAlwaysExtra: 110,
     zoneSightExtra: 300,
     zoneVisExtra: 130,
-    // Art director's call (docs/s7/desktop.md "Needs her"): real sun shadows are the biggest visual gain of the desktop
-    // edition, but she has not said yes yet. OFF until she does: flip this ONE line to true. (?shadows=follow still works.)
-    sunShadows: false,
+    // Real sun shadows: the biggest visual gain of the full edition. She left it to us (22 Nov: premium look first), so ON.
+    sunShadows: true, // her call 22 Nov: "if it makes the game look better, add it": on Mac it grounds every shop, cart and person; render cost 3.5 -> 3.7 ms
   }),
 };
 

@@ -22,6 +22,7 @@ Also checked:
 
 ## Needs you (one question)
 
+- **DO NOT ASK HER AGAIN (her order, 22 Nov: "I will give them to you whenever I want, you just add them").** Kept here only as a release-checklist item for the final sale build:
 - **Which Tripo plan made the 10 people?** (Brother, Dada, Dadi, Maa, Parlour Didi, Pitaji, Postman, Sarpanch, Sister, Teacher.)
   Tripo's pricing page: paid plans = "private models, commercial use"; free plan = models are public, under CC BY 4.0.
   Please open your Tripo account, look at Billing / Subscription, and tell us the plan name and the month you made them.

@@ -356,7 +356,7 @@ async function main() {
   // sun direction that dayline, night and the sky dome read.
   // OFF by default: real shadows at the village add 20 to 85 draw calls per view (measured 3 Nov), and the ceiling is already
   // breached. Try it with ?shadows=follow; turning it on for everyone is the art director's trade-off.
-  // S7 WIRING (desktop): the quality preset can switch them on for everyone (getQuality().sunShadows, OFF until she says yes)
+  // S7 WIRING (desktop): the quality preset can switch them on for everyone (getQuality().sunShadows: ON in the full preset since 22 Nov)
   const FOLLOW_SUN_SHADOWS = getQuality().sunShadows || new URLSearchParams(location.search).get('shadows') === 'follow';
   // The shadow box stays at the origin unless follow is on, 600 m from where she plays, so the
   // pass drew nothing while every lit material still paid for shadow sampling. Off by default.
