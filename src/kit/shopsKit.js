@@ -206,7 +206,7 @@ function steps(P, cx, w, zEdge, h, n) {
 
 // --------------------------------------------------------------------------------------------------------- designs
 /** Two-storey shop-house. opts: { W, D, H, shutterDown, balcony: 'rail'|'parapet', trade, seed } */
-export function shopHouse({ W, D, H = 7, shutterDown = false, balcony = 'rail', trade = 'general', seed = 1, lite = false }) {
+export function shopHouse({ W, D, H = 7, shutterDown = false, balcony = 'rail', trade = 'general', seed = 1, lite = false, homeDoor = false }) {
   LITE = lite;
   const P = new Parts(TILES);
   const t = 0.23, otla = Math.min(1.1, D * 0.16), fz = D / 2 - otla; // front wall plane
@@ -221,9 +221,17 @@ export function shopHouse({ W, D, H = 7, shutterDown = false, balcony = 'rail', 
   const sideMat = rnd(seed, 1) < 0.35 ? 'brick' : 'plaster';
   for (const s of [-1, 1]) sideWall(P, sideMat, -D / 2, fz + t / 2, plinthH, gfTop, s * (W / 2 - t / 2), t, sideMat === 'brick' ? 0xe8ddd0 : 0xffffff);
   wall(P, 'plaster', -W / 2 + t, W / 2 - t, plinthH, gfTop, -D / 2 + t / 2, t);
-  const ox0 = -W / 2 + 0.32, ox1 = W / 2 - 0.32, oy0 = plinthH, oy1 = 2.75;
-  wall(P, 'plaster', -W / 2, W / 2, plinthH, gfTop, fz, t, [{ x0: ox0, x1: ox1, y0: oy0, y1: oy1 }]);
+  // homeDoor (S7 fixes, the shopkeeper's home and godown): the family's own panelled door beside a narrower godown shutter
+  const hdw = 0.95, hdh = 2.1, hdx = W / 2 - 0.32 - 0.6;
+  const ox0 = -W / 2 + 0.32, ox1 = homeDoor ? W / 2 - 0.32 - 1.35 : W / 2 - 0.32, oy0 = plinthH, oy1 = 2.75;
+  const gfOps = [{ x0: ox0, x1: ox1, y0: oy0, y1: oy1 }];
+  if (homeDoor) gfOps.push({ x0: hdx - hdw / 2, x1: hdx + hdw / 2, y0: plinthH, y1: plinthH + hdh });
+  wall(P, 'plaster', -W / 2, W / 2, plinthH, gfTop, fz, t, gfOps);
   shutterAt(P, ox0, ox1, oy0, oy1, fz + t / 2, shutterDown, seed);
+  if (homeDoor) {
+    doorAt(P, hdx, plinthH, hdw, hdh, fz + t / 2, t, seed + 11);
+    P.box('concrete', hdx, plinthH + hdh + 0.06, fz + t / 2 + 0.03, hdw + 0.2, 0.12, 0.1, { color: CEMENT }); // lintel
+  }
   if (!shutterDown) interior(P, -W / 2 + t, W / 2 - t, -D / 2 + t + Math.max(0, D - otla - 4.2), fz - t / 2, plinthH, gfTop, trade, seed);
   // first-floor slab, running out over the otla as the balcony floor; drip edge
   P.box('concrete', 0, gfTop + slab / 2, -0.02, W + 0.04, slab, D - 0.04, { color: CEMENT });

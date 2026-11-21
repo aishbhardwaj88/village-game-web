@@ -44,7 +44,7 @@ export function buildShops(map, { camera = null } = {}) {
   const boards = [];
   const colliders = [];
   const lod = []; // { x, z, near, far }
-  const report = { shopHouses: 0, shops: 0, kiosks: 0, carts: 0, sheds: 0, skipped: [], onRoad: [], backToRoad: [], skewed: [] };
+  const report = { shopHouses: 0, shopkeeperHomes: 0, shops: 0, kiosks: 0, carts: 0, sheds: 0, skipped: [], onRoad: [], backToRoad: [], skewed: [] };
   const designSigns = new Map();
 
   const put = (type, key, build, rect, opts, i) => {
@@ -89,6 +89,28 @@ export function buildShops(map, { camera = null } = {}) {
     if (o.kind !== 'solids' || !o.rings?.[0] || o.rings[0].length !== 4) continue;
     const key = labelKey(o), name = labelName(o);
     if (!key.startsWith('new_')) continue;
+    if (key === 'new_sqh') {
+      // S7 fixes: the shopkeeper's home and godown (7 x 4.4 m, two storeys): no named place, so it stands on the layout's
+      // corrected footprint (o.rect, front towards its gali). Godown shutter down below with the family's door beside it,
+      // home above. No board (a godown carries none; question for her in docs/s7/fixes.md).
+      const r = o.rect;
+      let rect = r ? { x: r.cx, z: r.cz, width: r.w, depth: r.d, front: r.front, ry: r.ry, skewDeg: 0 } : null;
+      if (!rect) { // raw export (preview pages): the drawn plot, fronted on whichever side is nearest a road or gali
+        let best = null;
+        for (const f of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          const rr = ringRect(o.rings[0], f);
+          const cl = roads.clearance(rr.x + rr.front[0] * (rr.depth / 2 + 3), rr.z + rr.front[1] * (rr.depth / 2 + 3));
+          if (!best || cl < best.cl) best = { cl, rr };
+        }
+        rect = best.rr;
+      }
+      const W = Math.round(rect.width * 10) / 10, D = Math.round(rect.depth * 10) / 10, H = o.y1 || 6.5;
+      const k = 9001; // own seed: leaves every other shop's colour and variant exactly as before
+      const balcony = hash01(k, 2) < 0.55 ? 'rail' : 'parapet';
+      put('shopHouse', `sqh|${W}|${D}|${H}|${balcony}`, (lite) => shopHouse({ W, D, H, shutterDown: true, balcony, trade: 'seeds', seed: 17, lite, homeDoor: true }), rect, { H, signName: null }, k);
+      report.shopkeeperHomes++;
+      continue;
+    }
     const isSqx = key === 'new_sqx', isKiosk = key === 'new_kiosk' || key === 'new_cart';
     const isSingle = /^new_[A-Z]/.test(key) && !NOT_SHOPS.has(name);
     if (!isSqx && !isKiosk && !isSingle) continue;
