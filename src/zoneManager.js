@@ -4,6 +4,7 @@ import { modelLoads } from './loaders.js';
 import { queueBusy, frameBudget } from './frameQueue.js';
 import { placeBatchPending } from './placeBatch.js';
 import { layoutMode } from './layout/layout.js';
+import { getQuality } from './edition.js'; // S7 WIRING (desktop): zone distances from the quality preset
 
 // In-flight loads (glb, textures, files) through three's default manager. Its counters are private and ui.js owns its
 // callbacks, so the item hooks are wrapped (counting only, behaviour unchanged).
@@ -23,14 +24,15 @@ const loadsInFlight = { n: 0 };
 //    camera frustum, or lies ahead of the direction of travel (prefetch)
 // Builds are time-sliced so a crossing never freezes the frame; teardown only happens well
 // beyond the sight radius. Frustum culling keeps draw calls to what is actually in view.
-const ALWAYS_EXTRA = 70;
-const SIGHT_EXTRA = 230; // 170 -> 230 (9 Nov playtest S1): any zone ahead of the player is built at least 250 m out, 33 s ahead at the cycle's 7.5 m/s
+const _Q = getQuality() || {};
+const ALWAYS_EXTRA = _Q.zoneAlwaysExtra ?? 70;
+const SIGHT_EXTRA = _Q.zoneSightExtra ?? 230; // 170 -> 230 (9 Nov playtest S1): any zone ahead of the player is built at least 250 m out, 33 s ahead at the cycle's 7.5 m/s
 const TEARDOWN_EXTRA = 200;
 // Built early does not mean drawn early: a built zone is only DRAWN within buildRadius + VIS_EXTRA
 // (draw-call ceiling 150); `detail` zones (doorstep props, rooftop clutter, lane vignettes, boundary
 // walls, lamps: small things that are a few pixels at that range) keep their original radius. Built-but-hidden zones cost nothing per frame, so the reveal is a flip
 // at fog distance, never a visible assembly or a frame hitch.
-const VIS_EXTRA = 80;
+const VIS_EXTRA = _Q.zoneVisExtra ?? 80;
 // Build budget per frame: frameBudget() (src/frameQueue.js, ~4 ms, up to 8 ms on a slow frame), nearest zone first, always at
 // least one zone a frame. The old 45 ms warm-up budget chained several 40-190 ms builds into one frame right after Play
 // (load-play, 9 Nov: 0.5-1.8 s tasks); the surroundings now assemble one zone a frame, which is still well ahead of sight.
