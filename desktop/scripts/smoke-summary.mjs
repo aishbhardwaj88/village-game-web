@@ -1,0 +1,21 @@
+// Prints a plain summary of the two smoke runs written by desktop/main.js --smoke-test (see scripts/smoke.sh).
+import { readFileSync } from 'node:fs';
+const [a, b] = process.argv.slice(2).map((f) => { try { return JSON.parse(readFileSync(f, 'utf8')); } catch (e) { return { fatal: `${f}: ${e.message}` }; } });
+const line = (k, v) => console.log(`${k.padEnd(34)} ${v}`);
+line('run 1 ok', a.ok);
+line('loaded from', a.loadedUrl);
+line('edition / quality / characters', `${a.edition?.edition} / ${a.edition?.quality} / ${a.edition?.build}`);
+line('preload flag', JSON.stringify(a.edition?.flag));
+line('Node reachable from page', a.edition?.nodeVisible);
+line('title shown / Play ready (ms)', `${a.titleMs} / ${a.playReadyMs}`);
+line('Play pressed, first 3D frame', `${a.playClicked} / ${a.firstRender}`);
+line('renderer after Play', JSON.stringify(a.renderer));
+line('character file sizes (bytes)', JSON.stringify(a.characterBytes));
+line('console errors (run 1)', (a.errors || []).length);
+for (const e of a.errors || []) console.log('   ', e.level, e.message.slice(0, 200));
+line('failed requests (run 1)', JSON.stringify(a.failedRequests || []));
+line('run 2 ok', b.ok);
+line('save written in run 1', a.saveWritten);
+line('save read back in run 2', b.saveFromLastRun);
+line('saves persist across restart', !!a.saveWritten && a.saveWritten === b.saveFromLastRun);
+line('console errors (run 2)', (b.errors || []).length);
