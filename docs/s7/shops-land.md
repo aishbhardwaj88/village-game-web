@@ -13,8 +13,8 @@ Branch `s7-shops-land`. Everything here shows only with `?layout=new`; `?layout=
 | Carts (thela) | plank bed on two spoked wheels, crates of produce or a cook-top, canopy | 35 |
 | Open sheds | bus shelter, cycle stand, jaggery unit | 3 |
 | Signboards | ONE atlas, Hindi bold on top + English below (the 25 Oct rule), 6 painted colour schemes | 154 boards, 136 painted cells |
-| Trees | mango 179 (+ rows added in the sparse east orchard), guava 146, jamun 51, eucalyptus 119, neem 44, shisham 44, peepal 1 | 584 from the map |
-| Fields | 42 crop patches painted on the ground (sugarcane, young wheat, mustard in flower, marigold, potato, chilli, brinjal, cauliflower, green fodder, paddy stubble), earth bunds round every field, real plants only in a band 1.5-14 m from a road | 42 + 4 orchard floors + 9 green strips |
+| Trees | mango 179, guava 146, jamun 51, eucalyptus 119, neem 44, shisham 44, peepal 1 (+3 rows filled into orchard gaps) | 587 |
+| Fields | 42 crop patches painted on the ground (sugarcane, young wheat, mustard in flower, marigold, potato, chilli, brinjal, cauliflower, green fodder, paddy stubble): soft rows along the field's long side, flower speckles for mustard / marigold / chilli / cauliflower, earth bunds round every field; real plants (the khet's own tufts and cane clumps) only in a band 1.5-14 m from a road | 42 + 4 orchard floors + 9 green strips |
 | Canal | 690 m north-south at x 824: cement-lined, embanked, 6 m water, grassy bunds, kachcha bank track, 5 humped bridges with parapets and ramps, washing steps | 1 |
 | Flag island | brick-faced round island with coping and grass bed, stepped pedestal, 9 m white pole, waving tiranga, village name stone "अमराई खेड़ा / Amrai Kheda". No peepal on the island. | 1 |
 | Peepal chabutra | plastered round platform with a step by the chaupal (the big peepal stands on it) | 1 |
@@ -32,11 +32,15 @@ rusted through); roofs of stalls, carts and sheds are rusted corrugated sheet wi
 | square_eye.png | the bazaar street of two-storey shop-houses, eye height, flag at the end |
 | square_above.png | the square and its arms from above |
 | kiosks_eye.png | a shop-house, a gumti kiosk and carts round the square |
-| smallshop_eye.png | small shops with their boards (dhaba, chemist, electrical repair) |
+| smallshop_eye.png | small shops with their boards (kirana, dhaba ...): stocked shelves, counter, sacks, benches, chulha |
 | flag_eye.png | the flag island and the name stone |
-| orchard_eye.png / orchard_above.png | the south mango orchard and the eucalyptus row |
-| orchard_east.png | the east mango orchard (sparse in the map, filled with rows) |
-| field_eye.png / field_above.png | mustard in flower and marigold patches, plants by the track |
+| orchard_eye.png / orchard_above.png | the south mango orchard in rows |
+| orchard_east.png | the east mango orchard and its tree row |
+| peepal_eye.png | the chaupal peepal on its chabutra |
+| flag_above.png | the flag island from above |
+| canal_strip.png | the green strip and tree line between the houses and the canal |
+| kiln_green.png | the green strip with two tree rows between the highway and the kiln |
+| field_eye.png / field_above.png | mustard in flower and marigold patches, plants by the farm track |
 | cane_eye.png | sugarcane by a road |
 | canal_eye.png / canal_above.png | the canal, green strip, tree line, bridge on the east road, washing steps |
 
@@ -45,27 +49,40 @@ opens `docs/s7/shops-land/preview.html`, which uses the game's own renderer, sky
 drawn there as plain strips only for context). The preview loads the Devanagari webfont from `tmp/fonts/` (OFL,
 from the npm package @fontsource/noto-sans-devanagari; not committed); the game itself loads it from Google Fonts.
 
-## Numbers (headless, 1280 x 720, measured layer by layer, main pass, shadows off as in the game)
+## Numbers (headless, 1280 x 720, layer by layer, main pass, shadows off as in the game, 'full' preset)
 
 Budget asked: all shops <= 25 draw calls, all trees <= 15, fields + canal <= 10.
 
 | View | Shops calls / tris | Trees calls / tris | Fields calls / tris | Canal calls / tris | Props calls / tris |
 |---|---|---|---|---|---|
-| square_eye | 6 / 62k | 1 / 1k | 1 / 13k | 3 / 1.5k | 10 / 22k |
-| square_above | 6 / 48k | 1 / 1.4k | 1 / 13k | 3 / 1.5k | 13 / 35k |
-| kiosks_eye | 6 / 26k | 3 / 6k | 1 / 13k | 3 / 1.5k | 9 / 22k |
-| canal_above | 6 / 4.5k | 3 / 8.5k | 3 / 27k | 3 / 1.5k | 13 / 57k |
+| square_eye | 6 / 77k | 3 / 6k | 2 / 16k | 3 / 1.5k | 17 / 74k |
+| square_above | 6 / 71k | 1 / 1.4k | 3 / 17k | 3 / 1.5k | 20 / 65k |
+| smallshop_eye | 6 / 40k | 1 / 0.6k | 2 / 16k | 3 / 1.5k | 11 / 27k |
+| orchard_eye | 1 / 2k | 3 / 152k | 3 / 18k | 3 / 1.5k | 4 / 5k |
+| field_eye | 0 / 0 | 2 / 8k | 3 / 74k | 3 / 1.5k | 2 / 12k |
+| canal_above | 6 / 15k | 3 / 13k | 4 / 144k | 3 / 1.5k | 14 / 60k |
 
-- Shops never cost more than 6 draw calls (one BatchedMesh per material for every body, near and far, plus one mesh
-  for every board). Three detail tiers per shop: full within 60 m, no stock on the shelves to 160 m, a plain block
-  beyond (desktop/'full' preset; the 'light' web preset uses 35 / 100 m).
-- Trees never cost more than 3 (bark, leaf cards, impostors), whatever the count. Full crown within 70 m, every third
-  card to 150 m, two crossed baked sprites beyond ('light': 42 / 95 m).
-- Fields + canal: 1 painted ground mesh + up to 3 plant meshes (tufts, cane, mustard) + 3 canal meshes = at most 7.
-- Props: the shared chunked helper (src/kit/instancing.js), drawn within 140 m only ('light': 90 m).
-- Console errors in the preview runs: 0.
-- Quality knobs are grouped in `src/kit/landQuality.js` (presets 'light' and 'full', picked by src/edition.js
-  getQualityName() once that is merged, or `?quality=`).
+(Props were measured at 140 m reach; it is now 100 m 'full' / 70 m 'light', and crop plants 80 / 60 m with a third of
+them beyond 40 m, so the props and fields columns are lower than shown.)
+
+- Shops: always 6 draw calls (one BatchedMesh per material for every body, near and far, plus one mesh for every
+  board). Three detail tiers per shop: full within 60 m, no stock on the shelves to 160 m, a plain block beyond
+  ('light' web preset: 35 / 100 m).
+- Trees: at most 3 draw calls (bark, leaf cards, impostors), whatever the count. Full crown within 90 m, every second
+  card (1.3x larger) to 170 m, two crossed baked sprites beyond ('light': 42 / 95 m). An orchard seen from inside costs
+  ~150k triangles at 'full'; that is the number to watch (the 'light' preset roughly halves it).
+- Fields + canal: 1 painted ground mesh + 2 plant meshes (tufts, cane) + 3 canal meshes = at most 6.
+- Props: the shared chunked helper (src/kit/instancing.js): one draw per model part per 150 m chunk within reach,
+  9-20 in the village (the models are the game's existing hand pumps, haystacks, gobar and laundry lines, 1-8k
+  triangles each).
+- In the real game (headless, touch-device mode, `?layout=new&proof=1`, player in the square, docs/s7/shops-land/game-smoke.mjs):
+  the kit builds (all 5 layers), whole-frame draw calls 246 vs 202 with `?layout=old` at the same spot (the old village
+  is still standing there until the layout and houses agents' work lands), console errors 10 vs 11, **new errors: 0**.
+  (A desktop-size headless window crashes the GPU process for BOTH layouts on this machine; touch mode is what the
+  load tests use too.)
+- Preview runs: 0 console errors.
+- Quality knobs are grouped in `src/kit/landQuality.js` (presets 'light' and 'full'; picked by src/edition.js
+  getQualityName() once that is merged, else `?quality=`, else 'full').
 
 ## Checks
 
@@ -87,14 +104,21 @@ Budget asked: all shops <= 25 draw calls, all trees <= 15, fields + canal <= 10.
 ## Decisions I made (one line each)
 
 - Ground cannot be dug, so the canal is embanked and lined (lip 0.55 m, water 0.2 m, bridges 0.8 m humps).
-- The east mango orchard is drawn with only 12 trees on 3,600 m2; I filled it with rows at the spacing of the other
-  orchards (10.5 m), clear of the drawn trees and roads. The other three orchards are full in the map and untouched.
+- Orchards: every orchard's gaps are filled with rows of its species at 10.5 m, never within 8 m of a drawn tree or
+  4 m of a road (the map's orchards turned out to be nearly full: 3 trees added in all).
 - The family khet of the wheat errand (src/field.js) stays (gameplay); the painted fields leave a hole over it and
   place no plants there.
 - "Guava / jamun" markers: 3 in 4 guava, 1 in 4 jamun. "Neem / sheesham" markers: half each.
 - Not built (no owner in my brief; tell me if they are mine): mobile tower, transformer, barber under a tree,
   water trough, washing platform, pump rooms (tubewells), machans, scarecrows, clay pots, milestones, gate,
   notice board, buffaloes, culvert, water channels, ponds, cricket / kabaddi / parking / yard ground patches.
+
+## Questions for her (looks)
+
+- Crop plants by the roads reuse the old khet's code-built tufts and cane clumps (mustard now as yellow-tipped tufts, the
+  khet's mustard cards read as little trees at eye height). If they read as plastic, a CC0 crop model is the fix.
+- Shutters and gumti sheet steel are painted steel (the concrete photo set under a paint colour, bottom slats rusted).
+- Shop walls take the palette tints at 30% (law), so most read as cream; tell me if the bazaar should be more colourful.
 
 ## Old canal
 

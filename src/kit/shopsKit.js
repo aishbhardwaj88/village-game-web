@@ -290,7 +290,7 @@ export function shop({ W, D, H = 3.6, front = 'shutter', shutterDown = false, tr
       const cx = (x0 + x1) / 2;
       if (isDoor) ops.push({ x0: cx - 0.7, x1: cx + 0.7, y0: plinthH, y1: plinthH + 2.2, kind: 'door' });
       else ops.push({ x0: cx - 0.65, x1: cx + 0.65, y0: plinthH + 0.85, y1: plinthH + 2.1, kind: 'win' });
-    } else ops.push({ x0, x1, y0: plinthH, y1: Math.min(top - 0.45, plinthH + 2.5), kind: front });
+    } else ops.push({ x0, x1, y0: plinthH, y1: Math.min(top - 0.8, plinthH + 2.4), kind: front }); // shutter head + roll box sit under the chajja
   }
   wall(P, 'plaster', -W / 2, W / 2, plinthH, top, fz, t, ops);
   ops.forEach((o, i) => {
@@ -304,15 +304,15 @@ export function shop({ W, D, H = 3.6, front = 'shutter', shutterDown = false, tr
   // roof slab, chajja over the otla, parapet
   P.box('concrete', 0, top + slab / 2, (fz - D / 2) / 2 + 0.05, W + 0.08, slab, fz + D / 2 + 0.3, { color: CEMENT });
   const cj = otla - t / 2 - 0.03;
-  P.box('concrete', 0, top - 0.42, fz + t / 2 + cj / 2, W + 0.04, 0.08, cj, { color: CEMENT });
-  P.box('concrete', 0, top - 0.47, fz + t / 2 + cj - 0.03, W + 0.04, 0.05, 0.06, { color: 0xbcb6a8 });
+  P.box('concrete', 0, top - 0.48, fz + t / 2 + cj / 2, W + 0.04, 0.08, cj, { color: CEMENT });
+  P.box('concrete', 0, top - 0.53, fz + t / 2 + cj - 0.03, W + 0.04, 0.05, 0.06, { color: 0xbcb6a8 });
   const pY0 = top + slab;
   P.box('plaster', 0, (pY0 + H) / 2, fz + 0.12, W + 0.06, H - pY0, 0.16);
   P.box('plaster', 0, (pY0 + H) / 2, -D / 2 + 0.08, W, H - pY0, 0.15);
   for (const s of [-1, 1]) P.box('plaster', s * (W / 2 - 0.075), (pY0 + H) / 2, (fz - D / 2) / 2, 0.15, H - pY0, fz + D / 2 - 0.3);
   P.box('concrete', 0, H + 0.03, fz + 0.12, W + 0.1, 0.06, 0.24, { color: CEMENT });
   // the board sits on the front wall between the chajja and the parapet cap, proud of the wall
-  const sign = { x: 0, y: top - 0.36, z: fz + 0.26, w: Math.min(W - 0.3, front === 'office' ? 3.6 : 4.4), h: Math.min(0.78, H - (top - 0.36) - 0.05) };
+  const sign = { x: 0, y: top - 0.4, z: fz + 0.26, w: Math.min(W - 0.3, front === 'office' ? 3.6 : 4.4), h: Math.min(0.8, H - (top - 0.4) - 0.06) }; // above the chajja, clear of it from eye height
   return { geo: P.build(), sign };
 }
 
