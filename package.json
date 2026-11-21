@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node tools/licence-audit.mjs --check && node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
-    "build:unchecked": "vite build && node tools/check-budget.js",
+    "build": "node tools/licence-audit.mjs --check && node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/char-diet.mjs && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
+    "build:unchecked": "vite build && node tools/char-diet.mjs && node tools/check-budget.js",
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
     "shrink": "node tools/shrink.js",

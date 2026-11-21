@@ -144,6 +144,8 @@ function updateGesture(a, dt) {
 export function updateCharacterAnims(dt) {
   if (!(dt > 0)) return;
   for (const a of animators) {
+    const lod = a.root && a.root.userData && a.root.userData.charLOD; // S7 characters: distance tiers
+    if (lod && lod.tier >= 2) { a.first = true; continue; }
     a.follow.getWorldPosition(tmp);
     const raw = a.first ? 0 : Math.hypot(tmp.x - a.prev.x, tmp.z - a.prev.z) / dt;
     a.first = false;
@@ -172,8 +174,8 @@ export function updateCharacterAnims(dt) {
       a.run.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / a.runRef, 0.8, a.maxRate));
     }
     a.mixer.update(dt);
-    if (a.neck && a.head) straightenNeck(a);
-    if (a.face.length) {
+    if (a.neck && a.head && (!lod || lod.stepped)) straightenNeck(a);
+    if (a.face.length && (!lod || lod.tier === 0)) {
       // blink: 0.09 s close, 0.11 s open
       if (a.blinkT < 0) { a.blinkIn -= dt; if (a.blinkIn <= 0) { a.blinkT = 0; } }
       let b = 0;
