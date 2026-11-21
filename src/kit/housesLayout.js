@@ -19,10 +19,16 @@ export async function loadHouseMap() {
 export function houseMapFrom(map) {
   const houses = [];
   const solids = [];
+  // The layout agent's corrected footprint (o.rect: squared to its road, off roads and galis) wins over the drawn ring (S7 WIRING, 21 Nov).
+  const rectRing = (r) => {
+    const fx = Math.sin(r.ry), fz = Math.cos(r.ry), sx = fz, sz = -fx, hw = r.w / 2, hd = r.d / 2;
+    return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => [r.cx + sx * hw * a + fx * hd * b, r.cz + sz * hw * a + fz * hd * b]);
+  };
   for (const o of map.objects) {
-    if (!o.rings || !o.rings.length) continue;
-    if (o.label.startsWith('new_house')) houses.push({ ring: o.rings[0], mud: /Mud house/.test(o.label) });
-    else if (o.kind === 'solids') solids.push({ label: o.label, ring: o.rings[0] });
+    if (!o.rect && (!o.rings || !o.rings.length)) continue;
+    const ring = o.rect ? rectRing(o.rect) : o.rings[0];
+    if (o.label.startsWith('new_house')) houses.push({ ring, mud: /Mud house/.test(o.label) });
+    else if (o.kind === 'solids') solids.push({ label: o.label, ring });
   }
   const roads = map.roads.map((r) => ({ id: r.id, kind: r.kind, width: r.width, pts: r.pts }));
   return { houses, roads, solids };

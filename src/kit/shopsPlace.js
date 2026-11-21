@@ -95,7 +95,8 @@ export function buildShops(map, { camera = null } = {}) {
     const c0 = { x: o.rings[0].reduce((a, p) => a + p[0], 0) / 4, z: o.rings[0].reduce((a, p) => a + p[1], 0) / 4 };
     const place = matchPlace(places, isSqx ? name.replace(/ \(2-storey\)$/, '') : name, c0.x, c0.z);
     if (!place) { report.skipped.push(`${o.label}: no place with a front`); continue; }
-    const rect = ringRect(o.rings[0], place.front);
+    // The layout agent's corrected footprint (squared to its road, off roads and galis) wins over the drawn ring (S7 WIRING, 21 Nov).
+    const rect = o.rect ? { x: o.rect.cx, z: o.rect.cz, width: o.rect.w, depth: o.rect.d, front: o.rect.front, ry: o.rect.ry, skewDeg: 0 } : ringRect(o.rings[0], place.front);
     const W = Math.round(rect.width * 10) / 10, D = Math.round(rect.depth * 10) / 10, v = i % 3;
     i++;
     if (isSqx) {
