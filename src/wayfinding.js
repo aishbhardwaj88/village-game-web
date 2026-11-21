@@ -12,6 +12,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLACES } from './freeRoam.js';
 import { OLD_SHIFT } from './anchors.js';
+import { isNewLayout, getPlace } from './layout/layout.js'; // S7 layout
+import { seatBesideRoad, faceRoadYaw } from './layout/seat.js';
 import { drawBilingual, hiFont, enFont } from './signPaint.js';
 
 const CELL_W = 1024;
@@ -42,8 +44,18 @@ const SIGNPOSTS_ON_MAP = [
 ];
 
 // The map rides east by MAP_SHIFT as one piece (anchors.js OLD_SHIFT); the posts and the board ride with it.
-const SIGNPOSTS = SIGNPOSTS_ON_MAP.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }));
-const NOTICE = { x: -49.2 + OLD_SHIFT.x, z: 8.5 + OLD_SHIFT.z, ry: -Math.PI / 2 };
+// S7 (?layout=new): each post keeps its spot and facing where that spot is clear; one that would stand in a new building or on a
+// carriageway moves to the nearest clear spot beside a road (src/layout/seat.js), or is left out. The notice board stands on
+// the approved map's own 'Notice board' spot, facing its road. Under ?layout=old both are exactly as before.
+const SIGNPOSTS = SIGNPOSTS_ON_MAP.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }))
+  .map((p) => { if (!isNewLayout()) return p; const q = seatBesideRoad(p.x, p.z); return q ? { ...p, x: q.x, z: q.z } : null; })
+  .filter(Boolean);
+const NOTICE = (() => {
+  const n = isNewLayout() && getPlace('new_notice');
+  if (!n) return { x: -49.2 + OLD_SHIFT.x, z: 8.5 + OLD_SHIFT.z, ry: -Math.PI / 2 };
+  const q = seatBesideRoad(n.x, n.z) || { x: n.x, z: n.z };
+  return { x: q.x, z: q.z, ry: faceRoadYaw(q.x, q.z) };
+})();
 const NOTICE_LIST = ['school', 'bazaar', 'post', 'temple', 'canal', 'field', 'highway', 'mandi'];
 
 const byId = (id) => PLACES.find((p) => p.id === id);

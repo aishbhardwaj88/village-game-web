@@ -1,4 +1,5 @@
 import { pt, OLD_SHIFT } from './anchors.js';
+import { layoutTurnDeg } from './layout/layout.js'; // S7 layout
 import { MAP_SHIFT } from './mapPlan.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -29,7 +30,7 @@ import { applyTurn, turnXZ } from './turn.js';
  * Plain and dignified per this task's own item 2 instruction and CLAUDE.md section
  * 4: no deity figures, no religious imagery, no text anywhere on or in it.
  */
-export const TEMPLE_TURN_DEG = 1.5; // map turn: the temple is built square about TEMPLE_POS, then turned as one piece (src/turn.js)
+export const TEMPLE_TURN_DEG = layoutTurnDeg('temple', 1.5); // S7: ?layout=new turns the temple to face the highway (1.5 under old) // map turn: the temple is built square about TEMPLE_POS, then turned as one piece (src/turn.js)
 export const TEMPLE_YAW = -TEMPLE_TURN_DEG * Math.PI / 180;
 export function templeXZ(x, z) { return turnXZ(TEMPLE_POS.x, TEMPLE_POS.z, TEMPLE_TURN_DEG, x, z); }
 export function turnTempleGroup(group) { return applyTurn(group, TEMPLE_POS.x, TEMPLE_POS.z, TEMPLE_TURN_DEG); }

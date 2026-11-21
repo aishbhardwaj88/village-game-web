@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { getTiledMaterial } from './materials.js';
 import { allRoadLines } from './mapRoads.js';
 import { CHAURAHA } from './mapPlan.js';
+import { isNewLayout } from './layout/layout.js'; // S7 layout
 import { loadKitModels, KIT_SHARES } from './houseKit.js';
 import { swapShared, oldHouseMaterial } from './stagingYard.js';
 import { VILLAGE_HOUSES } from './villageHouses.js';
@@ -122,6 +123,9 @@ export function createArmFrontage(scene) {
   const info = { placed: [], skipped: [], houses: 0, shops: 0, sets: 0, drawCalls: 0 };
   if (typeof window !== 'undefined') window.__armFrontage = info;
   if (typeof location !== 'undefined' && /[?&]noarmfront=1/.test(location.search)) return { group, update() {} }; // A/B draw-call probe
+  // S7: under ?layout=new the approved map places every house and shop along the arms (houses / shops-land agents), so these
+  // generated frontage plots would stand among them: not built (?layout=old unchanged)
+  if (isNewLayout()) { info.off = 'layout=new'; return { group, update() {} }; }
   let built = false, frames = 0, models = null;
   const clusters = [];
   let lx = 1e9, lz = 1e9;

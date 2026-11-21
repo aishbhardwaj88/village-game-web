@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { pt } from '../anchors.js';
+import { movedWith, movedYaw, oldAnchor } from '../layout/layout.js'; // S7 layout
 import { buildBantaCart, buildChaatThela } from './props.js';
 
 /**
@@ -44,6 +45,7 @@ const STALLS = [
     seller: { en: 'Banta shop', hi: 'बंटा की दुकान' },
     role: 'bantawala',
     build: buildBantaCart,
+    place: 'banta', // S7: under ?layout=new the cart, seller and buy point turn with the moved banta shop (identity under old)
     pos: { x: pt('banta').x - 0.2, z: pt('banta').z },
     rotY: 0, // handle toward +x (the lane)
     buyAt: { x: pt('banta').x + 1.6, z: pt('banta').z + 0.4 },
@@ -70,13 +72,27 @@ const STALLS = [
   },
 ];
 
+/**
+ * S7: the stall's points are written as offsets from the banta anchor as it stood on 9 Nov. pt() already gives the new spot
+ * under ?layout=new, so the offsets are taken back to the old anchor and carried (moved and turned) with the place.
+ * Under ?layout=old (or a stall with no place) everything is exactly as written.
+ */
+function placeStall(s) {
+  const sellerAt = { x: s.pos.x - 1.1, z: s.pos.z }, sellerYaw = Math.PI / 2;
+  if (!s.place) return { ...s, sellerAt, sellerYaw };
+  const a = pt(s.place), o = oldAnchor(s.place) || a;
+  const carry = (p) => movedWith(s.place, p.x - a.x + o.x, p.z - a.z + o.z);
+  return { ...s, pos: carry(s.pos), buyAt: carry(s.buyAt), rotY: movedYaw(s.place, s.rotY), sellerAt: carry(sellerAt), sellerYaw: movedYaw(s.place, sellerYaw) };
+}
+
 export function registerStalls(api, env) {
-  for (const s of STALLS) {
+  for (const s0 of STALLS) {
+    const s = placeStall(s0);
     const cart = s.build();
     cart.position.set(s.pos.x, 0, s.pos.z);
     cart.rotation.y = s.rotY;
     api.scene.add(cart);
-    const seller = api.npc(s.role, { x: s.pos.x - 1.1, z: s.pos.z }, Math.PI / 2, `npc_${s.id}_seller`);
+    const seller = api.npc(s.role, s.sellerAt, s.sellerYaw, `npc_${s.id}_seller`);
     seller.root.position.y = 0;
     api.addInteraction({
       id: `stall_${s.id}`,

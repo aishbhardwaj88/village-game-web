@@ -5,6 +5,7 @@ import { followGround } from './moverGround.js';
 import { ANCHORS } from './anchors.js';
 import { ROUTES } from './npcRoutines.js';
 import { resolveMove } from './movement.js';
+import { isNewLayout } from './layout/layout.js'; // S7 layout
 import { BAZAAR_UNITS, bazaarUnitCx, BAZAAR_FRONT_Z, BAZAAR_WEST_X, BAZAAR_EAST_X, CHOWK_TEA_POS, CHOWK_FURN_ORIGIN, bazaarXZ, BAZAAR_YAW } from './bazaar.js';
 
 /**
@@ -46,20 +47,32 @@ const SHOP_FLOOR_SINK = 0.015; // see settleOne
 const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.2m out from the front), clear of it
 
 const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
+/** S7 (?layout=new): five short walks on the approved map's inner lanes (x 570 and x 624, south of the square), 0.8 m off the
+ * lane centre so they pass the kiosks and carts lining it. */
+const NEW_LANE_LOOPS = [
+  [{ x: 570.6, z: 36 }, { x: 570.8, z: 46 }], [{ x: 624.8, z: 30 }, { x: 624.8, z: 38 }], [{ x: 571.0, z: 58 }, { x: 571.1, z: 66 }],
+  [{ x: 623.2, z: 50 }, { x: 623.2, z: 58 }], [{ x: 569.6, z: 22 }, { x: 569.7, z: 30 }],
+];
 const VILLAGER_LOOPS = [
   [bazaarXZ(BAZAAR_WEST_X + 8, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 18, BAZAAR_FRONT_Z - 3.5)],
   [bazaarXZ(BAZAAR_WEST_X + 20, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 32, BAZAAR_FRONT_Z - 3.5)],
   [bazaarXZ(BAZAAR_EAST_X - 4, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_EAST_X - 16, BAZAAR_FRONT_Z - 3.5)],
-  [{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 0.7 }, { x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z + 1.8 }], // stays inside the map's square tea stall compound wall (z +1.2..+7)
+  ...(isNewLayout() ? [] : [[{ x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z - 0.7 }, { x: CHOWK_TEA_POS.x + 4, z: CHOWK_TEA_POS.z + 1.8 }]]), // S7: no chowk tea stall under ?layout=new; // stays inside the map's square tea stall compound wall (z +1.2..+7)
   // village lane between the house and the school: neighbours out on errands
-  [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 10.6 }], // shortened: the map's gher yard walls stand from z LH.z+12
-  [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
-  [{ x: LH.x - 5, z: LH.z - 3 }, { x: LH.x - 5, z: LH.z - 7 }],
+  // S7: under ?layout=new the halwai stands on the roundabout and the old lane is gone, so these walkers use the approved
+  // map's inner lanes south of the square instead (NEW_LANE_LOOPS below)
+  ...(isNewLayout() ? NEW_LANE_LOOPS.slice(0, 3) : [
+    [{ x: LH.x - 2.5, z: LH.z + 9 }, { x: LH.x - 2.5, z: LH.z + 10.6 }], // shortened: the map's gher yard walls stand from z LH.z+12
+    [{ x: LH.x - 6.5, z: LH.z + 24 }, { x: LH.x - 6.5, z: LH.z + 29 }],
+    [{ x: LH.x - 5, z: LH.z - 3 }, { x: LH.x - 5, z: LH.z - 7 }],
+  ]),
   // a few more walkers so the bazaar frontage and lane are not empty
   [bazaarXZ(BAZAAR_WEST_X + 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_WEST_X + 26, BAZAAR_FRONT_Z - 2.5)], // z 10: the shopfront props (awning poles, benches) stand along z 10.6-13.3; tools/collision-test.js proves this strip is walkable
   [bazaarXZ(BAZAAR_EAST_X - 10, BAZAAR_FRONT_Z - 2.5), bazaarXZ(BAZAAR_EAST_X - 26, BAZAAR_FRONT_Z - 2.5)],
-  [{ x: LH.x - 6, z: LH.z }, { x: LH.x - 6.5, z: LH.z + 7 }],
-  [{ x: LH.x - 8, z: LH.z + 37 }, { x: LH.x - 8, z: LH.z + 44 }], // west of the fence strip at x -47..-45
+  ...(isNewLayout() ? NEW_LANE_LOOPS.slice(3, 5) : [
+    [{ x: LH.x - 6, z: LH.z }, { x: LH.x - 6.5, z: LH.z + 7 }],
+    [{ x: LH.x - 8, z: LH.z + 37 }, { x: LH.x - 8, z: LH.z + 44 }], // west of the fence strip at x -47..-45
+  ]),
 ];
 
 const SPEED = 1.1;

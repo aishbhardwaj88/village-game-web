@@ -7,6 +7,8 @@ import { getTiledMaterial } from './materials.js';
 import { oldHouseMaterial } from './stagingYard.js';
 import { allRoadLines } from './mapRoads.js';
 import { CHAURAHA } from './mapPlan.js';
+import { isNewLayout } from './layout/layout.js'; // S7 layout
+import { inBuilding } from './save.js';
 import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHitsAnyBox, requestColliderRebuild } from './collision.js';
 import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleDy, settleInstances, groundAt } from './standOn.js';
@@ -260,6 +262,7 @@ export function createGullyLife(scene) {
     const siteOk = (x, z, r, taken) => {
       if (Math.hypot(x - CHAURAHA.x, z - CHAURAHA.z) <= 12 + r) return false;
       if (!roadClear(x, z, r)) return false;
+      if (isNewLayout() && inBuilding(x, z, r + 0.3)) return false; // S7: never inside a house or shop of the approved map (they may not be streamed in yet)
       if (circleHitsAnyBox({ x, z }, r, staticBoxesNear(x, z, r + 1))) return false;
       if (taken.some((t) => Math.hypot(t.x - x, t.z - z) < r + t.r + 0.8)) return false;
       for (const [dx, dz] of [[0, 0], [r * 0.7, 0], [-r * 0.7, 0], [0, r * 0.7], [0, -r * 0.7]]) {
