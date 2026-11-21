@@ -79,7 +79,7 @@ export function currentLayout() {
  */
 export const WORLD_BOUNDS = {
   old: { minX: -238, maxX: 880, minZ: -280, maxZ: 280, ground: { minX: -912, maxX: 912, minZ: -912, maxZ: 912 } },
-  new: { minX: -238, maxX: 1120, minZ: -375, maxZ: 380, canalX: 824, fieldsMaxX: 1090, fieldBandZ: [-345, 350], ground: { minX: -912, maxX: 1680, minZ: -912, maxZ: 912 } },
+  new: { minX: -238, maxX: 1120, minZ: -380, maxZ: 380, canalX: 824, fieldsMaxX: 1090, fieldBandZ: [-345, 350], ground: { minX: -912, maxX: 1680, minZ: -912, maxZ: 912 } },
 };
 export function worldBounds(layout = currentLayout()) {
   return WORLD_BOUNDS[layout] || WORLD_BOUNDS.old;

@@ -18,6 +18,9 @@
  *   SECS=90               ride length in seconds
  *   NET=none              no network throttle (default 20 Mbit/s, 40 ms, cold cache; Chromium only)
  *   OUT=docs/s7/perf/latest.json
+ *   VIEW=1280x720         window size
+ *   TRIES=2               attempts per run (a run killed for memory is retried)
+ *   QUERY=shadows=follow  extra URL parameters for the game (e.g. sun shadows on, shadowdist=0 to switch the distance shadows off)
  *   TAG=before            free text saved with the run (e.g. "before shadows")
  *   NOCHARS=1             do not load the 4K character models (for a low-memory machine: software GL keeps every texture
  *                         in RAM and the ride gets killed). Their bytes are still counted as "would have downloaded".
@@ -78,6 +81,7 @@ function pagesBytes(url) {
 const srv = spawn(process.execPath, [path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js'), 'preview', '--outDir', path.relative(ROOT, DIST), '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore', detached: true });
 const stop = () => { try { process.kill(-srv.pid, 'SIGTERM'); } catch {} try { srv.kill(); } catch {} };
 process.on('SIGINT', () => { stop(); process.exit(130); });
+process.on('unhandledRejection', (e) => { if (env.VERBOSE === '1') console.error('ignored:', String(e).slice(0, 200)); }); // e.g. a route answered after the page died
 process.on('exit', stop);
 for (let i = 0; i < 100; i++) { try { await fetch(BASE); break; } catch { await new Promise((r) => setTimeout(r, 300)); } }
 
@@ -154,7 +158,8 @@ async function rideOnce(browserName, layout) {
         : ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'];
   }
   const browser = await type.launch(launch);
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const [vw, vh] = (env.VIEW || '1280x720').split('x').map(Number);
+  const ctx = await browser.newContext({ viewport: { width: vw, height: vh } });
   const page = await ctx.newPage();
   if (browserName === 'chromium' && env.NET !== 'none') {
     const cdp = await ctx.newCDPSession(page);
@@ -167,108 +172,132 @@ async function rideOnce(browserName, layout) {
   const beforeList = [];
   let blockedBytes = 0, blockedBeforePlay = 0;
   const CHAR_RE = /assets\/models\/(parlour_didi|sister|maa|pitaji|dada|dadi|brother|sarpanch|postman|teacher)\.glb/;
-  if (env.NOCHARS) await page.route(CHAR_RE, (route) => { const n = pagesBytes(route.request().url()); blockedBytes += n; if (!played) blockedBeforePlay += n; if (env.LIST) console.log(`    blocked at ${((Date.now() - t0) / 1000).toFixed(1)} s: ${route.request().url().replace(BASE, '')}`); route.fulfill({ status: 404, body: '' }); });
-  page.on('requestfinished', (r) => { if (env.NOCHARS && CHAR_RE.test(r.url())) return; const n = pagesBytes(r.url()); bytes += n; reqs++; if (!played) { beforePlayBytes += n; beforePlayReqs++; beforeList.push([n, r.url().replace(BASE, ''), ((Date.now() - t0) / 1000).toFixed(1)]); } });
+  if (env.NOCHARS) await page.route(CHAR_RE, (route) => { const n = route.request().method() === 'GET' ? pagesBytes(route.request().url()) : 0; blockedBytes += n; if (!played) blockedBeforePlay += n; if (env.LIST) console.log(`    blocked at ${((Date.now() - t0) / 1000).toFixed(1)} s: ${route.request().url().replace(BASE, '')}`); route.fulfill({ status: 404, body: '' }).catch(() => {}); });
+  const pending = [];
+  page.on('requestfinished', (r) => {
+    if (env.NOCHARS && CHAR_RE.test(r.url())) return;
+    if (r.method() !== 'GET') return; // HEAD checks (src/assetSlots.js) carry no body
+    const wasBefore = !played, at = ((Date.now() - t0) / 1000).toFixed(1);
+    // A file served from the browser cache (fetched twice) has no body on the wire: count it once.
+    pending.push(r.sizes().then((sz) => {
+      if (!(sz.responseBodySize > 0)) return;
+      const n = pagesBytes(r.url()); bytes += n; reqs++;
+      if (wasBefore) { beforePlayBytes += n; beforePlayReqs++; beforeList.push([n, r.url().replace(BASE, ''), at]); }
+    }).catch(() => {}));
+  });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 300)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
   await page.addInitScript(pageInstrument);
 
-  await page.goto(`${BASE}?layout=${layout}&proof=1`, { waitUntil: 'commit' });
+  await page.goto(`${BASE}?layout=${layout}&proof=1${env.QUERY ? '&' + env.QUERY : ''}`, { waitUntil: 'commit' });
   await page.waitForSelector('#start-overlay.ready', { timeout: 300000 });
   const playReadyWall = Date.now() - t0;
+  played = true;
+  await Promise.all(pending);
   const log = (m) => { if (env.VERBOSE !== '0') console.log(`  [${((Date.now() - t0) / 1000).toFixed(0)} s] ${m}`); };
   log(`Play ready, ${(beforePlayBytes / 1048576).toFixed(1)} MB so far`);
   if (env.LIST) beforeList.sort((a, b) => b[0] - a[0]).slice(0, 15).forEach(([n, u, at]) => console.log('    ' + (n / 1048576).toFixed(2), u, 'done at', at, 's'));
-  played = true;
   const gpu = await page.evaluate(() => {
     const gl = window.__dopahar?.renderer?.getContext?.(); if (!gl) return null;
     const ext = gl.getExtension('WEBGL_debug_renderer_info');
     return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
   }).catch(() => null);
-  await page.evaluate(() => document.getElementById('play-btn').click());
-  await page.waitForFunction(() => (window.__loadMarks || {}).villageReady, null, { timeout: 240000, polling: 250 }).catch(() => {});
-  log('village ready (or timed out)');
-  await page.evaluate(() => { try { window.__dopahar.dialogue._advanceFromInput(); } catch {} });
-  await page.waitForTimeout(2000);
-  const marks = await page.evaluate(() => Object.fromEntries(Object.entries(window.__loadMarks || {}).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v) : v])));
+  const readyMarks = await page.evaluate(() => ({ ...(window.__loadMarks || {}) })).catch(() => ({}));
+  let result, marks, route;
+  try {
+    await page.evaluate(() => document.getElementById('play-btn').click());
+    await page.waitForFunction(() => (window.__loadMarks || {}).villageReady, null, { timeout: 240000, polling: 250 }).catch(() => {});
+    log('village ready (or timed out)');
+    await page.evaluate(() => { try { window.__dopahar.dialogue._advanceFromInput(); } catch {} });
+    await page.waitForTimeout(2000);
+    marks = await page.evaluate(() => Object.fromEntries(Object.entries(window.__loadMarks || {}).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v) : v])));
 
-  // Route: the places the brief names, read from the running game's own anchors (they move with the layout).
-  const route = await page.evaluate(() => {
-    const A = window.__dopahar.ANCHORS;
-    const want = ['bazaar', 'chowk', 'school', 'westgali', 'eastgali', 'haveli', 'health', 'sabzi', 'canal'];
-    return want.filter((k) => A[k]).map((k) => [A[k].x, A[k].z, k]);
-  });
-
-  // Draw-call split per frame: main pass vs the sun's shadow pass vs post-processing.
-  await page.evaluate(() => {
-    const d = window.__dopahar, r = d.renderer, pr = window.__perfRide;
-    const shadowCams = new Set();
-    d.scene.traverse((o) => { if (o.isLight && o.shadow && o.shadow.camera) shadowCams.add(o.shadow.camera); });
-    pr.mainCalls = 0; pr.shadowCalls = 0; pr.mainTris = 0;
-    const orig = r.renderBufferDirect.bind(r);
-    r.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
-      if (shadowCams.has(camera)) pr.shadowCalls++;
-      else if (camera === d.camera) {
-        pr.mainCalls++;
-        const n = group ? group.count : (geometry.index ? geometry.index.count : (geometry.attributes.position?.count || 0));
-        const dr = geometry.drawRange.count;
-        pr.mainTris += (Math.min(n, dr) / 3) * (object.isInstancedMesh ? object.count : 1);
-      }
-      return orig(camera, scene, geometry, material, object, group);
-    };
-  });
-
-  log(`riding ${route.map((r) => r[2]).join(' > ')}`);
-  const result = await page.evaluate(async ([route, secs]) => {
-    const d = window.__dopahar, pr = window.__perfRide, info = d.renderer.info;
-    const p = d.player.position;
-    const legs = [];
-    for (let i = 0; i < route.length - 1; i++) legs.push(Math.hypot(route[i + 1][0] - route[i][0], route[i + 1][1] - route[i][1]));
-    const total = legs.reduce((a, b) => a + b, 0);
-    const speed = Math.max(5, Math.min(14, total / secs)); // cycle pace
-    const perSecond = [];
-    const intervals = [];
-    let seg = 0, segT = 0, last = performance.now(), lastSample = last;
-    let peakFrame = { calls: 0, main: 0, shadow: 0, tris: 0, mainTris: 0 };
-    let secAgg = { callsMax: 0, mainMax: 0, shadowMax: 0, trisMax: 0, mainTrisMax: 0 };
-    pr.frames.length = 0; pr.on = true;
-    if (window.__perfReset) window.__perfReset();
-    const t0 = performance.now();
-    await new Promise((res) => {
-      const step = (now) => {
-        // previous frame's counters (info is reset at the start of each game frame; read before it is)
-        const f = { calls: info.render.calls, main: pr.mainCalls, shadow: pr.shadowCalls, tris: info.render.triangles, mainTris: Math.round(pr.mainTris) };
-        pr.mainCalls = 0; pr.shadowCalls = 0; pr.mainTris = 0;
-        for (const k of Object.keys(peakFrame)) if (f[k] > peakFrame[k]) peakFrame[k] = f[k];
-        secAgg.callsMax = Math.max(secAgg.callsMax, f.calls); secAgg.mainMax = Math.max(secAgg.mainMax, f.main); secAgg.shadowMax = Math.max(secAgg.shadowMax, f.shadow);
-        secAgg.trisMax = Math.max(secAgg.trisMax, f.tris); secAgg.mainTrisMax = Math.max(secAgg.mainTrisMax, f.mainTris);
-        const dt = Math.min(0.1, (now - last) / 1000); intervals.push(now - last); last = now;
-        segT += speed * dt;
-        while (seg < legs.length && segT > legs[seg]) { segT -= legs[seg]; seg++; }
-        if (seg >= legs.length || now - t0 > secs * 1000) return res();
-        const a = route[seg], b = route[seg + 1], k = segT / legs[seg];
-        const dx = b[0] - a[0], dz = b[1] - a[1];
-        p.x = a[0] + dx * k; p.z = a[1] + dz * k;
-        if (d.camRig) d.camRig.yaw = Math.atan2(-dx, -dz); // camera behind the rider, looking along the road
-        if (now - lastSample >= 1000) {
-          lastSample = now;
-          perSecond.push({ t: Math.round((now - t0) / 1000), x: Math.round(p.x), z: Math.round(p.z), place: route[seg][2] + '->' + route[seg + 1][2],
-            calls: secAgg.callsMax, mainCalls: secAgg.mainMax, shadowCalls: secAgg.shadowMax, triangles: secAgg.trisMax, mainTriangles: secAgg.mainTrisMax,
-            textures: info.memory.textures, geometries: info.memory.geometries, programs: info.programs ? info.programs.length : null,
-            gpuTexMB: +(pr.gpuTexBytes / 1048576).toFixed(1), gpuRbMB: +(pr.gpuRbBytes / 1048576).toFixed(1) });
-          secAgg = { callsMax: 0, mainMax: 0, shadowMax: 0, trisMax: 0, mainTrisMax: 0 };
-        }
-        requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    // Route: the places the brief names, read from the running game's own anchors (they move with the layout).
+    route = await page.evaluate(() => {
+      const A = window.__dopahar.ANCHORS;
+      const want = ['bazaar', 'chowk', 'school', 'westgali', 'eastgali', 'haveli', 'health', 'sabzi', 'canal'];
+      return want.filter((k) => A[k]).map((k) => [A[k].x, A[k].z, k]);
     });
-    pr.on = false;
-    const pp = window.__perfProbe || { max: {} };
-    return { speed: +speed.toFixed(1), routeMetres: Math.round(total), secs: +((performance.now() - t0) / 1000).toFixed(1), perSecond, intervals: intervals.slice(1),
-      cpuFrames: pr.frames.map((f) => f[1]), peakFrame, gpuTexMB: +(pr.gpuTexBytes / 1048576).toFixed(1), gpuRbMB: +(pr.gpuRbBytes / 1048576).toFixed(1),
-      worstLogic: Math.round(pp.max.logic || 0), worstZoneManager: Math.round(pp.max.zoneManager || 0), worstRenderCpu: Math.round(pp.max.render || 0) };
-  }, [route, SECS]);
+
+    // Draw-call split per frame: main pass vs the sun's shadow pass vs post-processing.
+    await page.evaluate(() => {
+      const d = window.__dopahar, r = d.renderer, pr = window.__perfRide;
+      const shadowCams = new Set();
+      d.scene.traverse((o) => { if (o.isLight && o.shadow && o.shadow.camera) shadowCams.add(o.shadow.camera); });
+      pr.mainCalls = 0; pr.shadowCalls = 0; pr.mainTris = 0;
+      const orig = r.renderBufferDirect.bind(r);
+      r.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
+        if (shadowCams.has(camera)) pr.shadowCalls++;
+        else if (camera === d.camera) {
+          pr.mainCalls++;
+          const n = group ? group.count : (geometry.index ? geometry.index.count : (geometry.attributes.position?.count || 0));
+          const dr = geometry.drawRange.count;
+          pr.mainTris += (Math.min(n, dr) / 3) * (object.isInstancedMesh ? object.count : 1);
+        }
+        return orig(camera, scene, geometry, material, object, group);
+      };
+    });
+
+    log(`riding ${route.map((r) => r[2]).join(' > ')}`);
+    result = await page.evaluate(async ([route, secs]) => {
+      const d = window.__dopahar, pr = window.__perfRide, info = d.renderer.info;
+      const p = d.player.position;
+      const legs = [];
+      for (let i = 0; i < route.length - 1; i++) legs.push(Math.hypot(route[i + 1][0] - route[i][0], route[i + 1][1] - route[i][1]));
+      const total = legs.reduce((a, b) => a + b, 0);
+      const speed = Math.max(5, Math.min(14, total / secs)); // cycle pace
+      const perSecond = [];
+      const intervals = [];
+      let seg = 0, segT = 0, last = performance.now(), lastSample = last;
+      let peakFrame = { calls: 0, main: 0, shadow: 0, tris: 0, mainTris: 0 };
+      let secAgg = { callsMax: 0, mainMax: 0, shadowMax: 0, trisMax: 0, mainTrisMax: 0 };
+      pr.frames.length = 0; pr.on = true;
+      if (window.__perfReset) window.__perfReset();
+      const t0 = performance.now();
+      await new Promise((res) => {
+        const step = (now) => {
+          // previous frame's counters (info is reset at the start of each game frame; read before it is)
+          const f = { calls: info.render.calls, main: pr.mainCalls, shadow: pr.shadowCalls, tris: info.render.triangles, mainTris: Math.round(pr.mainTris) };
+          pr.mainCalls = 0; pr.shadowCalls = 0; pr.mainTris = 0;
+          for (const k of Object.keys(peakFrame)) if (f[k] > peakFrame[k]) peakFrame[k] = f[k];
+          secAgg.callsMax = Math.max(secAgg.callsMax, f.calls); secAgg.mainMax = Math.max(secAgg.mainMax, f.main); secAgg.shadowMax = Math.max(secAgg.shadowMax, f.shadow);
+          secAgg.trisMax = Math.max(secAgg.trisMax, f.tris); secAgg.mainTrisMax = Math.max(secAgg.mainTrisMax, f.mainTris);
+          const dt = Math.min(0.1, (now - last) / 1000); intervals.push(now - last); last = now;
+          segT += speed * dt;
+          while (seg < legs.length && segT > legs[seg]) { segT -= legs[seg]; seg++; }
+          if (seg >= legs.length || now - t0 > secs * 1000) return res();
+          const a = route[seg], b = route[seg + 1], k = segT / legs[seg];
+          const dx = b[0] - a[0], dz = b[1] - a[1];
+          p.x = a[0] + dx * k; p.z = a[1] + dz * k;
+          if (d.camRig) d.camRig.yaw = Math.atan2(-dx, -dz); // camera behind the rider, looking along the road
+          if (now - lastSample >= 1000) {
+            lastSample = now;
+            perSecond.push({ t: Math.round((now - t0) / 1000), x: Math.round(p.x), z: Math.round(p.z), place: route[seg][2] + '->' + route[seg + 1][2],
+              calls: secAgg.callsMax, mainCalls: secAgg.mainMax, shadowCalls: secAgg.shadowMax, triangles: secAgg.trisMax, mainTriangles: secAgg.mainTrisMax,
+              textures: info.memory.textures, geometries: info.memory.geometries, programs: info.programs ? info.programs.length : null,
+              gpuTexMB: +(pr.gpuTexBytes / 1048576).toFixed(1), gpuRbMB: +(pr.gpuRbBytes / 1048576).toFixed(1),
+              shadowCastersOn: window.__perfS7?.shadows?.castingNow ?? null, characterBlobs: window.__perfS7?.shadows?.blobs ?? null });
+            secAgg = { callsMax: 0, mainMax: 0, shadowMax: 0, trisMax: 0, mainTrisMax: 0 };
+          }
+          requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+      pr.on = false;
+      const pp = window.__perfProbe || { max: {} };
+      return { speed: +speed.toFixed(1), routeMetres: Math.round(total), secs: +((performance.now() - t0) / 1000).toFixed(1), perSecond, intervals: intervals.slice(1),
+        cpuFrames: pr.frames.map((f) => f[1]), peakFrame, gpuTexMB: +(pr.gpuTexBytes / 1048576).toFixed(1), gpuRbMB: +(pr.gpuRbBytes / 1048576).toFixed(1),
+        worstLogic: Math.round(pp.max.logic || 0), worstZoneManager: Math.round(pp.max.zoneManager || 0), worstRenderCpu: Math.round(pp.max.render || 0) };
+    }, [route, SECS]);
+  } catch (e) {
+    // The page died after Play (on a small machine: out of memory while the village assembles). Keep the load numbers.
+    await browser.close().catch(() => {});
+    return { browser: browserName, layout, gpu, partial: true, crashed: String(e.message).split('\n')[0],
+      summary: { playReadyMs: readyMarks.readyFrame != null ? Math.round(readyMarks.readyFrame) : null, playReadyWallMs: playReadyWall,
+        beforePlayMB: +((beforePlayBytes + blockedBeforePlay) / 1048576).toFixed(2), beforePlayRequests: beforePlayReqs, errors: errors.length },
+      errors: errors.slice(0, 10) };
+  }
   await browser.close();
 
   const cpu = result.cpuFrames, iv = result.intervals;
@@ -305,10 +334,14 @@ const runs = [];
 for (const b of BROWSERS) for (const l of LAYOUTS) {
   console.log(`ride: ${b}, layout=${l}, ${SECS} s ...`);
   let res = null;
-  for (let attempt = 1; attempt <= Number(env.TRIES || 2) && !res?.summary; attempt++) {
-    try { res = await rideOnce(b, l); } catch (e) {
+  for (let attempt = 1; attempt <= Number(env.TRIES || 2) && (!res?.summary || res.partial); attempt++) {
+    try {
+      const r = await rideOnce(b, l);
+      if (r.partial) console.error(`ride ${b} ${l} attempt ${attempt}: page died after Play (${r.crashed}); load numbers kept${/crash/i.test(r.crashed) ? ', probably out of memory' : ''}`);
+      if (!res?.summary || !r.partial) res = r;
+    } catch (e) {
       console.error(`ride ${b} ${l} attempt ${attempt} failed: ${e.message.split('\n')[0]}${/crash/i.test(e.message) ? ' (the browser ran out of memory; NOCHARS=1 helps on a small machine)' : ''}`);
-      res = { browser: b, layout: l, failed: String(e.message).slice(0, 400) };
+      if (!res?.summary) res = { browser: b, layout: l, failed: String(e.message).slice(0, 400) };
     }
   }
   runs.push(res);
@@ -320,7 +353,7 @@ const gpuName = runs.find((r) => r.gpu)?.gpu || null;
 const softwareGL = /swiftshader|llvmpipe|software/i.test(gpuName || '') || (!env.GL && BROWSERS.includes('chromium') && !env.CHANNEL);
 let commit = null;
 try { commit = execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch {}
-const out = { date: new Date().toISOString(), tag: env.TAG || null, noChars: !!env.NOCHARS, commit, machine: `${os.type()} ${os.arch()} ${os.cpus()[0]?.model || ''} x${os.cpus().length}`.trim(), gpu: gpuName, softwareGL, secs: SECS, net: env.NET === 'none' ? 'none' : '20 Mbit/s, 40 ms, cold cache (Chromium)', runs };
+const out = { date: new Date().toISOString(), tag: env.TAG || null, query: env.QUERY || null, noChars: !!env.NOCHARS, commit, machine: `${os.type()} ${os.arch()} ${os.cpus()[0]?.model || ''} x${os.cpus().length}`.trim(), gpu: gpuName, softwareGL, secs: SECS, net: env.NET === 'none' ? 'none' : '20 Mbit/s, 40 ms, cold cache (Chromium)', runs };
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
 
@@ -333,6 +366,12 @@ L.push(`- Ride: ${SECS} s at cycle speed through ${runs[0]?.route?.map((r) => r[
 for (const r of runs) {
   if (r.failed) { L.push(`## ${r.browser}, layout=${r.layout}: FAILED`, `- ${r.failed}`, ''); continue; }
   const s = r.summary;
+  if (r.partial) {
+    L.push(`## ${r.browser}, layout=${r.layout}: load only (the page died after Play: ${r.crashed})`);
+    L.push(`- Play button ready: ${s.playReadyMs == null ? 'n/a' : (s.playReadyMs / 1000).toFixed(1) + ' s'} (budget 4 s)`);
+    L.push(`- Downloaded before Play: ${s.beforePlayMB} MB in ${s.beforePlayRequests} files (budget 8 MB)`, '');
+    continue;
+  }
   const ok = (v, lim) => (v == null ? 'n/a' : v <= lim ? 'ok' : 'OVER');
   L.push(`## ${r.browser}, layout=${r.layout}`);
   L.push(`- Play button ready: ${(s.playReadyMs / 1000).toFixed(1)} s (budget 4 s: ${ok(s.playReadyMs, 4000)})`);
