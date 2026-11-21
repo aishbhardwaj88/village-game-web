@@ -52,6 +52,7 @@ node desktop/scripts/build-game.mjs && cd desktop && npm run dist:mac && cd ..
 - Try it without packing (fast): `cd desktop && npm start`
 - Windows installer: `npm run dist:win` (needs a Windows PC, or the free GitHub Windows build machine, see Wiring 5).
 - Web build is unchanged: `npm run build` (the characters agent's slimming step runs there only).
+- On this Linux box the Electron downloads fail through the proxy, so the four Electron zips were fetched by hand (checksums verified) into desktop/.electron-zips/ and passed with `-c.electronDist=.electron-zips`. On the Mac this is not needed.
 
 ## Built here (21 Nov, Electron 45.4.1, cloud Linux box)
 - Not committed (build outputs are ignored by git). Paths:
@@ -67,7 +68,7 @@ node desktop/scripts/build-game.mjs && cd desktop && npm run dist:mac && cd ..
 
 - On a computer the installed app takes about 380 MB (Mac) to 480 MB (Windows): about 260 MB is the built-in Chrome engine, 122 MB is the game.
 - Mac .dmg: cannot be made on Linux (needs Apple's disk tool). Made automatically by `npm run dist:mac` on the Mac.
-- Mac zips made here are NOT signed. On an Apple-chip Mac an unsigned app shows "Dopahar is damaged". Build the Mac app on the MacBook instead (the Mac build signs it for that machine automatically). If testing a zip from here anyway, after unzipping run once:
+- Mac zips made here are NOT signed. On an Apple-chip Mac an unsigned app shows "Dopahar is damaged". Build the Mac app on the MacBook instead: there it gets a free basic ("ad-hoc") signature automatically, enough for her own Mac. Selling needs the paid Apple signature (Steam section). If testing a zip from here anyway, after unzipping run once:
 
 ```
 xattr -cr ~/Downloads/Dopahar.app && codesign --force --deep -s - ~/Downloads/Dopahar.app
