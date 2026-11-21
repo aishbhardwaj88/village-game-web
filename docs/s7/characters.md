@@ -69,7 +69,7 @@ Measured on every clip, at 12 moments each, with the game's own three.js loader.
 
 This shared machine could not run the full before/after browser comparison: the game alone takes 3.5-4 GB in software graphics, other agents' browsers share the same memory, and pages ran at under 1 frame a second, so most runs were killed or ran out of time (each run is now kept under 5 minutes under the shared browser lock). What the runs did prove:
 - **Nothing character-related downloads before Play** (docs/s7/characters/smoke-full.json, `node tools/char-smoke.mjs`): 0 character requests before Play; after Play the nearest came first (Halwai and Pitaji at once, Maa next). That run used the original 4096 files (desktop configuration); the page was then killed for memory as the big skins arrived (see Risks: graphics memory).
-- **The packed files load and draw correctly in the real game** (web/light packing, the smallest and most changed version): Dadi, Dada, Pitaji and Sarpanch in the ?gather=1 lineup, skinned, animated, textured, faces sharp at 2048 (docs/s7/characters/lineup_after.png, dada_body_after.png, dada_face_after.png, pitaji_body_after.png). The rest of the line still showed the simple stand-ins because the page was too slow to finish loading inside 5 minutes.
+- **The packed files load and draw correctly in the real game** (web/light packing, the smallest and most changed version): Dadi, Dada, Pitaji and Sarpanch in the ?gather=1 lineup, skinned, animated, textured, faces sharp at 2048 (docs/s7/characters/lineup_after.jpg, dada_body_after.jpg, dada_face_after.jpg, pitaji_body_after.jpg). The rest of the line still showed the simple stand-ins because the page was too slow to finish loading inside 5 minutes.
 - The tiers ran live: `window.__charLOD` reported the full preset (quality 'full') and the loaded people in the near tier.
 - **Not proven in a browser here** (needs a real graphics card or a quiet machine): all 10 faces side by side before vs after, console errors over a whole lineup, live blink. Numerically proven instead: every clip, bone, blink and smile above (`tools/char-verify.mjs`). To run the full proof on a normal computer: `npm run build:unchecked && node tools/char-diet.mjs`, `vite build --outDir dist-before`, then `node tools/char-proof.mjs` (writes before/after body and face pictures for everyone plus side-by-side sheets).
 
@@ -90,9 +90,9 @@ Measured without a browser (`node tools/char-lod-bench.mjs`): the game's own ani
 
 ## Screenshots and data (docs/s7/characters/)
 
-- lineup_after.png: the ?gather=1 line after Play, four packed characters in, the rest still stand-ins (loading after Play, nearest first)
-- dada_body_after.png, pitaji_body_after.png: whole body, packed file
-- dada_face_after.png: face close-up, packed file (2048 skin): no blur, no blotches
+- lineup_after.jpg: the ?gather=1 line after Play, four packed characters in, the rest still stand-ins (loading after Play, nearest first)
+- dada_body_after.jpg, pitaji_body_after.jpg: whole body, packed file
+- dada_face_after.jpg: face close-up, packed file (2048 skin): no blur, no blotches
 - verify-full.json, verify-light.json: per character, every clip, bone drift, body drift, blink and smile, original vs packed
 - lod-bench.jsonl: character CPU per frame, tiers on/off
 - smoke-full.json: when each character file was requested (none before Play)
