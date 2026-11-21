@@ -1,16 +1,13 @@
 /**
- * Tiny adapter between the houses kit and the map (S7 sprint). The LAYOUT agent is building src/layout/layout.js
- * (getObjects('new_house'), isNewLayout()); until it lands this reads the approved map JSON directly. Swap the two
- * functions below for the layout module's when it exists; nothing else in the houses code reads the map.
+ * Tiny adapter between the houses kit and the map (S7 sprint). The on/off switch is the layout agent's isNewLayout()
+ * (src/layout/layout.js). The house plan itself is precomputed from the game's map data by
+ * `node src/kit/housesCheck.js --write-plan` (src/kit/housesPlanData.json); loadHouseMap is kept for tools.
  *
  * The JSON is loaded with a dynamic import, so it is a separate chunk fetched only under ?layout=new.
  */
 
-/** True when the page runs the 21 Nov map (?layout=new). */
-export function isNewLayout() {
-  if (typeof location === 'undefined') return false;
-  return new URLSearchParams(location.search).get('layout') === 'new';
-}
+/** True when the page runs the 21 Nov map: the layout agent's switch (?layout=new now, the default once the integrator flips it). */
+export { isNewLayout } from '../layout/layout.js';
 
 /** { houses: [{ ring, mud }], roads: [{ id, width, pts }], solids: [{ label, ring }] } from the approved map. */
 export async function loadHouseMap() {
