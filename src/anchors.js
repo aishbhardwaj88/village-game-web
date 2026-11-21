@@ -10,6 +10,7 @@
  */
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
 import { MAP_PLAN, MAP_SHIFT } from './mapPlan.js';
+import { applyLayoutToAnchors } from './layout/layout.js';
 
 /** The old village's own layout (places the 1 Nov map does not position) rides east by the same 600 m as the map, so the whole world is one contiguous area. */
 export const OLD_SHIFT = MAP_SHIFT;
@@ -17,7 +18,11 @@ export const OLD_SHIFT = MAP_SHIFT;
 /** Where a map-placed v2 yard stands on the world (MAP_PLAN centre + MAP_SHIFT, turned as the map says). */
 const onMap = (yardId) => { const m = MAP_PLAN[yardId]; return { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 }; };
 
-export const ANCHORS = {
+/**
+ * S7 (21 Nov): under ?layout=new every anchor the approved map positions takes its new x, z and yaw (src/layout/layout.js
+ * applyLayoutToAnchors); under ?layout=old (default) the table below is used exactly as written.
+ */
+export const ANCHORS = applyLayoutToAnchors({
   house: { x: 52.1 + MAP_SHIFT.x, z: 40.2 + MAP_SHIFT.z, ry: -5 * Math.PI / 180 }, // map turn 5 deg, applied in src/village.js (HOUSE_TURN_DEG)
   school: { x: -43.5 + MAP_SHIFT.x, z: 108.5 + MAP_SHIFT.z, ry: 0 }, // the map's primary school centre; the hero school is axis-aligned, so the map's -11.2 deg turn is not applied (NEEDS_YOU)
   halwai: { x: 37.4 + MAP_SHIFT.x, z: 21.4 + MAP_SHIFT.z, ry: 0 },
@@ -65,7 +70,7 @@ export const ANCHORS = {
     const m = MAP_PLAN[p.id];
     return [p.id, m ? { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 } : { ...stagingPos(n), ry: 0 }];
   })),
-};
+});
 
 /** A fresh { x, z } for a place (callers may keep or mutate it). */
 export function pt(id) {
