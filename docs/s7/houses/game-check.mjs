@@ -7,23 +7,25 @@ import { writeFileSync } from 'node:fs';
 
 const layout = process.argv[2] || 'new';
 const PORT = +(process.env.PORT || 5398);
-const server = spawn('npx', ['vite', '--config', 'docs/s7/houses/vite.preview.config.js', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--config', 'docs/s7/houses/vite.preview.config.js', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 server.stderr.on('data', () => {});
 for (let i = 0; i < 200; i++) { try { await fetch(`http://localhost:${PORT}/village-game-web/`); break; } catch { await new Promise((r) => setTimeout(r, 300)); } }
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
 const out = { layout };
 try {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+  const T = Date.now(); const log = (m) => console.error(`[${((Date.now() - T) / 1000).toFixed(0)}s] ${m}`);
+  page.on('crash', () => log('PAGE CRASHED'));
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   await page.goto(`http://localhost:${PORT}/village-game-web/?dev=1&layout=${layout}`, { waitUntil: 'load', timeout: 300000 });
   await page.waitForSelector('#start-overlay.ready', { timeout: 400000 }).catch(() => {});
-  await page.click('#play-btn').catch(() => {});
+  log('title ready'); await page.click('#play-btn').catch(() => {}); log('play clicked');
   const t0 = Date.now();
   if (layout === 'new') {
     await page.waitForFunction(() => window.__newHouses && window.__newHouses.report && window.__newHouses.report.houses, null, { timeout: 600000, polling: 2000 });
-    out.buildSeconds = (Date.now() - t0) / 1000;
+    out.buildSeconds = (Date.now() - t0) / 1000; log('houses built');
     out.report = await page.evaluate(() => window.__newHouses.report);
   }
   await page.waitForTimeout(8000);

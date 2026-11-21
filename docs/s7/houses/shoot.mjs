@@ -14,7 +14,7 @@ const SHOTS = [
 const only = process.argv.slice(2);
 let server = null;
 async function startServer() {
-  server = spawn('npx', ['vite', '--config', 'docs/s7/houses/vite.preview.config.js', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+  server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--config', 'docs/s7/houses/vite.preview.config.js', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
   server.stderr.on('data', () => {});
   for (let i = 0; i < 200; i++) { try { await fetch(`http://localhost:${PORT}/village-game-web/`); return; } catch { await new Promise((r) => setTimeout(r, 300)); } }
 }
