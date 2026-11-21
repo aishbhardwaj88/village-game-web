@@ -74,3 +74,30 @@ peepal), same leaves, same three distance tiers, same 3 draw calls, trunk collid
   band and the buffalo pond), `notebook-new.jpg` (whole page), `minimap-old.jpg` / `notebook-old.jpg` (unchanged).
 - Not done (main.js, integrator): the canal **water sound** still measures from the old canal under new
   (`distanceToCanalWater` in main.js; sound is off until ?sound=1). See "Wiring left".
+
+## 4. Pot triangles (potter's yard) - done, with one honest limit
+
+- `src/kit/mapObjects.js`: the pot and milestone batch now has a distance stand-in per instance. Each pot model gets a
+  **lathe stand-in built from its own outline** (widest radius per height band, the rim turning in at the mouth), same
+  material, same colour, same batch, so **0 new draw calls** and no new files. Pots: 9 bands x 8 sides = 192 triangles;
+  kulhads 5 x 6 = 108 (the full models are 1.6-2.4k).
+- Pots switch to the stand-in **beyond 25 m**; the little kulhad cups beyond **12 m** (my call: a 10 cm cup is a few
+  pixels at 12 m). Milestones are unchanged.
+- Numbers (the map objects preview, the game's renderer, the pots + milestones layer alone, main pass, 1280 x 720):
+
+| View | Before | After |
+|---|---|---|
+| inside the yard (the map objects agent's `potter` view, 7-20 m from every pot) | 81.1k | 73.2k |
+| from the lane, 30 m | 85.4k | 17.6k |
+| 45 m | 85.4k | 15.4k |
+| 70 m | 77.8k | 16.4k |
+
+  (The ~16k left at distance is mostly the 10 milestones, which are not pots.)
+- **The limit:** every one of the 41 pot spots is within 20 m of the yard view, so a 25 m switch cannot lower the 81k
+  there; only the kulhads switch. For information: switching every pot at 12 m would make that view **31.9k**. The real fix
+  inside the yard is a lighter pot model (the source models are 1.6-2.4k triangles each). Decision for the integrator /
+  her: keep 25 m, or go to 12 m.
+- Pictures: `pots_full_close.jpg` vs `pots_standin_close.jpg` (every pot forced to its stand-in, same camera: the outlines
+  hold; the texture grain is a little coarser), `potter_lod.jpg` (as shipped, inside the yard), `potter_lane_30m.jpg`.
+- Remake the numbers: `flock /tmp/s7-browser.lock node docs/s7/fixes/pots-measure.mjs` (`pots-measure.json`).
+  In the game, `__s7mapobjects`'s group has `userData.setPotLod(on, metres)` for comparing.
