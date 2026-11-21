@@ -16,6 +16,7 @@ import { useOldHouseMasonry } from './stagingYard.js';
 // (zone-style distance culling, CLAUDE.md draw-call plan). Collision + the validator's real-geometry backing stay as a hidden,
 // locally-merged group of plain boxes ('bg_houses_old'), one per house footprint, taken from src/abadiBoxes.json.
 import ABADI_BOXES from './abadiBoxes.json';
+import { isNewLayout } from './kit/housesLayout.js';
 
 const ABADI_WASHES = [[1, 0.98, 0.95], [1, 0.9, 0.9], [0.9, 0.99, 0.93], [0.9, 0.95, 1], [1, 1, 1], [1, 0.95, 0.85]];
 import { buildStripSegment, buildKerbSegments, buildDrainSegments } from './paths.js';
@@ -77,6 +78,11 @@ const PLACEMENTS = [
   { v: 'b', x: 514.78, z: 32.79, ry: -1.4486, area: 'W' }, // 19: map footprints 18, 19
   { v: 'c', x: 517.69, z: 56.48, ry: -1.4486, area: 'W' }, // 20: map footprints 21, 22
 ];
+// S7 (houses agent): under ?layout=new the 21 Nov map's own houses (src/kit/houses.js) stand where these rows stood, so the rows,
+// their collider shells and everything derived from them (garden plants, doorstep props, roof fittings, chulha smoke) are left
+// out. abadiDoorstep keeps reading PLACEMENTS so the milk round still has stops (docs/s7/houses.md, Wiring needed).
+// ?layout=old (and no flag) is exactly as before.
+const ROWS_DRAWN = isNewLayout() ? [] : PLACEMENTS;
 const yawOf = (p) => (p.ry !== undefined ? p.ry : (p.q * Math.PI) / 2);
 /** Local (x along the row, z toward the lane) -> world, for any yaw (same convention as three.js rotation.y). */
 function rowPt(p, lx, lz) {
@@ -113,7 +119,7 @@ const KACHCHA_YARD_SOLIDS = [ // local footprints (x0,x1,z0,z1) of yard props, f
  *  for buildGardenPlants in vegetation.js. Positions are deterministic from PLACEMENTS. kinds: 0 marigold 1 banana 2 tulsi 4 creeper. */
 export function abadiGardenPlants() {
   const out = [];
-  PLACEMENTS.forEach((p, i) => {
+  ROWS_DRAWN.forEach((p, i) => {
     const L = ABADI_BOXES[p.v].L;
     const put = (lx, lz, kind, scale = 1) => out.push({ ...rowPt(p, lx, lz), kind, scale });
     const plan = [[-L / 2 + 1.2, 4, 1.15], [-L / 4 + 0.6, i % 2 ? 2 : 0, 1], [L / 12, 4, 1.0], [L / 4 + 0.9, i % 2 ? 0 : 2, 1], [L / 2 - 1.5, 4, 1.2]];
@@ -130,7 +136,7 @@ export function abadiGardenPlants() {
  *  World x/z + yaw + a deterministic pick; positions sit at the step line (local z 3.75, same as the tulsi/marigold pots). */
 export function abadiPropSites() {
   const out = [];
-  PLACEMENTS.forEach((p, i) => {
+  ROWS_DRAWN.forEach((p, i) => {
     const L = ABADI_BOXES[p.v].L;
     const n = 2 + (i % 3);
     for (let j = 0; j < n; j++) {
@@ -147,7 +153,7 @@ export function abadiPropSites() {
 export function abadiRoofSites() {
   const out = [];
   const kinds = ['antenna', 'tank', 'bricks', 'solar', 'antenna', 'bricks', 'tank']; // no satellite dishes: they read as random concave objects (art director, 24 Oct); the antenna she likes stays
-  PLACEMENTS.forEach((p, i) => {
+  ROWS_DRAWN.forEach((p, i) => {
     const th = yawOf(p);
     ABADI_BOXES[p.v].boxes.forEach((b, j) => {
       const n = (i + j) % 3 === 0 ? 2 : 1;
@@ -168,7 +174,7 @@ export function abadiRoofSites() {
 /** Thin chulha-smoke origins over a few abadi rows (behind the lane-side roof edge, on low 3.3 m roofs), for createAmbientLife. */
 export function abadiSmokeSources() {
   const out = [];
-  PLACEMENTS.forEach((p, i) => {
+  ROWS_DRAWN.forEach((p, i) => {
     if (i % 3 !== 1) return;
     const L = ABADI_BOXES[p.v].L;
     out.push({ ...rowPt(p, L / 4 - 0.5, -2), y: 3.4 });
@@ -198,7 +204,7 @@ export function buildBackgroundHouses(scene, kit) {
   // 88 solid per-house boxes doubled its sample count until the headless page ran out of memory. The shell still blocks exactly the
   // row's footprint (colliders are AABBs of the slabs; the interior is unreachable).
   const SLAB = 0.3;
-  PLACEMENTS.forEach((p) => {
+  ROWS_DRAWN.forEach((p) => {
     const bs = ROWS[p.v].boxes;
     const fx0 = Math.min(...bs.map((b) => b.x0)), fx1 = Math.max(...bs.map((b) => b.x1));
     const fz0 = Math.min(...bs.map((b) => b.z0)), fz1 = Math.max(...bs.map((b) => b.z1));
@@ -277,7 +283,7 @@ export function buildBackgroundHouses(scene, kit) {
   const sets = []; // { list: [placement], isNear, meshes: [{ inst, base }] }
   const tmp = new THREE.Matrix4();
   const col = new THREE.Color();
-  PLACEMENTS.forEach((p, i) => {
+  ROWS_DRAWN.forEach((p, i) => {
     p.M = new THREE.Matrix4().makeRotationY(yawOf(p)).setPosition(p.x, 0, p.z);
     const v = 0.94 + 0.08 * (((i * 7919 + p.v.charCodeAt(0) * 31) % 100) / 100);
     // Limewash variety per row (cream / blush pink / mint / blue-grey), kept pale so roofs and doors stay natural.
@@ -309,7 +315,7 @@ export function buildBackgroundHouses(scene, kit) {
     refreshedZ = lastZ;
   }
   for (const [key, def] of Object.entries(ROWS)) {
-    const mine = PLACEMENTS.filter((p) => p.v === key);
+    const mine = ROWS_DRAWN.filter((p) => p.v === key);
     if (!mine.length) continue;
     for (const [file, isNear] of [[def.file, true], [def.file.replace('.glb', '_lod.glb'), false]]) {
       loader.load(`assets/models/${file}`, (gltf) => {

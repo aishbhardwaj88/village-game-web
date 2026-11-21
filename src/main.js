@@ -43,6 +43,7 @@ import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
 import { createRoofMonkeys } from './roofMonkeys.js'; // monkeys on roof water tanks
 import { createVillageHouses } from './villageHouses.js'; // the house kit filling the map's empty house footprints (3 Nov)
+import { initNewMapHouses } from './kit/houses.js'; // S7 WIRING (houses): the 21 Nov map's ~490 houses, ?layout=new only
 import {
   buildTemple,
   buildTempleProps,
@@ -1610,6 +1611,7 @@ async function main() {
     yield;
     villageHouses = createVillageHouses(scene); // src/villageHouses.js, distance-gated per cluster in the frame loop
     cameraObstacles.push(villageHouses.group);
+    initNewMapHouses(scene); // S7 WIRING (houses): ?layout=new only; builds itself, LOD rides the camera, colliders rebuilt when it stands
     yield;
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
     yield;

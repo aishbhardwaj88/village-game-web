@@ -1,0 +1,4 @@
+{
+ "layout": "new",
+ "failure": "Error: page.waitForFunction: Target crashed "
+}
