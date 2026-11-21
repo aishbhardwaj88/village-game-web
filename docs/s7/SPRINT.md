@@ -38,3 +38,8 @@ Map coords are the game's world coords as read from the running game on 9 Nov (x
 - Asset licences allowed: CC0; CC BY (credited in docs/CREDITS.md AND the in-game credits screen); OFL fonts; MIT/BSD/Apache code; assets we build ourselves; Tripo characters made on a paid plan. NOT allowed: NC (non-commercial), "personal use only", unknown or missing licence, CC BY-SA (avoid), anything ripped from games/films/YouTube, real brands or logos. Every new third-party file gets a CREDITS.md row (source URL, author, licence) in the same commit.
 - Sound is off until final polish (audio engine only starts with ?sound=1).
 - Agents added 21 Nov evening: desktop (s7-desktop), licence (s7-licence).
+
+## Order of editions (owner, 21 Nov late evening)
+- FULL quality (desktop edition) first. The LIGHT web edition is built only after she approves the new village in 3D.
+- Until then: no time on web-only slimming or web budgets; the budget gate stays in warn mode (the Tue 24 strict flip is postponed).
+- Still needed for any machine: characters load after Play, distance tiers, chunked instancing, shadows by distance.
