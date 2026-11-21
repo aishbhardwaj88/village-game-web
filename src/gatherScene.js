@@ -59,6 +59,12 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   const yaw = {};
   let sel = Math.max(-1, ORDER.indexOf(new URLSearchParams(window.location.search).get('face') || '')), ui = null, label = null;
   const tmpV = new THREE.Vector3();
+  // 21 Nov: each person first WALKS (side view, in front of the line, out and back), then stops facing the camera
+  // and the camera glides in to the face. "Walk again" replays it. Speeds are close to each walk's natural pace.
+  const LINE_SPEED = { maa: 0.7, pitaji: 1.05, dada: 0.5, dadi: 0.38, sarpanch: 0.62, postman: 1.5, brother: 0.8, sister: 1.0, teacher: 0.85, didi: 0.9 };
+  const WALK_T = 8, GLIDE_T = 1.6, FRONT_Z = 1.6;
+  let phaseT = 0, lastSel = -2;
+  const camPos = new THREE.Vector3(), camTgt = new THREE.Vector3(), facePos = new THREE.Vector3(), faceTgt = new THREE.Vector3();
   function lineupUI() {
     ui = document.createElement('div');
     ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;font:600 16px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
@@ -71,34 +77,53 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
       return b;
     };
     ui.append(btn('Previous', () => { sel = sel <= 0 ? ORDER.length - 1 : sel - 1; }), label,
-      btn('Next', () => { sel = (sel + 1) % ORDER.length; }), btn('Whole line', () => { sel = -1; }));
+      btn('Next', () => { sel = (sel + 1) % ORDER.length; }), btn('Walk again', () => { if (sel < 0) sel = 0; phaseT = 0; }),
+      btn('Whole line', () => { sel = -1; }));
     document.body.appendChild(ui); name();
   }
-  function lineupUpdate() {
+  function lineupUpdate(dt) {
     if (!ui) lineupUI();
+    if (sel !== lastSel) { lastSel = sel; phaseT = 0; }
+    phaseT += dt;
     ORDER.forEach((k, i) => {
       const g = actors[k];
-      put(g, X0 + i * 1.15, 0);
       if (yaw[k] === undefined) {
         const m = g.getObjectByName(`gather_${k}_model`);
         if (m) { g.rotation.y = 0; g.updateMatrixWorld(true); tmpV.set(0, 0, 1).transformDirection(m.matrixWorld); yaw[k] = -Math.atan2(tmpV.x, tmpV.z); }
       }
-      g.rotation.y = yaw[k] || 0;
+      if (i !== sel) { put(g, X0 + i * 1.15, 0); g.rotation.y = yaw[k] || 0; }
     });
     const cam = window.__dopahar && window.__dopahar.photoCamera;
+    if (sel < 0) { if (cam) cam({ pos: [cx, 1.3, cz + 8.8], target: [cx, 0.95, cz], fov: 50 }); return; }
+    const k = ORDER[sel], g = actors[k], base = yaw[k] || 0;
+    const xs = X0 + sel * 1.15, amp = (LINE_SPEED[k] || 0.9) * WALK_T / 2;
+    let xo = 0, walkingDir = 0;
+    if (phaseT < WALK_T) { // out to the right, then back: a side view of the walk both ways
+      const u = phaseT / WALK_T;
+      xo = u < 0.5 ? amp * u * 2 : amp * (2 - u * 2) ;
+      walkingDir = u < 0.5 ? 1 : -1;
+      xo -= amp / 2; // centred on the person's own place
+    }
+    put(g, xs + xo, FRONT_Z);
+    const want = walkingDir > 0 ? base + Math.PI / 2 : walkingDir < 0 ? base - Math.PI / 2 : base;
+    turnTo(g, want, dt);
     if (!cam) return;
-    if (sel < 0) { cam({ pos: [cx, 1.3, cz + 8.8], target: [cx, 0.95, cz], fov: 50 }); return; }
-    const g = actors[ORDER[sel]]; let head = null;
+    let head = null;
     g.traverse((b) => { if (!head && b.isBone && /(^|rig|:)head$/i.test(b.name)) head = b; });
-    const x = cx + X0 + sel * 1.15;
-    const y = head ? head.getWorldPosition(tmpV).y + 0.09 : 1.5;
-    cam({ pos: [x, y, cz + 0.85], target: [x, y, cz], fov: 30 });
+    const gx = cx + xs + xo, hy = head ? head.getWorldPosition(tmpV).y + 0.09 : 1.5;
+    const h = CAST[k] || 1.6;
+    camPos.set(gx, h * 0.6, cz + FRONT_Z + h * 2.4); camTgt.set(gx, h * 0.5, cz + FRONT_Z); // whole body, head to feet
+    facePos.set(gx, hy, cz + FRONT_Z + 0.85); faceTgt.set(gx, hy, cz + FRONT_Z);
+    let f = phaseT < WALK_T + 0.6 ? 0 : Math.min(1, (phaseT - WALK_T - 0.6) / GLIDE_T);
+    f = f * f * (3 - 2 * f);
+    camPos.lerp(facePos, f); camTgt.lerp(faceTgt, f);
+    cam({ pos: camPos.toArray(), target: camTgt.toArray(), fov: 45 - 15 * f });
   }
 
   return function update(dt) {
     if (!(dt > 0)) return;
     if (!ready) { init(); ready = true; }
-    if (LINEUP) { lineupUpdate(); return; }
+    if (LINEUP) { lineupUpdate(dt); return; }
     // postman cycle: 7 s in, 6 s at Pitaji, 7 s out, 3 s off-stage pause
     postT = (postT + dt) % 23;
     const p = actors.postman;
