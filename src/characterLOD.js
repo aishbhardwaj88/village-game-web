@@ -24,13 +24,14 @@
  */
 import * as THREE from 'three';
 
-// ONE config for every limit. 'light' = the free web edition (docs/s7/SPRINT.md budget); 'full' = the desktop edition.
-// The edition is passed by main.js (initCharacterLOD({ ..., profile })); `?charprofile=full` overrides it for testing.
+// ONE config for every limit. 'full' = the full-quality game (default, built first); 'light' = the later web edition
+// (docs/s7/SPRINT.md budget).
+// The edition is passed by main.js (initCharacterLOD({ ..., profile })); `?charprofile=light` (or full) overrides it for testing.
 export const LOD_PROFILES = {
   light: { NEAR: 25, FAR: 50, MAX_FULL: 12, MID_HZ: 12, HYST: 2, LOAD_RADIUS: 55, LOAD_AT_ONCE: 2 },
   full: { NEAR: 40, FAR: 90, MAX_FULL: 24, MID_HZ: 20, HYST: 2, LOAD_RADIUS: 95, LOAD_AT_ONCE: 3 },
 };
-export const LOD = { ...LOD_PROFILES.light }; // the live values (filled from the chosen profile at init)
+export const LOD = { ...LOD_PROFILES.full }; // the live values (filled from the chosen profile at init)
 // Character model files (public/assets/models/<file>.glb). Slots named gather_* or <key>#<n> count as characters too.
 // A new Tripo character wired some other way: add its file name here so it waits for Play instead of loading at boot.
 export const CHARACTER_FILES = new Set(['maa', 'dadi', 'pitaji', 'sarpanch', 'dada', 'postman', 'sister', 'brother', 'teacher', 'parlour_didi',
@@ -158,11 +159,11 @@ function loadNearest(assetSlots, radius) {
   assetSlots.resolveOne(name).catch(() => {}).finally(() => { loadingNow--; stats.loading = loadingNow; stats.loaded++; });
 }
 
-export function initCharacterLOD({ camera, assetSlots, profile = 'light' }) {
+export function initCharacterLOD({ camera, assetSlots, profile = 'full' }) { // 22 Nov owner: full-quality game first
   if (installed) return;
   installed = true;
   const q = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  Object.assign(LOD, LOD_PROFILES[q.get('charprofile') || profile] || LOD_PROFILES.light);
+  Object.assign(LOD, LOD_PROFILES[q.get('charprofile') || profile] || LOD_PROFILES.full);
   const tiersOn = q.get('charlod') !== '0';
   if (assetSlots) deferCharacterLoads(assetSlots);
   const loop = () => {
