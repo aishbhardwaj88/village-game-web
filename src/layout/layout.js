@@ -24,7 +24,7 @@
  * per-asset front offset (src/layout/frontOffsets.js): feed it straight to the anchor.
  */
 import MAP_DATA from './mapData.json' with { type: 'json' };
-import { buildLayout, DEG, wrapPi } from './layoutCore.js';
+import { DEG, wrapPi, roadBBox } from './layoutCore.js';
 import { FRONT_OFFSETS } from './frontOffsets.js';
 
 /** The integrator flips this to 'new' once every district is moved. */
@@ -46,7 +46,11 @@ export const isNewLayout = () => MODE === 'new';
 
 let LAYOUT = null;
 export function getLayout() {
-  if (!LAYOUT) LAYOUT = buildLayout(MAP_DATA);
+  if (!LAYOUT) {
+    const places = {};
+    for (const p of MAP_DATA.places) places[p.id] = p;
+    LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips };
+  }
   return LAYOUT;
 }
 export const getPlace = (id) => getLayout().places[id] || null;
@@ -71,6 +75,7 @@ export const ANCHOR_SOURCE = {
   eastgali: 'new_East gali', westgali: 'new_West gali',
 };
 
+const UNTOUCHED = new Set(); // anchors the map keeps exactly as they are (layoutTurnDeg / movedWith are the identity for them)
 const OLD = {}; // the anchors exactly as the old layout has them (snapshot before any override)
 let ANCH = null;
 /** Before/after report of the anchor override (tools/layout-tests.mjs prints it). */
@@ -88,6 +93,7 @@ export function applyLayoutToAnchors(anchors) {
     const src = ANCHOR_SOURCE[id] || id;
     const p = L.places[src];
     if (!p) continue;
+    if (p.untouched) { UNTOUCHED.add(id); anchorReport.push({ id, src, old: OLD[id], next: OLD[id], untouched: true, beforeMatches: true }); continue; }
     const label = src.startsWith('new_') && /gali/.test(src);
     const next = { x: p.x, z: p.z, ry: label ? anchors[id].ry || 0 : p.ry };
     anchorReport.push({ id, src, old: OLD[id], next, beforeMatches: p.before ? Math.hypot(p.before.x - OLD[id].x, p.before.z - OLD[id].z) < 0.6 : null });
@@ -105,27 +111,29 @@ function oldYaw(id) {
 
 /** A place's map turn in degrees (three.js rotation.y = -turn). Old layout: `oldDeg` unchanged. */
 export function layoutTurnDeg(id, oldDeg) {
-  if (MODE !== 'new' || !ANCH || !ANCH[id]) return oldDeg;
+  if (MODE !== 'new' || !ANCH || !ANCH[id] || UNTOUCHED.has(id)) return oldDeg;
   return -ANCH[id].ry / DEG;
 }
 /** A place's yaw in radians. Old layout: `oldYaw` unchanged. */
 export function layoutYaw(id, oldYawRad) {
-  if (MODE !== 'new' || !ANCH || !ANCH[id]) return oldYawRad;
+  if (MODE !== 'new' || !ANCH || !ANCH[id] || UNTOUCHED.has(id)) return oldYawRad;
   return ANCH[id].ry;
 }
 /** Turn (rad) place `id` makes from the old layout to the new one (0 under the old layout). */
 export function placeTurn(id) {
-  if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id]) return 0;
+  if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id] || UNTOUCHED.has(id)) return 0;
   return wrapPi(ANCH[id].ry - oldYaw(id));
 }
 /** A world point that belongs to place `id`, carried with the place (rotated about it and moved). Identity under the old layout. */
 export function movedWith(id, x, z) {
-  if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id]) return { x, z };
+  if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id] || UNTOUCHED.has(id)) return { x, z };
   const o = OLD[id], n = ANCH[id], t = placeTurn(id), c = Math.cos(t), s = Math.sin(t);
   const dx = x - o.x, dz = z - o.z;
   return { x: n.x + dx * c + dz * s, z: n.z - dx * s + dz * c };
 }
 /** A yaw that belongs to place `id`, turned with it. Identity under the old layout. */
 export const movedYaw = (id, yaw) => yaw + placeTurn(id);
+/** True when the approved map keeps this anchor exactly as today. */
+export const isUntouched = (id) => UNTOUCHED.has(id);
 /** The old (today's) anchor of a place, whatever the layout. */
 export const oldAnchor = (id) => (OLD[id] ? { ...OLD[id] } : null);

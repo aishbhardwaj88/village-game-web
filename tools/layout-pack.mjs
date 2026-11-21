@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 /**
- * Packs the approved map (docs/layout/approved-map-2026-11-21.json, 590 KB) into the copy the game ships
- * (src/layout/mapData.json). Same data, smaller: every tree's 24-32 point circle becomes centre + radius (it is a circle),
- * coordinates keep 2 decimals. Places, roads, the canal and every non-tree ring are copied as they are.
+ * Packs the approved map (docs/layout/approved-map-2026-11-21.json) into the copy the game ships (src/layout/mapData.json):
+ * every tree's 24-32 point circle becomes centre + radius (it is a circle), coordinates keep 2 decimals, and everything the
+ * game needs is derived here once (src/layout/layoutCore.js buildLayout: yaws, untouched places, oriented footprints, the
+ * roundabout ring; src/layout/layoutSnap.js: the road snap), so the game only reads the result.
  *
  * Usage: node tools/layout-pack.mjs          (writes src/layout/mapData.json)
  *        node tools/layout-pack.mjs --check  (exit 1 if mapData.json is out of date; tools/layout-tests.mjs runs this too)
  */
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { buildLayout, roadBBox } from '../src/layout/layoutCore.js';
+import { snapLayout, clipGalis } from '../src/layout/layoutSnap.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const SRC = ROOT + 'docs/layout/approved-map-2026-11-21.json';
@@ -32,7 +35,22 @@ export function pack(raw) {
     for (const k of ['color', 'y0', 'y1', 'y']) if (o[k] !== null && o[k] !== undefined) out[k] = o[k];
     return out;
   });
-  return { source: 'docs/layout/approved-map-2026-11-21.json (packed by tools/layout-pack.mjs)', places: raw.places, roads: raw.roads, objects, canal: raw.canal };
+  // derive everything once here (fronts, oriented footprints, the road snap), so the game only reads the result
+  const layout = buildLayout({ places: raw.places, roads: raw.roads, objects, canal: raw.canal });
+  const clips = clipGalis(layout);
+  for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
+  const nudges = snapLayout(layout);
+  const round = (v) => (typeof v === 'number' ? +v.toFixed(4) : v);
+  const cleanRect = (r) => r && { cx: r2(r.cx), cz: r2(r.cz), w: r2(r.w), d: r2(r.d), ry: round(r.ry), front: r.front.map(round), frontMid: r.frontMid.map(r2) };
+  return {
+    source: 'docs/layout/approved-map-2026-11-21.json, derived by tools/layout-pack.mjs (fronts, footprints, road snap)',
+    places: layout.list.map((p) => ({ ...p, frontYaw: round(p.frontYaw), ry: round(p.ry) })),
+    roads: layout.roads.map(({ bbox, ...r }) => r),
+    objects: layout.objects.map((o) => ({ ...o, rect: cleanRect(o.rect), cx: r2(o.cx), cz: r2(o.cz), ...(o.r !== undefined ? { r: r2(o.r) } : {}) })),
+    canal: raw.canal,
+    nudges,
+    galiClips: clips,
+  };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

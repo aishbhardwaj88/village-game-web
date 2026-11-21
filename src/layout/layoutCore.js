@@ -125,15 +125,43 @@ const nameOf = (label) => { const s = String(label || ''); const i = s.indexOf('
  */
 export function buildLayout(data) {
   const roads = data.roads.map((r) => ({ ...r, bbox: roadBBox(r) }));
+  // the roundabout is drawn as a ground ring; the game lays it as a 7 m ring carriageway round a 6 m island (src/mapPlan.js
+  // CHAURAHA), so it joins the road list as that ring
+  const rb = data.objects.find((o) => /^road_roundabout/.test(o.label));
+  if (rb) {
+    const ring = rb.rings[0];
+    let cx = 0, cz = 0, R = 0;
+    for (const [x, z] of ring) { cx += x; cz += z; }
+    cx /= ring.length; cz /= ring.length;
+    for (const [x, z] of ring) R += Math.hypot(x - cx, z - cz);
+    R /= ring.length;
+    const w = 7, rc = R - w / 2, pts = [];
+    for (let i = 0; i <= 48; i++) { const a = i / 48 * Math.PI * 2; pts.push([+(cx + Math.cos(a) * rc).toFixed(2), +(cz + Math.sin(a) * rc).toFixed(2)]); }
+    const r = { id: 'chauraha_ring', kind: 'road', width: w, name: 'Roundabout', pts, closed: true, centre: [cx, cz] };
+    roads.push({ ...r, bbox: roadBBox(r) });
+  }
   const places = {};
   const list = [];
   for (const p of data.places) {
-    const frontYaw = yawOf(p.front[0], p.front[1]);
     const off = frontOffsetDeg(p.id);
     const e = FRONT_OFFSETS[p.id] || {};
+    let front = p.front.slice();
+    let ry;
+    // UNTOUCHED places (the map's own note: "fixed and untouched: the roundabout, the dark brown roads, the primary school,
+    // the anganwadi, the Gurukul college and the sports grounds"): same spot as today and the export's front is exactly the
+    // reverse of its "before" value, the export's front flip applied to a place nobody turned. They keep today's yaw:
+    // before.front is (sin ry, cos ry) of today's anchor, so the anchor yaw is read back from it and the true front is that
+    // yaw minus the model's own offset.
+    const untouched = !!p.before && Math.hypot(p.x - p.before.x, p.z - p.before.z) < 0.5
+      && front[0] * p.before.front[0] + front[1] * p.before.front[1] < -0.9;
+    if (untouched) {
+      ry = yawOf(p.before.front[0], p.before.front[1]);
+      front = frontOfYaw(ry - off * DEG);
+    } else ry = wrapPi(yawOf(front[0], front[1]) + off * DEG);
+    const frontYaw = yawOf(front[0], front[1]);
     const q = {
-      id: p.id, name: p.name, hi: p.hi || '', x: p.x, z: p.z, front: p.front.slice(), frontYaw,
-      ry: wrapPi(frontYaw + off * DEG), offsetDeg: off, row: !!e.row, existing: !!p.existing, minor: !!p.minor,
+      id: p.id, name: p.name, hi: p.hi || '', x: p.x, z: p.z, front, frontYaw,
+      ry, offsetDeg: off, row: !!e.row, existing: !!p.existing, minor: !!p.minor, untouched,
       before: p.before ? { x: p.before.x, z: p.before.z } : null,
     };
     places[p.id] = q;
@@ -170,4 +198,67 @@ export function buildLayout(data) {
     return out;
   });
   return { places, list, roads, objects, canal: data.canal };
+}
+
+// ------------------------------------------------------------------ road probes (shared by the snap and tools/layout-tests.mjs)
+/** The road whose carriageway covers (x, z), or null. */
+export function roadUnder(roads, x, z, tol = 0) {
+  for (const r of roads) {
+    if (x < r.bbox[0] || x > r.bbox[2] || z < r.bbox[1] || z > r.bbox[3]) continue;
+    for (let i = 0; i + 1 < r.pts.length; i++) {
+      const s = segNear(x, z, r.pts[i], r.pts[i + 1]);
+      if (s.d <= r.width / 2 - tol) return { r, ux: s.ux, uz: s.uz, pen: r.width / 2 - s.d };
+    }
+  }
+  return null;
+}
+/** 0..90 degrees between two undirected directions. */
+export function lineAngle(ax, az, bx, bz) {
+  const a = Math.abs(Math.atan2(ax * bz - az * bx, ax * bx + az * bz)) * 180 / Math.PI;
+  return Math.min(a, 180 - a);
+}
+/** The edge of a quad whose outward normal is closest to `front`: { a, c, nx, nz } (n = outward unit normal). */
+export function frontEdge(corners, front) {
+  const cx = corners.reduce((s, q) => s + q[0], 0) / 4, cz = corners.reduce((s, q) => s + q[1], 0) / 4;
+  let best = null;
+  for (let i = 0; i < 4; i++) {
+    const a = corners[i], c = corners[(i + 1) % 4];
+    const mx = (a[0] + c[0]) / 2, mz = (a[1] + c[1]) / 2, n = Math.hypot(mx - cx, mz - cz) || 1;
+    const dot = ((mx - cx) * front[0] + (mz - cz) * front[1]) / n;
+    if (!best || dot > best.dot) best = { dot, a, c, nx: (mx - cx) / n, nz: (mz - cz) / n };
+  }
+  return best;
+}
+/**
+ * Does the front face a road? From 9 points along the front edge walk straight out (0.25 m steps, up to `reach` m) until a
+ * carriageway starts. Returns { gap (shortest walk), road, par (deg between the front edge and that road), ux, uz } or null.
+ */
+export function frontProbe(roads, corners, front, reach = 30) {
+  const e = frontEdge(corners, front);
+  const ex = e.c[0] - e.a[0], ez = e.c[1] - e.a[1], L = Math.hypot(ex, ez) || 1;
+  let nx = -ez / L, nz = ex / L;
+  if (nx * e.nx + nz * e.nz < 0) { nx = -nx; nz = -nz; }
+  let best = null;
+  for (let k = 1; k <= 9; k++) {
+    const t = k / 10, px = e.a[0] + ex * t, pz = e.a[1] + ez * t;
+    for (let d = 0; d <= reach; d += 0.25) {
+      if (best && d >= best.gap) break;
+      const h = roadUnder(roads, px + nx * d, pz + nz * d);
+      if (h) { best = { gap: d, road: h.r, ux: h.ux, uz: h.uz }; break; }
+    }
+  }
+  if (best) best.par = lineAngle(ex, ez, best.ux, best.uz);
+  return best;
+}
+/** Deepest a quad reaches into any carriageway (0 = clear), sampled every 0.5 m. */
+export function roadDepth(roads, corners, tol = 0.1) {
+  const [p0, p1, , p3] = corners;
+  const ux = p1[0] - p0[0], uz = p1[1] - p0[1], vx = p3[0] - p0[0], vz = p3[1] - p0[1];
+  const nu = Math.max(1, Math.ceil(Math.hypot(ux, uz) / 0.5)), nv = Math.max(1, Math.ceil(Math.hypot(vx, vz) / 0.5));
+  let worst = null;
+  for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
+    const h = roadUnder(roads, p0[0] + ux * i / nu + vx * j / nv, p0[1] + uz * i / nu + vz * j / nv, tol);
+    if (h && (!worst || h.pen > worst.pen)) worst = { pen: h.pen, road: h.r };
+  }
+  return worst;
 }
