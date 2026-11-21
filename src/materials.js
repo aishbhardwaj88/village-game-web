@@ -12,6 +12,7 @@ const materialCache = new Map(); // "name|rx|ry|tint" -> Material
  */
 const SETS = {
   plaster: { base: 'assets/textures/plaster/', maps: ['color', 'normal', 'roughness'] },
+  rust: { base: 'assets/textures/rust/', maps: ['color', 'normal', 'roughness'] }, // S7 WIRING (shops-land)
   concrete: { base: 'assets/textures/concrete/', maps: ['color', 'normal', 'roughness', 'ao'] },
   wood: { base: 'assets/textures/wood/', maps: ['color', 'normal', 'roughness', 'ao'] },
   metal: { base: 'assets/textures/metal/', maps: ['color', 'normal', 'roughness'] },

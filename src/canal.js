@@ -112,6 +112,10 @@ function makeRippleNormalMap() {
 export function buildCanal() {
   const group = new THREE.Group();
   group.name = 'canal';
+  // S7 (?layout=new): the approved map moves the nahar to the north-south canal at x 824 (src/kit/landCanal.js). This old
+  // east-west stretch (x 758-786, z 34) would stand in the new weekly market ground and across the east road, so under the
+  // new layout it is not built (no trench, no dip registered: the ground stays whole). ?layout=old is unchanged.
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layout') === 'new') return group;
 
   // Water — a simple flat-tinted plane sitting in a shallow trench (not a CC0
   // texture set; no water set exists in src/materials.js's SETS, and a flat tint

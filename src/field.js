@@ -234,18 +234,8 @@ function addDensityLOD(mesh, total) {
   };
 }
 
-/** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
- * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
- * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
- * triangles each, no shadow casting. */
-function buildCropRows() {
-  const along = 1.15;
-  const between = 1.5;
-  const halfX = FIELD_SIZE.x / 2 - 2;
-  const halfZ = FIELD_SIZE.z / 2 - 2;
-  const cols = Math.floor((halfX * 2) / along);
-  const rows = Math.floor((halfZ * 2) / between);
-
+/** One crop tuft (six blades + four ear / flower spikes) and its material: shared by the khet rows and the s7 kit (?layout=new). */
+export function cropTuftParts() {
   const pos = [];
   const col = [];
   const uv = [];
@@ -282,6 +272,22 @@ function buildCropRows() {
   geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, map: bladeAtlas(), roughness: 1, side: THREE.DoubleSide });
   material.name = 'crop';
+  return { geometry, material };
+}
+
+/** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
+ * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
+ * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
+ * triangles each, no shadow casting. */
+function buildCropRows() {
+  const along = 1.15;
+  const between = 1.5;
+  const halfX = FIELD_SIZE.x / 2 - 2;
+  const halfZ = FIELD_SIZE.z / 2 - 2;
+  const cols = Math.floor((halfX * 2) / along);
+  const rows = Math.floor((halfZ * 2) / between);
+
+  const { geometry, material } = cropTuftParts();
   const mesh = new THREE.InstancedMesh(geometry, material, cols * rows);
   mesh.castShadow = false;
   mesh.receiveShadow = true;
@@ -344,7 +350,7 @@ function buildCropRows() {
 }
 
 /** Sugarcane blocks inside the khet: ~2.6 m clumps (6 pale-green jointed stalks, arching leaf blades), one InstancedMesh for every cane plot. */
-function buildCaneClumps(spots) {
+export function buildCaneClumps(spots) {
   const pos = [], col = [], uv = [];
   const stalk = new THREE.Color(0x8a9a44), leaf = new THREE.Color(0x4f7a2a), leafTip = new THREE.Color(0x8aa23a);
   const tri = (a, b, c2, ca, cb, cc, stalkUv) => { pos.push(...a, ...b, ...c2); col.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cc.r, cc.g, cc.b); uv.push(...(stalkUv ? [0.52, 0, 0.98, 0, 0.75, 1] : [0.02, 0, 0.48, 0, 0.25, 1])); };

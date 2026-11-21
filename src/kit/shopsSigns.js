@@ -1,0 +1,140 @@
+import * as THREE from 'three';
+import { drawBilingual } from '../signPaint.js';
+
+/**
+ * ONE sign atlas for every new shop, shop-house, kiosk and cart board (?layout=new).
+ * 2048 x 4080 canvas, 4 columns x 34 rows of 512 x 120 px cells (one board each, 110 names fit with room to spare),
+ * painted with the shared signPaint rule: Hindi bold on top, English below, one dark paint colour.
+ * A 2.6 m board gets ~200 texels per metre: sharper than the screen at 10 m on a 1080p display.
+ * One material, one texture: every board in the kit is merged into ONE mesh, ONE draw call.
+ */
+
+export const HINDI = {
+  'Aloo tikki': 'आलू टिक्की', 'Animal hospital': 'पशु चिकित्सालय', 'Bag shop': 'बैग की दुकान', 'Bakery': 'बेकरी',
+  'Bangles': 'चूड़ी भंडार', 'Bangles and cosmetics': 'चूड़ी एवं श्रृंगार', 'Barber shop': 'नाई की दुकान', 'Beauty parlour': 'ब्यूटी पार्लर',
+  'Bhutta': 'भुट्टा', "Blacksmith's workshop": 'लोहार की दुकान', 'Book depot': 'पुस्तक भंडार', 'Books and uniforms': 'किताबें एवं वर्दी',
+  'Bus shelter': 'बस प्रतीक्षालय', "Carpenter's workshop": 'बढ़ई की दुकान', 'Chai': 'चाय', 'Chana jor': 'चना जोर गरम',
+  'Chemist': 'दवाइयाँ', 'Chemist (health centre)': 'दवा केंद्र', 'Cloth': 'कपड़ा भंडार', 'Cloth house': 'वस्त्रालय',
+  'Cloth shop': 'कपड़े की दुकान', 'Cosmetics': 'श्रृंगार भंडार', 'Cyber cafe': 'साइबर कैफ़े', 'Cycle and puncture repair': 'साइकिल पंचर मरम्मत',
+  'Cycle repair': 'साइकिल मरम्मत', 'Cycle stand': 'साइकिल स्टैंड', 'Dairy booth': 'दूध डेयरी', 'Dhaba': 'ढाबा',
+  "Doctor's clinic": 'डॉक्टर क्लिनिक', 'Dosa': 'डोसा', 'Dry fruits': 'मेवा भंडार', 'Electrical': 'बिजली का सामान',
+  'Electrical and mobile repair': 'बिजली एवं मोबाइल मरम्मत', 'Electrical repair': 'बिजली मरम्मत', "Farmers' cooperative and godown": 'किसान सहकारी समिति',
+  'Fertiliser and seeds': 'खाद बीज भंडार', 'Footwear': 'जूता घर', 'Fruit': 'ताज़े फल', 'Gas cylinder godown': 'गैस गोदाम',
+  'General store': 'जनरल स्टोर', 'Gift shop': 'उपहार भंडार', 'Golgappa': 'गोलगप्पे', 'Grocery': 'किराना',
+  'Hardware and paint': 'हार्डवेयर एवं पेंट', 'Ice gola': 'बर्फ़ का गोला', 'Jaggery making unit': 'गुड़ भट्ठी', 'Jeweller': 'सर्राफ़',
+  'Juice': 'जूस', 'Kirana': 'किराना स्टोर', 'Kites and toys': 'पतंग एवं खिलौने', 'Kulfi': 'कुल्फ़ी', 'Lassi': 'लस्सी',
+  'Lassi and milk': 'लस्सी एवं दूध', 'Library and reading room': 'पुस्तकालय एवं वाचनालय', 'Medical store': 'मेडिकल स्टोर', 'Milk carts': 'दूध',
+  'Milk collection point': 'दुग्ध संग्रह केंद्र', 'Mithai': 'मिठाई', 'Mobile': 'मोबाइल', 'Mobile accessories': 'मोबाइल एक्सेसरीज़',
+  'Mobile and recharge': 'मोबाइल एवं रिचार्ज', 'Mobile covers': 'मोबाइल कवर', 'Mobile recharge': 'मोबाइल रिचार्ज',
+  'Mobile recharge and photocopy': 'रिचार्ज एवं फ़ोटोकॉपी', 'Mobile shop': 'मोबाइल की दुकान', 'Momos': 'मोमोज़', 'Moongphali': 'मूँगफली',
+  'Namkeen': 'नमकीन', 'Namkeen and biscuits': 'नमकीन एवं बिस्कुट', 'Newspaper stand': 'अख़बार', 'Optician': 'चश्मा घर',
+  'Photo studio': 'फ़ोटो स्टूडियो', 'Pickles and papad': 'अचार पापड़', 'Plastic goods': 'प्लास्टिक का सामान', 'Pooja items': 'पूजा सामग्री',
+  'Readymade clothes': 'रेडीमेड वस्त्र', 'Rewari and gajak': 'रेवड़ी गजक', 'Samosa and pakora': 'समोसा पकौड़ा', 'Samosa and snacks': 'समोसा एवं नाश्ता',
+  'Saree shop': 'साड़ी भंडार', 'Seeds': 'बीज भंडार', 'Shoe shop': 'जूते चप्पल', 'Snacks': 'नाश्ता', 'Spices': 'मसाले',
+  'Stationery': 'स्टेशनरी', 'Stationery and xerox': 'स्टेशनरी एवं फ़ोटोकॉपी', 'Steel utensils': 'स्टील बर्तन भंडार', 'Sugarcane juice': 'गन्ने का रस',
+  'Sweet corn': 'स्वीट कॉर्न', 'Sweet shop': 'मिष्ठान भंडार', 'Sweets and namkeen': 'मिठाई नमकीन', 'Tailor': 'दर्ज़ी',
+  'Tea and biscuits': 'चाय बिस्कुट', 'Tea stall': 'चाय की दुकान', 'Tent and wedding lights': 'टेंट हाउस', 'Toy shop': 'खिलौना घर',
+  'Toys and balloons': 'खिलौने गुब्बारे', 'Tractor repair': 'ट्रैक्टर मरम्मत', 'Utensils': 'बर्तन भंडार', 'Vegetable': 'ताज़ी सब्ज़ी',
+  'Village bank': 'ग्रामीण बैंक', 'Watch and clock': 'घड़ी घर', 'Watch repair': 'घड़ी मरम्मत', 'Wedding and community hall': 'बारात घर',
+};
+
+// Painted-board schemes seen on real UP bazaar boards: light ground, ONE dark paint for both lines, a darker border.
+const SCHEMES = [
+  { bg: '#efe3c4', fg: '#6e1a12', border: '#7a2a1a' }, // cream / maroon
+  { bg: '#e9c95a', fg: '#5a1410', border: '#6e2018' }, // yellow / deep red
+  { bg: '#e6e2d6', fg: '#1f2f5e', border: '#2a3a6e' }, // white / navy
+  { bg: '#cfdcc4', fg: '#1f3a22', border: '#2c4a2a' }, // pale green / bottle green
+  { bg: '#c9d6e0', fg: '#18305a', border: '#22406a' }, // pale blue / navy
+  { bg: '#ead2b4', fg: '#3a2414', border: '#5a3a1e' }, // sand / brown
+];
+
+const CW = 512, CH = 120, COLS = 4, ROWS = 34, W = CW * COLS, H = CH * ROWS;
+
+export function signNameFor(name) {
+  return name.replace(/ \(2-storey\)$/, '').replace(/ (kiosk|cart)$/, '');
+}
+
+export class SignAtlas {
+  constructor() {
+    this.cells = new Map(); // key -> { i, hi, en, scheme }
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = W; this.canvas.height = H;
+    this.texture = new THREE.CanvasTexture(this.canvas);
+    this.texture.colorSpace = THREE.SRGBColorSpace;
+    this.texture.anisotropy = 8;
+    this.texture.generateMipmaps = true;
+    this.texture.minFilter = THREE.LinearMipmapLinearFilter;
+    this.material = new THREE.MeshStandardMaterial({ map: this.texture, roughness: 0.82, metalness: 0 });
+    this.material.name = 'signboard';
+  }
+  /** Cell for a shop name (+ scheme index); same name and scheme share a cell. Returns null when the name has no Hindi. */
+  cell(name, schemeIdx = 0) {
+    const en = signNameFor(name);
+    const hi = HINDI[en];
+    if (!hi) return null;
+    const key = en + '|' + schemeIdx;
+    if (!this.cells.has(key)) {
+      if (this.cells.size >= COLS * ROWS) return null;
+      this.cells.set(key, { i: this.cells.size, hi, en, scheme: SCHEMES[schemeIdx % SCHEMES.length] });
+    }
+    return this.cells.get(key);
+  }
+  /** UV rect [u0, v0, u1, v1] of a cell (a 3 px inset keeps mip bleed off the edge). */
+  uv(c) {
+    const col = c.i % COLS, row = Math.floor(c.i / COLS);
+    const x0 = col * CW + 3, x1 = (col + 1) * CW - 3, y0 = row * CH + 3, y1 = (row + 1) * CH - 3;
+    return [x0 / W, 1 - y1 / H, x1 / W, 1 - y0 / H];
+  }
+  paint() {
+    const g = this.canvas.getContext('2d');
+    g.fillStyle = '#7a6a58'; g.fillRect(0, 0, W, H);
+    for (const c of this.cells.values()) {
+      const col = c.i % COLS, row = Math.floor(c.i / COLS), x = col * CW, y = row * CH, s = c.scheme;
+      g.fillStyle = s.bg; g.fillRect(x, y, CW, CH);
+      // sun-faded paint: a few very soft uneven patches, never a clean print
+      for (let k = 0; k < 5; k++) {
+        const r = 60 + ((k * 37 + c.i * 13) % 70), px = x + ((k * 97 + c.i * 31) % CW), py = y + ((k * 53 + c.i * 7) % CH);
+        const rg = g.createRadialGradient(px, py, 0, px, py, r);
+        rg.addColorStop(0, k % 2 ? 'rgba(255,250,235,0.10)' : 'rgba(110,90,60,0.07)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = rg; g.fillRect(x, y, CW, CH);
+      }
+      g.strokeStyle = s.border; g.lineWidth = 7; g.strokeRect(x + 7, y + 7, CW - 14, CH - 14);
+      drawBilingual(g, c.hi, c.en, { x: x + CW / 2, y: y + 12, w: CW - 52, h: CH - 24, fg: s.fg, fillFraction: 0.92 });
+      // a little grime along the bottom edge (rain run-off)
+      const grd = g.createLinearGradient(0, y + CH - 22, 0, y + CH);
+      grd.addColorStop(0, 'rgba(60,45,30,0)'); grd.addColorStop(1, 'rgba(60,45,30,0.16)');
+      g.fillStyle = grd; g.fillRect(x, y + CH - 22, CW, 22);
+    }
+    this.texture.needsUpdate = true;
+  }
+  /** Paint now with whatever fonts exist, and again once the Devanagari webfont has loaded. */
+  ready() {
+    this.paint();
+    if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
+    return Promise.all([document.fonts.load('700 40px "Noto Sans Devanagari"'), document.fonts.ready]).then(() => this.paint(), () => this.paint());
+  }
+}
+
+/**
+ * Board geometry: a 3 cm thick painted plank (front face = the atlas cell) on two flat-iron brackets is overkill at this
+ * size, so it is a thin box whose front shows the cell and whose edges/back take the border colour. Returns a geometry in
+ * the board's local frame (front +z) at (cx,cy,cz) rotated by the parent matrix.
+ */
+export function boardGeometry(atlas, cell, w, h, matrix, depth = 0.04) {
+  const g = new THREE.BoxGeometry(w, h, depth);
+  const [u0, v0, u1, v1] = atlas.uv(cell);
+  const uv = g.attributes.uv;
+  const front = g.groups[4];
+  const touched = new Set();
+  for (let i = front.start; i < front.start + front.count; i++) {
+    const vi = g.index.array[i];
+    if (touched.has(vi)) continue;
+    touched.add(vi);
+    uv.setXY(vi, u0 + uv.getX(vi) * (u1 - u0), v0 + uv.getY(vi) * (v1 - v0));
+  }
+  const eu = u0 + 0.004 * (u1 - u0), ev = (v0 + v1) / 2; // edges + back: the border paint
+  for (let vi = 0; vi < uv.count; vi++) if (!touched.has(vi)) uv.setXY(vi, eu, ev);
+  g.clearGroups();
+  g.applyMatrix4(matrix);
+  return g;
+}
