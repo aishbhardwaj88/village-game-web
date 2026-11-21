@@ -20,12 +20,15 @@ export const VIEWS = {
   square_above: { cam: [640, 34, -62], look: [600, 0, -12] },
   kiosks_eye: { cam: [606, 1.6, 34], look: [596, 2.0, 48] },
   smallshop_eye: { cam: [613, 1.6, -88.5], look: [621, 2.4, -77] },
-  orchard_eye: { cam: [846, 1.6, -137], look: [866, 3, -165] },
-  orchard_above: { cam: [820, 30, -120], look: [865, 0, -165] },
-  field_eye: { cam: [606, 1.6, -132], look: [585, 1.2, -170] },
-  field_above: { cam: [560, 45, -120], look: [520, 0, -200] },
-  canal_eye: { cam: [812, 1.6, 52], look: [826, 1.0, 34] },
-  canal_above: { cam: [790, 26, 70], look: [824, 0, 34] },
+  orchard_eye: { cam: [641, 1.6, -142], look: [672, 3.5, -176] },
+  orchard_above: { cam: [622, 34, -122], look: [680, 0, -200] },
+  orchard_east: { cam: [842, 1.6, -134], look: [866, 3, -165] },
+  field_eye: { cam: [846, 1.6, 127], look: [872, 1.0, 152] },
+  field_above: { cam: [815, 42, 105], look: [868, 0, 162] },
+  cane_eye: { cam: [843.5, 1.6, -92], look: [862, 1.4, -70] },
+  canal_eye: { cam: [838, 1.6, 50], look: [822, 1.2, 36] },
+  canal_above: { cam: [852, 26, 78], look: [824, 0, 30] },
+  canal_strip: { cam: [810, 1.6, -60], look: [816, 2.0, -20] },
   flag_eye: { cam: [592, 1.6, 34], look: [603, 4.5, 19] },
   flag_above: { cam: [585, 20, 42], look: [603, 0, 20] },
   peepal_eye: { cam: [552, 1.6, 74], look: [543, 4, 63] },
@@ -65,6 +68,7 @@ try {
   console.log(errors.length ? 'ERRORS: ' + errors.join(' | ').slice(0, 1500) : 'console errors: 0');
   fs.writeFileSync(path.join(OUT, 'last-run.json'), JSON.stringify({ results, errors }, null, 1));
 } finally {
-  await browser.close();
+  await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
   vite.kill();
+  process.exit(0);
 }

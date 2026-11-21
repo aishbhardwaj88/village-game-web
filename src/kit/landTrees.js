@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { LAND_QUALITY } from './landQuality.js';
 import { treeParts, treeMaterials, CANOPIES } from '../trees.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
-import { labelKey, labelName, ringCentre, ringRadius, hash01 } from './landLayout.js';
+import { labelKey, labelName, ringCentre, ringRadius, hash01, inRing, makeRoadIndex } from './landLayout.js';
 
 /**
  * Every tree of the approved map (?layout=new), ~585: mango (orchards), guava / jamun (orchard + village), eucalyptus rows
@@ -114,6 +114,31 @@ export async function build(map, { camera = null } = {}) {
     trees.push({ kind: pick(h), x: c.x, z: c.z, d: r * 2, h: o.y1 || 9, seed: Math.floor(hash01(c.z, c.x) * VARIANTS), ry: hash01(c.x * 3.1, c.z) * Math.PI * 2 });
   }
 
+  // Orchards in rows: the map draws orchard trees mostly along the orchard edges (the east mango orchard has 12 trees on
+  // 3,600 m2), so every orchard's empty middle is filled with rows of its own species at ~10.5 m, the spacing the map uses
+  // where it is full, never within 8 m of a drawn tree or 4 m of a road.
+  const roads = makeRoadIndex(map.roads);
+  let filled = 0;
+  for (const o of map.objects) {
+    if (labelKey(o) !== 'new_orchard' || !o.rings?.[0]) continue;
+    const ring = o.rings[0], name = labelName(o);
+    let area = 0;
+    for (let i = 0; i < ring.length; i++) { const a = ring[i], b = ring[(i + 1) % ring.length]; area += a[0] * b[1] - b[0] * a[1]; }
+    area = Math.abs(area) / 2;
+    const xs = ring.map((q) => q[0]), zs = ring.map((q) => q[1]), step = 10.5;
+    for (let x = Math.min(...xs) + step / 2; x < Math.max(...xs); x += step) {
+      for (let z = Math.min(...zs) + step / 2; z < Math.max(...zs); z += step) {
+        const jx = x + (hash01(x, z) - 0.5) * 1.2, jz = z + (hash01(z, x) - 0.5) * 1.2;
+        if (!inRing(ring, jx, jz) || roads.clearance(jx, jz) < 4) continue;
+        if (trees.some((t) => (t.x - jx) ** 2 + (t.z - jz) ** 2 < 64)) continue; // keep the drawn trees, fill only the gaps
+        const h = hash01(jx, jz);
+        const kind = /guava/i.test(name) ? (h < 0.75 ? 'guava' : 'jamun') : 'mango';
+        trees.push({ kind, x: jx, z: jz, d: kind === 'mango' ? 7.2 : 5.2, h: 9, seed: Math.floor(hash01(jz, jx) * VARIANTS), ry: h * Math.PI * 2 });
+        filled++;
+      }
+    }
+  }
+
   const kit = new BatchKit('s7_trees');
   const imp = impostorAtlas();
   const natural = new Map(); // `${kind}|${seed}` -> Box3 of the near crown
@@ -128,7 +153,7 @@ export async function build(map, { camera = null } = {}) {
     trunk.computeBoundingBox(); box.union(trunk.boundingBox);
     natural.set(k, box);
     kit.design(`${k}|near`, () => ({ bark: trunk, leaf: parts.leafGeo }));
-    kit.design(`${k}|mid`, () => ({ bark: trunk, leaf: thinCards(parts.leafGeo, 3) }));
+    kit.design(`${k}|mid`, () => ({ bark: trunk, leaf: thinCards(parts.leafGeo, 2) }));
     kit.design(`${k}|far`, () => ({ imp: impostorGeometry(imp.cell(parts.impostor), box) }));
   }
 
@@ -141,6 +166,7 @@ export async function build(map, { camera = null } = {}) {
     const nat = box.getSize(new THREE.Vector3());
     const wide = Math.max(nat.x, nat.z);
     let s = THREE.MathUtils.clamp(t.d / wide, 0.6, 2.2);
+    if (t.kind === 'peepal') s = Math.max(s, 1.45); // the chaupal peepal is the biggest tree in the village: its crown spreads well past the chabutra
     // the map's canopy height wins where the natural crown would be too short (eucalyptus rows): stretch up to 1.35x
     const sy = THREE.MathUtils.clamp(t.h / nat.y, s * 0.9, s * 1.35);
     const leafTint = new THREE.Color(LEAF_TINT[t.kind]).multiplyScalar(0.92 + 0.16 * hash01(t.x, 7));
@@ -192,7 +218,7 @@ export async function build(map, { camera = null } = {}) {
 
   const counts = {};
   for (const t of trees) counts[t.kind] = (counts[t.kind] || 0) + 1;
-  group.userData.report = { trees: trees.length, bySpecies: counts, kit: kit.stats() };
+  group.userData.report = { trees: trees.length, orchardRowsAdded: filled, bySpecies: counts, kit: kit.stats() };
   group.userData.update = update;
   return group;
 }

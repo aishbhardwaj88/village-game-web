@@ -170,7 +170,7 @@ export async function build(map) {
       }
     } else if (key === 'new_peepal' && name.startsWith('Raised platform')) {
       // chabutra: plastered round platform, a step all round, cement top
-      P.cyl('plaster', c.x, 0, c.z, r + 0.35, r + 0.35, 0.22, { seg: 28, color: 0xe4dccb });
+      P.cyl('brick', c.x, 0, c.z, r + 0.35, r + 0.35, 0.22, { seg: 28, color: 0xe6d8c8 }); // exposed brick step
       P.cyl('plaster', c.x, 0.22, c.z, r, r, 0.38, { seg: 28, color: 0xece4d4 });
       P.cyl('concrete', c.x, 0.6, c.z, r + 0.04, r + 0.04, 0.04, { seg: 28, color: CEMENT });
       colliders.push(...orientedBoxes(c.x, c.z, 0, r * 1.5, r * 1.5));

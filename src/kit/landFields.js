@@ -176,7 +176,7 @@ function nearPack(mesh, total) {
     let n = 0;
     for (let i = 0; i < total; i++) {
       const dx = M[i * 16 + 12] - p.x, dz = M[i * 16 + 14] - p.z, d2 = dx * dx + dz * dz;
-      if (d2 > PLANT_M * PLANT_M || (d2 > 1600 && i % 2)) continue; // full density to 40 m, half beyond
+      if (d2 > PLANT_M * PLANT_M || (d2 > 1600 && i % 3)) continue; // full density to 40 m, a third beyond
       mesh.instanceMatrix.array.set(M.subarray(i * 16, i * 16 + 16), n * 16);
       if (C) mesh.instanceColor.array.set(C.subarray(i * 3, i * 3 + 3), n * 3);
       n++;
@@ -207,7 +207,7 @@ export async function build(map, { camera = null } = {}) {
     // real plants only in the band beside a road
     if (key === 'new_field' && look.plant) {
       const xs = ring.map((p) => p[0]), zs = ring.map((p) => p[1]);
-      const step = look.plant === 'cane' ? 0.95 : look.plant === 'sarson' ? 0.9 : 0.75;
+      const step = look.plant === 'cane' ? 0.95 : look.plant === 'sarson' ? 0.55 : 0.75;
       const ca = Math.cos(angle), sa = Math.sin(angle);
       for (let x = Math.min(...xs); x < Math.max(...xs); x += step) {
         for (let z = Math.min(...zs); z < Math.max(...zs); z += step) {
@@ -217,7 +217,7 @@ export async function build(map, { camera = null } = {}) {
           if (cl < 1.5 || cl > 14) continue;
           if (!inRing(ring, jx, jz) || inKhet(jx, jz)) continue;
           const across = (-sa * jx + ca * jz) / (look.plant === 'cane' ? 1.1 : 0.75);
-          if (Math.abs(across - Math.round(across)) > 0.3) continue; // rows, with walkable furrows between
+          if (look.plant !== 'sarson' && Math.abs(across - Math.round(across)) > 0.3) continue; // rows, with walkable furrows between (mustard closes over its rows)
           if (hash01(jx * 1.3, jz * 0.7) < 0.18) continue; // gaps: a hand-sown row is never full
           spots[look.plant].push([jx, jz]);
         }
@@ -257,7 +257,14 @@ export async function build(map, { camera = null } = {}) {
     group.add(mesh);
   }
   if (spots.cane.length) { const m = buildCaneClumps(spots.cane); m.name = 's7_field_cane'; m.userData.noAutoCollider = true; nearPack(m, spots.cane.length); group.add(m); }
-  if (spots.sarson.length) { const m = buildSarsonBloom(spots.sarson); m.name = 's7_field_sarson'; m.userData.noAutoCollider = true; nearPack(m, spots.sarson.length); group.add(m); }
+  if (spots.sarson.length) {
+    const m = buildSarsonBloom(spots.sarson);
+    // the field kit's stems read near-black against the light at eye height: lift them to the green of a real mustard stalk
+    const col = m.geometry.attributes.color, n = col.count;
+    for (let i = n - 9; i < n; i++) col.setXYZ(i, 0.36, 0.46, 0.17);
+    col.needsUpdate = true;
+    m.name = 's7_field_sarson'; m.userData.noAutoCollider = true; nearPack(m, spots.sarson.length); group.add(m);
+  }
   for (const k in spots) report.plants[k] = spots[k].length;
   report.triangles = merged.index.count / 3;
   group.userData.report = report;
