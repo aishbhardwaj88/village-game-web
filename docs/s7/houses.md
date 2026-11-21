@@ -74,3 +74,8 @@ Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind 
 5. **Camera**: the new houses are not in `cameraObstacles` (raycasting the batch every frame is costly). If the camera clips into walls in galis, push `window.__newHouses.group` into `cameraObstacles` or give the camera the collider boxes.
 6. **Tulsi plant** on the chaura: the game has no real tulsi model (vegetation.js draws none), so the chaura shows bare soil. If a real model arrives, chaura tops are clutter items of kind `tulsi` (house-local, see `clutterFor`).
 7. The 'Mud house' label is on 400 of the 492 footprints (all the new mohallas), not just the outer edge; I treated it as "may be mud" and kept mud to backs-on-open-ground. Decision for Aishwarya if she wants more or fewer mud houses.
+
+## Selling rules and editions
+
+- Licences: the kit adds **no third-party file**. Geometry is self-built; the atlas is composed at runtime from texture sets already in the game and already credited (Poly Haven / ambientCG, CC0). Nothing new for CREDITS.md.
+- Quality knobs are in one place, `src/kit/housesQuality.js`: atlas cell size (512 light / 1024 full), anisotropy, near-detail distance (55 / 90 m), clutter distance (40 / 70 m), far cut-off (420 / 600 m). `houseQuality()` should read `getQuality()` from `src/edition.js` when it lands (one line).

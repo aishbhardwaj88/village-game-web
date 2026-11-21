@@ -7,6 +7,7 @@ import { planHouses, ringsOverlap, inRing, rectCorners } from './housesPlan.js';
 import { isNewLayout } from './housesLayout.js';
 import { dipHeightRaw } from '../dips.js';
 import { requestColliderRebuild } from '../collision.js';
+import { houseQuality } from './housesQuality.js';
 
 /**
  * The new-map houses (S7 sprint, houses agent): all ~490 'new_house' footprints of the approved 21 Nov map, built from the
@@ -25,9 +26,10 @@ const CLASSES = [[5.5, 6.5], [6.5, 8], [7.5, 8], [6.5, 5.5], [7.5, 6.5], [6.5, 6
 const classOf = (w, d) => CLASSES.reduce((b, c) => (Math.max(Math.abs(Math.log(w / c[0])), Math.abs(Math.log(d / c[1]))) < Math.max(Math.abs(Math.log(w / b[0])), Math.abs(Math.log(d / b[1]))) ? c : b), CLASSES[0]);
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
-export const NEAR_DIST = 55; // full detail within this; the far box beyond
-export const CLUTTER_DIST = 40;
-export const FAR_DIST = 420; // the haze has eaten a house by then
+const Q = houseQuality();
+export const NEAR_DIST = Q.nearDist; // full detail within this; the far box beyond
+export const CLUTTER_DIST = Q.clutterDist;
+export const FAR_DIST = Q.farDist; // the haze has eaten a house by then
 
 /** Picks a design, mirror, wash and seed for each planned house. Deterministic. Neighbours never match in design AND wash. */
 export function assignHouses(plan) {
@@ -143,7 +145,7 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
   }
   const batch = hb.batch;
   batch.receiveShadow = true;
-  batch.castShadow = true;
+  batch.castShadow = Q.castShadow;
   // LOD rides the camera that draws the batch: no per-frame call needed from main.js
   const baseBefore = batch.onBeforeRender;
   batch.onBeforeRender = function (renderer, scene, camera, ...rest) {

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { houseQuality } from './housesQuality.js';
 
 /**
  * ONE material for every new-map house (S7 sprint, houses agent), so all houses, far boxes and front clutter draw in one batch.
@@ -21,7 +22,7 @@ export const CELL = { plaster: 0, concrete: 1, brick: 2, brickWash: 3, wood: 4, 
 /** Tiles per metre for each cell, from the library table (tools/blender/arch.py: brick 1.2, plaster 0.5, wood 1.0, metal 1.0). */
 export const CELL_REPEAT = [0.5, 0.5, 1.2, 1.2, 1.0, 1.0, 1.0, 0.7];
 
-const COLS = 4, ROWS = 2, CS = 512, MARGIN = 24;
+const COLS = 4, ROWS = 2, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
 const SETS = [
   ['plaster', 'plaster'], ['concrete', 'concrete'], ['brick', 'brick'], ['brick', 'brickWash'],
   ['wood', 'wood'], ['rust', 'rust'], ['terracotta', 'terracotta'], ['dryearth', 'mud'],
@@ -109,7 +110,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
       });
       const t = new THREE.CanvasTexture(c);
       t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-      t.anisotropy = 8;
+      t.anisotropy = houseQuality().anisotropy;
       t.generateMipmaps = true;
       t.minFilter = THREE.LinearMipmapLinearFilter;
       if (k === 'color') t.colorSpace = THREE.SRGBColorSpace;
