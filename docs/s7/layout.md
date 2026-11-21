@@ -192,10 +192,18 @@ These small plot steps live in `o.rect` (see "Wiring left" 1); drawn positions a
 - `node tools/layout-tests.mjs`: **PASS, 0 failures** (167 named buildings: carts now count as props; 492 houses; 926
   footprints). One accepted exception, marked in the test: the brick kiln stands 18 m back behind its own green strip, as drawn.
   Houses facing a road or gali within 3 m and 3 deg: 460 of 492 (reported). 173 footprints nudged in all (31 existing places,
-  59 new named buildings, 67 houses, the rest carts and washing lines making room); 2 shops relocated (drawn in a second
-  row with no road at all: Kites and toys, Gift shop) to the nearest free frontage, 27 m at most.
+  59 new named buildings, 67 houses, the rest carts and washing lines making room). 3 relocated to the nearest free frontage
+  facing a road: Kites and toys (16 m) and Gift shop (27 m), both drawn in a second row with no road at all, and the
+  Wedding and community hall (6.8 m), which could not turn square to the cross road where drawn.
 - `node tools/layout-tests.mjs --as-drawn` (shops and houses where the map draws them, i.e. what is built until wiring item 1
   lands): 67 failures (55 front, 8 on a road, 4 overlaps), all of which the snapped footprints fix.
+
+- Headless boot (`flock /tmp/s7-browser.lock node tools/layout-smoke.mjs --only old|new --no-force`, 22 Nov, after the
+  merge with main): old boots in 82 s (330 zones), new in 71 s (233 zones); the only red lines on both are the 404s of the
+  skipped character models; the five probed places are drawn exactly at their anchors in both (new: gurudwara (444.8, 94.0)
+  yaw 2.6, haveli (656.0, -38.5) yaw 85.3, health centre (588.0, 57.7) yaw 11.2).
+- `npm run build:unchecked` passes. `collision-test.js` / `regression-check.js` not run (full-world runs, longer than the
+  5-minute browser slot); `?layout=old` code paths are unchanged (every change is behind `isNewLayout()`).
 
 ### Wiring left for the integrator
 1. **shops-land (`src/kit/shopsPlace.js`) and houses (`src/kit/housesLayout.js`) build from `o.rings[0]`, so they ignore the
