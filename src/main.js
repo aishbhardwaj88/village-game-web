@@ -2793,7 +2793,7 @@ async function main() {
     const roofMinX = Math.min(HOUSE_BLOCK.cx - roofHalfW, s.x - halfW);
     const onRoofFootprint = x > roofMinX && x < HOUSE_BLOCK.cx + roofHalfW && z > HOUSE_BLOCK.cz - roofHalfD && z < HOUSE_BLOCK.cz + roofHalfD;
     if (onRoofFootprint && currentY > s.yTop * 0.5) return s.yTop;
-    return Math.max(dipHeightAt(wx, wz), window.__s7land ? window.__s7land(wx, wz) : 0); // 0 except down the pond/johad/canal banks (src/dips.js); S7 WIRING (shops-land): bridges, bunds, platforms under ?layout=new
+    return Math.max(dipHeightAt(wx, wz), window.__s7land ? window.__s7land(wx, wz) : 0, window.__s7mapobjHeight ? window.__s7mapobjHeight(wx, wz) : 0); // 0 except down the pond/johad/canal banks (src/dips.js); S7 WIRING (shops-land): bridges, bunds, platforms under ?layout=new
   }
 
   function nearestMountable() {

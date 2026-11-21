@@ -21,7 +21,7 @@ const NEAR_M = LAND_QUALITY.shopNearM, MID_M = LAND_QUALITY.shopMidM; // full de
 const WALLS = [PALETTE.cream, PALETTE.mustard, PALETTE.terracotta, PALETTE.teal, PALETTE.fadedBlue, PALETTE.schoolYellow, PALETTE.greyGreen, PALETTE.cream];
 const paint = (hex) => new THREE.Color(1, 1, 1).lerp(new THREE.Color(hex), WALL_TINT_STRENGTH).getHex();
 
-const NOT_SHOPS = new Set(['Hand pump', 'Well', 'Washing line', 'Dung cakes', 'Resting spot', 'Buffalo', 'Haystack', 'Old well', 'Transformer', 'Mobile tower', 'Water trough', 'Washing platform', 'Barber under a tree']);
+const NOT_SHOPS = new Set(['Hand pump', 'Well', 'Washing line', 'Dung cakes', 'Resting spot', 'Buffalo', 'Haystack', 'Old well', 'Transformer', 'Mobile tower', 'Water trough', 'Washing platform', 'Barber under a tree', 'Weekly market ground']);
 const SHEDS = new Set(['Bus shelter', 'Cycle stand', 'Jaggery making unit', 'Milk carts']);
 
 export function tradeOf(name) {
