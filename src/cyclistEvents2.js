@@ -129,6 +129,7 @@ function nearest(li, x, z) {
 
 let audioCtx = null;
 function honk(vol = 0.05) {
+  if (typeof window !== 'undefined' && window.__dopaharMuted) return; // respects the mute button
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     audioCtx = audioCtx || new AC(); if (audioCtx.state === 'suspended') audioCtx.resume();
