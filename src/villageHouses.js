@@ -6,6 +6,7 @@ import { buildRoofParts } from './rooftops.js';
 import { buildHouseExtras, pickFeatures } from './houseExtras.js';
 import { swapShared } from './stagingYard.js';
 import { requestColliderRebuild } from './collision.js';
+import { isNewLayout } from './kit/housesLayout.js';
 
 /**
  * The house kit through the village (her 3 Nov answer, docs/PARALLEL.md items 2 + 4): the 8 kit types
@@ -239,6 +240,9 @@ export function createVillageHouses(scene) {
   scene.add(group);
   const clusters = []; // { pts: [[x, z]] of its houses, root, shadow }
   if (typeof location !== 'undefined' && /[?&]nokit=1/.test(location.search)) return { group, update() {} }; // A/B switch for draw-call audits
+  // S7 (houses agent): the 21 Nov map's houses (src/kit/houses.js) replace these gap fills under ?layout=new. VILLAGE_HOUSES stays
+  // exported unchanged (armFrontage/mainRoadFrontage read it for avoidance).
+  if (isNewLayout()) return { group, update() {} };
   loadKitModels().then((models) => {
     for (const m of Object.values(models)) { m.updateWorldMatrix(true, true); m.traverse((o) => { if (o.isMesh) swapShared(o); }); }
     const cells = new Map(); // one merged set per area: about 5 draw calls per visible area
