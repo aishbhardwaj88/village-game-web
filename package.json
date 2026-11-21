@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
-    "build:unchecked": "vite build",
+    "build:unchecked": "vite build && node tools/check-budget.js",
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
     "shrink": "node tools/shrink.js",
     "screenshot": "node tools/screenshot.js",
     "perf-check": "node tools/perf-budget-check.js",
-    "perf-check-fps": "node tools/perf-check.js"
+    "perf-check-fps": "node tools/perf-check.js",
+    "budget": "node tools/check-budget.js",
+    "budget:strict": "node tools/check-budget.js --strict",
+    "perf:ride": "node tools/perf-ride.mjs",
+    "perf:ride:mac": "HEADED=1 GL=metal BROWSERS=chromium,webkit node tools/perf-ride.mjs",
+    "perf:instancing-test": "node tools/perf-instancing-test.mjs"
   },
   "dependencies": {
     "three": "^0.186.0",

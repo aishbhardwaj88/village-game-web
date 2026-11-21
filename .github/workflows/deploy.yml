@@ -26,6 +26,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:unchecked
+      # S7 budget gate (docs/s7/perf.md). build:unchecked already prints the budget report (warn).
+      # Tue 24 Nov the integrator flips the NEXT line to: npm run budget:strict   (breaches then stop the deploy)
+      - run: npm run budget  # S7-STRICT-FLIP
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
