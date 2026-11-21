@@ -50,6 +50,84 @@ export function nearestRoad(roads, x, z) {
 /** distance from (x, z) to the nearest road EDGE (negative = on the road) */
 export const roadClearance = (roads, x, z) => { const n = nearestRoad(roads, x, z); return n ? n.d - n.half : 99; };
 
+// ---------------------------------------------------------------------------------------------- S7 fixes: road edges
+// Map objects drawn a metre or two into a gali or the highway are trimmed back to the road edge; the road never moves.
+const ROAD_GAP = 0.05;
+/** Step every side of a rectangular patch that reaches into a road back to the road edge. Returns metres trimmed. */
+export function trimRectToRoads(p, roads) {
+  let { x, z, ry, w, d } = p, trimmed = 0;
+  for (let iter = 0; iter < 5; iter++) {
+    let changed = false;
+    for (const [ax, sg] of [['x', 1], ['x', -1], ['z', 1], ['z', -1]]) {
+      let worst = 99;
+      for (let i = 0; i <= 16; i++) {
+        const t = -0.5 + i / 16, lx = ax === 'x' ? sg * w / 2 : t * w, lz = ax === 'z' ? sg * d / 2 : t * d;
+        worst = Math.min(worst, roadClearance(roads, ...toWorld(x, z, ry, lx, lz)));
+      }
+      if (worst >= -0.01) continue;
+      const cut = -worst + ROAD_GAP;
+      if ((ax === 'x' ? w : d) - cut < 1.5) continue; // never trim a patch to nothing
+      if (ax === 'x') { w -= cut; [x, z] = toWorld(x, z, ry, -sg * cut / 2, 0); } else { d -= cut; [x, z] = toWorld(x, z, ry, 0, -sg * cut / 2); }
+      trimmed += cut; changed = true;
+    }
+    if (!changed) break;
+  }
+  if (trimmed > 0) Object.assign(p, { x, z, w, d, ring: rectRing(x, z, ry, w, d), trimmed: +trimmed.toFixed(2) });
+  return trimmed;
+}
+/** Slide (x, z) towards (cx, cz) until it clears every road (never closer than minR to the centre). */
+export function pullToRoadEdge(roads, cx, cz, x, z, minR) {
+  if (roadClearance(roads, x, z) >= 0) return [x, z];
+  const R = Math.hypot(x - cx, z - cz) || 1, ux = (x - cx) / R, uz = (z - cz) / R;
+  let lo = Math.min(minR, R), hi = R; // lo = clear (or as far in as allowed), hi = on the road
+  for (let k = 0; k < 18; k++) { const m = (lo + hi) / 2; if (roadClearance(roads, cx + ux * m, cz + uz * m) >= ROAD_GAP) lo = m; else hi = m; }
+  return [cx + ux * lo, cz + uz * lo];
+}
+
+/**
+ * A round pond hemmed by a road (S7 fixes): along each direction from the pond's centre, where the road edge comes
+ * inside the drawn bank, the bank ends at the road edge and the water ends POND_LIP m short of it; the rest of the pond
+ * keeps its drawn size. Returns { rw, rb, touched, most, limit(a), map(r, a), inv(d, a) } (mean radii of the drawn
+ * water and bank; map: drawn radius -> built radius along angle a; inv: built -> drawn).
+ */
+export const POND_LIP = 0.6;
+export function pondSqueeze(roads, p) {
+  const mr = (ring) => ring.reduce((t, q) => t + Math.hypot(q[0] - p.x, q[1] - p.z), 0) / ring.length;
+  const rw = mr(p.water), rb = p.bank ? mr(p.bank) : rw + 1.6;
+  const reach = Math.max(rb, ...(p.bank || p.water).map((q) => Math.hypot(q[0] - p.x, q[1] - p.z))) + 0.3; // drawn rings are not perfect circles
+  const cache = new Map();
+  const limit = (a) => {
+    const k = Math.round(((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) / (Math.PI / 180));
+    if (cache.has(k)) return cache.get(k);
+    const ua = Math.cos(k * Math.PI / 180), va = Math.sin(k * Math.PI / 180);
+    let L = Infinity;
+    for (let r = rw * 0.4; r <= reach; r += 0.1) if (roadClearance(roads, p.x + ua * r, p.z + va * r) < 0.15) { L = r; break; }
+    cache.set(k, L);
+    return L;
+  };
+  // the built bank radius along each degree: the road limit, eased out over the neighbouring degrees (a gently receding
+  // bank where a gali meets the pond, never a square notch): b(a) = min over a' of (min(rb, L(a')) + TAPER * rb * |a - a'|)
+  const TAPER = 0.7, bankR = new Float32Array(360);
+  for (let i = 0; i < 360; i++) bankR[i] = Math.min(rb, limit(i * Math.PI / 180));
+  const eased = new Float32Array(360);
+  for (let i = 0; i < 360; i++) {
+    let b = rb;
+    for (let j = -60; j <= 60; j++) b = Math.min(b, bankR[(i + j + 360) % 360] + TAPER * rb * Math.abs(j) * Math.PI / 180);
+    eased[i] = b;
+  }
+  const degOf = (a) => Math.round(((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) / (Math.PI / 180)) % 360;
+  const radii = (a) => {
+    const i = degOf(a), L = limit(a), b = eased[i];
+    if (b >= rb) return Number.isFinite(L) ? [Math.min(rw, L - POND_LIP), rb] : [rw, rb];
+    return [Math.min(rw, Math.max(rw * 0.5, b - POND_LIP)), b];
+  };
+  const map = (r, a) => { const [w2, b2] = radii(a); const out = w2 === rw && b2 === rb ? r : r <= rw ? r * w2 / rw : w2 + (r - rw) * (b2 - w2) / Math.max(0.01, rb - rw); return Math.min(limit(a), out); };
+  const inv = (d, a) => { const [w2, b2] = radii(a); if (w2 === rw && b2 === rb) return d; return d <= w2 ? d * rw / w2 : rw + (d - w2) * (rb - rw) / Math.max(0.01, b2 - w2); };
+  let most = 0;
+  for (let i = 0; i < 360; i += 2) { const a = i * Math.PI / 180; most = Math.max(most, rb - radii(a)[1]); }
+  return { rw, rb, touched: most > 0, most, limit, map, inv };
+}
+
 /** Axis of a long thin rect: { a: [x,z], b: [x,z], len, width } (a, b = the two short ends' midpoints). */
 function longAxis(rect) {
   const along = rect.w >= rect.d ? [Math.cos(rect.ry), -Math.sin(rect.ry)] : [Math.sin(rect.ry), Math.cos(rect.ry)];
@@ -117,11 +195,21 @@ export function planMapObjects(map) {
       put(bench ? 'bench' : 'charpai', o, r.cx, r.cz, r.ry + (hash01(r.cx, 9) - 0.5) * 0.4, { w: 2, d: 1 });
     } else if (k === 'new_milestone' && r) {
       // a kilometre stone faces along its road, towards the traffic on its own side (src/milestones.js convention: face = +z)
-      const nr = nearestRoad(roads, r.cx, r.cz);
+      let mx = r.cx, mz = r.cz, moved = 0;
+      // S7 fixes: a stone drawn on the carriageway steps sideways onto the verge (0.35 m clear of the edge)
+      for (let it = 0; it < 4; it++) {
+        const n0 = nearestRoad(roads, mx, mz), cl = n0 ? n0.d - n0.half : 99;
+        if (cl >= 0.35) break;
+        let nx = mx - n0.p[0], nz = mz - n0.p[1], L = Math.hypot(nx, nz);
+        if (L < 1e-3) { nx = -n0.dir[1]; nz = n0.dir[0]; L = 1; }
+        const step = 0.35 - cl + 0.01;
+        mx += (nx / L) * step; mz += (nz / L) * step; moved += step;
+      }
+      const nr = nearestRoad(roads, mx, mz);
       let u = nr ? nr.dir : [1, 0];
-      const nx = r.cx - (nr ? nr.p[0] : r.cx), nz = r.cz - (nr ? nr.p[1] : r.cz);
+      const nx = mx - (nr ? nr.p[0] : mx), nz = mz - (nr ? nr.p[1] : mz);
       if (nx * -u[1] + nz * u[0] < 0) u = [-u[0], -u[1]]; // stone on the right of travel
-      out.milestones.push({ id: o.id, x: r.cx, z: r.cz, ry: Math.atan2(-u[0], -u[1]), road: nr && nr.id, clearance: nr ? +(nr.d - nr.half).toFixed(2) : null });
+      out.milestones.push({ id: o.id, x: mx, z: mz, ry: Math.atan2(-u[0], -u[1]), road: nr && nr.id, clearance: nr ? +(nr.d - nr.half).toFixed(2) : null, moved: +moved.toFixed(2) });
       count('milestone');
     } else if (k === 'new_pots') {
       out.pots.push({ id: o.id, x: o.cx, z: o.cz, r: o.r || 0.35 });
@@ -161,6 +249,21 @@ export function planMapObjects(map) {
   out.counts.pond = out.ponds.length;
   out.counts.tank = out.tanks.length;
 
+  // S7 fixes: patches that reach into a road step back to its edge (before their contents are placed, so plot pillars and
+  // hopscotch follow); pond banks pull back to the gali edge, point by point (the drawn bank stays in p.bankDrawn)
+  for (const p of out.patches) trimRectToRoads(p, roads);
+  for (const p of out.ponds) {
+    if (!p.water) continue;
+    const sq = pondSqueeze(roads, p);
+    if (!sq.touched) continue;
+    // the shapes as built (for the checks): every ring point squeezed the same way the ground and water are
+    const dense = (ring) => ring.flatMap((q, i) => { const n = ring[(i + 1) % ring.length]; return [0, 0.2, 0.4, 0.6, 0.8].map((t) => [q[0] + (n[0] - q[0]) * t, q[1] + (n[1] - q[1]) * t]); });
+    const squeezeRing = (ring) => dense(ring).map(([x, z]) => { const a = Math.atan2(z - p.z, x - p.x), r = Math.hypot(x - p.x, z - p.z), r2 = sq.map(r, a); return [p.x + Math.cos(a) * r2, p.z + Math.sin(a) * r2]; });
+    p.waterBuilt = squeezeRing(p.water);
+    if (p.bank) p.bankBuilt = squeezeRing(p.bank);
+    p.squeezed = +sq.most.toFixed(2);
+  }
+
   // things inside the ground patches (they sit on the patch, built as designs)
   for (const p of out.patches) {
     if (p.kind === 'cricket') { // stumps at both popping ends of the 20 m strip (the pitch is 20.12 m in real life)
@@ -190,7 +293,7 @@ export function planMapObjects(map) {
     'new_Old well, new_Well, new_well: built by shops-land (wells)',
     'new_grazing, new_Mango baagh: painted by shops-land (green ground)',
     'new_culvert, new_Goods yard, new_Gher yard, new_Dung cake yard, new_Haystacks, new_Carrom under a tree: the layout wiring moves the game\'s own models there',
-    'new_sqh (Shopkeeper\'s home and godown, a 7 x 4.4 m two-storey building): not a small object, left for the shops-land agent',
+    'new_sqh (Shopkeeper\'s home and godown, a 7 x 4.4 m two-storey building): built by the shops kit (S7 fixes, src/kit/shopsPlace.js)',
   );
   return out;
 }

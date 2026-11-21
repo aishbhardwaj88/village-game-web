@@ -21,7 +21,8 @@ const items = [];
 for (const d of plan.designs) items.push({ what: `${d.kind} ${d.id}`, ring: designRing(d), x: d.x, z: d.z, soft: d.soft, ground: false });
 for (const m of plan.milestones) items.push({ what: `milestone ${m.id}`, ring: rectRing(m.x, m.z, m.ry, 0.6, 0.4), x: m.x, z: m.z });
 for (const p of plan.patches) items.push({ what: `ground ${p.kind} ${p.id}`, ring: p.ring, x: p.x, z: p.z, ground: true });
-for (const p of plan.ponds) items.push({ what: `pond ${p.kind}`, ring: p.bank || p.water, x: p.x, z: p.z, round: true });
+for (const p of plan.ponds) items.push({ what: `pond ${p.kind}`, ring: p.bankBuilt || p.bank || p.water, x: p.x, z: p.z, round: true });
+for (const p of plan.ponds) if (p.water) items.push({ what: `pond water ${p.kind}`, ring: p.waterBuilt || p.water, x: p.x, z: p.z, round: true, roadOnly: true });
 for (const t of plan.tanks) items.push({ what: 'temple tank', ring: rectRing(t.x, t.z, t.ry, t.outer, t.outer), x: t.x, z: t.z });
 if (plan.gate) for (const p of plan.gate.pillars) items.push({ what: `gate pillar ${p.id}`, ring: rectRing(p.x, p.z, 0, p.w, p.w), x: p.x, z: p.z });
 for (const a of plan.animals) items.push({ what: `buffalo ${a.id}`, ring: rectRing(a.x, a.z, a.ry, 0.9, 2.2), x: a.x, z: a.z });
@@ -37,11 +38,11 @@ const hull = (r) => r; // the map's round markers are already convex
 
 const res = { houses: [], solids: [], roads: [] };
 for (const it of items) {
-  for (const h of houses) {
+  if (!it.roadOnly) for (const h of houses) {
     if (Math.abs(h.x - it.x) > 40 || Math.abs(h.z - it.z) > 40) continue;
     if (convexOverlap(it.ring, h.ring)) res.houses.push(`${it.what} (${it.x.toFixed(1)}, ${it.z.toFixed(1)}) x house #${h.i} (${h.x.toFixed(1)}, ${h.z.toFixed(1)})`);
   }
-  for (const s of solids) {
+  if (!it.roadOnly) for (const s of solids) {
     if (Math.abs(s.cx - it.x) > 40 || Math.abs(s.cz - it.z) > 40) continue;
     if (convexOverlap(it.ring, s.rings[0])) res.solids.push(`${it.what} (${it.x.toFixed(1)}, ${it.z.toFixed(1)}) x ${s.label} (${s.cx.toFixed(1)}, ${s.cz.toFixed(1)})`);
   }

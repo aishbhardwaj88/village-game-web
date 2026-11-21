@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { fieldMaterial, paint } from './landFields.js';
 import { createWaterMaterial } from '../water.js';
-import { PATCH_LOOKS, roadClearance, toWorld } from './mapObjectsPlan.js';
+import { PATCH_LOOKS, roadClearance, toWorld, pondSqueeze } from './mapObjectsPlan.js';
 
 /**
  * Ground and water of the map objects layer:
@@ -150,6 +150,20 @@ export function buildGroundAndWater(plan, roads) {
     const clay = p.kind === 'Clay pit pond';
     const inner = profileStrip(path, [[rw - 0.9, 0.02], [rw, WATER_Y + 0.01], [crest, BANK_Y]], (x, z) => 1);
     const outer = profileStrip(path.map((q) => ({ ...q })), [[crest, BANK_Y], [rb, 0.0]]);
+    // S7 fixes: where a gali runs inside the drawn bank, the bank ends at the gali edge and the water a 0.6 m lip short
+    // of it (src/kit/mapObjectsPlan.js pondSqueeze); the rest of the pond keeps its drawn size
+    const sq = pondSqueeze(roads, p);
+    const squeeze = (g) => {
+      if (!sq.touched) return g;
+      const P = g.attributes.position;
+      for (let i = 0; i < P.count; i++) {
+        const dx = P.getX(i) - p.x, dz = P.getZ(i) - p.z, a = Math.atan2(dz, dx), r = Math.hypot(dx, dz), r2 = sq.map(r, a);
+        if (r > 1e-6) P.setXYZ(i, p.x + (dx / r) * r2, P.getY(i), p.z + (dz / r) * r2);
+      }
+      P.needsUpdate = true;
+      return g;
+    };
+    squeeze(inner); squeeze(outer);
     // flatten near roads (outer bank vertices)
     for (const g of [inner, outer]) {
       const P = g.attributes.position;
@@ -158,13 +172,13 @@ export function buildGroundAndWater(plan, roads) {
     }
     paint(inner, { soil: clay ? 0x7a5236 : 0x5e4c38, color: 0x56602c, spacing: 0, cover: 0.12 }, 0);
     paint(outer, { soil: clay ? 0x9a6a48 : 0x8a7454, color: 0x6e7e3a, spacing: 0, cover: clay ? 0.25 : 0.62 }, 0);
-    const bed = polyGeometry(Array.from({ length: 40 }, (_, i) => { const a = (i / 40) * Math.PI * 2; return [p.x + Math.cos(a) * (rw - 0.85), p.z + Math.sin(a) * (rw - 0.85)]; }), 0.018);
+    const bed = polyGeometry(Array.from({ length: 40 }, (_, i) => { const a = (i / 40) * Math.PI * 2, rr = sq.map(rw - 0.85, a); return [p.x + Math.cos(a) * rr, p.z + Math.sin(a) * rr]; }), 0.018);
     paint(bed, { soil: clay ? 0x6a4630 : 0x4a3e2e, color: 0x3e4a26, spacing: 0, cover: 0.2 }, 0);
     ground.push(inner, outer, bed);
-    water.push(waterDisc(p.x, p.z, rw + 0.05, WATER_Y, 48, 7, 0.0));
+    water.push(squeeze(waterDisc(p.x, p.z, rw + 0.05, WATER_Y, 48, 7, 0.0)));
     const cx = p.x, cz = p.z;
     heightFns.push((x, z) => {
-      const d = Math.hypot(x - cx, z - cz);
+      const d = sq.touched ? sq.inv(Math.hypot(x - cx, z - cz), Math.atan2(z - cz, x - cx)) : Math.hypot(x - cx, z - cz);
       if (d > rb || d < rw) return 0;
       const y = d < crest ? WATER_Y + (BANK_Y - WATER_Y) * (d - rw) / (crest - rw) : BANK_Y * (rb - d) / (rb - crest);
       return y * flat(x, z);
@@ -172,6 +186,12 @@ export function buildGroundAndWater(plan, roads) {
     // the water is solid (the player stops at the edge, like the canal): 1.5 m cells inside rw - 0.4
     const R = rw - 0.4;
     for (let gx = -R; gx < R; gx += 1.5) for (let gz = -R; gz < R; gz += 1.5) {
+      if (sq.touched) { // squeezed pond: a cell is water only if all four corners are inside the built water, 0.4 m in
+        const ins = [[gx, gz], [gx + 1.5, gz], [gx, gz + 1.5], [gx + 1.5, gz + 1.5]].every(([a, b]) => sq.inv(Math.hypot(a, b), Math.atan2(b, a)) <= R + 0.8);
+        const nearIn = sq.inv(Math.hypot(gx + 0.75, gz + 0.75), Math.atan2(gz + 0.75, gx + 0.75)) <= R;
+        if (ins && nearIn) solid.push({ minX: cx + gx, maxX: cx + gx + 1.5, minZ: cz + gz, maxZ: cz + gz + 1.5 });
+        continue;
+      }
       const ex = Math.max(Math.abs(gx), Math.abs(gx + 1.5)), ez = Math.max(Math.abs(gz), Math.abs(gz + 1.5));
       if (Math.hypot(Math.min(Math.abs(gx), Math.abs(gx + 1.5)), Math.min(Math.abs(gz), Math.abs(gz + 1.5))) > R) continue;
       if (Math.hypot(ex, ez) > R + 0.8) continue;

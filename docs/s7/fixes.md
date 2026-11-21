@@ -124,3 +124,25 @@ results in `smoke-old*.json` / `smoke-new*.json`).
 - Why not "fixed": silencing them means giving the game a list of the model files that exist so it never asks for a
   missing one. That changes `?layout=old` too (fewer requests), so it is the integrator's call: e.g. the build writes
   `assets/models/index.json` and `urlExists()` in src/assetSlots.js checks that list first. Listed under "Wiring left".
+
+## 6. Map objects reaching into roads - done (roads and houses untouched)
+
+All in the map objects plan (`src/kit/mapObjectsPlan.js`), so the game and its check (`node src/kit/mapObjectsCheck.js`)
+see the same shapes. **Check result: on a road 8 -> 0**; overlaps with houses 0, with other solids 0 (unchanged).
+
+- **Painted patches**: any side that reaches into a road steps back to the road edge (+5 cm); what stands on the patch
+  (plot corner pillars, hopscotch, brick wicket) is placed after the trim, so it moves in with the edge.
+  Tempo and auto stand: 1.89 m off its highway side (now 10.1 x 5.0 m). Weekly market ground: 1.92 m (28 x 16.1 m).
+  Kids' play patch 2: 3.15 m over two sides (7.0 x 6.85 m). House plot 1 and 4: 1.94 m each. Kids' play patch 3 also
+  gave up 0.17 m (it touched a gali by less than the check's 5 cm).
+- **Milestone** (450.0, 1.5): stepped 0.99 m sideways onto the verge of gali n21 (now 0.36 m clear of the edge, still
+  facing along its road). Milestone 10 moved 2 cm for the same reason.
+- **Pond banks** (cattle pond, buffalo pond): not just the bank, the **water** too reached into the galis (0.5 and
+  0.3 m), and four galis end at the cattle pond. The rule I used: along each direction from the pond's centre, the bank
+  ends at the road edge and the water stops a 0.6 m earth lip short of it, eased over the neighbouring ~30 degrees so the
+  bank recedes in a soft curve where a lane meets it (a square notch looked like a cog). The rest of each pond keeps its
+  drawn size. The bund, mud bed, water, walk height and the water's collision all follow the same shape. Largest pull-back
+  3.5 m (cattle pond, where the lanes end at it).
+- Pictures: `pond_cattle_top.jpg`, `pond_cattle_eye.jpg`, `pond_buffalo_top.jpg`, `play_patch_top.jpg`, `milestone_eye.jpg`.
+- Question for her (look): the cattle pond now has soft bays where its four lanes arrive. Keep, or should the lanes stop
+  short of the pond instead (that would move roads, so it is the layout agent's job)?
