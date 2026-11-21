@@ -17,7 +17,7 @@ const plan = planHouses(houses, roads);
 
 const convex = (r) => r.length >= 3;
 
-const fails = { onRoad: [], houseOverlap: [], solidOverlap: [], notParallel: [], noRoad: [] };
+const fails = { onRoad: [], houseOverlap: [], solidOverlap: [], placeInside: [], notParallel: [], noRoad: [] };
 plan.forEach((h) => {
   const c = footprintRoadClearance(h.corners, roads);
   if (c < -0.05) fails.onRoad.push({ i: h.i, x: +h.x.toFixed(1), z: +h.z.toFixed(1), by: +(-c).toFixed(2) });
@@ -47,6 +47,11 @@ for (const h of plan) for (const s of solids) {
   if (s.ring.length === 4 ? overlap(h.corners, s.ring) : s.ring.some((p) => inRing(p, h.corners))) fails.solidOverlap.push({ i: h.i, solid: s.label });
 }
 
+// a map place (existing or new: shops, temple, school...) whose centre falls inside a house footprint
+for (const h of plan) for (const pl of map.places) {
+  if (Math.abs(pl.x - h.x) > 8 || Math.abs(pl.z - h.z) > 8) continue;
+  if (inRing([pl.x, pl.z], h.corners)) fails.placeInside.push({ i: h.i, place: pl.id });
+}
 const sizes = {};
 for (const h of plan) { const k = `${h.w.toFixed(1)}x${h.d.toFixed(1)}`; sizes[k] = (sizes[k] || 0) + 1; }
 const byRoad = {};
@@ -57,3 +62,11 @@ console.log('fronts per road:', byRoad);
 for (const [k, v] of Object.entries(fails)) console.log(`${k}: ${v.length}`, v.length ? JSON.stringify(v.slice(0, 12)) : '');
 const outIdx = process.argv.indexOf('--json');
 if (outIdx > 0) writeFileSync(process.argv[outIdx + 1], JSON.stringify({ plan, fails }, null, 0));
+
+// --write-plan: the planned houses as a small file the game loads instead of the whole map + the planning walk (~30 KB vs 550 KB)
+if (process.argv.includes('--write-plan')) {
+  const r3 = (v) => Math.round(v * 1000) / 1000;
+  const rows = plan.map((h) => [h.i, r3(h.x), r3(h.z), Math.round(h.ry * 1e5) / 1e5, r3(h.w), r3(h.d), h.mud ? 1 : 0, h.road]);
+  writeFileSync(new URL('./housesPlanData.json', import.meta.url), JSON.stringify({ source: 'docs/layout/approved-map-2026-11-21.json', made: 'node src/kit/housesCheck.js --write-plan', fields: ['i', 'x', 'z', 'ry', 'w', 'd', 'mud', 'road'], rows }));
+  console.log('wrote src/kit/housesPlanData.json', rows.length);
+}

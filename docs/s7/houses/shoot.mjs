@@ -12,13 +12,19 @@ const SHOTS = [
   ['gali_eye_shadows', 'mode=gali&view=eye&shadows=1'],
 ];
 const only = process.argv.slice(2);
-const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
-server.stderr.on('data', () => {});
-for (let i = 0; i < 100; i++) { try { await fetch(`http://localhost:${PORT}/village-game-web/`); break; } catch { await new Promise((r) => setTimeout(r, 300)); } }
+let server = null;
+async function startServer() {
+  server = spawn('npx', ['vite', '--config', 'docs/s7/houses/vite.preview.config.js', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+  server.stderr.on('data', () => {});
+  for (let i = 0; i < 200; i++) { try { await fetch(`http://localhost:${PORT}/village-game-web/`); return; } catch { await new Promise((r) => setTimeout(r, 300)); } }
+}
+async function alive() { try { await fetch(`http://localhost:${PORT}/village-game-web/`); return true; } catch { return false; } }
+await startServer();
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
 try {
   for (const [name, q] of SHOTS) {
     if (only.length && !only.includes(name)) continue;
+    if (!(await alive())) { try { server.kill(); } catch {} await startServer(); } // another job may have stopped the server
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const errors = [];
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -27,7 +33,7 @@ try {
     try { await page.waitForFunction(() => window.__ready === true, null, { timeout: 400000, polling: 2000 }); }
     catch (e) { console.log(name, 'TIMEOUT', errors.join(' | ').slice(0, 2000)); await page.close(); continue; }
     const stats = await page.evaluate(() => window.__houseStats);
-    await page.screenshot({ path: `docs/s7/houses/${name}.png` });
+    try { await page.screenshot({ path: `docs/s7/houses/${name}.png`, timeout: 240000 }); } catch (e) { console.log(name, 'SHOT FAILED', String(e).slice(0, 200)); await page.close(); continue; }
     console.log(name, JSON.stringify(stats), errors.length ? 'ERRORS ' + errors.join(' | ') : '');
     await page.close();
   }

@@ -67,7 +67,12 @@ function roadIndex(roads, cell = 20) {
         if (m >= 0) continue;
         // at a junction several corridors overlap: with a side direction given, the most parallel road is the one the side faces
         let score = m;
-        if (dir) { const ex = s.b[0] - s.a[0], ez = s.b[1] - s.a[1], el = Math.hypot(ex, ez) || 1; score = -Math.abs((ex * dir[0] + ez * dir[1]) / el); }
+        if (dir) {
+          const ex = s.b[0] - s.a[0], ez = s.b[1] - s.a[1], el = Math.hypot(ex, ez) || 1;
+          const par = Math.abs((ex * dir[0] + ez * dir[1]) / el);
+          if (par < 0.7) continue; // a side looking at a road end-on (more than 45 deg off) is not facing it
+          score = -par;
+        }
         if (score < bm) { bm = score; best = s; }
       }
       return best;
@@ -191,33 +196,26 @@ export function planHouses(houses, roads) {
     for (const c of q.cands) { if (c.dist > q.cands[0].dist + 12) continue; const v = votes.get(dirKey(c.n)) || 0; if (v > bestV) { bestV = v; bestC = c; } }
     if (bestV > 0) pick[i] = bestC;
   });
-  return pre.map((q, i) => {
-    let best = pick[i];
-    if (!best) { // enclosed plot: face the nearest road, whatever stands between
-      let bd = Infinity;
-      for (const s of q.sides) { const c = RI.clearance([q.cx + s.n[0] * 3, q.cz + s.n[1] * 3], 60); if (c < bd) { bd = c; best = { ...s, dist: Infinity, road: null }; } }
-    }
+  const finalize = (q, i, best) => {
     let w = best.L, d = q.sides[(best.k + 1) % 4].L;
     let ry = Math.atan2(best.n[0], best.n[1]);
-    let x = q.cx, z = q.cz, turned = 0, trimmed = 0;
+    let x = q.cx, z = q.cz, turned = 0, trimmed = 0, err = 0;
+    const rdir = best.seg ? Math.atan2(best.seg.b[1] - best.seg.a[1], best.seg.b[0] - best.seg.a[0]) : null;
     // 3. edges parallel to the road: turn the house about its centre onto the road's own direction
-    if (best.road) {
-      const fp = [x + best.n[0] * (d / 2 + best.dist), z + best.n[1] * (d / 2 + best.dist)];
-      const rd = best.seg ? Math.atan2(best.seg.b[1] - best.seg.a[1], best.seg.b[0] - best.seg.a[0]) : roadDirAt(best.road, fp);
-      // the front normal of a house parallel to that road is the road direction turned 90 deg, on the house's side
-      let n2 = [Math.sin(rd), -Math.cos(rd)];
+    if (rdir != null) {
+      let n2 = [Math.sin(rdir), -Math.cos(rdir)];
       if (n2[0] * best.n[0] + n2[1] * best.n[1] < 0) n2 = [-n2[0], -n2[1]];
       const ry2 = Math.atan2(n2[0], n2[1]);
       let dd = ry2 - ry;
       while (dd > Math.PI) dd -= 2 * Math.PI;
       while (dd < -Math.PI) dd += 2 * Math.PI;
+      err = Math.abs(dd);
       if (Math.abs(dd) > 0.002 && Math.abs(dd) < (MAX_ALIGN_DEG * Math.PI) / 180) {
-        // only if the turned house stays clear of every neighbour as drawn (a row member turned alone would saw-tooth into its row)
-        // a little narrower/shallower (up to 12%) if that is what it takes to turn clear of the neighbours
-        for (let shrink = 1; shrink >= 0.879; shrink -= 0.03) {
+        // a little narrower/shallower (up to 20%) if that is what it takes to turn clear of the neighbours
+        for (let shrink = 1; shrink >= 0.799; shrink -= 0.025) {
           const cs = rectCorners(x, z, ry2, w * shrink, d * shrink);
           const hit = rings.some((r, j) => j !== i && Math.abs(r[0][0] - x) < 14 && Math.abs(r[0][1] - z) < 14 && ringsOverlap(cs, r));
-          if (!hit) { ry = ry2; turned = dd; w *= shrink; d *= shrink; break; }
+          if (!hit) { ry = ry2; turned = dd; w *= shrink; d *= shrink; err = 0; break; }
         }
       }
     }
@@ -243,8 +241,25 @@ export function planHouses(houses, roads) {
     }
     return {
       i, x, z, ry, w, d, mud: !!q.h.mud, front: [Math.sin(ry), Math.cos(ry)], road: best.road ? best.road.id : null,
-      roadGap: best.dist, turned, trimmed, roadDir: best.seg ? Math.atan2(best.seg.b[1] - best.seg.a[1], best.seg.b[0] - best.seg.a[0]) : null, corners: rectCorners(x, z, ry, w, d), drawn: q.h.ring,
+      roadGap: best.dist, turned, trimmed, roadDir: rdir, angleErr: err, corners: rectCorners(x, z, ry, w, d), drawn: q.h.ring,
     };
+  };
+  return pre.map((q, i) => {
+    let best = pick[i];
+    if (!best) { // enclosed plot: face the nearest road, whatever stands between
+      let bd = Infinity;
+      for (const s of q.sides) { const c = RI.clearance([q.cx + s.n[0] * 3, q.cz + s.n[1] * 3], 60); if (c < bd) { bd = c; best = { ...s, dist: Infinity, road: null }; } }
+    }
+    let r = finalize(q, i, best);
+    // still not parallel to its road (> 3 deg) and could not turn: another side that faces a road it IS parallel to wins
+    if (r.angleErr > (3 * Math.PI) / 180) {
+      for (const c of q.cands) {
+        if (c === best) continue;
+        const r2 = finalize(q, i, c);
+        if (r2.angleErr <= (3 * Math.PI) / 180) { r = r2; break; }
+      }
+    }
+    return r;
   });
 }
 

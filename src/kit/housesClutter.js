@@ -27,7 +27,7 @@ export const CLUTTER = {
   },
   /** LPG cylinder: painted steel (sun-faded red), collar and foot ring. */
   cylinder(g) {
-    const R = { cell: CELL.rust, col: [1.25, 0.45, 0.38] };
+    const R = { cell: CELL.rust, col: [1.0, 0.4, 0.34] };
     g.lathe(0, 0, [[0.14, 0], [0.15, 0.02], [0.15, 0.08], [0.155, 0.1], [0.155, 0.5], [0.13, 0.58], [0.07, 0.62], [0.05, 0.63], [0, 0.63]], 12, R);
     const M = { cell: CELL.rust, col: [0.75, 0.74, 0.72] };
     g.lathe(0, 0, [[0.045, 0.62], [0.045, 0.66], [0.03, 0.68], [0, 0.68]], 8, M);

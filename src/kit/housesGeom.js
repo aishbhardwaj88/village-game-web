@@ -101,10 +101,11 @@ export class GB {
   toGeometry() {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
-    g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nor, 3));
+    // compact types (28 bytes a vertex instead of 52): normals as signed bytes, colours as bytes, cell/paint as small integers
+    g.setAttribute('normal', new THREE.BufferAttribute(Int8Array.from(this.nor, (v) => Math.round(Math.max(-1, Math.min(1, v)) * 127)), 3, true));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
-    g.setAttribute('aCellPaint', new THREE.Float32BufferAttribute(this.cp, 2));
+    g.setAttribute('color', new THREE.BufferAttribute(Uint8Array.from(this.col, (v) => Math.round(Math.max(0, Math.min(1, v)) * 255)), 3, true));
+    g.setAttribute('aCellPaint', new THREE.BufferAttribute(Uint8Array.from(this.cp), 2, false));
     g.setIndex(this.pos.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(this.idx, 1) : new THREE.Uint16BufferAttribute(this.idx, 1));
     g.computeBoundingBox();
     g.computeBoundingSphere();

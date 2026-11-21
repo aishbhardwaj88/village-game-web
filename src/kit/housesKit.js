@@ -244,7 +244,7 @@ function mumty(g, x0, x1, z0, z1, y, wall) {
 
 /** Corrugated sheet from the line (x0..x1, z0, y0) down to (x0..x1, z1, y1); waves run along x. Rusted steel, lapped panels. */
 function corrugated(g, x0, x1, z0, y0, z1, y1, o = {}) {
-  const pitch = o.pitch || 0.1, amp = o.amp || 0.014, sm = 6, pw = o.panel || 0.92;
+  const pitch = o.pitch || 0.11, amp = o.amp || 0.016, sm = 4, pw = o.panel || 0.92;
   const M = { cell: CELL.rust, col: o.col || [0.95, 0.92, 0.9] };
   let px = x0, k = 0;
   while (px < x1 - 0.01) {
@@ -499,6 +499,7 @@ export function buildHouse(design, w, d, mirror = false) {
         g.box(a, b, 0, yw, wz0, wz1, { ...bw, skip: 'ny' });
         g.box(a - 0.02, b + 0.02, yw, yw + 0.06, wz0 - 0.03, wz1 + 0.03, { cell: CELL.concrete, col: C_CONC, colBot: C_SOFFIT });
       }
+      for (const sx of [-1, 1]) g.box(sx > 0 ? w / 2 - 0.2 : -w / 2, sx > 0 ? w / 2 : -w / 2 + 0.2, 0, yw, zf, wz0, { ...bw, skip: 'ny' }); // angan side walls
       for (const x of [gx0 - 0.15, gx1 + 0.15]) {
         g.box(x - 0.17, x + 0.17, 0, yw + 0.25, wz0 - 0.07, wz1 + 0.07, { ...bw, skip: 'ny' });
         g.box(x - 0.21, x + 0.21, yw + 0.25, yw + 0.33, wz0 - 0.11, wz1 + 0.11, { cell: CELL.concrete, col: C_CONC });

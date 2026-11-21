@@ -93,7 +93,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
           img = sq;
         }
         drawTile(g, img, col, row);
-        if (name === 'brickWash') { // lime whitewash brushed over the brick in ragged patches: paler, flatter, smoother where it sits
+        if (name === 'brickWash' && false) { // lime whitewash brushed over the brick in ragged patches: paler, flatter, smoother where it sits
           const x0 = col * CS, y0 = row * CS;
           g.save(); g.beginPath(); g.rect(x0, y0, CS, CS); g.clip();
           const layer = document.createElement('canvas'); layer.width = layer.height = CS;
@@ -183,7 +183,7 @@ export function getHouseMaterial() {
         varying vec3 vHLocal;
         const vec3 DOOR_PAINTS[8] = vec3[8](${doorPaints});
         const float CELL_BOOST[8] = float[8](1.35, 1.45, 1.25, 1.2, 2.4, 1.15, 1.3, 1.25);
-        const float CELL_NORMAL[8] = float[8](2.2, 1.0, 1.0, 0.9, 1.1, 1.2, 1.0, 0.5);
+        const float CELL_NORMAL[8] = float[8](2.2, 1.0, 1.0, 1.0, 1.1, 1.2, 1.0, 0.3);
         float hh_(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
         float hn_(vec3 p) {
           vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -237,6 +237,11 @@ export function getHouseMaterial() {
           float edge_ = 0.3 + 0.7 * hn_(vec3((wp_.x + wp_.z) * 1.7, 0.0, 9.0));
           float dust_ = (1.0 - smoothstep(edge_ * 0.5, edge_, wp_.y)) * (wall_ ? 0.5 : 0.3) * vert_;
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(0.84, 0.72, 0.56), dust_);
+          if (hCell == 7.0) { // gobar-mitti plaster: grey-brown, not sand-yellow, hand-smeared in big swirls
+            float l_ = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
+            diffuseColor.rgb = mix(vec3(l_), diffuseColor.rgb, 0.45) * vec3(1.0, 0.93, 0.84);
+            diffuseColor.rgb *= 0.88 + 0.24 * hn_(vec3(wp_.x * 1.7 + wp_.z * 1.7 + sin(wp_.y * 3.0) * 0.6, wp_.y * 0.9, vSeed * 7.0));
+          }
           if (hCell == 6.0) diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(1.1, 0.93, 0.8), diffuseColor.rgb, 0.5);
           if (hCell == 2.0 || hCell == 3.0) {
             // per-brick tone: lighter, darker and the odd overburnt brick (cells roughly brick-aligned)
@@ -244,12 +249,20 @@ export function getHouseMaterial() {
             float row_ = floor(bt_.y);
             vec2 cl_ = vec2(floor(bt_.x + hh_(vec3(row_, 3.0, 1.0)) * 4.8), row_);
             float r1_ = hh_(vec3(cl_, 7.0)), r2_ = hh_(vec3(cl_, 13.0));
-            float k_ = hCell == 3.0 ? 0.5 : 1.0;
+            float k_ = 1.0;
             diffuseColor.rgb *= 1.0 + k_ * (0.82 + 0.34 * r1_ - 1.0);
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), k_ * step(0.93, r2_) * 0.7);
             diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.82);
           }
-          float lum_ = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
+          if (hCell == 3.0) {
+            // old lime whitewash over the brick: big irregular patches (world space, so no tile ever repeats), thin and
+            // translucent at their ragged edges, the mortar lines still showing through
+            float big_ = hn_(wp_ * vec3(0.35, 0.5, 0.35) + vSeed * 17.0) * 0.65 + hn_(wp_ * vec3(1.1, 1.4, 1.1) + 3.0) * 0.25 + hn_(wp_ * 6.0) * 0.1;
+            float wash_ = smoothstep(0.42, 0.58, big_);
+            float thin_ = 0.55 + 0.45 * hn_(wp_ * 3.3 + 9.0);
+            vec3 lime_ = vec3(0.84, 0.82, 0.77) * (0.92 + 0.12 * hn_(wp_ * 2.0));
+            diffuseColor.rgb = mix(diffuseColor.rgb, lime_ * mix(vec3(1.0), diffuseColor.rgb * 1.6, 0.18), wash_ * thin_);
+          }
           diffuseColor.rgb = clamp(diffuseColor.rgb, vec3(0.025), vec3(0.86));
         }`)
       .replace('#include <roughnessmap_fragment>', `

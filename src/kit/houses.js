@@ -3,8 +3,8 @@ import { buildHouse, buildFar, DESIGN_INFO } from './housesKit.js';
 import { buildClutter } from './housesClutter.js';
 import { getHouseMaterial, houseMaterialReady } from './housesMaterial.js';
 import { createHouseBatch } from './housesInstancing.js';
-import { planHouses, ringsOverlap, inRing } from './housesPlan.js';
-import { isNewLayout, loadHouseMap } from './housesLayout.js';
+import { planHouses, ringsOverlap, inRing, rectCorners } from './housesPlan.js';
+import { isNewLayout } from './housesLayout.js';
 import { dipHeightRaw } from '../dips.js';
 import { requestColliderRebuild } from '../collision.js';
 
@@ -19,8 +19,10 @@ export const WASHES = [
   [0.97, 0.95, 0.9], [0.99, 0.9, 0.68], [0.8, 0.88, 0.96], [0.98, 0.82, 0.8], [0.82, 0.91, 0.79], [0.97, 0.91, 0.8], [0.82, 0.81, 0.77], [0.99, 0.86, 0.73],
 ];
 const PAKKA_SHARES = { A: 0.22, B: 0.15, C: 0.14, D: 0.12, E: 0.13, F: 0.1 };
-const SIZES = [5.5, 6.5, 7.5, 8.0];
-const snap = (v) => SIZES.reduce((b, s) => (Math.abs(s - v) < Math.abs(b - v) ? s : b), SIZES[0]);
+/** Footprint classes (front width x depth) the geometry is built for; a house takes the nearest and is scaled by the small rest
+ *  (<= ~10%). The map's footprints: 5.5x6.5 (207), 6.5x8 (158), 7.5x8 (84), 6.5x5.5 (18), 8x7.5 (17), 8x6.5 (6). */
+const CLASSES = [[5.5, 6.5], [6.5, 8], [7.5, 8], [6.5, 5.5], [7.5, 6.5], [6.5, 6.5]];
+const classOf = (w, d) => CLASSES.reduce((b, c) => (Math.max(Math.abs(Math.log(w / c[0])), Math.abs(Math.log(d / c[1]))) < Math.max(Math.abs(Math.log(w / b[0])), Math.abs(Math.log(d / b[1]))) ? c : b), CLASSES[0]);
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 export const NEAR_DIST = 55; // full detail within this; the far box beyond
@@ -46,7 +48,7 @@ export function assignHouses(plan) {
       if (!near.some((o) => o.design === design) && !near.some((o) => o.wash === wash)) break;
       if (t >= 3 && !near.some((o) => o.design === design && o.wash === wash)) break;
     }
-    const cw = snap(h.w), cd = snap(h.d);
+    const [cw, cd] = classOf(h.w, h.d);
     out.push({ ...h, design, wash, mirror: hash(i * 23.3 + 4) < 0.5, seed: hash(i * 31.7 + 9), cw, cd, sx: h.w / cw, sz: h.d / cd, kachcha: DESIGN_INFO[design].kachcha });
   });
   return out;
@@ -110,15 +112,15 @@ export function sliceRect(x, z, ry, w, d) {
  * Builds the batch for a list of assigned houses (each with x, z, y, ry, design, mirror, cw, cd, sx, sz, wash, seed).
  * Returns { group, batch, update(px, pz), colliderBoxes, stats, houses }.
  */
-export function buildHouseBatch(entries, { withFar = true, withClutter = true, nearDist = NEAR_DIST, clutterDist = CLUTTER_DIST, farDist = FAR_DIST } = {}) {
-  const geos = new Map(), infos = new Map();
+export function buildHouseBatch(entries, { withFar = true, withClutter = true, nearDist = NEAR_DIST, clutterDist = CLUTTER_DIST, farDist = FAR_DIST, cache = null } = {}) {
+  const geos = cache ? cache.geos : new Map(), infos = cache ? cache.infos : new Map();
   const nearKey = (e) => `${e.design}|${e.cw}|${e.cd}|${e.mirror ? 1 : 0}`;
-  const farKey = (e) => `far|${e.design}|${e.cw}|${e.cd}|${e.mirror ? 1 : 0}`;
+  const farKey = (e) => `far|${e.design}|${e.cw}|${e.cd}`;
   let nearTris = 0, nearCount = 0;
   for (const e of entries) {
     const k = nearKey(e);
     if (!geos.has(k)) { const b = buildHouse(e.design, e.cw, e.cd, e.mirror); geos.set(k, b.near.toGeometry()); infos.set(k, b.info); }
-    if (withFar) { const f = farKey(e); if (!geos.has(f)) geos.set(f, buildFar(e.design, e.cw, e.cd, e.mirror).toGeometry()); }
+    if (withFar) { const f = farKey(e); if (!geos.has(f)) geos.set(f, buildFar(e.design, e.cw, e.cd, false).toGeometry()); }
     e.info = infos.get(k);
     e.clutter = withClutter ? clutterFor(e, e.info) : [];
     for (const c of e.clutter) { const ck = 'c|' + c.kind; if (!geos.has(ck)) geos.set(ck, buildClutter(c.kind).toGeometry()); }
@@ -182,10 +184,32 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
   for (const g of geos.values()) { vtx += g.attributes.position.count; idx += g.index.count; }
   const stats = {
     houses: entries.length, geometries: geos.size, instances, vertices: vtx, indices: idx,
-    geometryMB: +((vtx * (3 + 3 + 2 + 3 + 2) * 4 + idx * 4) / 1048576).toFixed(1),
+    geometryMB: +((vtx * 28 + idx * 4) / 1048576).toFixed(1),
     avgNearTriangles: Math.round(nearTris / Math.max(1, nearCount)), lod: state,
   };
   return { group, batch, update, colliderBoxes, stats, houses: entries };
+}
+
+/** Builds every geometry the entries need, a few per frame (keeps each frame under ~8 ms of building), for buildHouseBatch's cache. */
+export async function prebuildGeometries(entries, withFar = true) {
+  const cache = { geos: new Map(), infos: new Map() };
+  let t = performance.now();
+  const yieldNow = async () => { if (performance.now() - t > 8) { await new Promise((r) => setTimeout(r, 0)); t = performance.now(); } };
+  for (const e of entries) {
+    const k = `${e.design}|${e.cw}|${e.cd}|${e.mirror ? 1 : 0}`;
+    if (!cache.geos.has(k)) { const b = buildHouse(e.design, e.cw, e.cd, e.mirror); cache.geos.set(k, b.near.toGeometry()); cache.infos.set(k, b.info); await yieldNow(); }
+    const f = `far|${e.design}|${e.cw}|${e.cd}`;
+    if (withFar && !cache.geos.has(f)) { cache.geos.set(f, buildFar(e.design, e.cw, e.cd, false).toGeometry()); await yieldNow(); }
+  }
+  return cache;
+}
+
+/** The precomputed plan (src/kit/housesPlanData.json, made by `node src/kit/housesCheck.js --write-plan` from the approved map). */
+export async function loadPlannedHouses() {
+  const mod = await import('./housesPlanData.json');
+  const data = mod.default || mod;
+  const plan = data.rows.map(([i, x, z, ry, w, d, mud, road]) => ({ i, x, z, ry, w, d, mud: !!mud, road, front: [Math.sin(ry), Math.cos(ry)], corners: rectCorners(x, z, ry, w, d) }));
+  return { plan };
 }
 
 /** World data other systems may want once the new houses are built (roof tanks for the monkeys, doorsteps for jobs). */
@@ -203,8 +227,8 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
   scene.add(holder);
   let built = null;
   const report = {};
-  const ready = Promise.all([loadMap(), houseMaterialReady()]).then(([map]) => {
-    const plan = planHouses(map.houses, map.roads);
+  const ready = Promise.all([loadMap(), houseMaterialReady()]).then(async ([map]) => {
+    const plan = map.plan || planHouses(map.houses, map.roads);
     // a pair drawn overlapping on the map: the later one is left out (reported)
     const drop = new Set();
     for (let i = 0; i < plan.length; i++) for (let j = i + 1; j < plan.length; j++) {
@@ -218,7 +242,8 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
       e.y = Math.max(...ys);
       worstStep = Math.max(worstStep, e.y - Math.min(...ys));
     }
-    built = buildHouseBatch(entries);
+    const cache = await prebuildGeometries(entries);
+    built = buildHouseBatch(entries, { cache });
     holder.add(built.group);
     for (const e of entries) {
       const c = Math.cos(e.ry), s = Math.sin(e.ry);
@@ -246,7 +271,7 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
  */
 export function initNewMapHouses(scene) {
   if (!isNewLayout()) return null;
-  const h = createNewMapHouses(scene, { loadMap: loadHouseMap, groundAt: dipHeightRaw, onBuilt: () => requestColliderRebuild() });
+  const h = createNewMapHouses(scene, { loadMap: loadPlannedHouses, groundAt: dipHeightRaw, onBuilt: () => requestColliderRebuild() });
   if (typeof window !== 'undefined') window.__newHouses = h;
   h.ready.catch((err) => console.warn('new-map houses did not build', err));
   return h;
