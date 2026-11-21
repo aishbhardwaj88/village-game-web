@@ -218,7 +218,7 @@ import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
 import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
-import { initEdition } from './edition.js'; // S7 WIRING (desktop)
+import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -350,7 +350,8 @@ async function main() {
   // sun direction that dayline, night and the sky dome read.
   // OFF by default: real shadows at the village add 20 to 85 draw calls per view (measured 3 Nov), and the ceiling is already
   // breached. Try it with ?shadows=follow; turning it on for everyone is the art director's trade-off.
-  const FOLLOW_SUN_SHADOWS = new URLSearchParams(location.search).get('shadows') === 'follow';
+  // S7 WIRING (desktop): the quality preset can switch them on for everyone (getQuality().sunShadows, OFF until she says yes)
+  const FOLLOW_SUN_SHADOWS = getQuality().sunShadows || new URLSearchParams(location.search).get('shadows') === 'follow';
   // The shadow box stays at the origin unless follow is on, 600 m from where she plays, so the
   // pass drew nothing while every lit material still paid for shadow sampling. Off by default.
   if (!FOLLOW_SUN_SHADOWS) sun.castShadow = false;

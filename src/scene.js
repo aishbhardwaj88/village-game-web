@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
 import { getActiveAtmosphere } from './atmosphere.js';
+import { getQuality } from './edition.js'; // S7 (desktop)
 
 export const GROUND_SIZE = 480; // metres — big enough for the hero zone + field + track
 const GROUND_TILE_METRES = 5; // real-world metres per ground texture tile
@@ -52,7 +53,8 @@ export function createSun(isTouch = false, preset) {
   const sun = new THREE.DirectionalLight(preset.sunColor.getHex(), preset.sunIntensity);
   const elevationDeg = preset.sunElevationDeg;
   const elevationRad = THREE.MathUtils.degToRad(elevationDeg);
-  const distance = 80;
+  // S7 (desktop): the light sits far enough back that the 'full' preset's 120 m shadow box does not clip tall things on the sun side
+  const distance = Math.max(80, getQuality().shadowExtent + 40);
   sun.position.set(
     Math.cos(elevationRad) * distance,
     Math.sin(elevationRad) * distance,

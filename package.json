@@ -19,7 +19,12 @@
     "budget:strict": "node tools/check-budget.js --strict",
     "perf:ride": "node tools/perf-ride.mjs",
     "perf:ride:mac": "HEADED=1 GL=metal BROWSERS=chromium,webkit node tools/perf-ride.mjs",
-    "perf:instancing-test": "node tools/perf-instancing-test.mjs"
+    "perf:instancing-test": "node tools/perf-instancing-test.mjs",
+    "build:desktop": "node desktop/scripts/build-game.mjs",
+    "desktop:install": "npm --prefix desktop install",
+    "desktop:start": "npm --prefix desktop start",
+    "desktop:mac": "npm run build:desktop && npm --prefix desktop run dist:mac",
+    "desktop:win": "npm run build:desktop && npm --prefix desktop run dist:win"
   },
   "dependencies": {
     "three": "^0.186.0",

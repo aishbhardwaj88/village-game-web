@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 import { buildContactShadows } from './contactShadows.js';
 import { currentLayout, worldBounds } from './zoneManager.js';
+import { getQuality } from './edition.js'; // S7 (desktop): distances and caps come from the quality preset
 
-const MAX_PIXEL_RATIO = 1.5;
+const QUALITY = getQuality();
+
+const MAX_PIXEL_RATIO = QUALITY.pixelRatioMax; // S7: 'full' 2, 'light' 1.5 (was a fixed 1.5)
 // Phone perf pass (queue item 5): touch devices cap lower — 1.5x on a high-DPI phone
 // GPU is a lot more pixels to shade than the same ratio on a desktop dGPU. Recorded
 // alongside the other mobile settings in docs/look-standard.md.
@@ -52,10 +55,10 @@ export function resizeRendererToDisplaySize(renderer, camera, isTouch = false) {
 // One init call from main.js (the `// S7 WIRING (perf)` block): initPerfS7({ scene, sun, player }).
 // ---------------------------------------------------------------------------------------------
 
-const SHADOW_RADIUS = 60; // metres: things further than this from the player stop casting real sun shadows
-const CHAR_SHADOW_RADIUS = 15; // characters further than this get a soft blob under the feet instead
-const BLOB_MAX_DISTANCE = 50; // characters beyond this are hidden by the character tiers anyway
-const BLOB_SLOTS = 40;
+const SHADOW_RADIUS = QUALITY.shadowRadius; // S7: 'full' 120, 'light' 60. Metres: things further than this from the player stop casting real sun shadows
+const CHAR_SHADOW_RADIUS = QUALITY.charShadowRadius; // S7: 'full' 30, 'light' 15. Characters further than this get a soft blob under the feet instead
+const BLOB_MAX_DISTANCE = QUALITY.blobMaxDistance; // S7: 'full' 80, 'light' 50. Characters beyond this are hidden by the character tiers anyway
+const BLOB_SLOTS = QUALITY.blobMaxDistance > 50 ? 64 : 40; // S7: more room for blobs when characters show further out
 const RESCAN_MS = 2000; // full scene walk for new casters (zones stream in and out)
 const TICK_MS = 250; // distance test on the cached list
 

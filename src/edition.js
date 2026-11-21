@@ -84,9 +84,9 @@ const PRESETS = {
     zoneAlwaysExtra: 110,
     zoneSightExtra: 300,
     zoneVisExtra: 130,
-    // Art director's call (docs/s7/desktop.md, NEEDS_YOU): turning real sun shadows on is the biggest visual gain of the
-    // desktop edition. Stays a preset value so she can flip it in one place.
-    sunShadows: true,
+    // Art director's call (docs/s7/desktop.md "Needs her"): real sun shadows are the biggest visual gain of the desktop
+    // edition, but she has not said yes yet. OFF until she does: flip this ONE line to true. (?shadows=follow still works.)
+    sunShadows: false,
   }),
 };
 
