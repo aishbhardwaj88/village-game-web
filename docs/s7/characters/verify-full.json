@@ -1,0 +1,311 @@
+[
+  {
+    "name": "brother",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "run",
+      "gesture_jumps",
+      "gesture_punch",
+      "gesture_laugh",
+      "gesture_dance",
+      "gesture_sneaky"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightToeBase@run",
+    "skinBoxDriftMm": 0.13,
+    "blink": {
+      "origVerts": 429,
+      "slimVerts": 431,
+      "origMaxMm": 6.01,
+      "slimMaxMm": 5.99
+    },
+    "smile": {
+      "origVerts": 701,
+      "slimVerts": 701,
+      "origMaxMm": 5.39,
+      "slimMaxMm": 5.38
+    },
+    "ok": true
+  },
+  {
+    "name": "dada",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_nod",
+      "gesture_back"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightFoot@walk",
+    "skinBoxDriftMm": 0.27,
+    "blink": {
+      "origVerts": 4271,
+      "slimVerts": 4295,
+      "origMaxMm": 7.2,
+      "slimMaxMm": 7.18
+    },
+    "smile": {
+      "origVerts": 1141,
+      "slimVerts": 1141,
+      "origMaxMm": 5.39,
+      "slimMaxMm": 5.39
+    },
+    "ok": true
+  },
+  {
+    "name": "dadi",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_bless",
+      "gesture_nod"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigLeftToe_End@idle",
+    "skinBoxDriftMm": 0.24,
+    "blink": {
+      "origVerts": 822,
+      "slimVerts": 834,
+      "origMaxMm": 5.54,
+      "slimMaxMm": 5.55
+    },
+    "smile": {
+      "origVerts": 197,
+      "slimVerts": 197,
+      "origMaxMm": 5.37,
+      "slimMaxMm": 5.37
+    },
+    "ok": true
+  },
+  {
+    "name": "maa",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_nod",
+      "gesture_pallu",
+      "gesture_call",
+      "gesture_bless",
+      "gesture_wipe"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightFoot@walk",
+    "skinBoxDriftMm": 0.37,
+    "blink": {
+      "origVerts": 4268,
+      "slimVerts": 4274,
+      "origMaxMm": 7.23,
+      "slimMaxMm": 7.24
+    },
+    "smile": {
+      "origVerts": 315,
+      "slimVerts": 315,
+      "origMaxMm": 5.37,
+      "slimMaxMm": 5.39
+    },
+    "ok": true
+  },
+  {
+    "name": "parlour_didi",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_hair",
+      "gesture_pose",
+      "gesture_nails",
+      "gesture_hmph",
+      "gesture_earring",
+      "gesture_plait",
+      "gesture_shoulderlook",
+      "gesture_crossarms"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightToe_End@walk",
+    "skinBoxDriftMm": 0.04,
+    "blink": {
+      "origVerts": 724,
+      "slimVerts": 723,
+      "origMaxMm": 7.53,
+      "slimMaxMm": 7.56
+    },
+    "smile": {
+      "origVerts": 361,
+      "slimVerts": 361,
+      "origMaxMm": 5.39,
+      "slimMaxMm": 5.4
+    },
+    "ok": true
+  },
+  {
+    "name": "pitaji",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_nod",
+      "gesture_point"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigLeftToeBase@walk",
+    "skinBoxDriftMm": 0.08,
+    "blink": {
+      "origVerts": 3755,
+      "slimVerts": 3767,
+      "origMaxMm": 5.9,
+      "slimMaxMm": 5.87
+    },
+    "smile": {
+      "origVerts": 509,
+      "slimVerts": 509,
+      "origMaxMm": 5.36,
+      "slimMaxMm": 5.38
+    },
+    "ok": true
+  },
+  {
+    "name": "postman",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_scratch",
+      "gesture_proudwave"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightToe_End@gesture_proudwave",
+    "skinBoxDriftMm": 0.17,
+    "blink": {
+      "origVerts": 3701,
+      "slimVerts": 3707,
+      "origMaxMm": 6.04,
+      "slimMaxMm": 6.05
+    },
+    "smile": {
+      "origVerts": 1623,
+      "slimVerts": 1623,
+      "origMaxMm": 5.39,
+      "slimMaxMm": 5.38
+    },
+    "ok": true
+  },
+  {
+    "name": "sarpanch",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_nod",
+      "gesture_twirl",
+      "gesture_raisehand",
+      "gesture_watch"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightToe_End@walk",
+    "skinBoxDriftMm": 0.25,
+    "blink": {
+      "origVerts": 3921,
+      "slimVerts": 3933,
+      "origMaxMm": 6.9,
+      "slimMaxMm": 6.87
+    },
+    "smile": {
+      "origVerts": 1176,
+      "slimVerts": 1176,
+      "origMaxMm": 5.38,
+      "slimMaxMm": 5.39
+    },
+    "ok": true
+  },
+  {
+    "name": "sister",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "run",
+      "gesture_twirl",
+      "gesture_skip",
+      "gesture_clap",
+      "gesture_shywave"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigRightHandMiddle4@gesture_shywave",
+    "skinBoxDriftMm": 0.12,
+    "blink": {
+      "origVerts": 4006,
+      "slimVerts": 4014,
+      "origMaxMm": 7.11,
+      "slimMaxMm": 7.12
+    },
+    "smile": {
+      "origVerts": 3224,
+      "slimVerts": 3225,
+      "origMaxMm": 5.39,
+      "slimMaxMm": 5.39
+    },
+    "ok": true
+  },
+  {
+    "name": "teacher",
+    "height": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "gesture_nod",
+      "gesture_greet",
+      "gesture_listen"
+    ],
+    "sameClips": true,
+    "bones": 65,
+    "sameBones": true,
+    "boneDriftMm": 0,
+    "worstBone": "mixamorigLeftFoot@walk",
+    "skinBoxDriftMm": 0.14,
+    "blink": {
+      "origVerts": 310,
+      "slimVerts": 312,
+      "origMaxMm": 5.38,
+      "slimMaxMm": 5.37
+    },
+    "smile": {
+      "origVerts": 213,
+      "slimVerts": 213,
+      "origMaxMm": 5.32,
+      "slimMaxMm": 5.32
+    },
+    "ok": true
+  }
+]

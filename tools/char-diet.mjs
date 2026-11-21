@@ -52,11 +52,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const HEROES = new Set(['brother', 'dada', 'dadi', 'maa', 'pitaji', 'postman', 'sarpanch', 'teacher']);
 const BUDGET = { hero: 2.5 * 1024 * 1024, other: 1.5 * 1024 * 1024 };
 export const PROFILES = {
-  light: { textureSize: (name) => (HEROES.has(name) ? 2048 : 1024), budget: true },
-  full: { textureSize: () => 0 /* 0 = leave the skin textures exactly as they are */, budget: false },
+  light: { textureSize: (name) => (HEROES.has(name) ? 2048 : 1024), budget: true, normalBits: 8 },
+  // full: skin textures untouched (0), and smooth-skin shading kept exact: normals stored at 12 bits instead of 8
+  full: { textureSize: () => 0, budget: false, normalBits: 12 },
 };
 // Bump when the recipe below changes, so cached slim files are rebuilt.
-const RECIPE = 'char-diet-v2:webp88:q-scene:pos14:nrm8oct:uv12';
+const RECIPE = 'char-diet-v3:webp88:q-scene:pos14:nrm8oct|12:uv12';
 const WEBP_QUALITY = 88;
 
 function args() {
@@ -105,7 +106,7 @@ function fingerprint(doc) {
   };
 }
 
-async function slim(io, input, size) {
+async function slim(io, input, size, normalBits = 8) {
   const doc = await io.readBinary(new Uint8Array(input));
   const before = fingerprint(doc);
   await doc.transform(
@@ -121,13 +122,14 @@ async function slim(io, input, size) {
     reorder({ encoder: MeshoptEncoder, target: 'size' }),
     quantize({
       quantizationVolume: 'scene',
-      pattern: /^(POSITION|TEXCOORD|JOINTS|WEIGHTS|COLOR)(_\d+)?$/,
+      // 8-bit normals: the meshopt octahedral filter packs them (light). 12-bit: stored as 16-bit numbers (full).
+      pattern: normalBits > 8 ? /^(POSITION|NORMAL|TEXCOORD|JOINTS|WEIGHTS|COLOR)(_\d+)?$/ : /^(POSITION|TEXCOORD|JOINTS|WEIGHTS|COLOR)(_\d+)?$/,
       patternTargets: /^(POSITION|TEXCOORD|JOINTS|WEIGHTS|COLOR|NORMAL|TANGENT)(_\d+)?$/,
-      quantizePosition: 14, quantizeTexcoord: 12, quantizeNormal: 8, quantizeWeight: 8,
+      quantizePosition: 14, quantizeTexcoord: 12, quantizeNormal: normalBits, quantizeWeight: 8,
     }),
   );
   doc.createExtension(EXTMeshoptCompression).setRequired(true)
-    .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.FILTER });
+    .setEncoderOptions({ method: normalBits > 8 ? EXTMeshoptCompression.EncoderMethod.QUANTIZE : EXTMeshoptCompression.EncoderMethod.FILTER });
   const out = await io.writeBinary(doc);
   // re-open and compare
   const check = fingerprint(await io.readBinary(out));
@@ -164,7 +166,7 @@ async function main() {
     let status = 'cached';
     if (o.force || !existsSync(cached)) {
       try {
-        const { out, problems } = await slim(io, input, size);
+        const { out, problems } = await slim(io, input, size, profile.normalBits);
         if (problems.length) {
           console.warn(`char-diet: WARNING ${name}: slim copy lost [${problems.join(', ')}], shipping the ORIGINAL instead`);
           warnings++; status = 'original (check failed)';
