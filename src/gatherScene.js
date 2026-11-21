@@ -22,6 +22,15 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
   const put = (g, x, z) => g.position.set(cx + x, groundAt(cx + x, cz + z, 0), cz + z);
   const face = (g, x, z) => { g.rotation.y = Math.atan2(cx + x - g.position.x, cz + z - g.position.z); };
   const turnTo = (g, want, dt) => { g.rotation.y += Math.atan2(Math.sin(want - g.rotation.y), Math.cos(want - g.rotation.y)) * Math.min(1, dt * 6); };
+  // 21 Nov: Pitaji turns like a heavy, deliberate man: he ignores small angles, then turns at a steady 75 deg/s with
+  // his feet stepping (characterAnim steps the walk clip while a standing character turns), instead of swivelling
+  // smoothly after every move (that continuous swivel read as feminine).
+  const heavyTurn = (g, want, dt) => {
+    const d = Math.atan2(Math.sin(want - g.rotation.y), Math.cos(want - g.rotation.y));
+    if (!g.userData.turning && Math.abs(d) < 0.35) return;
+    g.userData.turning = Math.abs(d) > 0.05;
+    g.rotation.y += Math.sign(d) * Math.min(Math.abs(d), dt * 1.3);
+  };
 
   function init() {
   const c = getCenter(); cx = c.x + 3.1; cz = c.z + 9.1; // open ground just south of the chauraha island (checked live: clear of the sweet shop and kiosks)
@@ -105,7 +114,7 @@ export function setupGather({ scene, assetSlots, groundAt, getCenter }) {
     // Pitaji turns to the postman while he's there, back to the huddle when he leaves
     const pit = actors.pitaji;
     const atPit = postT > 6 && postT < 13.5;
-    turnTo(pit, atPit ? Math.atan2(cx + x - pit.position.x, cz + z - pit.position.z) : Math.atan2(cx + 3.0 - pit.position.x, cz - 0.4 - pit.position.z), dt);
+    heavyTurn(pit, atPit ? Math.atan2(cx + x - pit.position.x, cz + z - pit.position.z) : Math.atan2(cx + 3.0 - pit.position.x, cz - 0.4 - pit.position.z), dt);
     // siblings walk side by side across the front of the square and back (about 1.1 m/s), Brother a step beside her
     loopA += dt * 1.1;
     const span = 9, ph = loopA % (2 * span), fwd = ph < span, sx = -4 + (fwd ? ph : 2 * span - ph);

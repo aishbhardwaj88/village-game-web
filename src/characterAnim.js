@@ -8,6 +8,7 @@ import * as THREE from 'three';
 
 const animators = [];
 const tmp = new THREE.Vector3();
+const tq = new THREE.Quaternion(), te = new THREE.Euler();
 
 // 21 Nov: personality. Each character file now carries its own curated clips: idle, walk, (kids) run, and 1-2
 // gesture_<name> clips (nod, point, wave, bless, ...). Walks were reshaped per character (graceful Maa, heavy
@@ -17,19 +18,21 @@ const tmp = new THREE.Vector3();
 // render check). `maxRate` caps how much faster than natural a walk may play (1.3x) so nobody scurries or slides
 // much; the hurrying Postman and the player may go faster.
 const PROFILE = {
-  maa: { walkRef: 0.96 },
+  maa: { walkRef: 0.63, maxRate: 1.35 }, // 21 Nov: straight graceful walk, shorter steps
   pitaji: { walkRef: 0.99 },
   dada: { walkRef: 0.56, keepStoop: true },
   dadi: { walkRef: 0.38, keepStoop: true },
   darzi: { keepStoop: true },
   sarpanch: { walkRef: 0.58 },
   postman: { walkRef: 1.38, maxRate: 2.2 },
+  teacher: { walkRef: 0.83 },
+  didi: { walkRef: 0.86 },
   brother: { walkRef: 0.66, kid: true, runRef: 1.07 },
   sister: { walkRef: 0.99, kid: true, runRef: 1.55 },
   player: { walkRef: 0.66, kid: true, runRef: 1.07, maxRate: 2.2 },
 };
 /** comfortable ground speed (m/s) for each character's walking routines (<= 1.3x natural) */
-export const WALK_SPEED = { maa: 1.25, pitaji: 1.25, dada: 0.55, dadi: 0.4, sarpanch: 0.72, postman: 1.8, brother: 0.85, sister: 1.25 };
+export const WALK_SPEED = { maa: 0.85, pitaji: 1.25, dada: 0.55, dadi: 0.4, sarpanch: 0.72, postman: 1.8, brother: 0.85, sister: 1.25 };
 // kids switch from walk to run once walking would play faster than ~1.25x (feet would start to slide)
 const RUN_SWITCH = 1.25;
 const GESTURE_EVERY = [10, 20]; // seconds of standing between gestures
@@ -146,8 +149,13 @@ export function updateCharacterAnims(dt) {
     a.first = false;
     a.prev.copy(tmp);
     a.speed += (raw - a.speed) * Math.min(1, dt * 8);
+    // 21 Nov: turning on the spot steps the feet (walk clip, slow) instead of spinning on planted feet
+    a.follow.getWorldQuaternion(tq); te.setFromQuaternion(tq, 'YXZ');
+    const yaw = te.y, dy = a.yawPrev === undefined ? 0 : Math.atan2(Math.sin(yaw - a.yawPrev), Math.cos(yaw - a.yawPrev));
+    a.yawPrev = yaw; a.turn = (a.turn || 0) + (dy / dt - (a.turn || 0)) * Math.min(1, dt * 8);
+    const turning = a.speed < 0.35 && Math.abs(a.turn) > 0.5;
     // walking pace only: standing still, or riding something fast (cycle, tractor), uses idle
-    const want = a.speed > 0.35 && a.speed < 7 ? 1 : 0;
+    const want = a.speed > 0.35 && a.speed < 7 ? 1 : turning ? 0.6 : 0;
     a.w += (want - a.w) * Math.min(1, dt * 6);
     // kids: walk -> run once the walk would play faster than RUN_SWITCH x natural
     const runWant = a.run && a.speed > a.walkRef * RUN_SWITCH ? 1 : 0;
@@ -157,7 +165,7 @@ export function updateCharacterAnims(dt) {
     if (a.idle) a.idle.setEffectiveWeight((a.walk ? 1 - a.w : 1) * keep);
     if (a.walk) {
       a.walk.setEffectiveWeight((a.idle ? a.w : 1) * (1 - a.r) * keep);
-      a.walk.setEffectiveTimeScale(THREE.MathUtils.clamp(a.speed / a.walkRef, 0.6, a.maxRate));
+      a.walk.setEffectiveTimeScale(turning ? 0.75 : THREE.MathUtils.clamp(a.speed / a.walkRef, 0.6, a.maxRate));
     }
     if (a.run) {
       a.run.setEffectiveWeight(a.w * a.r * keep);
