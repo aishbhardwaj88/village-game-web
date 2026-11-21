@@ -10,12 +10,13 @@ Branch `s7-characters`. Plain-words summary first, numbers below.
   - Only the shape and animation numbers are packed tighter (measured below: animation identical, body within 0.4 mm).
   - Each packed file is opened again and checked against the original. If anything is missing, the original ships instead and the build prints a warning.
   - New characters from the Tripo chat are packed automatically, with no work on its side. Any `.glb` with a skeleton counts as a character.
-- **Characters no longer download before Play.** After Play the nearest ones load first, three at a time, within 95 m of the camera. Anyone further away loads when you come near. Until then the old simple figure stands in their place.
+- **Characters no longer download before Play.** After Play the nearest ones load first, two at a time, within 90 m of the camera. Anyone further away loads when you come near. Until then the old simple figure stands in their place.
 - **Distance tiers**, so 30-40 people never cost more than ~24:
   - within 40 m and on screen: fully animated, blinking and smiling, at most 24 at once (nearest first)
-  - 40-90 m: animation moves 20 times a second instead of every frame; no blink or smile (not visible that far)
+  - 40-80 m: animation moves 20 times a second instead of every frame; no blink or smile (not visible that far)
   - off screen: animation paused
-  - beyond 90 m: hidden
+  - beyond 80 m: hidden
+  - these numbers live in ONE place, `getQuality()` in src/edition.js (desktop agent), keys charNear, charMaxFull, charFar, charMidHz, charLoadRadius
 - **Web version (later, one switch):** skins 2048 for the main cast and 1024 for the rest, 12 animated within 25 m, hidden beyond 50 m. About 6x smaller files.
 
 ## Numbers
@@ -74,25 +75,30 @@ Measured without a browser (`node tools/char-lod-bench.mjs`): the game's own ani
 
 | Scene | Tiers off | Tiers on | Tiers on + the small characterAnim change (Wiring needed 5) |
 |---|---|---|---|
-| ?gather=1: the 10 at the square, camera 6 m away | 0.50 ms | 0.49 ms | 0.45 ms |
-| 40 people spread over the village (300 x 300 m), camera in the middle | 2.10 ms | 1.30 ms | 0.83 ms (web limits: 0.59 ms) |
+| ?gather=1: the 10 at the square, camera 6 m away | 0.52 ms | 0.46 ms | 0.51 ms |
+| 40 people spread over the village (300 x 300 m), camera in the middle | 2.05 ms | 1.25 ms | 0.61 ms (light limits: 0.56 ms) |
 
 - At the square everyone is near and on screen, so all stay fully animated: no saving there, and none expected.
-- With 40 people around the village, the tiers cut the character cost by 40%, and by 60% with the characterAnim change. Of the 40: 6 at reduced speed, 13 paused (behind the camera), 21 hidden (beyond 90 m).
-- Not in these numbers (drawing): hidden people are not drawn at all, no skinning and no shadow, about 4 draw calls saved per hidden person (84 in the 40-person scene).
+- With 40 people around the village, the tiers cut the character cost by 40%, and by 70% with the characterAnim change. Of the 40 (full limits): 4-5 at reduced speed, 12 paused (behind the camera), 23-24 hidden (beyond 80 m).
+- Differences under ~0.05 ms are noise (other agents share the 2 processor cores).
+- Not in these numbers (drawing): hidden people are not drawn at all, no skinning and no shadow, about 4 draw calls saved per hidden person (about 90 in the 40-person scene).
 - What is left (~0.5 ms for 40) is three.js updating the bone positions of everyone still in the scene graph; hidden people would have to be taken out of the scene to save that, which other code (lineup, missions) does not expect, so it is left alone.
 
 ## Screenshots (docs/s7/characters/)
 
 SHOTS_LIST
 
-## Edition switch (full = default now, light = web later)
+## Edition switch (one switch for everything: `WEB_QUALITY` in src/edition.js)
 
-- Packing: `node tools/char-diet.mjs` = full (default). Web version: `CHAR_PROFILE=light node tools/char-diet.mjs` (or `--profile light`).
-- Tiers: one table, `LOD_PROFILES` in `src/characterLOD.js`.
-  - full (default): fully animated within 40 m, max 24; reduced 40-90 m (20 times a second); hidden beyond 90 m; load within 95 m
-  - light: fully animated within 25 m, max 12; reduced 25-50 m (12 times a second); hidden beyond 50 m; load within 55 m
-  - main.js passes the edition: `initCharacterLOD({ camera, assetSlots, profile })` (no profile = full). For testing, `?charprofile=light` in the address. `?charlod=0` turns the tiers off.
+- **Desktop app:** ships the untouched original character files (desktop/scripts/build-game.mjs never runs the packing step). Tiers use the `full` preset.
+- **Web build today:** `WEB_QUALITY = 'full'`, so `node tools/char-diet.mjs` packs with the full profile (skins byte for byte, 76.0 -> 48.9 MB for the 10) and the tiers use `full`.
+- **Web build later:** change `WEB_QUALITY` to `'light'` in src/edition.js. The packing step follows it on its own (1024/2048 WebP skins, 11.8 MB for the 10) and the tiers switch to the light limits. Nothing else to change.
+- Overrides for testing: `CHAR_PROFILE=light|full node tools/char-diet.mjs` (or `--profile`); `?quality=light` in the address (edition.js); `?charlod=0` turns the tiers off.
+
+| Preset | Fully animated | Max at once | Reduced (steps/s) | Hidden beyond | Loads within |
+|---|---|---|---|---|---|
+| full (in use) | 40 m | 24 | 40-80 m (20) | 80 m | 90 m |
+| light (later) | 25 m | 12 | 25-50 m (12) | 50 m | 55 m |
 
 ## Tripo characters: file and first commit (for the licence check)
 
@@ -116,11 +122,11 @@ Command for later ones: `git log --diff-filter=A --follow --format='%ad %h' --da
 1. **package.json scripts** (the packing step runs right after `vite build`, BEFORE the budget check, so the check sees the packed files):
    - `"build:unchecked": "vite build && node tools/char-diet.mjs && node tools/check-budget.js"` (perf branch currently has `vite build && node tools/check-budget.js`)
    - `"build"`: insert ` && node tools/char-diet.mjs` right after `vite build` (before world-validator / check-budget)
-   - desktop/full build: plain `node tools/char-diet.mjs` (full is the default). The later web build: `CHAR_PROFILE=light node tools/char-diet.mjs`
+   - web build only; it follows `WEB_QUALITY` by itself. The desktop build does not run it (it ships the originals).
    - optional: `"char-diet": "node tools/char-diet.mjs"`, `"char-verify": "node tools/char-verify.mjs"`
    - No new packages: `@gltf-transform/*`, `meshoptimizer`, `sharp` are already devDependencies.
 2. **Budget check (perf agent)**: the per-character limit (1.5 MB / 2.5 MB) is a web-version budget: measure it on `dist/assets/models/` after `CHAR_PROFILE=light` packing, not on `public/`, and not on the full build (full characters are 4-6 MB each on purpose).
-3. **Edition**: when `src/edition.js` exists, change the one init line in my main.js block to `initCharacterLOD({ camera, assetSlots, profile: getQuality() })` (plus its import; `getQuality()` returns `'light'` or `'full'`). Until then the game uses full.
+3. **Edition**: done. src/characterLOD.js reads `getQuality()` itself (merged main with src/edition.js); my main.js block is unchanged.
 4. deploy.yml: nothing required (the packing step takes ~7-12 s now, under a minute at 40 characters, well inside 15 min). Optional speed-up: cache `node_modules/.cache/char-diet` between runs.
 5. **src/characterAnim.js** (no owner in the sprint list; three small lines, measured above): skip people the tiers have paused or hidden, and skip the neck fix and the face when nothing moved:
    - in `updateCharacterAnims`, first lines inside `for (const a of animators) {`:
@@ -134,6 +140,9 @@ Command for later ones: `git log --diff-filter=A --follow --format='%ad %h' --da
 6. Characters load after Play is already wired through my main.js block (assetSlots.register is wrapped there); nothing else to change.
 
 ## Risks and notes
+
+- **Graphics memory with full skins (decision for her, with numbers).** A 4096 skin takes about 85 MB on the graphics card (a 2048 one about 21 MB, 1024 about 5 MB). 24 people near you at full quality = about 2 GB of graphics memory for skins alone, 40 people met in one session = about 3.4 GB (people are loaded when you come near and are not unloaded). The sprint budget is 400 MB for all textures. Fine on a gaming PC, too much for a typical laptop or Mac with shared memory. Ways out, cheapest first: (a) skins at 2048 for the desktop too (most of the face detail stays: the face is a small part of the skin picture, so this needs her eye on a close-up); (b) GPU-compressed skins (KTX2/Basis, free tools, 4096 kept at about a quarter of the memory; needs the free KTX-Software tool installed on the build machine, not present here); (c) unload people who have been far away for a while (code work in src/characterLOD.js).
+- **The same person loaded twice is two copies.** In ?gather=1 Maa exists as the gather actor and as the village NPC: two downloads (the second from the browser cache) and two copies of her skin in graphics memory. Only the gather review scene does this today.
 
 - **public/ budget**: the originals stay in git at 6-9 MB each. At 30-40 characters that is 200-300 MB in `public/`, far over the 90 MB "whole public/" budget, even though players only download the packed copies. Needs a decision: either count characters from `dist/` for that budget, or keep the originals outside `public/` (the Tripo chat would then push somewhere else).
 - **Dev server** (`npm run dev`) still serves the full-size originals; only built games are packed.
