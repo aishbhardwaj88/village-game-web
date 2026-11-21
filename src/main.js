@@ -216,6 +216,7 @@ import { createVillageSounds } from './villageSounds.js';
 import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
+import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -735,6 +736,8 @@ async function main() {
   }
 
   const player = createPlayer();
+  // S7 WIRING (perf): distance shadows + world growing east under ?layout=new (docs/s7/perf.md)
+  initPerfS7({ scene, sun, player });
   // Opening spawn + camera facing — chosen (not the original (-48,25) facing north,
   // which pointed the chase camera straight at the house block's solid, gapless
   // south wall from 7m away, filling most of the opening frame with one flat

@@ -6,7 +6,19 @@
  */
 
 import { PLACES } from './freeRoam.js';
-import { CANAL_MIN_X, CANAL_MAX_X, CANAL_Z } from './canal.js';
+import * as canalMod from './canal.js';
+import { currentLayout, worldBounds } from './zoneManager.js';
+
+// The canal line drawn on the minimap: ?layout=old = today's east-west feeder (canal.js constants); ?layout=new = the
+// north-south canal at x ~824 along the field band, or canal.js's own CANAL_PATH ([[x, z], ...]) once it exports one.
+function canalLine() {
+  if (currentLayout() === 'new') {
+    if (Array.isArray(canalMod.CANAL_PATH) && canalMod.CANAL_PATH.length > 1) return canalMod.CANAL_PATH;
+    const b = worldBounds('new');
+    return [[b.canalX, b.fieldBandZ[0]], [b.canalX, b.fieldBandZ[1]]];
+  }
+  return [[canalMod.CANAL_MIN_X, canalMod.CANAL_Z], [canalMod.CANAL_MAX_X, canalMod.CANAL_Z]];
+}
 
 const HIDE_KEY = 'dopahar.minimapHidden';
 const SPAN = 110; // metres across the window on foot
@@ -54,6 +66,7 @@ function glyph(ctx, kind, x, y) {
  *          lanes: number[][][], onOpen: () => void}} opts
  */
 export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes, onOpen }) {
+  const CANAL_LINE = canalLine();
   const canvas = document.getElementById('minimap-canvas');
   if (!canvas) return { update() {}, setHidden() {}, isHidden: () => true, setActive() {} };
   const wrap = document.getElementById('minimap-wrap');
@@ -118,9 +131,9 @@ export function createMinimap({ getPlayerPos, getCameraDir, getObjective, lanes,
       lane.forEach(([x, z], i) => (i ? ctx.lineTo(wx(x), wy(z)) : ctx.moveTo(wx(x), wy(z))));
       ctx.stroke();
     }
-    ctx.strokeStyle = 'rgba(45,127,141,0.8)'; // canal, north of the village
+    ctx.strokeStyle = 'rgba(45,127,141,0.8)'; // canal
     ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(wx(CANAL_MIN_X), wy(CANAL_Z)); ctx.lineTo(wx(CANAL_MAX_X), wy(CANAL_Z)); ctx.stroke();
+    ctx.beginPath(); CANAL_LINE.forEach(([x, z], i) => (i ? ctx.lineTo(wx(x), wy(z)) : ctx.moveTo(wx(x), wy(z)))); ctx.stroke();
     ctx.font = '700 9px "Segoe Print","Comic Sans MS",cursive,sans-serif';
     ctx.textAlign = 'center';
     for (const pl of PLACES) {
