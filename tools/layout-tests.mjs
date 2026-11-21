@@ -27,8 +27,11 @@ const args = process.argv.slice(2);
 const VERBOSE = args.includes('--verbose');
 const DISTRICT = args.includes('--district') ? args[args.indexOf('--district') + 1] : null;
 const JSON_OUT = args.includes('--json') ? args[args.indexOf('--json') + 1] : null;
+// --as-drawn: test the new shops/houses where the map DRAWS them (their rings), not where the snap puts them (o.rect); existing
+// places, roads and galis as the game uses them. This is what is built while a kit still places from o.rings[0].
+const AS_DRAWN = args.includes('--as-drawn');
 
-const { inputsHash, OUT } = await import('./layout-pack.mjs');
+const { inputsHash, OUT, compact, SRC } = await import('./layout-pack.mjs');
 const L = await import('../src/layout/layout.js');
 const C = await import('../src/layout/layoutCore.js');
 const S = await import('../src/layout/layoutSnap.js');
@@ -53,7 +56,12 @@ for (const r of L.anchorReport) {
 }
 
 // ------------------------------------------------------------------ districts (nearest district label of the map)
-const layout = L.getLayout();
+let layout = L.getLayout();
+if (AS_DRAWN) {
+  const drawn = C.buildLayout(compact(JSON.parse(fs.readFileSync(SRC, 'utf8'))));
+  for (const p of drawn.list) if (p.existing && layout.places[p.id]) Object.assign(p, layout.places[p.id]); // existing places: as the game moves them
+  layout = { ...layout, objects: drawn.objects, places: drawn.places, list: drawn.list, nudges: [] };
+}
 const districts = layout.list.filter((p) => p.id.startsWith('new_zone_')).map((p) => ({ name: p.name, x: p.x, z: p.z }));
 const districtOf = (x, z) => {
   let best = null, bd = Infinity;
@@ -79,6 +87,8 @@ const samples = (corners, step = 0.5) => {
 // From 9 points along the front edge, walk straight out along the front (0.25 m steps, up to 30 m) until a road's carriageway
 // starts. gap = the shortest such walk; the road hit there must run parallel to the front edge. Untouched places are reported
 // (kept exactly as today on the owner's instruction), never failed.
+const ACCEPTED = { yard_bhatta: 'kiln set back behind its green strip, as drawn' };
+const accepted = [];
 const frontRows = [];
 for (const b of sel) {
   if (b.open || b.crossing) continue;
@@ -90,7 +100,10 @@ for (const b of sel) {
   row.ok = row.gap <= MAX_GAP && row.par <= MAX_PAR;
   if (b.untouched) row.kept = 'untouched';
   frontRows.push(row);
-  if (!row.ok && b.named && !b.untouched) fail('front', row);
+  // ACCEPTED EXCEPTION (integrator, 22 Nov): the brick kiln stands 18 m back from the highway behind its own green strip of
+  // neem and shisham, as the approved map draws it ('Green strip (grass and trees between the highway and the kiln)').
+  if (!row.ok && ACCEPTED[b.id]) { row.accepted = ACCEPTED[b.id]; accepted.push(row); }
+  else if (!row.ok && b.named && !b.untouched) fail('front', row);
 }
 
 // ------------------------------------------------------------------ 3. on a road / 4. ground
@@ -152,7 +165,7 @@ const bump = (d, k) => { byDistrict[d] = byDistrict[d] || { front: 0, frontFail:
 for (const r of named) { bump(r.district, 'front'); if (!r.ok) bump(r.district, 'frontFail'); }
 for (const k of ['road', 'ground', 'overlap']) for (const r of results[k]) bump(r.district, k);
 
-console.log(`\nLAYOUT TESTS (approved map 21 Nov, ?layout=new)${DISTRICT ? ` district ~ "${DISTRICT}"` : ''}\n`);
+console.log(`\nLAYOUT TESTS (approved map 21 Nov, ?layout=new)${AS_DRAWN ? ' AS DRAWN (new buildings on their rings, not snapped)' : ''}${DISTRICT ? ` district ~ "${DISTRICT}"` : ''}\n`);
 console.log('district'.padEnd(20), 'named', 'front-fail', 'on-road', 'ground', 'overlap');
 for (const [d, v] of Object.entries(byDistrict).sort()) console.log(d.padEnd(20), String(v.front).padStart(5), String(v.frontFail).padStart(10), String(v.road).padStart(7), String(v.ground).padStart(6), String(v.overlap).padStart(7));
 console.log(`\nhouses facing a road within ${MAX_GAP} m and ${MAX_PAR} deg: ${houses.filter((r) => r.ok).length} / ${houses.length} (reported, not failed)`);
@@ -165,6 +178,7 @@ for (const [k, title] of sections) {
   for (const r of rows.slice(0, VERBOSE ? 1e9 : 15)) console.log('   ', Object.entries(r).map(([a, b]) => `${a}=${typeof b === 'number' ? +b.toFixed(2) : b}`).join('  '));
   if (!VERBOSE && rows.length > 15) console.log(`    ... ${rows.length - 15} more (--verbose)`);
 }
+for (const r of accepted) console.log(`accepted exception: ${r.id} (${r.name}) gap ${r.gap} m: ${r.accepted}`);
 const nudges = layout.nudges || [];
 console.log(`
 road snap (tools/layout-pack.mjs): ${nudges.length} footprints nudged onto their road (${nudges.filter((n) => n.kind === 'place').length} existing places, ${nudges.filter((n) => n.kind === 'solid').length} named new, ${nudges.filter((n) => n.kind === 'house').length} houses); largest move ${Math.max(0, ...nudges.map((n) => n.move)).toFixed(1)} m, largest turn ${Math.max(0, ...nudges.map((n) => Math.abs(n.turnDeg))).toFixed(1)} deg`);

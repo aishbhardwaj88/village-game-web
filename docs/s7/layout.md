@@ -157,7 +157,55 @@ What is left, in plain words (each needs her eye or a small build decision, not 
 - **Floating/sunk**: the mela ground's far corner reaches the johad's bank (0.9 m dip under one corner).
 - **Overlaps**: post office and chaupal yards share 1.1 m of edge; two mud houses by the haveli overlap 0.5 m as drawn.
 
-## Wiring needed (for the integrator; files I do not own)
+## Round 2 (22 Nov): wiring applied, failures fixed
+Applied myself (files now mine): `village.js` (house / halwai / school turns from `layoutTurnDeg`), `bazaar.js` (row turn;
+no chowk tea board under new), `temple.js` (turn), `bazaarLife.js` (no chowk tea drinkers; the five walkers that hung off the
+halwai's old lane now walk the inner lanes), `jobs/stalls.js` (banta cart, seller and buy point carried with the shop),
+`wayfinding.js` (8 posts re-seated beside the new roads, 0-5 m; notice board on the map's own spot, facing its road),
+`mainRoadFrontage.js` + `armFrontage.js` (generated frontage houses/shops off under new: the map places every one),
+`gullyLife.js` (never inside a map building), `zoneManager.js` (`currentLayout()` = `layoutMode()`, one switch for both),
+`main.js` (chowk tea stall and its model slot not built under new, two marked lines), `roadNetwork.js` (under new the road
+surface never dips under y 0.02, so it always draws over the painted fields at 0.016).
+
+Hand-offset props: the shade trees round the pond, johad, haveli and gaushala keep their spot only where it is clear of every
+map building and road (2 m crown), else move to the nearest clear spot within 8 m: 6 of 10 kept (moved 0, 1, 4, 5, 5.5,
+6.5 m); 4 left out (both haveli trees, one pond and one johad tree: their spots are now inside the new houses).
+`window.__layoutWiring` lists every such change at run time. The old sugarcane belt and the neighbour's 2 mango trees at the old 'cane' spot are
+not built under new (they crossed the cross road and the west edge lane; the map's own fields and orchards replace them).
+
+The snap is now a small search per footprint (turn to its road up to 30 deg, forward/back, slide along the road; carts and
+washing lines step aside; a shop drawn in a second row with no road at all moves to the nearest free frontage within 30 m;
+a gali that runs along a building slides sideways or narrows to 3.5 / 3 m; gali ends stop short of the wall they lead to),
+run twice with the gali fixes in between.
+
+### The 7 shop plots shops-land found on a road edge (my decision)
+Where the road is a gali (a 4 m back lane between house rows) the ROAD gives way and the plot stays where she drew it:
+- Cycle and puncture repair, Utensils: gali n40's end trimmed 2.25 m. Optician: gali n41 trimmed 7.25 m. Tailor (712.8, -73.1):
+  gali n1 trimmed 2.25 m. Plots unchanged.
+- Jeweller: gali n41 trimmed at both ends and the plot steps 0.5 m along the row; Stationery and xerox: gali n37 trimmed 0.5 m
+  and the plot steps 0.25 m (trimming more would cut the lane off from the houses it serves).
+- General store (507.2, 50.6) on the west outer lane (a through lane, not a gali): the plot turns 4.9 deg to sit square to the
+  lane where it bends, which also takes its corner off the lane. The lane stays.
+These small plot steps live in `o.rect` (see "Wiring left" 1); drawn positions are kept in `o.rings`.
+
+### Test numbers, round 2 (22 Nov)
+- `node tools/layout-tests.mjs`: **PASS, 0 failures** (167 named buildings: carts now count as props; 492 houses; 926
+  footprints). One accepted exception, marked in the test: the brick kiln stands 18 m back behind its own green strip, as drawn.
+  Houses facing a road or gali within 3 m and 3 deg: 460 of 492 (reported). 173 footprints nudged in all (31 existing places,
+  59 new named buildings, 67 houses, the rest carts and washing lines making room); 2 shops relocated (drawn in a second
+  row with no road at all: Kites and toys, Gift shop) to the nearest free frontage, 27 m at most.
+- `node tools/layout-tests.mjs --as-drawn` (shops and houses where the map draws them, i.e. what is built until wiring item 1
+  lands): 67 failures (55 front, 8 on a road, 4 overlaps), all of which the snapped footprints fix.
+
+### Wiring left for the integrator
+1. **shops-land (`src/kit/shopsPlace.js`) and houses (`src/kit/housesLayout.js`) build from `o.rings[0]`, so they ignore the
+   snap.** For the shops and houses to stand where the tests say, replace their rectangle with
+   `footprintOf(o)` from `src/layout/layout.js` (returns `{ x, z, ry, width, depth, front }`, the same shape shopsPlace uses):
+   `const rect = footprintOf(o) || ringRect(o.rings[0], place.front);` and in housesLayout the equivalent. Until then
+   `node tools/layout-tests.mjs --as-drawn` gives the numbers for what is actually built.
+2. Flip `DEFAULT_LAYOUT` to `'new'` in `src/layout/layout.js` when she signs off (zoneManager follows it now).
+
+## Wiring needed in round 1 (all applied in round 2, kept for the record)
 Each line keeps `?layout=old` exactly as today (`layoutTurnDeg(id, old)` returns `old` under the old layout).
 
 1. **src/village.js** (our house and the halwai still turn by their old constants; everything built from them, NPC spots and

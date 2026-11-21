@@ -28,7 +28,8 @@ export function inputsHash() {
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
-export function pack(raw) {
+/** The approved map with tree circles compacted, nothing derived yet (also used by tools/layout-tests.mjs --as-drawn). */
+export function compact(raw) {
   const objects = raw.objects.map((o) => {
     if (o.kind === 'trees') {
       const ring = o.rings[0];
@@ -44,13 +45,22 @@ export function pack(raw) {
     for (const k of ['color', 'y0', 'y1', 'y']) if (o[k] !== null && o[k] !== undefined) out[k] = o[k];
     return out;
   });
+  return { places: raw.places, roads: raw.roads, objects, canal: raw.canal };
+}
+
+export function pack(raw) {
   // derive everything once here (fronts, oriented footprints, the road snap), so the game only reads the result
-  const layout = buildLayout({ places: raw.places, roads: raw.roads, objects, canal: raw.canal });
+  const layout = buildLayout(compact(raw));
   const clips = clipGalis(layout);
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   const nudges = snapLayout(layout);
   // a gali whose length runs along a building's back slides sideways off it; then trim gali ends the snap moved buildings onto
   const galiShifts = nudgeGalis(layout);
+  for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
+  for (const c of clipGalis(layout)) clips.push({ ...c, after: 'snap' });
+  for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
+  // second round: what the first round could not settle often can once its neighbours and the galis have moved
+  for (const n of snapLayout(layout)) nudges.push({ ...n, round: 2 });
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   for (const c of clipGalis(layout)) clips.push({ ...c, after: 'snap' });
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);

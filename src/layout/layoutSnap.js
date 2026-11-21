@@ -61,11 +61,25 @@ function overlapsOf(it, items, ignoreCarts = false) {
 const isCart = (o) => o.kind === 'solid' && !o.named && /carts?$|washing line/i.test(o.name) && (o.obj.h || 0) < 3.1;
 /** Is a road hit acceptable because it is only the end cap of a gali that clipGalis() will trim afterwards? */
 function galiEndOnly(roads, d, corners) {
+  // 22 Nov: every gali conflict left after the first end trim is treated as real (the snap moves the building); the end trim
+  // runs again after each snap round for the ends a moved building now touches
+  if (GALI_ENDS_COUNT) return false;
   if (!d || d.road.kind !== 'back') return false;
   const pts = d.road.pts, ends = [pts[0], pts[pts.length - 1]];
   if (Math.hypot(ends[0][0] - ends[1][0], ends[0][1] - ends[1][1]) <= 8) return false;
-  // the deepest point on the gali must lie in its round end cap (within its half-width + 0.5 m of an end), not along its length
-  return ends.some(([x, z]) => Math.hypot(d.x - x, d.z - z) < d.road.width / 2 + 0.5);
+  // the deepest point on the gali must lie in its round end cap (within its half-width + 0.5 m of an end)...
+  if (!ends.some(([x, z]) => Math.hypot(d.x - x, d.z - z) < d.road.width / 2 + 0.5)) return false;
+  // ...and the footprint must not also stand along the gali's length (then trimming the end would not free it)
+  const w = d.road.width;
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const [ax, az] = pts[i], [bx, bz] = pts[i + 1], L = Math.hypot(bx - ax, bz - az), steps = Math.max(2, Math.ceil(L / 0.5));
+    for (let k = 1; k < steps; k++) {
+      const t = k / steps, x = ax + (bx - ax) * t, z = az + (bz - az) * t;
+      if ((i === 0 && t * L < w / 2 + 2.5) || (i === pts.length - 2 && (1 - t) * L < w / 2 + 2.5)) continue;
+      if (distToQuad(x, z, corners) < w / 2 - 0.1) return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -151,7 +165,9 @@ export function snapLayout(layout) {
   for (let pass = 0; pass < 2; pass++) {
     for (const it of order) {
       if (it.fixed || it.crossing) continue;
+      if (process.env.DEBUG_ONLY && process.env.DEBUG_ONLY !== it.id) continue;
       const base = scoreOf(it, it.corners, it.front, true);
+      if (process.env.DEBUG_ONLY) console.log('[snap] base', base.s, base.d && base.d.road.id, base.d && base.d.pen, 'ov', base.ov, 'pr', base.pr && base.pr.gap, base.pr && base.pr.par);
       const pr0 = base.pr;
       if (base.s === 0 && overlapsOf(it, items, false) === 0) continue;
       // a house is only moved for a road or an overlap (its front is reported, not failed: it faces its gali by construction)
@@ -198,14 +214,14 @@ export function snapLayout(layout) {
           if (sc.s < base.s - 0.01) cands.push({ total, t, mx, mz, moved, fr, sc });
         }
       }
-      if (process.env.DEBUG_SNAP === it.id) console.log('[snap]', it.id, 'base', base.s.toFixed(2), 'cands', cands.length, cands.slice(0, 3).map((c) => [c.total.toFixed(2), c.t.toFixed(3), c.mx.toFixed(2), c.mz.toFixed(2)]));
+      if ((process.env.DEBUG_SNAP === it.id || process.env.DEBUG_ONLY === it.id)) console.log('[snap]', it.id, 'base', base.s.toFixed(2), 'cands', cands.length, cands.slice(0, 3).map((c) => [c.total.toFixed(2), c.t.toFixed(3), c.mx.toFixed(2), c.mz.toFixed(2)]));
       if (!cands.length) continue;
       cands.sort((a, b) => a.total - b.total);
       // carts the move would land on step behind the building (the building takes the cart's spot) or aside; the best move
       // whose carts can all be cleared wins
       const saved = it.corners;
       let best = null, cartMoves = [];
-      for (const c of cands.slice(0, 12)) {
+      for (const c of cands.slice(0, 60)) {
         it.corners = c.moved; it._bb = null;
         const moves = [];
         let ok = true;
@@ -217,7 +233,7 @@ export function snapLayout(layout) {
         if (ok) { best = c; cartMoves = moves; break; }
         for (const m of moves) { m.c.corners = m.saved; m.c._bb = null; }
       }
-      if (process.env.DEBUG_SNAP === it.id) console.log('[snap]', it.id, best ? 'chosen' : 'no candidate could clear its carts');
+      if ((process.env.DEBUG_SNAP === it.id || process.env.DEBUG_ONLY === it.id)) console.log('[snap]', it.id, best ? 'chosen' : 'no candidate could clear its carts');
       if (!best) { it.corners = saved; it._bb = null; continue; }
       it.front = best.fr;
       applyNudge(it, best.t, best.mx, best.mz, cx, cz);
@@ -294,6 +310,7 @@ function reorient(it, dir, turn) {
     p.adjust = { ...(p.adjust || {}), reoriented: +(turn / DEG).toFixed(0) };
   }
 }
+const GALI_ENDS_COUNT = true;
 const SIDE_STEPS = [0, 0.15, -0.15, 0.3, -0.3, 0.5, -0.5, 0.8, -0.8, 1.2, -1.2, 1.6, -1.6, 2.2, -2.2];
 
 /** Carts a footprint now overlaps. */
@@ -301,13 +318,13 @@ function cartsHit(it, items) {
   const bb = bboxOf(it.corners);
   return items.filter((o) => o !== it && isCart(o) && (() => { const b = bboxOf(o.corners); return !(b[2] < bb[0] || bb[2] < b[0] || b[3] < bb[1] || bb[3] < b[1]); })() && quadOverlap(it.corners, o.corners) > OVERLAP_TOL);
 }
-/** Move cart c out of building it: straight behind it first (along -front), then sideways, up to 8 m; clear of everything. */
+/** Move cart c out of building it: straight behind it first (along -front), then sideways along the road, up to 14 m; clear of everything. */
 function clearCart(c, it, items, roads, front) {
   const cx = c.corners.reduce((s, q) => s + q[0], 0) / 4, cz = c.corners.reduce((s, q) => s + q[1], 0) / 4;
   const side = [front[1], -front[0]];
   const dirs = [[-front[0], -front[1]], side, [-side[0], -side[1]]];
   const saved = c.corners;
-  for (let d = 0.5; d <= 8; d += 0.5) for (const [ux, uz] of dirs) {
+  for (let d = 0.5; d <= 14; d += 0.5) for (const [ux, uz] of dirs) { // up to 14 m: a 5 m cart row may have to pass the whole building
     const moved = saved.map(([x, z]) => [x + ux * d, z + uz * d]);
     c.corners = moved; c._bb = null;
     if (overlapsOf(c, items, false) === 0 && !roadDepth(roads, moved)) return { c, dx: ux * d, dz: uz * d, cx, cz, saved };
