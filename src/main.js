@@ -1192,10 +1192,10 @@ async function main() {
     placements: [{ container: player, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }],
   });
   }
+  // S7 WIRING (characters): tiers for every rigged character (?charlod=0 turns them off); characters download only after Play, nearest first
+  initCharacterLOD({ camera, assetSlots });
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
   const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => groundHeightAt(x, z, y), getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
-  // S7 WIRING (characters): near/mid/far tiers for every rigged character (?charlod=0 turns it off)
-  initCharacterLOD({ camera });
   for (const [name, npc, dims] of [
     ['maa', maaNpc, { w: 1.4, h: 1.65, d: 1.4 }],
     ['halwai', halwaiNpc],

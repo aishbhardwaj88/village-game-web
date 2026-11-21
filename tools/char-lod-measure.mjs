@@ -25,7 +25,7 @@ const base = `http://localhost:${PORT}/village-game-web/`;
 for (let i = 0; i < 100; i++) { try { if ((await fetch(base)).ok) break; } catch { /* starting */ } await new Promise((r) => setTimeout(r, 300)); }
 
 // The machine is shared with other agents' browsers (one memory pool, ~8 GB): wait until ~3.5 GB is free first.
-async function waitForMemory(mb = 3500, maxMin = 15) {
+async function waitForMemory(mb = Number(process.env.FREE_MB || 3500), maxMin = 60) {
   const free = () => { try { return Number(execSync("free -m | awk '/^Mem:/ {print $7}'").toString()); } catch { return mb; } };
   const t0 = Date.now();
   while (free() < mb && Date.now() - t0 < maxMin * 60000) await new Promise((r) => setTimeout(r, 10000));
@@ -79,7 +79,7 @@ mkdirSync(resolve(ROOT, 'tmp'), { recursive: true });
 const results = [];
 try {
   for (const lod of [false, true]) {
-    for (let t = 1; t <= 4; t++) {
+    for (let t = 1; t <= Number(get('--tries', '4')); t++) {
       try { results.push(await measure(lod)); break; } catch (e) { console.log(`attempt ${t} failed: ${String(e.message).split('\n')[0]}`); await new Promise((r) => setTimeout(r, 45000)); }
     }
   }

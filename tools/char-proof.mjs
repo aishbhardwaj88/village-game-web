@@ -4,8 +4,7 @@
  * Serves two builds with `vite preview` (before = plain `vite build`, after = `vite build` + tools/char-diet.mjs), opens
  * ?gather=1&lineup=1&proof=1 in headless chromium (software GL), and for each build:
  *   - bytes downloaded (each character GLB, and the whole page), console errors
- *   - whole-line screenshot, then for EVERY character (the lineup's own Next button): a body shot (standing, facing
- *     the camera, right after the walk) and the face close-up the lineup glides to
+ *   - whole-line screenshot, then the game is paused and EVERY character is framed: whole body, and a face close-up
  *   - live checks: every character's blink influence goes above 0.5 at least once, and its bones move (animation runs)
  * Writes docs/s7/characters/<name>_{body,face}_{before,after}.png, side-by-side <name>_compare.png, lineup_*.png and
  * docs/s7/characters/proof.json.
@@ -36,7 +35,7 @@ const VARIANTS = [
 ];
 
 // The machine is shared with other agents' browsers (one memory pool, ~8 GB): wait until ~3.5 GB is free first.
-async function waitForMemory(mb = 3500, maxMin = 15) {
+async function waitForMemory(mb = Number(process.env.FREE_MB || 3500), maxMin = 60) {
   const free = () => { try { return Number(execSync("free -m | awk '/^Mem:/ {print $7}'").toString()); } catch { return mb; } };
   const t0 = Date.now();
   while (free() < mb && Date.now() - t0 < maxMin * 60000) await new Promise((r) => setTimeout(r, 10000));
@@ -119,24 +118,29 @@ async function run(v, browser) {
       return out;
     }, ORDER);
     res.blink = live.blink; res.moves = live.moves;
-    // per character: Next button walks through the line in ORDER
-    const next = page.locator('button', { hasText: 'Next' });
-    for (let i = 0; i < ORDER.length; i++) {
-      await next.click();
-      const k = ORDER[i];
+    // per character: pause the game (Escape: the lineup stops steering the camera, everyone holds still), hide the
+    // pause panel, then frame each person ourselves: whole body, then a face close-up from the head bone.
+    await page.keyboard.press('Escape');
+    await page.addStyleTag({ content: '#pause-overlay{display:none!important}' });
+    await page.waitForTimeout(500);
+    for (const k of ORDER) {
       if (ONLY && !ONLY.includes(k)) continue;
-      // body: after the walk the person snaps back to their spot facing the camera, camera still on the whole body
-      await page.waitForFunction(({ k, i, order }) => {
-        const d = window.__dopahar, g = d.scene.getObjectByName(`gather_${k}`);
-        const j = i === 0 ? 1 : 0, o = d.scene.getObjectByName(`gather_${order[j]}`);
-        const want = o.position.x + (i - j) * 1.15;
-        return Math.abs(g.position.x - want) < 0.01 && d.camera.fov > 44.9;
-      }, { k, i, order: ORDER }, { timeout: 300000, polling: 'raf' });
-      await page.screenshot({ path: `${OUT}/${k}_body_${v.name}.png` });
-      await page.waitForFunction(() => window.__dopahar.camera.fov < 30.01, null, { timeout: 120000, polling: 'raf' });
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: `${OUT}/${k}_face_${v.name}.png` });
-      res.shots.push(`${k}_body_${v.name}.png`, `${k}_face_${v.name}.png`);
+      for (const shot of ['body', 'face']) {
+        await page.evaluate(({ k, shot }) => {
+          const d = window.__dopahar, m = d.scene.getObjectByName(`gather_${k}_model`), g = d.scene.getObjectByName(`gather_${k}`);
+          let head = null; m.traverse((b) => { if (!head && b.isBone && /(^|rig|:)head$/i.test(b.name)) head = b; });
+          const V = d.camera.position.constructor;
+          const hp = head.getWorldPosition(new V()), gp = g.getWorldPosition(new V());
+          // facing direction of the model (its +Z after the lineup's yaw fix)
+          const f = new V(0, 0, 1).transformDirection(m.matrixWorld); f.y = 0; f.normalize();
+          const h = hp.y - gp.y + 0.12;
+          if (shot === 'body') d.photoCamera({ pos: [gp.x + f.x * h * 2.2, gp.y + h * 0.55, gp.z + f.z * h * 2.2], target: [gp.x, gp.y + h * 0.5, gp.z], fov: 45 });
+          else d.photoCamera({ pos: [hp.x + f.x * 0.8, hp.y + 0.06, hp.z + f.z * 0.8], target: [hp.x, hp.y + 0.06, hp.z], fov: 30 });
+        }, { k, shot });
+        await page.waitForTimeout(700);
+        await page.screenshot({ path: `${OUT}/${k}_${shot}_${v.name}.png` });
+        res.shots.push(`${k}_${shot}_${v.name}.png`);
+      }
       console.log(`${v.name}: ${k} shots done`);
     }
     await ctx.close();
@@ -148,7 +152,7 @@ async function run(v, browser) {
 const results = [];
 // The machine is shared with other agents' browsers; a page killed for memory is retried after a pause.
 for (const v of VARIANTS.filter((x) => !ONLY_VARIANT || x.name === ONLY_VARIANT)) {
-  for (let attempt = 1; attempt <= Number(get('--tries', '4')); attempt++) {
+  for (let attempt = 1; attempt <= Number(get('--tries', '2')); attempt++) {
     console.log(`${v.name}: attempt ${attempt}, free memory ${await waitForMemory()} MB`);
     const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
     try {
