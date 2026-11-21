@@ -18,6 +18,8 @@ function createNoiseBuffer(ctx, seconds) {
 // never touches the slider hears exactly what every earlier item already tuned.
 const BASE_MASTER_GAIN = 0.42; // was 0.55 (9 Nov playtest: the mix was in her ear, not in the background)
 const MUTE_KEY = 'dopahar_muted';
+// Sound is OFF for the whole game until the final polish (her call, 21 Nov). Add ?sound=1 to the address to hear it.
+const SOUND_ENABLED = (() => { try { return new URLSearchParams(location.search).has('sound'); } catch (e) { return false; } })();
 import { loadSavedVolume, saveVolume } from './quality.js';
 
 // Real recordings (CC0, see docs/CREDITS.md). Fetched only after start() (the Play tap), never before.
@@ -80,6 +82,7 @@ export class AudioEngine {
 
   start() {
     if (this.started) return;
+    if (!SOUND_ENABLED) { try { window.__dopaharMuted = true; } catch (e) { /* no window */ } return; }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     this.ctx = new Ctx();
