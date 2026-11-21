@@ -70,7 +70,17 @@ PROOF_RESULTS
 
 ### Character CPU per frame (tiers on vs off)
 
-LOD_RESULTS
+Measured without a browser (`node tools/char-lod-bench.mjs`): the game's own animation code on the real character files, 600 frames, middle value. The browser runs on this shared machine were too starved to time anything (see Risks). Raw numbers: docs/s7/characters/lod-bench.jsonl.
+
+| Scene | Tiers off | Tiers on | Tiers on + the small characterAnim change (Wiring needed 5) |
+|---|---|---|---|
+| ?gather=1: the 10 at the square, camera 6 m away | 0.50 ms | 0.49 ms | 0.45 ms |
+| 40 people spread over the village (300 x 300 m), camera in the middle | 2.10 ms | 1.30 ms | 0.83 ms (web limits: 0.59 ms) |
+
+- At the square everyone is near and on screen, so all stay fully animated: no saving there, and none expected.
+- With 40 people around the village, the tiers cut the character cost by 40%, and by 60% with the characterAnim change. Of the 40: 6 at reduced speed, 13 paused (behind the camera), 21 hidden (beyond 90 m).
+- Not in these numbers (drawing): hidden people are not drawn at all, no skinning and no shadow, about 4 draw calls saved per hidden person (84 in the 40-person scene).
+- What is left (~0.5 ms for 40) is three.js updating the bone positions of everyone still in the scene graph; hidden people would have to be taken out of the scene to save that, which other code (lineup, missions) does not expect, so it is left alone.
 
 ## Screenshots (docs/s7/characters/)
 
@@ -112,6 +122,16 @@ Command for later ones: `git log --diff-filter=A --follow --format='%ad %h' --da
 2. **Budget check (perf agent)**: the per-character limit (1.5 MB / 2.5 MB) is a web-version budget: measure it on `dist/assets/models/` after `CHAR_PROFILE=light` packing, not on `public/`, and not on the full build (full characters are 4-6 MB each on purpose).
 3. **Edition**: when `src/edition.js` exists, change the one init line in my main.js block to `initCharacterLOD({ camera, assetSlots, profile: getQuality() })` (plus its import; `getQuality()` returns `'light'` or `'full'`). Until then the game uses full.
 4. deploy.yml: nothing required (the packing step takes ~7-12 s now, under a minute at 40 characters, well inside 15 min). Optional speed-up: cache `node_modules/.cache/char-diet` between runs.
+5. **src/characterAnim.js** (no owner in the sprint list; three small lines, measured above): skip people the tiers have paused or hidden, and skip the neck fix and the face when nothing moved:
+   - in `updateCharacterAnims`, first lines inside `for (const a of animators) {`:
+     ```js
+     const lod = a.root.userData.charLOD; // S7 tiers (src/characterLOD.js): off screen or far = nothing to see, skip it all
+     if (lod && lod.tier >= 2) { a.first = true; continue; }
+     ```
+   - `if (a.neck && a.head) straightenNeck(a);` becomes `if (a.neck && a.head && (!lod || lod.stepped)) straightenNeck(a);`
+   - `if (a.face.length) {` becomes `if (a.face.length && (!lod || lod.tier === 0)) {`
+   - That is the whole change. `node tools/char-lod-bench.mjs --anim <changed file>` measures it.
+6. Characters load after Play is already wired through my main.js block (assetSlots.register is wrapped there); nothing else to change.
 
 ## Risks and notes
 

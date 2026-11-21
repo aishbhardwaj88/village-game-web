@@ -72,24 +72,32 @@ async function run(v, browser) {
     page.on('pageerror', (e) => res.errors.push(`pageerror: ${String(e.message).slice(0, 300)}`));
     page.on('response', async (r) => {
       if (r.request().method() !== 'GET') return;
-      try {
-        const b = await r.body(); res.totalBytes += b.length;
-        const m = r.url().match(/assets\/models\/([a-z_]+)\.glb/);
-        if (m) res.glbBytes[m[1]] = b.length;
-      } catch { /* redirects etc */ }
+      const len = Number(r.headers()['content-length'] || 0); res.totalBytes += len;
+      const m = r.url().match(/assets\/models\/([a-z_]+)\.glb/);
+      if (m) res.glbBytes[m[1]] = len;
+      if (m) res.loadLog = (res.loadLog || []).concat(`${m[1]} at ${Math.round((Date.now() - t0) / 1000)} s`);
     });
+    const t0 = Date.now();
     await page.goto(`${base}?gather=1&lineup=1&proof=1`);
     await page.waitForSelector('#start-overlay.ready', { timeout: 120000 }).catch(() => {});
-    await page.click('#play-btn').catch(() => {});
+    await page.click('#play-btn', { timeout: 120000 }).catch(() => {});
+    res.playClickedAtS = Math.round((Date.now() - t0) / 1000);
     // all ten in the line
-    await page.waitForFunction((order) => {
-      const d = window.__dopahar; if (!d) return false;
-      return order.every((k) => d.scene.getObjectByName(`gather_${k}_model`));
-    }, ORDER, { timeout: 240000, polling: 500 });
+    try {
+      await page.waitForFunction((order) => {
+        const d = window.__dopahar; if (!d) return false;
+        return order.every((k) => d.scene.getObjectByName(`gather_${k}_model`));
+      }, ORDER, { timeout: Number(get('--wait', '600')) * 1000, polling: 2000 });
+      res.castLoadedAtS = Math.round((Date.now() - t0) / 1000);
+    } catch (e) {
+      const why = await page.evaluate(() => ({ overlay: document.getElementById('start-overlay')?.className, lod: window.__charLOD && { ...window.__charLOD.stats, waiting: window.__charLOD.waiting() } })).catch(() => 'page gone');
+      console.log(`${v.name}: cast did not appear:`, JSON.stringify(why));
+      throw e;
+    }
     await page.waitForTimeout(4000);
     // dismiss any opening dialogue so it never covers a shot
     await page.evaluate(() => { try { const d = window.__dopahar; if (d.dialogue && d.dialogue.isOpen) d.dialogue._advanceFromInput(); } catch (e) { /* none */ } });
-    await page.screenshot({ path: `${OUT}/lineup_${v.name}.png` });
+    await page.screenshot({ path: `${OUT}/lineup_${v.name}.png`, timeout: 120000 });
     res.shots.push(`lineup_${v.name}.png`);
     // live: blink and bone movement for everyone, sampled for 8 s of page time
     const live = await page.evaluate(async (order) => {
@@ -138,7 +146,7 @@ async function run(v, browser) {
           else d.photoCamera({ pos: [hp.x + f.x * 0.8, hp.y + 0.06, hp.z + f.z * 0.8], target: [hp.x, hp.y + 0.06, hp.z], fov: 30 });
         }, { k, shot });
         await page.waitForTimeout(700);
-        await page.screenshot({ path: `${OUT}/${k}_${shot}_${v.name}.png` });
+        await page.screenshot({ path: `${OUT}/${k}_${shot}_${v.name}.png`, timeout: 120000 });
         res.shots.push(`${k}_${shot}_${v.name}.png`);
       }
       console.log(`${v.name}: ${k} shots done`);
