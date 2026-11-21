@@ -1,46 +1,51 @@
-# Characters agent: slim characters, load after Play, distance tiers (S7, 21-22 Nov)
+# Characters agent: packed characters, load after Play, distance tiers (S7, 21-22 Nov)
 
 Branch `s7-characters`. Plain-words summary first, numbers below.
 
 ## What changed, in plain words
 
-- **Every character file now ships about 6x smaller** in the built game. The originals in `public/assets/models/` are not touched (the Tripo chat keeps adding them there at full size). A step after the build makes a slim copy of each one, under the same name, inside the built game folder. The game loads exactly the same file names.
-  - Nothing is cut: every bone, every animation, blink and smile, the eye patches, glasses and lids, every material. The body shape is never simplified.
-  - What is smaller: the skin picture (4096 wide becomes 2048 for the main cast, 1024 for the others, in the smaller WebP format), and the shape and animation numbers are packed tighter.
-  - Each slim file is opened again and checked against the original. If anything is missing, the original ships instead and the build prints a warning.
-  - New characters from the Tripo chat are slimmed automatically, with no work on its side. Any `.glb` with a skeleton counts as a character.
-- **Characters no longer download before Play.** After Play the nearest ones load first, two at a time, and only those within 55 m of the camera. Anyone further away loads when you come near. Until then the old simple figure stands in their place.
-- **Distance tiers**, so 30-40 people never cost more than ~12:
-  - within 25 m and on screen: fully animated, blinking and smiling, at most 12 at once (nearest first)
-  - 25-50 m: animation moves 12 times a second instead of every frame; no blink or smile (not visible that far)
+- **Your decision (22 Nov) is built in: full quality first.** By default the built game keeps every character's skin picture exactly as Tripo made it (4096, byte for byte), so faces lose nothing. The lighter web version is ready behind one switch for later.
+- **Character files still ship about a third smaller**, with no visible change. The originals in `public/assets/models/` are not touched (the Tripo chat keeps adding them there). A step after the build makes a packed copy of each one, same name, inside the built game folder. The game loads exactly the same file names.
+  - Nothing is cut: every bone, every animation, blink and smile, the eye patches, glasses and lids, every material, the skin pictures. The body shape is never simplified.
+  - Only the shape and animation numbers are packed tighter (measured below: animation identical, body within 0.4 mm).
+  - Each packed file is opened again and checked against the original. If anything is missing, the original ships instead and the build prints a warning.
+  - New characters from the Tripo chat are packed automatically, with no work on its side. Any `.glb` with a skeleton counts as a character.
+- **Characters no longer download before Play.** After Play the nearest ones load first, three at a time, within 95 m of the camera. Anyone further away loads when you come near. Until then the old simple figure stands in their place.
+- **Distance tiers**, so 30-40 people never cost more than ~24:
+  - within 40 m and on screen: fully animated, blinking and smiling, at most 24 at once (nearest first)
+  - 40-90 m: animation moves 20 times a second instead of every frame; no blink or smile (not visible that far)
   - off screen: animation paused
-  - beyond 50 m: hidden
-- **Two editions from one codebase.** The web edition uses the slim files above. The paid desktop edition can keep the original 4096 skins and see more people animated further away (see "Desktop edition switch").
+  - beyond 90 m: hidden
+- **Web version (later, one switch):** skins 2048 for the main cast and 1024 for the rest, 12 animated within 25 m, hidden beyond 50 m. About 6x smaller files.
 
 ## Numbers
 
-### File size per character (light = web edition, full = desktop edition)
+### File size per character
 
-| Character | Main cast (2048 skin) | Original MB | Web edition MB | Desktop edition MB |
-|---|---|---|---|---|
-| brother | yes | 7.3 | 1.31 | 4.2 |
-| dada | yes | 8.1 | 1.26 | 5.3 |
-| dadi | yes | 7.0 | 1.22 | 4.5 |
-| maa | yes | 7.9 | 1.22 | 4.7 |
-| parlour_didi | no (1024) | 8.5 | 1.08 | 4.2 |
-| pitaji | yes | 7.7 | 1.30 | 4.6 |
-| postman | yes | 7.5 | 1.16 | 4.4 |
-| sarpanch | yes | 7.6 | 1.14 | 4.4 |
-| sister | no (1024) | 7.5 | 0.98 | 4.3 |
-| teacher | yes | 6.4 | 0.99 | 3.5 |
-| **All 10** | | **75.6** | **11.7** | **44.0** |
+| Character | Original MB | Full quality (default) MB | Web version MB (skin size) |
+|---|---|---|---|
+| brother | 7.3 | 4.8 | 1.31 (2048) |
+| dada | 8.1 | 5.7 | 1.26 (2048) |
+| dadi | 7.0 | 4.9 | 1.22 (2048) |
+| maa | 7.9 | 5.2 | 1.22 (2048) |
+| parlour_didi | 8.5 | 4.8 | 1.08 (1024) |
+| pitaji | 7.7 | 5.0 | 1.30 (2048) |
+| postman | 7.5 | 4.8 | 1.16 (2048) |
+| sarpanch | 7.6 | 4.9 | 1.14 (2048) |
+| sister | 7.5 | 4.7 | 0.98 (1024) |
+| teacher | 6.4 | 3.9 | 0.99 (2048) |
+| **All 10** | **75.6** | **48.7** | **11.7** |
 
-- Every web file is under its budget (1.5 MB; main cast 2.5 MB). Even the main cast at 2048 stays under 1.5 MB.
-- The slim step takes ~1.2 s per character the first time (~12 s for 10, ~50 s for 40) and 0.1 s when nothing changed (it remembers finished files).
+- Full quality: skins untouched, animation stored exactly, shading kept at full precision.
+- Web version: every file under its budget (1.5 MB; main cast 2.5 MB).
+- The packing takes ~0.7 s per character the first time (~7 s for 10, ~30 s for 40) and 0.2 s when nothing changed (it remembers finished files).
 
-### The slim files move exactly like the originals (`node tools/char-verify.mjs`)
+### The packed files move exactly like the originals (`node tools/char-verify.mjs`)
 
-Measured on every clip, at 12 moments each, with the game's own three.js loader:
+Measured on every clip, at 12 moments each, with the game's own three.js loader.
+
+- **Full quality (default): bones differ by 0 mm in every clip of every character; body outline within 0.04-0.37 mm; blink and smile the same.** (docs/s7/characters/verify-full.json)
+- Web version (table below, docs/s7/characters/verify-light.json):
 
 | Character | Clips | Bones | Bones differ by | Body outline differs by | Blink |
 |---|---|---|---|---|---|
@@ -71,13 +76,13 @@ LOD_RESULTS
 
 SHOTS_LIST
 
-## Desktop edition switch
+## Edition switch (full = default now, light = web later)
 
-- Slimming: `CHAR_PROFILE=full node tools/char-diet.mjs` (or `--profile full`). Keeps the original skins, only packs shape and animation (44 MB for the 10 instead of 75.6). Default is `light` (web).
+- Packing: `node tools/char-diet.mjs` = full (default). Web version: `CHAR_PROFILE=light node tools/char-diet.mjs` (or `--profile light`).
 - Tiers: one table, `LOD_PROFILES` in `src/characterLOD.js`.
-  - light: fully animated within 25 m, max 12; reduced 25-50 m; hidden beyond 50 m; load within 55 m
-  - full: fully animated within 40 m, max 24; reduced 40-90 m (20 times a second); hidden beyond 90 m; load within 95 m
-  - main.js passes the edition: `initCharacterLOD({ camera, assetSlots, profile })`. For testing, `?charprofile=full` in the address.
+  - full (default): fully animated within 40 m, max 24; reduced 40-90 m (20 times a second); hidden beyond 90 m; load within 95 m
+  - light: fully animated within 25 m, max 12; reduced 25-50 m (12 times a second); hidden beyond 50 m; load within 55 m
+  - main.js passes the edition: `initCharacterLOD({ camera, assetSlots, profile })` (no profile = full). For testing, `?charprofile=light` in the address. `?charlod=0` turns the tiers off.
 
 ## Tripo characters: file and first commit (for the licence check)
 
@@ -98,21 +103,21 @@ Command for later ones: `git log --diff-filter=A --follow --format='%ad %h' --da
 
 ## Wiring needed (integrator)
 
-1. **package.json scripts** (the slim step runs right after `vite build`, BEFORE the budget check, so the check sees the slim files):
+1. **package.json scripts** (the packing step runs right after `vite build`, BEFORE the budget check, so the check sees the packed files):
    - `"build:unchecked": "vite build && node tools/char-diet.mjs && node tools/check-budget.js"` (perf branch currently has `vite build && node tools/check-budget.js`)
    - `"build"`: insert ` && node tools/char-diet.mjs` right after `vite build` (before world-validator / check-budget)
-   - desktop build: `CHAR_PROFILE=full node tools/char-diet.mjs` after its `vite build` (or `node tools/char-diet.mjs --profile full`)
+   - desktop/full build: plain `node tools/char-diet.mjs` (full is the default). The later web build: `CHAR_PROFILE=light node tools/char-diet.mjs`
    - optional: `"char-diet": "node tools/char-diet.mjs"`, `"char-verify": "node tools/char-verify.mjs"`
    - No new packages: `@gltf-transform/*`, `meshoptimizer`, `sharp` are already devDependencies.
-2. **Budget check (perf agent)**: the per-character limit (1.5 MB / 2.5 MB) must be measured on `dist/assets/models/` after the slim step, not on `public/`. The originals in `public/` stay 6-9 MB each.
-3. **Edition**: when `src/edition.js` exists, change the one init line in my main.js block to `initCharacterLOD({ camera, assetSlots, profile: getQuality() })` (plus its import; `getQuality()` must return `'light'` or `'full'`).
-4. deploy.yml: nothing required (the slim step takes ~12 s now, ~50 s at 40 characters, well inside 15 min). Optional speed-up: cache `node_modules/.cache/char-diet` between runs.
+2. **Budget check (perf agent)**: the per-character limit (1.5 MB / 2.5 MB) is a web-version budget: measure it on `dist/assets/models/` after `CHAR_PROFILE=light` packing, not on `public/`, and not on the full build (full characters are 4-6 MB each on purpose).
+3. **Edition**: when `src/edition.js` exists, change the one init line in my main.js block to `initCharacterLOD({ camera, assetSlots, profile: getQuality() })` (plus its import; `getQuality()` returns `'light'` or `'full'`). Until then the game uses full.
+4. deploy.yml: nothing required (the packing step takes ~7-12 s now, under a minute at 40 characters, well inside 15 min). Optional speed-up: cache `node_modules/.cache/char-diet` between runs.
 
 ## Risks and notes
 
-- **public/ budget**: the originals stay in git at 6-9 MB each. At 30-40 characters that is 200-300 MB in `public/`, far over the 90 MB "whole public/" budget, even though players only download the slim copies. Needs a decision: either count characters from `dist/` for that budget, or keep the originals outside `public/` (the Tripo chat would then push somewhere else).
-- **Dev server** (`npm run dev`) still serves the full-size originals; only built games are slim.
-- A new character wired by some other route than gather / NPC slots / side-job `<key>#<n>` slots must have its file name added to `CHARACTER_FILES` in `src/characterLOD.js`, or it still loads at boot (it still gets slimmed and tiered).
+- **public/ budget**: the originals stay in git at 6-9 MB each. At 30-40 characters that is 200-300 MB in `public/`, far over the 90 MB "whole public/" budget, even though players only download the packed copies. Needs a decision: either count characters from `dist/` for that budget, or keep the originals outside `public/` (the Tripo chat would then push somewhere else).
+- **Dev server** (`npm run dev`) still serves the full-size originals; only built games are packed.
+- A new character wired by some other route than gather / NPC slots / side-job `<key>#<n>` slots must have its file name added to `CHARACTER_FILES` in `src/characterLOD.js`, or it still loads at boot (it still gets packed and tiered).
 - Every character shares the same 65-bone skeleton naming (mixamorig*), so clips and bone lookups match across the cast; no mismatches found. Clip sets differ per person on purpose (e.g. only kids have `run`).
 - Characters the camera has not come near stay as the old simple figures; on a phone, walking fast into a crowd, there can be a moment of the simple figure before the real one appears (nearest load first keeps this short).
 - Off-screen characters keep their pose frozen; one walking behind you slides with a still pose for a moment if you spin round fast (the frustum margin is 1 m around the body).
