@@ -84,7 +84,7 @@ async function run(mode, browser) {
   return { mode, bootS, errors, ...info };
 }
 
-const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox', '--disable-dev-shm-usage'] });
+const browser = await chromium.launch({ headless: true, args: (process.env.GLARGS || '--use-gl=swiftshader --enable-unsafe-swiftshader --disable-dev-shm-usage').split(' ') });
 const out = {};
 let failures = 0;
 try {
