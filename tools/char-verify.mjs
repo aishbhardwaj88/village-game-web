@@ -24,7 +24,7 @@ const ORIG = resolve(ROOT, get('--orig', 'public/assets/models'));
 const SLIM = resolve(ROOT, get('--slim', 'dist/assets/models'));
 
 /** GLB -> ArrayBuffer with images/textures removed from the JSON (BIN chunk untouched). */
-function noTextures(buf) {
+export function noTextures(buf) {
   const jsonLen = buf.readUInt32LE(12);
   const j = JSON.parse(buf.subarray(20, 20 + jsonLen).toString('utf8'));
   delete j.images; delete j.textures; delete j.samplers;
@@ -82,6 +82,9 @@ function morphStats(root, name) {
   return { moved, max, sum };
 }
 
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) await runAll();
+async function runAll() {
 const files = readdirSync(ORIG).filter((f) => f.endsWith('.glb')).map((f) => join(ORIG, f)).filter(isRiggedGlb);
 const results = [];
 let fail = 0;
@@ -131,3 +134,4 @@ for (const f of files) {
 if (get('--json', null)) writeFileSync(resolve(ROOT, get('--json')), JSON.stringify(results, null, 2));
 console.log(fail ? `char-verify: ${fail} problem(s)` : `char-verify: all ${results.length} characters match`);
 process.exit(fail ? 1 : 0);
+}
