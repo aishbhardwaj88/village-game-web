@@ -90,16 +90,14 @@ function table() {
   // as it is under ?layout=old). New: on the open ground behind the house, next to the wheat sack pile (M3 loads the trolley
   // there; M7 drives out from there), the bullock cart beside it, the spare cycle at the gate.
   T.vehicles = () => ({
-    tractor: { x: 643.7, z: 33.8, yaw: Math.PI }, // trolley rests 4.6 m north of it (643.7, 29.2): box found clear by tools/missions-check.mjs
+    tractor: { x: 643.7, z: 31.0, yaw: 0 }, // trolley rests 4.6 m south of it (643.7, 35.6); clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
     cart: { ...nearCart(), yaw: Math.PI },
     bike: { ...house(3.2, 9.0), yaw: ANCHORS.house.ry + Math.PI / 2 },
   });
   // ---- free roam: Dadi (pump, chakki and every Dadi job). Old (-43.3, 41.8) was off the village. New: just outside the
   // house gate, facing out, where the bullock cart and the buckets are brought to her.
   T.dadi = () => ({ ...house(-2.6, 8.7), yaw: ANCHORS.house.ry });
-  // ---- the petrol pump attendant stood by the old highway strip's pump island; that strip is not on the approved map
-  // (the canal green is there now) and the new petrol pump yard is a whole model with no free spot known: not placed.
-  T.pump_attendant = () => null;
+  // (the petrol pump attendant is moved to the new petrol pump by src/layout/layout-wiring-entry.js, not here)
   // ---- side job 7 (pump): "the pump at the chowk" = the hand pump on the square (map object), worked from its front.
   T.pump_job = () => {
     const sq = ANCHORS.chowk;
@@ -179,6 +177,24 @@ export function spot(name, oldValue) {
 /** Vehicle spawn points { bike, tractor, cart: { x, z, yaw } } (src/vehicles.js). Old values exactly as before. */
 export function vehicleSpawns() {
   return spot('vehicles', { bike: { x: -48, z: 28, yaw: 0 }, tractor: { x: -45, z: 26, yaw: Math.PI }, cart: { x: -36, z: 50, yaw: Math.PI * 0.5 } });
+}
+
+/**
+ * True when (x, z) is inside (or within `pad` m of) one of the approved map's own solids: a new house, shop, kiosk, cart,
+ * well, pump... (the places that kept their old model are not counted). Always false under the old layout.
+ */
+let SOLIDS = null;
+export function inMapSolid(x, z, pad = 0.2) {
+  if (!NEW) return false;
+  if (!SOLIDS) SOLIDS = getObjects('solids').filter((o) => o.rect && (o.h || 0) >= 0.5 && o.prefix !== 'canal_new').map((o) => o.rect);
+  for (const r of SOLIDS) {
+    const dx = x - r.cx, dz = z - r.cz;
+    if (Math.abs(dx) > r.w + r.d || Math.abs(dz) > r.w + r.d) continue;
+    const c = Math.cos(r.ry), s = Math.sin(r.ry);
+    const lx = dx * c - dz * s, lz = dx * s + dz * c; // into the rect's own frame (rotation.y = ry)
+    if (Math.abs(lx) <= r.w / 2 + pad && Math.abs(lz) <= r.d / 2 + pad) return true;
+  }
+  return false;
 }
 
 /** Where the mission checker expects the M7 baagh to be (null under the old layout). */

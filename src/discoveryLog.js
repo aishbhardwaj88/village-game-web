@@ -3,6 +3,7 @@
 // sounds that the AudioEngine does not already have. No meshes, no draw calls, no colliders.
 import * as THREE from 'three';
 import { registerInteraction } from './interactions.js';
+import { inMapSolid } from './missionsLayout.js'; // S7 (missions)
 
 const KEY = 'dopahar_discoveries_v1';
 const ALL = new Set(); // every discovery id registered this session (the denominator)
@@ -17,6 +18,9 @@ export const discoveryCount = () => ({ found: [...found].filter((id) => ALL.has(
  * `lines(ctx, n)` returns the dialogue lines for the n-th press (0-based), `sound(audio, n)` is optional.
  */
 export function registerDiscovery({ id, x, z, radius = 2.4, label, lines, sound, priority = 0.3, available }) {
+  // S7 (missions): under ?layout=new a find whose spot now lies inside one of the approved map's new houses or shops is left
+  // out (its object was placed for the old village; it cannot be reached and is not counted). ?layout=old: always registered.
+  if (inMapSolid(x, z)) return;
   ALL.add(id);
   let n = 0;
   registerInteraction({

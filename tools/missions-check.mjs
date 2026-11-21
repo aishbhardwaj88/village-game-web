@@ -93,9 +93,10 @@ async function collect(mode) {
   add({ id: 'ration shop buy', group: 'shops', kind: 'interact', owner: 'ration', r: 2.2, pts: [localPt('ration', 0, 3.0)] });
   add({ id: 'postmaster', group: 'shops', kind: 'npc', owner: 'post', yaw: ANCHORS.post.ry + Math.PI, inside: true, pts: [localPt('post', 0, 0.2)] });
   add({ id: 'miller', group: 'shops', kind: 'npc', owner: 'chakki', yaw: ANCHORS.chakki.ry + Math.PI, inside: true, pts: [localPt('chakki', 0.6, 0.4)] });
-  const PUMP_ATT = sp('pump_attendant', { x: 189.4 + OLD_SHIFT.x, z: 6.4 });
-  if (PUMP_ATT) add({ id: 'petrol pump attendant', group: 'ambient', kind: 'npc', near: { place: 'yard_petrol', max: 25 }, yaw: Math.PI / 2, pts: [PUMP_ATT] });
-  else out.push({ id: 'petrol pump attendant', note: 'petrol pump attendant not placed (his highway strip is not on this map)' });
+  // the pump attendant: main.js puts him by the old highway strip; under new src/layout/layout-wiring-entry.js moves him to
+  // the moved petrol pump yard, local (6, 9), facing ry - 90 deg (mirrored here)
+  const PUMP_ATT = mode === 'new' ? localPt('yard_petrol', 6, 9) : { x: 189.4 + OLD_SHIFT.x, z: 6.4 };
+  add({ id: 'petrol pump attendant', group: 'ambient', kind: 'npc', owner: mode === 'new' ? 'yard_petrol' : undefined, inside: mode === 'new' || undefined, norigid: true, near: { place: 'yard_petrol', max: 25 }, yaw: mode === 'new' ? ANCHORS.yard_petrol.ry - Math.PI / 2 : Math.PI / 2, pts: [PUMP_ATT] });
   // the bazaar counters (darzi = M5, kirana = M3 above, sabzi / bangle / the rest = shop buys)
   bazaar.BAZAAR_UNITS.forEach((u, idx) => {
     if (u.trade === 'kirana') return;
@@ -141,11 +142,15 @@ async function collect(mode) {
   const fakeScene = { add() {}, remove() {} };
   try { (await import('../src/interactionsExtra.js')).createInteractionsExtra(fakeScene, fakeCtx); } catch (e) { out.push({ id: 'ERR interactionsExtra', error: e.message }); }
   try { (await import('../src/interactionsVillage.js')).createInteractionsVillage(fakeScene, fakeCtx); } catch (e) { out.push({ id: 'ERR interactionsVillage', error: e.message }); }
+  for (const [file, fn, args] of [['nostalgiaDiscoveries', 'createNostalgiaDiscoveries', []], ['wallStories', 'createWallStories', []], ['oddityDiscoveries', 'createOddityDiscoveries', []], ['villageFurniture3', 'createVillageFurniture3', [fakeScene]], ['roadEvents', 'createRoadEvents', [fakeScene]]]) {
+    try { (await import(`../src/${file}.js`))[fn](...args); } catch (e) { out.push({ id: `ERR ${file}`, error: e.message }); }
+  }
   const OWN = { maa: 'house', halwai: 'halwai', school_bell: 'school', teacher: 'school', charpai: 'halwai', house_charpai: 'house', hand_pump: 'house', tulsi: 'house', blackboard: 'school', school_bench: 'school', pitaji: 'house', sack_pile: 'house', kirana: 'bazaar', kulhad_chai: 'teastall', chaupal_radio: 'yard_chaupal', feed_gaushala_cow: 'gaushala', kite_pickup: 'maidan', temple_bell: 'temple', jhoola_swing: '*' };
   const seen = new Set(out.map((e) => e.id));
   for (const ip of inter.INTERACTION_POINTS) {
     if (!ip.position || (ip.position.x === 0 && ip.position.z === 0)) continue; // live-linked (postman, monkey)
-    const owner = OWN[ip.id];
+    let owner = OWN[ip.id];
+    if (!owner && /^find_|^panchayat_notices$/.test(ip.id)) owner = 'byContainment'; // a find belongs to the place it stands in
     const id = `interaction ${ip.id}`;
     if (seen.has(id)) continue;
     add({ id, group: 'interactions', kind: 'interact', owner: owner === '*' ? undefined : owner, inside: ['house_charpai', 'blackboard', 'school_bench', 'charpai', 'hand_pump', 'tulsi'].includes(ip.id) || undefined, r: ip.radius || 2.2, pts: [P(ip.position)], faith: ip.id === 'temple_bell' || undefined });
@@ -191,6 +196,11 @@ async function collect(mode) {
   for (const l of loops) add({ id: `job route ${l.name}`, group: `job:${jobOf(l.name)}`, kind: 'route', mode: 'cycle', pts: l.pts });
   for (const [id, j] of Object.entries(jobs.JOBS)) add({ id: `notebook marker ${id}`, group: `job:${id}`, kind: 'marker', pts: [{ x: j.x, z: j.z }] });
   if (JP && JP.jobPoints) for (const e of JP.jobPoints()) add(e);
+  // whole job grounds, not just their centres: the khet gate (walls 17.2 m along x, the yard 9.2 m north, a 14 m run-up south)
+  // and the kanche ring + stapu grid (x -1.2..+4.2, z -1.2..+2.6 round its centre)
+  { const G = (await import('../src/jobs/gate.js')).GATE || { x: 30, z: 40 }; // (older code did not export it) add({ id: 'job gate: walls, yard and run-up', group: 'job:gate', kind: 'vehicle', box: [8.9, 12.2], yaw: 0, pts: [{ x: G.x, z: G.z + 1.8 }] });
+    add({ id: 'job gate: run-up (tractor)', group: 'job:gate', kind: 'waypoint', r: 4, mode: 'tractor', pts: [{ x: G.x, z: G.z + 6 }] }); }
+  { const K = (await import('../src/jobs/kanche.js')).CENTRE || { x: -46, z: 12 }; add({ id: 'job kanche ground', group: 'job:kanche', kind: 'vehicle', box: [2.9, 2.0], yaw: Math.PI / 2, pts: [{ x: K.x + 1.5, z: K.z + 0.7 }] }); }
 
   // milk round stops (new layout: the five new-map houses nearest the doodhwala, exactly as src/jobs/milk.js picks them)
   if (mode === 'new') {
@@ -239,6 +249,9 @@ async function main() {
   const OLD = run('old'), NEW = run('new');
   for (const e of [...OLD.entries, ...NEW.entries]) if (e.error) console.log(`COLLECT ERROR ${e.id}: ${e.error}`);
   for (const e of NEW.entries) if (e.note) console.log(`NOTE ${e.note}`);
+  { const newIds = new Set(NEW.entries.map((e) => e.id));
+    const gone = OLD.entries.filter((e) => e.pts && !newIds.has(e.id)).map((e) => e.id);
+    if (gone.length) console.log(`NOTE left out under ?layout=new (their old object or wall is not on the approved map): ${gone.join(', ')}`); }
   const oldById = new Map(OLD.entries.filter((e) => e.pts).map((e) => [e.id, e]));
 
   globalThis.__DOPAHAR_LAYOUT = 'new';
@@ -248,6 +261,7 @@ async function main() {
   const { EXISTING_FOOTPRINTS } = await import('../src/layout/footprints.js');
   const { ANCHORS } = await import('../src/anchors.js');
   const W = buildWorld(L, core, EXISTING_FOOTPRINTS, ANCHORS);
+  const FPK = new Set(Object.keys(EXISTING_FOOTPRINTS));
 
   const results = [];
   const res = (e, test, status, msg) => results.push({ id: e.id, group: e.group, test, status, msg });
@@ -262,11 +276,12 @@ async function main() {
       res(e, 'near', ok ? 'PASS' : 'FAIL', ok ? `marker ${at(p)} inside the village` : `marker ${at(p)} is off the map`);
       continue;
     }
+    if (e.owner === 'byContainment') { const h = W.solidAt(e.pts[0].x, e.pts[0].z, 0, null, { trees: false }); e.owner = h && FPK.has(h.owner) ? h.owner : undefined; if (e.owner) e.inside = true; }
     const own = e.owner && W.ownerQuads(e.owner);
     { const off = e.pts.find((p) => !(p.x > W.bx0 && p.x < W.bx1 && p.z > W.bz0 && p.z < W.bz1));
       if (off) { res(e, 'onmap', 'FAIL', `${at(off)} is off the village map (600 m west: the 1 Nov shift)`); continue; } }
     // ---- rigid: a point of a place moves and turns with that place
-    if (e.owner) {
+    if (e.owner && !e.norigid) {
       const o = oldById.get(e.id);
       if (o && o.pts.length === e.pts.length) {
         let worst = 0;

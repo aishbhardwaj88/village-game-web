@@ -528,7 +528,7 @@ async function main() {
   scene.add(millerNpc);
 
   // Petrol pump attendant beside the east pump island (capsule stand-in until the 3D people arrive)
-  { const pa = spot('pump_attendant', { x: 189.4 + OLD_SHIFT.x, z: 6.4 }); if (pa) scene.add(createNPC(0x4a6a8a, pa, Math.PI / 2, 'npc_pump_attendant')); } // S7 WIRING (missions): his highway strip is not on the approved map
+  scene.add(createNPC(0x4a6a8a, { x: 189.4 + OLD_SHIFT.x, z: 6.4 }, Math.PI / 2, 'npc_pump_attendant'));
 
   // Shop interactions (this task) — the shared "buy", at each shop's own open
   // counter side. The general store's is also errand 3's purchase step (see

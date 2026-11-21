@@ -9,7 +9,7 @@ import { buildGatePillars, gateColliders, part, mergeProp } from './props.js';
  * yard behind it. Timed, best time saved (notebook records); generous tolerance (the gap is wider than the trolley by 1 m) and
  * it never fails — bumping a pillar just costs seconds. Reward: Pitaji's praise + money (more for a fast run).
  */
-const GATE = spot('gate', { x: 30, z: 40 }); // S7 (missions): on a field by the house under ?layout=new
+export const GATE = spot('gate', { x: 30, z: 40 }); // S7 (missions): on a field by the house under ?layout=new
 const PITAJI_AT = isNewLayout() ? PITAJI_POSITION : { x: -48, z: 31 }; // where the run ends: Pitaji
 const GAP = 4.0;
 const YARD_Z0 = GATE.z - 9; // the target zone, north of the gate
