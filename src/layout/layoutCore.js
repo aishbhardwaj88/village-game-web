@@ -233,7 +233,11 @@ export function frontEdge(corners, front) {
  * Does the front face a road? From 9 points along the front edge walk straight out (0.25 m steps, up to `reach` m) until a
  * carriageway starts. Returns { gap (shortest walk), road, par (deg between the front edge and that road), ux, uz } or null.
  */
+const quadBBox = (c, pad) => [Math.min(c[0][0], c[1][0], c[2][0], c[3][0]) - pad, Math.min(c[0][1], c[1][1], c[2][1], c[3][1]) - pad, Math.max(c[0][0], c[1][0], c[2][0], c[3][0]) + pad, Math.max(c[0][1], c[1][1], c[2][1], c[3][1]) + pad];
+const roadsNear = (roads, bb) => roads.filter((r) => !(r.bbox[2] < bb[0] || r.bbox[0] > bb[2] || r.bbox[3] < bb[1] || r.bbox[1] > bb[3]));
 export function frontProbe(roads, corners, front, reach = 30) {
+  roads = roadsNear(roads, quadBBox(corners, reach + 1));
+  if (!roads.length) return null;
   const e = frontEdge(corners, front);
   const ex = e.c[0] - e.a[0], ez = e.c[1] - e.a[1], L = Math.hypot(ex, ez) || 1;
   let nx = -ez / L, nz = ex / L;
@@ -251,14 +255,17 @@ export function frontProbe(roads, corners, front, reach = 30) {
   return best;
 }
 /** Deepest a quad reaches into any carriageway (0 = clear), sampled every 0.5 m. */
-export function roadDepth(roads, corners, tol = 0.1) {
+export function roadDepth(roads, corners, tol = 0.1, step = 0.5) {
+  roads = roadsNear(roads, quadBBox(corners, 1));
+  if (!roads.length) return null;
   const [p0, p1, , p3] = corners;
   const ux = p1[0] - p0[0], uz = p1[1] - p0[1], vx = p3[0] - p0[0], vz = p3[1] - p0[1];
-  const nu = Math.max(1, Math.ceil(Math.hypot(ux, uz) / 0.5)), nv = Math.max(1, Math.ceil(Math.hypot(vx, vz) / 0.5));
+  const nu = Math.max(1, Math.ceil(Math.hypot(ux, uz) / step)), nv = Math.max(1, Math.ceil(Math.hypot(vx, vz) / step));
   let worst = null;
   for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
-    const h = roadUnder(roads, p0[0] + ux * i / nu + vx * j / nv, p0[1] + uz * i / nu + vz * j / nv, tol);
-    if (h && (!worst || h.pen > worst.pen)) worst = { pen: h.pen, road: h.r };
+    const x = p0[0] + ux * i / nu + vx * j / nv, z = p0[1] + uz * i / nu + vz * j / nv;
+    const h = roadUnder(roads, x, z, tol);
+    if (h && (!worst || h.pen > worst.pen)) worst = { pen: h.pen, road: h.r, x, z };
   }
   return worst;
 }

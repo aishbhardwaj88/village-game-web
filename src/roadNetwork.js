@@ -18,6 +18,8 @@
  */
 import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2 } from './materials.js';
+import { isNewLayout } from './layout/layout.js';
+const NEW_LAYOUT = isNewLayout();
 
 /** Per-kind look: tint (multiplies the dirt texture), edge wander amplitude (m), edge band width (m), nali, ruts. */
 export const ROAD_KINDS = {
@@ -193,6 +195,9 @@ function sample(net, x, z, out) {
   out.a = a;
   out.r = r; out.g = g; out.b = b;
   out.y = 0.032 + lift + bump * vnoise(x / 2.3 + 11, z / 2.3) - 0.022 * t - 0.045 * drain * inside - (rut > 0 ? 0.012 * rut * inside : 0);
+  // S7 (?layout=new): the painted fields lie at y 0.016 (shops-land); the road surface, its edge band and its nali groove never
+  // dip under 0.02, so a road always draws over a field it touches. ?layout=old unchanged.
+  if (NEW_LAYOUT && out.y < 0.02) out.y = 0.02;
   return out;
 }
 

@@ -1,4 +1,5 @@
 import { pt, OLD_SHIFT } from './anchors.js';
+import { layoutTurnDeg, isNewLayout } from './layout/layout.js'; // S7 layout
 import { MAP_SHIFT } from './mapPlan.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -30,7 +31,7 @@ export const BAZAAR_ROW_CZ = pt('bazaar').z; // row centreline z; shopfronts ope
 export const BAZAAR_FRONT_Z = BAZAAR_ROW_CZ - BAZAAR_UNIT_D / 2; // open face
 // Map turn (4.8 deg): the row is BUILT square to the grid in the coordinates below, then turned about the bazaar anchor as one piece
 // (src/turn.js; the bazaar group in src/main.js). Anything placed by row coordinates (shop stands, NPC beats, greenery) goes through bazaarXZ().
-export const BAZAAR_TURN_DEG = 4.8;
+export const BAZAAR_TURN_DEG = layoutTurnDeg('bazaar', 4.8); // S7: ?layout=new turns the row to face the bazaar street (4.8 under old)
 export const BAZAAR_YAW = -BAZAAR_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned row
 export function bazaarXZ(x, z) { const a = pt('bazaar'); return turnXZ(a.x, a.z, BAZAAR_TURN_DEG, x, z); }
 export function turnBazaarGroup(group) { const a = pt('bazaar'); return applyTurn(group, a.x, a.z, BAZAAR_TURN_DEG); }
@@ -452,7 +453,8 @@ export async function buildBazaarSignboards() {
   });
   // Item 2a — the chowk tea stall's board, sharing this same atlas/mesh (was its
   // own separate buildTeaStallChowkSign() mesh/draw call).
-  {
+  // S7: under ?layout=new there is no chowk tea stall (the approved map puts the TV house on its spot), so no board either.
+  if (!isNewLayout()) {
     const chowkGeo = new THREE.BoxGeometry(CHOWK_TEA.w - 1.2, (CHOWK_TEA.w - 1.2) / 4, 0.04);
     mapFrontFaceToAtlasCell(chowkGeo, CHOWK_SIGN_CELL_INDEX % SIGN_ATLAS_COLS, Math.floor(CHOWK_SIGN_CELL_INDEX / SIGN_ATLAS_COLS));
     const chowkWorld = chowkWorldMatrix();

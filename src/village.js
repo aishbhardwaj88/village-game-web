@@ -1,4 +1,5 @@
 import { pt } from './anchors.js';
+import { layoutTurnDeg } from './layout/layout.js'; // S7 layout
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { texturedBox, texturedWall, texturedThickBox, texturedWallBox, texturedFloor, getTiledMaterial, bakeFlatTintColors, ensureUv2 } from './materials.js';
@@ -21,7 +22,7 @@ const HALWAI_CENTER = pt('halwai');
 // Map turn -11.2 deg (1 Nov plan): the school is built square about SCHOOL_CENTER, then the whole group (classroom, props, colliders,
 // the Blender model via its slot) turns as ONE piece about the centre (src/turn.js). Anything keyed to the school's square layout
 // (bell, teacher, blackboard, bench, signboard, routes, trees) goes through schoolXZ(); schoolInverseXZ() is the other way.
-export const SCHOOL_TURN_DEG = 11.2;
+export const SCHOOL_TURN_DEG = layoutTurnDeg('school', 11.2); // S7: the approved map keeps the school untouched, so this stays 11.2
 export const SCHOOL_YAW = -SCHOOL_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned school
 /** Where a point of the square school layout lands once the school is turned. */
 export function schoolXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CENTER.z, SCHOOL_TURN_DEG, x, z); }
@@ -31,7 +32,7 @@ export function schoolInverseXZ(x, z) { return turnXZ(SCHOOL_CENTER.x, SCHOOL_CE
 // Map turn 5 deg (1 Nov plan): the hero house is built square about HOUSE_CENTER, then the whole group (walls, courtyard, stairs,
 // roof, props, colliders, the Blender model via its slot) turns as ONE piece. Anything keyed to the house's square layout (stairs,
 // roof, family, courtyard props, routes, trees) goes through houseXZ(); houseInverseXZ() is the other way.
-export const HOUSE_TURN_DEG = 5;
+export const HOUSE_TURN_DEG = layoutTurnDeg('house', 5); // S7: ?layout=new turns the house to its approved front (5 under old)
 export const HOUSE_YAW = -HOUSE_TURN_DEG * Math.PI / 180; // three.js rotation.y of the turned house
 /** Where a point of the square house layout lands once the house is turned. */
 export function houseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTER.z, HOUSE_TURN_DEG, x, z); }
@@ -40,7 +41,7 @@ export function houseInverseXZ(x, z) { return turnXZ(HOUSE_CENTER.x, HOUSE_CENTE
 
 // Map turn 95 deg (1 Nov plan): the halwai is built square about HALWAI_CENTER, then the shop group, its Blender model, goods, board,
 // fire and the halwai himself turn as ONE piece. Anything keyed to the square layout goes through halwaiXZ().
-export const HALWAI_TURN_DEG = 95;
+export const HALWAI_TURN_DEG = layoutTurnDeg('halwai', 95); // S7: ?layout=new turns the halwai to face the roundabout (95 under old)
 export const HALWAI_YAW = -HALWAI_TURN_DEG * Math.PI / 180;
 /** Where a point of the square halwai layout lands once the shop is turned. */
 export function halwaiXZ(x, z) { return turnXZ(HALWAI_CENTER.x, HALWAI_CENTER.z, HALWAI_TURN_DEG, x, z); }

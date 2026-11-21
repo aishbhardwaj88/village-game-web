@@ -50,7 +50,7 @@ export function getLayout() {
   if (!LAYOUT) {
     const places = {};
     for (const p of MAP_DATA.places) places[p.id] = p;
-    LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips };
+    LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips, galiShifts: MAP_DATA.galiShifts || [] };
   }
   return LAYOUT;
 }
@@ -136,5 +136,14 @@ export function movedWith(id, x, z) {
 export const movedYaw = (id, yaw) => yaw + placeTurn(id);
 /** True when the approved map keeps this anchor exactly as today. */
 export const isUntouched = (id) => UNTOUCHED.has(id);
+/**
+ * The footprint to BUILD an object on, in the shape the kits use ({ x, z, ry, width, depth }): the snapped rectangle
+ * (o.rect: turned square to its road, moved off roads and neighbours, see docs/s7/layout.md "road snap"), or null for
+ * objects that are not a 4-corner footprint. Use this instead of re-deriving a rectangle from o.rings[0].
+ */
+export function footprintOf(o) {
+  const r = o && o.rect;
+  return r ? { x: r.cx, z: r.cz, ry: r.ry, width: r.w, depth: r.d, front: r.front } : null;
+}
 /** The old (today's) anchor of a place, whatever the layout. */
 export const oldAnchor = (id) => (OLD[id] ? { ...OLD[id] } : null);

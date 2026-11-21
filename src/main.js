@@ -206,7 +206,7 @@ import { createQuestState, QUEST_STEPS, OBJECTIVE_TEXT } from './quest.js';
 import { createWaypointGlow, updateWaypoint } from './waypoint.js';
 import { applyQuality, loadSavedQuality, saveQuality, loadSavedVolume, saveVolume } from './quality.js';
 import { loadSavedGame, saveGame } from './save.js';
-import { initLayoutWiring } from './layout/layout-wiring-entry.js'; // S7 WIRING (layout): the approved map behind ?layout=new, docs/s7/layout.md
+import { initLayoutWiring } from './layout/layout-wiring-entry.js'; import { isNewLayout } from './layout/layout.js'; // S7 WIRING (layout): the approved map behind ?layout=new, docs/s7/layout.md
 import { setupPauseMenu } from './pause.js';
 import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
@@ -615,7 +615,7 @@ async function main() {
   // Chowk (item 4) — the second tea stall (Places V1/tea_stall_chowk/), a chabutra,
   // benches, a few plastic chairs, east of the bazaar row with open ground left
   // around it for future content.
-  bazaarGroup.add(buildTeaStallChowk());
+  if (!isNewLayout()) bazaarGroup.add(buildTeaStallChowk()); // S7 WIRING (layout): no chowk tea stall on the approved map (the TV house stands there)
   const chowkPlaza = buildChowkPlaza();
   applyTurn(chowkPlaza, CHOWK_PLAZA.x, CHOWK_PLAZA.z, CHOWK_TURN_DEG); // map turn 5 deg about the plaza centre
   bazaarGroup.add(chowkPlaza);
@@ -1131,7 +1131,7 @@ async function main() {
     // rotation as its code group) and the plaza dressing (exact slot at CHOWK_CENTER); code versions stay hidden.
     const chowkTeaOld = scene.getObjectByName('tea_stall_chowk');
     const chowkPlazaOld = scene.getObjectByName('chowk_plaza');
-    assetSlots.register('tea_stall_chowk', {
+    if (!isNewLayout()) assetSlots.register('tea_stall_chowk', { // S7 WIRING (layout): not built under ?layout=new
       exact: true,
       hide: chowkTeaOld ? [chowkTeaOld] : [],
       placements: [{ container: scene, position: new THREE.Vector3(CHOWK_TEA_POS.x, 0, CHOWK_TEA_POS.z), rotationY: CHOWK_TEA_ROT }],

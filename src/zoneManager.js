@@ -3,6 +3,7 @@ import { startStaticColliderRebuild, colliderRequests } from './collision.js';
 import { modelLoads } from './loaders.js';
 import { queueBusy, frameBudget } from './frameQueue.js';
 import { placeBatchPending } from './placeBatch.js';
+import { layoutMode } from './layout/layout.js';
 
 // In-flight loads (glb, textures, files) through three's default manager. Its counters are private and ui.js owns its
 // callbacks, so the item hooks are wrapped (counting only, behaviour unchanged).
@@ -60,14 +61,10 @@ const VIS_EXTRA = 80;
 // ---------------------------------------------------------------------------------------------
 // S7 (perf): which layout is running, and how far the world reaches in it.
 // ---------------------------------------------------------------------------------------------
-/** 'new' or 'old'. Reads window.__dopaharLayout if the layout loader set it (src/layout/*), else ?layout=, else 'old'.
- *  When the integrator flips the default to new, only the last fallback here changes. */
+/** 'new' or 'old': the one answer of the layout loader (src/layout/layout.js layoutMode: window.__dopaharLayout, else ?layout=,
+ *  else its DEFAULT_LAYOUT), so flipping that one default flips the world bounds here too (S7 layout, 22 Nov). */
 export function currentLayout() {
-  if (typeof window === 'undefined') return 'old';
-  const g = window.__dopaharLayout;
-  if (g === 'new' || g === 'old') return g;
-  const q = new URLSearchParams(window.location.search).get('layout');
-  return q === 'new' ? 'new' : 'old';
+  return layoutMode();
 }
 
 /**
