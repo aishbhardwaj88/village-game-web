@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 import { buildPump, buildBucketParts, mergeProp } from './props.js';
 import { rhythmBar } from './minigames.js';
 
@@ -6,7 +7,11 @@ import { rhythmBar } from './minigames.js';
  * Job 7 — Hand pump for Dadi (docs/MISSIONS_PLAN.md): fill 3 buckets at the lane hand pump with a rhythm pump, carry them home
  * without spilling (sharp turns slosh water out), hand them to Dadi. Reward scales with the water left (never fails).
  */
+// S7 (missions): under ?layout=new "the pump at the chowk" is the approved map's hand pump on the square (its own model
+// stands there, so the job builds none) and the player works it from its front; ?layout=old exactly as before.
+const PJ = spot('pump_job', null);
 const PUMP_POS = new THREE.Vector3(-55.5, 0, 28);
+const PUMP_AT = PJ ? new THREE.Vector3(PJ.at.x, 0, PJ.at.z) : new THREE.Vector3(PUMP_POS.x, 0, PUMP_POS.z + 0.8);
 
 export function registerPumpJob(api, env) {
   const { quest } = api;
@@ -16,10 +21,12 @@ export function registerPumpJob(api, env) {
   let lastHeading = null;
 
   // The pump itself.
-  const pump = buildPump();
-  pump.position.copy(PUMP_POS);
-  pump.rotation.y = Math.PI / 2;
-  api.scene.add(pump);
+  if (!PJ) {
+    const pump = buildPump();
+    pump.position.copy(PUMP_POS);
+    pump.rotation.y = Math.PI / 2;
+    api.scene.add(pump);
+  }
 
   function bucketsMesh(n) {
     const parts = [];
@@ -77,7 +84,7 @@ export function registerPumpJob(api, env) {
 
   api.addInteraction({
     id: 'job_pump_pump',
-    position: new THREE.Vector3(PUMP_POS.x, 0, PUMP_POS.z + 0.8),
+    position: PUMP_AT,
     radius: 2.2,
     label: { hi: 'पंप चलाएँ', en: 'Work the hand pump' },
     available: () => st.stage === 'toPump',

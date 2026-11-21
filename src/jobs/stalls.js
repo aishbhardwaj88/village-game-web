@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { pt } from '../anchors.js';
 import { movedWith, movedYaw, oldAnchor } from '../layout/layout.js'; // S7 layout
 import { buildBantaCart, buildChaatThela } from './props.js';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 
 /**
  * Pocket money can be spent at the banta shop, the kulfiwala (src/jobs/kulfi.js) and the chaat thela (docs/MISSIONS_PLAN.md
@@ -79,6 +80,9 @@ const STALLS = [
  */
 function placeStall(s) {
   const sellerAt = { x: s.pos.x - 1.1, z: s.pos.z }, sellerYaw = Math.PI / 2;
+  // S7 (missions): the side-job chaat thela stood at (-62.8, 50.5), off the village. Under ?layout=new the chaat place's own thela
+  // is used: no second cart, the seller behind it and the buy point in front of it. ?layout=old: unchanged.
+  if (s.id === 'chaat') { const c = spot('chaat_stall', null); if (c) return { ...s, noCart: true, pos: c.sellerAt, buyAt: c.buyAt, sellerAt: c.sellerAt, sellerYaw: c.sellerYaw }; }
   if (!s.place) return { ...s, sellerAt, sellerYaw };
   const a = pt(s.place), o = oldAnchor(s.place) || a;
   const carry = (p) => movedWith(s.place, p.x - a.x + o.x, p.z - a.z + o.z);
@@ -88,10 +92,12 @@ function placeStall(s) {
 export function registerStalls(api, env) {
   for (const s0 of STALLS) {
     const s = placeStall(s0);
-    const cart = s.build();
-    cart.position.set(s.pos.x, 0, s.pos.z);
-    cart.rotation.y = s.rotY;
-    api.scene.add(cart);
+    if (!s.noCart) {
+      const cart = s.build();
+      cart.position.set(s.pos.x, 0, s.pos.z);
+      cart.rotation.y = s.rotY;
+      api.scene.add(cart);
+    }
     const seller = api.npc(s.role, s.sellerAt, s.sellerYaw, `npc_${s.id}_seller`);
     seller.root.position.y = 0;
     api.addInteraction({

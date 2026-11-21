@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
 import { buildKulfiCart } from './props.js';
 import { GOSSIP_TEXT } from './data.js';
 import { openMenu } from './stalls.js';
@@ -7,10 +8,10 @@ import { openMenu } from './stalls.js';
  * Job 3 — Kulfiwala (docs/MISSIONS_PLAN.md): his bell carries across the village (sound radar, louder as you near); find him, pick a
  * flavour. Reward: a treat + a line of gossip that reveals another side job. He pushes his cart round the lanes all afternoon.
  */
-const ROUTE = [
+const ROUTE = spot('kulfi_route', [ // S7 (missions): under ?layout=new the lanes by the house (ring road, kiosk lane)
   { x: -45, z: 62 }, { x: -45, z: 98 }, { x: -45, z: 62 }, { x: -58, z: 47 }, { x: -58, z: 24 }, { x: -58, z: 47 },
   { x: -30, z: 55 }, { x: -12, z: 55 }, { x: -30, z: 55 },
-];
+]);
 const FLAVOURS = [
   { en: 'Malai kulfi', hi: 'मलाई कुल्फी', price: 10, line: { en: 'Creamy malai kulfi on a stick, so cold it makes your teeth ring.', hi: 'डंडी पर मलाई कुल्फी, इतनी ठंडी कि दाँत बज उठें।' } },
   { en: 'Mango kulfi', hi: 'आम की कुल्फी', price: 12, line: { en: 'Mango kulfi — the whole baagh in one bite.', hi: 'आम की कुल्फी — पूरा बाग एक निवाले में।' } },

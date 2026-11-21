@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { vehicleSpawns } from './missionsLayout.js'; // S7 (missions)
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildBovineGeometry, createHideMaterial } from './animals.js';
@@ -1228,7 +1229,8 @@ if (typeof window !== 'undefined') window.__vehicleGround = { list: () => [...GR
 export function spawnVehicles(scene) {
   const vehicles = [];
 
-  const bike = new Vehicle('bike', new THREE.Vector3(-48, 0, 28), 0);
+  const SP = vehicleSpawns(); // S7 (missions): the approved map's spots under ?layout=new; exactly the old numbers under ?layout=old
+  const bike = new Vehicle('bike', new THREE.Vector3(SP.bike.x, 0, SP.bike.z), SP.bike.yaw);
   bike.addToScene(scene);
   vehicles.push(bike);
 
@@ -1244,7 +1246,7 @@ export function spawnVehicles(scene) {
   // not eyeballed): tractor clearance 3.9m, trolley clearance 3.48m, 3.6m from
   // the next-nearest other vehicle (the bike). Still on the same lane, still
   // "near the player's house" (HOUSE_CENTER {x:-48,z:39}) as the original intent.
-  const tractor = new Vehicle('tractor', new THREE.Vector3(-45, 0, 26), Math.PI);
+  const tractor = new Vehicle('tractor', new THREE.Vector3(SP.tractor.x, 0, SP.tractor.z), SP.tractor.yaw);
   tractor.addToScene(scene);
   vehicles.push(tractor);
 
@@ -1268,7 +1270,7 @@ export function spawnVehicles(scene) {
     console.error('[spawn guard] trolley spawn position is blocked — tractor spawned without its trolley attached. Check the tractor/trolley spawn coordinates in spawnVehicles() against the current building layout.');
   }
 
-  const cart = new Vehicle('cart', new THREE.Vector3(-36, 0, 50), Math.PI * 0.5);
+  const cart = new Vehicle('cart', new THREE.Vector3(SP.cart.x, 0, SP.cart.z), SP.cart.yaw);
   cart.addToScene(scene);
   vehicles.push(cart);
 

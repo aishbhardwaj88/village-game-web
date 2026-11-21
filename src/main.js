@@ -213,6 +213,7 @@ import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
+import { spot } from './missionsLayout.js'; // S7 WIRING (missions): approved-map spots for missions, jobs and NPCs (identity under ?layout=old)
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs, allRoadLines } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
@@ -772,7 +773,7 @@ async function main() {
   // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
   // in src/interactions.js. Maa/halwai are now the real code-built characters
   // (docs/FINISH_LINE.md Step 2, src/characters.js) — a capsule no longer.
-  const maaBuilt = buildCharacterNpc('maa', MAA_POSITION, 0, 'npc_maa');
+  const maaBuilt = buildCharacterNpc('maa', MAA_POSITION, spot('house_yaw', 0), 'npc_maa'); // S7 WIRING (missions): facings turn with the house
   const maaNpc = maaBuilt.root;
   scene.add(maaNpc);
   const maaAnim = { root: maaNpc, animate: maaBuilt.animate, prev: maaNpc.position.clone() };
@@ -782,8 +783,9 @@ async function main() {
   // Dada — stationary in the courtyard near Maa, per docs/FINISH_LINE.md's
   // People section ("Maa and Dada at the house"). A few metres clear of her
   // own 2-point waypoint loop (below) and of the house wall.
-  const DADA_POSITION = { x: MAA_POSITION.x + 3, z: MAA_POSITION.z };
-  const dadaBuilt = buildCharacterNpc('dada', DADA_POSITION, -Math.PI / 2, 'npc_dada');
+  const DADA_POSITION = spot('dada', { x: MAA_POSITION.x + 3, z: MAA_POSITION.z }); // S7 WIRING (missions): carried with the turned house
+  const DADA_YAW = spot('house_yaw', -Math.PI / 2); // S7 WIRING (missions)
+  const dadaBuilt = buildCharacterNpc('dada', DADA_POSITION, DADA_YAW, 'npc_dada');
   const dadaNpc = dadaBuilt.root;
   scene.add(dadaNpc);
   const dadaAnim = { root: dadaNpc, animate: dadaBuilt.animate, prev: dadaNpc.position.clone() };
@@ -791,7 +793,7 @@ async function main() {
   // Third errand (this task) — Pitaji, stationary near the tractor/sack pile, and
   // the sack pile itself (folds into the hero zone's own vertex-coloured 'wood'
   // family, so it costs nothing extra — see src/wheatErrand.js).
-  const pitajiNpc = createNPC(0x4a5a3a, PITAJI_POSITION, Math.PI, 'npc_pitaji');
+  const pitajiNpc = createNPC(0x4a5a3a, PITAJI_POSITION, spot('house_yaw', Math.PI), 'npc_pitaji'); // S7 WIRING (missions)
   scene.add(pitajiNpc);
 
   // M8 (docs/STORY.md) — Dadi. Not in STORY.md's own written dialogue (the ending
@@ -823,7 +825,7 @@ async function main() {
   scene.add(childNpc);
   const childWalk = createWaypointLoop(
     childNpc,
-    [
+    spot('child_walk', [ // S7 WIRING (missions): the approved map's roads under ?layout=new
       { ...houseAt(0, 9) },
       { x: HOUSE_CENTER.x - 20, z: 55.3 },
       { x: HOUSE_CENTER.x - 40, z: 55.3 }, // south of the house compound and the kirana goods yard, north of the map's South houses (z 57+)
@@ -847,7 +849,7 @@ async function main() {
       { x: HOUSE_CENTER.x - 47, z: 55.3 },
       { x: HOUSE_CENTER.x - 40, z: 55.3 },
       { x: HOUSE_CENTER.x - 20, z: 55.3 },
-    ],
+    ]),
     { speed: 1.6, pauseSeconds: 3, getExtraBoxes: () => otherVehicleBoxes(null) }
   );
 
@@ -891,10 +893,10 @@ async function main() {
   const postmanAnim = { root: postmanNpc, animate: postmanBuilt.animate, prev: postmanNpc.position.clone() };
   const postmanWalk = createWaypointLoop(
     postmanNpc,
-    [
+    spot('postman_walk', [ // S7 WIRING (missions): along the house front under ?layout=new (the old 2nd stop is on the ring road)
       { ...houseAt(0, 9) },
       { ...houseAt(-6, 13) },
-    ],
+    ]),
     { speed: 1.8, pauseSeconds: 2, getExtraBoxes: () => otherVehicleBoxes(null) } // 21 Nov: always in a hurry
   );
   linkPostmanPosition(postmanNpc.position);
@@ -2396,7 +2398,7 @@ async function main() {
     endingSceneActive = false; // the roof tableau is over: NPC routines run again
     endCard.classList.remove('visible');
     dadaNpc.position.set(DADA_POSITION.x, 0, DADA_POSITION.z);
-    dadaNpc.rotation.y = -Math.PI / 2;
+    dadaNpc.rotation.y = DADA_YAW; // S7 WIRING (missions)
     dadiNpc.visible = false;
     sisterFollowing = false;
     sisterNpc.position.copy(SISTER_SCHOOL_POSITION);
@@ -2540,15 +2542,15 @@ async function main() {
     onReachRoofEnding: () => {
       endingSceneActive = true;
       { const rp = houseXZ(HOUSE_CENTER.x, HOUSE_BLOCK.cz - 1); dadaNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
-      dadaNpc.rotation.y = Math.PI * 0.75;
+      dadaNpc.rotation.y = spot('house_yaw', Math.PI * 0.75); // S7 WIRING (missions)
       { const rp = houseXZ(HOUSE_CENTER.x - 1.5, HOUSE_BLOCK.cz + 0.5); maaNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
-      maaNpc.rotation.y = Math.PI * 0.6;
+      maaNpc.rotation.y = spot('house_yaw', Math.PI * 0.6); // S7 WIRING (missions)
       { const rp = houseXZ(HOUSE_CENTER.x + 1.5, HOUSE_BLOCK.cz - 0.5); pitajiNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
-      pitajiNpc.rotation.y = Math.PI * 1.1;
+      pitajiNpc.rotation.y = spot('house_yaw', Math.PI * 1.1); // S7 WIRING (missions)
       { const rp = houseXZ(HOUSE_CENTER.x + 1, HOUSE_BLOCK.cz - 2.5); sisterNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
-      sisterNpc.rotation.y = Math.PI * 1.3;
+      sisterNpc.rotation.y = spot('house_yaw', Math.PI * 1.3); // S7 WIRING (missions)
       { const rp = houseXZ(HOUSE_CENTER.x - 1, HOUSE_BLOCK.cz - 2); dadiNpc.position.set(rp.x, HOUSE_ROOF_Y, rp.z); }
-      dadiNpc.rotation.y = Math.PI * 0.9;
+      dadiNpc.rotation.y = spot('house_yaw', Math.PI * 0.9); // S7 WIRING (missions)
       dadiNpc.visible = true;
     },
     tractor: tractorForShadows, // third errand — isTrolleyNearby() reads this live, see src/wheatErrand.js

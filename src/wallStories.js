@@ -5,6 +5,7 @@
 import { ANCHORS, localPt } from './anchors.js';
 import { MAP_COMPOUND_WALLS } from './mapCompoundWalls.js';
 import { registerDiscovery, cycle, noiseBurst } from './discoveryLog.js';
+import { isNewLayout } from './layout/layout.js'; // S7 (missions)
 
 /** point `s` metres along the run of `wallName` that starts at map (ax, az); null if the wall moved */
 function onRun(wallName, ax, az, s) {
@@ -53,6 +54,7 @@ const WALL_PIECES = [
 
 export function createWallStories() {
   for (const [id, wall, ax, az, s, label, lines] of WALL_PIECES) {
+    if (isNewLayout()) break; // S7 (missions): the 1 Nov roadside compound walls are not built on the approved map, so nothing to read
     const p = onRun(wall, ax, az, s);
     if (p) registerDiscovery({ id, ...p, radius: 2.2, label, sound: rustle, lines: cycle(lines) });
   }

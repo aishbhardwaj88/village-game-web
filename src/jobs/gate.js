@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { spot } from '../missionsLayout.js'; // S7 (missions)
+import { isNewLayout } from '../layout/layout.js';
+import { PITAJI_POSITION } from '../wheatErrand.js';
 import { buildGatePillars, gateColliders, part, mergeProp } from './props.js';
 
 /**
@@ -6,7 +9,8 @@ import { buildGatePillars, gateColliders, part, mergeProp } from './props.js';
  * yard behind it. Timed, best time saved (notebook records); generous tolerance (the gap is wider than the trolley by 1 m) and
  * it never fails — bumping a pillar just costs seconds. Reward: Pitaji's praise + money (more for a fast run).
  */
-const GATE = { x: 30, z: 40 };
+export const GATE = spot('gate', { x: 30, z: 40 }); // S7 (missions): on a field by the house under ?layout=new
+const PITAJI_AT = isNewLayout() ? PITAJI_POSITION : { x: -48, z: 31 }; // where the run ends: Pitaji
 const GAP = 4.0;
 const YARD_Z0 = GATE.z - 9; // the target zone, north of the gate
 const YARD_Z1 = GATE.z - 0.2; // trolley centre this far past the gate line = rear axle through
@@ -61,7 +65,7 @@ export function registerGateJob(api, env) {
     api.hud(`Gate challenge ${st.started ? fmt(st.t) : '— hitch the trolley and go'}`, `फाटक की चुनौती ${st.started ? fmt(st.t) : '— ट्रॉली जोड़ो और चलो'}`);
     if (st.started && g && inYard(g)) {
       st.stage = 'done';
-      env.setJobWaypoint(new THREE.Vector3(-48, 0, 31)); // back to Pitaji
+      env.setJobWaypoint(new THREE.Vector3(PITAJI_AT.x, 0, PITAJI_AT.z)); // back to Pitaji
       api.hud(`In! ${fmt(st.t)} — tell Pitaji`, `अंदर! ${fmt(st.t)} — पिताजी को बताओ`);
     }
   });

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { ANCHORS, localPt } from './anchors.js';
 import { registerInteraction } from './interactions.js';
 import { CHAURAHA } from './mapPlan.js';
+import { spot } from './missionsLayout.js'; // S7 (missions)
 
 const V = (p) => new THREE.Vector3(p.x, 0, p.z);
 // The chowk offset can land inside the solid roundabout island (unreachable on foot): push it out to the carriageway, same bearing.
@@ -104,7 +105,7 @@ export function createInteractionsExtra(scene, ctx) {
   // ---- panchayat notice board at the chowk ----
   let ni = 0;
   registerInteraction({
-    id: 'notice_board', position: V(outsideIsland(localPt('chowk', 4, 4))), radius: 3,
+    id: 'notice_board', position: V(spot('notice', null) || outsideIsland(localPt('chowk', 4, 4))), radius: 3, // S7 (missions): the map's own notice board under ?layout=new
     label: { hi: 'सूचना पढ़ें', en: 'Read the notice board' },
     onInteract: () => { ctx.dialogue.say(NOTICES[ni % NOTICES.length]); ni++; },
   });
