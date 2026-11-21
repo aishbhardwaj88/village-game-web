@@ -1,99 +1,9 @@
 {
  "results": {
-  "kabaddi": {
-   "mapobjects": {
-    "calls": 13,
-    "triangles": 24082
-   },
-   "signs": {
-    "calls": 1,
-    "triangles": 0
-   },
-   "kit": {
-    "calls": 9,
-    "triangles": 3126
-   },
-   "ground": {
-    "calls": 2,
-    "triangles": 3814
-   },
-   "water": {
-    "calls": 2,
-    "triangles": 2900
-   },
-   "models": {
-    "calls": 2,
-    "triangles": 5922
-   },
-   "animals": {
-    "calls": 2,
-    "triangles": 8320
-   }
-  },
-  "cricket": {
-   "mapobjects": {
-    "calls": 13,
-    "triangles": 24599
-   },
-   "signs": {
-    "calls": 1,
-    "triangles": 0
-   },
-   "kit": {
-    "calls": 9,
-    "triangles": 6604
-   },
-   "ground": {
-    "calls": 2,
-    "triangles": 3814
-   },
-   "water": {
-    "calls": 2,
-    "triangles": 2900
-   },
-   "models": {
-    "calls": 2,
-    "triangles": 2961
-   },
-   "animals": {
-    "calls": 2,
-    "triangles": 8320
-   }
-  },
-  "gate": {
-   "mapobjects": {
-    "calls": 14,
-    "triangles": 24031
-   },
-   "signs": {
-    "calls": 2,
-    "triangles": 6
-   },
-   "kit": {
-    "calls": 9,
-    "triangles": 4740
-   },
-   "ground": {
-    "calls": 2,
-    "triangles": 3814
-   },
-   "water": {
-    "calls": 2,
-    "triangles": 2900
-   },
-   "models": {
-    "calls": 2,
-    "triangles": 4251
-   },
-   "animals": {
-    "calls": 2,
-    "triangles": 8320
-   }
-  },
   "tower_transformer": {
    "mapobjects": {
     "calls": 15,
-    "triangles": 28762
+    "triangles": 28726
    },
    "signs": {
     "calls": 2,
@@ -101,7 +11,7 @@
    },
    "kit": {
     "calls": 10,
-    "triangles": 9520
+    "triangles": 9484
    },
    "ground": {
     "calls": 2,
@@ -153,7 +63,7 @@
   "transformer": {
    "mapobjects": {
     "calls": 14,
-    "triangles": 27736
+    "triangles": 27700
    },
    "signs": {
     "calls": 1,
@@ -161,7 +71,7 @@
    },
    "kit": {
     "calls": 10,
-    "triangles": 8500
+    "triangles": 8464
    },
    "ground": {
     "calls": 2,
@@ -180,10 +90,40 @@
     "triangles": 8320
    }
   },
+  "gate": {
+   "mapobjects": {
+    "calls": 14,
+    "triangles": 23995
+   },
+   "signs": {
+    "calls": 2,
+    "triangles": 6
+   },
+   "kit": {
+    "calls": 9,
+    "triangles": 4704
+   },
+   "ground": {
+    "calls": 2,
+    "triangles": 3814
+   },
+   "water": {
+    "calls": 2,
+    "triangles": 2900
+   },
+   "models": {
+    "calls": 2,
+    "triangles": 4251
+   },
+   "animals": {
+    "calls": 2,
+    "triangles": 8320
+   }
+  },
   "potter": {
    "mapobjects": {
     "calls": 13,
-    "triangles": 79042
+    "triangles": 91558
    },
    "signs": {
     "calls": 1,
@@ -203,11 +143,101 @@
    },
    "models": {
     "calls": 2,
-    "triangles": 68616
+    "triangles": 81132
    },
    "animals": {
     "calls": 1,
     "triangles": 0
+   }
+  },
+  "wash_barber": {
+   "mapobjects": {
+    "calls": 13,
+    "triangles": 21418
+   },
+   "signs": {
+    "calls": 1,
+    "triangles": 0
+   },
+   "kit": {
+    "calls": 10,
+    "triangles": 6384
+   },
+   "ground": {
+    "calls": 2,
+    "triangles": 3814
+   },
+   "water": {
+    "calls": 2,
+    "triangles": 2900
+   },
+   "models": {
+    "calls": 1,
+    "triangles": 0
+   },
+   "animals": {
+    "calls": 2,
+    "triangles": 8320
+   }
+  },
+  "trough_rest": {
+   "mapobjects": {
+    "calls": 13,
+    "triangles": 17948
+   },
+   "signs": {
+    "calls": 1,
+    "triangles": 0
+   },
+   "kit": {
+    "calls": 10,
+    "triangles": 7032
+   },
+   "ground": {
+    "calls": 2,
+    "triangles": 3814
+   },
+   "water": {
+    "calls": 2,
+    "triangles": 2900
+   },
+   "models": {
+    "calls": 2,
+    "triangles": 4202
+   },
+   "animals": {
+    "calls": 1,
+    "triangles": 0
+   }
+  },
+  "rest": {
+   "mapobjects": {
+    "calls": 14,
+    "triangles": 33620
+   },
+   "signs": {
+    "calls": 2,
+    "triangles": 6
+   },
+   "kit": {
+    "calls": 9,
+    "triangles": 5876
+   },
+   "ground": {
+    "calls": 2,
+    "triangles": 3814
+   },
+   "water": {
+    "calls": 2,
+    "triangles": 2900
+   },
+   "models": {
+    "calls": 2,
+    "triangles": 12704
+   },
+   "animals": {
+    "calls": 2,
+    "triangles": 8320
    }
   }
  },

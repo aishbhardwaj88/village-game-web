@@ -26,6 +26,9 @@ export const VIEWS = {
   machan_scarecrow: { cam: [391, 1.7, -204], look: [399, 1.6, -226] },
   notice: { cam: [546.5, 1.6, 34.2], look: [546.5, 1.5, 37.5] },
   gate: { cam: [612, 1.7, -136], look: [605, 5, -113] },
+  wash_barber: { cam: [512, 2.2, 20], look: [504, 0.6, 30] },
+  trough_rest: { cam: [476, 2.0, -2], look: [470, 0.4, -12] },
+  rest: { cam: [694, 1.8, -14], look: [691, 0.4, -19.2] },
   potter: { cam: [457, 2.6, -147], look: [467, 0.3, -157] },
 };
 const names = process.argv.slice(2).filter((a) => !a.startsWith('--'));
