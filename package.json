@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
+    "build": "node tools/licence-audit.mjs --check && node tools/check-dup-models.js && node tools/place-visibility-check.js && vite build && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
     "build:unchecked": "vite build && node tools/check-budget.js",
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
@@ -14,6 +14,8 @@
     "perf-check": "node tools/perf-budget-check.js",
     "perf-check-fps": "node tools/perf-check.js",
     "budget": "node tools/check-budget.js",
+    "licence": "node tools/licence-audit.mjs",
+    "licence:check": "node tools/licence-audit.mjs --check",
     "budget:strict": "node tools/check-budget.js --strict",
     "perf:ride": "node tools/perf-ride.mjs",
     "perf:ride:mac": "HEADED=1 GL=metal BROWSERS=chromium,webkit node tools/perf-ride.mjs",

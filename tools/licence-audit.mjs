@@ -134,7 +134,16 @@ const tripoPicture = (n) => /^tripo_rgb_/.test(n) || /_eyes$|^teeth_patch$|_lid_
 const publicFiles = walk(path.join(ROOT, 'public')).map(rel);
 const rows = [];
 for (const f of publicFiles) {
-  const hits = records.filter((r) => r._re.some((re) => re.test(f)));
+  let hits = records.filter((r) => r._re.some((re) => re.test(f)));
+  // New characters from the Tripo chat arrive without a record: recognise them by Tripo's own texture name
+  // inside the file, so they count as "Tripo, plan to confirm" (an owner question), never as an unknown file.
+  if (hits.length === 0 && /^public\/assets\/models\/[^/]+\.glb$/.test(f)) {
+    try {
+      if (fs.readFileSync(path.join(ROOT, f)).includes('tripo_rgb_')) {
+        hits = [{ category: 'tripo', title: `Character: ${path.basename(f, '.glb')} (auto-detected Tripo)`, source: 'Tripo AI', licence: 'Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0', plan: 'UNKNOWN', _re: [], _files: [], _i: 'auto' }];
+      }
+    } catch (e) { /* unreadable file stays unknown */ }
+  }
   const size = fs.statSync(path.join(ROOT, f)).size;
   const g = gitInfo.get(f);
   const row = { file: f, size, used: usedInCode(f), git: g ? `${g.first.d} ${g.first.h}${g.last.h !== g.first.h ? ` .. ${g.last.d} ${g.last.h}` : ''}` : 'not committed', notes: [] };

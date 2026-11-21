@@ -43,3 +43,6 @@ Map coords are the game's world coords as read from the running game on 9 Nov (x
 - FULL quality (desktop edition) first. The LIGHT web edition is built only after she approves the new village in 3D.
 - Until then: no time on web-only slimming or web budgets; the budget gate stays in warn mode (the Tue 24 strict flip is postponed).
 - Still needed for any machine: characters load after Play, distance tiers, chunked instancing, shadows by distance.
+
+## Licence records (from the licence agent, 21 Nov)
+- Every new file under public/ needs a record in tools/licence-records.json (plus a CREDITS.md row if third-party) in the same commit. `npm run licence:check` must pass. New Tripo character GLBs are recognised automatically (owner question: Tripo plan).
