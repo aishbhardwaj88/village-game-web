@@ -38,7 +38,7 @@ const srv = http.createServer((req, res) => {
 }).listen(PORT);
 
 // zone name -> anchor id, for the coordinate check (groups built at the anchor and turned by its yaw)
-const PROBES = { anganwadi: 'anganwadi', gurudwara: 'gurudwara', mela_ground: 'mela', old_haveli: 'haveli', gaushala: 'gaushala', post_office_v2: 'yard_post', panchayat_v2: 'yard_panchayat', bus_adda_v2: 'yard_bus_adda', mandi: 'mandi', sabzi_rehris: 'sabzi' };
+const PROBES = { anganwadi: 'anganwadi', gurudwara: 'gurudwara', old_haveli: 'haveli', post_office_v2: 'yard_post', health_subcentre: 'health' };
 
 async function run(mode, browser) {
   const page = await browser.newPage({ viewport: { width: 480, height: 300 } });
@@ -68,6 +68,12 @@ async function run(mode, browser) {
   await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput && window.__dopahar.dialogue._advanceFromInput());
   await page.waitForTimeout(3000);
   const bootS = (Date.now() - t0) / 1000;
+  // walk (teleport) the player to each probed place so the zone manager streams it in the normal way, then read it back
+  for (const zone of Object.keys(PROBES)) {
+    await page.evaluate((zone) => { const d = window.__dopahar; const z = d.zoneManager.zones.get(zone); if (z) d.teleportPlayer(z.x + 12, z.z + 12); }, zone);
+    await page.waitForFunction((zone) => { const z = window.__dopahar.zoneManager.zones.get(zone); return !z || z.active; }, zone, { timeout: 120000 }).catch(() => {});
+  }
+  await page.waitForTimeout(1500);
   const info = await page.evaluate(({ FORCE, PROBES }) => {
     const d = window.__dopahar;
     const out = { player: { x: d.player.position.x, z: d.player.position.z }, zones: d.zoneManager.zones.size, built: 0, buildErrors: [], probes: [] };
@@ -84,9 +90,9 @@ async function run(mode, browser) {
       }
     }
     for (const [zone, id] of Object.entries(PROBES)) {
-      let g = null;
-      d.scene.traverse((o) => { if (!g && o.name === zone) g = o; });
-      if (!g) { const z = d.zoneManager.zones.get(zone); g = z && z.group; }
+      const zz = d.zoneManager.zones.get(zone);
+      let g = zz && zz.group;
+      if (!g) d.scene.traverse((o) => { if (!g && o.name === zone) g = o; });
       const a = d.ANCHORS[id];
       if (!g || !a) { out.probes.push({ zone, id, missing: true }); continue; }
       out.probes.push({ zone, id, gx: g.position.x, gz: g.position.z, gry: g.rotation.y, ax: a.x, az: a.z, ary: a.ry || 0 });
