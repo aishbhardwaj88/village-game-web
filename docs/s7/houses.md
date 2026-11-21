@@ -47,7 +47,7 @@ Branch `s7-houses`, worktree `/home/claude/wt/houses`. Everything new is behind 
 
 ## Numbers
 
-Measured headless (SwiftShader) with all 492 houses built exactly as the game builds them (`docs/s7/houses/preview.html?mode=village`), renderer.info with the houses shown minus hidden, same camera:
+Measured headless (SwiftShader, near-detail distance 55 m; the full preset now uses 60 m, a few more near houses) with all 492 houses built exactly as the game builds them (`docs/s7/houses/preview.html?mode=village`), renderer.info with the houses shown minus hidden, same camera:
 
 | View | Houses draw calls | Houses triangles | Near-detail houses | Far boxes |
 |---|---|---|---|---|
