@@ -218,6 +218,7 @@ import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
 import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
+import { initEdition } from './edition.js'; // S7 WIRING (desktop)
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -262,6 +263,8 @@ const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz
 const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
+  // S7 WIRING (desktop): which edition is running (web 'light' / desktop 'full'), published on window.__dopaharEdition (docs/s7/desktop.md)
+  initEdition();
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
   const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
   _lm.mainStart = performance.now();

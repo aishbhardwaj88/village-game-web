@@ -5,6 +5,7 @@
  * defaults (src/renderer.js, src/scene.js) exactly, so picking High is a no-op vs the
  * old fixed behaviour.
  */
+import { getQuality } from './edition.js'; // S7 (desktop)
 const STORAGE_KEY = 'dopahar_quality';
 
 export const QUALITY_LEVELS = ['high', 'medium', 'low'];
@@ -49,7 +50,7 @@ const PRESETS = {
 };
 
 export function getPreset(level) {
-  return PRESETS[level] || PRESETS.medium;
+  return withEditionCeiling(level, PRESETS[level] || PRESETS.medium); // S7 (desktop): edition ceiling, see the marked block at the end
 }
 
 /** Reads a previously-saved quality choice from localStorage, wrapped in try/catch —
@@ -124,4 +125,26 @@ export function saveVolume(v) {
   } catch (e) {
     // storage blocked/unavailable — volume still applies for this session
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// S7 ADDITION (desktop agent, 21 Nov): the quality preset (src/edition.js getQuality()) raises the
+// ceiling of the pause menu's 'high' level. 'full' (the default everywhere for now, owner 21 Nov):
+// 'high' becomes pixel ratio up to 2, a 4096 shadow map over a 120 m box. 'light' (stub for the
+// later web edition) is a no-op: its numbers equal 'high' above (1.5, 2048, 60 m).
+// 'medium' and 'low' stay as they are, so a player on a weak machine can still step down.
+// Touch values are never raised.
+// ---------------------------------------------------------------------------------------------
+function withEditionCeiling(level, p) {
+  if (level !== 'high') return p;
+  let q;
+  try { q = getQuality(); } catch (e) { return p; }
+  if (!q || q.name === 'light') return p;
+  return {
+    ...p,
+    pixelRatioDesktop: Math.max(p.pixelRatioDesktop, q.pixelRatioMax),
+    shadowMapSize: Math.max(p.shadowMapSize, q.shadowMapSize),
+    shadowFarDesktop: Math.max(p.shadowFarDesktop, q.shadowFar),
+    shadowExtentDesktop: Math.max(p.shadowExtentDesktop, q.shadowExtent),
+  };
 }
