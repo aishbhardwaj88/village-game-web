@@ -19,7 +19,7 @@ import { safeSpawn, inBuilding } from '../save.js';
 import { ANCHORS, localPt } from '../anchors.js';
 import { turnSiteGroup } from '../turn.js';
 import { createYardSite } from '../yardModels.js';
-import { createMapHaystacks, createDungCakeYard, createCarromScene, createFieldPropSite } from '../farmSites.js';
+import { createMapHaystacks, createDungCakeYard, createCarromScene, createFieldPropSite, createChemist, createManihari } from '../farmSites.js';
 import { RIDE_NOOK_SITES } from '../rideNooks.js';
 import { LONG_WALK_SITES } from '../longWalks.js';
 
@@ -72,6 +72,15 @@ export function initLayoutWiring({ zoneManager, scene, player } = {}) {
   move('map_field_gate_wheat', 'zone:map_field_gate_wheat', (p) => () => createFieldPropSite('map_field_gate_wheat', { x: p.x, z: p.z }, [
     { part: 'field_gate', x: p.x - 5.4, z: p.z, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: p.x + 5.4, z: p.z, ry: Math.PI, solid: [0.9, 0.9] },
   ]));
+
+  // 3b. the chemist and the manihari were folded into bazaar units 3 and 7 on the 1 Nov map; the approved map stands them on
+  // their own again (its 'Chemist' and 'Manihari' places), so their own site models come back there, turned to their fronts
+  for (const [zone, id, make] of [['chemist', 'chemist', createChemist], ['manihari', 'manihari', createManihari]]) {
+    const a = ANCHORS[id];
+    if (!a || Z.has(zone)) continue;
+    zoneManager.register(zone, { x: a.x, z: a.z, buildRadius: 38, teardownRadius: 50, build: () => turnSiteGroup(make({ x: a.x, z: a.z }), a.ry) });
+    done.push(`built ${zone} on its own at (${a.x.toFixed(1)}, ${a.z.toFixed(1)})`);
+  }
 
   // 4. ride nooks and long-walk sites: the map lists the ones it keeps (as zone:<name>, most moved onto the new farm loop);
   // the rest stood along roads the map removed and are dropped. The site objects are shared with the zone's build closure,

@@ -37,6 +37,8 @@ export const EXISTING_FOOTPRINTS = {
   sabzi: { box: [-5.1, 5.1, -2, 2] }, // fit box 10.2 x 4.0
   johad: { box: [-7, 7, -7, 7], open: true }, // src/dips.js: water R 5.4, bank to u 1.32
   masjid: { box: [-5.45, 5.45, -5.3, 5.3] }, // fit box 10.9 x 10.6
+  chemist: { box: [-2.4, 2.4, -2.9, 2.9] }, // fit box 4.8 x 5.8 (standalone again on the approved map)
+  manihari: { box: [-2.6, 2.6, -0.9, 0.9] }, // fit box 5.2 x 1.8
   jain: { box: [-3.7, 3.7, -4.8, 4.8] }, // fit box 7.4 x 9.6
   haveli: { box: [-16, 16, -12.3, 12.3] }, // fit box 32.0 x 24.6
   gurukul: { box: [-30.5, 30.5, -22.6, 23.1] }, // gurukul_v2.glb bounds (grounds included)
