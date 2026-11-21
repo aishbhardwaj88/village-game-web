@@ -1611,7 +1611,7 @@ async function main() {
     yield;
     villageHouses = createVillageHouses(scene); // src/villageHouses.js, distance-gated per cluster in the frame loop
     cameraObstacles.push(villageHouses.group);
-    initNewMapHouses(scene); // S7 WIRING (houses): ?layout=new only; builds itself, LOD rides the camera, colliders rebuilt when it stands
+    { const nh = initNewMapHouses(scene); if (nh && nh.group) cameraObstacles.push(nh.group); } // S7 WIRING (houses): ?layout=new only; builds itself, LOD rides the camera, colliders rebuilt when it stands
     yield;
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
     yield;

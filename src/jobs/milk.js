@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildMilkCans } from './props.js';
 import { abadiDoorstep } from '../scenery.js';
 import { halwaiXZ, HALWAI_CENTER } from '../village.js';
+import { NEW_HOUSES } from '../kit/houses.js'; // S7 WIRING (houses): doorsteps of the new map's houses under ?layout=new
 
 /**
  * Job 2 — Milk round (docs/MISSIONS_PLAN.md): help the doodhwala deliver milk to five houses before his round ends (a generous
@@ -23,7 +24,20 @@ const TIME_LIMIT = 220; // seconds
 
 export function registerMilkJob(api, env) {
   const DOODH = halwaiXZ(HALWAI_CENTER.x, HALWAI_CENTER.z + 6.5);
-  const STOPS = STOP_ROWS.map((s) => ({ ...s, ...abadiDoorstep(s.row, s.along) }));
+  let STOPS = STOP_ROWS.map((s) => ({ ...s, ...abadiDoorstep(s.row, s.along) }));
+  // Under ?layout=new the old abadi rows are gone: the five stops are the new-map houses nearest the doodh counter,
+  // picked when a round starts (the houses build after Play). Each stop stands just outside its door, facing out.
+  function newMapStops() {
+    if (!NEW_HOUSES.length) return null;
+    const near = [...NEW_HOUSES].sort((a, b) => Math.hypot(a.door.x - DOODH.x, a.door.z - DOODH.z) - Math.hypot(b.door.x - DOODH.x, b.door.z - DOODH.z));
+    const picked = [];
+    for (const h of near) { if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
+    if (picked.length < STOP_ROWS.length) return null;
+    return picked.map((h, i) => {
+      const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1, ux = ox / l, uz = oz / l;
+      return { ...STOP_ROWS[i], door: { ...h.door }, stand: { x: h.door.x + ux * 0.8, z: h.door.z + uz * 0.8 }, ry: Math.atan2(ux, uz) };
+    });
+  }
   const st = { stage: 'idle', idx: 0, timeLeft: 0 };
   const dood = api.npc('doodhwala', DOODH, Math.PI / 2, 'npc_doodhwala');
   const aunty = api.npc('villager_aunty', { x: 0, z: 0 }, 0, 'npc_milk_aunty');
@@ -66,6 +80,7 @@ export function registerMilkJob(api, env) {
           () => {
             st.stage = 'deliver';
             st.idx = 0;
+            { const ns = newMapStops(); if (ns) STOPS = ns; }
             st.timeLeft = TIME_LIMIT;
             const cans = buildMilkCans();
             cans.position.set(0, 0.55, -0.45);

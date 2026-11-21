@@ -106,10 +106,11 @@ function impostorGeometry(cellIdx, box) {
 export async function build(map, { camera = null } = {}) {
   const trees = [];
   for (const o of map.objects) {
-    if (o.kind !== 'trees' || !o.rings?.[0]) continue;
+    // The game's packed layout (src/layout/mapData.json) gives trees as cx/cz/r with no rings; the raw export has rings (21 Nov).
+    if (o.kind !== 'trees' || !(o.rings?.[0] || Number.isFinite(o.cx))) continue;
     const key = labelKey(o), pick = KIND_OF[key];
     if (!pick) continue;
-    const c = ringCentre(o.rings[0]), r = ringRadius(o.rings[0]);
+    const c = o.rings?.[0] ? ringCentre(o.rings[0]) : { x: o.cx, z: o.cz }, r = o.rings?.[0] ? ringRadius(o.rings[0]) : (o.r || 3);
     const h = hash01(c.x, c.z);
     trees.push({ kind: pick(h), x: c.x, z: c.z, d: r * 2, h: o.y1 || 9, seed: Math.floor(hash01(c.z, c.x) * VARIANTS), ry: hash01(c.x * 3.1, c.z) * Math.PI * 2 });
   }

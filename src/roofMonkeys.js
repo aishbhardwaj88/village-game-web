@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { buildMonkeyMesh } from './animals.js';
-import { ROOF_TANK_TOPS } from './villageHouses.js';
+import { ROOF_TANK_TOPS as OLD_TANK_TOPS } from './villageHouses.js';
+import { NEW_HOUSE_TANK_TOPS } from './kit/houses.js'; // S7 WIRING (houses): new-map tanks under ?layout=new
 
 /**
  * Three monkeys sitting on rooftop water tanks of the kit houses (docs/PARALLEL.md tonight item 4). The M6 monkey shape
@@ -27,6 +28,7 @@ export function createRoofMonkeys(scene) {
     player = player || scene.getObjectByName('player');
     if (!player) return;
     if (!sits.length) {
+      const ROOF_TANK_TOPS = NEW_HOUSE_TANK_TOPS.length ? NEW_HOUSE_TANK_TOPS : OLD_TANK_TOPS;
       if (!ROOF_TANK_TOPS.length) return;
       const near = [...ROOF_TANK_TOPS].sort((a, b) => Math.hypot(a.x - player.position.x, a.z - player.position.z) - Math.hypot(b.x - player.position.x, b.z - player.position.z));
       const a = near[0], b = near[1] || near[0];
