@@ -108,10 +108,19 @@ function addHiddenColliderCarrier(group, boxes) {
 /** Geometries of one material can differ in indexing or attribute set (small prop modules vs Blender models); mergeGeometries needs them identical.
  * Leaves an already-compatible list untouched; otherwise makes all non-indexed with position/normal/uv (+ white colour if the material reads it). */
 function compatGeometries(list, material) {
-  const sig = (g) => (g.index ? 'i' : 'n') + Object.keys(g.attributes).sort().map((k) => k + g.attributes[k].itemSize).join(',');
+  // Array type is part of the signature: a quantized glb (Int8/Int16 normals) beside Float32 code geometry makes mergeGeometries return null (21 Nov).
+  const sig = (g) => (g.index ? 'i' : 'n') + Object.keys(g.attributes).sort().map((k) => k + g.attributes[k].itemSize + g.attributes[k].array.constructor.name + (g.attributes[k].normalized ? 'n' : '')).join(',');
   if (list.every((g) => sig(g) === sig(list[0]))) return list;
   return list.map((g0) => {
-    const g = g0.index ? g0.toNonIndexed() : g0;
+    const g = g0.index ? g0.toNonIndexed() : g0.clone();
+    for (const k of Object.keys(g.attributes)) { // dequantize to plain Float32 so every list member matches
+      const a = g.attributes[k];
+      if (a.isInterleavedBufferAttribute || !(a.array instanceof Float32Array) || a.normalized) {
+        const f = new Float32Array(a.count * a.itemSize);
+        for (let i = 0; i < a.count; i++) for (let c = 0; c < a.itemSize; c++) f[i * a.itemSize + c] = a.getComponent(i, c);
+        g.setAttribute(k, new THREE.BufferAttribute(f, a.itemSize));
+      }
+    }
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'color'].includes(k)) g.deleteAttribute(k);
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
     if (!g.attributes.normal) g.computeVertexNormals();
@@ -277,6 +286,7 @@ export function mergeAcrossGroups(roots, dest, { skipNames = [] } = {}) {
   for (const [key, bucket] of buckets) {
     const material = keyMaterial.get(key) || key;
     const geometry = bucket.geometries.length > 1 ? mergeGeometries(compatGeometries(bucket.geometries, material)) : bucket.geometries[0];
+    if (!geometry) { console.warn('mergeAcrossGroups: bucket could not merge, skipped', material.name || bucket.srcName); continue; } // never abort the whole deferred build
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = `${material.name || bucket.srcName || 'merged'}_${i++}`; // unnamed material: the shared source mesh name, so the world validator can tell what a bucket is
     if (material.name === 'shop_goods') {
