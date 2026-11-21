@@ -28,6 +28,12 @@
  *   node tools/char-diet.mjs --only maa,dada       # just these
  *   node tools/char-diet.mjs --force               # ignore the cache
  *   node tools/char-diet.mjs --json <file>         # also write a size report
+ *   node tools/char-diet.mjs --profile full        # desktop edition (same as CHAR_PROFILE=full)
+ *
+ * Profiles (22 Nov: one codebase, two editions):
+ *   light (default, the free web edition): skin 1024, heroes 2048, WebP. Budget 1.5 MB / heroes 2.5 MB.
+ *   full  (the paid desktop edition):      skins untouched (original 4096 JPEG / PNG), only geometry and animation
+ *                                          are meshopt-compressed (same check as light). No size budget.
  */
 import { NodeIO, PropertyType, Logger } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
@@ -45,6 +51,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // If a face looks soft at 1024 in the lineup proof, add the name here (docs/s7/characters.md).
 export const HEROES = new Set(['brother', 'dada', 'dadi', 'maa', 'pitaji', 'postman', 'sarpanch', 'teacher']);
 const BUDGET = { hero: 2.5 * 1024 * 1024, other: 1.5 * 1024 * 1024 };
+export const PROFILES = {
+  light: { textureSize: (name) => (HEROES.has(name) ? 2048 : 1024), budget: true },
+  full: { textureSize: () => 0 /* 0 = leave the skin textures exactly as they are */, budget: false },
+};
 // Bump when the recipe below changes, so cached slim files are rebuilt.
 const RECIPE = 'char-diet-v2:webp88:q-scene:pos14:nrm8oct:uv12';
 const WEBP_QUALITY = 88;
@@ -59,6 +69,7 @@ function args() {
     force: a.includes('--force'),
     json: get('--json', null),
     quiet: a.includes('--quiet'),
+    profile: get('--profile', process.env.CHAR_PROFILE || 'light'),
   };
 }
 
@@ -102,8 +113,9 @@ async function slim(io, input, size) {
     // the file no smaller (every clip then needs its own time track instead of one shared one). Measured 21 Nov.
     // share identical accessors (each clip repeats the same time track for every bone)
     dedup({ propertyTypes: [PropertyType.ACCESSOR], keepUniqueNames: true }),
-    // skin: WebP, never bigger than `size`; small textures (eye patches, lid atlas) keep their own size
-    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [size, size], quality: WEBP_QUALITY, effort: 90 }),
+    // skin: WebP, never bigger than `size`; small textures (eye patches, lid atlas) keep their own size.
+    // size 0 (full profile): textures untouched.
+    ...(size ? [textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [size, size], quality: WEBP_QUALITY, effort: 90 })] : []),
     // geometry: vertex cache order + quantize. One quantization volume for the whole file so body, eyes and lids
     // keep sharing ONE skin (three.js then keeps a single skeleton per character).
     reorder({ encoder: MeshoptEncoder, target: 'size' }),
@@ -125,6 +137,8 @@ async function slim(io, input, size) {
 
 async function main() {
   const o = args();
+  const profile = PROFILES[o.profile];
+  if (!profile) throw new Error(`unknown profile "${o.profile}" (light or full)`);
   await MeshoptEncoder.ready; await MeshoptDecoder.ready;
   const io = new NodeIO().setLogger(new Logger(Logger.Verbosity.ERROR)).registerExtensions(ALL_EXTENSIONS)
     .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder });
@@ -141,9 +155,9 @@ async function main() {
   for (const file of files) {
     const name = basename(file, '.glb');
     const hero = HEROES.has(name);
-    const size = hero ? 2048 : 1024;
+    const size = profile.textureSize(name);
     const input = readFileSync(file);
-    const hash = createHash('sha256').update(RECIPE).update(String(size)).update(input).digest('hex').slice(0, 16);
+    const hash = createHash('sha256').update(RECIPE).update(o.profile).update(String(size)).update(input).digest('hex').slice(0, 16);
     const cached = join(cacheDir, `${name}-${hash}.glb`);
     const dest = join(o.out, `${name}.glb`);
     const t1 = Date.now();
@@ -173,13 +187,13 @@ async function main() {
     copyFileSync(cached, dest);
     const after = statSync(dest).size;
     const budget = hero ? BUDGET.hero : BUDGET.other;
-    if (after > budget) { console.warn(`char-diet: WARNING ${name} is ${(after / 1048576).toFixed(2)} MB, over its ${(budget / 1048576).toFixed(1)} MB budget`); warnings++; }
+    if (profile.budget && after > budget) { console.warn(`char-diet: WARNING ${name} is ${(after / 1048576).toFixed(2)} MB, over its ${(budget / 1048576).toFixed(1)} MB budget`); warnings++; }
     report.push({ name, hero, texture: size, before: input.length, after, status, ms: Date.now() - t1 });
-    if (!o.quiet) console.log(`char-diet: ${name.padEnd(16)} ${(input.length / 1048576).toFixed(2).padStart(5)} MB -> ${(after / 1048576).toFixed(2).padStart(5)} MB  (${size}px, ${status}, ${Date.now() - t1} ms)`);
+    if (!o.quiet) console.log(`char-diet: ${name.padEnd(16)} ${(input.length / 1048576).toFixed(2).padStart(5)} MB -> ${(after / 1048576).toFixed(2).padStart(5)} MB  (${size ? `${size}px` : 'original skin'}, ${status}, ${Date.now() - t1} ms)`);
   }
   const tb = report.reduce((s, r) => s + r.before, 0), ta = report.reduce((s, r) => s + r.after, 0);
-  console.log(`char-diet: ${report.length} characters, ${(tb / 1048576).toFixed(1)} MB -> ${(ta / 1048576).toFixed(1)} MB in ${((Date.now() - t0) / 1000).toFixed(1)} s${warnings ? `, ${warnings} warning(s)` : ''}`);
-  if (o.json) writeFileSync(resolve(ROOT, o.json), JSON.stringify({ recipe: RECIPE, report, totalBefore: tb, totalAfter: ta }, null, 2));
+  console.log(`char-diet [${o.profile}]: ${report.length} characters, ${(tb / 1048576).toFixed(1)} MB -> ${(ta / 1048576).toFixed(1)} MB in ${((Date.now() - t0) / 1000).toFixed(1)} s${warnings ? `, ${warnings} warning(s)` : ''}`);
+  if (o.json) writeFileSync(resolve(ROOT, o.json), JSON.stringify({ recipe: RECIPE, profile: o.profile, report, totalBefore: tb, totalAfter: ta }, null, 2));
 }
 
 // Never break the build: dist already holds the full-size originals, so the game still works if this step fails.
