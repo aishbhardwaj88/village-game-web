@@ -454,7 +454,7 @@ export function buildHouse(design, w, d, mirror = false) {
         const xa = run0 - s * i * tread, xb = run0 - s * (i + 1) * tread;
         const lo = Math.min(xa, xb), hi = Math.max(xa, xb);
         const top = (i + 1) * rise;
-        g.box(lo, hi, top - rise - 0.02, top, z0, z1, { ...S, colSide: C_CONC_D, skip: 'nz ny' + (i ? (s > 0 ? ' px' : ' nx') : '') });
+        g.box(lo, hi, top - rise - 0.02, top, z0, z1, { ...S, colSide: C_CONC_D, skip: 'nz ny' + (i < n - 1 ? (s > 0 ? ' nx' : ' px') : '') }); // the face toward the next (higher) step is hidden by it; the riser shows
         // waist: the stepped outer face down to the sloping soffit
         const soff = (x) => Math.max(0, (Math.abs(x - run0) / Math.abs(run1 - run0)) * yr - 0.38);
         const fa = s > 0 ? hi : lo, fb = s > 0 ? lo : hi;

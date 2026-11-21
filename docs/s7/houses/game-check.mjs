@@ -14,7 +14,7 @@ for (let i = 0; i < 200; i++) { try { await fetch(`http://localhost:${PORT}/vill
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
 const out = { layout };
 try {
-  const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+  const page = await browser.newPage({ viewport: { width: 640, height: 400 } });
   const T = Date.now(); const log = (m) => console.error(`[${((Date.now() - T) / 1000).toFixed(0)}s] ${m}`);
   page.on('crash', () => log('PAGE CRASHED'));
   await page.addInitScript(() => { try { localStorage.setItem('dopahar_quality', 'low'); localStorage.removeItem('dopahar_save'); } catch (e) {} });
