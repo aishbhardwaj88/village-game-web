@@ -13,7 +13,8 @@ import { currentLayout, worldBounds } from './zoneManager.js';
 // north-south canal at x ~824 along the field band, or canal.js's own CANAL_PATH ([[x, z], ...]) once it exports one.
 function canalLine() {
   if (currentLayout() === 'new') {
-    if (Array.isArray(canalMod.CANAL_PATH) && canalMod.CANAL_PATH.length > 1) return canalMod.CANAL_PATH;
+    const path = Reflect.get(canalMod, 'CANAL_PATH'); // optional export (shops-land may add it); read loosely so the build does not warn
+    if (Array.isArray(path) && path.length > 1) return path;
     const b = worldBounds('new');
     return [[b.canalX, b.fieldBandZ[0]], [b.canalX, b.fieldBandZ[1]]];
   }

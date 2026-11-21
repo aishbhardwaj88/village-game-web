@@ -19,6 +19,7 @@
  *   NET=none              no network throttle (default 20 Mbit/s, 40 ms, cold cache; Chromium only)
  *   OUT=docs/s7/perf/latest.json
  *   VIEW=1280x720         window size
+ *   EARLY=1               start the ride 5 s after the first frame instead of after 'village ready' (small machine)
  *   TRIES=2               attempts per run (a run killed for memory is retried)
  *   QUERY=shadows=follow  extra URL parameters for the game (e.g. sun shadows on, shadowdist=0 to switch the distance shadows off)
  *   TAG=before            free text saved with the run (e.g. "before shadows")
@@ -174,6 +175,8 @@ async function rideOnce(browserName, layout) {
   const CHAR_RE = /assets\/models\/(parlour_didi|sister|maa|pitaji|dada|dadi|brother|sarpanch|postman|teacher)\.glb/;
   if (env.NOCHARS) await page.route(CHAR_RE, (route) => { const n = route.request().method() === 'GET' ? pagesBytes(route.request().url()) : 0; blockedBytes += n; if (!played) blockedBeforePlay += n; if (env.LIST) console.log(`    blocked at ${((Date.now() - t0) / 1000).toFixed(1)} s: ${route.request().url().replace(BASE, '')}`); route.fulfill({ status: 404, body: '' }).catch(() => {}); });
   const pending = [];
+  const startedBefore = new Set(); let startedBeforeBytes = 0; // files asked for before Play (they compete for the line even if they finish later)
+  page.on('request', (r) => { if (played || r.method() !== 'GET') return; const u = r.url(); if (startedBefore.has(u)) return; startedBefore.add(u); startedBeforeBytes += pagesBytes(u); });
   page.on('requestfinished', (r) => {
     if (env.NOCHARS && CHAR_RE.test(r.url())) return;
     if (r.method() !== 'GET') return; // HEAD checks (src/assetSlots.js) carry no body
@@ -187,7 +190,7 @@ async function rideOnce(browserName, layout) {
   });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 300)));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 300)); });
+  page.on('console', (m) => { if (m.type() === 'error' && !(env.NOCHARS && /404/.test(m.text()))) errors.push(m.text().slice(0, 300)); });
   await page.addInitScript(pageInstrument);
 
   await page.goto(`${BASE}?layout=${layout}&proof=1${env.QUERY ? '&' + env.QUERY : ''}`, { waitUntil: 'commit' });
@@ -207,8 +210,14 @@ async function rideOnce(browserName, layout) {
   let result, marks, route;
   try {
     await page.evaluate(() => document.getElementById('play-btn').click());
-    await page.waitForFunction(() => (window.__loadMarks || {}).villageReady, null, { timeout: 240000, polling: 250 }).catch(() => {});
-    log('village ready (or timed out)');
+    if (env.EARLY) { // small machine: start riding 5 s after the first frame, before the whole village has assembled
+      await page.waitForFunction(() => (window.__loadMarks || {}).firstRender, null, { timeout: 120000, polling: 250 });
+      await page.waitForTimeout(5000);
+      log('first frame + 5 s (EARLY: the village is still assembling further out)');
+    } else {
+      await page.waitForFunction(() => (window.__loadMarks || {}).villageReady, null, { timeout: 240000, polling: 250 }).catch(() => {});
+      log('village ready (or timed out)');
+    }
     await page.evaluate(() => { try { window.__dopahar.dialogue._advanceFromInput(); } catch {} });
     await page.waitForTimeout(2000);
     marks = await page.evaluate(() => Object.fromEntries(Object.entries(window.__loadMarks || {}).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v) : v])));
@@ -295,7 +304,7 @@ async function rideOnce(browserName, layout) {
     await browser.close().catch(() => {});
     return { browser: browserName, layout, gpu, partial: true, crashed: String(e.message).split('\n')[0],
       summary: { playReadyMs: readyMarks.readyFrame != null ? Math.round(readyMarks.readyFrame) : null, playReadyWallMs: playReadyWall,
-        beforePlayMB: +((beforePlayBytes + blockedBeforePlay) / 1048576).toFixed(2), beforePlayRequests: beforePlayReqs, errors: errors.length },
+        beforePlayMB: +((beforePlayBytes + blockedBeforePlay) / 1048576).toFixed(2), beforePlayRequests: beforePlayReqs, requestedBeforePlayMB: +(startedBeforeBytes / 1048576).toFixed(2), errors: errors.length },
       errors: errors.slice(0, 10) };
   }
   await browser.close();
@@ -310,6 +319,7 @@ async function rideOnce(browserName, layout) {
     charactersBlockedMB: env.NOCHARS ? +(blockedBytes / 1048576).toFixed(1) : undefined,
     charactersRequestedBeforePlayMB: env.NOCHARS ? +(blockedBeforePlay / 1048576).toFixed(1) : undefined,
     beforePlayRequests: beforePlayReqs,
+    requestedBeforePlayMB: +(startedBeforeBytes / 1048576).toFixed(2),
     totalMBByEnd: +(bytes / 1048576).toFixed(1),
     drawCallsMax: result.peakFrame.calls,
     mainPassCallsMax: result.peakFrame.main,
@@ -353,7 +363,7 @@ const gpuName = runs.find((r) => r.gpu)?.gpu || null;
 const softwareGL = /swiftshader|llvmpipe|software/i.test(gpuName || '') || (!env.GL && BROWSERS.includes('chromium') && !env.CHANNEL);
 let commit = null;
 try { commit = execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch {}
-const out = { date: new Date().toISOString(), tag: env.TAG || null, query: env.QUERY || null, noChars: !!env.NOCHARS, commit, machine: `${os.type()} ${os.arch()} ${os.cpus()[0]?.model || ''} x${os.cpus().length}`.trim(), gpu: gpuName, softwareGL, secs: SECS, net: env.NET === 'none' ? 'none' : '20 Mbit/s, 40 ms, cold cache (Chromium)', runs };
+const out = { date: new Date().toISOString(), tag: env.TAG || null, query: env.QUERY || null, early: !!env.EARLY, noChars: !!env.NOCHARS, commit, machine: `${os.type()} ${os.arch()} ${os.cpus()[0]?.model || ''} x${os.cpus().length}`.trim(), gpu: gpuName, softwareGL, secs: SECS, net: env.NET === 'none' ? 'none' : '20 Mbit/s, 40 ms, cold cache (Chromium)', runs };
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
 
@@ -361,22 +371,24 @@ fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
 const L = [];
 L.push(`# Perf ride, ${out.date.slice(0, 16).replace('T', ' ')} UTC${out.tag ? ` (${out.tag})` : ''}`, '');
 L.push(`- Machine: ${out.machine}; graphics: ${gpuName || 'unknown'}${softwareGL ? ' (software, no real GPU: frame times are NOT what a player sees)' : ''}`);
+if (env.EARLY) L.push('- EARLY mode: the ride started 5 s after the first frame, while the far village was still assembling (small machine).');
 if (env.NOCHARS) L.push('- The 10 character models were NOT loaded (low-memory machine); their download is still counted, their drawing is not.');
-L.push(`- Ride: ${SECS} s at cycle speed through ${runs[0]?.route?.map((r) => r[0]).join(', ') || '?'}`, '');
+const routed = runs.find((r) => r.route);
+L.push(routed ? `- Ride: ${SECS} s at cycle speed through ${routed.route.map((r) => r[0]).join(', ')}` : '- No full ride completed on this machine (load numbers only).', '');
 for (const r of runs) {
   if (r.failed) { L.push(`## ${r.browser}, layout=${r.layout}: FAILED`, `- ${r.failed}`, ''); continue; }
   const s = r.summary;
   if (r.partial) {
     L.push(`## ${r.browser}, layout=${r.layout}: load only (the page died after Play: ${r.crashed})`);
     L.push(`- Play button ready: ${s.playReadyMs == null ? 'n/a' : (s.playReadyMs / 1000).toFixed(1) + ' s'} (budget 4 s)`);
-    L.push(`- Downloaded before Play: ${s.beforePlayMB} MB in ${s.beforePlayRequests} files (budget 8 MB)`, '');
+    L.push(`- Downloaded before Play: ${s.beforePlayMB} MB in ${s.beforePlayRequests} files (budget 8 MB); asked for before Play: ${s.requestedBeforePlayMB} MB`, '');
     continue;
   }
   const ok = (v, lim) => (v == null ? 'n/a' : v <= lim ? 'ok' : 'OVER');
   L.push(`## ${r.browser}, layout=${r.layout}`);
   L.push(`- Play button ready: ${(s.playReadyMs / 1000).toFixed(1)} s (budget 4 s: ${ok(s.playReadyMs, 4000)})`);
   L.push(`- Village ready after Play: ${s.villageAfterPlayMs == null ? 'n/a' : (s.villageAfterPlayMs / 1000).toFixed(1) + ' s'} (budget 2 s: ${ok(s.villageAfterPlayMs, 2000)})`);
-  L.push(`- Downloaded before Play: ${s.beforePlayMB} MB (budget 8 MB: ${ok(s.beforePlayMB, 8)}); by the end of the ride: ${s.totalMBByEnd} MB`);
+  L.push(`- Downloaded before Play: ${s.beforePlayMB} MB (budget 8 MB: ${ok(s.beforePlayMB, 8)}); asked for before Play: ${s.requestedBeforePlayMB} MB; by the end of the ride: ${s.totalMBByEnd} MB`);
   L.push(`- Draw calls, worst moment: ${s.mainPassCallsMax} main (budget 150: ${ok(s.mainPassCallsMax, 150)}), ${s.shadowCallsMax} shadow, ${s.drawCallsMax} all (budget 250: ${ok(s.drawCallsMax, 250)})`);
   L.push(`- Triangles, worst moment: ${s.mainTrianglesMax.toLocaleString('en')} on screen (budget 450k: ${ok(s.mainTrianglesMax, 450000)}), ${s.trianglesMax.toLocaleString('en')} incl. shadows`);
   L.push(`- GPU texture memory: about ${s.gpuTextureMB} MB (budget 400: ${ok(s.gpuTextureMB, 400)}), plus ${s.gpuRenderbufferMB} MB screen buffers; ${s.texturesMax} textures, ${s.geometriesMax} meshes' data`);

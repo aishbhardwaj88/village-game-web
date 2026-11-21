@@ -56,6 +56,35 @@ scene.add(group);
 - Every chunk mesh carries `userData.chunked = true` and `userData.wantsShadow`, so the perf distance-shadow switch can turn chunk shadows off far from the player.
 - Measured: 2000 items over 1 km x 700 m build in about 13-22 ms into 80 chunks.
 
+## Baseline ("before"), 21 Nov, main b5bd781, ?layout=old
+
+**Where measured**
+- This cloud machine: no GPU (software drawing), 2 CPUs, 6 GB memory shared with 4 other agents. Slow network imitation: 20 Mbit/s, 40 ms, empty cache, 960x540 window.
+- Full 90 s rides could NOT finish here: the game is killed for memory 20 to 150 s after Play every time (12 attempts), even without the 10 characters. Sampled at the moment of death: page 1.6 GB, browser 1.3 GB, graphics 0.65 GB, still rising. A phone has far less than this, so the memory after Play is itself a risk worth a look on the Mac (Chrome: Window > Task Manager).
+- So the "before" below = load numbers measured today + the drawing numbers from the last full record (10 Nov). The real ride baseline is one command on the MacBook (`npm run perf:ride:mac`, see Perf ride).
+
+**Load (measured today)**
+
+| | Budget | old layout | new layout (same as old today) |
+|---|---|---|---|
+| Play ready (no characters) | 4 s | 7.1 s, OVER | 7.2 s, OVER |
+| Downloaded before Play (no characters) | 8 MB | 11.4 MB, OVER (11 to 16 MB over 9 tries) | 13.0 MB, OVER |
+| With the 10 characters: asked for before Play | | 60 MB (52 MB of it characters) | |
+| With the 10 characters: Play ready | 4 s | 12 s and 40 s in two tries | |
+
+- The 10 character models (52 MB, 4K textures) are requested at boot, before Play (src/main.js registerCharacterSlot calls assetSlots.resolveOne straight away), and share the line with the models Play waits for. Slimming them (characters agent) and loading them only after Play are the two biggest load wins.
+- Some files are fetched twice before Play (grass, ground, thatch textures: once by the index.html preload, once by the game); the second copy comes from the browser cache, counted once.
+
+**Files (measured today, built game)**
+- Shipped game 120.4 MB (budget 90); characters 6.4 to 8.5 MB each (budget 2.5 named cast, 1.5 others).
+
+**Drawing and frames (last full record, 10 Nov, same kind of machine)**
+- Hero zone: 147 draw calls, 394k triangles (budgets 150 / 450k: just inside).
+- Worst game-logic frame on the 91 s ride: 32 ms (budget: none over 50; p95 12 ms not measurable without a GPU).
+- Sun shadows are off by default today, so those 147 calls have no shadow pass.
+
+Files: docs/s7/perf/baseline-2026-11-21.json (+ .md), copied to latest.json so the gate reads it.
+
 ## Budget gate (tools/check-budget.js)
 
 **What it checks (on the built game in dist/, so slimmed characters count and the big originals in public/ do not)**
@@ -112,3 +141,41 @@ npm run perf:ride:mac
 - Sun shadow box follows the player (when shadows are on), so it already works in the east. Camera reach 500 m and the fog are unchanged: the fog hides everything well before 500 m (density 0.0044 to 0.0068 means less than 1% visible at 500 m).
 - Minimap (src/minimap.js): the canal line is drawn north-south at x 824 along the field band under ?layout=new (or canal.js's own `CANAL_PATH` if it starts exporting one); old layout unchanged.
 - zoneManager warns in the console if a zone is registered off the ground for the running layout.
+
+## Shadows before/after
+
+- Tool ready: `SKIP_BUILD=1 node tools/perf-shadow-check.mjs` (same views, sun shadows on, distance manager off then on; writes docs/s7/perf/shadows.json).
+- Not measured yet: on this machine the page dies for memory before the first frame after Play (3 tries). To be run on the Mac, or here when the other agents are idle. Expected effect: the shadow pass only draws casters within 60 m instead of everything inside the sun's 120 x 200 m shadow box, and characters past 15 m drop out of the shadow pass entirely.
+
+## Wiring needed (for the integrator)
+
+1. **main.js, already done in this branch** (one import + one call, marked `S7 WIRING (perf)`): `import { initPerfS7 } from './renderer.js';` and `initPerfS7({ scene, sun, player });` right after `const player = createPlayer();`.
+2. **main.js, player limits for the new layout** (lines ~220-222). Replace:
+
+```
+const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2;
+const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42;
+const GROUND_HALF_X = 880;
+```
+
+with:
+
+```
+import { worldBounds } from './zoneManager.js'; // (with the other imports)
+const WORLD = worldBounds(); // old: x -238..880, z +-280 (unchanged); new: x -238..1120, z +-380
+const GROUND_HALF_EXTENT = -WORLD.minX;
+const GROUND_HALF_Z = WORLD.maxZ;
+const GROUND_HALF_X = WORLD.maxX;
+```
+
+   Without this the player cannot ride past x 880 or beyond z +-280 in the new layout (the canal at 824 and the fields to 1090 are out of reach). `worldBounds()` reads `window.__dopaharLayout` if the layout loader sets it before main.js runs, else `?layout=`.
+3. **package.json, build order**: `build:unchecked` is now `vite build && node tools/check-budget.js`. If the characters agent adds a slimming step to the build, it must run BEFORE `check-budget.js` (the gate measures dist/ after slimming).
+4. **deploy.yml, Tue 24 Nov**: change the line marked `# S7-STRICT-FLIP` from `npm run budget` to `npm run budget:strict`.
+5. **For the characters agent / owner of main.js**: load the character models after Play (or by distance), not at boot. Today they are 52 MB asked for before Play.
+6. **For shops-land**: if canal.js exports `CANAL_PATH = [[x, z], ...]` the minimap draws that line in the new layout instead of the straight default at x 824.
+
+## Commits on s7-perf
+- chunked instancing helper + test + API notes
+- budget gate (warn in build, strict ready)
+- perf ride, distance shadows, world bounds + ground growth east, minimap canal, main.js wiring block
+- ride hardening (load numbers kept when the page dies), notes, baseline
