@@ -21,6 +21,9 @@ import { turnSiteGroup } from '../turn.js';
 import { createYardSite } from '../yardModels.js';
 import { createMapHaystacks, createDungCakeYard, createCarromScene, createFieldPropSite, createChemist, createManihari } from '../farmSites.js';
 import { RIDE_NOOK_SITES } from '../rideNooks.js';
+import { buildTrees } from '../trees.js';
+import { mergeGroupByMaterial } from '../mergeUtils.js';
+import { nearestClear } from './seat.js';
 import { LONG_WALK_SITES } from '../longWalks.js';
 
 // copied from src/main.js (the same yard walls, local to each yard's own origin)
@@ -99,6 +102,28 @@ export function initLayoutWiring({ zoneManager, scene, player } = {}) {
     }
     done.push(`${prefix}: ${moved} moved to the map, ${dropped} dropped (not on the map)`);
   }
+
+  // 4b. hand-offset shade trees round moved places (main.js outskirtTrees: fixed offsets from the anchor, not turned with it)
+  // and the old sugarcane belt / neighbour's orchard at the 'cane' anchor (the approved map has its own fields and orchards,
+  // built by the shops-land agent; the old belt now crosses the cross road and the west edge lane). Each tree keeps its spot
+  // where its trunk, with 2 m of crown, touches no building and no road of the approved map, or moves to the nearest such spot
+  // within 8 m; a tree with no clear spot that close is left out.
+  const OUTSKIRT = {
+    trees_pond: ['pond', [['neem', -18, -10, 21], ['peepal', 20, 12, 22, 0.8], ['babool', -16, 14, 23]]],
+    trees_johad: ['johad', [['babool', -16, -9, 24], ['neem', 18, 13, 25, 2.0], ['babool', -14, 15, 26, 1.0]]],
+    trees_haveli: ['haveli', [['peepal', -18, 12, 27], ['neem', 20, -16, 28, 0.5]]],
+    trees_gaushala: ['gaushala', [['neem', 19, -15, 29], ['peepal', -21, 15, 30, 1.4]]],
+  }; // copied from src/main.js (same kinds, offsets, seeds)
+  for (const [zone, [id, list]] of Object.entries(OUTSKIRT)) {
+    const z = Z.get(zone), a = ANCHORS[id];
+    if (!z || !a) continue;
+    const keep = list.map(([kind, dx, dz, seed, rotationY]) => { const q = nearestClear(a.x + dx, a.z + dz, 2, 8); return q && { kind, x: q.x, z: q.z, seed, ...(rotationY ? { rotationY } : {}) }; })
+      .filter(Boolean);
+    if (!keep.length) { Z.delete(zone); done.push(`dropped zone ${zone} (every tree landed on a building or road)`); continue; }
+    z.build = () => buildTrees(keep);
+    done.push(`${zone}: ${keep.length} of ${list.length} trees kept`);
+  }
+  for (const zone of ['sugarcane_belt', 'neighbour_orchard']) drop(zone);
 
   // 5. people and the player
   const attendant = scene && scene.getObjectByName('npc_pump_attendant');

@@ -50,7 +50,7 @@ export function getLayout() {
   if (!LAYOUT) {
     const places = {};
     for (const p of MAP_DATA.places) places[p.id] = p;
-    LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips };
+    LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips, galiShifts: MAP_DATA.galiShifts || [] };
   }
   return LAYOUT;
 }

@@ -30,17 +30,17 @@ export const EXISTING_FOOTPRINTS = {
   gaushala: { box: [-13.8, 13.6, -10.8, 11.4] }, // gaushala.glb bounds
   pond: { box: [-13, 13, -13, 13], open: true }, // src/dips.js: water R 9.6 with a wobbling outline, bank to u 1.25
   anganwadi: { box: [-5.3, 5.3, -4.85, 4.85] }, // docs/asset-slots.md fit box 10.6 x 9.7
-  mela: { box: [-31.3, 31.3, -26.7, 26.7], open: true },
-  gurudwara: { box: [-5.65, 5.65, -5.5, 5.5] }, // fit box 11.3 x 11.0
+  mela: { box: [-10, 19.4, -13, 13.5], open: true }, // src/farmSites.js createMelaGround: shamiana, stage, benches, swing, stalls (the 62 x 53 m fit box was the old open-ground outline)
+  gurudwara: { box: [-5, 5, -3.6, 7.4] }, // createGurudwara: 9.2 x 7.2 hall + porch and steps to the front (fit box 11 deep)
   tvhouse: { box: [-8, 8, -12, 7.5] }, // tv_house_v2.glb bounds
-  health: { box: [-4.8, 4.8, -4, 4] }, // fit box 9.6 x 8.0
-  sabzi: { box: [-5.1, 5.1, -2, 2] }, // fit box 10.2 x 4.0
+  health: { box: [-4.8, 4.8, -2.85, 5] }, // createHealthSubCentre: 9.2 x 5.7 block + verandah to z 5
+  sabzi: { box: [-4.95, 4.95, -1.4, 0.9] }, // createSabziRehris: three carts + tarp poles
   johad: { box: [-7, 7, -7, 7], open: true }, // src/dips.js: water R 5.4, bank to u 1.32
-  masjid: { box: [-5.45, 5.45, -5.3, 5.3] }, // fit box 10.9 x 10.6
+  masjid: { box: [-5.8, 4.1, -3.6, 3.6] }, // createMasjid: 8.2 x 7.2 hall + the minaret at x -5.2
   chemist: { box: [-2.4, 2.4, -2.9, 2.9] }, // fit box 4.8 x 5.8 (standalone again on the approved map)
   manihari: { box: [-2.6, 2.6, -0.9, 0.9] }, // fit box 5.2 x 1.8
-  jain: { box: [-3.7, 3.7, -4.8, 4.8] }, // fit box 7.4 x 9.6
-  haveli: { box: [-16, 16, -12.3, 12.3] }, // fit box 32.0 x 24.6
+  jain: { box: [-3.7, 3.7, -3.7, 4.8] }, // createJainMandir: 7.4 x 7.4 + front steps (fit box depth 9.6)
+  haveli: { box: [-16, 16, -10, 14.2] }, // src/farmSites.js createOldHaveli: 20 x 20 m ranges + the front yard walls to x +-16, z 14.15
   gurukul: { box: [-30.5, 30.5, -22.6, 23.1] }, // gurukul_v2.glb bounds (grounds included)
   maidan: { box: [-24, 24, -24, 24], open: true }, // the same ground as yard_khel
   mandi: { box: [-18.6, 18.6, -37, 37] }, // the built yard is 74 m long (src/anchors.js), her outline 58 m

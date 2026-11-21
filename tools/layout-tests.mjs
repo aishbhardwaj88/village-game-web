@@ -28,7 +28,7 @@ const VERBOSE = args.includes('--verbose');
 const DISTRICT = args.includes('--district') ? args[args.indexOf('--district') + 1] : null;
 const JSON_OUT = args.includes('--json') ? args[args.indexOf('--json') + 1] : null;
 
-const { pack, SRC, OUT } = await import('./layout-pack.mjs');
+const { inputsHash, OUT } = await import('./layout-pack.mjs');
 const L = await import('../src/layout/layout.js');
 const C = await import('../src/layout/layoutCore.js');
 const S = await import('../src/layout/layoutSnap.js');
@@ -40,8 +40,8 @@ const results = { sync: [], anchors: [], front: [], road: [], ground: [], overla
 const fail = (k, row) => results[k].push(row);
 
 // ------------------------------------------------------------------ 0. sync
-const raw = JSON.parse(fs.readFileSync(SRC, 'utf8'));
-if (fs.readFileSync(OUT, 'utf8') !== JSON.stringify(pack(raw))) fail('sync', { what: 'src/layout/mapData.json out of date (node tools/layout-pack.mjs)' });
+// the pack records a hash of everything it was derived from (the approved map + the derivation rules); a stale pack fails here
+if (JSON.parse(fs.readFileSync(OUT, 'utf8')).inputsHash !== inputsHash()) fail('sync', { what: 'src/layout/mapData.json out of date (node tools/layout-pack.mjs)' });
 
 // ------------------------------------------------------------------ 1. anchors / coordinate frame
 const LABELS = new Set(['eastgali', 'westgali']);

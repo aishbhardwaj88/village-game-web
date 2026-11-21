@@ -38,3 +38,16 @@ export function faceRoadYaw(x, z) {
   const n = nearestRoad(roads(), x, z);
   return n ? yawOf(n.qx - x, n.qz - z) : 0;
 }
+
+/** The nearest spot within `reach` m of (x, z) where a thing of radius r touches no building and no carriageway, or null. */
+export function nearestClear(x, z, r = 0.5, reach = 8) {
+  if (clearOfLayout(x, z, r)) return { x, z, moved: 0 };
+  for (let d = 0.5; d <= reach; d += 0.5) {
+    const steps = Math.max(8, Math.round(d * 6));
+    for (let k = 0; k < steps; k++) {
+      const a = (k / steps) * Math.PI * 2, px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d;
+      if (clearOfLayout(px, pz, r)) return { x: +px.toFixed(2), z: +pz.toFixed(2), moved: d };
+    }
+  }
+  return null;
+}
