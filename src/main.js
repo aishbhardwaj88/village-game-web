@@ -224,6 +224,7 @@ import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
 import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 // S7 WIRING (shops-land)
 import { initShopsLand } from './kit/landInit.js';
+import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 
 const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
 const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
@@ -388,6 +389,8 @@ async function main() {
   applyFog(scene, atmosphere);
   // S7 WIRING (shops-land): shops, trees, fields, canal, flag island, props of the approved map; ?layout=new only (no-op otherwise)
   initShopsLand(scene, { camera }).then((land) => { if (land) { window.__s7land = land.group.userData.landHeightAt; requestColliderRebuild(); } });
+  // S7 WIRING (mapobjects): tubewells, channels, ponds, tank, tower, gate, field and yard props of the approved map; ?layout=new only (docs/s7/mapobjects.md)
+  initMapObjects(scene, { camera }).then((mo) => { if (mo) { window.__s7mapobjHeight = mo.group.userData.heightAt; requestColliderRebuild(); } });
 
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.
