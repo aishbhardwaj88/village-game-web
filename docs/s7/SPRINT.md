@@ -46,3 +46,8 @@ Map coords are the game's world coords as read from the running game on 9 Nov (x
 
 ## Licence records (from the licence agent, 21 Nov)
 - Every new file under public/ needs a record in tools/licence-records.json (plus a CREDITS.md row if third-party) in the same commit. `npm run licence:check` must pass. New Tripo character GLBs are recognised automatically (owner question: Tripo plan).
+
+## Efficiency (her order, 22 Nov: "be very efficient")
+- New agents run on Sonnet by default. Use Opus only for genuinely hard design or debugging work, and say why in the brief.
+- Briefs are short. Agents read only the parts of files they need, take at most one headless browser run per task, and send previews only when she will look at them.
+- The integrator checks the Mac browser once per merge batch, not once per commit. No status messages unless something changed.
