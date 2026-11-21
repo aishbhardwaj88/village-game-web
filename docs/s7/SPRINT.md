@@ -32,3 +32,17 @@ The game matches the approved map (docs/layout/approved-map-2026-11-21.json, pic
 
 ## Coordinates
 Map coords are the game's world coords as read from the running game on 9 Nov (x east, z south, metres). Verify against 3 existing places before relying on it, and write what you found in your notes.
+
+## Selling rules (owner's decision, 21 Nov): the game will be SOLD
+- Two editions from ONE codebase: a paid downloadable desktop edition (Mac + Windows, "full" quality) and a free web edition ("light" quality). Quality differences come from a preset, never from a separate copy of the game.
+- Asset licences allowed: CC0; CC BY (credited in docs/CREDITS.md AND the in-game credits screen); OFL fonts; MIT/BSD/Apache code; assets we build ourselves; Tripo characters made on a paid plan. NOT allowed: NC (non-commercial), "personal use only", unknown or missing licence, CC BY-SA (avoid), anything ripped from games/films/YouTube, real brands or logos. Every new third-party file gets a CREDITS.md row (source URL, author, licence) in the same commit.
+- Sound is off until final polish (audio engine only starts with ?sound=1).
+- Agents added 21 Nov evening: desktop (s7-desktop), licence (s7-licence).
+
+## Order of editions (owner, 21 Nov late evening)
+- FULL quality (desktop edition) first. The LIGHT web edition is built only after she approves the new village in 3D.
+- Until then: no time on web-only slimming or web budgets; the budget gate stays in warn mode (the Tue 24 strict flip is postponed).
+- Still needed for any machine: characters load after Play, distance tiers, chunked instancing, shadows by distance.
+
+## Licence records (from the licence agent, 21 Nov)
+- Every new file under public/ needs a record in tools/licence-records.json (plus a CREDITS.md row if third-party) in the same commit. `npm run licence:check` must pass. New Tripo character GLBs are recognised automatically (owner question: Tripo plan).

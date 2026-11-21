@@ -12,11 +12,13 @@ import { MAP_SHIFT, CHAURAHA, bendMapRoad } from './mapPlan.js';
 import { dirtTrackLines } from './dirtTracks.js';
 import { pt } from './anchors.js';
 import MAP from '../docs/layout/village-plan-positions-2026-11-01.json';
+import { isNewLayout, getRoads } from './layout/layout.js';
 
 const kindOf = (type) => (type === 'back lane' ? 'back' : type.startsWith('farm') ? 'track' : type === 'front path' ? 'path' : 'lane');
 
 /** Every polyline of the map: { id, w, kind, pts: [[x, z]...], closed, noDrain } in world metres (shift applied). */
 export function mapRoadLines() {
+  if (isNewLayout()) return newMapRoadLines();
   const lines = [];
   const add = (id, w, c, kind, closed, extra = {}) => {
     const pts = c.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]);
@@ -30,6 +32,19 @@ export function mapRoadLines() {
     add(`${i}_${l.name}`, l.width_m, l.centreline, kind, l.closed, kind === 'back' && l.type === 'village lane' ? { tint: 0xab9470 } : {});
   });
   return lines;
+}
+
+/**
+ * S7 (?layout=new): the approved 21 Nov map's roads (src/layout/layout.js getRoads, galis already trimmed short of the
+ * buildings they lead to by tools/layout-pack.mjs). Same line format as the 1 Nov ones, so every reader keeps working.
+ * The roundabout ring is left out here: ringArms() below lays it, exactly as today.
+ */
+function newMapRoadLines() {
+  return getRoads().filter((r) => r.id !== 'chauraha_ring').map((r) => {
+    const pts = r.pts.map((p) => p.slice());
+    const closed = pts.length > 2 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
+    return { id: r.id, w: r.width, pts, kind: r.kind, closed, ...(r.kind === 'back' ? { tint: 0xab9470 } : {}) };
+  });
 }
 
 /**
@@ -92,6 +107,8 @@ function ringArms(lines) {
 }
 
 export function allRoadLines() {
+  // ?layout=new: the approved map is the whole network (its farm tracks replace the old kachcha tracks, the field loop and the temple stub)
+  if (isNewLayout()) return ringArms(mapRoadLines());
   const map = ringArms(mapRoadLines());
   const lines = [...map, ...dirtTrackLines().map((t) => ({ id: t.id, w: t.w, pts: t.pts, y: t.y, kind: t.w >= 3 ? 'track' : 'path' }))];
   for (const l of legacyLines()) {
@@ -137,7 +154,11 @@ export const ROAD_CHUNK_RADIUS = 260;
 /** Street-lamp legs along the map's village lanes: polylines cut into straight chunks of at most 36 m, each { id, a, b, w, len }. Back lanes, farm tracks and front paths get none. */
 export function mapLampLegs() {
   const legs = [];
-  MAP.lanes_and_tracks.forEach((l, li) => {
+  // ?layout=new: lamps along the approved map's village lanes (outer lanes, inner lanes, the west edge lane); galis and tracks get none
+  const src = isNewLayout()
+    ? getRoads().filter((r) => r.kind === 'lane').map((r) => ({ type: 'village lane', width_m: r.width, centreline: r.pts.map(([x, z]) => [x - MAP_SHIFT.x, z - MAP_SHIFT.z]) }))
+    : MAP.lanes_and_tracks;
+  src.forEach((l, li) => {
     if (l.type !== 'village lane') return;
     const pts = l.centreline.map(([x, z]) => ({ x: x + MAP_SHIFT.x, z: z + MAP_SHIFT.z }));
     for (let i = 1; i < pts.length; i++) {
