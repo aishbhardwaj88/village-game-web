@@ -28,3 +28,11 @@ The checker collects all of these from the game's own modules, so this list is a
 - main.js: one import + `spot(...)` calls, marked `// S7 WIRING (missions)` (Dada, house facings, child walk, postman walk).
 - Also touched: vehicles.js (spawns), baagh.js, sideJobs.js, discoveryLog.js, wallStories.js, interactionsExtra.js, jobs/*.js.
 - Re-run the new-layout boot once to confirm the trolley attaches at the new spawn.
+
+## Correction (22 Nov, QA audit + integrator)
+The "365 tests, 0 FAIL, 4 WARN" above was measured before src/kit/landLayout.js started using
+import.meta.glob, which crashed tools/missions-check.mjs's Node shim on every run since (it was
+reporting a crash artifact, "dadi off the map at 0,0", as if it were a real failure). Fixed in
+tools/missions-node-env.mjs (22 Nov). Re-run, current numbers: 362 tests, 0 FAIL, 4 WARN, 163
+points under new layout; Dadi, banta, chaat and the milk round all show real positions and PASS.
+Fresh snapshot: docs/s7/missions-check-2026-11-22.json.
