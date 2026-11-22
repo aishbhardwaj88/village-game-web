@@ -28,6 +28,11 @@ const SETS = {
   jute: { base: 'assets/textures/jute/', maps: ['color', 'normal', 'roughness'] },
   tarpaulin: { base: 'assets/textures/tarpaulin/', maps: ['color', 'normal', 'roughness'] },
   brick: { base: 'assets/textures/brick/', maps: ['color', 'normal', 'roughness'] },
+  // S7 WIRING (textures) — closes the "add to SETS" note left by housesMaterial.js, which
+  // loads dryearth/thatch raw files itself today. Same CC0 sets already on disk and in
+  // docs/CREDITS.md; no new files. (rust was already added above by shops-land.)
+  thatch: { base: 'assets/textures/thatch/', maps: ['color', 'normal', 'roughness'] },
+  dryearth: { base: 'assets/textures/dryearth/', maps: ['color', 'normal', 'roughness'] },
 };
 
 function loadRaw(url, srgb) {
@@ -138,7 +143,7 @@ const dpPrevHooks = new WeakMap();   // material -> { hook, key } it had before 
 /** Library set name -> variation family (null = leave alone). */
 export function surfaceFamilyFor(set) {
   if (set === 'plaster' || set === 'brick' || set === 'concrete') return 'masonry';
-  if (set === 'wood' || set === 'terracotta' || set === 'thatch' || set === 'jute' || set === 'tarpaulin') return 'matte';
+  if (set === 'wood' || set === 'terracotta' || set === 'thatch' || set === 'jute' || set === 'tarpaulin' || set === 'dryearth') return 'matte';
   if (set === 'tin' || set === 'metal' || set === 'rust') return 'tin';
   if (set === 'lane') return 'earth';
   return null;
@@ -187,7 +192,7 @@ function removeSurfaceVariation(material) {
   if (saved.key) material.customProgramCacheKey = saved.key; else delete material.customProgramCacheKey;
 }
 
-const MATTE_SETS = new Set(['plaster', 'concrete', 'wood', 'terracotta', 'jute', 'tarpaulin', 'brick']);
+const MATTE_SETS = new Set(['plaster', 'concrete', 'wood', 'terracotta', 'jute', 'tarpaulin', 'brick', 'thatch', 'dryearth']);
 
 /**
  * Matte, uneven, never-plastic response for code-built surfaces (shader only, no
