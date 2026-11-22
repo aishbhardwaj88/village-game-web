@@ -7,6 +7,7 @@ import { SignAtlas, boardGeometry, signNameFor } from './shopsSigns.js';
 import { kitMaterials } from './landMaterials.js';
 import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from './landLayout.js';
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
+import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 
 /**
  * Places every new shop of the approved map (?layout=new): the ~44 two-storey shop-houses (new_sqx), the ~37 kiosks and
@@ -42,6 +43,7 @@ export function buildShops(map, { camera = null } = {}) {
   const kit = new BatchKit('s7_shops');
   const atlas = new SignAtlas();
   const boards = [];
+  const muralBoxes = [];
   const colliders = [];
   const lod = []; // { x, z, near, far }
   const report = { shopHouses: 0, shopkeeperHomes: 0, shops: 0, kiosks: 0, carts: 0, sheds: 0, skipped: [], onRoad: [], backToRoad: [], skewed: [] };
@@ -82,6 +84,7 @@ export function buildShops(map, { camera = null } = {}) {
     if (front > back + 0.5 && front > 4) report.backToRoad.push(`${opts.signName || key} at ${rect.x.toFixed(1)},${rect.z.toFixed(1)} (front ${front.toFixed(1)} m from a road, back ${back.toFixed(1)} m)`);
     if (rect.skewDeg > 3) report.skewed.push(`${opts.signName || key} plot edge is ${rect.skewDeg.toFixed(1)} deg off its front`);
     colliders.push(...orientedBoxes(rect.x, rect.z, rect.ry, opts.colW ?? rect.width, opts.colD ?? rect.depth));
+    muralBoxes.push({ x: rect.x, z: rect.z, ry: rect.ry, w: opts.colW ?? rect.width, d: opts.colD ?? rect.depth, seed: i });
   };
 
   let i = 0;
@@ -174,6 +177,10 @@ export function buildShops(map, { camera = null } = {}) {
     signs.receiveShadow = true;
     group.add(signs);
   }
+  // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per shop at most.
+  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes);
+  if (muralMesh) group.add(muralMesh);
+  report.murals = muralStats;
   // colliders ride on the concrete batch (a mesh, so the collider walk reads them); it never derives its own
   const holder = kit.batches.get('concrete')?.bm || bodies.children[0];
   if (holder) holder.userData.colliderBoxes = colliders;

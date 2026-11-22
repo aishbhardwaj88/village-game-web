@@ -8,6 +8,7 @@ import { isNewLayout } from './housesLayout.js';
 import { dipHeightRaw } from '../dips.js';
 import { requestColliderRebuild } from '../collision.js';
 import { houseQuality } from './housesQuality.js';
+import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 
 /**
  * The new-map houses (S7 sprint, houses agent): all ~490 'new_house' footprints of the approved 21 Nov map, built from the
@@ -165,6 +166,15 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
   group.name = 'houses_s7';
   group.add(batch, colliders);
 
+  // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per building at most.
+  const muralBoxes = entries.map((e, i) => ({
+    x: e.x, z: e.z, y: e.y || 0, ry: e.ry,
+    w: e.w ?? e.cw * (e.sx || 1), d: e.d ?? e.cd * (e.sz || 1),
+    seed: i,
+  }));
+  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes);
+  if (muralMesh) group.add(muralMesh);
+
   let lx = 1e9, lz = 1e9;
   const state = { near: 0, far: 0, clutter: 0 };
   function update(px, pz, force = false) {
@@ -189,6 +199,7 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
     geometryMB: +((vtx * 28 + idx * 4) / 1048576).toFixed(1),
     avgNearTriangles: Math.round(nearTris / Math.max(1, nearCount)), lod: state,
   };
+  stats.murals = muralStats;
   return { group, batch, update, colliderBoxes, stats, houses: entries };
 }
 
