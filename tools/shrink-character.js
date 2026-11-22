@@ -1,5 +1,16 @@
 #!/usr/bin/env node
 /**
+ * SUPERSEDED, 23 Nov, same night it was written - use tools/char-diet.mjs instead.
+ * That tool already does this (texture resize + meshopt-compress), already runs
+ * automatically in the web build, never simplifies the mesh at all (this one does,
+ * unnecessarily), and verifies itself against the original. Characters are still
+ * large on disk because src/edition.js's WEB_QUALITY is 'full' (the owner's own
+ * 21 Nov call, full quality first) - not because char-diet.mjs is missing or broken.
+ * See docs/NEEDS_YOU.md's correction note, same date, for the full story.
+ *
+ * Kept rather than deleted (standing rule: never rm). Left otherwise unchanged below
+ * as a record of the dead end - do not run this against any shipped character file.
+ *
  * Character-safe shrink: resize texture + simplify mesh + meshopt-compress,
  * WITHOUT tools/shrink.js's prune() step - which silently drops the skin and
  * animations from a rigged character (found 23 Nov while checking why the 10
