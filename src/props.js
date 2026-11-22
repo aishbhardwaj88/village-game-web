@@ -475,6 +475,26 @@ export function createWaterTankProp(position) {
   group.name = 'water_tank_prop';
   group.add(mesh);
   group.position.set(position.x, 0, position.z);
-  // No colliders: streamed by zoneManager (src/main.js), which does not register colliders; legs are thin scenery.
+  // Real colliders for the four concrete legs and the two transformer poles - found missing 22 Nov
+  // by tools/collider-coverage-audit.mjs: the old "legs are thin scenery" comment was wrong (each leg
+  // is a real 0.4x0.4 m post running the full 9 m body-band height), and this mesh's own name
+  // ('water_tank'/'water_tank_prop') accidentally matches solidRules.js's water-surface exclusion by
+  // bare substring, so the usual auto-derive safety net never applied either - a player could walk
+  // straight through the tallest landmark in the village. Same invisible-tagged-box convention
+  // createFlagpoleProp() uses above, sized to match the visible geometry exactly.
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.4, legH, 0.4));
+    leg.position.set(sx * half, legH / 2, sz * half); // local to `group`, matches the visual leg above
+    leg.userData.collider = true;
+    leg.visible = false;
+    group.add(leg);
+  }
+  for (const dz of [-0.6, 0.6]) {
+    const pole = new THREE.Mesh(new THREE.BoxGeometry(0.26, 8, 0.26));
+    pole.position.set(tx, 4, dz);
+    pole.userData.collider = true;
+    pole.visible = false;
+    group.add(pole);
+  }
   return group;
 }
