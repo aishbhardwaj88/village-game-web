@@ -7,7 +7,7 @@
  * curve); village lanes carry their nali as a groove in the surface. The "To the city" boards and back-lane posts are src/mapGates.js.
  */
 import * as THREE from 'three';
-import { buildNetwork, networkMesh } from './roadNetwork.js';
+import { buildNetwork, networkMesh, stonesMesh } from './roadNetwork.js';
 import { MAP_SHIFT, CHAURAHA, bendMapRoad } from './mapPlan.js';
 import { dirtTrackLines } from './dirtTracks.js';
 import { pt } from './anchors.js';
@@ -145,6 +145,9 @@ export function* createMapRoads(chunkId) {
   yield; // the shared network build (first chunk only) and the mesh build land on separate frames (10 Nov, S1)
   const mesh = chunk && networkMesh(net, chunk.rect, `${chunkId}_strips`);
   if (mesh) group.add(mesh);
+  yield; // the stone scatter walks every line again; its own frame slice, same reason as the comment above
+  const stones = chunk && stonesMesh(net, chunk.rect, `${chunkId}_stones`);
+  if (stones) group.add(stones);
   return group;
 }
 

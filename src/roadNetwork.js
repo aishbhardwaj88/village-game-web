@@ -17,6 +17,7 @@
  * Ground-level, never solid.
  */
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2 } from './materials.js';
 import { isNewLayout } from './layout/layout.js';
 const NEW_LAYOUT = isNewLayout();
@@ -300,6 +301,82 @@ export function networkMesh(net, rect, name) {
   mesh.receiveShadow = true;
   mesh.castShadow = false;
   mesh.renderOrder = -1; // under every other see-through thing at ground level
+  return mesh;
+}
+
+// ---------------------------------------------------------------- loose roadside stones (her playtest note, 2nd half)
+// Small broken aggregate swept to the road's own edge, never on the carriageway itself. Procedural (no Blender pass,
+// no download), one low-poly rock shape merged per chunk into ONE mesh - same draw-call-per-chunk budget as the
+// surface itself, zero extra texture: the shared 'concrete' set, tinted and vertex-coloured per stone.
+let ROCK_GEO = null;
+function rockGeometry() {
+  if (ROCK_GEO) return ROCK_GEO;
+  const g = new THREE.IcosahedronGeometry(0.1, 0);
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const j = 1 + 0.22 * vnoise(x * 9 + i, z * 9 - i);
+    pos.setXYZ(i, x * j, y * j * 0.62, z * j); // squashed flatter, a rock resting on the ground, not a ball
+  }
+  g.computeVertexNormals();
+  ROCK_GEO = g;
+  return g;
+}
+let STONE_MAT = null;
+function stoneMaterial() {
+  if (STONE_MAT) return STONE_MAT;
+  STONE_MAT = getTiledMaterial('concrete', { repeatX: 1.3, repeatY: 1.3, roughness: 1, vertexColors: true }).clone();
+  STONE_MAT.name = 'road_stone';
+  return STONE_MAT;
+}
+const STEP = 1.4; // metres along a line between candidate stone spots
+/** Deterministic scatter of loose stones along `net`'s eligible lines, inside `rect`. One mesh, merged, per chunk. */
+export function stonesMesh(net, rect, name) {
+  const geo = rockGeometry();
+  const parts = [];
+  const m = new THREE.Matrix4(), col = new THREE.Color();
+  let seed = 0;
+  for (const l of net.lines) {
+    if (!l.k.potholes) continue; // same eligible kinds as the potholes above (road/lane/back/highway, not track/path)
+    for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i];
+      const dx = bx - ax, dz = bz - az, len = Math.hypot(dx, dz);
+      if (len < 1e-4) continue;
+      const ux = dx / len, uz = dz / len, nx = -uz, nz = ux; // unit along, unit left-normal
+      const steps = Math.max(1, Math.round(len / STEP));
+      for (let s = 0; s <= steps; s++) {
+        seed++;
+        const t = s / steps, px = ax + ux * len * t, pz = az + uz * len * t;
+        if (px < rect.x0 - 2 || px > rect.x1 + 2 || pz < rect.z0 - 2 || pz > rect.z1 + 2) continue;
+        if (hash2(Math.floor(px * 37) + seed, Math.floor(pz * 53) - seed) > 0.14) continue; // ~14% of spots host a stone
+        const side = hash2(seed * 11 + 3, seed * 7 - 2) > 0.5 ? 1 : -1;
+        const lat = l.hw + l.k.band * (0.25 + 0.55 * hash2(seed * 19, seed * 29)); // just past the carriageway edge, inside the worn band
+        const jx = (hash2(seed * 41, seed * 43) - 0.5) * 0.5, jz = (hash2(seed * 47, seed * 53) - 0.5) * 0.5;
+        const x = px + nx * lat * side + jx, z = pz + nz * lat * side + jz;
+        const scale = 0.5 + 0.9 * hash2(seed * 61, seed * 67);
+        const yaw = hash2(seed * 71, seed * 73) * Math.PI * 2;
+        m.makeRotationY(yaw);
+        m.scale(new THREE.Vector3(scale, scale, scale));
+        m.setPosition(x, 0.01, z);
+        const inst = geo.clone().applyMatrix4(m);
+        const shade = 0.68 + 0.28 * hash2(seed * 83, seed * 89);
+        col.setRGB(shade, shade * 0.97, shade * 0.92);
+        const n = inst.attributes.position.count;
+        const carr = new Float32Array(n * 3);
+        for (let v = 0; v < n; v++) carr[v * 3] = col.r, carr[v * 3 + 1] = col.g, carr[v * 3 + 2] = col.b;
+        inst.setAttribute('color', new THREE.BufferAttribute(carr, 3));
+        inst.deleteAttribute('uv2');
+        parts.push(inst);
+      }
+    }
+  }
+  if (!parts.length) return null;
+  const merged = mergeGeometries(parts, false);
+  ensureUv2(merged);
+  const mesh = new THREE.Mesh(merged, stoneMaterial());
+  mesh.name = name;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   return mesh;
 }
 
