@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
-import { createScene, createGround, createSun, loadEnvironment, applyFog, GROUND_SIZE } from './scene.js';
+import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
@@ -226,10 +226,15 @@ import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 // S7 WIRING (shops-land)
 import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
+import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
-const GROUND_HALF_EXTENT = GROUND_SIZE / 2 - 2; // keep the player a couple metres inside the ground
-const GROUND_HALF_Z = GROUND_HALF_EXTENT + 42; // the 1 Nov map's far-north abadi houses reach z -241; the drawn ground (912 m) is much larger
-const GROUND_HALF_X = 880; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches x 912
+// S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
+// canal (x 824) and fields (to x 1090) and the wider field band (z +-380) are reachable, which the old hardcoded
+// GROUND_HALF_X=880 / GROUND_HALF_Z=280 cut off.
+const WORLD = worldBounds();
+const GROUND_HALF_EXTENT = -WORLD.minX; // keep the player a couple metres inside the ground
+const GROUND_HALF_Z = WORLD.maxZ;
+const GROUND_HALF_X = WORLD.maxX; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches further still
 const MOVE_SPEED = 4.2; // m/s, walking pace
 const CYCLE_TOP_SPEED = 7.5; // m/s, 27 km/h (9 Nov playtest: 5.5 felt like a punctured tyre); a fixed cycle speed, not a walking multiple (7 Nov), so a motorbike can get its own
 const CYCLE_SPRINT_SPEED = 9.5; // m/s, Shift held
