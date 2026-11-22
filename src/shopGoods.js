@@ -163,7 +163,12 @@ function getAtlas() {
   };
   paint();
   Promise.all([document.fonts.load('600 20px "Noto Sans Devanagari"'), document.fonts.ready]).then(paint, paint);
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.42, metalness: 0.12 });
+  // 23 Nov - metalness 0.12 was wrong for this whole atlas: nothing drawn into it (sweets,
+  // packets, bottles, cloth bolts, a cotton towel, a rubber tyre) is actual metal, and this
+  // project's own rule elsewhere (src/sharedTextures.js) is "metalness 0 except real metal" -
+  // same bug family as the grass roughness fix today, just smaller: a shared scalar applied
+  // uniformly across very different surfaces. Zeroed it.
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.42, metalness: 0 });
   material.name = 'shop_goods';
   atlas = { texture, material };
   return atlas;
