@@ -16,3 +16,4 @@ Plain-language list of anything blocked on you. No jargon. The dashboard shows t
 the top. Mark an item done from the dashboard, or edit this file directly. Keep each
 item as a single line (do not wrap it across lines), ending in `- status: open` or
 `- status: done` - the dashboard parses one item per line.
+- Rebuilt tin roof, thatch, mud-and-dung-wall, and jute-weave as real 3D texture (not flat paint), per your 27/28 Oct note on what was still failing - look at docs/s7/textures/board.png when you can: thatch came out denser and spikier than real thatch, your call on whether it needs a second softer pass - status: open
