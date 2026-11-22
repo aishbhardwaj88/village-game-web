@@ -33,7 +33,33 @@ const SETS = {
   // docs/CREDITS.md; no new files. (rust was already added above by shops-land.)
   thatch: { base: 'assets/textures/thatch/', maps: ['color', 'normal', 'roughness'] },
   dryearth: { base: 'assets/textures/dryearth/', maps: ['color', 'normal', 'roughness'] },
+
+  // --- CANDIDATE REPLACEMENTS, staged 22 Nov for Aishwarya's look-approval ---
+  // Not live. Only reached via the ?matv2=1 dev toggle below (see VARIANT_OVERRIDE).
+  // Poly Haven CC0 "dirt_floor" (compacted, slightly muddy dirt, real ARM scan) —
+  // candidate to replace 'lane' (road). She called the current lane material
+  // "plasticky"; its roughness map is mid-grey, this one is near-white/matte.
+  lane_v2: { base: 'assets/textures_candidates/lane_v2/', maps: ['color', 'normal', 'roughness'] },
+  // Poly Haven CC0 "beige_wall_001" (smooth painted exterior wall, undamaged) —
+  // candidate to replace 'plaster' (painted buildings). Current plaster_color.webp
+  // has baked-in cracks, which reads as "falling apart" against CLAUDE.md section 6's
+  // "worn-in yes, falling apart no" rule; this one is clean/cared-for.
+  plaster_v2: { base: 'assets/textures_candidates/plaster_v2/', maps: ['color', 'normal', 'roughness'] },
 };
+
+// Dev-only A/B toggle so a candidate material swap can be shown live in-game without
+// touching the frozen library or the 20+ files that call getTiledMaterial('plaster'/
+// 'lane', ...) — per docs/collaboration_lessons.md "materials are frozen, only she
+// decides taste, show her early/small/once". Visit the game with ?matv2=1 in the URL
+// to preview candidates; default (no param) is bit-for-bit the current live look.
+// Once she approves, the fix is to rename the _v2 SETS entry over the original and
+// delete this block — never leave the toggle in as the permanent mechanism.
+const VARIANT_OVERRIDE = (() => {
+  try {
+    return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('matv2') === '1';
+  } catch { return false; }
+})();
+const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
 
 function loadRaw(url, srgb) {
   // One real load() per URL, reused via clone() for every repeat/tint variant — this
@@ -57,16 +83,17 @@ function loadRaw(url, srgb) {
  * (name, repeat, tint) so reused tiling scales share one material/draw-call group.
  */
 export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1, tintStrength = 1, vertexColors = false } = {}) {
-  const key = `${name}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}|${vertexColors ? 'vc' : ''}`;
+  const resolvedName = (VARIANT_OVERRIDE && VARIANTS[name]) ? VARIANTS[name] : name;
+  const key = `${resolvedName}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}|${vertexColors ? 'vc' : ''}`;
   let mat = materialCache.get(key);
   if (mat) return mat;
 
-  const set = SETS[name];
-  if (!set) throw new Error(`Unknown texture set: ${name}`);
+  const set = SETS[resolvedName];
+  if (!set) throw new Error(`Unknown texture set: ${resolvedName}`);
 
   const opts = { map: null, normalMap: null, roughnessMap: null, aoMap: null, roughness };
   for (const mapType of set.maps) {
-    const tex = loadRaw(set.base + name + '_' + mapType + '.webp', mapType === 'color').clone();
+    const tex = loadRaw(set.base + resolvedName + '_' + mapType + '.webp', mapType === 'color').clone();
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(repeatX, repeatY);

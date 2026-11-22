@@ -42,6 +42,32 @@
   },
   {
    "match": [
+    "public/assets/textures_candidates/lane_v2/*"
+   ],
+   "category": "credited",
+   "title": "dirt_floor (candidate road/muddy-road replacement, staged 22 Nov, not yet approved)",
+   "source": "Poly Haven",
+   "url": "https://polyhaven.com/a/dirt_floor",
+   "author": "Poly Haven",
+   "licence": "CC0",
+   "creditsKey": "dirt_floor",
+   "evidence": "Downloaded 4K PNG, downscaled to 1024 and re-encoded to WebP in-browser for Aishwarya's review; not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
+  },
+  {
+   "match": [
+    "public/assets/textures_candidates/plaster_v2/*"
+   ],
+   "category": "credited",
+   "title": "beige_wall_001 (candidate painted-wall replacement, staged 22 Nov, not yet approved)",
+   "source": "Poly Haven",
+   "url": "https://polyhaven.com/a/beige_wall_001",
+   "author": "Poly Haven",
+   "licence": "CC0",
+   "creditsKey": "beige_wall_001",
+   "evidence": "Downloaded 4K PNG, downscaled to 1024 and re-encoded to WebP in-browser for Aishwarya's review; not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
+  },
+  {
+   "match": [
     "public/assets/textures/plaster/*"
    ],
    "category": "credited",

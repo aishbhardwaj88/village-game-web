@@ -57,7 +57,7 @@ async function main() {
     await waitForServer(BASE_URL);
     const browser = await chromium.launch({
       headless: true,
-      args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'],
+      args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox', '--no-sandbox'],
     });
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const pageErrors = [];
