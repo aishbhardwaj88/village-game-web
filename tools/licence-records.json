@@ -1,1967 +1,2123 @@
 {
- "_readme": "One licence record for every file that ships from public/. Read by tools/licence-audit.mjs. Add a record IN THE SAME COMMIT as any new file under public/. Categories: credited (third-party, must have a docs/CREDITS.md row: creditsKey must appear there), self-made (builder = the script that makes it), tripo (plan must be confirmed by the owner), flag (not allowed, must be replaced). match = paths, * matches any characters except /.",
- "allowedLicences": [
-  "CC0",
-  "CC BY 4.0",
-  "CC BY 3.0",
-  "OFL-1.1",
-  "MIT",
-  "BSD-2-Clause",
-  "BSD-3-Clause",
-  "Apache-2.0",
-  "Zlib",
-  "ISC"
- ],
- "tripoPlanConfirmed": null,
- "records": [
-  {
-   "match": [
-    "public/assets/textures/ground/*"
-   ],
-   "category": "credited",
-   "title": "Ground109 (ground texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Ground109",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Ground109",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/lane/*"
-   ],
-   "category": "credited",
-   "title": "Ground102 (lane texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Ground102",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Ground102",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures_candidates/lane_v2/*"
-   ],
-   "category": "credited",
-   "title": "dirt_floor (candidate road/muddy-road replacement, staged 22 Nov, not yet approved)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/dirt_floor",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "dirt_floor",
-   "evidence": "Downloaded 4K PNG, downscaled to 1024 and re-encoded to WebP in-browser for Aishwarya's review; not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
-  },
-  {
-   "match": [
-    "public/assets/textures_candidates/plaster_v2/*"
-   ],
-   "category": "credited",
-   "title": "PaintedPlaster017, crack-removed (candidate painted-wall replacement, staged 22 Nov v2, not yet approved)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=PaintedPlaster017",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "PaintedPlaster017",
-   "evidence": "22 Nov v1 used Poly Haven beige_wall_001, but its normal map is nearly flat (she said the candidates didn't look realistic - correctly). v2: reverted to the existing, already-credited PaintedPlaster017 color/normal/roughness (real stucco grain, good relief under raking light), ran the color map through a median blur in this repo to remove the baked-in crack lines while keeping the normal/roughness untouched - not a new third-party asset, a cleaned-up derivative of one already in CREDITS.md. Not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
-  },
-  {
-   "match": [
-    "public/assets/textures/plaster/*"
-   ],
-   "category": "credited",
-   "title": "PaintedPlaster017 (plaster texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=PaintedPlaster017",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "PaintedPlaster017",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/concrete/*"
-   ],
-   "category": "credited",
-   "title": "Concrete048 (concrete texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Concrete048",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Concrete048",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/wood/*"
-   ],
-   "category": "credited",
-   "title": "Planks023A (wood texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Planks023A",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Planks023A",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/metal/*"
-   ],
-   "category": "credited",
-   "title": "Metal009 (metal texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Metal009",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Metal009",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/terracotta/*"
-   ],
-   "category": "credited",
-   "title": "GlazedTerracotta001 (terracotta texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=GlazedTerracotta001",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "GlazedTerracotta001",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/crop/*"
-   ],
-   "category": "credited",
-   "title": "Grass001 (crop texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Grass001",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Grass001",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/tin/*"
-   ],
-   "category": "credited",
-   "title": "CorrugatedSteel005 (tin texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=CorrugatedSteel005",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "CorrugatedSteel005",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/brick/*"
-   ],
-   "category": "credited",
-   "title": "Bricks051 (brick texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Bricks051",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Bricks051",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/jute/*"
-   ],
-   "category": "credited",
-   "title": "Fabric061 (jute texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Fabric061",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Fabric061",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/tarpaulin/*"
-   ],
-   "category": "credited",
-   "title": "Fabric066 (tarpaulin texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Fabric066",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Fabric066",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/rust/*"
-   ],
-   "category": "credited",
-   "title": "Rust007 (rust texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Rust007",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Rust007",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/burlap/*"
-   ],
-   "category": "credited",
-   "title": "Fabric030 (burlap texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Fabric030",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Fabric030",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/dryearth/*"
-   ],
-   "category": "credited",
-   "title": "Ground054 (dryearth texture)",
-   "source": "ambientCG",
-   "url": "https://ambientcg.com/view?id=Ground054",
-   "author": "ambientCG (Lennart Demes)",
-   "licence": "CC0",
-   "creditsKey": "Ground054",
-   "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/grass/*"
-   ],
-   "category": "credited",
-   "title": "Aerial Grass Rock (grass texture)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/aerial_grass_rock",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "aerial_grass_rock",
-   "polyhavenSlug": "aerial_grass_rock",
-   "evidence": "CREDITS.md row; 4K downscaled to 1K WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/textures/thatch/*"
-   ],
-   "category": "credited",
-   "title": "Thatch Roof Angled (thatch texture)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/thatch_roof_angled",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "thatch_roof_angled",
-   "polyhavenSlug": "thatch_roof_angled",
-   "evidence": "CREDITS.md row; 4K downscaled to 1K WebP in this repo"
-  },
-  {
-   "match": [
-    "public/assets/hdri/camdeboo_road_512.hdr"
-   ],
-   "category": "credited",
-   "title": "Camdeboo Road (sky HDRI)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/camdeboo_road",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "camdeboo_road",
-   "polyhavenSlug": "camdeboo_road",
-   "evidence": "CREDITS.md row; 1K HDRI downscaled to 512 by tools/hdr-downscale.mjs"
-  },
-  {
-   "match": [
-    "public/assets/models/ceramic_pot.glb"
-   ],
-   "category": "credited",
-   "title": "Ceramic Pot (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/ceramic_pot",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "ceramic_pot",
-   "polyhavenSlug": "ceramic_pot",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/brass_pot_01.glb"
-   ],
-   "category": "credited",
-   "title": "Brass Pot 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/brass_pot_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "brass_pot_01",
-   "polyhavenSlug": "brass_pot_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/ceramic_vase_01.glb"
-   ],
-   "category": "credited",
-   "title": "Ceramic Vase 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/ceramic_vase_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "ceramic_vase_01",
-   "polyhavenSlug": "ceramic_vase_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/jug_01.glb"
-   ],
-   "category": "credited",
-   "title": "Jug 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/jug_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "jug_01",
-   "polyhavenSlug": "jug_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/metal_jug.glb"
-   ],
-   "category": "credited",
-   "title": "Metal Jug (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/metal_jug",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "metal_jug",
-   "polyhavenSlug": "metal_jug",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/old_tyre.glb"
-   ],
-   "category": "credited",
-   "title": "Old Tyre (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/old_tyre",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "old_tyre",
-   "polyhavenSlug": "old_tyre",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/painted_wooden_bench.glb"
-   ],
-   "category": "credited",
-   "title": "Painted Wooden Bench (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/painted_wooden_bench",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "painted_wooden_bench",
-   "polyhavenSlug": "painted_wooden_bench",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/painted_wooden_chair_01.glb"
-   ],
-   "category": "credited",
-   "title": "Painted Wooden Chair 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/painted_wooden_chair_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "painted_wooden_chair_01",
-   "polyhavenSlug": "painted_wooden_chair_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/painted_wooden_stool.glb"
-   ],
-   "category": "credited",
-   "title": "Painted Wooden Stool (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/painted_wooden_stool",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "painted_wooden_stool",
-   "polyhavenSlug": "painted_wooden_stool",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/planter_pot_clay.glb"
-   ],
-   "category": "credited",
-   "title": "Planter Pot Clay (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/planter_pot_clay",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "planter_pot_clay",
-   "polyhavenSlug": "planter_pot_clay",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/plastic_monobloc_chair_01.glb"
-   ],
-   "category": "credited",
-   "title": "Plastic Monobloc Chair 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/plastic_monobloc_chair_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "plastic_monobloc_chair_01",
-   "polyhavenSlug": "plastic_monobloc_chair_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/potted_plant_01.glb"
-   ],
-   "category": "credited",
-   "title": "Potted Plant 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/potted_plant_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "potted_plant_01",
-   "polyhavenSlug": "potted_plant_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/potted_plant_02.glb"
-   ],
-   "category": "credited",
-   "title": "Potted Plant 02 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/potted_plant_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "potted_plant_02",
-   "polyhavenSlug": "potted_plant_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/potted_plant_04.glb"
-   ],
-   "category": "credited",
-   "title": "Potted Plant 04 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/potted_plant_04",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "potted_plant_04",
-   "polyhavenSlug": "potted_plant_04",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/round_wooden_table_01.glb"
-   ],
-   "category": "credited",
-   "title": "Round Wooden Table 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/round_wooden_table_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "round_wooden_table_01",
-   "polyhavenSlug": "round_wooden_table_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/small_wooden_table_01.glb"
-   ],
-   "category": "credited",
-   "title": "Small Wooden Table 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/small_wooden_table_01",
-   "author": "Ulan Cabanilla",
-   "licence": "CC0",
-   "creditsKey": "small_wooden_table_01",
-   "polyhavenSlug": "small_wooden_table_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wicker_basket_01.glb"
-   ],
-   "category": "credited",
-   "title": "Wicker Basket 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wicker_basket_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wicker_basket_01",
-   "polyhavenSlug": "wicker_basket_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wicker_basket_02.glb"
-   ],
-   "category": "credited",
-   "title": "Wicker Basket 02 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wicker_basket_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wicker_basket_02",
-   "polyhavenSlug": "wicker_basket_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_bucket_01.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Bucket 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_bucket_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_bucket_01",
-   "polyhavenSlug": "wooden_bucket_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_bucket_02.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Bucket 02 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_bucket_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_bucket_02",
-   "polyhavenSlug": "wooden_bucket_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_crate_01.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Crate 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_crate_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_crate_01",
-   "polyhavenSlug": "wooden_crate_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_crate_02.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Crate 02 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_crate_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_crate_02",
-   "polyhavenSlug": "wooden_crate_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_stool_01.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Stool 01 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_stool_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_stool_01",
-   "polyhavenSlug": "wooden_stool_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/props/wooden_stool_02.glb"
-   ],
-   "category": "credited",
-   "title": "Wooden Stool 02 (model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/wooden_stool_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "wooden_stool_02",
-   "polyhavenSlug": "wooden_stool_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/plants3d/flower_gazania.glb"
-   ],
-   "category": "credited",
-   "title": "Flower Gazania (plant model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/flower_gazania",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "flower_gazania",
-   "polyhavenSlug": "flower_gazania",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/plants3d/grass_medium_02.glb"
-   ],
-   "category": "credited",
-   "title": "Grass Medium 02 (plant model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/grass_medium_02",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "grass_medium_02",
-   "polyhavenSlug": "grass_medium_02",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/plants3d/shrub_01.glb"
-   ],
-   "category": "credited",
-   "title": "Shrub 01 (plant model)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/shrub_01",
-   "author": "Poly Haven",
-   "licence": "CC0",
-   "creditsKey": "shrub_01",
-   "polyhavenSlug": "shrub_01",
-   "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
-  },
-  {
-   "match": [
-    "public/assets/audio/bed_village.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: bed_village.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop",
-   "author": "Kresiek The Furry",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/amb-morning-sounds-perfect-loop",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/bed_wind.m4a",
-    "public/assets/audio/bed_water.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: bed_wind.m4a, bed_water.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/park-ambiences",
-   "author": "Thimras",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/park-ambiences",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/bed_bazaar.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: bed_bazaar.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
-   "author": "StarNinjas",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/shot_birds1.m4a",
-    "public/assets/audio/shot_birds2.m4a",
-    "public/assets/audio/shot_birds3.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: shot_birds1.m4a, shot_birds2.m4a, shot_birds3.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/ambient-bird-sounds",
-   "author": "isaiah658",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/ambient-bird-sounds",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/shot_crow.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: shot_crow.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/crow-caw",
-   "author": "zeroisnotnull",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/crow-caw",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/cycle_bell.m4a",
-    "public/assets/audio/cycle_spokes.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: cycle_bell.m4a, cycle_spokes.m4a",
-   "source": "OpenGameArt.org",
-   "url": "https://opengameart.org/content/bicycle-sounds",
-   "author": "AntumDeluge",
-   "licence": "CC0",
-   "creditsKey": "https://opengameart.org/content/bicycle-sounds",
-   "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/bed_children.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: bed_children.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/myserval/sounds/274988/",
-   "author": "myserval",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/myserval/sounds/274988/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/bed_cattle.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: bed_cattle.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/Astounded/sounds/517468/",
-   "author": "Astounded",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/Astounded/sounds/517468/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/shot_moo1.m4a",
-    "public/assets/audio/shot_moo2.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: shot_moo1.m4a, shot_moo2.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/JosephSardin/sounds/177253/",
-   "author": "JosephSardin",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/JosephSardin/sounds/177253/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/shot_koel.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: shot_koel.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/ramblinglibrarian/sounds/460466/",
-   "author": "ramblinglibrarian",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/ramblinglibrarian/sounds/460466/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/shot_cooker.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: shot_cooker.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/Jibanshil/sounds/536520/",
-   "author": "Jibanshil",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/Jibanshil/sounds/536520/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/cycle_chain.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: cycle_chain.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/AngryAdam/sounds/130367/",
-   "author": "AngryAdam",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/AngryAdam/sounds/130367/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/cycle_freewheel.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: cycle_freewheel.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/donkpow/sounds/156996/",
-   "author": "donkpow",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/donkpow/sounds/156996/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/audio/cycle_crunch.m4a"
-   ],
-   "category": "credited",
-   "title": "Sound: cycle_crunch.m4a",
-   "source": "Freesound",
-   "url": "https://freesound.org/people/SpliceSound/sounds/218301/",
-   "author": "SpliceSound",
-   "licence": "CC0",
-   "creditsKey": "https://freesound.org/people/SpliceSound/sounds/218301/",
-   "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
-  },
-  {
-   "match": [
-    "public/assets/plants/*.webp"
-   ],
-   "category": "self-made",
-   "title": "Leaf atlases (garden and trees)",
-   "builder": [
-    "tools/build-plant-atlas.mjs"
-   ],
-   "family": [
-    "garden_atlas",
-    "tree_atlas"
-   ],
-   "madeFrom": [
-    "LeafSet002",
-    "LeafSet003",
-    "LeafSet004",
-    "LeafSet022",
-    "LeafSet023",
-    "LeafSet024",
-    "LeafSet025",
-    "Foliage008"
-   ],
-   "licence": "own work (from CC0 ambientCG leaf photos)",
-   "creditsKey": "LeafSet022",
-   "evidence": "tools/build-plant-atlas.mjs cuts ambientCG CC0 leaf sets into the atlas; flower heads drawn in code"
-  },
-  {
-   "match": [
-    "public/assets/trees/impostor_*.webp"
-   ],
-   "category": "self-made",
-   "title": "Far-tree pictures (impostors)",
-   "builder": [
-    "src/trees.js"
-   ],
-   "family": [
-    "impostor_"
-   ],
-   "licence": "own work (rendered from the game's own code-built trees, CC0 leaves)",
-   "evidence": "docs/handoff.md 23 Oct 2026 (cycle 38bo): baked from the game's own trees; the one-off render script was not kept, so evidence is the handoff note only"
-  },
-  {
-   "match": [
-    "public/data/donations.json"
-   ],
-   "category": "self-made",
-   "title": "Donations data file",
-   "builder": [],
-   "licence": "own work (data)",
-   "evidence": "plain project data written in this repo, no third-party content"
-  },
-  {
-   "match": [
-    "public/assets/models/akhada_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: akhada_v2",
-   "builder": [
-    "tools/blender/build_akhada.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_akhada.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/atta_chakki_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: atta_chakki_v2",
-   "builder": [
-    "tools/blender/build_atta_chakki.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_atta_chakki.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/bazaar_row.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: bazaar_row",
-   "builder": [
-    "tools/blender/build_bazaar_row.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_bazaar_row.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/bhatta_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: bhatta_v2",
-   "builder": [
-    "tools/blender/build_bhatta.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_bhatta.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/bus_adda_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: bus_adda_v2",
-   "builder": [
-    "tools/blender/build_bus_adda.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_bus_adda.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/chaupal_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: chaupal_v2",
-   "builder": [
-    "tools/blender/build_chaupal.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_chaupal.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/chowk_plaza.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: chowk_plaza",
-   "builder": [
-    "tools/blender/build_chowk_plaza.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_chowk_plaza.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/dharam_kanta.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: dharam_kanta",
-   "builder": [
-    "tools/blender/build_dharam_kanta.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_dharam_kanta.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/dharam_kanta_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: dharam_kanta_v2",
-   "builder": [
-    "tools/blender/build_dharam_kanta_v2.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_dharam_kanta_v2.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/dudh_dairy_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: dudh_dairy_v2",
-   "builder": [
-    "tools/blender/build_dudh_dairy.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_dudh_dairy.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/field_props.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: field_props",
-   "builder": [
-    "tools/blender/build_field_props.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_field_props.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/flower_stall.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: flower_stall",
-   "builder": [
-    "tools/blender/build_flower_stall.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_flower_stall.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/gaushala.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: gaushala",
-   "builder": [
-    "tools/blender/build_gaushala.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_gaushala.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/general_store.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: general_store",
-   "builder": [
-    "tools/blender/build_general_store.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_general_store.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/gher_yard.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: gher_yard",
-   "builder": [
-    "tools/blender/build_gher_yard.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_gher_yard.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/goods_yard.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: goods_yard",
-   "builder": [
-    "tools/blender/build_goods_yard.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_goods_yard.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/gurukul_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: gurukul_v2",
-   "builder": [
-    "tools/blender/build_gurukul.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_gurukul.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/halwai_compound.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: halwai_compound",
-   "builder": [
-    "tools/blender/build_halwai.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_halwai.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/house_compound.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: house_compound",
-   "builder": [
-    "tools/blender/build_house.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_house.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/jeep_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: jeep_v2",
-   "builder": [
-    "tools/blender/build_jeep.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_jeep.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/kachcha_homestead.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: kachcha_homestead",
-   "builder": [
-    "tools/blender/build_kachcha.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_kachcha.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/khalihan_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: khalihan_v2",
-   "builder": [
-    "tools/blender/build_khalihan.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_khalihan.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/khel_maidan_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: khel_maidan_v2",
-   "builder": [
-    "tools/blender/build_khel_maidan.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_khel_maidan.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/laundry_line.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: laundry_line",
-   "builder": [
-    "tools/blender/build_laundry.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_laundry.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/material_board_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: material_board_v2",
-   "builder": [
-    "tools/blender/build_material_board.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_material_board.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/new_shops.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: new_shops",
-   "builder": [
-    "tools/blender/build_new_shops.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_new_shops.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/paani_tanki_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: paani_tanki_v2",
-   "builder": [
-    "tools/blender/build_paani_tanki.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_paani_tanki.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/panchayat_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: panchayat_v2",
-   "builder": [
-    "tools/blender/build_panchayat.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_panchayat.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/petrol_pump.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: petrol_pump",
-   "builder": [
-    "tools/blender/build_petrol_pump.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_petrol_pump.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/petrol_pump_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: petrol_pump_v2",
-   "builder": [
-    "tools/blender/build_petrol_pump_v2.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_petrol_pump_v2.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/player_cycle_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: player_cycle_v2",
-   "builder": [
-    "tools/blender/build_player_cycle.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_player_cycle.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/post_office_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: post_office_v2",
-   "builder": [
-    "tools/blender/build_post_office.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_post_office.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/primary_school.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: primary_school",
-   "builder": [
-    "tools/blender/build_primary_school.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_primary_school.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/puncture_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: puncture_v2",
-   "builder": [
-    "tools/blender/build_puncture.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_puncture.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/ration_shop_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: ration_shop_v2",
-   "builder": [
-    "tools/blender/build_ration_shop.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_ration_shop.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/rough_surfaces.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: rough_surfaces",
-   "builder": [
-    "tools/blender/build_rough_surfaces.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_rough_surfaces.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/school_compound.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: school_compound",
-   "builder": [
-    "tools/blender/build_school.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_school.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/school_props.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: school_props",
-   "builder": [
-    "tools/blender/build_school_props.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_school_props.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tea_stall.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tea_stall",
-   "builder": [
-    "tools/blender/build_tea_stall.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_tea_stall.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tea_stall_chowk.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tea_stall_chowk",
-   "builder": [
-    "tools/blender/build_chowk_tea.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_chowk_tea.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/temple.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: temple",
-   "builder": [
-    "tools/blender/build_temple.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_temple.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tubewell_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tubewell_v2",
-   "builder": [
-    "tools/blender/build_tubewell.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_tubewell.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tv_house_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tv_house_v2",
-   "builder": [
-    "tools/blender/build_tv_house.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_tv_house.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/volleyball_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: volleyball_v2",
-   "builder": [
-    "tools/blender/build_volleyball.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_volleyball.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/abadi_row_a.glb",
-    "public/assets/models/abadi_row_a_lod.glb",
-    "public/assets/models/abadi_row_b.glb",
-    "public/assets/models/abadi_row_b_lod.glb",
-    "public/assets/models/abadi_row_c.glb",
-    "public/assets/models/abadi_row_c_lod.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: abadi_row family (6 files)",
-   "builder": [
-    "tools/blender/build_abadi.py",
-    "tools/blender/make_abadi.sh"
-   ],
-   "family": [
-    "abadi_row_"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_abadi.py + tools/blender/make_abadi.sh; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/bg_house_a.glb",
-    "public/assets/models/bg_house_b.glb",
-    "public/assets/models/bg_house_c.glb",
-    "public/assets/models/bg_house_d.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: bg_house family (4 files)",
-   "builder": [
-    "tools/blender/build_bg_houses.py",
-    "tools/blender/make_bg_houses.sh"
-   ],
-   "family": [
-    "bg_house_"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_bg_houses.py + tools/blender/make_bg_houses.sh; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/house_kit_a.glb",
-    "public/assets/models/house_kit_b.glb",
-    "public/assets/models/house_kit_c.glb",
-    "public/assets/models/house_kit_d.glb",
-    "public/assets/models/house_kit_e.glb",
-    "public/assets/models/house_kit_f.glb",
-    "public/assets/models/house_kit_g.glb",
-    "public/assets/models/house_kit_h.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: house_kit family (8 files)",
-   "builder": [
-    "tools/blender/build_houses_kit.py",
-    "tools/blender/make_houses_kit.sh"
-   ],
-   "family": [
-    "house_kit_"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_houses_kit.py + tools/blender/make_houses_kit.sh; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/house_plots_1.glb",
-    "public/assets/models/house_plots_2.glb",
-    "public/assets/models/house_plots_3.glb",
-    "public/assets/models/house_plots_4.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: house_plots family (4 files)",
-   "builder": [
-    "tools/blender/build_house_plots.py"
-   ],
-   "family": [
-    "house_plots_"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_house_plots.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/pot_ghada_v2.glb",
-    "public/assets/models/pot_ghada_v2_b.glb",
-    "public/assets/models/pot_ghada_v2_c.glb",
-    "public/assets/models/pot_kulhad_v2.glb",
-    "public/assets/models/pot_kulhad_v2_b.glb",
-    "public/assets/models/pot_kulhad_v2_c.glb",
-    "public/assets/models/pot_matka_v2.glb",
-    "public/assets/models/pot_matka_v2_b.glb",
-    "public/assets/models/pot_matka_v2_c.glb",
-    "public/assets/models/pot_surahi_v2.glb",
-    "public/assets/models/pot_surahi_v2_b.glb",
-    "public/assets/models/pot_surahi_v2_c.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: pot_ghada family (12 files)",
-   "builder": [
-    "tools/blender/build_pots.py",
-    "tools/blender/make_pots.sh"
-   ],
-   "family": [
-    "pot_${t}_v2${v}"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_pots.py + tools/blender/make_pots.sh; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/gobar_stack_v2.glb",
-    "public/assets/models/gobar_stack_v2_b.glb",
-    "public/assets/models/gobar_wall_v2.glb",
-    "public/assets/models/gobar_wall_v2_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: gobar_stack family (4 files)",
-   "builder": [
-    "tools/blender/build_gobar.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_gobar.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/haystack_cone_v2.glb",
-    "public/assets/models/haystack_half_v2.glb",
-    "public/assets/models/haystack_heap_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: haystack_cone_v2, haystack_half_v2, haystack_heap_v2",
-   "builder": [
-    "tools/blender/build_haystack.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_haystack.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/icecream_cart.glb",
-    "public/assets/models/icecream_cart_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: icecream_cart, icecream_cart_b",
-   "builder": [
-    "tools/blender/build_icecream_cart.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_icecream_cart.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/lamp_rcc_v2.glb",
-    "public/assets/models/lamp_rcc_v2_b.glb",
-    "public/assets/models/lamp_solar_v2.glb",
-    "public/assets/models/lamp_solar_v2_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: lamp_rcc family (4 files)",
-   "builder": [
-    "tools/blender/build_street_lamp.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_street_lamp.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/lantern_hanging_v2.glb",
-    "public/assets/models/lantern_hurricane_v2.glb",
-    "public/assets/models/lantern_tin_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: lantern_hanging_v2, lantern_hurricane_v2, lantern_tin_v2",
-   "builder": [
-    "tools/blender/build_lantern.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_lantern.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/milestone_v2.glb",
-    "public/assets/models/milestone_v2_b.glb",
-    "public/assets/models/milestone_v2_c.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: milestone_v2, milestone_v2_b, milestone_v2_c",
-   "builder": [
-    "tools/blender/build_milestone.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_milestone.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/painted_wood_panel.glb",
-    "public/assets/models/painted_wood_panel_b.glb",
-    "public/assets/models/painted_wood_panel_c.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: painted_wood_panel, painted_wood_panel_b, painted_wood_panel_c",
-   "builder": [
-    "tools/blender/build_painted_wood.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_painted_wood.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/pump_cracked_v2.glb",
-    "public/assets/models/pump_mark2_v2.glb",
-    "public/assets/models/pump_old_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: pump_cracked_v2, pump_mark2_v2, pump_old_v2",
-   "builder": [
-    "tools/blender/build_hand_pump.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_hand_pump.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/rusted_steel_panel.glb",
-    "public/assets/models/rusted_steel_panel_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: rusted_steel_panel, rusted_steel_panel_b",
-   "builder": [
-    "tools/blender/build_rusted_steel.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_rusted_steel.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/scooter_covered_v2.glb",
-    "public/assets/models/scooter_covered_v2_b.glb",
-    "public/assets/models/scooter_motorcycle_v2.glb",
-    "public/assets/models/scooter_motorcycle_v2_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: scooter_covered family (4 files)",
-   "builder": [
-    "tools/blender/build_scooter.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_scooter.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/scooter_open_v2.glb",
-    "public/assets/models/scooter_open_v2_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: scooter_open_v2, scooter_open_v2_b",
-   "builder": [
-    "tools/blender/build_scooter_open.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_scooter_open.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tap_pyaau_v2.glb",
-    "public/assets/models/tap_stand_v2.glb",
-    "public/assets/models/tap_wall_v2.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tap_pyaau_v2, tap_stand_v2, tap_wall_v2",
-   "builder": [
-    "tools/blender/build_tap.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_tap.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/terracotta_panel.glb",
-    "public/assets/models/terracotta_panel_low.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: terracotta_panel, terracotta_panel_low",
-   "builder": [
-    "tools/blender/build_terracotta.py"
-   ],
-   "family": [
-    "terracotta_panel%s"
-   ],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_terracotta.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/tv_cabinet_v2.glb",
-    "public/assets/models/tv_cabinet_v2_b.glb"
-   ],
-   "category": "self-made",
-   "title": "Built in Blender: tv_cabinet_v2, tv_cabinet_v2_b",
-   "builder": [
-    "tools/blender/build_tv.py"
-   ],
-   "family": [],
-   "licence": "own work",
-   "evidence": "made by tools/blender/build_tv.py; textures only from the repo's CC0 sets or drawn by the script"
-  },
-  {
-   "match": [
-    "public/assets/models/brother.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Brother",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/dada.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Dada",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/dadi.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Dadi",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/maa.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Maa",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/parlour_didi.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Parlour Didi",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/pitaji.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Pitaji",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/postman.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Postman",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/sarpanch.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Sarpanch",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/sister.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Sister",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/assets/models/teacher.glb"
-   ],
-   "category": "tripo",
-   "title": "Character: Teacher",
-   "source": "Tripo AI (made from Gemini reference pictures)",
-   "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-   "plan": "UNKNOWN",
-   "builder": [
-    "tools/eye_patch.py",
-    "tools/face_keys.py",
-    "tools/teeth_fix.py"
-   ],
-   "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
-  },
-  {
-   "match": [
-    "public/fonts/noto-sans-devanagari/*"
-   ],
-   "category": "credited",
-   "title": "Noto Sans Devanagari (Hindi font, weights 600-700) + its OFL licence text",
-   "source": "Google Fonts (github.com/google/fonts, ofl/notosansdevanagari)",
-   "url": "https://github.com/google/fonts/tree/main/ofl/notosansdevanagari",
-   "author": "The Noto Project Authors (Google)",
-   "licence": "OFL-1.1",
-   "creditsKey": "Noto Sans Devanagari",
-   "evidence": "CREDITS.md Fonts row; variable TTF cut to weights 600-700, width 100 and saved as WOFF2 with fontTools (allowed by OFL; family name kept, no Reserved Font Name); OFL.txt ships beside it"
-  }
- ],
- "worthKnowing": [
-  "The panchayat flag is the Indian national flag, drawn by our own code (src/props.js) and inside panchayat_v2.glb. Showing it in the village is normal; keep it off the store page, box art, logo and ads unless your lawyer says it is fine.",
-  "The old saloon car is drawn by our code in the shape of a 1960s Ambassador, with no name or badge; the jeep is generic with blank plates. No real brand name, logo or wordmark appears anywhere (the code has a standing \"no brands\" rule).",
-  "The people's extra moves (gestures) are inside the character files; no outside animation file is in the repo. If any move was downloaded from somewhere other than Tripo (for example Mixamo), tell the lead so it can be recorded.",
-  "Sounds are shipped but switched off until final polish; all 19 are CC0 and credited."
- ]
+  "_readme": "One licence record for every file that ships from public/. Read by tools/licence-audit.mjs. Add a record IN THE SAME COMMIT as any new file under public/. Categories: credited (third-party, must have a docs/CREDITS.md row: creditsKey must appear there), self-made (builder = the script that makes it), tripo (plan must be confirmed by the owner), flag (not allowed, must be replaced). match = paths, * matches any characters except /.",
+  "allowedLicences": [
+    "CC0",
+    "CC BY 4.0",
+    "CC BY 3.0",
+    "OFL-1.1",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "Zlib",
+    "ISC"
+  ],
+  "tripoPlanConfirmed": null,
+  "records": [
+    {
+      "match": [
+        "public/assets/textures/ground/*"
+      ],
+      "category": "credited",
+      "title": "Ground109 (ground texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Ground109",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Ground109",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/lane/*"
+      ],
+      "category": "credited",
+      "title": "Ground102 (lane texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Ground102",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Ground102",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures_candidates/lane_v2/*"
+      ],
+      "category": "credited",
+      "title": "dirt_floor (candidate road/muddy-road replacement, staged 22 Nov, not yet approved)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/dirt_floor",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "dirt_floor",
+      "evidence": "Downloaded 4K PNG, downscaled to 1024 and re-encoded to WebP in-browser for Aishwarya's review; not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
+    },
+    {
+      "match": [
+        "public/assets/textures_candidates/plaster_v2/*"
+      ],
+      "category": "credited",
+      "title": "PaintedPlaster017, crack-removed (candidate painted-wall replacement, staged 22 Nov v2, not yet approved)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "PaintedPlaster017",
+      "evidence": "22 Nov v1 used Poly Haven beige_wall_001, but its normal map is nearly flat (she said the candidates didn't look realistic - correctly). v2: reverted to the existing, already-credited PaintedPlaster017 color/normal/roughness (real stucco grain, good relief under raking light), ran the color map through a median blur in this repo to remove the baked-in crack lines while keeping the normal/roughness untouched - not a new third-party asset, a cleaned-up derivative of one already in CREDITS.md. Not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
+    },
+    {
+      "match": [
+        "public/assets/textures/plaster/*"
+      ],
+      "category": "credited",
+      "title": "PaintedPlaster017 (plaster texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "PaintedPlaster017",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/concrete/*"
+      ],
+      "category": "credited",
+      "title": "Concrete048 (concrete texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Concrete048",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Concrete048",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/wood/*"
+      ],
+      "category": "credited",
+      "title": "Planks023A (wood texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Planks023A",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Planks023A",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/metal/*"
+      ],
+      "category": "credited",
+      "title": "Metal009 (metal texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Metal009",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Metal009",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/terracotta/*"
+      ],
+      "category": "credited",
+      "title": "GlazedTerracotta001 (terracotta texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=GlazedTerracotta001",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "GlazedTerracotta001",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/crop/*"
+      ],
+      "category": "credited",
+      "title": "Grass001 (crop texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Grass001",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Grass001",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/tin/*"
+      ],
+      "category": "credited",
+      "title": "CorrugatedSteel005 (tin texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=CorrugatedSteel005",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "CorrugatedSteel005",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/brick/*"
+      ],
+      "category": "credited",
+      "title": "Bricks051 (brick texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Bricks051",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Bricks051",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/jute/*"
+      ],
+      "category": "credited",
+      "title": "Fabric061 (jute texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Fabric061",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Fabric061",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/tarpaulin/*"
+      ],
+      "category": "credited",
+      "title": "Fabric066 (tarpaulin texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Fabric066",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Fabric066",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/rust/*"
+      ],
+      "category": "credited",
+      "title": "Rust007 (rust texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Rust007",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Rust007",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/burlap/*"
+      ],
+      "category": "credited",
+      "title": "Fabric030 (burlap texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Fabric030",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Fabric030",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/dryearth/*"
+      ],
+      "category": "credited",
+      "title": "Ground054 (dryearth texture)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Ground054",
+      "author": "ambientCG (Lennart Demes)",
+      "licence": "CC0",
+      "creditsKey": "Ground054",
+      "evidence": "CREDITS.md row; resized and re-encoded to WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/grass/*"
+      ],
+      "category": "credited",
+      "title": "Aerial Grass Rock (grass texture)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/aerial_grass_rock",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "aerial_grass_rock",
+      "polyhavenSlug": "aerial_grass_rock",
+      "evidence": "CREDITS.md row; 4K downscaled to 1K WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/textures/thatch/*"
+      ],
+      "category": "credited",
+      "title": "Thatch Roof Angled (thatch texture)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/thatch_roof_angled",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "thatch_roof_angled",
+      "polyhavenSlug": "thatch_roof_angled",
+      "evidence": "CREDITS.md row; 4K downscaled to 1K WebP in this repo"
+    },
+    {
+      "match": [
+        "public/assets/hdri/camdeboo_road_512.hdr"
+      ],
+      "category": "credited",
+      "title": "Camdeboo Road (sky HDRI)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/camdeboo_road",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "camdeboo_road",
+      "polyhavenSlug": "camdeboo_road",
+      "evidence": "CREDITS.md row; 1K HDRI downscaled to 512 by tools/hdr-downscale.mjs"
+    },
+    {
+      "match": [
+        "public/assets/models/ceramic_pot.glb"
+      ],
+      "category": "credited",
+      "title": "Ceramic Pot (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ceramic_pot",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ceramic_pot",
+      "polyhavenSlug": "ceramic_pot",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/brass_pot_01.glb"
+      ],
+      "category": "credited",
+      "title": "Brass Pot 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brass_pot_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brass_pot_01",
+      "polyhavenSlug": "brass_pot_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/ceramic_vase_01.glb"
+      ],
+      "category": "credited",
+      "title": "Ceramic Vase 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ceramic_vase_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ceramic_vase_01",
+      "polyhavenSlug": "ceramic_vase_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/jug_01.glb"
+      ],
+      "category": "credited",
+      "title": "Jug 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/jug_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "jug_01",
+      "polyhavenSlug": "jug_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/metal_jug.glb"
+      ],
+      "category": "credited",
+      "title": "Metal Jug (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_jug",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "metal_jug",
+      "polyhavenSlug": "metal_jug",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/old_tyre.glb"
+      ],
+      "category": "credited",
+      "title": "Old Tyre (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/old_tyre",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "old_tyre",
+      "polyhavenSlug": "old_tyre",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/painted_wooden_bench.glb"
+      ],
+      "category": "credited",
+      "title": "Painted Wooden Bench (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_bench",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "painted_wooden_bench",
+      "polyhavenSlug": "painted_wooden_bench",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/painted_wooden_chair_01.glb"
+      ],
+      "category": "credited",
+      "title": "Painted Wooden Chair 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_chair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "painted_wooden_chair_01",
+      "polyhavenSlug": "painted_wooden_chair_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/painted_wooden_stool.glb"
+      ],
+      "category": "credited",
+      "title": "Painted Wooden Stool (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_stool",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "painted_wooden_stool",
+      "polyhavenSlug": "painted_wooden_stool",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/planter_pot_clay.glb"
+      ],
+      "category": "credited",
+      "title": "Planter Pot Clay (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/planter_pot_clay",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "planter_pot_clay",
+      "polyhavenSlug": "planter_pot_clay",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/plastic_monobloc_chair_01.glb"
+      ],
+      "category": "credited",
+      "title": "Plastic Monobloc Chair 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/plastic_monobloc_chair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "plastic_monobloc_chair_01",
+      "polyhavenSlug": "plastic_monobloc_chair_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/potted_plant_01.glb"
+      ],
+      "category": "credited",
+      "title": "Potted Plant 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "potted_plant_01",
+      "polyhavenSlug": "potted_plant_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/potted_plant_02.glb"
+      ],
+      "category": "credited",
+      "title": "Potted Plant 02 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "potted_plant_02",
+      "polyhavenSlug": "potted_plant_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/potted_plant_04.glb"
+      ],
+      "category": "credited",
+      "title": "Potted Plant 04 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_04",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "potted_plant_04",
+      "polyhavenSlug": "potted_plant_04",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/round_wooden_table_01.glb"
+      ],
+      "category": "credited",
+      "title": "Round Wooden Table 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/round_wooden_table_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "round_wooden_table_01",
+      "polyhavenSlug": "round_wooden_table_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/small_wooden_table_01.glb"
+      ],
+      "category": "credited",
+      "title": "Small Wooden Table 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/small_wooden_table_01",
+      "author": "Ulan Cabanilla",
+      "licence": "CC0",
+      "creditsKey": "small_wooden_table_01",
+      "polyhavenSlug": "small_wooden_table_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wicker_basket_01.glb"
+      ],
+      "category": "credited",
+      "title": "Wicker Basket 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wicker_basket_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wicker_basket_01",
+      "polyhavenSlug": "wicker_basket_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wicker_basket_02.glb"
+      ],
+      "category": "credited",
+      "title": "Wicker Basket 02 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wicker_basket_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wicker_basket_02",
+      "polyhavenSlug": "wicker_basket_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_bucket_01.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Bucket 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_bucket_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_bucket_01",
+      "polyhavenSlug": "wooden_bucket_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_bucket_02.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Bucket 02 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_bucket_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_bucket_02",
+      "polyhavenSlug": "wooden_bucket_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_crate_01.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Crate 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_crate_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_crate_01",
+      "polyhavenSlug": "wooden_crate_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_crate_02.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Crate 02 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_crate_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_crate_02",
+      "polyhavenSlug": "wooden_crate_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_stool_01.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Stool 01 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_stool_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_stool_01",
+      "polyhavenSlug": "wooden_stool_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/props/wooden_stool_02.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Stool 02 (model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_stool_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "wooden_stool_02",
+      "polyhavenSlug": "wooden_stool_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/plants3d/flower_gazania.glb"
+      ],
+      "category": "credited",
+      "title": "Flower Gazania (plant model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/flower_gazania",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "flower_gazania",
+      "polyhavenSlug": "flower_gazania",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/plants3d/grass_medium_02.glb"
+      ],
+      "category": "credited",
+      "title": "Grass Medium 02 (plant model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/grass_medium_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "grass_medium_02",
+      "polyhavenSlug": "grass_medium_02",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/plants3d/shrub_01.glb"
+      ],
+      "category": "credited",
+      "title": "Shrub 01 (plant model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/shrub_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "shrub_01",
+      "polyhavenSlug": "shrub_01",
+      "evidence": "CREDITS.md row; downloaded from api.polyhaven.com, shrunk with tools/shrink.js"
+    },
+    {
+      "match": [
+        "public/assets/audio/bed_village.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: bed_village.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/amb-morning-sounds-perfect-loop",
+      "author": "Kresiek The Furry",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/amb-morning-sounds-perfect-loop",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/bed_wind.m4a",
+        "public/assets/audio/bed_water.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: bed_wind.m4a, bed_water.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/park-ambiences",
+      "author": "Thimras",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/park-ambiences",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/bed_bazaar.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: bed_bazaar.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
+      "author": "StarNinjas",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/shot_birds1.m4a",
+        "public/assets/audio/shot_birds2.m4a",
+        "public/assets/audio/shot_birds3.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: shot_birds1.m4a, shot_birds2.m4a, shot_birds3.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/ambient-bird-sounds",
+      "author": "isaiah658",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/ambient-bird-sounds",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/shot_crow.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: shot_crow.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/crow-caw",
+      "author": "zeroisnotnull",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/crow-caw",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/cycle_bell.m4a",
+        "public/assets/audio/cycle_spokes.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: cycle_bell.m4a, cycle_spokes.m4a",
+      "source": "OpenGameArt.org",
+      "url": "https://opengameart.org/content/bicycle-sounds",
+      "author": "AntumDeluge",
+      "licence": "CC0",
+      "creditsKey": "https://opengameart.org/content/bicycle-sounds",
+      "evidence": "CREDITS.md row; licence read from the page badge on 10 Nov 2026; trimmed and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/bed_children.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: bed_children.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/myserval/sounds/274988/",
+      "author": "myserval",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/myserval/sounds/274988/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/bed_cattle.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: bed_cattle.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/Astounded/sounds/517468/",
+      "author": "Astounded",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/Astounded/sounds/517468/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/shot_moo1.m4a",
+        "public/assets/audio/shot_moo2.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: shot_moo1.m4a, shot_moo2.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/JosephSardin/sounds/177253/",
+      "author": "JosephSardin",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/JosephSardin/sounds/177253/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/shot_koel.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: shot_koel.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/ramblinglibrarian/sounds/460466/",
+      "author": "ramblinglibrarian",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/ramblinglibrarian/sounds/460466/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/shot_cooker.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: shot_cooker.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/Jibanshil/sounds/536520/",
+      "author": "Jibanshil",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/Jibanshil/sounds/536520/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/cycle_chain.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: cycle_chain.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/AngryAdam/sounds/130367/",
+      "author": "AngryAdam",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/AngryAdam/sounds/130367/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/cycle_freewheel.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: cycle_freewheel.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/donkpow/sounds/156996/",
+      "author": "donkpow",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/donkpow/sounds/156996/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/audio/cycle_crunch.m4a"
+      ],
+      "category": "credited",
+      "title": "Sound: cycle_crunch.m4a",
+      "source": "Freesound",
+      "url": "https://freesound.org/people/SpliceSound/sounds/218301/",
+      "author": "SpliceSound",
+      "licence": "CC0",
+      "creditsKey": "https://freesound.org/people/SpliceSound/sounds/218301/",
+      "evidence": "CREDITS.md row; licence read from the sound page on 10 Nov 2026; sliced and re-encoded with ffmpeg"
+    },
+    {
+      "match": [
+        "public/assets/plants/*.webp"
+      ],
+      "category": "self-made",
+      "title": "Leaf atlases (garden and trees)",
+      "builder": [
+        "tools/build-plant-atlas.mjs"
+      ],
+      "family": [
+        "garden_atlas",
+        "tree_atlas"
+      ],
+      "madeFrom": [
+        "LeafSet002",
+        "LeafSet003",
+        "LeafSet004",
+        "LeafSet022",
+        "LeafSet023",
+        "LeafSet024",
+        "LeafSet025",
+        "Foliage008"
+      ],
+      "licence": "own work (from CC0 ambientCG leaf photos)",
+      "creditsKey": "LeafSet022",
+      "evidence": "tools/build-plant-atlas.mjs cuts ambientCG CC0 leaf sets into the atlas; flower heads drawn in code"
+    },
+    {
+      "match": [
+        "public/assets/trees/impostor_*.webp"
+      ],
+      "category": "self-made",
+      "title": "Far-tree pictures (impostors)",
+      "builder": [
+        "src/trees.js"
+      ],
+      "family": [
+        "impostor_"
+      ],
+      "licence": "own work (rendered from the game's own code-built trees, CC0 leaves)",
+      "evidence": "docs/handoff.md 23 Oct 2026 (cycle 38bo): baked from the game's own trees; the one-off render script was not kept, so evidence is the handoff note only"
+    },
+    {
+      "match": [
+        "public/data/donations.json"
+      ],
+      "category": "self-made",
+      "title": "Donations data file",
+      "builder": [],
+      "licence": "own work (data)",
+      "evidence": "plain project data written in this repo, no third-party content"
+    },
+    {
+      "match": [
+        "public/assets/models/akhada_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: akhada_v2",
+      "builder": [
+        "tools/blender/build_akhada.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_akhada.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/atta_chakki_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: atta_chakki_v2",
+      "builder": [
+        "tools/blender/build_atta_chakki.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_atta_chakki.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/bazaar_row.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: bazaar_row",
+      "builder": [
+        "tools/blender/build_bazaar_row.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_bazaar_row.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/bhatta_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: bhatta_v2",
+      "builder": [
+        "tools/blender/build_bhatta.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_bhatta.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/bus_adda_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: bus_adda_v2",
+      "builder": [
+        "tools/blender/build_bus_adda.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_bus_adda.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/chaupal_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: chaupal_v2",
+      "builder": [
+        "tools/blender/build_chaupal.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_chaupal.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/chowk_plaza.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: chowk_plaza",
+      "builder": [
+        "tools/blender/build_chowk_plaza.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_chowk_plaza.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/dharam_kanta.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: dharam_kanta",
+      "builder": [
+        "tools/blender/build_dharam_kanta.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_dharam_kanta.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/dharam_kanta_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: dharam_kanta_v2",
+      "builder": [
+        "tools/blender/build_dharam_kanta_v2.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_dharam_kanta_v2.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/dudh_dairy_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: dudh_dairy_v2",
+      "builder": [
+        "tools/blender/build_dudh_dairy.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_dudh_dairy.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/field_props.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: field_props",
+      "builder": [
+        "tools/blender/build_field_props.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_field_props.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/flower_stall.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: flower_stall",
+      "builder": [
+        "tools/blender/build_flower_stall.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_flower_stall.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/gaushala.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: gaushala",
+      "builder": [
+        "tools/blender/build_gaushala.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_gaushala.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/general_store.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: general_store",
+      "builder": [
+        "tools/blender/build_general_store.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_general_store.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/gher_yard.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: gher_yard",
+      "builder": [
+        "tools/blender/build_gher_yard.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_gher_yard.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/goods_yard.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: goods_yard",
+      "builder": [
+        "tools/blender/build_goods_yard.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_goods_yard.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/gurukul_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: gurukul_v2",
+      "builder": [
+        "tools/blender/build_gurukul.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_gurukul.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/halwai_compound.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: halwai_compound",
+      "builder": [
+        "tools/blender/build_halwai.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_halwai.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/house_compound.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: house_compound",
+      "builder": [
+        "tools/blender/build_house.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_house.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/jeep_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: jeep_v2",
+      "builder": [
+        "tools/blender/build_jeep.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_jeep.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/kachcha_homestead.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: kachcha_homestead",
+      "builder": [
+        "tools/blender/build_kachcha.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_kachcha.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/khalihan_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: khalihan_v2",
+      "builder": [
+        "tools/blender/build_khalihan.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_khalihan.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/khel_maidan_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: khel_maidan_v2",
+      "builder": [
+        "tools/blender/build_khel_maidan.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_khel_maidan.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/laundry_line.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: laundry_line",
+      "builder": [
+        "tools/blender/build_laundry.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_laundry.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/material_board_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: material_board_v2",
+      "builder": [
+        "tools/blender/build_material_board.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_material_board.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/new_shops.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: new_shops",
+      "builder": [
+        "tools/blender/build_new_shops.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_new_shops.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/paani_tanki_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: paani_tanki_v2",
+      "builder": [
+        "tools/blender/build_paani_tanki.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_paani_tanki.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/panchayat_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: panchayat_v2",
+      "builder": [
+        "tools/blender/build_panchayat.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_panchayat.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/petrol_pump.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: petrol_pump",
+      "builder": [
+        "tools/blender/build_petrol_pump.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_petrol_pump.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/petrol_pump_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: petrol_pump_v2",
+      "builder": [
+        "tools/blender/build_petrol_pump_v2.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_petrol_pump_v2.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/player_cycle_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: player_cycle_v2",
+      "builder": [
+        "tools/blender/build_player_cycle.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_player_cycle.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/post_office_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: post_office_v2",
+      "builder": [
+        "tools/blender/build_post_office.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_post_office.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/primary_school.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: primary_school",
+      "builder": [
+        "tools/blender/build_primary_school.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_primary_school.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/puncture_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: puncture_v2",
+      "builder": [
+        "tools/blender/build_puncture.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_puncture.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/ration_shop_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: ration_shop_v2",
+      "builder": [
+        "tools/blender/build_ration_shop.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_ration_shop.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/rough_surfaces.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: rough_surfaces",
+      "builder": [
+        "tools/blender/build_rough_surfaces.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_rough_surfaces.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/school_compound.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: school_compound",
+      "builder": [
+        "tools/blender/build_school.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_school.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/school_props.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: school_props",
+      "builder": [
+        "tools/blender/build_school_props.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_school_props.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tea_stall.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tea_stall",
+      "builder": [
+        "tools/blender/build_tea_stall.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_tea_stall.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tea_stall_chowk.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tea_stall_chowk",
+      "builder": [
+        "tools/blender/build_chowk_tea.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_chowk_tea.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/temple.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: temple",
+      "builder": [
+        "tools/blender/build_temple.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_temple.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tubewell_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tubewell_v2",
+      "builder": [
+        "tools/blender/build_tubewell.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_tubewell.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tv_house_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tv_house_v2",
+      "builder": [
+        "tools/blender/build_tv_house.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_tv_house.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/volleyball_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: volleyball_v2",
+      "builder": [
+        "tools/blender/build_volleyball.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_volleyball.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/abadi_row_a.glb",
+        "public/assets/models/abadi_row_a_lod.glb",
+        "public/assets/models/abadi_row_b.glb",
+        "public/assets/models/abadi_row_b_lod.glb",
+        "public/assets/models/abadi_row_c.glb",
+        "public/assets/models/abadi_row_c_lod.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: abadi_row family (6 files)",
+      "builder": [
+        "tools/blender/build_abadi.py",
+        "tools/blender/make_abadi.sh"
+      ],
+      "family": [
+        "abadi_row_"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_abadi.py + tools/blender/make_abadi.sh; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/bg_house_a.glb",
+        "public/assets/models/bg_house_b.glb",
+        "public/assets/models/bg_house_c.glb",
+        "public/assets/models/bg_house_d.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: bg_house family (4 files)",
+      "builder": [
+        "tools/blender/build_bg_houses.py",
+        "tools/blender/make_bg_houses.sh"
+      ],
+      "family": [
+        "bg_house_"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_bg_houses.py + tools/blender/make_bg_houses.sh; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/house_kit_a.glb",
+        "public/assets/models/house_kit_b.glb",
+        "public/assets/models/house_kit_c.glb",
+        "public/assets/models/house_kit_d.glb",
+        "public/assets/models/house_kit_e.glb",
+        "public/assets/models/house_kit_f.glb",
+        "public/assets/models/house_kit_g.glb",
+        "public/assets/models/house_kit_h.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: house_kit family (8 files)",
+      "builder": [
+        "tools/blender/build_houses_kit.py",
+        "tools/blender/make_houses_kit.sh"
+      ],
+      "family": [
+        "house_kit_"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_houses_kit.py + tools/blender/make_houses_kit.sh; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/house_plots_1.glb",
+        "public/assets/models/house_plots_2.glb",
+        "public/assets/models/house_plots_3.glb",
+        "public/assets/models/house_plots_4.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: house_plots family (4 files)",
+      "builder": [
+        "tools/blender/build_house_plots.py"
+      ],
+      "family": [
+        "house_plots_"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_house_plots.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/pot_ghada_v2.glb",
+        "public/assets/models/pot_ghada_v2_b.glb",
+        "public/assets/models/pot_ghada_v2_c.glb",
+        "public/assets/models/pot_kulhad_v2.glb",
+        "public/assets/models/pot_kulhad_v2_b.glb",
+        "public/assets/models/pot_kulhad_v2_c.glb",
+        "public/assets/models/pot_matka_v2.glb",
+        "public/assets/models/pot_matka_v2_b.glb",
+        "public/assets/models/pot_matka_v2_c.glb",
+        "public/assets/models/pot_surahi_v2.glb",
+        "public/assets/models/pot_surahi_v2_b.glb",
+        "public/assets/models/pot_surahi_v2_c.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: pot_ghada family (12 files)",
+      "builder": [
+        "tools/blender/build_pots.py",
+        "tools/blender/make_pots.sh"
+      ],
+      "family": [
+        "pot_${t}_v2${v}"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_pots.py + tools/blender/make_pots.sh; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/gobar_stack_v2.glb",
+        "public/assets/models/gobar_stack_v2_b.glb",
+        "public/assets/models/gobar_wall_v2.glb",
+        "public/assets/models/gobar_wall_v2_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: gobar_stack family (4 files)",
+      "builder": [
+        "tools/blender/build_gobar.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_gobar.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/haystack_cone_v2.glb",
+        "public/assets/models/haystack_half_v2.glb",
+        "public/assets/models/haystack_heap_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: haystack_cone_v2, haystack_half_v2, haystack_heap_v2",
+      "builder": [
+        "tools/blender/build_haystack.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_haystack.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/icecream_cart.glb",
+        "public/assets/models/icecream_cart_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: icecream_cart, icecream_cart_b",
+      "builder": [
+        "tools/blender/build_icecream_cart.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_icecream_cart.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/lamp_rcc_v2.glb",
+        "public/assets/models/lamp_rcc_v2_b.glb",
+        "public/assets/models/lamp_solar_v2.glb",
+        "public/assets/models/lamp_solar_v2_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: lamp_rcc family (4 files)",
+      "builder": [
+        "tools/blender/build_street_lamp.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_street_lamp.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/lantern_hanging_v2.glb",
+        "public/assets/models/lantern_hurricane_v2.glb",
+        "public/assets/models/lantern_tin_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: lantern_hanging_v2, lantern_hurricane_v2, lantern_tin_v2",
+      "builder": [
+        "tools/blender/build_lantern.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_lantern.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/milestone_v2.glb",
+        "public/assets/models/milestone_v2_b.glb",
+        "public/assets/models/milestone_v2_c.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: milestone_v2, milestone_v2_b, milestone_v2_c",
+      "builder": [
+        "tools/blender/build_milestone.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_milestone.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/painted_wood_panel.glb",
+        "public/assets/models/painted_wood_panel_b.glb",
+        "public/assets/models/painted_wood_panel_c.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: painted_wood_panel, painted_wood_panel_b, painted_wood_panel_c",
+      "builder": [
+        "tools/blender/build_painted_wood.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_painted_wood.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/pump_cracked_v2.glb",
+        "public/assets/models/pump_mark2_v2.glb",
+        "public/assets/models/pump_old_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: pump_cracked_v2, pump_mark2_v2, pump_old_v2",
+      "builder": [
+        "tools/blender/build_hand_pump.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_hand_pump.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/rusted_steel_panel.glb",
+        "public/assets/models/rusted_steel_panel_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: rusted_steel_panel, rusted_steel_panel_b",
+      "builder": [
+        "tools/blender/build_rusted_steel.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_rusted_steel.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/scooter_covered_v2.glb",
+        "public/assets/models/scooter_covered_v2_b.glb",
+        "public/assets/models/scooter_motorcycle_v2.glb",
+        "public/assets/models/scooter_motorcycle_v2_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: scooter_covered family (4 files)",
+      "builder": [
+        "tools/blender/build_scooter.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_scooter.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/scooter_open_v2.glb",
+        "public/assets/models/scooter_open_v2_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: scooter_open_v2, scooter_open_v2_b",
+      "builder": [
+        "tools/blender/build_scooter_open.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_scooter_open.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tap_pyaau_v2.glb",
+        "public/assets/models/tap_stand_v2.glb",
+        "public/assets/models/tap_wall_v2.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tap_pyaau_v2, tap_stand_v2, tap_wall_v2",
+      "builder": [
+        "tools/blender/build_tap.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_tap.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/terracotta_panel.glb",
+        "public/assets/models/terracotta_panel_low.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: terracotta_panel, terracotta_panel_low",
+      "builder": [
+        "tools/blender/build_terracotta.py"
+      ],
+      "family": [
+        "terracotta_panel%s"
+      ],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_terracotta.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/tv_cabinet_v2.glb",
+        "public/assets/models/tv_cabinet_v2_b.glb"
+      ],
+      "category": "self-made",
+      "title": "Built in Blender: tv_cabinet_v2, tv_cabinet_v2_b",
+      "builder": [
+        "tools/blender/build_tv.py"
+      ],
+      "family": [],
+      "licence": "own work",
+      "evidence": "made by tools/blender/build_tv.py; textures only from the repo's CC0 sets or drawn by the script"
+    },
+    {
+      "match": [
+        "public/assets/models/brother.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Brother",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/dada.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Dada",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/dadi.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Dadi",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/maa.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Maa",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/parlour_didi.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Parlour Didi",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/pitaji.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Pitaji",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/postman.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Postman",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/sarpanch.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Sarpanch",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/sister.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Sister",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/assets/models/teacher.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Teacher",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/eye_patch.py",
+        "tools/face_keys.py",
+        "tools/teeth_fix.py"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; faces, eyes, teeth and moves edited in this repo"
+    },
+    {
+      "match": [
+        "public/fonts/noto-sans-devanagari/*"
+      ],
+      "category": "credited",
+      "title": "Noto Sans Devanagari (Hindi font, weights 600-700) + its OFL licence text",
+      "source": "Google Fonts (github.com/google/fonts, ofl/notosansdevanagari)",
+      "url": "https://github.com/google/fonts/tree/main/ofl/notosansdevanagari",
+      "author": "The Noto Project Authors (Google)",
+      "licence": "OFL-1.1",
+      "creditsKey": "Noto Sans Devanagari",
+      "evidence": "CREDITS.md Fonts row; variable TTF cut to weights 600-700, width 100 and saved as WOFF2 with fontTools (allowed by OFL; family name kept, no Reserved Font Name); OFL.txt ships beside it"
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/tin_b/*"
+      ],
+      "category": "credited",
+      "title": "worn_corrugated_iron (tin roof mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/worn_corrugated_iron",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "worn_corrugated_iron",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/tin_c/*"
+      ],
+      "category": "credited",
+      "title": "corrugated_iron_02 (tin roof mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/corrugated_iron_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "corrugated_iron_02",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/lane_b/*"
+      ],
+      "category": "credited",
+      "title": "brown_mud_dry (mud-road mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brown_mud_dry",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brown_mud_dry",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/lane_c/*"
+      ],
+      "category": "credited",
+      "title": "brown_mud_rocks_01 (mud-road mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brown_mud_rocks_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brown_mud_rocks_01",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/concrete_b/*"
+      ],
+      "category": "credited",
+      "title": "brushed_concrete (cement-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brushed_concrete",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brushed_concrete",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/concrete_c/*"
+      ],
+      "category": "credited",
+      "title": "brushed_concrete_2 (cement-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brushed_concrete_2",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brushed_concrete_2",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_b/*"
+      ],
+      "category": "credited",
+      "title": "beige_wall_002 (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/beige_wall_002",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "beige_wall_002",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_c/*"
+      ],
+      "category": "credited",
+      "title": "clay_plaster (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/clay_plaster",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "clay_plaster",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_d/*"
+      ],
+      "category": "credited",
+      "title": "painted_plaster_wall (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_plaster_wall",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "painted_plaster_wall",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_e/*"
+      ],
+      "category": "credited",
+      "title": "peeling_painted_wall (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/peeling_painted_wall",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "peeling_painted_wall",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_f/*"
+      ],
+      "category": "credited",
+      "title": "white_stucco (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/white_stucco",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "white_stucco",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_g/*"
+      ],
+      "category": "credited",
+      "title": "patterned_clay_plaster (painted-wall mix variant, live 22 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/patterned_clay_plaster",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "patterned_clay_plaster",
+      "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    }
+  ],
+  "worthKnowing": [
+    "The panchayat flag is the Indian national flag, drawn by our own code (src/props.js) and inside panchayat_v2.glb. Showing it in the village is normal; keep it off the store page, box art, logo and ads unless your lawyer says it is fine.",
+    "The old saloon car is drawn by our code in the shape of a 1960s Ambassador, with no name or badge; the jeep is generic with blank plates. No real brand name, logo or wordmark appears anywhere (the code has a standing \"no brands\" rule).",
+    "The people's extra moves (gestures) are inside the character files; no outside animation file is in the repo. If any move was downloaded from somewhere other than Tripo (for example Mixamo), tell the lead so it can be recorded.",
+    "Sounds are shipped but switched off until final polish; all 19 are CC0 and credited."
+  ]
 }

@@ -45,7 +45,54 @@ const SETS = {
   // has baked-in cracks, which reads as "falling apart" against CLAUDE.md section 6's
   // "worn-in yes, falling apart no" rule; this one is clean/cared-for.
   plaster_v2: { base: 'assets/textures_candidates/plaster_v2/', maps: ['color', 'normal', 'roughness'] },
+
+  // --- MIX VARIANTS, live 22 Nov — her direct instruction: "use all of these
+  // textures... in reality as well, there is a mix of textures." These are CC0
+  // Poly Haven sets she picked from two rounds of screenshots (both "i like these"
+  // and "use all of these"). Each one's normal map was checked isn't flat (the
+  // beige_wall_001 lesson) before being added here — see docs/CREDITS.md for the
+  // check values. Two wall candidates from round 2 (worn_cracked_plaster,
+  // yellow_plaster) measured borderline-flat after the downscale this session's
+  // fetch pipeline needed and are held back pending a full-res recheck — see
+  // docs/NEEDS_YOU.md. Selection logic is pickMixVariant() below.
+  tin_b: { base: 'assets/textures_mix/tin_b/', maps: ['color', 'normal', 'roughness'] }, // worn_corrugated_iron
+  tin_c: { base: 'assets/textures_mix/tin_c/', maps: ['color', 'normal', 'roughness'] }, // corrugated_iron_02
+  lane_b: { base: 'assets/textures_mix/lane_b/', maps: ['color', 'normal', 'roughness'] }, // brown_mud_dry
+  lane_c: { base: 'assets/textures_mix/lane_c/', maps: ['color', 'normal', 'roughness'] }, // brown_mud_rocks_01
+  concrete_b: { base: 'assets/textures_mix/concrete_b/', maps: ['color', 'normal', 'roughness'] }, // brushed_concrete
+  concrete_c: { base: 'assets/textures_mix/concrete_c/', maps: ['color', 'normal', 'roughness'] }, // brushed_concrete_2
+  plaster_b: { base: 'assets/textures_mix/plaster_b/', maps: ['color', 'normal', 'roughness'] }, // beige_wall_002
+  plaster_c: { base: 'assets/textures_mix/plaster_c/', maps: ['color', 'normal', 'roughness'] }, // clay_plaster
+  plaster_d: { base: 'assets/textures_mix/plaster_d/', maps: ['color', 'normal', 'roughness'] }, // painted_plaster_wall
+  plaster_e: { base: 'assets/textures_mix/plaster_e/', maps: ['color', 'normal', 'roughness'] }, // peeling_painted_wall
+  plaster_f: { base: 'assets/textures_mix/plaster_f/', maps: ['color', 'normal', 'roughness'] }, // white_stucco
+  plaster_g: { base: 'assets/textures_mix/plaster_g/', maps: ['color', 'normal', 'roughness'] }, // patterned_clay_plaster
 };
+
+// Real villages don't paint every wall and roof from one tin/one lane/one plaster -
+// each building ended up with whatever the owner could get, so the same material
+// name should resolve to different, but DETERMINISTIC (same wall never flickers
+// between variants frame to frame or reload to reload), textures across the
+// village. Keyed by the ORIGINAL (unresolved) name so the matv2 toggle above still
+// works unchanged for plaster/lane's dedicated A/B candidates.
+const MIX_GROUPS = {
+  tin: ['tin', 'tin_b', 'tin_c'],
+  lane: ['lane', 'lane_b', 'lane_c'],
+  concrete: ['concrete', 'concrete_b', 'concrete_c'],
+  plaster: ['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g'],
+};
+
+// Deterministic string hash -> pick one entry of a variant group. Seeded from the
+// repeat/tint values already passed to getTiledMaterial, which in practice differ
+// per building/wall (each wall's repeatX/repeatY comes from its own real-world
+// size) — so this gives variety across the village without needing every one of
+// the 20+ call sites changed to pass an explicit building id. A caller that wants
+// deliberate control can still do so later by widening the seed below.
+function pickMixVariant(groupNames, seedStr) {
+  let h = 0;
+  for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
+  return groupNames[h % groupNames.length];
+}
 
 // Dev-only A/B toggle so a candidate material swap can be shown live in-game without
 // touching the frozen library or the 20+ files that call getTiledMaterial('plaster'/
@@ -83,7 +130,11 @@ function loadRaw(url, srgb) {
  * (name, repeat, tint) so reused tiling scales share one material/draw-call group.
  */
 export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, roughness = 1, tintStrength = 1, vertexColors = false } = {}) {
-  const resolvedName = (VARIANT_OVERRIDE && VARIANTS[name]) ? VARIANTS[name] : name;
+  let resolvedName = (VARIANT_OVERRIDE && VARIANTS[name]) ? VARIANTS[name] : name;
+  if (resolvedName === name && MIX_GROUPS[name]) {
+    const seedStr = `${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}`;
+    resolvedName = pickMixVariant(MIX_GROUPS[name], seedStr);
+  }
   const key = `${resolvedName}|${repeatX.toFixed(3)}|${repeatY.toFixed(3)}|${tint || ''}|${roughness}|${tintStrength}|${vertexColors ? 'vc' : ''}`;
   let mat = materialCache.get(key);
   if (mat) return mat;
