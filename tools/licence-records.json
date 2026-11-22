@@ -58,13 +58,13 @@
     "public/assets/textures_candidates/plaster_v2/*"
    ],
    "category": "credited",
-   "title": "beige_wall_001 (candidate painted-wall replacement, staged 22 Nov, not yet approved)",
-   "source": "Poly Haven",
-   "url": "https://polyhaven.com/a/beige_wall_001",
-   "author": "Poly Haven",
+   "title": "PaintedPlaster017, crack-removed (candidate painted-wall replacement, staged 22 Nov v2, not yet approved)",
+   "source": "ambientCG",
+   "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+   "author": "ambientCG (Lennart Demes)",
    "licence": "CC0",
-   "creditsKey": "beige_wall_001",
-   "evidence": "Downloaded 4K PNG, downscaled to 1024 and re-encoded to WebP in-browser for Aishwarya's review; not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
+   "creditsKey": "PaintedPlaster017",
+   "evidence": "22 Nov v1 used Poly Haven beige_wall_001, but its normal map is nearly flat (she said the candidates didn't look realistic - correctly). v2: reverted to the existing, already-credited PaintedPlaster017 color/normal/roughness (real stucco grain, good relief under raking light), ran the color map through a median blur in this repo to remove the baked-in crack lines while keeping the normal/roughness untouched - not a new third-party asset, a cleaned-up derivative of one already in CREDITS.md. Not wired into the live material (see ?matv2=1 toggle, src/materials.js)"
   },
   {
    "match": [
