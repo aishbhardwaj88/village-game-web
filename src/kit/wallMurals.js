@@ -61,21 +61,8 @@ function iconFamily(g, cx, cy, s, fg) {
 }
 
 // ---- pure-graphic folk-art murals (no text; generic, not any one temple's or artist's exact iconography) ----
-function muralDevotional(g, x, y, w, h, fg) {
-  const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.3;
-  g.strokeStyle = fg; g.lineWidth = r * 0.06;
-  for (let i = 0; i < 8; i++) { // lotus petals, abstract
-    const a = (i / 8) * Math.PI * 2;
-    g.save(); g.translate(cx, cy); g.rotate(a);
-    g.beginPath(); g.ellipse(0, -r * 1.15, r * 0.3, r * 0.55, 0, 0, Math.PI * 2); g.stroke();
-    g.restore();
-  }
-  g.font = `${Math.round(r * 1.4)}px "Noto Sans Devanagari", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = fg; g.fillText('ॐ', cx, cy + r * 0.05);
-  // a small diya (oil lamp) below
-  g.beginPath(); g.ellipse(cx, cy + r * 1.9, r * 0.55, r * 0.22, 0, 0, Math.PI, true); g.fill();
-  g.beginPath(); g.moveTo(cx, cy + r * 1.68); g.quadraticCurveTo(cx + r * 0.07, cy + r * 1.4, cx, cy + r * 1.25); g.quadraticCurveTo(cx - r * 0.07, cy + r * 1.4, cx, cy + r * 1.68); g.fillStyle = '#c96a1f'; g.fill(); g.fillStyle = fg;
-}
+// NOTE: no religious iconography here, ever (owner's order, 22 Nov, strict). The former 'devotional' design
+// (lotus + om + diya) is removed on purpose, not pending review. Do not re-add any religious motif.
 function muralRangoli(g, x, y, w, h, fg) {
   const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) * 0.34;
   g.strokeStyle = fg; g.lineWidth = r * 0.05;
@@ -142,7 +129,6 @@ const DESIGNS = [
   { id: 'school', kind: 'text', bg: '#fbf3df', border: '#8a5a12', fg: '#6e4610', hi: 'स्कूल जरूर जाएं', en: 'Always go to school', icon: iconPencil },
   { id: 'family', kind: 'text', bg: '#eef0f6', border: '#293a6e', fg: '#202f58', hi: 'छोटा परिवार सुखी परिवार', en: 'Small family, happy family', icon: (g, cx, cy, s, fg) => iconFamily(g, cx, cy, s, fg) },
   { id: 'literacy', kind: 'text', bg: '#f4eee0', border: '#6e4a18', fg: '#5a3c12', hi: 'साक्षरता ही शक्ति है', en: 'Literacy is strength', icon: iconBook },
-  { id: 'devotional', kind: 'graphic', bg: '#f7efd8', border: '#8a5a1c', fg: '#6e3a14', draw: muralDevotional },
   { id: 'rangoli', kind: 'graphic', bg: '#fbeedd', border: '#a5401c', fg: '#a5401c', draw: muralRangoli },
   { id: 'cowpeacock', kind: 'graphic', bg: '#eef2e4', border: '#2c4a2a', fg: '#243a1e', draw: muralCowPeacock },
   { id: 'handprints', kind: 'graphic', bg: '#f1e6d6', border: '#7a2a1a', fg: '#8a2c18', draw: muralHandprints },
