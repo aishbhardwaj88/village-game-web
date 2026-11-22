@@ -4,7 +4,7 @@ import { buildClutter } from './housesClutter.js';
 import { getHouseMaterial, houseMaterialReady } from './housesMaterial.js';
 import { createHouseBatch } from './housesInstancing.js';
 import { planHouses, ringsOverlap, inRing, rectCorners } from './housesPlan.js';
-import { makeRoadIndex } from './landLayout.js'; // S7 WIRING (integrator, wallposters)
+import { makeRoadIndex, loadLandMap } from './landLayout.js'; // S7 WIRING (integrator, wallposters)
 import { isNewLayout } from './housesLayout.js';
 import { dipHeightRaw } from '../dips.js';
 import { requestColliderRebuild } from '../collision.js';
@@ -225,7 +225,12 @@ export async function loadPlannedHouses() {
   const mod = await import('./housesPlanData.json');
   const data = mod.default || mod;
   const plan = data.rows.map(([i, x, z, ry, w, d, mud, road]) => ({ i, x, z, ry, w, d, mud: !!mud, road, front: [Math.sin(ry), Math.cos(ry)], corners: rectCorners(x, z, ry, w, d) }));
-  return { plan };
+  // S7 fix (22 Nov): this returned no `roads`, so makeRoadIndex(map.roads) below threw on an undefined iterable and the
+  // whole new-map house layer silently failed to build every time (caught by the .catch in initNewMapHouses). The approved
+  // map (already fetched by the shops/land system) is the real road source; load it lazily so houses can build with no
+  // land layers wanted (`?only=` audits) without paying for it.
+  const roads = await loadLandMap().then((m) => m.roads).catch(() => []);
+  return { plan, roads };
 }
 
 /** World data other systems may want once the new houses are built (roof tanks for the monkeys, doorsteps for jobs). */
