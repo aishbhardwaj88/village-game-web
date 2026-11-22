@@ -4,6 +4,7 @@ import { buildClutter } from './housesClutter.js';
 import { getHouseMaterial, houseMaterialReady } from './housesMaterial.js';
 import { createHouseBatch } from './housesInstancing.js';
 import { planHouses, ringsOverlap, inRing, rectCorners } from './housesPlan.js';
+import { makeRoadIndex } from './landLayout.js'; // S7 WIRING (integrator, wallposters)
 import { isNewLayout } from './housesLayout.js';
 import { dipHeightRaw } from '../dips.js';
 import { requestColliderRebuild } from '../collision.js';
@@ -115,7 +116,7 @@ export function sliceRect(x, z, ry, w, d) {
  * Builds the batch for a list of assigned houses (each with x, z, y, ry, design, mirror, cw, cd, sx, sz, wash, seed).
  * Returns { group, batch, update(px, pz), colliderBoxes, stats, houses }.
  */
-export function buildHouseBatch(entries, { withFar = true, withClutter = true, nearDist = NEAR_DIST, clutterDist = CLUTTER_DIST, farDist = FAR_DIST, cache = null } = {}) {
+export function buildHouseBatch(entries, { withFar = true, withClutter = true, nearDist = NEAR_DIST, clutterDist = CLUTTER_DIST, farDist = FAR_DIST, cache = null, roads = null } = {}) {
   const geos = cache ? cache.geos : new Map(), infos = cache ? cache.infos : new Map();
   const nearKey = (e) => `${e.design}|${e.cw}|${e.cd}|${e.mirror ? 1 : 0}`;
   const farKey = (e) => `far|${e.design}|${e.cw}|${e.cd}`;
@@ -166,13 +167,15 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
   group.name = 'houses_s7';
   group.add(batch, colliders);
 
-  // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per building at most.
+  // S7 WIRING (integrator, signage + wallposters): bare back/side walls get a painted mural/slogan poster or a
+  // pasted poster, one per building at most; a road-facing wall (incl. a house front beside the door) is boosted.
   const muralBoxes = entries.map((e, i) => ({
     x: e.x, z: e.z, y: e.y || 0, ry: e.ry,
     w: e.w ?? e.cw * (e.sx || 1), d: e.d ?? e.cd * (e.sz || 1),
-    seed: i,
+    seed: i, kind: 'house',
+    door: e.info?.door ? { x0: e.info.door.x0, x1: e.info.door.x1 } : undefined,
   }));
-  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes);
+  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes, { roads });
   if (muralMesh) group.add(muralMesh);
 
   let lx = 1e9, lz = 1e9;
@@ -242,6 +245,7 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
   const report = {};
   const ready = Promise.all([loadMap(), houseMaterialReady()]).then(async ([map]) => {
     const plan = map.plan || planHouses(map.houses, map.roads);
+    const roadIdx = makeRoadIndex(map.roads); // S7 WIRING (integrator, wallposters)
     // a pair drawn overlapping on the map: the later one is left out (reported)
     const drop = new Set();
     for (let i = 0; i < plan.length; i++) for (let j = i + 1; j < plan.length; j++) {
@@ -256,7 +260,7 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
       worstStep = Math.max(worstStep, e.y - Math.min(...ys));
     }
     const cache = await prebuildGeometries(entries);
-    built = buildHouseBatch(entries, { cache });
+    built = buildHouseBatch(entries, { cache, roads: roadIdx });
     holder.add(built.group);
     for (const e of entries) {
       const c = Math.cos(e.ry), s = Math.sin(e.ry);

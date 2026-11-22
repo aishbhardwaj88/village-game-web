@@ -84,7 +84,7 @@ export function buildShops(map, { camera = null } = {}) {
     if (front > back + 0.5 && front > 4) report.backToRoad.push(`${opts.signName || key} at ${rect.x.toFixed(1)},${rect.z.toFixed(1)} (front ${front.toFixed(1)} m from a road, back ${back.toFixed(1)} m)`);
     if (rect.skewDeg > 3) report.skewed.push(`${opts.signName || key} plot edge is ${rect.skewDeg.toFixed(1)} deg off its front`);
     colliders.push(...orientedBoxes(rect.x, rect.z, rect.ry, opts.colW ?? rect.width, opts.colD ?? rect.depth));
-    muralBoxes.push({ x: rect.x, z: rect.z, ry: rect.ry, w: opts.colW ?? rect.width, d: opts.colD ?? rect.depth, seed: i });
+    muralBoxes.push({ x: rect.x, z: rect.z, ry: rect.ry, w: opts.colW ?? rect.width, d: opts.colD ?? rect.depth, seed: i, kind: 'shop' });
   };
 
   let i = 0;
@@ -178,7 +178,7 @@ export function buildShops(map, { camera = null } = {}) {
     group.add(signs);
   }
   // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per shop at most.
-  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes);
+  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes, { roads }); // S7 WIRING (integrator, wallposters): road-facing boost
   if (muralMesh) group.add(muralMesh);
   report.murals = muralStats;
   // colliders ride on the concrete batch (a mesh, so the collider walk reads them); it never derives its own
