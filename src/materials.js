@@ -51,10 +51,7 @@ const SETS = {
   // Poly Haven sets she picked from two rounds of screenshots (both "i like these"
   // and "use all of these"). Each one's normal map was checked isn't flat (the
   // beige_wall_001 lesson) before being added here — see docs/CREDITS.md for the
-  // check values. Two wall candidates from round 2 (worn_cracked_plaster,
-  // yellow_plaster) measured borderline-flat after the downscale this session's
-  // fetch pipeline needed and are held back pending a full-res recheck — see
-  // docs/NEEDS_YOU.md. Selection logic is pickMixVariant() below.
+  // check values. Selection logic is pickMixVariant() below.
   tin_b: { base: 'assets/textures_mix/tin_b/', maps: ['color', 'normal', 'roughness'] }, // worn_corrugated_iron
   tin_c: { base: 'assets/textures_mix/tin_c/', maps: ['color', 'normal', 'roughness'] }, // corrugated_iron_02
   lane_b: { base: 'assets/textures_mix/lane_b/', maps: ['color', 'normal', 'roughness'] }, // brown_mud_dry
@@ -67,6 +64,13 @@ const SETS = {
   plaster_e: { base: 'assets/textures_mix/plaster_e/', maps: ['color', 'normal', 'roughness'] }, // peeling_painted_wall
   plaster_f: { base: 'assets/textures_mix/plaster_f/', maps: ['color', 'normal', 'roughness'] }, // white_stucco
   plaster_g: { base: 'assets/textures_mix/plaster_g/', maps: ['color', 'normal', 'roughness'] }, // patterned_clay_plaster
+  // 23 Nov - the two held-back round-2 options, re-fetched at 4k direct from Poly Haven
+  // (dl.polyhaven.org serves per-map JPGs directly, no zip needed) instead of through
+  // whatever lossy path produced the earlier borderline-flat (0.008-0.010) normal maps.
+  // Re-measured clean this time: worn_cracked_plaster std 0.017-0.026, yellow_plaster
+  // std 0.012-0.019 - both clear of the 0.012 flatness floor, no longer held back.
+  plaster_h: { base: 'assets/textures_mix/plaster_h/', maps: ['color', 'normal', 'roughness'] }, // worn_cracked_plaster
+  plaster_i: { base: 'assets/textures_mix/plaster_i/', maps: ['color', 'normal', 'roughness'] }, // yellow_plaster
 };
 
 // Real villages don't paint every wall and roof from one tin/one lane/one plaster -
@@ -79,7 +83,7 @@ const MIX_GROUPS = {
   tin: ['tin', 'tin_b', 'tin_c'],
   lane: ['lane', 'lane_b', 'lane_c'],
   concrete: ['concrete', 'concrete_b', 'concrete_c'],
-  plaster: ['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g'],
+  plaster: ['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g', 'plaster_h', 'plaster_i'],
 };
 
 // Deterministic string hash -> pick one entry of a variant group. Seeded from the

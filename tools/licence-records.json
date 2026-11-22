@@ -2111,6 +2111,32 @@
       "licence": "CC0",
       "creditsKey": "patterned_clay_plaster",
       "evidence": "She said \"use all of these textures... in reality there is a mix of textures\" after seeing it in a screenshot grid (two rounds) and picking it. Downloaded via Poly Haven files API (1k jpg), downscaled/re-encoded to webp in this repo. Normal map checked not flat (std-dev test, see docs/CREDITS.md) before wiring live in src/materials.js MIX_GROUPS."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_h/*"
+      ],
+      "category": "credited",
+      "title": "worn_cracked_plaster (painted-wall mix variant, live 23 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/worn_cracked_plaster",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "worn_cracked_plaster",
+      "evidence": "One of the two round-2 options she was shown that came back borderline-flat (std 0.008-0.010) after the original downscale and was held back on 22 Nov. Re-fetched 23 Nov direct from dl.polyhaven.org at 4k (its real highest resolution, not a zip this time) and downscaled fresh; re-measured clean at std 0.017-0.026. No longer held back."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_i/*"
+      ],
+      "category": "credited",
+      "title": "yellow_plaster (painted-wall mix variant, live 23 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/yellow_plaster",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "yellow_plaster",
+      "evidence": "The second round-2 option held back 22 Nov for the same borderline-flat reason. Re-fetched 23 Nov direct from dl.polyhaven.org at 4k and downscaled fresh; re-measured clean at std 0.012-0.019. No longer held back."
     }
   ],
   "worthKnowing": [
