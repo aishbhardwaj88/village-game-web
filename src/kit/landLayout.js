@@ -101,7 +101,7 @@ export function distToPolyline(pts, x, z) {
 /** A fast road lookup: roads bucketed into a 20 m grid; clearance(x,z) = distance to the nearest road EDGE (negative = on a road). */
 export function makeRoadIndex(roads) {
   const CELL = 20, grid = new Map(), segs = [];
-  for (const r of roads) {
+  for (const r of roads || []) {
     const half = (r.width || 4) / 2;
     for (let i = 0; i < r.pts.length - 1; i++) {
       const s = { a: r.pts[i], b: r.pts[i + 1], half, id: r.id, kind: r.kind };

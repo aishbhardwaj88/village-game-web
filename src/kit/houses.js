@@ -250,7 +250,10 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
   const report = {};
   const ready = Promise.all([loadMap(), houseMaterialReady()]).then(async ([map]) => {
     const plan = map.plan || planHouses(map.houses, map.roads);
-    const roadIdx = makeRoadIndex(map.roads); // S7 WIRING (integrator, wallposters)
+    // S7 fix (22 Nov): map.roads came back undefined here on the real deployed build (22 Nov) even after loadPlannedHouses
+    // was fixed to fetch it, and makeRoadIndex's own `for (const r of roads)` has no guard - never let it see anything
+    // but a real array, whichever map source supplied (or failed to supply) roads.
+    const roadIdx = makeRoadIndex(Array.isArray(map.roads) ? map.roads : []); // S7 WIRING (integrator, wallposters)
     // a pair drawn overlapping on the map: the later one is left out (reported)
     const drop = new Set();
     for (let i = 0; i < plan.length; i++) for (let j = i + 1; j < plan.length; j++) {
