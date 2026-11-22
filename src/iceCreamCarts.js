@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { getGLTFLoader } from './loaders.js';
 import { floatGeometry } from './pots.js';
 import { ANCHORS } from './anchors.js';
+import { isNewLayout } from './layout/layout.js';
 import { batchPlaceModelWhenRooted } from './placeBatch.js';
 import { requestColliderRebuild } from './collision.js';
 
@@ -18,7 +19,7 @@ export const ICECREAM_SPOTS = [
   { at: 'school', lx: 7.5, lz: -14.2, yaw: 3.1, m: 'icecream_cart' }, // 7 Nov spatial audit: was lx 8, lz 7 = inside the school yard; now outside the wall, 7.5 m east of the gate, 2 m clear of the outer lane edge
   { at: 'mela', lx: 5.0, lz: 6.0, yaw: -0.8, m: 'icecream_cart_b' },
   { at: 'chowk', lx: -12.0, lz: 9.0, yaw: 0.6, m: 'icecream_cart' },
-];
+].filter((s) => !(isNewLayout() && s.at === 'mela')); // Mela ground parked by owner, 22 Nov: no cart on open empty ground under ?layout=new
 
 const rnd = (i) => { const s = Math.sin(i * 91.7 + 17.3) * 43758.5453; return s - Math.floor(s); };
 

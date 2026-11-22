@@ -3,6 +3,7 @@
 // first find ticks the shared discovery log (src/discoveryLog.js). Positions come from the builders' own spot tables,
 // so a map change moves these with them. No meshes, no draw calls, no colliders, no quest state.
 import { ANCHORS } from './anchors.js';
+import { isNewLayout } from './layout/layout.js';
 import { NOSTALGIA_SPOTS } from './nostalgia.js';
 import { SCOOTER_SPOTS } from './scooters.js';
 import { registerDiscovery, cycle, noiseBurst, note } from './discoveryLog.js';
@@ -25,7 +26,7 @@ const TV_TUNES = [
 
 export function createNostalgiaDiscoveries() {
   const S = NOSTALGIA_SPOTS;
-  const at = (sp) => spotXZ(sp);
+  const at = (sp) => (isNewLayout() && sp && sp.at === 'mela' ? null : spotXZ(sp)); // Mela ground parked by owner, 22 Nov: no discoveries on open empty ground under ?layout=new
 
   // red letterbox at the post office
   let p = at(S.letterbox);

@@ -2000,7 +2000,7 @@ async function main() {
     zoneManager.register('jalebi_stall', { ...pt('jalebi'), buildRadius: 35, teardownRadius: 48, build: () => turnSiteGroup(createJalebiStall(pt('jalebi')), ANCHORS.jalebi.ry) });
     zoneManager.register('banta_shop', { visibleRadius: 350, ...pt('banta'), buildRadius: 30, teardownRadius: 42, build: () => turnSiteGroup(createBantaShop(pt('banta')), ANCHORS.banta.ry) });
     zoneManager.register('chaat_thela', { visibleRadius: 350, ...pt('chaat'), buildRadius: 30, teardownRadius: 42, build: () => turnSiteGroup(createChaatThela(pt('chaat')), ANCHORS.chaat.ry) });
-    zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => turnSiteGroup(createMelaGround(pt('mela')), ANCHORS.mela.ry) });
+    if (!isNewLayout()) zoneManager.register('mela_ground', { ...pt('mela'), buildRadius: 65, teardownRadius: 80, build: () => turnSiteGroup(createMelaGround(pt('mela')), ANCHORS.mela.ry) }); // S7 WIRING (integrator): parked by owner, 22 Nov. Not built under ?layout=new. Will return towards the outskirts once she gives a new spot.
     // 'gurukul' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // STAGING YARD (src/stagingYard.js, table in src/stagedPlaces.js): newly built places wait on their own pads east of the mandi until the map is laid out.
     yield;

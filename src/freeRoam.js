@@ -23,7 +23,7 @@ const NEW_WATER = isNewLayout() ? newWaterShapes() : null;
 const canalPt = () => (NEW_WATER ? { x: NEW_WATER.bridge.x, z: NEW_WATER.bridge.z, ry: 0 } : pt('canal'));
 
 // World positions (1 unit = 1 m; +x east, +z south, so north is up on the map). Same numbers as the places' own source files.
-export const PLACES = [
+const PLACES_ALL = [
   { id: 'house', en: 'Our house', hi: 'हमारा घर', ...pt('house'), kind: 'house', radius: 22 },
   { id: 'school', en: 'Primary school', hi: 'प्राथमिक विद्यालय', ...pt('school'), kind: 'school', radius: 28 },
   { id: 'halwai', en: 'Halwai', hi: 'हलवाई', ...pt('halwai'), kind: 'shop', radius: 14 },
@@ -68,6 +68,9 @@ export const PLACES = [
   { id: 'mandi', en: 'Mandi', hi: 'मंडी', ...pt('mandi'), kind: 'bazaar', radius: 26 },
   ...STAGED_PLACES.filter((p) => !['yard_dairy', 'yard_khalihan', 'yard_tubewell'].includes(p.id)).map((p) => ({ id: p.id, en: p.en, hi: p.hi, ...pt(p.id), kind: p.kind, radius: p.radius })), // staging yard (src/stagedPlaces.js)
 ];
+
+// Mela ground parked by owner, 22 Nov: not built under ?layout=new (see src/main.js), so it drops off the map/notebook/Visit-place menu too until it returns, towards the outskirts.
+export const PLACES = PLACES_ALL.filter((p) => !(isNewLayout() && p.id === 'mela'));
 
 // Faint pencil lanes so the page has structure before anything is inked. The old village's own lanes ride OLD_SHIFT with it
 // (src/anchors.js); the 1 Nov map's roads, lanes and tracks come straight from src/mapRoads.js (already at MAP_SHIFT).

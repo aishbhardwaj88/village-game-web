@@ -48,6 +48,7 @@ const SIGNPOSTS_ON_MAP = [
 // carriageway moves to the nearest clear spot beside a road (src/layout/seat.js), or is left out. The notice board stands on
 // the approved map's own 'Notice board' spot, facing its road. Under ?layout=old both are exactly as before.
 const SIGNPOSTS = SIGNPOSTS_ON_MAP.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }))
+  .map((p) => (isNewLayout() ? { ...p, to: p.to.filter((id) => id !== 'mela') } : p)) // Mela ground parked by owner, 22 Nov: drop it off signposts under ?layout=new
   .map((p) => { if (!isNewLayout()) return p; const q = seatBesideRoad(p.x, p.z); return q ? { ...p, x: q.x, z: q.z } : null; })
   .filter(Boolean);
 const NOTICE = (() => {
