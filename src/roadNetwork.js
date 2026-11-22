@@ -23,12 +23,12 @@ const NEW_LAYOUT = isNewLayout();
 
 /** Per-kind look: tint (multiplies the dirt texture), edge wander amplitude (m), edge band width (m), nali, ruts. */
 export const ROAD_KINDS = {
-  highway: { tint: 0x86837d, amp: 0.2, band: 1.8, edge: 0xa08f72, drain: false, ruts: false, bump: 0.006 },
-  road: { tint: 0x9d9384, amp: 0.32, band: 1.4, edge: 0xa69579, drain: false, ruts: false, bump: 0.01 },
-  lane: { tint: 0xb19c76, amp: 0.3, band: 1.1, edge: 0xb09c78, drain: true, ruts: false, bump: 0.012 },
-  back: { tint: 0xb09a74, amp: 0.2, band: 0.8, edge: 0xab9775, drain: false, ruts: false, bump: 0.01 },
-  track: { tint: 0xa08a64, amp: 0.45, band: 1.5, edge: 0xa69071, drain: false, ruts: true, bump: 0.016 },
-  path: { tint: 0xb4a07a, amp: 0.2, band: 0.75, edge: 0xb09d7b, drain: false, ruts: false, bump: 0.01 },
+  highway: { tint: 0x86837d, amp: 0.2, band: 1.8, edge: 0xa08f72, drain: false, ruts: false, bump: 0.006, potholes: true },
+  road: { tint: 0x9d9384, amp: 0.32, band: 1.4, edge: 0xa69579, drain: false, ruts: false, bump: 0.01, potholes: true },
+  lane: { tint: 0xb19c76, amp: 0.3, band: 1.1, edge: 0xb09c78, drain: true, ruts: false, bump: 0.012, potholes: true },
+  back: { tint: 0xb09a74, amp: 0.2, band: 0.8, edge: 0xab9775, drain: false, ruts: false, bump: 0.01, potholes: true },
+  track: { tint: 0xa08a64, amp: 0.45, band: 1.5, edge: 0xa69071, drain: false, ruts: true, bump: 0.016, potholes: false },
+  path: { tint: 0xb4a07a, amp: 0.2, band: 0.75, edge: 0xb09d7b, drain: false, ruts: false, bump: 0.01, potholes: false },
 };
 
 const CELL = 0.8; // grid spacing, metres. Edge wander is >= 2.5 m wavelength, so 0.8 m resolves it.
@@ -49,6 +49,26 @@ function vnoise(x, z) {
   return (a + (b - a) * sx + (c - a) * sz + (a - b - c + d) * sx * sz) * 2 - 1;
 }
 const fbm = (x, z, s) => 0.6 * vnoise(x / (7 * s), z / (7 * s)) + 0.3 * vnoise(x / (2.9 * s) + 17.3, z / (2.9 * s) - 4.1) + 0.1 * vnoise(x / 1.3 + 41.7, z / 1.3 + 9.2);
+
+// ---------------------------------------------------------------- potholes (her playtest note: "no pits, no stones")
+// Sparse, deterministic broken-edge pits in the road's own vertex field - no extra geometry or draw calls, since they
+// ride the same 0.8 m sample grid every road cell already computes. Centres sit on a coarse 2.6 m lattice so two pits
+// never crowd into one smear; about one cell in six hosts one (jittered off-centre, irregular radius).
+const POT_CELL = 2.6;
+function potholeField(x, z) {
+  const ix0 = Math.floor(x / POT_CELL), iz0 = Math.floor(z / POT_CELL);
+  let best = 0;
+  for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+    const ix = ix0 + dx, iz = iz0 + dz;
+    if (hash2(ix * 7 + 3, iz * 13 + 5) > 0.84) continue; // ~16% of cells host a pit
+    const cx = (ix + 0.5 + (hash2(ix * 31, iz * 17) - 0.5) * 0.7) * POT_CELL;
+    const cz = (iz + 0.5 + (hash2(ix * 19, iz * 23) - 0.5) * 0.7) * POT_CELL;
+    const rx = 0.26 + 0.34 * hash2(ix * 41, iz * 53), rz = 0.26 + 0.34 * hash2(ix * 59 + 1, iz * 67 + 2);
+    const v = Math.max(0, 1 - Math.hypot((x - cx) / rx, (z - cz) / rz));
+    if (v > best) best = v;
+  }
+  return best * best * (3 - 2 * best); // smoothstep: a flat-ish floor, not a cone
+}
 
 // ---------------------------------------------------------------- centrelines
 /**
@@ -153,13 +173,13 @@ function sample(net, x, z, out) {
     else { const h = Math.max(JOIN_K - Math.abs(D - di), 0) / JOIN_K; D = Math.min(D, di) - h * h * JOIN_K * 0.25; }
   }
   // Soft weights blend the look of lines meeting at a junction.
-  let wsum = 0, lift = 0, amp = 0, band = 0, bump = 0, tr = 0, tg = 0, tb = 0, er = 0, eg = 0, eb = 0, drain = 0, rut = 0;
+  let wsum = 0, lift = 0, amp = 0, band = 0, bump = 0, tr = 0, tg = 0, tb = 0, er = 0, eg = 0, eb = 0, drain = 0, rut = 0, pot = 0;
   for (const li of touched) {
     const l = net.lines[li];
     const di = bestD[li] - l.hw;
     touchedMark[li] = 0;
     const w = Math.exp(-(di - dmin) / 0.7);
-    wsum += w; lift += w * l.lift; amp += w * l.k.amp; band += w * l.k.band; bump += w * l.k.bump;
+    wsum += w; lift += w * l.lift; amp += w * l.k.amp; band += w * l.k.band; bump += w * l.k.bump; pot += w * (l.k.potholes ? 1 : 0);
     tr += w * l.tint.r; tg += w * l.tint.g; tb += w * l.tint.b;
     er += w * l.edgeTint.r; eg += w * l.edgeTint.g; eb += w * l.edgeTint.b;
     const lat = bestLat[li];
@@ -174,7 +194,7 @@ function sample(net, x, z, out) {
       rut += w * Math.exp(-(((al - 0.42 * l.hw) / Math.max(0.35, 0.18 * l.hw)) ** 2)) - w * 0.6 * Math.exp(-((lat / Math.max(0.4, 0.16 * l.hw)) ** 2));
     }
   }
-  lift /= wsum; amp /= wsum; band /= wsum; bump /= wsum; drain /= wsum; rut /= wsum;
+  lift /= wsum; amp /= wsum; band /= wsum; bump /= wsum; drain /= wsum; rut /= wsum; pot /= wsum;
   const n = fbm(x, z, 1);
   D -= amp * n * 1.4; // the edge wanders in and out
   const n2 = vnoise(x / 1.7 + 3.1, z / 1.7 - 8.4); // grass tufts biting into the band
@@ -192,9 +212,12 @@ function sample(net, x, z, out) {
   const inside = 1 - edgeMix;
   if (rut) { const k = 1 - 0.13 * rut * inside; r *= k; g *= k; b *= k; }
   if (drain > 0.02) { const k = 1 - 0.42 * drain * inside; r *= k; g *= k * 1.01; b *= k * 1.03; }
+  // potholes: broken, dust-rimmed and often damp at the bottom, never out at the grassy edge
+  const pit = pot > 0.02 ? pot * inside * potholeField(x, z) : 0;
+  if (pit > 0.02) { const k = 1 - 0.55 * pit; r *= k; g *= k * 0.985; b *= k * 1.04; }
   out.a = a;
   out.r = r; out.g = g; out.b = b;
-  out.y = 0.032 + lift + bump * vnoise(x / 2.3 + 11, z / 2.3) - 0.022 * t - 0.045 * drain * inside - (rut > 0 ? 0.012 * rut * inside : 0);
+  out.y = 0.032 + lift + bump * vnoise(x / 2.3 + 11, z / 2.3) - 0.022 * t - 0.045 * drain * inside - (rut > 0 ? 0.012 * rut * inside : 0) - 0.065 * pit;
   // S7 (?layout=new): the painted fields lie at y 0.016 (shops-land); the road surface, its edge band and its nali groove never
   // dip under 0.02, so a road always draws over a field it touches. ?layout=old unchanged.
   if (NEW_LAYOUT && out.y < 0.02) out.y = 0.02;
