@@ -3,7 +3,7 @@ import { LAND_QUALITY } from './landQuality.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
 import { shopHouse, shop, kiosk, cart, shed, farBlock } from './shopsKit.js';
-import { SignAtlas, boardGeometry, signNameFor } from './shopsSigns.js';
+import { SignAtlas, boardGeometry, signNameFor, SHAPES, CW, layoutFor } from './shopsSigns.js';
 import { kitMaterials } from './landMaterials.js';
 import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from './landLayout.js';
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
@@ -65,13 +65,21 @@ export function buildShops(map, { camera = null } = {}) {
     const midId = kit.add(mid, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false });
     const farId = big ? kit.add(farKey, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false }) : -1;
     lod.push({ x: rect.x, z: rect.z, ids: [nearId, midId, farId], tier: 0 });
-    // signboard
+    // signboard: a real shape (own row height, see shopsSigns.js SHAPES), not one box repainted 14 ways (her 22 Nov
+    // note: "some boards are thin, some thick, some have more height, some less, text left, right or centred").
     const s = designSigns.get(near);
     if (s && opts.signName) {
-      const cell = atlas.cell(opts.signName, Math.floor(hash01(i, 9) * 14)); // S7 (22 Nov): 14 board schemes now, was 6
+      const schemeIdx = Math.floor(hash01(i, 9) * 14); // 14 paint schemes
+      const shapeIdx = Math.floor(hash01(i, 10) * SHAPES.length);
+      const cell = atlas.cell(opts.signName, schemeIdx, shapeIdx, layoutFor(i));
       if (cell) {
-        const m = new THREE.Matrix4().makeRotationY(rect.ry).setPosition(rect.x, 0, rect.z).multiply(new THREE.Matrix4().makeTranslation(s.x, s.y + s.h / 2, s.z));
-        boards.push(boardGeometry(atlas, cell, s.w, s.h, m));
+        const aspect = CW / SHAPES[shapeIdx].ch;
+        let h = Math.min(s.h * 1.7, Math.max(s.h * 0.55, s.w / aspect));
+        let w = h * aspect;
+        if (w > s.w) { w = s.w; h = w / aspect; } // never wider than the facade's own budget
+        const depth = 0.03 + hash01(i, 12) * 0.045; // thin painted tin to a thicker wood plank
+        const m = new THREE.Matrix4().makeRotationY(rect.ry).setPosition(rect.x, 0, rect.z).multiply(new THREE.Matrix4().makeTranslation(s.x, s.y + h / 2, s.z));
+        boards.push(boardGeometry(atlas, cell, w, h, m, depth));
       }
     }
     // checks: nothing on a road, front faces a road
