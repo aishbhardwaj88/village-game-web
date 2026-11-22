@@ -216,7 +216,7 @@ export function buildShops(map, { camera = null } = {}) {
 
   group.userData.atlas = atlas;
   report.boards = boards.length;
-  report.signCells = atlas.cells.size;
+  report.signCells = atlas.bins.reduce((n, bin) => n + bin.length, 0);
   report.kit = kit.stats();
   group.userData.report = report;
   group.userData.update = update;
