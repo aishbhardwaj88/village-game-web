@@ -108,6 +108,12 @@ const VARIANT_OVERRIDE = (() => {
 })();
 const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
 
+/** Cache-busting suffix (see vite.config.js's __ASSET_V__) so a texture that changes
+ * content at the same public/ path (no content hash, unlike the built JS/CSS) is never
+ * served stale from the browser cache or GitHub Pages' CDN after a deploy. */
+const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
+function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
+
 function loadRaw(url, srgb) {
   // One real load() per URL, reused via clone() for every repeat/tint variant — this
   // is what keeps a scene with many wall/roof boxes to a handful of actual network
@@ -117,7 +123,7 @@ function loadRaw(url, srgb) {
   // "Texture marked for update but no image data found" warning; see docs/parked.md.
   let tex = rawTextureCache.get(url);
   if (!tex) {
-    tex = textureLoader.load(url);
+    tex = textureLoader.load(bust(url)); // cache key stays the clean url; only the actual request is busted
     if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
     rawTextureCache.set(url, tex);
   }
@@ -332,7 +338,7 @@ let grassRoughTex = null;
 function getGrassDetailTexture(kind) {
   const isNormal = kind === 'normal';
   if (isNormal ? !grassNormalTex : !grassRoughTex) {
-    const t = textureLoader.load(`assets/textures/grass/grass_${kind}.webp`); // linear data, not sRGB
+    const t = textureLoader.load(bust(`assets/textures/grass/grass_${kind}.webp`)); // linear data, not sRGB
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.anisotropy = 4;
     if (isNormal) grassNormalTex = t; else grassRoughTex = t;
@@ -341,7 +347,7 @@ function getGrassDetailTexture(kind) {
 }
 function getGrassCoverTexture() {
   if (!grassCoverTex) {
-    grassCoverTex = textureLoader.load('assets/textures/grass/grass_color.webp');
+    grassCoverTex = textureLoader.load(bust('assets/textures/grass/grass_color.webp'));
     grassCoverTex.colorSpace = THREE.SRGBColorSpace;
     grassCoverTex.wrapS = grassCoverTex.wrapT = THREE.RepeatWrapping;
     grassCoverTex.anisotropy = 4;

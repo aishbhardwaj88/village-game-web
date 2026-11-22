@@ -39,9 +39,16 @@ const ATLAS_COLS = 3;
 const ATLAS_ROWS = 2;
 const SPECIES_CELL = { neem: 0, peepal: 1, mango: 2, babool: 3, eucalyptus: 4 };
 
+// Cache-busting suffix (see vite.config.js's __ASSET_V__ and materials.js's bust()) - a
+// texture that changes content at the same public/ path keeps the same URL across deploys
+// (no content hash, unlike built JS/CSS), so without this a changed texture can keep
+// serving stale bytes from the browser cache or GitHub Pages' CDN.
+const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
+function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
+
 function makeLeafAtlas() {
   // Real ambientCG CC0 leaf photos cut out and arranged by tools/build-plant-atlas.mjs.
-  const tex = new THREE.TextureLoader().load('assets/plants/tree_atlas.webp');
+  const tex = new THREE.TextureLoader().load(bust('assets/plants/tree_atlas.webp'));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   return tex;
@@ -329,7 +336,7 @@ function buildSpeciesTree(spec, seed, name) {
 const IMPOSTOR_MATERIALS = {};
 function impostorMaterial(species) {
   if (!IMPOSTOR_MATERIALS[species]) {
-    const tex = new THREE.TextureLoader().load(`assets/trees/impostor_${species}.webp`);
+    const tex = new THREE.TextureLoader().load(bust(`assets/trees/impostor_${species}.webp`));
     tex.colorSpace = THREE.SRGBColorSpace;
     const m = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 });
     m.name = `tree_impostor_${species}`;
