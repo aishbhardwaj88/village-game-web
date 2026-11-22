@@ -68,7 +68,7 @@ export function buildShops(map, { camera = null } = {}) {
     // signboard
     const s = designSigns.get(near);
     if (s && opts.signName) {
-      const cell = atlas.cell(opts.signName, Math.floor(hash01(i, 9) * 6));
+      const cell = atlas.cell(opts.signName, Math.floor(hash01(i, 9) * 14)); // S7 (22 Nov): 14 board schemes now, was 6
       if (cell) {
         const m = new THREE.Matrix4().makeRotationY(rect.ry).setPosition(rect.x, 0, rect.z).multiply(new THREE.Matrix4().makeTranslation(s.x, s.y + s.h / 2, s.z));
         boards.push(boardGeometry(atlas, cell, s.w, s.h, m));

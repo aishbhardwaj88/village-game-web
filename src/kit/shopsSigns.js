@@ -39,6 +39,8 @@ export const HINDI = {
 };
 
 // Painted-board schemes seen on real UP bazaar boards: light ground, ONE dark paint for both lines, a darker border.
+// Expanded 22 Nov (her reference photos: no two boards in a real UP market row match) from 6 to 14, mixing painted-tin
+// and printed-banner feels so a long shop row never repeats a look within view.
 const SCHEMES = [
   { bg: '#efe3c4', fg: '#6e1a12', border: '#7a2a1a' }, // cream / maroon
   { bg: '#e9c95a', fg: '#5a1410', border: '#6e2018' }, // yellow / deep red
@@ -46,6 +48,14 @@ const SCHEMES = [
   { bg: '#cfdcc4', fg: '#1f3a22', border: '#2c4a2a' }, // pale green / bottle green
   { bg: '#c9d6e0', fg: '#18305a', border: '#22406a' }, // pale blue / navy
   { bg: '#ead2b4', fg: '#3a2414', border: '#5a3a1e' }, // sand / brown
+  { bg: '#c23b2e', fg: '#f5ecd8', border: '#7a1e16' }, // bright red / cream (vinyl banner look)
+  { bg: '#1f6e4a', fg: '#f3ecd4', border: '#123a26' }, // bottle green / cream (printed banner)
+  { bg: '#e8831a', fg: '#2a1608', border: '#8a4a0c' }, // saffron / near-black (hardware/general store)
+  { bg: '#16365e', fg: '#eadfa8', border: '#0c2038' }, // navy / gold (mobile/electronics shop)
+  { bg: '#d9a6b0', fg: '#5a1a28', border: '#7a2638' }, // dusty pink / maroon (bangles/cosmetics)
+  { bg: '#3a3028', fg: '#e8c468', border: '#1e1812' }, // dark tin / gold paint (jeweller, sweet shop)
+  { bg: '#eef0e6', fg: '#2a2a2a', border: '#5a5a52' }, // galvanised tin grey-white / near-black (hardware)
+  { bg: '#f0d23a', fg: '#1a1a1a', border: '#7a1e16' }, // bright yellow / black (tailor, cycle repair)
 ];
 
 const CW = 512, CH = 120, COLS = 4, ROWS = 34, W = CW * COLS, H = CH * ROWS;
