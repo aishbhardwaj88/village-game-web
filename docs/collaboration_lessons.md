@@ -149,3 +149,16 @@ bilingual signboard). Rule: before writing ANY place prompt, read
   front/back). Road signs face oncoming traffic (perpendicular to the road).
 - 25 Oct: health sub-centre dropped after 3 tries; it kept reading as a house. Small
   single-storey public buildings need a strong signal beyond props (scale, signage). Parked.
+- 22 Nov: CLAUDE.md tells every agent to read reference-from-unity/MAP.md, but the file
+  does not exist in this repo (it is gitignored and was never committed, confirmed with
+  git log --all). Agents who "read" it from training data would be guessing, which
+  CLAUDE.md itself forbids. Before relying on MAP.md, check it is actually present; if
+  not, use docs/layout/approved-map-2026-11-21.json (the sprint's own named source of
+  truth) and say in the report that MAP.md was unreachable, never invent its contents.
+- 22 Nov: a shop-house solid (new_sqh, "Shopkeeper's home and godown") has no matching
+  entry in the approved map's places list, so src/layout/layoutSnap.js marks it
+  named:false and tools/layout-tests.mjs skips it entirely (line ~95: unnamed solids
+  are never front/road checked, never auto-snapped). It is already built and may well
+  be fine, but its position has never actually been verified. Any solid added without a
+  places[] back-reference silently escapes every layout check this way - worth a look
+  before trusting "0 failures" to mean every built thing was tested.
