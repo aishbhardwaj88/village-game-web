@@ -1,0 +1,48 @@
+# S7 desktop (22 Nov): builds the Mac app (.dmg + .zip, both chips) of the DESKTOP edition on a free GitHub Mac machine.
+# Mirrors desktop-windows.yml's structure. Runs ONLY when started by hand: GitHub > Actions > "Desktop Mac installer" > Run workflow.
+# The result is attached to the run as a download ("Dopahar-mac", kept 14 days). Nothing is published or deployed.
+# Needed because electron-builder's dmg target calls macOS's own disk-image tool (hdiutil), which does not exist on
+# Linux, so the .dmg cannot be made on this cloud box (docs/s7/desktop.md). A GitHub-hosted macos runner has that tool.
+# Unsigned for now (no Apple Developer Program yet; see docs/s7/desktop.md "Needs her"). An unsigned app shows
+# "Dopahar is damaged" on an Apple-chip Mac unless the ad-hoc fix in docs/s7/desktop.md is run once after download.
+name: Desktop Mac installer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
+      - name: Install the game's tools
+        run: npm ci
+      - name: Licence check
+        run: npm run licence:check
+      - name: Build the game for desktop (full quality, original characters)
+        run: npm run build:desktop
+      - name: Install the desktop app tools (Electron)
+        run: npm --prefix desktop ci
+      - name: Make the Mac app (.dmg + .zip, Apple chip and Intel)
+        run: npm --prefix desktop run dist:mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Dopahar-mac
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            desktop/out/*.dmg
+            desktop/out/*.zip
