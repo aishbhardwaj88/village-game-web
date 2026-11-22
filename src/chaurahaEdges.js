@@ -9,6 +9,7 @@ import { CHAURAHA } from './mapPlan.js';
 import { ensureUv2 } from './materials.js';
 import { oldHouseMaterial } from './stagingYard.js';
 import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
+import { buildTinRoofPanel } from './kit/materialsGeo.js'; // S7 WIRING (textures-wiring)
 
 /**
  * Edge life round the chauraha (docs/SPATIAL_SENSE.md section 1: "the square is ringed by fronts, never filled").
@@ -147,6 +148,20 @@ export function createChaurahaEdges(scene) {
     frame.compose(new THREE.Vector3(x, 0, z), _q.clone().setFromEuler(_e.set(0, ry, 0)), _one);
   }
   function add(mat, mesh) { (parts[mat] ||= []).push(mesh); }
+  // S7 WIRING (textures-wiring): real-geometry tin roofs are their own small meshes (ribs +
+  // instanced washers, not one flat box), so they can't go through the per-material
+  // mergeGeometries() path below (`parts`) — they're collected here and added to `root`
+  // directly once built. Only the 10 chauraha-edge buildings use this (hero, closest-camera
+  // site in the village); gullyLife/mainRoadFrontage/armFrontage keep the flat 'tin' box —
+  // see docs/s7/textures-wiring.md for why.
+  const heroRoofs = [];
+  let roofSeed = 9001;
+  /** Real-geometry tin roof panel in frame-local metres: centre (x,y,z), yaw ry, pitch rx. */
+  function tinRoof(w, d, x, y, z, ry = 0, tint = null, rx = 0) {
+    const group = buildTinRoofPanel(w, d, { seed: roofSeed++, tint });
+    group.applyMatrix4(_l.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, 0)), _one).premultiply(frame));
+    heroRoofs.push(group);
+  }
   /** Textured box in frame-local metres: centre (x,y,z), yaw ry, pitch rx. */
   function box(mat, w, h, d, x, y, z, ry = 0, tint = null, tile = 1.0, rx = 0, rz = 0) {
     const oh = oldHouseMaterial(mat); // masonry wears the old-house weathered library material, UVs in metres at its own library repeat
@@ -185,7 +200,7 @@ export function createChaurahaEdges(scene) {
     box('plaster', w, H, wt, 0, 0.16 + H / 2, -d / 2 + wt / 2, 0, wall, 0.5);
     for (const s of [-1, 1]) box('plaster', wt, H, d, s * (w / 2 - wt / 2), 0.16 + H / 2, 0, 0, wall, 0.5);
     box('plaster', w, 0.62, 0.3, 0, 0.16 + H - 0.31, d / 2 - 0.15, 0, wall, 0.5);
-    box('tin', w + 0.5, 0.07, d + 0.5, 0, 0.16 + H + 0.06, 0.1, 0, 0xa8a49a, 0.8, 0.045);
+    tinRoof(w + 0.5, d + 0.5, 0, 0.16 + H + 0.06, 0.1, 0, 0xa8a49a, 0.045); // S7 WIRING (textures-wiring): real-geometry tin, hero site
     // shutter rolled up under the lintel with its guide rails
     box('metal', w - 0.5, 0.26, 0.26, 0, 0.16 + H - 0.75, d / 2 - 0.2, 0, 0x8c8c86, 1.0);
     for (const s of [-1, 1]) box('metal', 0.07, 2.4, 0.09, s * (w / 2 - wt - 0.1), 0.16 + 1.2, d / 2 - 0.12, 0, 0x7a7a74, 1.0);
@@ -280,7 +295,7 @@ export function createChaurahaEdges(scene) {
     box('plaster', w, H, d, 0, 0.4 + H / 2, 0, 0, wall, 0.5);
     box('plaster', w + 0.1, 0.14, d + 0.1, 0, 0.4 + H - 0.07, 0, 0, 0xcdc4b0, 0.5); // cornice band
     // tin roof, low pitch, overhanging the front as a verandah with two posts
-    box('tin', w + 0.5, 0.07, d + 1.5, 0, 0.4 + H + 0.2, 0.55, 0, 0xa8a49a, 0.8, 0.07);
+    tinRoof(w + 0.5, d + 1.5, 0, 0.4 + H + 0.2, 0.55, 0, 0xa8a49a, 0.07); // S7 WIRING (textures-wiring): real-geometry tin, hero site
     for (const s of [-1, 1]) box('wood', 0.12, 2.7, 0.12, s * (w / 2 - 0.25), 0.4 + 1.3, d / 2 + 1.05, 0, 0x7a5a3c);
     // verandah floor and step
     box('concrete', w - 0.2, 0.1, 1.2, 0, 0.35, d / 2 + 0.55, 0, 0xb0aaa0, 1.0);
@@ -378,6 +393,11 @@ export function createChaurahaEdges(scene) {
     merged.receiveShadow = true;
     root.add(merged);
   }
+  // S7 WIRING (textures-wiring): real-geometry tin roofs (ribs, dents, rust, washers) —
+  // each is its own small Group (not mergeable with the flat 'tin' boxes above), added
+  // directly. 10 of them, all at the hero chauraha site, so 10 extra draw calls here —
+  // see docs/s7/textures-wiring.md for the before/after budget numbers.
+  for (const rf of heroRoofs) root.add(rf);
 
   // signboards: one atlas, Hindi bold on top, English below, one dark paint
   const keys = [...new Set(signList.map((s) => s.key))];
