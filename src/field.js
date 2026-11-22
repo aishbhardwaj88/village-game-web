@@ -393,59 +393,63 @@ export function buildCaneClumps(spots) {
   return mesh;
 }
 
-/** Procedural mustard flower-head card: a raceme of tiny four-petal yellow florets climbing a green stem, buds at the tip, cut out with alpha. */
-function sarsonBloomTexture() {
-  const W = 128, H = 128;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const g = cv.getContext('2d');
-  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  g.clearRect(0, 0, W, H);
-  g.strokeStyle = '#4e6a22'; g.lineWidth = 2.5;
-  for (let s2 = 0; s2 < 5; s2++) { // five branching racemes
-    const x0 = 64 + (s2 - 2) * 14, lean = (s2 - 2) * 9;
-    g.beginPath(); g.moveTo(x0, H); g.quadraticCurveTo(x0 + lean * 0.4, H * 0.5, x0 + lean, 14 + (s2 % 2) * 12); g.stroke();
-    for (let i = 0; i < 22; i++) {
-      const t = i / 21, x = x0 + lean * t * t + (rnd() - 0.5) * 9, y = (14 + (s2 % 2) * 12) + t * 62 + (rnd() - 0.5) * 5;
-      const r = 3.6 - t * 1.4, hue = 46 + rnd() * 6;
-      g.fillStyle = `hsl(${hue},95%,${52 + rnd() * 8}%)`;
-      for (let p = 0; p < 4; p++) { const a = p * Math.PI / 2 + rnd() * 0.5; g.beginPath(); g.ellipse(x + Math.cos(a) * r * 0.8, y + Math.sin(a) * r * 0.8, r * 0.75, r * 0.5, a, 0, 6.3); g.fill(); }
-      g.fillStyle = '#8a9a24'; g.beginPath(); g.arc(x, y, 1, 0, 6.3); g.fill();
-    }
-    g.fillStyle = '#9ab02a'; for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(x0 + lean + (rnd() - 0.5) * 6, 10 + (s2 % 2) * 12 + rnd() * 10, 2.2, 0, 6.3); g.fill(); }
-  }
-  const t = new THREE.CanvasTexture(cv);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
-}
-
-/** Mustard in flower: a dense canopy of alpha-cut flower-head cards (racemes of yellow florets, see sarsonBloomTexture) over the sarson
- * plots (one InstancedMesh, 2 triangles per card) so the plot reads as a yellow carpet from a distance, not isolated sprigs. Stems below
- * are dark green. */
+/** Mustard in flower, rebuilt as real 3D geometry 22 Nov (no CC0 mustard/sarson model exists anywhere
+ * checked - Poly Haven's full model list has zero crop/flower hits beyond flower_gazania etc already in
+ * use, and every web hit for a free mustard plant was a paid CGTrader/TurboSquid listing; logged in
+ * docs/NEEDS_YOU.md). The old version was a flat alpha-cut card, the exact 2D-cutout look she rejected
+ * for the carrom-side plant and for brinjal/okra (which are off for the same reason, see buildField).
+ * This version has NO alpha cards at all: each floret is a small 3D cross of four tilted petal triangles
+ * (same idea as the lotus flower geometry in farmSites.js), climbing a real 3-sided stem built the same
+ * way buildCaneClumps already builds sugarcane - so the stalk and florets both have real volume and
+ * self-shadow, and the plot still reads as a yellow carpet from a distance because there are many of
+ * them, not because any one card is painted to look like many. */
 function buildSarsonBloom(spots) {
-  const pos = [], col = [], uv = [];
-  const stem = new THREE.Color(0x4a6420);
-  const push = (pts, cols, uvs) => { pts.forEach((p) => pos.push(...p)); cols.forEach((q) => col.push(q.r, q.g, q.b)); uvs.forEach((q) => uv.push(...q)); };
-  const white = new THREE.Color(1, 1, 1);
-  for (let i = 0; i < 16; i++) {
-    const a = i * 2.399, r = 0.08 + 0.62 * Math.sqrt((i + 0.5) / 16);
-    const cx = Math.cos(a) * r, cz = Math.sin(a) * r, h = 0.62 + 0.2 * ((i * 7) % 5) / 4;
-    const w = 0.3 + 0.06 * (i % 3), t = a + 1.1, hh = 0.34;
-    const ux = Math.cos(t) * w, uz = Math.sin(t) * w, tilt = 0.05;
-    const A = [cx - ux, h - hh * 0.5, cz - uz], B = [cx + ux, h - hh * 0.5, cz + uz], C = [cx + ux, h + hh * 0.5, cz + uz - tilt], D = [cx - ux, h + hh * 0.5, cz - uz - tilt];
-    push([A, B, C], [white, white, white], [[0, 0], [1, 0], [1, 1]]);
-    push([A, C, D], [white, white, white], [[0, 0], [1, 1], [0, 1]]);
-  }
-  for (let i = 0; i < 3; i++) {   // short stem bundles tying the canopy to the ground
-    const a = i * 2.1, x = Math.cos(a) * 0.2, z = Math.sin(a) * 0.2;
-    push([[x - 0.03, 0, z], [x + 0.03, 0, z], [x * 1.4, 0.7, z * 1.4]], [stem.clone().multiplyScalar(0.6), stem.clone().multiplyScalar(0.6), stem], [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]);
+  const pos = [], col = [], norm = [];
+  const stem = new THREE.Color(0x4a6420), bud = new THREE.Color(0x8a9a24);
+  const push = (pts, cols) => {
+    const a2 = pts[0], b2 = pts[1], c2 = pts[2];
+    const u = [b2[0] - a2[0], b2[1] - a2[1], b2[2] - a2[2]];
+    const v = [c2[0] - a2[0], c2[1] - a2[1], c2[2] - a2[2]];
+    const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    pts.forEach((p) => pos.push(...p));
+    cols.forEach((q) => col.push(q.r, q.g, q.b));
+    for (let i = 0; i < 3; i++) norm.push(...n);
+  };
+  // 5 branching stem spikes rising from one root, each carrying its own florets - real 3-sided
+  // tapering stalks, same construction as buildCaneClumps' sugarcane stalks just thinner/shorter.
+  for (let s2 = 0; s2 < 5; s2++) {
+    const a = s2 * 1.26, lean = 0.12 * Math.cos(s2 * 2.1), h = 0.55 + 0.14 * ((s2 * 3) % 3);
+    const bx = Math.cos(a) * 0.1, bz = Math.sin(a) * 0.1;
+    const tx = bx + lean, tz = bz + lean * 0.6;
+    for (let side = 0; side < 3; side++) {
+      const ang = side * 2.094, px = Math.cos(ang) * 0.018, pz = Math.sin(ang) * 0.018;
+      push([[bx - px, 0, bz - pz], [bx + px, 0, bz + pz], [tx, h, tz]], [stem.clone().multiplyScalar(0.65), stem.clone().multiplyScalar(0.65), stem]);
+    }
+    // 7-9 florets climbing the top two-thirds of this spike, shrinking toward the tip into buds
+    const nFlorets = 7 + (s2 % 3);
+    for (let i = 0; i < nFlorets; i++) {
+      const t = 0.3 + 0.68 * (i / (nFlorets - 1));
+      const fx = bx + (tx - bx) * t, fy = h * t, fz = bz + (tz - bz) * t;
+      const isBud = t > 0.88;
+      const r = isBud ? 0.02 : 0.045 * (1 - 0.3 * t);
+      const hue = 46 + ((i * 37) % 10);
+      const petal = isBud ? bud : new THREE.Color().setHSL(hue / 360, 0.9, 0.56 + 0.06 * ((i * 13) % 3) / 3);
+      const petalDark = petal.clone().multiplyScalar(0.8);
+      for (let p = 0; p < 4; p++) { // 4 small petals splayed around the floret's own vertical axis, each its own 3D plane (not a billboard)
+        const pa = p * (Math.PI / 2) + t * 3.1;
+        const dx = Math.cos(pa) * r, dz = Math.sin(pa) * r;
+        push(
+          [[fx, fy - r * 0.3, fz], [fx + dx, fy + r * 0.5, fz + dz], [fx - dx * 0.4, fy + r * 0.9, fz - dz * 0.4]],
+          [petalDark, petal, petal]
+        );
+      }
+    }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ name: 'sarson', vertexColors: true, map: sarsonBloomTexture(), alphaTest: 0.5, roughness: 0.9, side: THREE.DoubleSide });
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(norm, 3));
+  const mat = new THREE.MeshStandardMaterial({ name: 'sarson', vertexColors: true, roughness: 0.75, side: THREE.DoubleSide });
   const mesh = new THREE.InstancedMesh(g, mat, spots.length);
   mesh.name = 'field_sarson';
   mesh.castShadow = false;
