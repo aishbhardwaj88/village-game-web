@@ -481,9 +481,13 @@ def thatch_straw(obj, base_hex, seed=0):
 
 
 def earth_ground(obj, base_hex, seed=0):
-    """Packed earth / mud-and-dung as GEOMETRY: the top face is subdivided into a fine grid and displaced with low swells, a network of
-    dried cracks (narrow sunk lines with dark floors), cart-rut and hoof dimples, and darker damp/dung patches; paler dust on the ridges.
-    Only wide, mostly-upward slabs take it; small pieces just take the colour."""
+    """Packed earth / mud-and-dung as GEOMETRY. Her 28 Oct verdict on the first pass was
+    'too smooth and too uniform' - this rebuild answers that directly: bigger, irregular
+    hand-applied lumps and smears (real dung-plaster is patted on by hand, not poured),
+    scattered straw flecks (chopped straw is mixed into the dung-mud render), stronger
+    light/dark patch contrast at a size that breaks any periodic look, plus the original
+    cracks, cart-ruts and hoof dimples. Only wide, mostly-upward slabs take it; small
+    pieces just take the colour."""
     import bmesh
     obj.data.transform(obj.matrix_world)
     obj.matrix_world.identity()
@@ -498,12 +502,24 @@ def earth_ground(obj, base_hex, seed=0):
     rnd = random.Random(seed * 53 + 7)
     ph = [rnd.uniform(0, 6.28) for _ in range(6)]
     dimples = [(rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(0.05, 0.11)) for _ in range(14)]
+    # hand-smear lumps: irregular, varied-size, randomly placed - NOT a clean sine wave,
+    # this is what breaks the "too uniform" read. Size and strength both vary per lump.
+    lumps = [(rnd.uniform(-1.15, 1.15), rnd.uniform(-1.15, 1.15), rnd.uniform(0.12, 0.42), rnd.uniform(0.5, 1.0), rnd.uniform(0, 6.28)) for _ in range(22)]
+    # straw flecks mixed into the dung-mud: tiny, pale, numerous, sharp-edged
+    flecks = [(rnd.uniform(-1.15, 1.15), rnd.uniform(-1.15, 1.15), rnd.uniform(0.015, 0.035), rnd.uniform(0, 6.28)) for _ in range(90)]
     cx = sum(v.co.x for v in bm.verts) / len(bm.verts)
     cy = sum(v.co.y for v in bm.verts) / len(bm.verts)
     info = {}
     for v in bm.verts:
         x, y = v.co.x - cx, v.co.y - cy
-        swell = 0.012 * math.sin(x * 2.1 + ph[0]) * math.cos(y * 1.7 + ph[1]) + 0.006 * math.sin(x * 5.3 + y * 4.1 + ph[2])
+        swell = 0.02 * math.sin(x * 2.1 + ph[0]) * math.cos(y * 1.7 + ph[1]) + 0.012 * math.sin(x * 5.3 + y * 4.1 + ph[2])
+        lump = 0.0
+        for lx, ly, r, amp, lph in lumps:
+            d2 = ((x - lx) ** 2 + (y - ly) ** 2) / (r * r)
+            if d2 < 1.0:
+                # smoothstep falloff, not a hard circle - a hand-patted blob, not a bubble
+                t = 1.0 - d2
+                lump += amp * (t * t * (3 - 2 * t)) * (1.0 + 0.3 * math.sin(lx * 9 + ly * 7 + lph))
         a = math.sin(x * 3.1 + 1.3 * math.sin(y * 1.9 + ph[3]) + ph[4])
         b = math.sin(y * 3.7 + 1.1 * math.sin(x * 2.3 + ph[5]))
         crack = max(0.0, 1.0 - min(abs(a), abs(b)) * 14.0)   # thin sunk lines where a or b crosses zero
@@ -512,17 +528,24 @@ def earth_ground(obj, base_hex, seed=0):
             d2 = ((x - dx) ** 2 + (y - dy) ** 2) / (r * r)
             if d2 < 1.0:
                 dim = max(dim, 1.0 - d2)
-        patch = 0.5 + 0.5 * math.sin(x * 1.1 + ph[1]) * math.sin(y * 0.9 + ph[2])
-        info[v] = (swell, crack, dim, patch)
+        fleck = 0.0
+        for fx, fy, r, fph in flecks:
+            d2 = ((x - fx) ** 2 + (y - fy) ** 2) / (r * r)
+            if d2 < 1.0:
+                fleck = max(fleck, (1.0 - d2) * (0.6 + 0.4 * math.sin(fph)))
+        info[v] = (swell, lump, crack, dim, fleck)
         if not v.is_boundary and v.normal.z > 0.5:
-            v.co.z += swell - 0.016 * crack - 0.02 * dim
+            v.co.z += swell + 0.028 * lump - 0.016 * crack - 0.02 * dim + 0.006 * fleck
     layer = bm.loops.layers.color.new('Base')
     r0, g0, b0 = hex_to_linear_rgb(base_hex)
     for f in bm.faces:
         for lp in f.loops:
-            swell, crack, dim, patch = info[lp.vert]
-            k = 0.82 + 0.3 * patch + 12.0 * swell
+            swell, lump, crack, dim, fleck = info[lp.vert]
+            # lump itself carries most of the light/dark read now (big, irregular, hand-applied),
+            # the old sine 'patch' term is gone - that periodicity was part of "too uniform"
+            k = 0.78 + 0.85 * lump + 12.0 * swell
             k *= 1.0 - 0.55 * crack - 0.25 * dim
+            k += 0.35 * fleck
             lp[layer] = (min(1.0, r0 * k), min(1.0, g0 * k), min(1.0, b0 * k), 1.0)
     for f in bm.faces:
         f.smooth = True

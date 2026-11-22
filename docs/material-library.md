@@ -80,7 +80,19 @@ could certify taste. One round plus her eye settles it.
 | packed earth | APPROVED | 28 Oct 2026 | not in her reject list |
 | tin | FAILED (2nd time) | 28 Oct 2026 | "Tin is still flat." |
 | thatch | FAILED | 28 Oct 2026 | "Thatch is not at all clear." |
-| mud and dung | FAILED | 28 Oct 2026 | "too smooth and too uniform" |
+| mud and dung | FAILED, rebuilt 22 Nov, awaiting her eye | 28 Oct 2026 | "too smooth and too uniform" |
 | jute | FAILED | 28 Oct 2026 | "no weave" |
 
 The four approved materials are FROZEN. Do not touch them again.
+
+## 22 Nov rebuild: mud-and-dung (answers "too smooth and too uniform")
+
+`tools/blender/arch.py` `earth_ground()` rewritten: the old version displaced height with
+a clean sine wave (periodic = exactly what reads as "too uniform") and coloured patches
+the same way. New version adds 22 irregular, randomly-sized hand-smear lumps (smoothstep
+falloff, not a sine), 90 small pale straw flecks mixed into the surface, and drops the old
+periodic colour term entirely so the lumps themselves carry the light/dark read. Cracks,
+cart-ruts and hoof dimples kept from the first pass (those weren't the complaint). Not
+re-reviewed internally past this one pass, per the "never iterate twice before her eye"
+rule - blocked only on the screenshot pipeline (see `docs/NEEDS_YOU.md`), then straight
+to her.
