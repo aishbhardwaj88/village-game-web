@@ -13,6 +13,19 @@ export async function resolve(spec, context, next) {
 export async function load(url, context, next) {
   if (url.endsWith('.json')) return next(url, { ...context, importAttributes: { type: 'json' } });
   if (/\\.(png|jpe?g|webp|ktx2|glb|gltf|css|svg|wav|mp3|ogg|hdr|exr)(\\?.*)?$/.test(url)) return { format: 'module', source: 'export default ""', shortCircuit: true };
+  if (url.endsWith('.js') || url.endsWith('.mjs')) {
+    // S7 QA audit (22 Nov): import.meta.glob is a Vite build-time macro, undefined under plain Node, so calling it threw and
+    // crashed the whole import chain (src/kit/landLayout.js, landQuality.js, landIndex.js all use it). These files' own
+    // comments say a glob that finds nothing should return {} and fall back gracefully, so always answering {} in Node is
+    // the behaviour their own design already expects, not a workaround that changes it. The real Vite build is untouched.
+    const result = await next(url, context);
+    const raw = result && result.source;
+    const src = typeof raw === 'string' ? raw : (raw ? Buffer.from(raw).toString('utf8') : null);
+    if (src && src.includes('import.meta.glob')) {
+      return { ...result, source: src.replace(/import\\.meta\\.glob\\(/g, '((..._g) => ({}))(') };
+    }
+    return result;
+  }
   return next(url, context);
 }`;
 register('data:text/javascript,' + encodeURIComponent(HOOKS));

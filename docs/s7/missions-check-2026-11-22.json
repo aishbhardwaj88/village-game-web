@@ -1,0 +1,2543 @@
+{
+ "results": [
+  {
+   "id": "player_start",
+   "group": "story",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(604.0, 27.0) on open ground"
+  },
+  {
+   "id": "M1 maa",
+   "group": "M1",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M1 maa",
+   "group": "M1",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(659.4, 35.6) on open ground"
+  },
+  {
+   "id": "M1 maa",
+   "group": "M1",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(659.4, 35.6) off the carriageways"
+  },
+  {
+   "id": "M1 maa",
+   "group": "M1",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M1 maa",
+   "group": "M1",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(659.4, 35.6) reachable (foot)"
+  },
+  {
+   "id": "M1 maa walk",
+   "group": "M1",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M1 maa walk",
+   "group": "M1",
+   "test": "route",
+   "status": "PASS",
+   "msg": "2 waypoints, no leg passes through a building"
+  },
+  {
+   "id": "M1 halwai",
+   "group": "M1",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with halwai (off 0.00 m)"
+  },
+  {
+   "id": "M1 halwai",
+   "group": "M1",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(614.9, 3.7) on open ground"
+  },
+  {
+   "id": "M1 halwai",
+   "group": "M1",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(614.9, 3.7) off the carriageways"
+  },
+  {
+   "id": "M1 halwai",
+   "group": "M1",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M1 halwai",
+   "group": "M1",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(614.9, 3.7) reachable (foot)"
+  },
+  {
+   "id": "M8 dada (courtyard)",
+   "group": "M8",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M8 dada (courtyard)",
+   "group": "M8",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(659.4, 32.6) on open ground"
+  },
+  {
+   "id": "M8 dada (courtyard)",
+   "group": "M8",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(659.4, 32.6) off the carriageways"
+  },
+  {
+   "id": "M8 dada (courtyard)",
+   "group": "M8",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M8 dada (courtyard)",
+   "group": "M8",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(659.4, 32.6) reachable (foot)"
+  },
+  {
+   "id": "M3 pitaji",
+   "group": "M3",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M3 pitaji",
+   "group": "M3",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(648.5, 34.7) on open ground"
+  },
+  {
+   "id": "M3 pitaji",
+   "group": "M3",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(648.5, 34.7) off the carriageways"
+  },
+  {
+   "id": "M3 pitaji",
+   "group": "M3",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M3 pitaji",
+   "group": "M3",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(648.5, 34.7) reachable (foot)"
+  },
+  {
+   "id": "M3 sack pile",
+   "group": "M3",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M3 sack pile",
+   "group": "M3",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(646.7, 31.5) reachable (foot + tractor)"
+  },
+  {
+   "id": "M3 kirana (sack drop)",
+   "group": "M3",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "M3 kirana (sack drop)",
+   "group": "M3",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(596.8, -111.8) reachable (foot + cycle)"
+  },
+  {
+   "id": "M3 general store buy",
+   "group": "M3",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with store (off 0.00 m)"
+  },
+  {
+   "id": "M3 general store buy",
+   "group": "M3",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(611.4, -113.4) reachable (foot + cycle)"
+  },
+  {
+   "id": "tea stall buy",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with teastall (off 0.00 m)"
+  },
+  {
+   "id": "tea stall buy",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(595.0, 8.9) reachable (foot)"
+  },
+  {
+   "id": "post office buy",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with post (off 0.00 m)"
+  },
+  {
+   "id": "post office buy",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(557.9, 68.4) reachable (foot)"
+  },
+  {
+   "id": "ration shop buy",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with ration (off 0.00 m)"
+  },
+  {
+   "id": "ration shop buy",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(588.0, -57.5) reachable (foot)"
+  },
+  {
+   "id": "postmaster",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with post (off 0.00 m)"
+  },
+  {
+   "id": "postmaster",
+   "group": "shops",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(557.3, 65.7) on open ground"
+  },
+  {
+   "id": "postmaster",
+   "group": "shops",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(557.3, 65.7) off the carriageways"
+  },
+  {
+   "id": "postmaster",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(557.3, 65.7) reachable (foot)"
+  },
+  {
+   "id": "miller",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with chakki (off 0.00 m)"
+  },
+  {
+   "id": "miller",
+   "group": "shops",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(590.1, -47.0) on open ground"
+  },
+  {
+   "id": "miller",
+   "group": "shops",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(590.1, -47.0) off the carriageways"
+  },
+  {
+   "id": "miller",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(590.1, -47.0) reachable (foot)"
+  },
+  {
+   "id": "petrol pump attendant",
+   "group": "ambient",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(480.3, -113.6) on open ground"
+  },
+  {
+   "id": "petrol pump attendant",
+   "group": "ambient",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(480.3, -113.6) off the carriageways"
+  },
+  {
+   "id": "petrol pump attendant",
+   "group": "ambient",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(480.3, -113.6) reachable (foot)"
+  },
+  {
+   "id": "petrol pump attendant",
+   "group": "ambient",
+   "test": "near",
+   "status": "PASS",
+   "msg": "10.8 m from yard_petrol (allowed 25)"
+  },
+  {
+   "id": "bazaar sabzi counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar sabzi counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(595.3, -107.6) reachable (foot)"
+  },
+  {
+   "id": "bazaar medical counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar medical counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(593.7, -103.4) reachable (foot)"
+  },
+  {
+   "id": "M5 darzi (kurta)",
+   "group": "M5",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "M5 darzi (kurta)",
+   "group": "M5",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(592.2, -99.1) reachable (foot + cycle)"
+  },
+  {
+   "id": "bazaar barber counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar barber counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(590.7, -94.9) reachable (foot)"
+  },
+  {
+   "id": "bazaar mobile counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar mobile counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(589.1, -90.7) reachable (foot)"
+  },
+  {
+   "id": "bazaar bangle counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar bangle counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(587.6, -86.4) reachable (foot)"
+  },
+  {
+   "id": "bazaar puncture counter",
+   "group": "shops",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "bazaar puncture counter",
+   "group": "shops",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(586.1, -82.2) reachable (foot)"
+  },
+  {
+   "id": "M2 teacher",
+   "group": "M2",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "M2 teacher",
+   "group": "M2",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(556.2, 111.1) on open ground"
+  },
+  {
+   "id": "M2 teacher",
+   "group": "M2",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(556.2, 111.1) off the carriageways"
+  },
+  {
+   "id": "M2 teacher",
+   "group": "M2",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M2 teacher",
+   "group": "M2",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(556.2, 111.1) reachable (foot)"
+  },
+  {
+   "id": "M2 school bell",
+   "group": "M2",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "M2 school bell",
+   "group": "M2",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(549.8, 111.3) reachable (foot)"
+  },
+  {
+   "id": "M2 sister at school",
+   "group": "M2",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "M2 sister at school",
+   "group": "M2",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(558.3, 109.9) on open ground"
+  },
+  {
+   "id": "M2 sister at school",
+   "group": "M2",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(558.3, 109.9) off the carriageways"
+  },
+  {
+   "id": "M2 sister at school",
+   "group": "M2",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "M2 sister at school",
+   "group": "M2",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(558.3, 109.9) reachable (foot)"
+  },
+  {
+   "id": "child school run",
+   "group": "M2",
+   "test": "route",
+   "status": "PASS",
+   "msg": "14 waypoints, no leg passes through a building"
+  },
+  {
+   "id": "M4 postman round",
+   "group": "M4",
+   "test": "route",
+   "status": "PASS",
+   "msg": "2 waypoints, no leg passes through a building"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(665.4, 36.1) #1 on open ground"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(665.4, 36.1) #1 off the carriageways"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(664.8, 42.0) #2 on open ground"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(664.8, 42.0) #2 off the carriageways"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(665.4, 36.1) #1 reachable (foot + cycle)"
+  },
+  {
+   "id": "M4 postman (stops)",
+   "group": "M4",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(664.8, 42.0) #2 reachable (foot + cycle)"
+  },
+  {
+   "id": "M6 monkey snatch spot",
+   "group": "M6",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "M6 monkey snatch spot",
+   "group": "M6",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(592.2, -99.1) on open ground"
+  },
+  {
+   "id": "M6 monkey snatch spot",
+   "group": "M6",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(592.2, -99.1) off the carriageways"
+  },
+  {
+   "id": "M6 monkey snatch spot",
+   "group": "M6",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(592.2, -99.1) reachable (foot)"
+  },
+  {
+   "id": "M6 monkey ground legs",
+   "group": "M6",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "M6 monkey ground legs",
+   "group": "M6",
+   "test": "route",
+   "status": "PASS",
+   "msg": "3 waypoints, no leg passes through a building"
+  },
+  {
+   "id": "M6 monkey recovery (end)",
+   "group": "M6",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "M6 monkey recovery (end)",
+   "group": "M6",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(586.6, -76.4) reachable (foot)"
+  },
+  {
+   "id": "M7 baagh (drive here)",
+   "group": "M7",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(723.6, 86.4) reachable (foot + tractor)"
+  },
+  {
+   "id": "M7 baagh (drive here)",
+   "group": "M7",
+   "test": "near",
+   "status": "PASS",
+   "msg": "0.0 m from mango baagh (allowed 30)"
+  },
+  {
+   "id": "M7 mango knock 1",
+   "group": "M7",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(716.6, 81.8) reachable (foot)"
+  },
+  {
+   "id": "M7 mango knock 2",
+   "group": "M7",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(722.1, 79.9) reachable (foot)"
+  },
+  {
+   "id": "M7 mango knock 3",
+   "group": "M7",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(728.7, 82.1) reachable (foot)"
+  },
+  {
+   "id": "M8 roof stairs",
+   "group": "M8",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "M8 roof stairs",
+   "group": "M8",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(653.0, 41.0) reachable (foot)"
+  },
+  {
+   "id": "tractor + trolley spawn",
+   "group": "M3/M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(643.7, 33.3) on open ground"
+  },
+  {
+   "id": "tractor + trolley spawn",
+   "group": "M3/M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(643.7, 33.3) off the carriageways"
+  },
+  {
+   "id": "tractor + trolley spawn",
+   "group": "M3/M7",
+   "test": "near",
+   "status": "PASS",
+   "msg": "12.9 m from house (allowed 60)"
+  },
+  {
+   "id": "bullock cart spawn",
+   "group": "jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(639.4, 32.5) on open ground"
+  },
+  {
+   "id": "bullock cart spawn",
+   "group": "jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(639.4, 32.5) off the carriageways"
+  },
+  {
+   "id": "bullock cart spawn",
+   "group": "jobs",
+   "test": "near",
+   "status": "PASS",
+   "msg": "17.3 m from house (allowed 60)"
+  },
+  {
+   "id": "spare cycle spawn",
+   "group": "jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(665.7, 32.9) on open ground"
+  },
+  {
+   "id": "spare cycle spawn",
+   "group": "jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(665.7, 32.9) off the carriageways"
+  },
+  {
+   "id": "spare cycle spawn",
+   "group": "jobs",
+   "test": "near",
+   "status": "PASS",
+   "msg": "9.6 m from house (allowed 60)"
+  },
+  {
+   "id": "interaction maa",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction maa",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(659.4, 35.6) reachable (foot)"
+  },
+  {
+   "id": "interaction halwai",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with halwai (off 0.00 m)"
+  },
+  {
+   "id": "interaction halwai",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(614.9, 3.7) reachable (foot)"
+  },
+  {
+   "id": "interaction school_bell",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "interaction school_bell",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(549.8, 111.3) reachable (foot)"
+  },
+  {
+   "id": "interaction teacher",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "interaction teacher",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(556.2, 111.1) reachable (foot)"
+  },
+  {
+   "id": "interaction charpai",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with halwai (off 0.00 m)"
+  },
+  {
+   "id": "interaction charpai",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(617.0, 6.9) reachable (foot)"
+  },
+  {
+   "id": "interaction house_charpai",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction house_charpai",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(655.5, 38.5) reachable (foot)"
+  },
+  {
+   "id": "interaction hand_pump",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction hand_pump",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(661.7, 38.3) reachable (foot)"
+  },
+  {
+   "id": "interaction tulsi",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction tulsi",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(661.2, 32.7) reachable (foot)"
+  },
+  {
+   "id": "interaction blackboard",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "interaction blackboard",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(546.2, 98.7) reachable (foot)"
+  },
+  {
+   "id": "interaction school_bench",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "interaction school_bench",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(545.3, 101.2) reachable (foot)"
+  },
+  {
+   "id": "interaction pitaji",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction pitaji",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(648.5, 34.7) reachable (foot)"
+  },
+  {
+   "id": "interaction sack_pile",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with house (off 0.00 m)"
+  },
+  {
+   "id": "interaction sack_pile",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(646.7, 31.5) reachable (foot)"
+  },
+  {
+   "id": "interaction kirana",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with bazaar (off 0.00 m)"
+  },
+  {
+   "id": "interaction kirana",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(596.8, -111.8) reachable (foot)"
+  },
+  {
+   "id": "interaction temple_bell",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with temple (off 0.16 m)"
+  },
+  {
+   "id": "interaction temple_bell",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(776.0, -106.9) reachable (foot)"
+  },
+  {
+   "id": "interaction temple_bell",
+   "group": "interactions",
+   "test": "faith",
+   "status": "WARN",
+   "msg": "interaction at a faith building (ambient bell, no task, no reward): kept as it was"
+  },
+  {
+   "id": "interaction kulhad_chai",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with teastall (off 0.00 m)"
+  },
+  {
+   "id": "interaction kulhad_chai",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(593.5, 6.9) reachable (foot)"
+  },
+  {
+   "id": "interaction chaupal_radio",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with yard_chaupal (off 0.00 m)"
+  },
+  {
+   "id": "interaction chaupal_radio",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(553.5, 51.1) reachable (foot)"
+  },
+  {
+   "id": "interaction notice_board",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(546.5, 36.3) reachable (foot)"
+  },
+  {
+   "id": "interaction kite_pickup",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with maidan (off 0.00 m)"
+  },
+  {
+   "id": "interaction kite_pickup",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(634.7, 156.6) reachable (foot)"
+  },
+  {
+   "id": "interaction jhoola_swing",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(495.8, 3.3) reachable (foot)"
+  },
+  {
+   "id": "interaction feed_gaushala_cow",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with gaushala (off 0.00 m)"
+  },
+  {
+   "id": "interaction feed_gaushala_cow",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(462.2, -18.2) reachable (foot)"
+  },
+  {
+   "id": "interaction find_letterbox",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with post (off 0.00 m)"
+  },
+  {
+   "id": "interaction find_letterbox",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(552.6, 69.4) reachable (foot)"
+  },
+  {
+   "id": "interaction find_community_tv",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with yard_panchayat (off 0.00 m)"
+  },
+  {
+   "id": "interaction find_community_tv",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(554.5, 22.3) reachable (foot)"
+  },
+  {
+   "id": "interaction find_old_car",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(540.4, 20.4) reachable (foot)"
+  },
+  {
+   "id": "interaction find_covered_scooter",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with haveli (off 0.00 m)"
+  },
+  {
+   "id": "interaction find_covered_scooter",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(667.7, -34.3) reachable (foot)"
+  },
+  {
+   "id": "interaction find_old_motorcycle",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(587.7, 6.7) reachable (foot)"
+  },
+  {
+   "id": "interaction find_barber_newspaper",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with yard_chaupal (off 0.00 m)"
+  },
+  {
+   "id": "interaction find_barber_newspaper",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(540.2, 42.7) reachable (foot)"
+  },
+  {
+   "id": "interaction find_child_seat_cycle",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with school (off 0.00 m)"
+  },
+  {
+   "id": "interaction find_child_seat_cycle",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(562.1, 95.3) reachable (foot)"
+  },
+  {
+   "id": "interaction find_half_built_house",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(588.9, -8.0) reachable (foot)"
+  },
+  {
+   "id": "interaction find_sand_pile",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(580.9, 56.1) reachable (foot)"
+  },
+  {
+   "id": "interaction find_bamboo_scaffold",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(678.6, -41.6) reachable (foot)"
+  },
+  {
+   "id": "interaction find_shamiana_drum",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(731.7, -155.8) reachable (foot)"
+  },
+  {
+   "id": "interaction find_bhootiya_ghar",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(503.4, -3.4) reachable (foot)"
+  },
+  {
+   "id": "interaction panchayat_notices",
+   "group": "interactions",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with yard_panchayat (off 0.00 m)"
+  },
+  {
+   "id": "interaction panchayat_notices",
+   "group": "interactions",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(545.7, 22.7) reachable (foot)"
+  },
+  {
+   "id": "job job_dadi",
+   "group": "job:dadi",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(664.9, 38.6) reachable (foot)"
+  },
+  {
+   "id": "job peepal_posters",
+   "group": "job:peepal",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(538.2, 64.5) reachable (foot)"
+  },
+  {
+   "id": "job job_pump_pump",
+   "group": "job:pump",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(597.1, 5.6) reachable (foot)"
+  },
+  {
+   "id": "job job_ration_shop",
+   "group": "job:ration",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with ration (off 0.00 m)"
+  },
+  {
+   "id": "job job_ration_shop",
+   "group": "job:ration",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(588.0, -57.5) reachable (foot)"
+  },
+  {
+   "id": "job stall_banta",
+   "group": "job:stall_banta",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with banta (off 0.00 m)"
+  },
+  {
+   "id": "job stall_banta",
+   "group": "job:stall_banta",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(614.9, 13.8) reachable (foot)"
+  },
+  {
+   "id": "job stall_chaat",
+   "group": "job:stall_chaat",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(610.6, 30.5) reachable (foot)"
+  },
+  {
+   "id": "job job_kulfiwala",
+   "group": "job:kulfi",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(670.4, 24.1) reachable (foot + cycle)"
+  },
+  {
+   "id": "job job_kanche",
+   "group": "job:kanche",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(583.4, 26.9) reachable (foot)"
+  },
+  {
+   "id": "job job_gilli",
+   "group": "job:gilli",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(668.0, 162.9) reachable (foot)"
+  },
+  {
+   "id": "job job_milk_doodhwala",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(619.9, 6.6) reachable (foot + cycle)"
+  },
+  {
+   "id": "job job_chakki_load",
+   "group": "job:chakki",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(639.4, 31.0) reachable (foot)"
+  },
+  {
+   "id": "job job_chakki_counter",
+   "group": "job:chakki",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with chakki (off 0.00 m)"
+  },
+  {
+   "id": "job job_chakki_counter",
+   "group": "job:chakki",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(592.9, -47.7) reachable (foot)"
+  },
+  {
+   "id": "job job_patang_kid",
+   "group": "job:patang",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(587.0, 33.5) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_dussehri",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_langra",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_chausa",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_safeda",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_totapuri",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) reachable (foot)"
+  },
+  {
+   "id": "job job_mango_desi",
+   "group": "job:mango",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) reachable (foot)"
+  },
+  {
+   "id": "job dadi (free roam)",
+   "group": "job:dadi",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(664.9, 38.6) on open ground"
+  },
+  {
+   "id": "job dadi (free roam)",
+   "group": "job:dadi",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(664.9, 38.6) off the carriageways"
+  },
+  {
+   "id": "job dadi (free roam)",
+   "group": "job:dadi",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job dadi (free roam)",
+   "group": "job:dadi",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(664.9, 38.6) reachable (foot)"
+  },
+  {
+   "id": "job dadi (free roam)",
+   "group": "job:dadi",
+   "test": "near",
+   "status": "PASS",
+   "msg": "9.1 m from house (allowed 30)"
+  },
+  {
+   "id": "job npc npc_ration_keeper",
+   "group": "job:ration",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with ration (off 0.00 m)"
+  },
+  {
+   "id": "job npc npc_ration_keeper",
+   "group": "job:ration",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(586.0, -56.6) on open ground"
+  },
+  {
+   "id": "job npc npc_ration_keeper",
+   "group": "job:ration",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(586.0, -56.6) off the carriageways"
+  },
+  {
+   "id": "job npc npc_ration_keeper",
+   "group": "job:ration",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(586.0, -56.6) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_banta_seller",
+   "group": "job:jobs",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with banta (off 0.00 m)"
+  },
+  {
+   "id": "job npc npc_banta_seller",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(617.6, 12.6) on open ground"
+  },
+  {
+   "id": "job npc npc_banta_seller",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(617.6, 12.6) off the carriageways"
+  },
+  {
+   "id": "job npc npc_banta_seller",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_banta_seller",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(617.6, 12.6) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_chaat_seller",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(614.4, 30.9) on open ground"
+  },
+  {
+   "id": "job npc npc_chaat_seller",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(614.4, 30.9) off the carriageways"
+  },
+  {
+   "id": "job npc npc_chaat_seller",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_chaat_seller",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(614.4, 30.9) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_kulfiwala",
+   "group": "job:kulfi",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(670.4, 24.1) on open ground"
+  },
+  {
+   "id": "job npc npc_kulfiwala",
+   "group": "job:kulfi",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(670.4, 24.1) a vendor pushing his cart along the lanes (his route is checked below)"
+  },
+  {
+   "id": "job npc npc_kulfiwala",
+   "group": "job:kulfi",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_kulfiwala",
+   "group": "job:kulfi",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(670.4, 24.1) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_kid_0",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(585.0, 27.6) on open ground"
+  },
+  {
+   "id": "job npc npc_kid_0",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(585.0, 27.6) off the carriageways"
+  },
+  {
+   "id": "job npc npc_kid_0",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_kid_0",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(585.0, 27.6) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_kid_1",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(582.7, 28.5) on open ground"
+  },
+  {
+   "id": "job npc npc_kid_1",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(582.7, 28.5) off the carriageways"
+  },
+  {
+   "id": "job npc npc_kid_1",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_kid_1",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(582.7, 28.5) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_kid_2",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(581.8, 26.2) on open ground"
+  },
+  {
+   "id": "job npc npc_kid_2",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(581.8, 26.2) off the carriageways"
+  },
+  {
+   "id": "job npc npc_kid_2",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_kid_2",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(581.8, 26.2) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_kid_3",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(584.1, 25.3) on open ground"
+  },
+  {
+   "id": "job npc npc_kid_3",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(584.1, 25.3) off the carriageways"
+  },
+  {
+   "id": "job npc npc_kid_3",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_kid_3",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(584.1, 25.3) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_gilli_0",
+   "group": "job:gilli",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(665.3, 160.1) on open ground"
+  },
+  {
+   "id": "job npc npc_gilli_0",
+   "group": "job:gilli",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(665.3, 160.1) off the carriageways"
+  },
+  {
+   "id": "job npc npc_gilli_0",
+   "group": "job:gilli",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_gilli_0",
+   "group": "job:gilli",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(665.3, 160.1) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_gilli_1",
+   "group": "job:gilli",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(668.2, 162.9) on open ground"
+  },
+  {
+   "id": "job npc npc_gilli_1",
+   "group": "job:gilli",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(668.2, 162.9) off the carriageways"
+  },
+  {
+   "id": "job npc npc_gilli_1",
+   "group": "job:gilli",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_gilli_1",
+   "group": "job:gilli",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(668.2, 162.9) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_gilli_2",
+   "group": "job:gilli",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(671.6, 160.8) on open ground"
+  },
+  {
+   "id": "job npc npc_gilli_2",
+   "group": "job:gilli",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(671.6, 160.8) off the carriageways"
+  },
+  {
+   "id": "job npc npc_gilli_2",
+   "group": "job:gilli",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_gilli_2",
+   "group": "job:gilli",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(671.6, 160.8) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_gilli_ref",
+   "group": "job:gilli",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(674.7, 166.6) on open ground"
+  },
+  {
+   "id": "job npc npc_gilli_ref",
+   "group": "job:gilli",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(674.7, 166.6) off the carriageways"
+  },
+  {
+   "id": "job npc npc_gilli_ref",
+   "group": "job:gilli",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_gilli_ref",
+   "group": "job:gilli",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(674.7, 166.6) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_doodhwala",
+   "group": "job:jobs",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(619.9, 6.6) on open ground"
+  },
+  {
+   "id": "job npc npc_doodhwala",
+   "group": "job:jobs",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(619.9, 6.6) off the carriageways"
+  },
+  {
+   "id": "job npc npc_doodhwala",
+   "group": "job:jobs",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_doodhwala",
+   "group": "job:jobs",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(619.9, 6.6) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_chakki_keeper",
+   "group": "job:chakki",
+   "test": "rigid",
+   "status": "PASS",
+   "msg": "moves with chakki (off 0.00 m)"
+  },
+  {
+   "id": "job npc npc_chakki_keeper",
+   "group": "job:chakki",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(591.7, -46.0) on open ground"
+  },
+  {
+   "id": "job npc npc_chakki_keeper",
+   "group": "job:chakki",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(591.7, -46.0) off the carriageways"
+  },
+  {
+   "id": "job npc npc_chakki_keeper",
+   "group": "job:chakki",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(591.7, -46.0) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_patang_kid",
+   "group": "job:patang",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(587.0, 33.5) on open ground"
+  },
+  {
+   "id": "job npc npc_patang_kid",
+   "group": "job:patang",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(587.0, 33.5) off the carriageways"
+  },
+  {
+   "id": "job npc npc_patang_kid",
+   "group": "job:patang",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_patang_kid",
+   "group": "job:patang",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(587.0, 33.5) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_patang_rival_0",
+   "group": "job:patang",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(585.0, 35.0) on open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_0",
+   "group": "job:patang",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(585.0, 35.0) off the carriageways"
+  },
+  {
+   "id": "job npc npc_patang_rival_0",
+   "group": "job:patang",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_0",
+   "group": "job:patang",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(585.0, 35.0) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_patang_rival_1",
+   "group": "job:patang",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(589.0, 35.0) on open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_1",
+   "group": "job:patang",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(589.0, 35.0) off the carriageways"
+  },
+  {
+   "id": "job npc npc_patang_rival_1",
+   "group": "job:patang",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_1",
+   "group": "job:patang",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(589.0, 35.0) reachable (foot)"
+  },
+  {
+   "id": "job npc npc_patang_rival_2",
+   "group": "job:patang",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(587.0, 36.5) on open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_2",
+   "group": "job:patang",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(587.0, 36.5) off the carriageways"
+  },
+  {
+   "id": "job npc npc_patang_rival_2",
+   "group": "job:patang",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job npc npc_patang_rival_2",
+   "group": "job:patang",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(587.0, 36.5) reachable (foot)"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 1",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(714.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 2",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(721.6, 77.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 3",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(730.6, 80.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 4",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(717.6, 93.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 5",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(725.6, 95.4) off the carriageways"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) on open ground"
+  },
+  {
+   "id": "M7 baagh tree 6",
+   "group": "M7",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(732.6, 91.4) off the carriageways"
+  },
+  {
+   "id": "job route npc_kulfiwala",
+   "group": "job:kulfi",
+   "test": "route",
+   "status": "PASS",
+   "msg": "6 waypoints, no leg passes through a building"
+  },
+  {
+   "id": "notebook marker pump",
+   "group": "job:pump",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (597.1, 5.6) inside the village"
+  },
+  {
+   "id": "notebook marker ration",
+   "group": "job:ration",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (585.3, -56.2) inside the village"
+  },
+  {
+   "id": "notebook marker kulfi",
+   "group": "job:kulfi",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (670.4, 24.1) inside the village"
+  },
+  {
+   "id": "notebook marker kanche",
+   "group": "job:kanche",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (583.4, 26.9) inside the village"
+  },
+  {
+   "id": "notebook marker gilli",
+   "group": "job:gilli",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (669.0, 163.0) inside the village"
+  },
+  {
+   "id": "notebook marker milk",
+   "group": "job:milk",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (619.9, 6.6) inside the village"
+  },
+  {
+   "id": "notebook marker chakki",
+   "group": "job:chakki",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (590.0, -46.3) inside the village"
+  },
+  {
+   "id": "notebook marker gate",
+   "group": "job:gate",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (684.4, 129.3) inside the village"
+  },
+  {
+   "id": "notebook marker patang",
+   "group": "job:patang",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (587.0, 33.5) inside the village"
+  },
+  {
+   "id": "notebook marker mango",
+   "group": "job:mango",
+   "test": "near",
+   "status": "PASS",
+   "msg": "marker (723.6, 86.4) inside the village"
+  },
+  {
+   "id": "job gate: run-up (tractor)",
+   "group": "job:gate",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(684.4, 135.3) reachable (foot + tractor)"
+  },
+  {
+   "id": "job kanche ground",
+   "group": "job:kanche",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(584.9, 27.6) on open ground"
+  },
+  {
+   "id": "job kanche ground",
+   "group": "job:kanche",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(584.9, 27.6) off the carriageways"
+  },
+  {
+   "id": "job milk stop 1 (aunty)",
+   "group": "job:milk",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(638.8, -10.0) on open ground"
+  },
+  {
+   "id": "job milk stop 1 (aunty)",
+   "group": "job:milk",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(638.8, -10.0) off the carriageways"
+  },
+  {
+   "id": "job milk stop 1 (aunty)",
+   "group": "job:milk",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job milk stop 1 (aunty)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(638.8, -10.0) reachable (foot)"
+  },
+  {
+   "id": "job milk stop 1 (door)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(638.0, -10.1) reachable (foot + cycle)"
+  },
+  {
+   "id": "job milk stop 2 (aunty)",
+   "group": "job:milk",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(655.9, 3.6) on open ground"
+  },
+  {
+   "id": "job milk stop 2 (aunty)",
+   "group": "job:milk",
+   "test": "road",
+   "status": "WARN",
+   "msg": "(655.9, 3.6) stands on gali_n39 (back)"
+  },
+  {
+   "id": "job milk stop 2 (aunty)",
+   "group": "job:milk",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job milk stop 2 (aunty)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(655.9, 3.6) reachable (foot)"
+  },
+  {
+   "id": "job milk stop 2 (door)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(655.6, 3.7) reachable (foot + cycle)"
+  },
+  {
+   "id": "job milk stop 3 (aunty)",
+   "group": "job:milk",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(628.6, -28.8) on open ground"
+  },
+  {
+   "id": "job milk stop 3 (aunty)",
+   "group": "job:milk",
+   "test": "road",
+   "status": "PASS",
+   "msg": "(628.6, -28.8) off the carriageways"
+  },
+  {
+   "id": "job milk stop 3 (aunty)",
+   "group": "job:milk",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job milk stop 3 (aunty)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(628.6, -28.8) reachable (foot)"
+  },
+  {
+   "id": "job milk stop 3 (door)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(629.4, -28.8) reachable (foot + cycle)"
+  },
+  {
+   "id": "job milk stop 4 (aunty)",
+   "group": "job:milk",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(657.0, -9.6) on open ground"
+  },
+  {
+   "id": "job milk stop 4 (aunty)",
+   "group": "job:milk",
+   "test": "road",
+   "status": "WARN",
+   "msg": "(657.0, -9.6) stands on gali_n39 (back)"
+  },
+  {
+   "id": "job milk stop 4 (aunty)",
+   "group": "job:milk",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job milk stop 4 (aunty)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(657.0, -9.6) reachable (foot)"
+  },
+  {
+   "id": "job milk stop 4 (door)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(656.7, -9.7) reachable (foot + cycle)"
+  },
+  {
+   "id": "job milk stop 5 (aunty)",
+   "group": "job:milk",
+   "test": "clear",
+   "status": "PASS",
+   "msg": "(588.8, -25.1) on open ground"
+  },
+  {
+   "id": "job milk stop 5 (aunty)",
+   "group": "job:milk",
+   "test": "road",
+   "status": "WARN",
+   "msg": "(588.8, -25.1) stands on gali_n40 (back)"
+  },
+  {
+   "id": "job milk stop 5 (aunty)",
+   "group": "job:milk",
+   "test": "face",
+   "status": "PASS",
+   "msg": "faces open ground"
+  },
+  {
+   "id": "job milk stop 5 (aunty)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(588.8, -25.1) reachable (foot)"
+  },
+  {
+   "id": "job milk stop 5 (door)",
+   "group": "job:milk",
+   "test": "reach",
+   "status": "PASS",
+   "msg": "(588.7, -25.4) reachable (foot + cycle)"
+  }
+ ],
+ "counts": {
+  "PASS": 358,
+  "FAIL": 0,
+  "WARN": 4
+ }
+}
