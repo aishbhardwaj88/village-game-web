@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2 } from '../materials.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
  * S7 textures agent — geometry-based fixes for the 4 materials whose "plastic wrap" read
@@ -113,18 +114,21 @@ export function buildTinRoofPanel(width, length, opts = {}) {
   const sheetLen = length / sheets;
   const overlap = Math.min(0.18, sheetLen * 0.12); // real overlapping joint, not a seam
   const washers = [];
+  // S7 WIRING (textures-wiring): sheets all share one cached material, so they're merged
+  // into a single mesh (1 draw call for the whole panel's sheets, not one per sheet) —
+  // every call site using this builder benefits, not just the chauraha wiring. The source
+  // geometries are cached per (width, length, seed) and reused elsewhere, so each is cloned
+  // before its per-sheet position is baked in.
+  const sheetGeos = [];
   for (let s = 0; s < sheets; s++) {
     const lenHere = sheetLen + (s < sheets - 1 ? overlap : 0);
-    const geo = buildCorrugatedSheetGeometry(width, lenHere, seed + s * 13);
-    const mesh = new THREE.Mesh(geo, material);
+    const geo = buildCorrugatedSheetGeometry(width, lenHere, seed + s * 13).clone();
     // Each successive sheet laps UNDER the one above it (step down slightly) and starts
     // `overlap` into the previous sheet — the shadow line at the join is the step itself,
     // not a texture trick.
     const stepDown = 0.004 * s;
-    mesh.position.set(0, -stepDown, -length / 2 + s * sheetLen + lenHere / 2 - (s > 0 ? overlap / 2 : 0));
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    group.add(mesh);
+    geo.translate(0, -stepDown, -length / 2 + s * sheetLen + lenHere / 2 - (s > 0 ? overlap / 2 : 0));
+    sheetGeos.push(geo);
 
     // Fixing washers at every other rib along this sheet's top (upslope) lap edge.
     if (s < sheets - 1) {
@@ -134,6 +138,11 @@ export function buildTinRoofPanel(width, length, opts = {}) {
       }
     }
   }
+  const mergedSheets = sheets > 1 ? mergeGeometries(sheetGeos) : sheetGeos[0];
+  const sheetsMesh = new THREE.Mesh(mergedSheets, material);
+  sheetsMesh.castShadow = true;
+  sheetsMesh.receiveShadow = true;
+  group.add(sheetsMesh);
   if (washers.length) {
     const wm = washerMaterial();
     const inst = new THREE.InstancedMesh(WASHER_GEO, wm, washers.length);
