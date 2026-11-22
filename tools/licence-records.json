@@ -240,14 +240,13 @@
         "public/assets/textures/grass/*"
       ],
       "category": "credited",
-      "title": "Aerial Grass Rock (grass texture)",
-      "source": "Poly Haven",
-      "url": "https://polyhaven.com/a/aerial_grass_rock",
-      "author": "Poly Haven",
+      "title": "Grass002 (grass texture, replaced aerial_grass_rock 22 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Grass002",
+      "author": "ambientCG (Lennart Demes)",
       "licence": "CC0",
-      "creditsKey": "aerial_grass_rock",
-      "polyhavenSlug": "aerial_grass_rock",
-      "evidence": "CREDITS.md row; 4K downscaled to 1K WebP in this repo"
+      "creditsKey": "Grass002",
+      "evidence": "CREDITS.md row; her 22 Nov NEEDS_YOU note that the old grass read as patchy moss on dirt, not a lawn; 1K-JPG zip downloaded and resized to 1K WebP, normal-map std-dev checked (0.167, well clear of the 0.012 flatness threshold) before wiring in"
     },
     {
       "match": [
