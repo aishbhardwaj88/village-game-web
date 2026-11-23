@@ -1,3 +1,57 @@
+# 23 Nov (7) - resolved all 7 "uncertain" flags on the collision-collider audit
+
+- Fresh container this firing too: `main` was again on a detached HEAD one commit behind
+  `origin/main` (same harmless staleness the previous entry flagged) - fast-forwarded it
+  before doing anything else. `npm install` also needed a re-run (node_modules empty, confirmed
+  gitignored/non-persistent per the last two entries, not a new finding).
+- Checked section A of BACKLOG.md first: everything left unticked there is genuinely blocked
+  (screenshot/world-validator still hangs/times out in this container after 90s with zero
+  output - tried again this firing in case the container differed, it didn't; `Places V1/` is
+  not present in this checkout; the rest explicitly waits on her eye/approval). Moved to the
+  "systems (collision, missions, audio, menus, mobile)" category CLAUDE.md 5a-MAP names as
+  always in scope, and ran the full battery of no-browser checks as a baseline: licence-audit,
+  check-dup-models, place-visibility-check, vite build, char-diet, check-budget all clean/
+  unchanged from the last entry's baseline (same 15 pre-existing WEB_QUALITY='full' breaches,
+  nothing new).
+- `tools/collider-coverage-audit.mjs` (static, no-browser heuristic for the "every solid prop
+  has a collider" backlog item) reported 0 real gap candidates but 7 "uncertain" ones - cases
+  where `userData.noAutoCollider` is set with no explicit collider box visible in that one
+  function, so the script can't tell if a sibling object elsewhere (often another file) really
+  covers it. Read all 7 by hand instead of leaving them as noise:
+  - `src/kit/housesInstancing.js createHouseBatch()`: covered - `src/kit/houses.js` builds the
+    real per-house `colliderBoxes` and returns them alongside this batch (confirmed by reading
+    both files, the comment names the mechanism).
+  - `src/kit/landInstancing.js frameHook()`: a `Mesh` built with `setDrawRange(0, 0)` - zero
+    vertices, ever. There is nothing to collide with; it exists purely to run a per-frame
+    callback via `onBeforeRender`. Not a gap, not even close to one.
+  - `src/kit/wallMurals.js buildWallMurals()`: a 0.03 m-offset poster decal glued flush onto an
+    existing building wall. The wall's own collider (built elsewhere) already blocks that space;
+    a second collider here would just double it.
+  - `src/placeBatch.js batchFor()` / `peopleBatchGet()` / `liveBatchFor()`: all three follow the
+    same documented pattern (comments right above each function say so) - the real source mesh
+    stays in the scene graph on a hidden layer with its own collider tag/boxes intact, driving
+    visibility and matrices; the BatchedMesh this script flagged is a visual-only mirror
+    (`userData.visualOnly`) that was never meant to collide itself.
+  - `src/roofMonkeys.js createRoofMonkeys()`: ambient monkeys on rooftops the player cannot
+    reach, deliberately non-solid like other roof dressing.
+  - Zero real gaps found across all 7.
+- Recorded each finding in a new `VERIFIED_SAFE` map inside the script itself (keyed by
+  `file::function`, one line of reasoning each, with a comment warning not to add an entry
+  without actually reading the code first) so a future run shows these as resolved instead of
+  repeating the same manual check every time. This is explicitly a "hand-verified once" record.
+  not an automatic re-check - the script's own output says so, and flags it for review again if
+  the referenced code changes. `uncertain` 7 -> 0, new `verifiedSafe` 7, `gaps` unchanged at 0.
+- Tools-only change, no game code touched: ran `node tools/collider-coverage-audit.mjs` before/
+  after (output above), plus `licence-audit --check`, `check-dup-models`, `place-visibility-check`
+  and `vite build` after, all clean - confirming the edit didn't change anything about what the
+  audit actually flags as a real gap, only how it labels the 7 already-safe cases.
+- Committed `e94902e`, pushed, CI confirmed green (run 45185317692, conclusion success).
+- NEXT: same conclusion as the last entry - section A has no more safely-workable items until
+  either the screenshot/validator container issue is fixed, `Places V1/` appears in a checkout,
+  or she answers an open NEEDS_YOU item. A future firing with a working renderer should revisit
+  the draw-call ceiling (A1) and the material board render-to-board item, both blocked purely on
+  that tooling, not on anything code-side.
+
 # 23 Nov (6) - found and fixed: metal/rust materials had NO roughness floor at all
 - Fresh container this firing: `node_modules` was empty again (confirmed it does not persist
   between hourly firings - gitignored, each firing starts from a clean checkout). Re-ran
