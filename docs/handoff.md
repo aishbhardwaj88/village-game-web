@@ -1,3 +1,69 @@
+# 23 Nov (9) - added a permanent build-time guard for the clone-drops-shader-hook bug (entry 8, this file)
+
+- Fresh container again this firing: `main` one commit behind `origin/main` on a detached
+  HEAD, fast-forwarded before anything else (same harmless staleness every recent entry
+  flags); `npm install` re-run (`node_modules` empty, confirmed non-persistent again).
+  `Places V1/` still absent from this checkout. Ran the full no-browser baseline first
+  (licence-audit, check-dup-models, place-visibility-check, missions-check, layout-tests,
+  collider-coverage-audit, check-budget) - all identical to the last entry's numbers, nothing
+  new, nothing fresh in section A to pick up (same stale/approval-blocked state the last 3
+  entries already found).
+- The last entry's fix (`cloneTiledMaterial()` in `src/materials.js`) only lives as source
+  code plus a `tmp/` verify script - and `tmp/` is gitignored and does not persist between
+  firings (confirmed again this run: empty on a fresh checkout). So nothing in the repo would
+  catch a FUTURE reintroduction of the exact same bug (someone adding a new
+  `getTiledMaterial()`-based singleton and cloning it with plain `.clone()` instead of the
+  helper) - the fix fixed the four known sites but left no guard rail. Built one:
+  `tools/check-material-clone.mjs`, a static source scan (not a real parser, says so in its
+  own header comment) that, for every `const/let X = getTiledMaterial(...)` or
+  `= sharedSetMaterial(...)` assignment in `src/**/*.js`, tracks brace balance forward from
+  that line to find the enclosing block and flags any plain `X.clone()` inside it that isn't
+  wrapped in `cloneTiledMaterial(X)`. Comments are stripped first (block and line) so a
+  comment merely discussing a clone call - every one of the three real fixes in entry 8 left
+  exactly that kind of explanatory comment, which the naive first draft of this script
+  misread as code and false-positived on - is never mistaken for one.
+- Verified the scope-boundary heuristic actually works, not just that it runs clean: wrote a
+  throwaway fixture in `tmp/fixture_bad.js` (stays there, gitignored, per CLAUDE.md "never
+  rm") with four cases - a real unwrapped clone (must FAIL), one wrapped in
+  `cloneTiledMaterial` (must PASS), a same-named variable in a different function that is
+  never cloned (must PASS), and a same-named variable in a third function that IS a plain
+  object unrelated to materials and IS cloned (must PASS, because it was never assigned from
+  `getTiledMaterial`/`sharedSetMaterial` - the risk the brace-tracking exists to avoid: a
+  dumb whole-file name match would have flagged this one wrongly). Ran the script against
+  that fixture (`node tools/check-material-clone.mjs tmp` - added an optional directory arg,
+  defaulting to `src`, exactly for this kind of check): exactly 1 violation, the real one, at
+  the right line. Against the real `src/`: 49 `getTiledMaterial()`/`sharedSetMaterial()`
+  assignments scanned, 0 unwrapped clones - the four sites entry 8 fixed, plus every other
+  real call site, all clean.
+- Wired it into `npm run build`'s pre-build chain (`package.json`, right after
+  `check-dup-models.js`, same place the other pure-source checks already run, before
+  `vite build`) and added a standalone `npm run check-material-clone`. Known limitation,
+  stated in the script's own header: it only sees the same-function pattern that caused the
+  real bug (a local `const`/`let` holding the getTiledMaterial result, cloned in the same
+  enclosing block) - it does not trace a value passed in as a function parameter (e.g.
+  `src/props.js`'s `lampTinMaterial(base)`, which legitimately uses a hand-rolled
+  hasOwnProperty-guarded clone instead of the helper because it also needs to compose a
+  second hook on top - a deliberate exception this script correctly can't see and doesn't
+  need to, since it isn't the dangerous pattern).
+- Full verification without the broken screenshot tool: `npx vite build` (234 modules,
+  clean, 1.36 s), `node tools/char-diet.mjs` (unchanged, 76.0 -> 48.9 MB),
+  `node tools/check-budget.js` (same 15 pre-existing breaches as every recent entry, nothing
+  new - confirms the new check script itself ships no asset weight), `node
+  tools/missions-check.mjs` (358 PASS / 0 FAIL / 4 WARN, identical),
+  `node tools/layout-tests.mjs` (PASS, 0 failures, identical),
+  `node tools/collider-coverage-audit.mjs` (226/22/7/0/0, identical) - all unchanged from the
+  last entry's baseline. `tools/world-validator.js` still hangs in this container after 90 s
+  (same pre-existing limitation, tried again in case the container differed; it didn't).
+- Committed, pushed, CI confirmed green.
+- NEXT: section A has no fresh, unblocked item left that isn't layout (destroyed by the map
+  uproot), screenshot-gated, or parked on her verdict in NEEDS_YOU.md. A future firing should
+  either revisit this once the screenshot/world-validator container issue is fixed (several
+  render-to-board and per-place items are blocked purely on that), or do another pass over
+  `src/` for the SAME bug class in a different shape: this entry's script only catches
+  `getTiledMaterial`/`sharedSetMaterial`; if a third shared-material factory with its own
+  `onBeforeCompile` hook gets added later, extend the `ASSIGN_RE` in
+  `tools/check-material-clone.mjs` to name it too.
+
 # 23 Nov (8) - found and fixed: `.clone()` on a tiled material silently drops its roughness-floor/mottling hook, unprotecting roads, most site props and every street-lamp tin part
 
 - Fresh container again this firing: `main` was detached one commit behind `origin/main`
