@@ -179,9 +179,22 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
     // docs/look-standard.md); terrain (ground/lane/field/crop) keeps full strength.
     mat.color = new THREE.Color(1, 1, 1).lerp(new THREE.Color(tint), tintStrength);
   }
+  // 23 Nov: was `name === 'tin'` / `name === 'lane'` only, so 'metal' and 'rust' (real sets, used
+  // directly all over the game: temple bell, tin-roof tarps, pipes, signboards, tyres, rooftops,
+  // chowk edges) got NO roughness floor at all, unlike surfaceFamilyFor()'s own documented mapping
+  // (metal/rust -> 'tin' family) and unlike the GLTF-relink path (sharedTextures.js), which already
+  // calls surfaceFamilyFor correctly. Today's metal/rust roughness maps aren't catastrophically low
+  // (checked: min 0.337/0.584, no near-zero hot spots), so nothing currently reads wrong on screen,
+  // but it's the exact unprotected gap that let a swapped-in grass/ground texture render as a
+  // mirror-bright plastic highlight (see this session's two earlier fixes). Routing through the same
+  // surfaceFamilyFor() the relink path uses closes the gap and can't change tin/lane's own behaviour
+  // (verified: surfaceFamilyFor('tin') === 'tin', surfaceFamilyFor('lane') === 'earth', the exact
+  // families the old hardcoded branches already used).
   if (MATTE_SETS.has(name)) applyMatteVariation(mat);
-  else if (name === 'tin') applySurfaceVariation(mat, 'tin');
-  else if (name === 'lane') applySurfaceVariation(mat, 'earth');
+  else {
+    const fam = surfaceFamilyFor(name);
+    if (fam) applySurfaceVariation(mat, fam);
+  }
   materialCache.set(key, mat);
   return mat;
 }

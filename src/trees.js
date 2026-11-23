@@ -114,9 +114,21 @@ function tube(out, pts, radii, color, sides = 6, flare = 0) {
     for (let s = 0; s < sides; s++) {
       const a = (s / sides) * Math.PI * 2;
       const dir = n.clone().multiplyScalar(Math.cos(a)).addScaledVector(b, Math.sin(a));
-      // root flare: wobble the base ring radius per side so the foot spreads into the ground
+      // root flare: wobble the base ring radius per side so the foot spreads into the ground.
       const f = i === 0 && flare ? 1 + flare * (0.6 + 0.8 * Math.abs(Math.sin(a * 2.5 + pts[0].x * 9))) : 1;
-      ring.push({ p: pts[i].clone().addScaledVector(dir, radii[i] * f), n: dir });
+      const p = pts[i].clone().addScaledVector(dir, radii[i]);
+      if (f !== 1) {
+        // The extra flare radius must spread sideways "into the ground" (XZ only), never down: `dir` is
+        // perpendicular to the trunk's tangent, which is NOT purely vertical once a species has any lean
+        // (SPECS.*.lean) or the per-point wobble, so adding the flare along `dir` was pushing part of the
+        // base ring tens of cm below the trunk's own ground point — found 23 Nov chasing world-validator's
+        // check 3 "nothing buried" FAIL on every streamed tree group, after the (separate, now-fixed) tree
+        // impostor billboard bug stopped masking it. Re-aim the extra amount at the horizontal projection of
+        // `dir` so the foot still wobbles the same way seen from above, but never sinks the mesh.
+        const horiz = new THREE.Vector3(dir.x, 0, dir.z);
+        if (horiz.lengthSq() > 1e-8) p.addScaledVector(horiz.normalize(), radii[i] * (f - 1));
+      }
+      ring.push({ p, n: dir });
     }
     rings.push(ring);
   }
@@ -268,6 +280,17 @@ function speciesGeometry(spec, seed) {
   }
 
   for (let i = 1; i < bark.pos.length; i += 3) if (bark.pos[i] < -0.02) bark.pos[i] = -0.02; // flare/lean must not dip under the ground
+  // Same rule for leaf cards. Each card's own anchor point (`c`, above) is clamped to y >= 1.1, but a
+  // non-"hang" card's local up axis (`ay` = t2 rotated by the fully random `roll`, a few dozen lines up)
+  // can point in ANY direction around the outward normal, including downward — so "the card's bottom
+  // edge sits on the tip" (this function's own comment, a few lines up) is only true for the lucky half
+  // of rolls; the rest hang their far corner below the anchor instead of above it. Found 23 Nov chasing
+  // world-validator's check 3 "nothing buried" FAIL (every streamed tree group measured buried, up to
+  // -0.82m for neem, after the two other contributors — a false-reading tree-impostor billboard and this
+  // same root-flare-vs-lean issue on the trunk, both fixed above — were ruled out). Clamping only the
+  // vertex, the same move already made for the trunk one line up, changes nothing about any card's size,
+  // rotation, colour or facing above ground; it only lifts the rare corner that would have poked through it.
+  for (let i = 1; i < P.length; i += 3) if (P[i] < 0) P[i] = 0;
   const trunkGeo = new THREE.BufferGeometry();
   trunkGeo.setAttribute('position', new THREE.Float32BufferAttribute(bark.pos, 3));
   trunkGeo.setAttribute('normal', new THREE.Float32BufferAttribute(bark.nor, 3));
