@@ -43,6 +43,22 @@ const SRC = join(ROOT, 'src');
 
 const { NON_SOLID_RULES, SKIP_TOP, isNonSolidSource } = await import(join(SRC, 'solidRules.js').replace(/\\/g, '/'));
 
+// Manually verified "uncertain" entries (23 Nov): each was hand-checked against its real sibling
+// mechanism (often in another file, which this script cannot see — it only reads one function body
+// at a time). Key is "relative/path/to/file.js::functionName". Keep the reason short; it is printed
+// as-is. Add an entry here ONLY after actually reading the code and confirming the real collider
+// source, never to silence a flag you have not checked — that is exactly the false-negative this
+// script's "uncertain" bucket exists to prevent. Remove an entry if the referenced code changes.
+const VERIFIED_SAFE = new Map([
+  ['src/kit/housesInstancing.js::createHouseBatch', 'the batch\'s own comment names its source: src/kit/houses.js builds the real colliderBoxes (one rect per house footprint) and stores them on the colliders holder returned alongside this batch'],
+  ['src/kit/landInstancing.js::frameHook', 'builds a Mesh with setDrawRange(0, 0) — zero vertices ever drawn, so there is no geometry for autoColliders.js to rasterise or for a player to walk through; it exists only to run a per-frame callback via onBeforeRender'],
+  ['src/kit/wallMurals.js::buildWallMurals', 'a thin (0.03 m offset) poster decal glued flush onto an existing building wall; the wall itself (its own box/collider, built elsewhere) already blocks that space, so a second collider here would just double it'],
+  ['src/placeBatch.js::batchFor', 'per the comment two lines above this function: "the hidden source meshes carry the colliders" — the pre-batch source mesh stays in the scene graph on the hidden layer with its own collider tag/boxes intact'],
+  ['src/placeBatch.js::peopleBatchGet', 'per batchPeopleMesh/syncPeople just below: the capsule-placeholder source InstancedMesh stays in the graph on the hidden layer (HIDDEN_LAYER) and is what autoColliders.js/collision.js actually see; this BatchedMesh is a visual-only mirror (userData.visualOnly)'],
+  ['src/placeBatch.js::liveBatchFor', 'per the "LIVE meshes" comment above this function: "the source stays in the graph on the hidden layer and keeps driving its own matrices" — same hidden-source pattern as peopleBatchGet, this BatchedMesh is visual-only (userData.visualOnly)'],
+  ['src/roofMonkeys.js::createRoofMonkeys', 'ambient decorative monkeys placed on rooftops the player cannot reach; deliberately non-solid like other roof/sky dressing, not a walk-through-able ground-level prop'],
+]);
+
 // Files that are infrastructure for the collision/collider system itself, or
 // clearly never place a physical prop (UI, audio, save, input, camera, perf).
 // Everything else in src/ is scanned — a function that builds nothing mesh-like
@@ -124,7 +140,7 @@ const EXPLICIT_COLLIDER_RE = /userData\.collider\s*=\s*true/;
 const EXPLICIT_BOXES_RE = /userData\.colliderBoxes\s*=/;
 const NO_AUTO_RE = /userData\.noAutoCollider\s*=\s*true/;
 
-const report = { covered: [], gaps: [], excludedOk: [], uncertain: [] };
+const report = { covered: [], gaps: [], excludedOk: [], uncertain: [], verifiedSafe: [] };
 
 for (const file of finalFiles) {
   const rel = relative(ROOT, file);
@@ -167,9 +183,13 @@ for (const file of finalFiles) {
       // function body, so this goes to "uncertain" rather than a hard gap,
       // UNLESS the name also matches a NON_SOLID_RULES reason, in which case the
       // exclusion is self-explained and fine.
+      const verified = VERIFIED_SAFE.get(`${rel}::${fn.name}`);
       if (nonSolidHits.length) {
         entry.why = `noAutoCollider + matches rule: ${nonSolidHits.map((h) => h.reason).join('; ')}`;
         report.excludedOk.push(entry);
+      } else if (verified) {
+        entry.why = `manually verified (hand-read, not re-checked automatically): ${verified}`;
+        report.verifiedSafe.push(entry);
       } else {
         entry.why = 'userData.noAutoCollider set, no userData.colliderBoxes/collider in this function — check that a sibling object in this file carries the real box';
         report.uncertain.push(entry);
@@ -216,6 +236,11 @@ printSection(
   'judgement calls already made in solidRules.js/the code comments — review if still correct, not new gaps',
 );
 printSection(
+  'VERIFIED SAFE — noAutoCollider set, hand-checked against its real collider mechanism',
+  report.verifiedSafe,
+  'resolved by manually reading the code once (23 Nov) and recorded in this script\'s VERIFIED_SAFE map — re-check if the referenced code changes',
+);
+printSection(
   'UNCERTAIN — noAutoCollider set, no explicit box visible in this function',
   report.uncertain,
   'likely fine IF a sibling object in the same file carries userData.colliderBoxes for this — verify by reading the file',
@@ -226,7 +251,7 @@ printSection(
   'the actual list the backlog item asks for',
 );
 
-console.log(`\nTotals: covered=${report.covered.length} excludedOk=${report.excludedOk.length} uncertain=${report.uncertain.length} gaps=${report.gaps.length}`);
+console.log(`\nTotals: covered=${report.covered.length} excludedOk=${report.excludedOk.length} verifiedSafe=${report.verifiedSafe.length} uncertain=${report.uncertain.length} gaps=${report.gaps.length}`);
 console.log('\nReminder: this never measured real geometry. A "covered" entry can still be');
 console.log('walk-through in-game if its mesh never enters the 0.35-1.5 m band, and a');
 console.log('"gap candidate" can be a false alarm if it is covered by a holder object this');
