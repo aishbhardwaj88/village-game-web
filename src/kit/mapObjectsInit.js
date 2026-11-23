@@ -1,10 +1,15 @@
 /**
  * The game's one hook into the map objects layer (src/main.js, block "// S7 WIRING (mapobjects)"). Tiny on purpose: the
- * layer itself loads as its own chunk and only under ?layout=new, so ?layout=old and the Before-Play download are
- * unchanged. Resolves to { group, layers, report } or null.
+ * layer itself loads as its own chunk and only under the new layout, so the old layout and the Before-Play download
+ * are unchanged. Resolves to { group, layers, report } or null.
  */
+import { isNewLayout } from '../layout/layout.js';
+
+// Fixed 24 Nov: same stale-query-string bug as src/kit/landInit.js — this never fired on a plain page load once
+// the new layout became the default with no query string required, so tubewells, channels, ponds, the tank, the
+// tower, the gate and field/yard props of the approved map were silently not building on the live site.
 export function initMapObjects(scene, opts = {}) {
-  if (typeof window === 'undefined' || new URLSearchParams(window.location.search).get('layout') !== 'new') return Promise.resolve(null);
+  if (typeof window === 'undefined' || !isNewLayout()) return Promise.resolve(null);
   return import('./mapObjects.js')
     .then((m) => m.buildMapObjects(scene, opts))
     .then((r) => { if (r) window.__s7mapobjects = r; return r; })

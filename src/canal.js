@@ -4,6 +4,7 @@ import { texturedBox, texturedThickBox } from './materials.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
 import { registerCanalDip, createCanalTrench } from './dips.js';
+import { isNewLayout } from './layout/layout.js';
 
 /**
  * The nahar (canal) — reference-from-unity/MAP.md: "Runs east-west across the
@@ -45,8 +46,12 @@ export const CANAL_MAX_X = 0 + CANAL_DX;
 
 /** Distance (m) from a point to the water channel rectangle; 0 above the water. */
 export function distanceToCanalWater(x, z) {
-  // S7 WIRING (fixes): under ?layout=new the canal is the shops-land one at x 824, not this old east-west feeder.
-  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layout') === 'new') {
+  // S7 WIRING (fixes), corrected 24 Nov: this used to check the literal ?layout=new query string, which
+  // went stale the moment DEFAULT_LAYOUT flipped to 'new' in src/layout/layout.js (adeae03, 21-23 Nov) —
+  // a plain load with no query string at all is now "new layout" too, and this check was missing that,
+  // so it fell through to the retired east-west feeder position below on every normal page load.
+  // isNewLayout() is the one source of truth every other module already reads (layoutMode()/pt()/etc).
+  if (isNewLayout()) {
     const NEW_X = 824, NEW_Z_MIN = -340, NEW_Z_MAX = 350, NEW_HALF_W = 3;
     const dz = Math.max(NEW_Z_MIN - z, 0, z - NEW_Z_MAX);
     const dx = Math.max(x - NEW_X - NEW_HALF_W, 0, NEW_X - NEW_HALF_W - x);
@@ -119,10 +124,15 @@ function makeRippleNormalMap() {
 export function buildCanal() {
   const group = new THREE.Group();
   group.name = 'canal';
-  // S7 (?layout=new): the approved map moves the nahar to the north-south canal at x 824 (src/kit/landCanal.js). This old
-  // east-west stretch (x 758-786, z 34) would stand in the new weekly market ground and across the east road, so under the
-  // new layout it is not built (no trench, no dip registered: the ground stays whole). ?layout=old is unchanged.
-  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('layout') === 'new') return group;
+  // S7 (new layout, default since adeae03): the approved map moves the nahar to the north-south canal at x 824
+  // (src/kit/landCanal.js). This old east-west stretch (x 758-786, z 34) would stand in the new weekly market ground
+  // and across the east road, so under the new layout it is not built (no trench, no dip registered: the ground
+  // stays whole). ?layout=old is unchanged.
+  // Fixed 24 Nov: this was checking the literal ?layout=new query string, which went stale the moment the new
+  // layout became the default with no query string required — on every normal (query-string-free) page load this
+  // early return never fired, so the old canal was being built right on top of / across the new layout's own
+  // geometry. isNewLayout() (src/layout/layout.js) is the real, current source of truth.
+  if (isNewLayout()) return group;
 
   // Water — a simple flat-tinted plane sitting in a shallow trench (not a CC0
   // texture set; no water set exists in src/materials.js's SETS, and a flat tint

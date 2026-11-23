@@ -9,12 +9,15 @@
  * house 652.1,40.2 / school 556.5,108.5 / halwai 637.4,21.4 / temple 695.7,-78.3 = anchors.js + MAP_SHIFT (600,0). All match.
  */
 import mapUrl from '../../docs/layout/approved-map-2026-11-21.json?url';
+import { isNewLayout } from '../layout/layout.js';
 
 const layoutModules = import.meta.glob('../layout/layout.js');
 
+// Fixed 24 Nov: this was its own literal ?layout=new query-string check (same stale-default bug fixed in
+// landInit.js/mapObjectsInit.js/canal.js). Currently unused (no importer left in src/), kept exported and
+// correct in case a future module reaches for it — isNewLayout() (src/layout/layout.js) is the one real switch.
 export function isNewLayoutParam() {
-  if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('layout') === 'new';
+  return isNewLayout();
 }
 
 let loading = null;
