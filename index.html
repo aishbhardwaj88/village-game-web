@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Dopahar</title>
+    <!-- No real favicon exists yet (not a decision for her, a browser-tab icon, not game content). Without ANY
+         rel="icon" tag, Chromium auto-requests /favicon.ico and gets a real 404 on every single page load,
+         which it logs to the console as an "error" — tripping every build-gate tool that asserts zero console
+         errors (traced 23 Nov: tools/slot-swap-test.js's 2 "no console errors" FAILs, present AND absent cases
+         alike, both turned out to be this one favicon request, nothing to do with the asset-slot pipeline it
+         tests). A data-URI "no icon" response stops the browser from ever requesting the file at all. -->
+    <link rel="icon" href="data:," />
     <!-- Hindi font, self-hosted (S7 desktop, 21 Nov): Noto Sans Devanagari, SIL OFL 1.1 (licence text beside the file), weights 600-700 in one file. Works offline in the desktop app. -->
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/noto-sans-devanagari/NotoSansDevanagari-600-700.woff2" />
     <style>
