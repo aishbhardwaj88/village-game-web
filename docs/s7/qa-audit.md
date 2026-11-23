@@ -153,3 +153,30 @@ actually just the checker crashing before it gets there, and could be hiding a r
 Fix the checker (give it a Vite-aware runner, or a Node-safe fallback in `landLayout.js` for when
 `import.meta.glob` isn't available) before trusting any "0 FAIL" side-job claim again, then re-run it to get
 a real answer on Dadi's new-layout position.
+
+## Follow-up check (separate branch, 23 Nov)
+
+Re-verified this item against the current `main` (`0b587c4`). **The fix described above is already in
+`main`**, landed in `d2523fb` ("S7 fix: missions-check.mjs's Node shim was crashing silently...") the same
+day as this audit, with a defensive follow-up in `d33716f` for an unrelated `map.roads` crash in
+`src/kit/houses.js`/`makeRoadIndex`. `tools/missions-node-env.mjs`'s loader hook rewrites every
+`import.meta.glob(...)` call (in `landLayout.js`, `landQuality.js`, `landIndex.js`) to a no-op returning `{}`
+before Node parses the file, which is exactly what each of those files' own comments already says a
+no-match glob should do, so the real Vite build is unaffected.
+
+Re-ran `node tools/missions-check.mjs` fresh on a clean worktree against `?layout=new`: **362 tests, 358
+PASS, 0 FAIL, 4 WARN, 163 points/routes collected** (old layout collects 177, expected - new layout drops
+objects left out per the "NOTE left out under ?layout=new" list, e.g. `find_gola_cart`, `find_old_well`).
+Breakdown for the jobs this task asked about, all real positions now, no crash artifacts:
+- `job:dadi`: 6 pass, 0 fail, 0 warn.
+- `job:stall_banta`: 2 pass, 0 fail, 0 warn.
+- `job:stall_chaat`: 1 pass, 0 fail, 0 warn.
+- `job:milk`: 24 pass, 0 fail, 3 warn (milk stops 2, 4, 5 stand on a gali/back lane - WARN only by the
+  tool's own design, not a FAIL; doorsteps opening onto a lane are allowed with a warning, per the tool's
+  own `road` test description).
+The only other WARN is the pre-existing `temple_bell` faith-building ambient interaction (no task, expected).
+
+No position bug found underneath the old crash: Dadi, banta, chaat and the milk round all check out clean
+against the approved map. `npm run build:unchecked` also still succeeds (pre-existing character/budget WARNs
+are unrelated, untouched by this item). Nothing further to fix for this item; confirming it's safe for the
+integrator to treat `missions-check.mjs` as trustworthy for `?layout=new` going forward.
