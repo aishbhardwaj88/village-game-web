@@ -20,7 +20,7 @@ let map;
 try { map = JSON.parse(readFileSync(LAYOUT_DATA)); } catch { map = JSON.parse(readFileSync(APPROVED)); mapSource = 'docs/layout/approved-map-2026-11-21.json'; }
 console.log('map:', mapSource);
 const { houses, roads, solids } = houseMapFrom(map);
-const plan = planHouses(houses, roads);
+const plan = planHouses(houses, roads, solids);
 
 const convex = (r) => r.length >= 3;
 

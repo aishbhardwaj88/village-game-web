@@ -144,7 +144,7 @@ const MAX_ALIGN_DEG = 40; // a footprint turned more than this off its road is l
  * Returns [{ i, x, z, ry, w, d, mud, front: [fx, fz], road: id, roadGap, turned, trimmed, corners }] in the input order.
  * corners = the FINAL rectangle the house is built on (after turning parallel to its road and trimming off any road overlap).
  */
-export function planHouses(houses, roads) {
+export function planHouses(houses, roads, solids = []) {
   const rings = houses.map((h) => h.ring);
   const RI = roadIndex(roads);
   const HI = houseIndex(rings);
@@ -244,7 +244,7 @@ export function planHouses(houses, roads) {
       roadGap: best.dist, turned, trimmed, roadDir: rdir, angleErr: err, corners: rectCorners(x, z, ry, w, d), drawn: q.h.ring,
     };
   };
-  return pre.map((q, i) => {
+  const out = pre.map((q, i) => {
     let best = pick[i];
     if (!best) { // enclosed plot: face the nearest road, whatever stands between
       let bd = Infinity;
@@ -261,6 +261,50 @@ export function planHouses(houses, roads) {
     }
     return r;
   });
+  // A house whose footprint reaches into a small fixed solid built by another kit (a well, a hand pump plinth, a
+  // milestone...) that the map itself did not know about when it drew the house: nudge the house straight away from
+  // the solid's own centre in small steps, re-checking against every other house and solid each step, so the house
+  // never lands on top of a different neighbour while dodging the first one. Everything else about the house is
+  // unchanged (same w, d, ry, road). This never fires unless a real overlap is found (the 173-nudge round from the
+  // road snap already handles every other case; this is the one kind it cannot see, another kit's own solid).
+  const distToRect = (px, pz, corners) => {
+    if (inRing([px, pz], corners)) return 0;
+    let best = Infinity;
+    for (let k = 0; k < 4; k++) best = Math.min(best, segDist([px, pz], corners[k], corners[(k + 1) % 4]));
+    return best;
+  };
+  const circleHitsRect = (sx, sz, radius, corners) => distToRect(sx, sz, corners) < radius;
+  if (solids.length) for (const r of out) {
+    const circles = [];
+    for (const s of solids) {
+      if (!s.ring || s.ring.length < 3) continue;
+      const sx = s.ring.reduce((t, p) => t + p[0], 0) / s.ring.length, sz = s.ring.reduce((t, p) => t + p[1], 0) / s.ring.length;
+      if (Math.abs(sx - r.x) > 8 || Math.abs(sz - r.z) > 8) continue;
+      const radius = Math.max(...s.ring.map((p) => Math.hypot(p[0] - sx, p[1] - sz)));
+      if (circleHitsRect(sx, sz, radius, r.corners)) circles.push({ sx, sz, radius, label: s.label });
+    }
+    if (!circles.length) continue;
+    const x0 = r.x, z0 = r.z;
+    for (let step = 0; step < 60 && circles.some((c) => circleHitsRect(c.sx, c.sz, c.radius, r.corners)); step++) {
+      const c = circles.find((c) => circleHitsRect(c.sx, c.sz, c.radius, r.corners));
+      let dx = r.x - c.sx, dz = r.z - c.sz, dist = Math.hypot(dx, dz);
+      if (dist < 1e-6) { dx = r.front[0]; dz = r.front[1]; dist = 1; }
+      r.x += (dx / dist) * 0.1; r.z += (dz / dist) * 0.1;
+      r.corners = rectCorners(r.x, r.z, r.ry, r.w, r.d);
+    }
+    // Never step onto another house, onto a road, or still into the solid while dodging: if the walk above lands
+    // somewhere worse, give up and report it rather than silently create a different overlap (keep the drawn spot).
+    const hitsAnotherHouse = out.some((o) => o !== r && Math.abs(o.x - r.x) < 12 && Math.abs(o.z - r.z) < 12 && ringsOverlap(r.corners, o.corners));
+    const stillHitsSolid = circles.some((c) => circleHitsRect(c.sx, c.sz, c.radius, r.corners));
+    const hitsRoad = r.corners.some((p) => RI.clearance(p) < -0.02);
+    if (hitsAnotherHouse || stillHitsSolid || hitsRoad) {
+      r.x = x0; r.z = z0; r.corners = rectCorners(r.x, r.z, r.ry, r.w, r.d);
+      r.solidOverlap = circles.map((c) => c.label);
+    } else {
+      r.solidNudge = Math.hypot(r.x - x0, r.z - z0);
+    }
+  }
+  return out;
 }
 
 /** Road clearance of a whole footprint: the smallest (distance - half width) over its edges and interior samples. */
