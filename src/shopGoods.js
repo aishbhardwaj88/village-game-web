@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { loadModel } from './villageProps.js';
 
 /**
  * Real-shaped village shop goods (FEEDBACK 24 Oct item 4: Gupta General Store had coloured cuboids): pillow packs of chips and
@@ -326,9 +327,37 @@ export function generalStoreGoods(world) {
   }
   items.push({ kind: 'sachets', design: D.sachet, x: -1.2, y: 2.05, z: 1.56 });
   items.push({ kind: 'sachets', design: D.sachet, x: 1.2, y: 2.05, z: 1.56 });
-  // the red crate of soda bottles outside, left of the counter
+  // the red crate of soda bottles outside, left of the counter (y:0.3 = standing on the crate's top, see loadSodaCrate below)
   for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) items.push({ kind: 'bottle', design: [D.sodaOrange, D.sodaLime, D.sodaCola][(i + j) % 3], x: -1.5 + i * 0.13, y: 0.3, z: 1.85 + j * 0.15, ry: i * 1.7 + j });
   return buildGoodsMesh(items, world, 'general_store_stock');
+}
+
+/**
+ * The crate itself, under the soda-bottle grid above (x -1.5..-1.11, z 1.85..2.0, local shop frame — same 8
+ * bottles, same `world` transform the caller already passes to generalStoreGoods). Bug found 23 Nov by
+ * tools/world-validator.js's real check 2 ("nothing floats"), finally runnable this session: `shops/
+ * general_store_stock lowestY 0.3` — the comment above calling these bottles "the red crate of soda bottles"
+ * had never actually built a crate, so they were floating 0.3m above the ground with nothing under them.
+ * Real CC0 model (public/assets/props/wooden_crate_02.glb, Poly Haven, already licensed in docs/CREDITS.md and
+ * already drawn elsewhere by src/villageProps.js's doorstep props — no new asset, no new credit), scaled to
+ * 0.3m tall via the same loadModel() fit-to-height/centre-on-ground helper that file uses, so its top lands
+ * exactly on the bottles' existing base height.
+ */
+export function loadSodaCrate(world) {
+  return loadModel('wooden_crate_02', 0.3).then((parts) => {
+    const local = new THREE.Matrix4().setPosition(-1.305, 0, 1.925); // centre of the 4x2 bottle grid
+    const group = new THREE.Group();
+    for (const part of parts) {
+      const m = new THREE.Matrix4().multiplyMatrices(local, part.matrix);
+      const mesh = new THREE.Mesh(part.geometry.clone().applyMatrix4(m), part.material);
+      mesh.castShadow = false;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    }
+    group.applyMatrix4(world);
+    group.name = 'general_store_crate';
+    return group;
+  });
 }
 
 /** Dudh dairy stock, dairy-local frame (bench top y 0.51 at x 2.0, z 3.1; crates beside the cans): milk pouches, ghee tins, curd tubs. */

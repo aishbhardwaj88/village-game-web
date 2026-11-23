@@ -196,7 +196,7 @@ import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoof
 import { placeBoardsMesh, placeBoardsBatch, syncPlaceBoards } from './placeBoards.js';
 import { placeBatchRoot, syncPlaceBatches } from './placeBatch.js';
 import { setPlantFocus } from './realPlants.js';
-import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes } from './shopGoods.js';
+import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes, loadSodaCrate } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
 import { createHalwaiFire } from './halwaiFire.js';
@@ -594,6 +594,11 @@ async function main() {
     teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
   ], 'general_store_stock'));
   shopsGroup.add(halwaiGoods(new THREE.Matrix4().makeRotationY(HALWAI_YAW).setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
+  // Bugfix (world-validator check 2, 23 Nov): the general store's outside soda bottles were floating at y=0.3
+  // with no crate drawn under them. Real CC0 crate model, see src/shopGoods.js's loadSodaCrate.
+  loadSodaCrate(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z))
+    .then((mesh) => shopsGroup.add(mesh))
+    .catch((err) => console.error('Failed to build the general store soda crate', err));
 
   // Halwai fascia board (FEEDBACK 24 Oct item 1: the stall had none). Bilingual, English dominant, on the front fascia.
   {

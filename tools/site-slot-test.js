@@ -16,10 +16,18 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { ANCHORS } from '../src/anchors.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
+// Same fix as tools/regression-check.js/world-validator.js/screenshot.js (23 Nov): on at least one box,
+// Playwright's default headless mode resolves to the lightweight "chrome-headless-shell" binary, which
+// reliably crashes ("Target crashed") a few seconds into rendering this village's full load under
+// SwiftShader software rendering; the full `chrome` binary, same flags, does not crash. Only used when
+// found, so this stays a no-op on a machine/CI image that only ships the headless-shell build. This file
+// never had the fix applied (found 23 Nov auditing every Playwright-launching tool for the same gap).
+const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 const PORT = 5237;
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
 const SITES = ['masjid', 'health_subcentre', 'old_haveli']; // dudh_dairy dropped 1 Nov: the map-placed v2 yard replaces it; zone name === slot filename
@@ -77,7 +85,9 @@ async function run(withFile, glb) {
   let browser;
   try {
     await waitForServer(BASE_URL);
-    browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
+    const launchOpts = { headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] };
+    if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH;
+    browser = await chromium.launch(launchOpts);
     const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));

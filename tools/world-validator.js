@@ -165,7 +165,18 @@ async function main() {
       const out = await page.evaluate((TOL) => {
         const d = window.__dopahar;
         const scene = d.scene;
-        const EXCLUDE = new Set(['ground', 'field_ground', 'sky', 'dust_motes', 'waypoint_glow', 'contact_shadows', 'lane', 'bazaar_lane', 'temple_lane', 'field_track', 'pump_water', 'tulsi_water']);
+        // 'abadi_lanes' (src/scenery.js buildBackgroundHouses): the background-house rows' own dirt lanes, built
+        // by the SAME buildStripSegment()/bumpHeight() function as 'lane'/'bazaar_lane'/etc above (src/paths.js) —
+        // just under its own group name because background_houses' per-child loop checks it directly rather than
+        // through the aggregate merged bucket. Found FAIL -0.058 the first time this check ever ran to completion
+        // (23 Nov, screenshot pipeline fix) — bumpHeight's own sine terms (+-0.03 +-0.03 +-0.015) plus
+        // edgeProfile's drain channel (-0.028) combine past the documented +-0.035 in the worst case, same as
+        // every other lane/track surface here; not a placement bug.
+        // 'bazaar_signboards' (src/bazaar.js buildBazaarSignboards): the bazaar row's own fascia signboards,
+        // mounted at each unit's wallHeight + parapet (FAIL 4.37 the same first real run) — wall/roof-mounted by
+        // design, same reasoning as the village_static_merged 'signboard' prefix exclusion below, just a direct
+        // bazaar_row child rather than a merged bucket.
+        const EXCLUDE = new Set(['ground', 'field_ground', 'sky', 'dust_motes', 'waypoint_glow', 'contact_shadows', 'lane', 'bazaar_lane', 'temple_lane', 'field_track', 'pump_water', 'tulsi_water', 'abadi_lanes', 'bazaar_signboards']);
         const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step', 'shop_roofs', 'shop_signboards']);
         // 'tree_impostor' (src/trees.js impostorMesh, the LOD>=220m billboard): its quad is deliberately
         // inflated to 1/0.65 (~1.5x) the real tree's height so the BAKED TEXTURE's tree render (which the
@@ -220,6 +231,19 @@ async function main() {
           for (const child of group.children) {
             if (SKIP_CHILD_NAMES.has(child.name) || EXCLUDE.has(child.name) || child.userData?.mergedStatic) continue;
             checkWholeObject(child, `${name}/${child.name || child.type}`);
+            const last = rows[rows.length - 1];
+            // general_store_stock (src/shopGoods.js generalStoreGoods): lowest item is the outside soda-bottle
+            // crate, y=0.3 (FAIL the first time this check ever ran to completion, 23 Nov) — the comment calling
+            // them "the red crate of soda bottles" had never actually built a crate, so they really were
+            // floating; fixed the same session by loadSodaCrate() (a real CC0 wooden_crate_02.glb under them,
+            // 0.3m tall). 0.3 is now the crate's own real top, not a float — every other item in this mesh sits
+            // higher, on the real shelves/counter (y 0.96-2.1). Accept ONLY at 0.3 +-0.01.
+            if (last && last.label === 'shops/general_store_stock' && Math.abs(last.lowestY - 0.3) <= 0.01) rows.pop();
+            // halwai_stock (src/shopGoods.js halwaiGoods): lowest item, y=0.595, is mithai standing on the real
+            // sweet display cabinet's own bottom tier (tools/blender/build_halwai.py: three tiers at
+            // 0.55/0.98/1.38, 0.045 thali thickness) — a real shelf, same reasoning as the village-wide
+            // shop_goods exclusion further below. Accept ONLY at 0.595 +-0.01.
+            if (last && last.label === 'shops/halwai_stock' && Math.abs(last.lowestY - 0.595) <= 0.01) rows.pop();
           }
         }
         // Aggregate safety net — every top-level merged static mesh (walls,

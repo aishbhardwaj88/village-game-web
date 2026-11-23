@@ -21,7 +21,9 @@ const CELL = 36; // metres
 const RADIUS = 0.3;
 
 const cache = new Map(); // file -> Promise<[{ geometry, material, matrix }]>
-function loadModel(file, height) {
+// Exported so a one-off deterministic placement (not this file's random per-cell doorstep scatter) can reuse the
+// same load-once/fit-to-height/centre-on-ground logic instead of duplicating it (see src/shopGoods.js loadSodaCrate).
+export function loadModel(file, height) {
   if (!cache.has(file)) {
     cache.set(file, getGLTFLoader().loadAsync(`assets/props/${file}.glb`).then((gltf) => {
       gltf.scene.updateMatrixWorld(true);

@@ -25,8 +25,15 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { NON_SOLID_RULES, SKIP_TOP } from '../src/solidRules.js';
+// Same fix as tools/regression-check.js/world-validator.js/screenshot.js (23 Nov): on at least one box,
+// Playwright's default headless mode resolves to the lightweight "chrome-headless-shell" binary, which
+// reliably crashes ("Target crashed") a few seconds into rendering this village's full load under
+// SwiftShader software rendering; the full `chrome` binary, same flags, does not crash. Only used when
+// found, so this stays a no-op on a machine/CI image that only ships the headless-shell build. This file
+// never had the fix applied (found 23 Nov auditing every Playwright-launching tool for the same gap).
+const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = +(process.env.PORT || 5199); // PORT / DIST env: lets parallel runs use their own build folder and port
@@ -407,7 +414,9 @@ async function main() {
   const T = Date.now(); const stage = (n) => console.log(`[collision-test] ${n} at ${((Date.now() - T) / 1000).toFixed(0)} s`); // where the time goes
   try {
     await waitForServer(BASE_URL);
-    const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] });
+    const launchOpts = { headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'] };
+    if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH;
+    const browser = await chromium.launch(launchOpts);
     const page = await browser.newPage({ viewport: { width: 480, height: 300 } }); // small: nothing here reads pixels, and headless software GL renders faster, so the live-stream stops settle sooner
     page.setDefaultTimeout(0);
     page.on('pageerror', (e) => console.error('pageerror:', e.message));

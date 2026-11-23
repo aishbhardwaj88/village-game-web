@@ -1,3 +1,82 @@
+# 23 Nov (12) - used the now-working world-validator for real: fixed a real floating-prop bug, calibrated 4 false positives, and propagated entry 11's chromium fix to the rest of `npm run build`'s own test chain
+
+- Fresh container again this firing: `main` detached 18 commits behind `origin/main` on checkout — turned out
+  to be a stale local tracking ref, not lost work (`git fetch` showed origin/main already AT that commit; a
+  `git push` after fast-forwarding local `main` to it reported "up to date", confirming nothing was actually
+  unpushed). `npm install` re-run (`node_modules` empty, same non-persistence every entry logs). `Places V1/`
+  and Blender both still absent from this checkout (confirmed `which blender` and `python3 -c "import bpy"`
+  both fail) - so J1-OLD2/J2 (material board render, per-place LAYOUT.md checks) stay un-runnable here,
+  same conclusion as every recent entry.
+- Entry 11 got `tools/world-validator.js` running to completion for the first time in days and logged 4 real
+  findings without acting on them (out of scope for that cycle). Read each one's actual source this cycle
+  instead of guessing:
+  - `shops/general_store_stock` lowestY 0.3 — a REAL bug. `src/shopGoods.js`'s `generalStoreGoods()` places 8
+    outside soda bottles at y=0.3 under a comment calling them "the red crate of soda bottles outside" - no
+    crate was ever built, so the bottles were genuinely floating 0.3m above bare ground with nothing under
+    them. Fixed: `loadSodaCrate()` (new, `src/shopGoods.js`) loads the already-licensed, already-used CC0
+    `wooden_crate_02.glb` (Poly Haven, `docs/CREDITS.md`, drawn elsewhere by `src/villageProps.js`'s doorstep
+    props) via that file's own fit-to-height/centre-on-ground helper (exported it, `loadModel()`, for this
+    one-off deterministic reuse rather than duplicating the logic), scaled to 0.3m so its top lands exactly
+    under the bottle grid, wired into `src/main.js` beside the existing goods meshes. No new asset, no new
+    licence entry (288 shipped files before and after, `licence-audit.mjs --check` unchanged).
+  - `shops/halwai_stock` lowestY 0.595, `bazaar_row/bazaar_signboards` lowestY 4.37, `background_houses/
+    abadi_lanes` lowestY -0.058 — all 3 traced to real, already-built geometry, not bugs: halwai_stock's
+    mithai sits on the real sweet-display cabinet's own bottom tier (`tools/blender/build_halwai.py`: tiers at
+    0.55/0.98/1.38, thali 0.045 thick -> 0.595); bazaar_signboards is a wall/roof-mounted fascia board
+    (`src/bazaar.js`: boardY = wallHeight + parapet), same category the validator already excludes under
+    `village_static_merged`'s 'signboard' prefix, just a direct `bazaar_row` child instead; abadi_lanes is
+    built by the identical `buildStripSegment()`/`bumpHeight()` function as the already-excluded 'lane' strips
+    (`src/paths.js`), whose own sine terms plus the edge-drain channel combine past the documented +-0.035 in
+    the worst case. Calibrated `tools/world-validator.js` for all 4: narrow, exact-value tolerance accepts for
+    the two stock meshes (only at their real resting height, so a FUTURE genuinely floating item in either
+    mesh still fails the check) and 2 new full-name exclusions (abadi_lanes, bazaar_signboards) matching the
+    same reasoning already used for their sibling names. Every addition carries the same inline evidence/
+    tolerance style as the file's existing 20+ exclusions.
+- Verified both fixes together: re-ran `node tools/world-validator.js` against a fresh build twice (once right
+  after the crate fix, once again after the validator calibration, against a freshly rebuilt `dist/`) - check 2
+  and check 3 both go from 4 real FAILs to clean PASS (0 objects) at t=0 and t=3s, no new exclusion swallowing
+  anything it shouldn't (re-read every one of its conditions against the real source before adding it, not
+  just against today's one printed number).
+- Separately: entry 11 fixed the Chromium-binary crash (full `chrome` instead of `chrome-headless-shell`
+  under SwiftShader) in `tools/screenshot.js` and `tools/world-validator.js` and flagged, as a loose end, that
+  no other Playwright-launching tool had the same fix. Grepped every `tools/*.js`/`*.mjs` for `chromium.launch`
+  (49 files) - too many for one cycle, so scoped to the 3 that are actually wired into the standing `npm run
+  build` gate itself (same category as the 2 entry 11 already fixed, not a one-off diagnostic script):
+  `tools/slot-swap-test.js`, `tools/site-slot-test.js`, `tools/collision-test.js`. Applied the identical
+  `FULL_CHROMIUM_PATH` guard to all 3. Ran each for real against this session's build: `site-slot-test.js` -
+  completed clean, 16/16 PASS (masjid/health_subcentre/old_haveli slot swap, grounding, facing, colliders,
+  signboards all correct); `slot-swap-test.js` - completed clean (no crash), 2 pre-existing FAILs unrelated to
+  this fix (`present`/`absent: no console errors`, both tripped by the exact same 404 the "absent" case's
+  own intentionally-missing-model scenario would produce even with a perfect test - looks like a pre-existing
+  test-authoring gap, not this session's doing, left for whoever next touches that file); `collision-test.js`
+  - still crashes ("Target crashed"), but only after running 24s of live-stream load + 5 full lamp/water-tank
+  settle stops (several real minutes of continuous SwiftShader rendering) - a different, longer-duration
+  resource exhaustion than the handoff-scrolled headless-shell crash the other two tools had, so the same fix
+  is still correct to carry (it is a documented no-op everywhere the binary isn't found, strictly a stability
+  improvement, never a regression) even though it did not fully resolve this one file in this sandbox. The
+  other 46 chromium.launch call sites are one-off audit/diagnostic scripts, not part of the standing build
+  gate - left for a future cycle if ever needed, not chased blindly this session.
+- Full verification: `npx vite build` (234 modules, clean), `node tools/char-diet.mjs` (unchanged, 76.0 ->
+  48.9 MB), `node tools/check-budget.js` (same 15 pre-existing breaches as every recent entry, nothing new -
+  confirms this change ships no new asset weight), `node tools/licence-audit.mjs --check` (288 files, 0
+  UNKNOWN, unchanged), `node tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs` PASS (49
+  scanned, 0 unwrapped clones), `node tools/place-visibility-check.js` PASS, `node tools/missions-check.mjs`
+  (358 PASS/0 FAIL/4 WARN, identical), `node tools/layout-tests.mjs` (PASS, 0 failures, identical), `node
+  tools/collider-coverage-audit.mjs` (identical, 0 gaps/0 uncertain).
+- Committed, pushed, CI confirmed green (deploy.yml's own build job runs `npm run build:unchecked`, which does
+  not call `world-validator.js`/`slot-swap-test.js`/`site-slot-test.js`/`collision-test.js` at all, so none of
+  tonight's changes touch what currently gates deploy - purely additive correctness work for whoever next runs
+  the full `npm run build` chain by hand, same as CLAUDE.md section 10 asks for).
+- NEXT: `collision-test.js`'s longer-duration crash in this sandbox is worth a look if a future firing has a
+  faster box or more patience - try `--disable-dev-shm-usage` (already used by some other tools' launch args
+  here, not yet tried on this one) or splitting its live-stream walk into fewer stops per run. The 2 pre-
+  existing `slot-swap-test.js` console-error FAILs (likely just needs the "absent" scenario's own 404 to be
+  expected/ignored in that specific check) are a small, well-scoped next fix. Otherwise section A of
+  BACKLOG.md is still either ticked, blocked on Places V1/Blender/her verdict, or layout (out of scope per
+  5a-MAP) - the next real lead is whatever the NOW-WORKING validator surfaces once someone runs its slower
+  checks (6/7/8: reachability, building overlap, draw-call ceiling) to completion, which this cycle did not
+  have time for after fixing what checks 1-3 already turned up.
+
 # 23 Nov (11) - fixed the "broken screenshot tool" that has blocked work since 22 Nov: it was never actually broken, Playwright was just launching the wrong Chromium binary
 
 - Fresh container again this firing: `main` detached one commit behind `origin/main` (fast-forwarded,
