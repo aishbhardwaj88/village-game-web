@@ -200,6 +200,33 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 }
 
 /**
+ * 23 Nov: clone a material that came from getTiledMaterial() (or carries any other
+ * custom onBeforeCompile/customProgramCacheKey own-property, e.g. the variation hooks
+ * below) WITHOUT silently losing that hook. THREE's Material.copy() — which .clone()
+ * calls internally — only copies its own fixed property list; onBeforeCompile and
+ * customProgramCacheKey are not on it, so a plain `.clone()` keeps userData.dpVar
+ * (deep-cloned via JSON, see removeSurfaceVariation's own "a clone: userData was
+ * copied but the hook never was" comment below) while dropping the actual shader hook
+ * dpVar is supposed to mark — i.e. the clone looks protected but renders unprotected.
+ * Confirmed directly against this project's three.js (Material.js's copy() field
+ * list has no onBeforeCompile/customProgramCacheKey entry). Found because
+ * src/roadNetwork.js's shared lane material (every road/lane in the village) and
+ * src/farmSites.js's vcMat() (most site-prop meshes: haveli, gaushala, mandi,
+ * khalihan, mela, playground...) both clone a getTiledMaterial() result and were
+ * silently running with no roughness floor or mottling at all, the same bug class as
+ * this session's earlier metal/rust dispatch-gap fix. Any caller that needs an
+ * independent material instance from a tiled-library base (to mutate transparent/
+ * polygonOffset/color/etc. without touching the shared cache entry) must go through
+ * this helper, not material.clone() directly.
+ */
+export function cloneTiledMaterial(mat) {
+  const c = mat.clone();
+  if (Object.prototype.hasOwnProperty.call(mat, 'onBeforeCompile')) c.onBeforeCompile = mat.onBeforeCompile;
+  if (Object.prototype.hasOwnProperty.call(mat, 'customProgramCacheKey')) c.customProgramCacheKey = mat.customProgramCacheKey;
+  return c;
+}
+
+/**
  * BACKLOG J0 "materials read as plastic", shader values only (no texture, geometry or
  * draw call). One shared GLSL chunk; one program per (material parameters, family),
  * because customProgramCacheKey is a constant per family instead of a per-closure string.

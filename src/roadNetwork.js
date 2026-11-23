@@ -18,7 +18,7 @@
  */
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { getTiledMaterial, ensureUv2 } from './materials.js';
+import { getTiledMaterial, ensureUv2, cloneTiledMaterial } from './materials.js';
 import { isNewLayout } from './layout/layout.js';
 const NEW_LAYOUT = isNewLayout();
 
@@ -229,7 +229,11 @@ let MAT = null;
 /** The shared 'lane' material, cloned once so its edge band can fade into the ground (vertex alpha). */
 export function roadMaterial() {
   if (MAT) return MAT;
-  MAT = getTiledMaterial('lane', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }).clone();
+  // 23 Nov: was a plain .clone(), which silently drops the 'lane' earth-family roughness
+  // floor/mottling hook (see materials.js's cloneTiledMaterial) on every road and lane in
+  // the village — the exact unprotected-surface bug class this session already fixed once
+  // for metal/rust.
+  MAT = cloneTiledMaterial(getTiledMaterial('lane', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
   MAT.name = 'lane';
   MAT.transparent = true;
   MAT.polygonOffset = true;
@@ -325,7 +329,8 @@ function rockGeometry() {
 let STONE_MAT = null;
 function stoneMaterial() {
   if (STONE_MAT) return STONE_MAT;
-  STONE_MAT = getTiledMaterial('concrete', { repeatX: 1.3, repeatY: 1.3, roughness: 1, vertexColors: true }).clone();
+  // 23 Nov: same clone-drops-the-hook fix as roadMaterial() above ('concrete' masonry family).
+  STONE_MAT = cloneTiledMaterial(getTiledMaterial('concrete', { repeatX: 1.3, repeatY: 1.3, roughness: 1, vertexColors: true }));
   STONE_MAT.name = 'road_stone';
   return STONE_MAT;
 }

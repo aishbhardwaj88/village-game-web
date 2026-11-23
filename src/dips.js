@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { getTiledMaterial } from './materials.js';
+import { getTiledMaterial, cloneTiledMaterial } from './materials.js';
 import { pt } from './anchors.js';
 
 /**
@@ -161,7 +161,10 @@ if (vDipW.y < 0.05) {
 let EARTH_MAT = null;
 function earthMaterial() {
   if (EARTH_MAT) return EARTH_MAT;
-  const m = getTiledMaterial('ground', { repeatX: 1, repeatY: 1, vertexColors: true }).clone();
+  // 'ground' has no variation family today (surfaceFamilyFor returns null), so this
+  // .clone() loses nothing right now, but cloneTiledMaterial (materials.js) is the safe
+  // habit for every getTiledMaterial() clone — see roadNetwork.js/farmSites.js fixes.
+  const m = cloneTiledMaterial(getTiledMaterial('ground', { repeatX: 1, repeatY: 1, vertexColors: true }));
   m.name = 'dip_earth';
   m.aoMap = null;
   m.color.setScalar(1.7); // same lift as farmSites vcMat: the scan is mid-grey, the vertex colours carry the value

@@ -5,7 +5,7 @@ import { batchPlaceModelWhenRooted } from './placeBatch.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildGardenPlants, GARDEN_KIND } from './vegetation.js';
-import { getTiledMaterial } from './materials.js';
+import { getTiledMaterial, cloneTiledMaterial } from './materials.js';
 import { addLaundryLine, LAUNDRY_HALF_SPAN } from './laundryLine.js';
 import { getGLTFLoader } from './loaders.js';
 import { oldHouseMaterial, useOldHouseMasonry } from './stagingYard.js';
@@ -116,7 +116,11 @@ const vcMat = (opts = {}) => {
   const water = roughness < 0.3;
   if (water) return new THREE.MeshStandardMaterial({ name: 'site_water', vertexColors: true, roughness, metalness, ...rest });
   const base = getTiledMaterial(set || (earth || roughness >= 1 ? 'ground' : 'plaster'), { repeatX: 1, repeatY: 1, vertexColors: true });
-  const m = base.clone();
+  // 23 Nov: was base.clone(), which silently drops the masonry/matte/tin roughness-floor
+  // and mottling hook (see materials.js's cloneTiledMaterial) — this is the material behind
+  // most site-prop meshes (haveli, gaushala, mandi, khalihan, mela, playground...), so almost
+  // every one of them was rendering unprotected plaster/concrete/metal.
+  const m = cloneTiledMaterial(base);
   m.name = 'site_props';
   m.aoMap = null;
   m.roughness = roughness;
@@ -1640,7 +1644,9 @@ export function createKhelMaidan(position) {
     ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => [-17 + sx * 2.8, sz * 1.2, 0.25, 0.25]), // pavilion poles
     [-17, 1.0, 5, 0.5], // pavilion bench
   ], boards: [{ id: 'maidan', x: -17, y: 2.3, z: -1.2, w: 3.6 }] });
-  const grassMat = getTiledMaterial('grass', { repeatX: 1, repeatY: 1, vertexColors: true }).clone();
+  // 'grass' has no variation family today, so this clone loses nothing yet; same safe-habit
+  // swap as vcMat() above.
+  const grassMat = cloneTiledMaterial(getTiledMaterial('grass', { repeatX: 1, repeatY: 1, vertexColors: true }));
   grassMat.name = 'maidan_grass'; grassMat.color.setScalar(1.5); grassMat.aoMap = null;
   const grassMesh = new THREE.Mesh(mergeGeometries(grass), grassMat);
   grassMesh.receiveShadow = true;

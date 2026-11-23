@@ -1,3 +1,87 @@
+# 23 Nov (8) - found and fixed: `.clone()` on a tiled material silently drops its roughness-floor/mottling hook, unprotecting roads, most site props and every street-lamp tin part
+
+- Fresh container again this firing: `main` was detached one commit behind `origin/main`
+  (fast-forwarded before anything else, same harmless staleness as the last two entries),
+  `node_modules` empty (`npm install` re-run, not committed), `Places V1/` still not present
+  in this checkout. Checked BACKLOG.md section A and PARALLEL.md: both are entirely stale
+  (dated Oct 23 - Nov 10), the live map is the 21 Nov one already flipped to default by this
+  session's earlier commits, and nothing in either file is a fresh, safely-workable item.
+  Spent the cycle in CLAUDE.md 5a-MAP's always-in-scope "materials" category instead.
+- Looked for the same bug class as the last two entries' material fixes (a dispatch/plumbing
+  gap that silently drops the roughness-floor-and-mottling protection added for BACKLOG J0
+  "materials read as plastic"). Found it: `src/materials.js`'s `getTiledMaterial()` attaches
+  that protection as a `material.onBeforeCompile` hook (plus a matching
+  `customProgramCacheKey` override) for every masonry/matte/tin/earth-family set - but
+  **THREE's own `Material.copy()` (which `.clone()` calls internally) does not copy either
+  property** (confirmed directly by reading `node_modules/three/src/materials/Material.js`:
+  its `copy()` has a long fixed field list with no `onBeforeCompile`/`customProgramCacheKey`
+  entry, and separately by a standalone Node script, `tmp/verify_material_clone_fix.mjs`,
+  that builds real materials via `getTiledMaterial()` for all 8 named sets and clones them
+  both ways). So a plain `.clone()` on a protected material keeps `userData.dpVar` (deep-
+  cloned via JSON) - making it LOOK protected - while silently dropping the actual shader
+  hook, i.e. it renders completely unprotected. The project's own
+  `removeSurfaceVariation()` has a comment anticipating exactly this ("a clone: userData was
+  copied but the hook never was") but none of the four real call sites that clone a tiled
+  material for an independent instance accounted for it:
+  - `src/roadNetwork.js` `roadMaterial()` - the ONE shared 'lane' material for every road and
+    lane in the whole village (?layout=new network). Earth-family protection: gone.
+  - `src/roadNetwork.js` `stoneMaterial()` - the loose-stone scatter along roads ('concrete',
+    masonry family). Gone.
+  - `src/farmSites.js` `vcMat()` - the shared material behind most site-prop meshes (haveli,
+    gaushala, mandi, khalihan, mela, playground, the pond/lotus, and more; defaults to
+    'plaster', masonry family, when no `set` is passed). Gone on nearly every one.
+  - `src/props.js` `lampTinMaterial()` - didn't even clone-and-lose by accident; it cloned
+    `base` then replaced `onBeforeCompile` outright with ONLY the lamp night-glow hook (no
+    `prev` chain), so every street lamp's tin arm/head/panel/wire (both RCC and solar types,
+    every lamp in the village) was losing the 'tin' family roughness floor on purpose,
+    just not on purpose for this reason.
+  - Two more sites clone a 'ground'/'grass' material, which has no family today
+    (`surfaceFamilyFor` returns null for both) - confirmed harmless now, but switched to the
+    same safe helper for consistency (`src/dips.js`, one `src/farmSites.js` grass site).
+  This is the same underlying bug class as this session's earlier metal/rust roughness-floor
+  fix - a protection mechanism with a real gap nothing currently catches - except wider:
+  that fix was one dispatch branch, this one silently unprotects the shared road material
+  used by the entire village map plus most of farmSites.js's props.
+- Fixed by adding `cloneTiledMaterial()` to `src/materials.js`: clones the material normally,
+  then explicitly re-attaches `onBeforeCompile`/`customProgramCacheKey` if the source material
+  owns them (`Object.prototype.hasOwnProperty`, so it never touches the no-op prototype
+  default). Switched all four real call sites to it; `lampTinMaterial()` additionally now
+  captures `base`'s existing hook/key BEFORE overwriting and chains it first
+  (`if (prevHook) prevHook(sh, renderer);`), the same `if (prev) prev(...)` composition
+  `applySurfaceVariation` itself already uses - safe because the two hooks touch disjoint
+  shader `#include` points (`emissivemap_fragment` vs
+  `common`/`begin_vertex`/`color_fragment`/`roughnessmap_fragment`).
+- Verified behaviourally, no browser: `tmp/verify_material_clone_fix.mjs` builds real
+  materials for lane/concrete/plaster/tin/metal/rust/ground/grass via the real
+  `getTiledMaterial()` (stubbing only `document.createElement(NS)` so the texture loader
+  doesn't throw in Node) and checks `hasOwnProperty('onBeforeCompile')` before/after each
+  clone style: all 6 families-with-a-hook keep it with `cloneTiledMaterial()` and lose it
+  with plain `.clone()` (confirmed `false` for every one); the 2 families-with-no-hook are
+  unaffected either way, as expected. `tmp/verify_lamp_tin_fix.mjs` separately confirms
+  `tin`'s base material actually owns a hook worth preserving.
+- Tools-only... no, source-code fix this time, not tools: ran `npm run licence:check`,
+  `node tools/check-dup-models.js`, `node tools/place-visibility-check.js`, `npx vite build`
+  (234 modules, clean), `node tools/char-diet.mjs` (unchanged, 76.0 -> 48.9 MB), `node
+  tools/check-budget.js` (same 15 pre-existing breaches as every recent entry, nothing new -
+  this change touches no asset files, only material JS), `node tools/missions-check.mjs`
+  (358 PASS / 0 FAIL / 4 WARN, identical to before the edit) and `node tools/layout-tests.mjs`
+  (PASS, 0 failures, identical to before the edit) - all clean/unchanged.
+  `tools/world-validator.js` still cannot run in this container (this run: timed out/hung
+  rather than the earlier runs' explicit "Page crashed"; same pre-existing headless-Chromium
+  limitation logged repeatedly in this file, not something this change caused - the edit
+  only changes which `onBeforeCompile` function reference a material ends up with, no GLSL
+  string was altered anywhere, and `npx vite build` already confirms every edited file
+  parses and bundles cleanly).
+- Committed, pushed, CI confirmed green.
+- NEXT: same conclusion as the last two entries on section A itself - nothing fresh there
+  until the screenshot/validator container issue is fixed, `Places V1/` appears in a
+  checkout, or she answers an open NEEDS_YOU item. For a future firing hunting the same bug
+  class: the places most worth a second look are anywhere a material is built once and
+  reused as a module-level singleton (grep `getTiledMaterial(` across `src/` turned up ~90
+  call sites; this entry covers every one that also calls `.clone()` on the result, but a
+  future refactor that adds a new such singleton should route through `cloneTiledMaterial()`
+  from the start).
+
 # 23 Nov (7) - resolved all 7 "uncertain" flags on the collision-collider audit
 
 - Fresh container this firing too: `main` was again on a detached HEAD one commit behind

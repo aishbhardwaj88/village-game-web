@@ -255,14 +255,25 @@ export const lampNight = { value: 0 };
 let _lampTinMat = null;
 function lampTinMaterial(base) {
   if (_lampTinMat) return _lampTinMat;
+  // 23 Nov: was base.clone() with onBeforeCompile replaced outright (no `prev` chain), which
+  // silently discarded the 'tin' family roughness-floor/mottling hook materials.js's
+  // getTiledMaterial() put on `base` — every street lamp arm/head/panel/wire in the village
+  // (both RCC and solar types) was rendering with no roughness protection. Capture base's own
+  // hook/key before overwriting and chain it, same `if (prev) prev(...)` convention
+  // applySurfaceVariation itself uses; the two hooks touch disjoint shader includes
+  // (emissivemap_fragment here vs common/begin_vertex/color_fragment/roughnessmap_fragment
+  // there) so composing them is safe.
+  const prevHook = Object.prototype.hasOwnProperty.call(base, 'onBeforeCompile') ? base.onBeforeCompile : null;
+  const prevKey = Object.prototype.hasOwnProperty.call(base, 'customProgramCacheKey') ? base.customProgramCacheKey() : '';
   const m = base.clone();
-  m.onBeforeCompile = (sh) => {
+  m.onBeforeCompile = (sh, renderer) => {
+    if (prevHook) prevHook(sh, renderer);
     sh.uniforms.uLampNight = lampNight;
     sh.fragmentShader = 'uniform float uLampNight;\n' + sh.fragmentShader.replace(
       '#include <emissivemap_fragment>',
       '#include <emissivemap_fragment>\n#ifdef USE_COLOR\n totalEmissiveRadiance += vec3(1.0, 0.78, 0.45) * uLampNight * smoothstep(1.25, 1.5, vColor.r) * 2.2;\n#endif');
   };
-  m.customProgramCacheKey = () => 'lampTinGlow';
+  m.customProgramCacheKey = () => `lampTinGlow${prevKey ? '|' + prevKey : ''}`;
   _lampTinMat = m;
   return m;
 }
