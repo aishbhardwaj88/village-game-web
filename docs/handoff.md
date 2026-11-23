@@ -1,3 +1,47 @@
+# 23 Nov (14) - found and fixed the real cause of slot-swap-test.js's 2 pre-existing console-error FAILs: a missing favicon, nothing to do with the asset-slot pipeline
+
+- Fresh container again this firing: `main` up to date with `origin/main` at `843b936`, clean working tree
+  (no detached-HEAD/stale-ref issue this time). `npm install` re-run (`node_modules` empty again, same
+  non-persistence every entry logs).
+- Picked up entry 12's own NEXT note: `tools/slot-swap-test.js` has had 2 pre-existing FAILs for several
+  cycles ("present: no console errors" and "absent: no console errors"), guessed back then to be "just the
+  absent scenario's own expected 404." Ran the real test first to check: both FAILs are still there, and
+  both print the exact same single console message - `["Failed to load resource: the server responded with a
+  status of 404 (Not Found)"]` - in BOTH the present AND absent passes. That rules out entry 12's guess: if it
+  were the Tripo slot files' own fetch, the present pass (where all 6 files genuinely exist) would be clean.
+- Traced it properly instead of guessing again: wrote a one-off diagnostic (`tmp/diag-404.mjs`, same
+  `vite preview` + Playwright technique the real test uses) that logs every console error together with its
+  real browser-reported source location, not just the text. One run gave the answer directly: `{"url":
+  "http://localhost:4178/favicon.ico", ...}`. The site has no `public/favicon.ico` and `index.html` carried no
+  `rel="icon"` tag at all, so Chromium's own browser chrome auto-requests `/favicon.ico` on every single page
+  load regardless of any game code, gets a real 404 from `vite preview`'s static file server, and logs it to
+  the console as type "error" - which is exactly what both passes of the test (and `world-validator.js`'s and
+  `regression-check.js`'s identical "no console errors across the whole run" assertions) treat as a build
+  failure.
+- Fixed with one line in `index.html`'s `<head>`: `<link rel="icon" href="data:," />`, a standard no-op
+  data-URI that tells the browser "no icon, don't ask" - stops the request from ever being made, no binary
+  favicon asset added, zero budget cost, nothing for the art director to look at or approve (a browser tab
+  icon, not game content).
+- Verified for real, not assumed: fresh `npx vite build` (clean), then the full `node tools/slot-swap-test.js`
+  end to end (both passes, all 6 slots, present AND absent) - **ALL PASSED**, was 2 FAILED before this commit,
+  0 FAILED after. Also ran the cheaper structural checks: `node tools/licence-audit.mjs --check` (288 files, 0
+  UNKNOWN, same pre-existing Tripo-plan-ownership warning), `node tools/check-dup-models.js` PASS, `node
+  tools/check-material-clone.mjs` PASS (49 scanned, 0 unwrapped clones), `node tools/place-visibility-check.js`
+  PASS, `node tools/check-budget.js` (same 15 pre-existing breaches as every recent entry - confirms this
+  change ships no new asset weight). Did not re-run `world-validator.js`/`regression-check.js` this cycle (long,
+  OOM-prone in this container per every recent entry) - they share the identical "zero console errors" pattern,
+  so this fix should quietly help their numbers too next time someone runs them to completion, but that is not
+  claimed as verified here.
+- Committed (`a5a1b96`), pushed, GitHub Actions run 45265863421 (`Deploy to GitHub Pages`) confirmed green for
+  this commit (`deploy.yml` runs `npm run build:unchecked`, which doesn't call `slot-swap-test.js` either, so
+  this was purely additive correctness work for whoever next runs the full local `npm run build` gate by hand).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent, no
+  layout/position change (pure tooling-accuracy fix, CLAUDE.md 5a-MAP doesn't apply).
+- NEXT: a future firing could re-run `world-validator.js` and `regression-check.js` to completion (background,
+  10+ min budget) now that this favicon noise is gone, to get a cleaner read of their own "no console errors"
+  checks than any entry has had so far. Otherwise section A of BACKLOG.md is still either ticked, blocked on
+  Places V1/Blender/her verdict (confirmed absent again this container), or layout (out of scope per 5a-MAP).
+
 # 23 Nov (13) - traced an intermittent world-validator FAIL (temple donation box, lowestY 0.45) to a real boot-timing settle race, not a bug; widened the exclusion with evidence, left the deeper race alone
 
 - Fresh container again this firing: on checkout, `HEAD` was detached ~24 commits AHEAD of local `main` (not
