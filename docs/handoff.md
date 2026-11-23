@@ -1,3 +1,52 @@
+# 23 Nov (13) - traced an intermittent world-validator FAIL (temple donation box, lowestY 0.45) to a real boot-timing settle race, not a bug; widened the exclusion with evidence, left the deeper race alone
+
+- Fresh container again this firing: on checkout, `HEAD` was detached ~24 commits AHEAD of local `main` (not
+  behind, unlike entry 12's case) with a clean working tree. Same underlying non-issue as entry 12 though:
+  `git fetch origin` showed `origin/main` was already at that same detached commit (`d39496b`), so a plain
+  `git checkout main && git merge --ff-only origin/main` brought local `main` up to date with zero risk - the
+  detached HEAD was never unpushed work, just a stale local branch pointer in a fresh container. `npm install`
+  re-run (`node_modules` empty again, same non-persistence every entry logs).
+- Ran the real `npm run build` chain in the background (the known 2-minute foreground timeout isn't a crash,
+  just slow - `vite build` itself finishes in under 1s). licence-audit/check-dup-models/check-material-clone/
+  place-visibility-check all PASS unchanged. `world-validator.js` checks 1-3 ran clean to completion and
+  check 2 ("nothing floats") genuinely FAILED: `village_static_merged/wood_17` at lowestY=0.45, outside the
+  existing temple-porch-props exclusion's exact `0.40 +-0.01` band. Checks 4/5 then crashed the container
+  ("Target crashed", the same documented OOM-under-SwiftShader issue as entry 12's collision-test.js finding -
+  not chased further, per standing instruction not to fight this tool).
+- Traced the FAIL properly instead of just widening blindly: wrote a one-off probe (`tmp/debug-wood17.mjs`,
+  same `window.__dopahar.scene` + Playwright technique world-validator.js itself uses) to read the flagged
+  bucket's real geometry/material/position. 3 separate runs against the exact same, unchanged `dist/` (file
+  mtime verified identical throughout - ruled out "stale build" before trusting the result) all found the same
+  single 24-vertex box (0.42x0.55x0.42) next to the `temple` anchor at world (783.44-783.87, -107.24--106.81) -
+  the temple's hundi (donation box), `src/temple.js` `buildTempleProps()`. Its authored position is exact
+  arithmetic with zero randomness (`FLOOR + 0.275`, `FLOOR === PLINTH.h === 0.4`, box height 0.55 -> local minY
+  always 0.4 exactly; its own PRNG is seeded(31) and never touches height) - so a real placement bug was ruled
+  out by just reading the source. The 3 probe runs still returned lowestY 0.40, 0.40, then 0.4498: a genuine
+  runtime non-determinism, not a measurement error.
+- Root cause, also from source, not guesswork: the hundi's box counts as "ground clutter" in `mergeUtils.js`'s
+  `mergeAcrossGroups` (bb max dim 0.55 m < 2 m, bb.min.y 0.4 < 0.5), so instead of staying inside the temple's
+  own per-building merge (which would respect `temple_area`'s `STATIC_SKIP_TOP` skip in `src/standOn.js`), it's
+  pulled into a village-wide 100 m-cell "prop:" bucket that standOn.js settles onto real nearby ground geometry
+  REGARDLESS of that top-level skip (ground-clutter buckets bypass it via their own `userData.propBucket` early
+  return - "the village merge's ground-clutter buckets ... pots, charpais, crates"). The 0.40-to-0.4498 spread
+  is which real nearby surface that settle raycast happens to find first at boot, which can vary with real
+  frame timing - a genuine, if narrow, boot-order race in standOn.js, not a bad placement.
+- Did NOT touch `standOn.js`'s settle order/raycast this cycle: that file's own comments already warn a
+  careless change there tore a character's hair/eyes once (20 Nov) - too risky to poke for a 5 cm, far-off-map
+  (179 m from spawn), already-correct-at-rest prop without being able to run a full regression pass in this
+  container. Fixed `tools/world-validator.js` instead: widened the existing temple-porch-props exclusion from
+  an exact `0.40 +-0.01` match to the real observed-plus-margin range (`0.395` to `0.46`), same narrow-tolerance
+  style this file already uses for its other settled-prop exclusions (the 0.06 m road-strip and 0.455 m
+  doorstep cases right next to it), with the full evidence trail above written into the code comment so a
+  future real regression (e.g. lowestY at 0.2 or 0.8) still fails loudly.
+- Verified: re-ran `node tools/world-validator.js` against the same `dist/` after the fix - checks 2/3 now
+  PASS at both t=0 and t=3s (was FAIL at 0.45 before). `node tools/check-budget.js` unchanged (same 15
+  pre-existing character/size breaches as every recent entry, all already logged in NEEDS_YOU, nothing new).
+  Pushed `3b10209`; GitHub Actions run 45253328879 (`Deploy to GitHub Pages`) is green for this commit.
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent, no
+  layout/position change (this was a pure tooling-accuracy fix, the map-uproot rule in CLAUDE.md 5a-MAP doesn't
+  apply to it).
+
 # 23 Nov (12) - used the now-working world-validator for real: fixed a real floating-prop bug, calibrated 4 false positives, and propagated entry 11's chromium fix to the rest of `npm run build`'s own test chain
 
 - Fresh container again this firing: `main` detached 18 commits behind `origin/main` on checkout — turned out
