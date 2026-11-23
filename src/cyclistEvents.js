@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { batchLiveMesh } from './placeBatch.js';
-import { buildDogGeometry, createHideMaterial } from './animals.js';
+import { buildDogGeometry, createHideMaterial, DOG_FOOTPRINT_RADIUS } from './animals.js';
 import { getTiledMaterial } from './materials.js';
 import { mapRoadLines } from './mapRoads.js';
 import { batchLateGroup } from './placeBatch.js';
 import { settlingReleased, lazyDue } from './standOn.js';
+import { resolveMove } from './movement.js';
 
 /**
  * More things that happen to the cyclist (docs/VILLAGE_VOCABULARY.md section 8):
@@ -12,7 +13,11 @@ import { settlingReleased, lazyDue } from './standOn.js';
  *                    jolt (the bike and rider hop and settle). On foot you step over them. Pure visual, no collider.
  *   dog            - a pariah dog loafing by the council lane. Ride past it twice (come within 6 m, go beyond 14 m, twice)
  *                    and it gets up and trots after you, keeping a few metres behind, until you leave it more than 70 m
- *                    behind or it has followed for 45 s, then it trots home and lies down again.
+ *                    behind or it has followed for 45 s, then it trots home and lies down again. Moves through
+ *                    src/movement.js's resolveMove() like every other moving body in the game (CLAUDE.md / BACKLOG.md
+ *                    A0: "no routine sets position directly without a collision check") — it used to write dog.x/dog.z
+ *                    straight from its target-seeking velocity with no wall check at all, so it could trot straight
+ *                    through a building wall on its way to or from the player.
  *
  * Sites hang off the real road centrelines (src/mapRoads.js) by road name + segment + fraction, so a map change moves them.
  * Draw calls (2): one concrete strip merge (library 'concrete', vertex colour bands) + one dog InstancedMesh (shared
@@ -162,12 +167,17 @@ export function createCyclistEvents(scene, { getPlayer, isOnCycle }) {
       if (dPlayer > 70 || dog.followT > 45) { dog.state = 'home'; }
       else if (dPlayer > 3.2) {
         const sp = Math.min(dPlayer > 12 ? 7.5 : 5.0, dPlayer * 2), nx = (px - dog.x) / dPlayer, nz = (pz - dog.z) / dPlayer;
-        dog.x += nx * sp * dt; dog.z += nz * sp * dt; dog.yaw = Math.atan2(nx, nz); moving = true;
+        resolveMove(dog, nx * sp * dt, nz * sp * dt, DOG_FOOTPRINT_RADIUS);
+        dog.yaw = Math.atan2(nx, nz); moving = true;
       }
     } else if (dog.state === 'home') {
       const d = Math.hypot(dog.hx - dog.x, dog.hz - dog.z);
       if (d < 0.4) { dog.state = 'sleep'; dog.passes = 0; dog.near = false; }
-      else { const nx = (dog.hx - dog.x) / d, nz = (dog.hz - dog.z) / d; dog.x += nx * 3.5 * dt; dog.z += nz * 3.5 * dt; dog.yaw = Math.atan2(nx, nz); moving = true; }
+      else {
+        const nx = (dog.hx - dog.x) / d, nz = (dog.hz - dog.z) / d;
+        resolveMove(dog, nx * 3.5 * dt, nz * 3.5 * dt, DOG_FOOTPRINT_RADIUS);
+        dog.yaw = Math.atan2(nx, nz); moving = true;
+      }
     }
     info.dogState = dog.state; info.dog = dog;
     const trot = moving ? Math.abs(Math.sin(elapsed * 13)) * 0.05 : 0;

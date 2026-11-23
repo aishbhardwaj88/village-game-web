@@ -437,7 +437,9 @@ function swapInAnimalModel(mesh, kind) {
 
 export const ANIMAL_MESHES = [];
 const COW_FOOTPRINT_RADIUS = 0.9;
-const DOG_FOOTPRINT_RADIUS = 0.4;
+// Exported so any other moving-dog routine (e.g. src/cyclistEvents.js's follow/home dog) uses the
+// same footprint as the real dog_pack instances instead of inventing its own radius.
+export const DOG_FOOTPRINT_RADIUS = 0.4;
 
 /** A stationary herd — real geometry, one InstancedMesh, real world positions (not
  * decorative-only placeholders), covering both cows and buffalo via per-instance

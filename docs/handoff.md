@@ -1,3 +1,106 @@
+# 23 Nov (16) - routed the cyclist-chasing dog through the shared collision resolver (BACKLOG A0: "no routine sets position directly without a collision check"); found and logged (not fixed) that the new-layout flip silently orphaned 3 old-layout-road-id systems
+
+- Fresh container again this firing: `HEAD` detached 4 commits AHEAD of local `main` on checkout (`a8624e6`,
+  entries 14/15's own work). `git fetch origin` showed `origin/main` was ALREADY at that same commit, so this
+  was a stale local branch pointer in a fresh container, not unpushed work (same pattern as entries 11-13) —
+  `git checkout main && git merge --ff-only` fast-forwarded with zero risk, `git push` correctly reported
+  nothing new to send. `npm install` re-run as always. `Places V1/` and Blender both confirmed absent again.
+- Section A of BACKLOG.md has nothing left that is both unticked and unblocked (J1-OLD2/J1-OLD/J2 all need
+  Places V1 or her material-board verdict, both absent/blocked here; J3/J4 all ticked) except one item outside
+  the Places-V1 track: "Draw-call ceiling... instance every repeated shared asset... only then consider
+  raising the ceiling" — but every tool that could measure a draw-call count (`perf-budget-check.js`,
+  `perf-check.js`, `world-validator.js`) crashes this container's Chromium process on a hard cgroup memory
+  ceiling (confirmed via `dmesg`: `Memory cgroup out of memory: Killed process ... (chrome-headless)
+  anon-rss:2951792kB`, independent of host `free -h` showing 6.9 GiB free — this is a per-task cgroup limit,
+  not host memory pressure, same root cause entry 15 pinned down for `world-validator.js` specifically, now
+  confirmed for the lighter checks too). So, per CLAUDE.md section 2/5a0, picked BACKLOG's other standing-
+  permission category instead: "systems (collision, missions, audio, menus, mobile)" from 5a-MAP, which
+  survives the map uproot and needs no renderer-measurement to verify.
+- Audited every moving NPC/animal body against `src/movement.js`'s own stated rule ("every moving body in this
+  game now proposes a movement through resolveMove() below and nothing else") by reading source, not guessing:
+  `src/npcRoutines.js`'s waypoint/follow/run loops all call `resolveMove`/`resolveCollisions` (the one
+  documented exception, the M6 rooftop-chase leg, deliberately skips it while airborne over walls below, by
+  design); `src/bazaarLife.js`'s 4 walking villagers already call `resolveMove` too (its own doc comment says
+  so); `src/animals.js`'s cattle/dogs/monkey are static placements (`.position.set()` once, never updated per
+  frame — "Static/stationary animals this pass, not roaming", per docs/NEEDS_YOU.md's 22 Nov crop-models line
+  and the M6/field-animals FINISH_LINE entries) so they have nothing to route. Found exactly one real gap:
+  `src/cyclistEvents.js`'s pariah dog (the one that gets up and follows the player's bicycle after 2 passes,
+  then trots home) wrote `dog.x += nx * sp * dt; dog.z += nz * sp * dt` directly every frame in both its
+  'follow' and 'home' states — the exact "no routine sets position directly without a collision check" gap
+  BACKLOG.md's A0 section names, just not yet closed for this one body.
+- Fixed: both branches now call `resolveMove(dog, dx, dz, DOG_FOOTPRINT_RADIUS, [])` from `src/movement.js`
+  (same swept-substep resolver the player, vehicles, and every other NPC use), instead of writing dog.x/dog.z
+  directly. `DOG_FOOTPRINT_RADIUS` (0.4, matching the real `dog_pack` instances' own collider radius in
+  `src/animals.js`) is now exported from `animals.js` instead of staying a private constant duplicated nowhere
+  else, so this and any future moving-dog routine share one real number instead of inventing a new one.
+- Verified three ways, strongest first (the renderer being unusable for this container, per above, ruled out
+  the normal in-game screenshot/validator route):
+  1. **Deterministic unit test against the real, unmocked `src/movement.js`** (`tmp/unit-test-dog-collision.mjs`,
+     Node, no browser): reproduced the exact pre-fix and post-fix per-frame update loop against a real 2.6 x
+     2.6 m wall AABB (the same box shape `src/collision.js` actually produces), both starting the dog 1.5 m
+     outside the near face aimed at a point 1.5 m past the far face. **Pre-fix code's own final position lands
+     at x=1.000 — literally INSIDE the solid wall block (0 to 2.6) — a real, reproduced tunnelling bug, not a
+     hypothetical one.** Post-fix, `resolveMove` stops the dog at x=-0.400, exactly `box.minX - radius` (the
+     dog's own 0.4 m body surface touching the wall face, not a single cm closer) — the textbook-correct
+     result from the real production collision code.
+  2. **Real in-browser run, short-lived (9 s wait, not the OOM-triggering full settle)**: confirmed the module
+     loads/builds with zero console or page errors under `?dev=1` (`tmp/diag-dog-collision.mjs`).
+  3. **Real in-browser run against a real wall collider pulled live from the actual scene graph**
+     (`tmp/diag-dog-wall-test.mjs`, under `?layout=old` — see below for why `?layout=old` was needed):
+     traversed `window.__dopahar.scene` for a real `userData.colliderBoxes` entry near the temple, placed the
+     dog 1.5 m outside its near face, teleported the player 1.5 m past its far face, forced `dog.state =
+     'follow'`, and read the dog's position back after real game-loop frames. Confirms the whole pipeline
+     (import wiring, `DOG_FOOTPRINT_RADIUS` export, the actual `window.__cyclistEvents.dog` live object) works
+     end to end with no errors; the real distance moved per wall-clock second was too small to cross-check
+     against test 1's numbers (this container's real frame rate is low enough under software rendering that
+     4 real seconds of `page.waitForTimeout` does not correspond to anywhere near 4 seconds of simulated `dt`
+     — noted here so a future cycle doesn't trust wall-clock-timed browser movement tests at face value in
+     this container; test 1's direct, deterministic approach is the one that actually proves the fix).
+- Real finding along the way, logged not fixed (CLAUDE.md 5a-MAP: "never spend a cycle on anything a layout
+  change destroys: lanes, roads... positions... wayfinding along routes"): `layout.js`'s default flipped to
+  the new (S7) map on 23 Nov (`isNewLayout()` now true unless `?layout=old`). Under the new default,
+  `mapRoadLines()` returns the new map's road set (`src/layout/mapData.json`), which has `main_road`,
+  `highway`, `cross_road` etc. by the same ids as before, but **no "Council lane" or "Cattle lane" id at all**
+  — those lanes are gone, replaced by generically-named `gali_nNN` back lanes. Three systems still look them
+  up by their old literal name and silently build nothing when not found (confirmed for the first by direct
+  test, inferred for the other two by identical code pattern, not yet independently verified since the
+  render tooling that would confirm it is the same broken pipeline above):
+  - `src/cyclistEvents.js`'s `DOG_HOME = { road: 'Council lane', ... }` — confirmed directly: under the live
+    default layout, `window.__cyclistEvents.dog` never gets created at all (`build()`'s `roadFrame(...)`
+    returns null, `dogMesh` stays null, the whole `if (!dogMesh) return` guard short-circuits every frame).
+    The entire follow-the-cyclist dog feature is currently unreachable on the live default site. Confirmed
+    working under `?layout=old` in the same test session.
+  - `src/roadEvents.js`'s `THELA_LANE` and `KHOONTA_LANE` (both also keyed to the retired `'Council lane'`/
+    `'Cattle lane'` names) — same code shape, not independently tested this cycle.
+  - `src/gullyLife.js`'s `LANES = ['20_Council lane', '21_Lane east of the square']` — same code shape, not
+    independently tested this cycle.
+  This is squarely the class of thing 5a-MAP says not to spend a cycle fixing (it is a road/lane id, the map
+  is being uprooted, any fix here would likely be redone when the new layout's lanes get their final wiring)
+  — noting it precisely here instead so whoever next wires the new `gali_nNN` lanes to ambient/event systems
+  knows these three call sites exist and are currently silently dead on the default site, not working as
+  intended.
+- `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same pre-existing Tripo-plan warning), `node
+  tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs` PASS (49 scanned, 0 unwrapped
+  clones), `node tools/place-visibility-check.js` PASS, `node tools/check-budget.js` (same 15 pre-existing
+  breaches as every recent entry, all already logged in NEEDS_YOU as her call — no asset touched this cycle,
+  src-only change). Fresh `npx vite build` clean both before and after the fix (used for the before/after
+  browser comparison above).
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see below).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle — no decision needed from her, no money/credits spent, no
+  layout/position CHANGE (the layout finding above is a report of something already broken by an earlier
+  layout flip, not a change made here), no taste call.
+- NEXT: whoever wires the new layout's `gali_nNN` lanes to ambient systems should also re-point
+  `cyclistEvents.js`'s `DOG_HOME`, `roadEvents.js`'s `THELA_LANE`/`KHOONTA_LANE`, and `gullyLife.js`'s `LANES`
+  at real new-layout lane ids (or an equivalent lookup) — otherwise this content stays permanently invisible
+  on the default site even after everything else about the new layout is finished. Render-tooling-wise: this
+  entry confirms entry 15's cgroup-OOM finding generalizes beyond `world-validator.js` to the lighter
+  `perf-budget-check.js`/`perf-check.js` too, and that even a successful short browser run can't be trusted
+  for wall-clock-timed movement checks in this container (dt starvation) — prefer a direct Node-level unit
+  test against the real module (this entry's `tmp/unit-test-dog-collision.mjs` pattern) wherever the code
+  under test doesn't itself require the renderer. Otherwise section A of BACKLOG.md is still either ticked,
+  blocked on Places V1/Blender/her verdict (confirmed absent again this container), or layout (out of scope
+  per 5a-MAP).
+
 # 23 Nov (15) - shrunk 23 prop models to the documented 512px texture budget; pinned down world-validator's check-5 OOM precisely (and ruled out the obvious fix) without shipping that fix
 
 - Fresh container again this firing, with a wrinkle: `HEAD` was detached 2 commits AHEAD of local `main`
