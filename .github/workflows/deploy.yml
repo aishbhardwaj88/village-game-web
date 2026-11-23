@@ -27,8 +27,13 @@ jobs:
       - run: npm ci
       - run: npm run build:unchecked
       # S7 budget gate (docs/s7/perf.md). build:unchecked already prints the budget report (warn).
-      # Tue 24 Nov the integrator flips the NEXT line to: npm run budget:strict   (breaches then stop the deploy)
-      - run: npm run budget  # S7-STRICT-FLIP
+      # STRICT FLIP DEFERRED 23 Nov (integrator decision, see docs/NEEDS_YOU.md): the old plan was to flip this
+      # to `npm run budget:strict` on 24 Nov on a fixed calendar date, regardless of whether the web build was
+      # still 'full' quality. It still is (her 21 Nov call, src/edition.js WEB_QUALITY), so the measured breaches
+      # (downloaded-before-Play ~13 MB vs an 8 MB limit, Play-ready ~7.2s vs a 4s limit) are real today and would
+      # hard-fail every deploy starting 24 Nov with nobody there to unblock it. Do NOT flip this line on a date;
+      # flip it only once WEB_QUALITY moves to 'light' (or she says otherwise) - check docs/NEEDS_YOU.md first.
+      - run: npm run budget  # S7-STRICT-FLIP (deferred, not date-gated - see comment above)
       - name: Licence check (warns for now; made blocking before the paid release)
         run: node tools/licence-audit.mjs --check --dist
         continue-on-error: true

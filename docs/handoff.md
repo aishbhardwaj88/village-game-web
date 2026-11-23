@@ -1,3 +1,60 @@
+# 23 Nov (10) - deferred the budget-gate strict flip before it broke tomorrow's deploy
+
+- Fresh container again this firing: detached HEAD one commit behind `origin/main`,
+  fast-forwarded first; `node_modules` empty, `npm install` re-run (confirmed non-persistent
+  again, same as every recent entry). `Places V1/` still absent from this checkout.
+- Read the top NEEDS_YOU.md item (left by the previous firing, same night) carefully before
+  touching BACKLOG.md: `.github/workflows/deploy.yml` had a comment, written by a past
+  `s7-perf` session (`docs/s7/perf.md`), saying "Tue 24 Nov the integrator flips the NEXT
+  line to `npm run budget:strict`" - i.e. a FUTURE firing of this very loop, tomorrow, was
+  instructed to make budget breaches hard-fail the deploy, on a fixed calendar date, with no
+  check of whether the build would actually be inside budget by then.
+- Checked: it would not be. Ran `npm run budget:strict` against a fresh `npx vite build`
+  tonight: 15 breaches (same count every recent entry's warn-mode run has logged, now
+  confirmed in strict mode too) - whole game 127.6 MB vs a 90 MB limit, all 8 un-named-cast
+  hero characters 6.5-8.7 MB vs a 2.5 MB hero limit (by design: `src/edition.js`
+  `WEB_QUALITY = 'full'`, her 21 Nov call, deliberately skips `char-diet.mjs`'s size-down for
+  now), and the real perf-ride numbers: downloaded-before-Play ~13.0 MB vs an 8 MB limit,
+  Play-ready ~7.2 s vs a 4 s limit. Every one of these would have hard-failed tomorrow's
+  deploy, the moment any firing of this loop (mine or a later one) literally followed the old
+  comment's instruction - with nobody watching to notice or unblock it.
+- This was never her instruction - `docs/s7/perf.md`'s own "Status on 21 Nov: 11 breaches,
+  would FAIL strict" line shows the date was set by a past build session before the breach
+  count was looked at again, not something she asked for. Treated this as mine to decide
+  (CLAUDE.md 5a0: a scheduling/infra call, not a taste or scope call - the actual quality
+  question, flip `WEB_QUALITY` to `'light'` or not, stays hers and stays open in
+  NEEDS_YOU.md, just without a clock on it now): deferred the flip instead of executing it
+  blindly.
+  - `.github/workflows/deploy.yml`: replaced the date-based comment on the `# S7-STRICT-FLIP`
+    line with one saying the flip is held until `WEB_QUALITY` moves to `'light'` (or she says
+    otherwise) - check NEEDS_YOU.md first. The line itself still runs `npm run budget` (warn
+    mode, unchanged behaviour tonight).
+  - `docs/s7/perf.md`: updated the "Deploy" section and "Wiring needed" item 4 the same way,
+    so a future reader (or firing) doesn't see "Tue 24 Nov" and act on the old date.
+  - `docs/NEEDS_YOU.md`: updated the open item to say the deadline pressure is gone and why,
+    kept the actual WEB_QUALITY decision open for her with no urgency attached.
+- Verified nothing else changed: `npx vite build` (clean, 3.9 s), `npm run budget` (same 15
+  breaches, all pre-existing, nothing new - this change only touches CI wiring and docs, no
+  asset or runtime code), `node tools/char-diet.mjs` (unchanged, 76.0 -> 48.9 MB), `node
+  tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same open Tripo-plan question as
+  every recent entry), `node tools/check-dup-models.js` (PASS), `node
+  tools/check-material-clone.mjs` (PASS, 49 scanned, 0 unwrapped clones, confirms last
+  firing's guard is still clean), `node tools/missions-check.mjs` (358 PASS/0 FAIL/4 WARN,
+  identical), `node tools/layout-tests.mjs` (PASS, 0 failures, identical), `node
+  tools/collider-coverage-audit.mjs` (identical). `tools/world-validator.js` still can't run
+  in this container (same pre-existing limitation, not retried again this firing - already
+  confirmed broken across several recent entries).
+- Committed, pushed, CI confirmed green.
+- NEXT: section A still has no fresh, unblocked item that isn't layout (destroyed by the map
+  uproot), screenshot-gated, or parked on her verdict. The budget gate itself is no longer
+  time-pressured, but it is still genuinely over - a future firing could make real headway by
+  picking ONE of the 8 un-slimmed hero characters' advisory 4K textures (33 advisory notes,
+  never fail the build, but they are most of the 127.6 MB overage) and checking whether a
+  non-destructive downscale (same approach as `char-diet.mjs`'s skin step, just applied to
+  more of the texture set) would claw back MB without touching mesh/skeleton/animation -
+  that's real, measurable, screenshot-independent progress on the budget number even while
+  the WEB_QUALITY/flip decision itself waits on her.
+
 # 23 Nov (9) - added a permanent build-time guard for the clone-drops-shader-hook bug (entry 8, this file)
 
 - Fresh container again this firing: `main` one commit behind `origin/main` on a detached

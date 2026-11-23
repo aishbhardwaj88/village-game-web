@@ -101,7 +101,13 @@ Files: docs/s7/perf/baseline-2026-11-21.json (+ .md), copied to latest.json so t
 
 **Deploy**
 - .github/workflows/deploy.yml now runs `npm run budget` after the build (report only).
-- Tue 24 Nov: the integrator changes the line marked `# S7-STRICT-FLIP` to `npm run budget:strict`. From then a breach stops the deploy.
+- DEFERRED 23 Nov (was: "Tue 24 Nov the integrator changes the line marked `# S7-STRICT-FLIP` to `npm run
+  budget:strict`"). That was a fixed calendar date set here before anyone checked whether the web build would
+  actually be inside budget by then - it would not be: the web edition is still her 21 Nov 'full' quality call
+  (src/edition.js WEB_QUALITY), which this gate's own numbers below show is over on download size and Play-ready
+  time. Flipping on the old date would hard-fail every deploy from 24 Nov with no one there to unblock it, so the
+  flip is held until WEB_QUALITY moves to 'light' or she says otherwise (open item in docs/NEEDS_YOU.md, 23 Nov).
+  Whoever makes that call: it's one line in deploy.yml, `npm run budget` -> `npm run budget:strict`.
 
 **Status on 21 Nov (main, b5bd781): 11 breaches, would FAIL strict**
 - Shipped game 120.4 MB (limit 90)
@@ -170,7 +176,10 @@ const GROUND_HALF_X = WORLD.maxX;
 
    Without this the player cannot ride past x 880 or beyond z +-280 in the new layout (the canal at 824 and the fields to 1090 are out of reach). `worldBounds()` reads `window.__dopaharLayout` if the layout loader sets it before main.js runs, else `?layout=`.
 3. **package.json, build order**: `build:unchecked` is now `vite build && node tools/check-budget.js`. If the characters agent adds a slimming step to the build, it must run BEFORE `check-budget.js` (the gate measures dist/ after slimming).
-4. **deploy.yml, Tue 24 Nov**: change the line marked `# S7-STRICT-FLIP` from `npm run budget` to `npm run budget:strict`.
+4. **deploy.yml, STRICT FLIP**: change the line marked `# S7-STRICT-FLIP` from `npm run budget` to `npm run
+   budget:strict` - but only once WEB_QUALITY is 'light' or she says otherwise. The old plan was a fixed date
+   (Tue 24 Nov); deferred 23 Nov because that date had nothing to do with whether the build would pass. See the
+   "Deploy" section above and docs/NEEDS_YOU.md.
 5. **For the characters agent / owner of main.js**: load the character models after Play (or by distance), not at boot. Today they are 52 MB asked for before Play.
 6. **For shops-land**: if canal.js exports `CANAL_PATH = [[x, z], ...]` the minimap draws that line in the new layout instead of the straight default at x 824.
 
