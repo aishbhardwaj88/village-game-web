@@ -1,3 +1,70 @@
+# 23 Nov (17) - routed the road-crossing goat herd and goatherd through the shared collision resolver (BACKLOG A0, same class of gap entry 16 fixed for the cyclist-chasing dog, found in a different file)
+
+- Fresh container again this firing: local `main` was behind `origin/main` by 0 commits once fetched (HEAD was
+  detached exactly at `origin/main`'s tip, `4d37bf8` — entry 16's own work), so this was a stale local branch
+  pointer, not unpushed work — `git checkout -B main origin/main` reset it with zero risk. `npm install` re-run
+  as always (`node_modules` empty in a fresh container). `Places V1/`, `reference-from-unity/` and Blender all
+  confirmed absent again (J1-OLD2/J1-OLD/J2 still un-runnable here).
+- Section A of BACKLOG.md is still either ticked, blocked on Places V1/Blender/her verdict (confirmed absent),
+  or layout (out of scope per 5a-MAP). Per CLAUDE.md 5a-MAP/section 2, picked the same standing-permission
+  category entry 16 used: "systems (collision, missions, audio, menus, mobile)", which survives the map
+  uproot. Re-ran entry 16's own code audit (grep of `resolveMove`/`resolveCollisions` across every `src/*.js`)
+  to look for a second instance of the same bug class in a file that grep didn't cover last time, since
+  `src/roadEvents.js` (a separate moving-animal system from `src/animals.js`/`src/npcRoutines.js`) wasn't in
+  entry 16's list.
+- Found exactly one real gap, same shape as the dog: `src/roadEvents.js`'s `stepHerd()` (the nine-goat herd +
+  goatherd that cross `cross_road` back and forth, grazing the verges between crossings — `GOAT_SITE.road =
+  'cross_road'`, a live, NOT orphaned road id on the current default layout, unlike `THELA_LANE`/`KHOONTA_LANE`/
+  `gullyLife.js`'s `LANES` which entry 16 found dead) moved both the goats and the herder with a private `ease()`
+  helper that wrote `o.x += ...; o.z += ...;` straight from the target-seeking velocity, with zero collision
+  check against any wall, building or prop — the goat herd could walk straight through a building on its way
+  across the crossing. `bov`/`dogs` (the lying cow, tied buffalo, sleeping dogs) in the same file are confirmed
+  static (sway/breath animation only, `.position` never written) so they have nothing to route, matching entry
+  16's finding for `animals.js`.
+- Fixed: `ease()` now takes a `radius` and calls `resolveMove(o, ..., radius)` from `src/movement.js` (the same
+  swept-substep resolver the player, vehicles, NPCs and the cyclist-dog all use) instead of the raw `+=`. Two
+  new footprint radii in `roadEvents.js` (`GOAT_FOOTPRINT_RADIUS = 0.22`, sized off `buildGoatGeometry()`'s own
+  barrel; `HERDER_FOOTPRINT_RADIUS = 0.3`, matching `herderGeometry()`'s own capsule radius) — kept local to
+  this file rather than exported from `animals.js` like `DOG_FOOTPRINT_RADIUS`, since the goat/herder geometry
+  is itself built in `roadEvents.js`, not `animals.js`. The one-time initial snap (`first` branch, `o.x = tx; o.z
+  = tz`) is untouched — that is placement, not movement, same as every other routine's initial `position.set()`.
+- Verified two ways (the renderer OOM-crashing on this container's full zone-streaming settle before checks 4/5,
+  same root cause entries 15/16 pinned down, ruled out the normal validator/collision-test route again):
+  1. **Deterministic unit test against the real, unmocked `src/movement.js`/`src/collision.js`**
+     (`tmp/unit-test-goat-herd-collision.mjs`, Node, no browser, same method as entry 16's dog test): a real 2.6 m
+     wall AABB (`src/collision.js`'s own `{minX,maxX,minZ,maxZ}` shape, via the `setStaticColliders()` test hook
+     `tools/collision-test.js` itself uses), goat starting 1.5 m outside the near face aimed at a point 1.5 m past
+     the far face. **Pre-fix line's own simulated result reaches the far-side target at x=4.100 — having walked
+     straight through the solid 0-to-2.6 m wall block to get there, a real reproduced tunnelling bug.** Post-fix
+     `resolveMove()` stops the goat at x=-0.220, exactly `wall.minX - GOAT_FOOTPRINT_RADIUS` (its own body surface
+     touching the wall face, not a cm closer) — the correct result from the real production collision code.
+  2. **Real in-browser load, short-lived** (`tmp/diag-goat-herd.mjs`, `?dev=1`, two runs at 9 s and 25 s): zero
+     console/page errors both times, confirming the new import (`resolveMove` from `src/movement.js`, not
+     previously imported into `roadEvents.js`) wires cleanly with no circular-import or runtime exception.
+     `window.__roadEvents.placed` stayed empty at both wait lengths — not a regression from this change: the
+     module's own `build()` is gated behind `settlingReleased()` + `lazyDue(frames, 30)` (src/roadEvents.js line
+     487, "load time: lazy builds wait for the opening view"), and this container's software-rendered frame rate
+     is low enough that neither 9 nor 25 real seconds reach that frame threshold — the exact wall-clock-vs-
+     simulated-time mismatch entry 16 already logged for this container. Noted here, not chased further (two-
+     strike rule): the deterministic test above is what actually proves the fix, same conclusion entry 16 reached.
+- `npm install` (fresh container) then: `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same
+  pre-existing Tripo-plan warning), `node tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs`
+  PASS (49 scanned, 0 unwrapped clones), `node tools/place-visibility-check.js` PASS, `npx vite build` clean (234
+  modules, 674 ms, no errors), `node tools/check-budget.js` (same 15 pre-existing breaches as every recent entry,
+  all already logged in NEEDS_YOU as her call — no asset touched this cycle, src-only change). The full `npm run
+  build` chain (which also runs `world-validator.js`/`collision-test.js`) still OOMs this container exactly as
+  entries 15/16 documented; not fought, per standing instruction.
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see below).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle — no decision needed from her, no money/credits spent, no
+  layout/position CHANGE (GOAT_SITE's road id and crossing-search logic are untouched; only how the already-
+  placed bodies move was fixed), no taste call.
+- NEXT: the same `src/*.js` moving-body audit (`resolveMove`/`resolveCollisions` grep) should be re-run against
+  any future file that creates a per-frame-updated herd/NPC/vehicle, since this entry found a second real
+  instance in a file entry 16's narrower grep (`npc.js`/`bazaarLife.js`/`animals.js`/`sideJobs.js`/`jobs/*.js`/
+  `rooftops.js`/`ambient.js`/`npcRoutines.js`) didn't cover. Render-tooling-wise: nothing new to add beyond
+  entries 15/16's findings — this entry's two 9 s/25 s browser waits are additional confirmation that short
+  waits in this container do not reach this game's own lazy-build frame threshold, not just the OOM ceiling.
+
 # 23 Nov (16) - routed the cyclist-chasing dog through the shared collision resolver (BACKLOG A0: "no routine sets position directly without a collision check"); found and logged (not fixed) that the new-layout flip silently orphaned 3 old-layout-road-id systems
 
 - Fresh container again this firing: `HEAD` detached 4 commits AHEAD of local `main` on checkout (`a8624e6`,

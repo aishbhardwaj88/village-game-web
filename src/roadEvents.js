@@ -9,12 +9,17 @@ import { colliderBoxFromTransform, STATIC_COLLIDERS, staticBoxesNear, circleHits
 import { batchLateGroup } from './placeBatch.js';
 import { keepOnGround, markFigure, settleDy, groundAt } from './standOn.js';
 import { settlingReleased, lazyDue } from './standOn.js';
+import { resolveMove } from './movement.js';
 
 /**
  * Things that happen to the cyclist, and the animals that make an afternoon (docs/VILLAGE_VOCABULARY.md sections 8 and 3):
  *   cow    - a cow sitting in the middle of the main road, chewing, a few dung pats behind her. Solid: you ride round her.
  *   goats  - a herd of nine goats and a goatherd with a lathi crossing the cross road, back and forth, grazing on each
  *            verge between crossings. Soft: they stop and part round you, and nudge you aside rather than walling you in.
+ *            Walk/graze movement goes through src/movement.js's resolveMove() like every other moving body in the game
+ *            (CLAUDE.md / BACKLOG.md A0: "no routine sets position directly without a collision check") — stepHerd()
+ *            used to write o.x/o.z straight from the goat's and herder's target-seeking velocity with no wall check at
+ *            all, so the herd could walk straight through a building on its way across the GOAT_SITE crossing.
  *   dog    - a pariah dog flat out asleep under a parked wooden thela on the council lane; a second one curled by the trough.
  *   buffalo- a buffalo tied to a khoonta (wooden peg) on the cattle lane, head in a cement naand of chopped straw,
  *            a tied calf on its own peg beside her, dung and dried pats round about.
@@ -29,6 +34,8 @@ import { settlingReleased, lazyDue } from './standOn.js';
  */
 
 const TILE = { wood: 1.0, concrete: 1.0 };
+const GOAT_FOOTPRINT_RADIUS = 0.22; // roughly the goat's own body half-width (buildGoatGeometry's barrel)
+const HERDER_FOOTPRINT_RADIUS = 0.3; // matches herderGeometry()'s own capsule radius
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const jit = (c, i, amt = 0.08) => new THREE.Color(c).multiplyScalar(1 + (rnd(i) - 0.5) * 2 * amt).getHex();
 const P = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -399,10 +406,10 @@ export function createRoadEvents(scene) {
     }
     const grazing = c.wait > 0;
     const first = !c.started; c.started = true;
-    const ease = (o, tx, tz, vmax) => { // walk toward a target at a capped speed, turning to face the way it moves
+    const ease = (o, tx, tz, vmax, radius) => { // walk toward a target at a capped speed, turning to face the way it moves
       const vx = tx - o.x, vz = tz - o.z, d = Math.hypot(vx, vz), stepLen = Math.min(d, vmax * dt);
       if (first) { o.x = tx; o.z = tz; o.yaw = Math.atan2(f.nx * c.dir, f.nz * c.dir); return 0; }
-      if (d > 1e-4) { o.x += vx / d * stepLen; o.z += vz / d * stepLen; }
+      if (d > 1e-4) resolveMove(o, vx / d * stepLen, vz / d * stepLen, radius);
       const sp = dt > 0 ? stepLen / dt : 0;
       if (sp > 0.06) { let dy = Math.atan2(vx, vz) - o.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); o.yaw += dy * Math.min(1, dt * 3); }
       return sp;
@@ -424,7 +431,7 @@ export function createRoadEvents(scene) {
       }
       g.dodge.multiplyScalar(1 - Math.min(1, dt * 0.6));
       tx += g.dodge.x; tz += g.dodge.y;
-      const sp = ease(g, tx, tz, grazing ? 0.45 : 0.9);
+      const sp = ease(g, tx, tz, grazing ? 0.45 : 0.9, GOAT_FOOTPRINT_RADIUS);
       g.graze += ((grazing && sp < 0.2 ? 0.35 + Math.sin(elapsed * 0.7 + g.ph) * 0.12 : 0.02) - g.graze) * Math.min(1, dt * 1.5);
       const walking = sp > 0.1;
       // no head-down pitch: the goat is one rigid piece, and pitching it about its middle buried the forelegs (G1).
@@ -437,7 +444,7 @@ export function createRoadEvents(scene) {
     goats.instanceMatrix.needsUpdate = true;
     // goatherd at the back of the file, a little to one side, lathi swinging with his stride
     const back = c.u - c.dir * (grazing ? 5.5 : 4.2);
-    const hs = ease(c.herder || (c.herder = { x: 0, z: 0, yaw: 0 }), f.x + f.nx * back + f.dx * 1.2, f.z + f.nz * back + f.dz * 1.2, 1.1);
+    const hs = ease(c.herder || (c.herder = { x: 0, z: 0, yaw: 0 }), f.x + f.nx * back + f.dx * 1.2, f.z + f.nz * back + f.dz * 1.2, 1.1, HERDER_FOOTPRINT_RADIUS);
     const h = c.herder;
     const hyaw = hs > 0.1 ? h.yaw : Math.atan2(f.nx * c.dir, f.nz * c.dir) + (grazing ? Math.sin(elapsed * 0.2) * 0.8 : 0);
     _e.set(hs > 0.1 ? Math.sin(elapsed * 4.5) * 0.05 : 0, hyaw, 0);
