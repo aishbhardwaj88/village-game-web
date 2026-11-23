@@ -3,8 +3,12 @@
  * Asset shrink pipeline: dedup + weld -> simplify to a triangle budget -> resize
  * textures to 1K + convert to WebP -> Meshopt-compress the geometry.
  *
- * Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget]
+ * Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget] [error] [textureMaxDim]
  *   triangleBudget defaults to 20000. Optional 4th arg: simplifier error (default 0.01; ~0.3 for foliage).
+ *   Optional 5th arg: texture max dimension in px, default 1024 (CLAUDE.md section 9: "1K max, 512 for
+ *   props" — pass 512 when shrinking a prop model so its textures land on the documented prop budget
+ *   instead of the hero/building 1K one; everything else about the pipeline — geometry, triangle budget,
+ *   webp/meshopt — is unchanged).
  */
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -13,18 +17,19 @@ import { MeshoptEncoder, MeshoptDecoder, MeshoptSimplifier } from 'meshoptimizer
 import sharp from 'sharp';
 import { resolve } from 'node:path';
 
-const TEXTURE_MAX_DIM = 1024;
+const DEFAULT_TEXTURE_MAX_DIM = 1024;
 
 async function main() {
-  const [inputArg, outputArg, budgetArg, errorArg] = process.argv.slice(2);
+  const [inputArg, outputArg, budgetArg, errorArg, textureDimArg] = process.argv.slice(2);
   if (!inputArg || !outputArg) {
-    console.error('Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget=20000]');
+    console.error('Usage: node tools/shrink.js <input.gltf|.glb> <output.glb> [triangleBudget=20000] [error=0.01] [textureMaxDim=1024]');
     process.exit(1);
   }
 
   const input = resolve(inputArg);
   const output = resolve(outputArg);
   const triangleBudget = budgetArg ? parseInt(budgetArg, 10) : 20000;
+  const TEXTURE_MAX_DIM = textureDimArg ? parseInt(textureDimArg, 10) : DEFAULT_TEXTURE_MAX_DIM;
 
   await MeshoptEncoder.ready;
   await MeshoptDecoder.ready;
