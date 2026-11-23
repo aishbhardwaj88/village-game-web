@@ -1,3 +1,53 @@
+# 23 Nov (6) - found and fixed: metal/rust materials had NO roughness floor at all
+- Fresh container this firing: `node_modules` was empty again (confirmed it does not persist
+  between hourly firings - gitignored, each firing starts from a clean checkout). Re-ran
+  `npm install` before anything else; not committing it or `package-lock.json`, same as the
+  previous entry's call. Also found `main` had been left on a detached HEAD one commit behind
+  (the last firing's 4 commits existed locally but the branch pointer hadn't followed) - fast-
+  forwarded `main` to match; `origin/main` already had them (push had worked fine, only the
+  local branch ref was stale), so nothing was actually at risk, but worth noting in case a
+  future firing sees the same detached-HEAD state.
+- Followed the same method as the grass/ground roughness fixes (sweep every roughness map,
+  check which ones lack a code-side floor): found the dispatch itself, not a texture file, is
+  the gap this time. `getTiledMaterial`'s roughness-floor dispatch in `src/materials.js` only
+  checked `name === 'tin'` / `name === 'lane'` literally. `surfaceFamilyFor()` (also in
+  materials.js) documents that `metal` and `rust` belong to the same 'tin' family - and the
+  GLTF-relink path for older Blender models (`src/sharedTextures.js`) already calls
+  `surfaceFamilyFor` and applies it correctly - but the live JS-authored path never did. Direct
+  `getTiledMaterial('metal', ...)` / `('rust', ...)` calls are real and widespread: temple bell,
+  tin-roof tarps, pipes, signboards, tyres, rooftops, chowk edges (14 call sites via grep).
+- Measured all 33 roughness maps in `public/assets/textures*` for the near-zero-minimum "mirror
+  highlight" signature that caused the grass/ground bugs: metal (min 0.337, mean 0.470) and rust
+  (min 0.584, mean 0.803) are NOT currently in that bad state, so nothing reads wrong on screen
+  today - but with zero code floor, a future texture swap on either (exactly what happened to
+  grass and ground) would reintroduce the same bug with nothing to catch it. terracotta's raw
+  map is far worse (min 0.051, 65.8% of pixels under 0.15) but is already protected - it's in
+  `MATTE_SETS`, which gets a hard 0.78 floor regardless of the raw file, confirming the floor
+  mechanism works and this is specifically a missing-dispatch bug, not a texture bug.
+- Fixed by routing the dispatch through `surfaceFamilyFor()` itself instead of two hardcoded
+  name checks: `if (MATTE_SETS.has(name)) applyMatteVariation(mat); else { const fam =
+  surfaceFamilyFor(name); if (fam) applySurfaceVariation(mat, fam); }`. Verified behaviourally
+  with a standalone Node check (no browser, mocked material objects): tin -> family 'tin' and
+  lane -> family 'earth' are unchanged from before; metal and rust now resolve to 'tin' (were
+  getting nothing); plaster/concrete still go through applyMatteVariation untouched;
+  ground/grass/crop still get no family (unaffected, protected at the texture-file level
+  instead, from earlier fixes).
+- `npm run build` clean (234 modules, char-diet, licence-audit, dup-models, place-visibility all
+  pass). `node tools/licence-audit.mjs`: 0 UNKNOWN, unaffected (pure code, no new asset files).
+  `node tools/check-budget.js`: the 15 reported breaches are all the pre-existing character/
+  load-time ones already open in NEEDS_YOU (today's `WEB_QUALITY='full'`), nothing new.
+  `world-validator.js`/`screenshot.js` still crash this container's headless Chromium (same
+  pre-existing OOM, see 23 Nov (3)) - not eyeballed, verified by the dispatch-logic check above
+  instead, consistent with how this session's other material fixes were verified.
+- Committed `acb1714`, pushed, CI confirmed green (`gh`-equivalent `actions_list`/`get`:
+  run 45175138118, conclusion success).
+- NEXT: section A of BACKLOG has little else safely workable this cycle - most remaining items
+  are blocked on her eye/approval, on the map rearrangement, or on `Places V1/` (not present in
+  this checkout). The draw-call ceiling item (A1, "149/150, instance harder") is still open and
+  in scope but needs a working screenshot/draw-call count, which this container can't do; worth
+  another pass if a future firing has a working renderer, or if a no-browser draw-call counting
+  method can be found.
+
 # 23 Nov (5) - found and fixed: every streamed tree group was measuring as "buried" (up to -2.6m)
 
 - `npm install` had never been run in this checkout (`node_modules` only had a stray tracked placeholder
