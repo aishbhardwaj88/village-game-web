@@ -1,3 +1,81 @@
+# 23 Nov (15) - shrunk 23 prop models to the documented 512px texture budget; pinned down world-validator's check-5 OOM precisely (and ruled out the obvious fix) without shipping that fix
+
+- Fresh container again this firing, with a wrinkle: `HEAD` was detached 2 commits AHEAD of local `main`
+  (`1769e92`, entry 14's own favicon commit + its handoff edit) rather than behind, unlike most recent
+  entries. `git fetch origin` showed `origin/main` was ALREADY at that same commit, so this was a stale
+  local branch pointer in a fresh container, not unpushed work — `git checkout main && git merge --ff-only`
+  fast-forwarded local `main` with zero risk, `git push` correctly reported nothing new to send. `npm
+  install` re-run as always (`node_modules` empty in a fresh container). `Places V1/` and Blender both
+  confirmed absent again (J1-OLD2/J2 still un-runnable here).
+- Picked up entry 14's own NEXT note: ran `world-validator.js` to completion in the background with a
+  real time budget (`timeout` foreground calls chained with `sleep`/poll instead of one blocking call).
+  Checks 1-3 passed clean at both t=0 and t=3s (no wall overlap, nothing floats, nothing buried) - the
+  favicon fix's benefit is real, this is the first entry to see checks 1-3 complete without any console-
+  error noise. Check 4 (wall collider coverage) also passed clean, 23352 real sample points. Check 5
+  (every structural-material collider has backing geometry) crashed the renderer every time, as every
+  recent entry has logged - but this run pinned the cause down precisely instead of leaving it as "OOM":
+  `dmesg` after the crash shows a real cgroup OOM-kill (`Memory cgroup out of memory: Killed process ...
+  (chrome)`), not a generic Playwright/Chromium failure, with the killed renderer process's own anon-rss
+  at kill time logged (~2.36-2.9 GB across 2 separate crashes this session).
+- Tried the obvious fix and it did NOT work, logged here so nobody retries it blind: split check 5's
+  `sampleMaterialSurface` call into x-axis world bands (8, then 16 bands, open-ended at both ends so no
+  real geometry could ever be silently dropped) so no single `page.evaluate` call builds one array for
+  every structural triangle in the +1100 m map at once. Found and fixed a real bug this surfaced along
+  the way (`solidPoints.push(...band)` blew V8's call-stack argument limit on a few-hundred-thousand-
+  element array - a plain indexed loop doesn't), but the OOM itself did not go away: the renderer crashed
+  on the FIRST band both times (once a near-empty one, x < -300), proving the problem isn't check 5's own
+  per-call array size - it's that the up-to-240s zone-streaming "wait until settled" loop ahead of checks
+  4/5 already pushes the renderer's baseline memory to within a sliver of the cgroup ceiling before check
+  5 ever allocates anything. No amount of chunking check 5 itself can fix that. Reverted the band-chunking
+  change cleanly (verified `git diff` empty on `tools/world-validator.js` after revert) rather than ship
+  an unverified fix that doesn't actually fix anything - not worth a committed complexity cost for zero
+  benefit. Did not attempt the real fix this cycle (bounding how much the settle-wait is allowed to stream
+  in before checks 4/5 run, or giving checks 4/5 their own fresh low-memory browser context) - that is a
+  bigger, riskier change to a shared validator and this cycle was already well into "don't fight this tool"
+  territory per standing instruction. Worth noting for whoever picks this up: this crash is irrelevant to
+  CI/deploy - `package.json`'s `build` script (the one with `world-validator.js` in it) is never what
+  `deploy.yml` runs; `deploy.yml` runs `build:unchecked`, which skips it entirely. This is real but
+  non-blocking correctness work for a human running the full `npm run build` gate by hand.
+- Needed an actual code/asset change this cycle regardless (CLAUDE.md section 2), so moved to a second,
+  bounded, numerically-verifiable item instead of sinking the rest of the cycle into the validator: `node
+  tools/check-budget.js -- --all`'s 33 advisory notes included 22 prop `.glb` files (brass_pot_01,
+  wicker_basket_02, potted_plant_01, the wooden furniture/crate/bucket/basket set, etc.) shipping 1024px
+  textures against CLAUDE.md section 9's own documented standard ("1K max, 512 for props") - `tools/
+  shrink.js`, the one standard tool every model goes through, simply hardcoded `TEXTURE_MAX_DIM = 1024`
+  with no way to ask for the prop budget.
+  - Added an optional 5th CLI arg to `tools/shrink.js`, `textureMaxDim` (default 1024, so every existing
+    caller is byte-for-byte unaffected). Re-ran all 23 flagged prop files (22 listed as advisories plus
+    `old_tyre.glb`, which the --all listing's visible slice cut off) through it with `textureMaxDim=512`
+    and a triangle budget far above each file's real count, so `simplify()` is a deliberate no-op -
+    verified triangle count identical before/after on every single file, not assumed.
+  - Verified each output (not just trusted the tool): read every shrunk `.glb` back with `gltf-transform`
+    + the meshopt decoder, confirmed mesh/texture data is present and loads without error (23/23 OK), and
+    spot/bulk-checked texture pixel dimensions are really 512x512 webp (not just "under some size").
+  - `public/assets/props/` for these 23 files: 6.5 MB -> 2.4 MB. `public/assets/` total: 125 MB -> 121 MB
+    (`du -sh`, stash/pop round-trip to get a clean before/after, not estimated). `check-budget`'s advisory
+    count: 33 -> 10, all 23 prop-texture warnings gone, nothing new introduced, the 15 pre-existing real
+    breaches (all characters + overall budget, all already logged in NEEDS_YOU as her call) unchanged.
+- Verified: fresh `npx vite build` (clean), `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN,
+  same pre-existing Tripo-plan-ownership warning), `node tools/check-dup-models.js` PASS, `node tools/
+  check-material-clone.mjs` PASS (49 scanned, 0 unwrapped clones), `node tools/place-visibility-check.js`
+  PASS, `npm run check-budget` (see above). Also ran `tools/slot-swap-test.js` end to end in the background
+  (its own 38/38 PASS, including both "no console errors" assertions) as a real in-game load check that
+  the modified prop files and the changed `shrink.js` didn't break anything, since the broken-check-5
+  pipeline above couldn't be used for that this cycle.
+- Committed (`0cd6f04`), pushed, GitHub Actions run 45275216160 (`Deploy to GitHub Pages`) confirmed green
+  (`conclusion: success`) for this commit.
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent, no
+  layout/position change (CLAUDE.md 5a-MAP doesn't apply), no taste call made (texture resolution is an
+  already-documented numeric budget, not a new choice).
+- NEXT: the real fix for check 5's OOM, if anyone wants to chase it further, is bounding what the pre-
+  check4/5 zone-settle wait is allowed to stream in (or running checks 4/5 in a fresh, low-memory-footprint
+  browser context right after navigation rather than reusing the same long-lived page checks 1-3 already
+  ran in) - NOT chunking check 5's own sampling call, which this entry ruled out with hard evidence.
+  Otherwise section A of BACKLOG.md is still either ticked, blocked on Places V1/Blender/her verdict
+  (confirmed absent again this container), or layout (out of scope per 5a-MAP) - a future cycle could grep
+  `check-budget.js --all`'s other advisory categories (none currently) or look for more of this same
+  "documented-standard-not-applied" class of fix once a new one shows up.
+
 # 23 Nov (14) - found and fixed the real cause of slot-swap-test.js's 2 pre-existing console-error FAILs: a missing favicon, nothing to do with the asset-slot pipeline
 
 - Fresh container again this firing: `main` up to date with `origin/main` at `843b936`, clean working tree
