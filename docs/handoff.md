@@ -1,3 +1,27 @@
+# 23 Nov (4) - found and fixed: the same plastic-highlight bug, this time on bare dirt
+- After the grass fix, swept every roughness map in `public/assets` (33 files) for the
+  same defect signature: a near-zero minimum, meaning scattered mirror-bright texels.
+  6 came back suspect; checked each against how it's actually used in `src/materials.js`.
+- terracotta, tin, and lane are fine despite low raw-texture minimums: `getTiledMaterial`
+  already applies an automatic shader-side roughness floor to each (via
+  `applyMatteVariation`/`applySurfaceVariation`), so the raw map value never reaches the
+  renderer unclamped. crop wasn't checked further (no direct `getTiledMaterial('crop', ...)`
+  call site found - used instead by `texturedBox`/field.js's own material path, lower
+  priority, not chased this cycle).
+- `ground` was a real gap: it's not in `MATTE_SETS` and has no special case in
+  `getTiledMaterial`, so it gets NO automatic floor. The only roughness floor near it is
+  inside `applyGroundNoiseDetail`'s grass-patch overlay, and that only touches pixels
+  under the grass mask - every bare-dirt pixel on the main terrain (`src/scene.js`
+  `createGround`) and the entire tilled field (`src/field.js`, which deliberately runs
+  with the grass pass disabled) used the raw map, min 0.173, with zero floor. Same bug
+  family as the grass fix, just on the base ground instead of the grass overlay.
+- Fixed the same way: remapped `ground_roughness.webp` from [0.173, 0.949] to
+  [0.55, 0.95] (same target range as grass). `npx vite build` clean, licence audit
+  unaffected (same file, no new record needed). No live/screenshot verification
+  possible in this container (still broken, see entry below) - numeric/measured fix,
+  not eyeballed.
+- Committed `1364105`, pushed, CI triggered.
+
 # 23 Nov (3) - technical note: root cause of the screenshot/validator crash, still unfixed
 - Not a decision for her, logged for whoever next has shell access to this workspace. `tools/screenshot.js`/`tools/world-validator.js`/`tools/regression-check.js` have crashed in this container for several cycles ("pre-existing, environmental" in earlier notes). Found the actual cause via `dmesg -T`: it's a real OOM-kill by a 6 GiB memory cgroup scoped to this container's shell tool (not a host-wide shortage - the host itself has 7-8 GB free). The killed process is `chrome-headless`, anon-rss ~3.3 GB for the renderer alone before the kill, with several other chrome-headless helper processes adding a few hundred MB each on top - this specific village scene, software-rendered by SwiftShader (no GPU in this container), needs more than 6 GB combined to rasterize.
 - Tried shrinking the viewport (640x400, deviceScaleFactor 1, `--js-flags=--max-old-space-size=512`) to cut memory - did NOT help, still crashed. The memory pressure is coming from the scene's own asset/texture footprint under software rendering, not the output framebuffer size, so a smaller screenshot doesn't dodge it.
