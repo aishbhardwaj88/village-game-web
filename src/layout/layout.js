@@ -2,7 +2,7 @@
  * THE LAYOUT LOADER (S7 sprint, 21 Nov 2026). One place every agent reads the approved village map from.
  * API (documented for the other agents in docs/s7/layout.md):
  *
- *   isNewLayout()            true when the page runs the approved 21 Nov map (?layout=new). Default: old (DEFAULT_LAYOUT).
+ *   isNewLayout()            true unless the page explicitly asks for the retired map (?layout=old). Default: new (DEFAULT_LAYOUT), flipped 23 Nov once qa-audit.md's punch list closed.
  *   layoutMode()             'new' | 'old'
  *   getLayout()              { places, list, roads, objects, canal } (the whole approved map, computed once)
  *   getPlace(id)             one place: { id, name, hi, x, z, ry, front, frontYaw, offsetDeg, row, existing, minor, before }
@@ -28,7 +28,7 @@ import { DEG, wrapPi, roadBBox } from './layoutCore.js';
 import { FRONT_OFFSETS } from './frontOffsets.js';
 
 /** The integrator flips this to 'new' once every district is moved. */
-export const DEFAULT_LAYOUT = 'old';
+export const DEFAULT_LAYOUT = 'new';
 
 function readMode() {
   // Node tools set __DOPAHAR_LAYOUT before importing the game's modules; __dopaharLayout is the same override the perf branch's
