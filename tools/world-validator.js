@@ -19,13 +19,22 @@
  */
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { statSync, readdirSync, writeFileSync } from 'node:fs';
+import { statSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PORT = +(process.env.PORT || 5235); // PORT / DIST env: lets parallel runs use their own build folder and port
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
+
+// Same fix as tools/regression-check.js (found there 23 Nov, see its own comment): on at least
+// one box, Playwright's default headless mode resolves to the lightweight "chrome-headless-shell"
+// binary, which reliably crashes ("Target crashed") a few seconds into rendering this village's
+// full triangle/texture load under SwiftShader software rendering. The full `chrome` binary, same
+// SwiftShader flags, does not crash. Only used when found, so this stays a no-op on a machine/CI
+// image that only ships the headless-shell build. This is very likely the exact cause of this
+// file's own "hangs/crashes in this container" history logged repeatedly in docs/handoff.md.
+const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 
 function waitForServer(url, timeoutMs = 30000) {
   const start = Date.now();
@@ -55,10 +64,12 @@ async function main() {
 
   try {
     await waitForServer(BASE_URL);
-    const browser = await chromium.launch({
+    const launchOpts = {
       headless: true,
       args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox', '--no-sandbox'],
-    });
+    };
+    if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH;
+    const browser = await chromium.launch(launchOpts);
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(e.message));

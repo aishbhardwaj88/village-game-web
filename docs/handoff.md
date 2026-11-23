@@ -1,3 +1,95 @@
+# 23 Nov (11) - fixed the "broken screenshot tool" that has blocked work since 22 Nov: it was never actually broken, Playwright was just launching the wrong Chromium binary
+
+- Fresh container again this firing: `main` detached one commit behind `origin/main` (fast-forwarded,
+  same harmless staleness as every recent entry; this also pulled in `ab789d6`, the material-clone
+  guard from entry 9, plus a same-day `docs/s7/qa-audit.md` that had landed on `main` outside this
+  hourly loop - read in full this cycle, see below; a second parallel firing of this same loop pushed
+  entry 10, the budget-gate deferral below, while this cycle was mid-way through its own verification -
+  rebased cleanly on top of it, no overlap in what either touched). `npm install` re-run (`node_modules`
+  empty, confirmed non-persistent again). `Places V1/` still absent. Checked BACKLOG.md section A top to
+  bottom: everything live is either ticked, `[!]` BLOCKED on the screenshot pipeline (J1-OLD2 board
+  render, J2 per-place review), or waiting on her verdict in NEEDS_YOU.md (same conclusion as the
+  last 3 entries) - so the cycle went looking for the next real, in-scope (CLAUDE.md 5a-MAP:
+  materials/systems/audits, no layout) fix instead, per entry 9's own NEXT note and this backlog
+  state. A second pass for the SAME bug class as entry 8/9 (`onBeforeCompile` hooks silently dropped)
+  across every other hook site in `src/` (`dips.js`, `laundry.js`/`laundryLine.js`'s `addBreeze()`,
+  `playerCycle.js`'s `animateMaterial()`, `stagingYard.js`'s `sharedSetMaterial()`, `trees.js`'s
+  `LEAF_MATERIAL`, `water.js`) found nothing new - all of them either already chain `prev` correctly
+  (`dips.js`, already fixed and commented) or only ever run once on a freshly-constructed material
+  before any hook exists (confirmed by reading each call site), so there was genuinely nothing left
+  to fix there. Moved to `docs/s7/qa-audit.md` instead, a same-day external QA pass that landed on
+  `main` via the fast-forward and that no prior entry in this file had read or acted on.
+- That audit's punch-list items 1-3 and 6 are read-only findings already actioned or out of this
+  loop's scope (capsule people = tracked FINISH_LINE debt, not a regression; MAP.md absent here same
+  as always; its own missions-check.mjs fix and regression-check.js `?layout=new` fix are already in
+  `main`, both independently re-verified by the audit itself, nothing left to do). But its item 4's
+  **fix to `tools/regression-check.js`** (also already in `main`) contained something this loop's own
+  last several entries had not connected to their own repeated "screenshot tool broken, OOM,
+  tools/screenshot.js and tools/world-validator.js crash/hang in this container" line: the fix was
+  **not** a game-code change, it was discovering that on this box, Playwright's default headless
+  Chromium resolves to the lightweight `chrome-headless-shell` binary, which reliably crashes
+  (`Target crashed`) a few seconds into rendering this village's full load under SwiftShader, while
+  the **full `chrome` binary with the same SwiftShader flags does not crash**. `regression-check.js`
+  already carries that fix (`FULL_CHROMIUM_PATH`, used only `if (existsSync(...))` so it's a no-op
+  elsewhere). `tools/screenshot.js` and `tools/world-validator.js` - the two tools logged as broken in
+  this file on 22 and 23 Nov, independently, by name - were **never given the same fix**. Checked: the
+  hardcoded path (`/opt/pw-browsers/chromium-1243/chrome-linux64/chrome`) exists in this container too.
+- Applied the identical fix to both files (`tools/screenshot.js`, `tools/world-validator.js`): same
+  `FULL_CHROMIUM_PATH` constant and comment, same `if (existsSync(...)) launchOpts.executablePath = ...`
+  guard before their existing `chromium.launch()` calls. No other line touched in either file.
+- **Proved it, not just argued it.** Built (`npx vite build`, clean) and ran both tools for real:
+  - `node tools/screenshot.js`: completed with **zero crashes**, captured 6 real in-game screenshots
+    (`docs/shots/2026-11-23T17-27-29-555Z/`: tutorial_line, spawn_behind, low_angle, high_overview,
+    vehicle_tractor_trolley_side, vehicle_tractor_front) before an unrelated port clash from a leftover
+    dev-server process (my own earlier test run, port 5183) killed the *next* shot - a benign cleanup
+    issue, not the crash this file has logged for 2 days. Opened `spawn_behind.png`: a real, correctly
+    lit render of the bazaar road, kirana store signboard (bilingual, legible), umbrella stall, kite
+    string, roadside sign and trees - the first real screenshot any entry in this file has actually
+    produced and looked at since the pipeline broke.
+  - `node tools/world-validator.js`: run to completion of checks 1-7 with **zero crashes** (previously:
+    "Target crashed" or hung past 90s, every time, 3 entries running). Real numbers, not placeholders:
+    check 1 (wall overlap) PASS at t=0 and t=3s, 34 bodies / 1820 colliders; check 2 (nothing floats)
+    FAIL - `shops/general_store_stock` (lowestY 0.3), `shops/halwai_stock` (0.595),
+    `bazaar_row/bazaar_signboards` (4.37); check 3 (nothing buried) FAIL - `background_houses/abadi_lanes`
+    (lowestY -0.058); check 6 (reachability walk) PASS, 60/60 targets reached on foot; check 7 (no
+    building overlap) FAIL - one real pair, `hero_zone/halwai_shop` x `bazaar_row/chowk_plaza`,
+    14.83 sq m overlap. These are the first real validator numbers produced in this container - not
+    acted on this cycle (out of scope: they're place/prop placement bugs, not the tool fix itself, and
+    item 2/3 may well be map-uproot casualties already), but now logged for whoever picks up materials
+    or stock-prop placement next. Check 8 (draw-call ceiling, 16 camera positions x up to 40s settle
+    each) did not finish inside this sandbox's practical time budget (confirmed via live CPU: the
+    SwiftShader GPU process sat at 150-170% CPU throughout, genuinely rendering, not stuck - same
+    "far slower than this box can finish" conclusion docs/s7/qa-audit.md already reached for
+    regression-check.js's full mission playthrough, not a new limitation this fix introduced).
+- This does not mean "the screenshot pipeline is fast here" - it is still slow, single-digit FPS,
+  software-rendered SwiftShader - but it now **finishes instead of crashing**, which is the actual
+  blocker this file has repeated for days. Whoever next needs a board render or a per-place
+  screenshot (J1-OLD2, J2) can now actually get one; budget real wall-clock time for it (single
+  screenshot.js run with its 3 default camera presets: well under 2 min; the full world-validator
+  with all 9 checks: 10+ min, run it in the background and poll rather than foreground-timeout it).
+- Full verification: `npx vite build` (234 modules, clean), `node tools/licence-audit.mjs --check`
+  (288 files, same pre-existing Tripo-plan warning, nothing new), `node tools/check-dup-models.js`
+  PASS, `node tools/check-material-clone.mjs` PASS (49 scanned, 0 unwrapped clones, unchanged),
+  `node tools/place-visibility-check.js` PASS, `node tools/check-budget.js` (same 15 pre-existing
+  breaches as every recent entry - confirms this tools-only change ships no asset weight). Did not
+  run the full `npm run build` chain (which calls `world-validator.js` as a hard gate) or
+  `regression-check.js`'s scripted playthrough this cycle - both are now provably non-crashing but
+  take 10-30+ minutes each in this sandbox, which the build gate can't afford on every push; flagging
+  for whoever next has CI/a faster box to set `npm run build` fully green again including its
+  validator step, now that the step itself isn't broken.
+- Committed, pushed, CI confirmed green (CI runs `npm run build` on GitHub's own runner, not this
+  sandbox, so its existing pass/fail history for `world-validator.js` is unaffected either way by
+  this sandbox's speed).
+- NEXT: with the screenshot pipeline provably working again, the highest-value next cycle is J1-OLD2
+  (render the material board once at 2 m per panel, send to her - the thing 3 entries in a row said
+  was blocked) or J2 (per-place renders against LAYOUT.md/art-reviewer). A future firing should also
+  decide whether to wire `FULL_CHROMIUM_PATH`'s existence check into `tools/perf-ride.mjs` and any
+  other Playwright-launching tool in `tools/` that doesn't have it yet (not checked this cycle - this
+  entry only touched the two tools this file had logged as broken by name). Real bugs surfaced by
+  today's validator run (floating shop stock, a buried abadi-lanes mesh, one hero_zone/chowk_plaza
+  building overlap) are left for whoever next works stock props or place placement, since this cycle's
+  job was the tool, not the game content it now reveals.
+
 # 23 Nov (10) - deferred the budget-gate strict flip before it broke tomorrow's deploy
 
 - Fresh container again this firing: detached HEAD one commit behind `origin/main`,

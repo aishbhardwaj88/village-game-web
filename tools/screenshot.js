@@ -7,7 +7,7 @@
  */
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hideForCapture, restoreAfterCapture, measureFps } from './shotlib.mjs';
@@ -15,6 +15,14 @@ import { hideForCapture, restoreAfterCapture, measureFps } from './shotlib.mjs';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DEV_PORT = 5183;
 const DEV_URL = `http://localhost:${DEV_PORT}/`;
+
+// Same fix as tools/regression-check.js (found there 23 Nov, see its own comment): on at least
+// one box, Playwright's default headless mode resolves to the lightweight "chrome-headless-shell"
+// binary, which reliably crashes ("Target crashed") a few seconds into rendering this village's
+// full triangle/texture load under SwiftShader software rendering. The full `chrome` binary, same
+// SwiftShader flags, does not crash. Only used when found, so this stays a no-op on a machine/CI
+// image that only ships the headless-shell build.
+const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
 
 const CAMERA_PRESETS = [
   { name: 'spawn_behind', yaw: Math.PI, pitch: -0.15, distance: 5 },
@@ -54,7 +62,7 @@ async function main() {
     await waitForServer(DEV_URL);
     console.log('Dev server up. Launching headless Chromium (SwiftShader)...');
 
-    const browser = await chromium.launch({
+    const launchOpts = {
       headless: true,
       args: [
         '--use-angle=swiftshader',
@@ -62,7 +70,9 @@ async function main() {
         '--ignore-gpu-blocklist',
         '--disable-gpu-sandbox',
       ],
-    });
+    };
+    if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH;
+    const browser = await chromium.launch(launchOpts);
 
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 
