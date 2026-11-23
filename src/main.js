@@ -3474,6 +3474,14 @@ async function main() {
       getQuality: () => currentQuality,
       isPaused: () => paused,
       pauseMenu,
+      // S7 regression-tooling hook (qa-audit.md item 4): these four are already
+      // layout-aware (pt()/layoutMode() under src/layout/layout.js), so reading
+      // them live here lets a test tool find the real bazaar/temple/field/school
+      // anchor under WHICHEVER layout the page booted with, instead of a
+      // hard-coded old-layout coordinate that silently goes stale under
+      // ?layout=new. Read-only, no new behaviour.
+      layoutMode: isNewLayout() ? 'new' : 'old',
+      landmarks: { bazaar: { x: CHOWK_CENTER.x, z: CHOWK_CENTER.z }, temple: { x: TEMPLE_POS.x, z: TEMPLE_POS.z }, field: { x: FIELD_CENTER.x, z: FIELD_CENTER.z }, school: { x: SCHOOL_CENTER.x, z: SCHOOL_CENTER.z } },
       Box3: THREE.Box3,
       Raycaster: THREE.Raycaster,
       get zoneManager() { return zoneManager; },

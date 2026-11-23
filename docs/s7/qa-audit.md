@@ -180,3 +180,61 @@ No position bug found underneath the old crash: Dadi, banta, chaat and the milk 
 against the approved map. `npm run build:unchecked` also still succeeds (pre-existing character/budget WARNs
 are unrelated, untouched by this item). Nothing further to fix for this item; confirming it's safe for the
 integrator to treat `missions-check.mjs` as trustworthy for `?layout=new` going forward.
+
+## Follow-up — punch list item 4 fixed, 23 Nov 2026 (branch `s7-regression-new-layout`)
+
+Fixed `tools/regression-check.js`'s complete blindness to `?layout=new` (item 4 above). Summary for the
+integrator; full detail in the branch's own commit message.
+
+**What changed** (`tools/regression-check.js`, `src/main.js`; no layout/position/character/audio code touched):
+- `--layout=new|old` CLI flag (or `LAYOUT` env var, matching `tools/layout-smoke.mjs`'s convention) now
+  controls which layout the scripted playthrough boots (`?dev=1&layout=...`) and which baseline file it
+  reads/writes (`docs/regression-baseline-new.json` for new, the existing `docs/regression-baseline.json`
+  unchanged for old — the two are never compared against each other).
+- `src/main.js`'s `window.__dopahar` dev hook gained two read-only fields, `layoutMode` and `landmarks`
+  (`{bazaar, temple, field, school}`, read live from `CHOWK_CENTER`/`TEMPLE_POS`/`FIELD_CENTER`/
+  `SCHOOL_CENTER`, which are already layout-aware via `pt()`). `regression-check.js`'s "can reach the
+  landmark" check now reads these live instead of four coordinates hand-captured from the old map, which
+  had already gone stale even for `?layout=old` itself — see below.
+- Two environment-only bugs that made this box unable to run the tool **at all**, fixed because nothing else
+  in the brief was checkable without them: (1) Playwright's default headless Chromium build
+  ("chrome-headless-shell") reliably crashed ("Target crashed") a few seconds into rendering the full
+  village — the full `chrome` binary, same SwiftShader flags, did not; now used when present at a fixed
+  path, a no-op where it isn't. (2) `page.click('#play-btn')`'s default post-click "wait for navigation"
+  never resolved on this box after that specific click (confirmed via a throwaway probe: the click lands
+  and the title overlay hides in under a second either way), hanging the run past its timeout; added
+  `noWaitAfter: true` to it and to the five `#end-continue-btn` clicks.
+
+**Real numbers, this run** (`npm run build:unchecked` — clean, no new errors; the full `npm run build`'s
+`tools/world-validator.js` step crashes on this box independent of this branch's changes, same symptom as
+fix (1) above, not fixed here — out of this item's scope, flagging for whoever next touches that tool):
+- **Both layouts boot and render with zero new console errors** — the only console line either produces is
+  the same expected model-slot-probe 404 already noted in item 5 above.
+- **A hand-captured side-finding**: the four hard-coded landmark coordinates this file used to use for
+  `?layout=old` were themselves already stale, from before the unrelated 1 Nov "600 m west" map shift
+  mentioned in item 2 above (e.g. the old hard-coded bazaar `{x:-54,z:13}` vs. the live `CHOWK_CENTER` today,
+  `{x:601.9,z:16.5}`, under `?layout=old` too) — not a new-layout bug, but this fix's live-read landmarks now
+  correct it for both layouts, not just the new one.
+- **Draw calls / triangles at the tool's own representative shot** (teleport to `(-48,30)`, `yaw=PI`):
+  `?layout=old` 74 calls / 118,895 triangles (matches the existing baseline exactly); `?layout=new` 44-48
+  calls / 111k-219k triangles across three runs — both layouts comfortably inside the 150-call / 400k-triangle
+  budget.
+- **One intermittent grounding-check flake under `?layout=new` only**, not reproduced under `?layout=old`: on
+  1 of 3 runs, `school_bell` (the hand post/bell prop at `BELL_POSITION`, `src/props.js`'s `createBellProp`,
+  placed at a hard-coded `y=0` rather than a real `groundHeightAt()` read) measured 0.121 m above the ground
+  plane; the other 2 runs under `?layout=new`, and all runs under `?layout=old`, came back clean. Not
+  reproduced enough times to call it a confirmed bug, and root-causing it (why only sometimes, why only under
+  the new layout) would mean touching either the school's placement or the bell prop's own Y, both outside
+  this item's test-tooling scope — flagging for the next person who touches the school or `createBellProp`,
+  not fixed here.
+- **Could not get a real number for the full "all eight missions complete end-to-end" scripted playthrough**
+  (the other 8 of this file's 13 checks) in this sandbox: a single attempt at `?layout=old` (to sanity-check
+  the fix against the existing baseline before trusting a `?layout=new` number) ran for 28 real minutes
+  without finishing and was killed by this session's own background-task time limit — confirmed still
+  making progress (rising CPU time on the renderer process) the whole time, not hung, just far slower than
+  this box can finish within a practical budget here. This is a sandbox-speed limit affecting `?layout=old`
+  too, not something specific to `?layout=new` or to this fix. **The tool itself now works correctly for
+  both layouts** (confirmed via the fast checks above, which exercise the same full village load, the same
+  `?dev=1` hook, and the same camera/render path as the mission walkthrough); someone with a faster machine
+  or CI runner needs to do the actual `npm run build && node tools/regression-check.js --layout=new` /
+  `--save-baseline` run to get the real mission-walkthrough number and set the new baseline file.
