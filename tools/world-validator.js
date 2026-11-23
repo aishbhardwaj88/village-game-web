@@ -156,11 +156,30 @@ async function main() {
         const scene = d.scene;
         const EXCLUDE = new Set(['ground', 'field_ground', 'sky', 'dust_motes', 'waypoint_glow', 'contact_shadows', 'lane', 'bazaar_lane', 'temple_lane', 'field_track', 'pump_water', 'tulsi_water']);
         const SKIP_CHILD_NAMES = new Set(['lane', 'trim', 'plinth', 'reveal', 'drainpipe', 'switchboard', 'step', 'shop_roofs', 'shop_signboards']);
+        // 'tree_impostor' (src/trees.js impostorMesh, the LOD>=220m billboard): its quad is deliberately
+        // inflated to 1/0.65 (~1.5x) the real tree's height so the BAKED TEXTURE's tree render (which the
+        // texture itself frames with ~16% transparent margin above AND below, confirmed across all 5 species'
+        // webp alpha channels, 23 Nov) maps to the correct real-world size. The quad is centred on the real
+        // tree's own bounding-box centre to line up the art, which — because that bottom margin is symmetric
+        // with the top one, not "ground" — pushes roughly 25% of the tree's height of fully-transparent
+        // (alphaTest 0.5, never drawn) plane below y=0. Not a placement bug: every one of three.js's own LOD
+        // levels for a tree exists in the scene graph at once (THREE.LOD never removes the inactive ones, it
+        // only toggles .visible, which Box3.expandByObject ignores), so this plane was always being measured
+        // even though it is only ever shown at 220m+ where the sub-metre vertical offset is invisible. Found
+        // while chasing check 3's "hero_zone/trees -2.608" etc FAILs 23 Nov: every species' impostor shares
+        // this geometry formula, so every streamed tree group fails by roughly -0.25x its own height.
+        const SKIP_DESCENDANT_NAMES = new Set(['tree_impostor']);
         const box = new d.Box3();
+        const partBox = new d.Box3();
         const rows = [];
         function checkWholeObject(object, label) {
           if (!object || EXCLUDE.has(object.name)) return;
-          box.setFromObject(object, true);
+          box.makeEmpty();
+          object.traverse((o) => {
+            if (SKIP_DESCENDANT_NAMES.has(o.name) || !o.geometry) return;
+            partBox.setFromObject(o, true);
+            if (isFinite(partBox.min.y)) box.union(partBox);
+          });
           if (!isFinite(box.min.y)) return;
           if (Math.abs(box.min.y) > TOL) rows.push({ label, lowestY: +box.min.y.toFixed(3) });
         }
