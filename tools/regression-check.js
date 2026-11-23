@@ -21,10 +21,20 @@
  *    of that (see src/main.js's otherVehicleBoxes() bugfix comment)
  *
  * Usage:
- *   npm run build && node tools/regression-check.js            # compare vs baseline
- *   npm run build && node tools/regression-check.js --save-baseline    # first run / intentional baseline update
+ *   npm run build && node tools/regression-check.js                      # old layout (default), compare vs baseline
+ *   npm run build && node tools/regression-check.js --layout=new         # S7 (qa-audit.md item 4): same full playthrough under ?layout=new
+ *   LAYOUT=new npm run build && node tools/regression-check.js           # env-var form, same as --layout=new (matches tools/layout-smoke.mjs's LAYOUT convention)
+ *   npm run build && node tools/regression-check.js --save-baseline      # first run / intentional baseline update (per-layout file)
  *
- * Without --save-baseline, if docs/regression-baseline.json doesn't exist yet,
+ * --layout=new|old (or the LAYOUT env var) picks which layout the scripted
+ * playthrough boots (`?layout=${mode}`, the same query param
+ * src/layout/layout.js reads and tools/layout-smoke.mjs already passes
+ * through) and which baseline file it reads/writes — docs/regression-baseline.json
+ * for old (unchanged, so every existing baseline/CI call keeps working with no
+ * flag), docs/regression-baseline-new.json for new. The two layouts' results are
+ * never compared against each other's baseline.
+ *
+ * Without --save-baseline, if that layout's baseline file doesn't exist yet,
  * this run's results ARE saved as the baseline (there's nothing to compare
  * against). If it does exist, results are compared against it and the script
  * exits non-zero if anything that previously passed now fails — a regression —
@@ -38,10 +48,31 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Found while running this file's own --layout=new/old checks (not a game bug): on at
+// least one box, Playwright's default headless mode resolves to the lightweight
+// "chrome-headless-shell" binary, which reliably crashed ("Target crashed") a few
+// seconds into rendering this village's full triangle/texture load under SwiftShader
+// software rendering — every time, at the same point (first camera move after the
+// village finishes building). The full `chrome` binary, same SwiftShader flags,
+// did not crash. Only used when found, so this stays a no-op on a machine/CI image
+// that only ships the headless-shell build.
+const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
+const launchOpts = {
+  headless: true,
+  args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'],
+};
+if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH;
+
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PORT = 5195;
+const PORT = +(process.env.PORT || 5195); // overridable so a leftover/parallel preview server on the default port (e.g. another agent's run) doesn't silently get reused instead of this build's dist/ — same env convention as tools/world-validator.js
+const layoutArg = process.argv.find((a) => a.startsWith('--layout='));
+const LAYOUT = (layoutArg ? layoutArg.split('=')[1] : process.env.LAYOUT || 'old').trim();
+if (LAYOUT !== 'old' && LAYOUT !== 'new') {
+  console.error(`Unknown --layout="${LAYOUT}" (expected "old" or "new")`);
+  process.exit(1);
+}
 const BASE_URL = `http://localhost:${PORT}/village-game-web/`;
-const BASELINE_PATH = resolve(ROOT, 'docs', 'regression-baseline.json');
+const BASELINE_PATH = resolve(ROOT, 'docs', LAYOUT === 'new' ? 'regression-baseline-new.json' : 'regression-baseline.json');
 const SAVE_BASELINE = process.argv.includes('--save-baseline');
 
 const DEFAULT_YAW = Math.PI;
@@ -70,6 +101,7 @@ function record(name, pass, detail = '') {
 }
 
 async function main() {
+  console.log(`Running regression check for ?layout=${LAYOUT} (baseline: ${BASELINE_PATH})`);
   console.log('Starting `vite preview` against dist/ (production build, not dev server)...');
   const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'pipe' });
   server.stdout.on('data', () => {});
@@ -79,19 +111,23 @@ async function main() {
 
   try {
     await waitForServer(BASE_URL);
-    const browser = await chromium.launch({
-      headless: true,
-      args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'],
-    });
+    const browser = await chromium.launch(launchOpts);
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
     page.on('console', (m) => {
       if (m.type() === 'error') consoleErrors.push(`console.error: ${m.text()}`);
     });
 
-    await page.goto(`${BASE_URL}?dev=1`, { waitUntil: 'load' });
+    await page.goto(`${BASE_URL}?dev=1&layout=${LAYOUT}`, { waitUntil: 'load' });
     await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
-    await page.click('#play-btn');
+    // noWaitAfter: this click only flips DOM state (src/ui.js's launch()), no real
+    // navigation — but on this box's Playwright/Chromium build, page.click()'s default
+    // post-click "wait for scheduled navigations" never resolves after this exact
+    // click (confirmed via tmp/probe.mjs: the click itself lands and the overlay
+    // hides in <1s either way), hanging the whole run past its timeout. Environment
+    // quirk, not a game bug — same reasoning as the `.catch(() => {})` already on
+    // every `#end-continue-btn` click below.
+    await page.click('#play-btn', { noWaitAfter: true });
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.__dopahar.dialogue._advanceFromInput());
     await page.waitForTimeout(1200); // let deferred content (field, bazaar, background) load
@@ -336,12 +372,12 @@ async function main() {
       await goInteract(pos.MAA); // -> HAVE_MONEY
       await goInteract(pos.HALWAI); // -> HAVE_JALEBI
       await goInteract(pos.MAA); // -> COMPLETE, shows end card
-      await page.click('#end-continue-btn').catch(() => {});
+      await page.click('#end-continue-btn', { noWaitAfter: true }).catch(() => {});
       await page.waitForTimeout(200);
       await goInteract(pos.MAA); // COMPLETE -> HAVE_TIFFIN (errand 2 start)
       await goInteract(pos.TEACHER); // -> HAVE_SISTER
       await goInteract(pos.MAA); // -> ERRAND2_COMPLETE, shows end card
-      await page.click('#end-continue-btn').catch(() => {});
+      await page.click('#end-continue-btn', { noWaitAfter: true }).catch(() => {});
       await page.waitForTimeout(200);
       await goInteract(pos.PITAJI); // ERRAND2_COMPLETE -> LOADING_WHEAT
 
@@ -353,7 +389,7 @@ async function main() {
       // quest.step should now be WHEAT_DELIVERED.
       if (pos.STORE) await goInteract(pos.STORE); // -> BOUGHT_GOODS
       await goInteract(pos.PITAJI); // -> ERRAND3_COMPLETE, shows a mid end card now (M1-M3 no longer end the game)
-      await page.click('#end-continue-btn').catch(() => {});
+      await page.click('#end-continue-btn', { noWaitAfter: true }).catch(() => {});
       await page.waitForTimeout(200);
 
       // Errand 4 (M4, docs/STORY.md): find the postman, bring the letter back.
@@ -375,7 +411,7 @@ async function main() {
       await page.evaluate(() => window.__dopahar.interact());
       await page.waitForTimeout(200); // -> KURTA_RECOVERED
       await goInteract(pos.PITAJI); // -> ERRAND6_COMPLETE, shows a mid end card
-      await page.click('#end-continue-btn').catch(() => {});
+      await page.click('#end-continue-btn', { noWaitAfter: true }).catch(() => {});
       await page.waitForTimeout(200);
 
       // Errand 7 (M7): drive to the baagh (teleport stands in for the drive —
@@ -387,7 +423,7 @@ async function main() {
       );
       for (const p of mangoPositions) await goInteract(p); // -> MANGOES_LOADED once all 3 are knocked
       await goInteract(pos.PITAJI); // -> ERRAND7_COMPLETE, shows a mid end card
-      await page.click('#end-continue-btn').catch(() => {});
+      await page.click('#end-continue-btn', { noWaitAfter: true }).catch(() => {});
       await page.waitForTimeout(200);
 
       // Errand 8 (M8): the roof ending. Teleport to the stair base (same reasoning
@@ -489,11 +525,26 @@ async function main() {
     // Each approach direction matters — e.g. the temple's entrance faces west
     // (src/temple.js) with a boundary wall on the other sides, so approaching
     // from the south (into the wall) would fail regardless of any real bug.
+    //
+    // S7 (qa-audit.md item 4): these four centres move under `?layout=new`
+    // (CHOWK_CENTER/TEMPLE_POS/FIELD_CENTER/SCHOOL_CENTER are all built on
+    // `pt()`, which is layout-aware — src/layout/layout.js). The x/z below are
+    // read LIVE from window.__dopahar.landmarks (added alongside this fix,
+    // src/main.js's dev hook) so this check always walks toward wherever that
+    // layout actually put each place, rather than a coordinate hand-captured
+    // from the old map that would silently go stale under the new one. The
+    // approach direction/yaw stays a static guess either way (a real wall can
+    // still face a different way post-layout-change; a wrong guess here fails
+    // honestly as "player can reach the X" rather than mis-reporting a bug).
+    const liveLandmarks = await page.evaluate(() => window.__dopahar.landmarks || null);
+    const OLD_LAYOUT_FALLBACK = { bazaar: { x: -54, z: 13 }, temple: { x: 8, z: 52 }, school: { x: 560, z: 90.8 }, field: { x: 20, z: -20 } };
+    const landmarkXZ = liveLandmarks || OLD_LAYOUT_FALLBACK;
+    if (!liveLandmarks) console.log('note: window.__dopahar.landmarks not found (older build) — using hard-coded old-layout coordinates for the reach-landmark check.');
     const LANDMARKS = {
-      bazaar: { x: -54, z: 13, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // CHOWK_CENTER, src/bazaar.js
-      temple: { x: 8, z: 52, from: { dx: -6, dz: 0 }, yaw: -Math.PI / 2 }, // TEMPLE_POS, src/temple.js — entrance faces west
-      school: { x: 560, z: 90.8, from: { dx: 6.5, dz: -1 }, yaw: Math.PI / 2 }, // the (turned) school's north yard gate on the 1 Nov map (schoolPt(0,-18), src/village.js), walked at from the east along the child's corridor (2 Nov)
-      field: { x: 20, z: -20, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // FIELD_CENTER, src/field.js
+      bazaar: { ...landmarkXZ.bazaar, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // CHOWK_CENTER, src/bazaar.js
+      temple: { ...landmarkXZ.temple, from: { dx: -6, dz: 0 }, yaw: -Math.PI / 2 }, // TEMPLE_POS, src/temple.js — entrance faces west
+      school: { ...landmarkXZ.school, from: { dx: 6.5, dz: -1 }, yaw: Math.PI / 2 }, // the (turned) school's north yard gate on the 1 Nov map (schoolPt(0,-18), src/village.js), walked at from the east along the child's corridor (2 Nov)
+      field: { ...landmarkXZ.field, from: { dx: 0, dz: -6 }, yaw: Math.PI }, // FIELD_CENTER, src/field.js
     };
     // The player starts on the cycle (3x speed, 3 Nov); this check measures walking, so step off first.
     await page.keyboard.press('KeyC');
