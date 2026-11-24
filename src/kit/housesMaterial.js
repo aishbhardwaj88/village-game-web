@@ -6,7 +6,7 @@ import { houseQuality } from './housesQuality.js';
  *
  * The texture atlas is composed at runtime in a canvas from the approved texture sets that already ship in
  * public/assets/textures (brick, plaster, concrete, wood, rust, terracotta, dryearth): no new files, 0 MB added.
- * 4 x 3 cells of 512 px, each cell = one tile of its set with a 24 px wrapped margin, for colour, normal and roughness.
+ * 4 x 4 cells of 512 px, each cell = one tile of its set with a 24 px wrapped margin, for colour, normal and roughness.
  *
  *   cell 0 lime plaster   1 concrete / cement   2 brick   3 brick with whitewash patches
  *   cell 4 wood           5 rusted steel        6 terracotta (fired clay)   7 mud plaster
@@ -22,11 +22,16 @@ export const CELL = { plaster: 0, concrete: 1, brick: 2, brickWash: 3, wood: 4, 
 /** Tiles per metre for each cell, from the library table (tools/blender/arch.py: brick 1.2, plaster 0.5, wood 1.0, metal 1.0). */
 export const CELL_REPEAT = [0.5, 0.5, 1.2, 1.2, 1.0, 1.0, 1.0, 0.7];
 
-const COLS = 4, ROWS = 3, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
+const COLS = 4, ROWS = 4, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
 // cells 8..11: extra wall surfaces picked per house by its seed (ambientCG CC0, shared library names plaster_j/m/p, concrete_e).
 // They start as copies of the plaster cell and are swapped in after the game has started (loadHouseVariants), so they add
 // no request before Play.
 export const WALL_VARIANTS = ['plaster_j', 'plaster_m', 'plaster_p', 'concrete_e'];
+// cells 12..15 (24 Nov, second round, ambientCG CC0): brick_b = Bricks105 (finer yellow-pink brick, picked by ~45% of the brick
+// walls), concrete_f = Concrete046 (pale stained cast concrete, ~35% of concrete trim/boundary walls), mud_b = Clay004 and
+// mud_c = Clay005 (brown and grey clay, kachcha mud walls: a third each with the original dryearth). Same late swap as above.
+export const EXTRA_VARIANTS = ['brick_b', 'concrete_f', 'mud_b', 'mud_c'];
+const ALL_VARIANTS = [...WALL_VARIANTS, ...EXTRA_VARIANTS];
 const SETS = [
   ['plaster', 'plaster'], ['concrete', 'concrete'], ['brick', 'brick'], ['brick', 'brickWash'],
   ['wood', 'wood'], ['rust', 'rust'], ['terracotta', 'terracotta'], ['dryearth', 'mud'],
@@ -101,6 +106,9 @@ export function buildHouseAtlas(base = 'assets/textures/') {
         }
         drawTile(g, img, col, row);
         if (name === 'plaster') { plasterSq[k] = img; WALL_VARIANTS.forEach((_, vi) => drawTile(g, img, (8 + vi) % COLS, Math.floor((8 + vi) / COLS))); }
+        // extra cells start as copies of the surface they replace (brick, concrete, mud, mud) until the real maps arrive
+        const ex = { brick: [12], concrete: [13], mud: [14, 15] }[name];
+        if (ex) ex.forEach((c) => drawTile(g, img, c % COLS, Math.floor(c / COLS)));
         if (name === 'brickWash' && false) { // lime whitewash brushed over the brick in ragged patches: paler, flatter, smoother where it sits
           const x0 = col * CS, y0 = row * CS;
           g.save(); g.beginPath(); g.rect(x0, y0, CS, CS); g.clip();
@@ -200,8 +208,8 @@ export function getHouseMaterial() {
         }
         // tile inside atlas cell c; the gradient comes from the continuous coordinate so the mip level is right across fract()
         vec4 atlasTex(sampler2D t, vec2 uv, float c) {
-          vec2 cell = vec2(mod(c, 4.0), 2.0 - floor(c / 4.0));
-          vec2 sz = vec2(0.25, 1.0 / 3.0);
+          vec2 cell = vec2(mod(c, 4.0), 3.0 - floor(c / 4.0));
+          vec2 sz = vec2(0.25, 0.25);
           float m = ${(MARGIN / CS).toFixed(5)};
           vec2 f = fract(uv);
           vec2 a = (cell + vec2(m) + f * (1.0 - 2.0 * m)) * sz;
@@ -220,6 +228,10 @@ export function getHouseMaterial() {
         float hAt = hCell < 0.5 ? floor(fract(vSeed * 17.31) * 5.0) : hCell;
         if (hCell < 0.5 && hAt > 0.5) hAt += 7.0;
         if (hCell >= 0.5) hAt = hCell;
+        // brick (cells 2, 3), concrete (1) and mud (7): some houses take the second-round surface (cells 12..15) instead
+        if (hCell == 2.0 || hCell == 3.0) { if (fract(vSeed * 23.71) < 0.45) { hAt = 12.0; hUv *= 0.58; } }
+        else if (hCell == 1.0) { if (fract(vSeed * 29.13) < 0.35) hAt = 13.0; }
+        else if (hCell == 7.0) { float mu_ = fract(vSeed * 19.37); if (mu_ > 0.34) hAt = mu_ > 0.67 ? 15.0 : 14.0; }
         {
           vec4 tex_ = atlasTex(map, hUv, hAt);
           tex_.rgb *= CELL_BOOST[int(hCell)];
@@ -262,7 +274,7 @@ export function getHouseMaterial() {
             float row_ = floor(bt_.y);
             vec2 cl_ = vec2(floor(bt_.x + hh_(vec3(row_, 3.0, 1.0)) * 4.8), row_);
             float r1_ = hh_(vec3(cl_, 7.0)), r2_ = hh_(vec3(cl_, 13.0));
-            float k_ = 1.0;
+            float k_ = hAt < 11.5 ? 1.0 : 0.0; // the per-brick tone is laid out for the original brick only
             diffuseColor.rgb *= 1.0 + k_ * (0.82 + 0.34 * r1_ - 1.0);
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), k_ * step(0.93, r2_) * 0.7);
             diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.82);
@@ -294,7 +306,7 @@ export function getHouseMaterial() {
           normal = normalize( tbn * mapN );
         }`);
   };
-  material.customProgramCacheKey = () => 'houses_s7_atlas_v2';
+  material.customProgramCacheKey = () => 'houses_s7_atlas_v3';
   return material;
 }
 
@@ -309,13 +321,13 @@ export function houseMaterialReady(base) {
   });
 }
 
-/** After the game has started: swap the real variant surfaces into cells 8..11 (12 small WebP files, 1.3 MB). */
+/** After the game has started: swap the real variant surfaces into cells 8..15 (24 small WebP files, about 2.4 MB). */
 export function loadHouseVariants(base = 'assets/textures_mix/') {
   const kinds = ['color', 'normal', 'roughness'];
-  return Promise.all(WALL_VARIANTS.flatMap((v) => kinds.map((k) => loadBitmap(`${base}${v}/${v}_${k}.webp`).then((img) => ({ v, k, img })))))
+  return Promise.all(ALL_VARIANTS.flatMap((v) => kinds.map((k) => loadBitmap(`${base}${v}/${v}_${k}.webp`).then((img) => ({ v, k, img })))))
     .then((all) => {
       for (const { v, k, img } of all) {
-        const i = 8 + WALL_VARIANTS.indexOf(v), p = atlasParts[k];
+        const i = 8 + ALL_VARIANTS.indexOf(v), p = atlasParts[k];
         if (!p) continue;
         drawTile(p.g, img, i % COLS, Math.floor(i / COLS));
         p.t.needsUpdate = true;

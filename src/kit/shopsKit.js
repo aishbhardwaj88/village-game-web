@@ -21,7 +21,9 @@ import { stockInterior, stockStall } from './shopsStock.js';
  * Each returns { geo: { [material]: BufferGeometry }, sign: { x, y, z, w, h } | null } (sign in the design frame).
  */
 
-export const TILES = { brick: 1.2, plaster: 0.5, concrete: 1.0, wood: 1.0, rust: 1.0 };
+// brick_b (ambientCG Bricks105, finer yellow-pink brick) and concrete_f (Concrete046, pale stained cast concrete) are per-shop
+// alternatives for exposed side/back brick and the plinth course; they load after Play (landMaterials.js), same tile shift per shop.
+export const TILES = { brick: 1.2, brick_b: 0.7, plaster: 0.5, concrete: 1.0, concrete_f: 1.0, wood: 1.0, rust: 1.0 };
 
 // colours baked into vertices (multiplied with the texture; plaster paint comes from the instance colour instead)
 const CEMENT = 0xd7d2c4; // neutral concrete (look-standard law)
@@ -217,11 +219,13 @@ export function shopHouse({ W, D, H = 7, shutterDown = false, balcony = 'rail', 
   P.box('concrete', 0, plinthH / 2, fz + (otla - 0.6) / 2, W, plinthH, otla - 0.6 + 0.02, { color: CEMENT });
   steps(P, 0, W, fz + otla - 0.6, plinthH, 2);
   // plinth course round sides/back
-  P.box('concrete', 0, plinthH / 2, -D / 2 + 0.02, W + 0.06, plinthH, 0.08, { color: PLINTH });
-  for (const s of [-1, 1]) P.box('concrete', s * (W / 2 + 0.01), plinthH / 2, (fz - D / 2) / 2, 0.08, plinthH, fz + D / 2, { color: PLINTH });
+  const plMat = rnd(seed, 8) < 0.5 ? 'concrete_f' : 'concrete';
+  P.box(plMat, 0, plinthH / 2, -D / 2 + 0.02, W + 0.06, plinthH, 0.08, { color: PLINTH });
+  for (const s of [-1, 1]) P.box(plMat, s * (W / 2 + 0.01), plinthH / 2, (fz - D / 2) / 2, 0.08, plinthH, fz + D / 2, { color: PLINTH });
   // ground floor walls (plaster; side walls exposed brick on some for variety)
-  const sideMat = rnd(seed, 1) < 0.35 ? 'brick' : 'plaster';
-  for (const s of [-1, 1]) sideWall(P, sideMat, -D / 2, fz + t / 2, plinthH, gfTop, s * (W / 2 - t / 2), t, sideMat === 'brick' ? 0xe8ddd0 : 0xffffff);
+  const brickMat = rnd(seed, 9) < 0.5 ? 'brick_b' : 'brick';
+  const sideMat = rnd(seed, 1) < 0.35 ? brickMat : 'plaster';
+  for (const s of [-1, 1]) sideWall(P, sideMat, -D / 2, fz + t / 2, plinthH, gfTop, s * (W / 2 - t / 2), t, sideMat !== 'plaster' ? 0xe8ddd0 : 0xffffff);
   wall(P, 'plaster', -W / 2 + t, W / 2 - t, plinthH, gfTop, -D / 2 + t / 2, t);
   // homeDoor (S7 fixes, the shopkeeper's home and godown): the family's own panelled door beside a narrower godown shutter
   const hdw = 0.95, hdh = 2.1, hdx = W / 2 - 0.32 - 0.6;
@@ -284,13 +288,15 @@ export function shop({ W, D, H = 3.6, front = 'shutter', shutterDown = false, tr
   const plinthH = 0.35, top = H - 0.5, slab = 0.16;
   P.box('concrete', 0, plinthH / 2, fz + (otla - 0.35) / 2, W, plinthH, otla - 0.35 + 0.02, { color: CEMENT });
   steps(P, 0, Math.min(W, 2.4), fz + otla - 0.35, plinthH, 1);
-  P.box('concrete', 0, plinthH / 2, -D / 2 + 0.02, W + 0.06, plinthH, 0.08, { color: PLINTH });
-  const sideMat = rnd(seed, 2) < 0.5 ? 'brick' : 'plaster';
+  const plMat = rnd(seed, 8) < 0.5 ? 'concrete_f' : 'concrete';
+  const brickMat = rnd(seed, 9) < 0.5 ? 'brick_b' : 'brick';
+  P.box(plMat, 0, plinthH / 2, -D / 2 + 0.02, W + 0.06, plinthH, 0.08, { color: PLINTH });
+  const sideMat = rnd(seed, 2) < 0.5 ? brickMat : 'plaster';
   for (const s of [-1, 1]) {
-    P.box('concrete', s * (W / 2 + 0.01), plinthH / 2, (fz - D / 2) / 2, 0.08, plinthH, fz + D / 2, { color: PLINTH });
-    sideWall(P, sideMat, -D / 2, fz + t / 2, plinthH, top, s * (W / 2 - t / 2), t, sideMat === 'brick' ? 0xe8ddd0 : 0xffffff);
+    P.box(plMat, s * (W / 2 + 0.01), plinthH / 2, (fz - D / 2) / 2, 0.08, plinthH, fz + D / 2, { color: PLINTH });
+    sideWall(P, sideMat, -D / 2, fz + t / 2, plinthH, top, s * (W / 2 - t / 2), t, sideMat !== 'plaster' ? 0xe8ddd0 : 0xffffff);
   }
-  wall(P, rnd(seed, 4) < 0.5 ? 'brick' : 'plaster', -W / 2 + t, W / 2 - t, plinthH, top, -D / 2 + t / 2, t, [], 0xe8ddd0);
+  wall(P, rnd(seed, 4) < 0.5 ? brickMat : 'plaster', -W / 2 + t, W / 2 - t, plinthH, top, -D / 2 + t / 2, t, [], 0xe8ddd0);
   const bays = Math.max(1, Math.round((W - 0.4) / (front === 'office' ? 3.2 : 3.4)));
   const bw = (W - 0.3) / bays, ops = [];
   for (let b = 0; b < bays; b++) {

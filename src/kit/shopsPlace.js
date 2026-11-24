@@ -177,7 +177,7 @@ export function buildShops(map, { camera = null } = {}) {
 
   const group = new THREE.Group();
   group.name = 's7_shops';
-  const mats = kitMaterials(['plaster', 'brick', 'concrete', 'wood', 'rust']);
+  const mats = kitMaterials(['plaster', 'brick', 'brick_b', 'concrete', 'concrete_f', 'wood', 'rust']);
   const bodies = kit.finalize(mats);
   group.add(bodies);
 
