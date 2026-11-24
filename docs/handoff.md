@@ -1,3 +1,67 @@
+# 24 Nov (20) - built a new static, self-tested check for BACKLOG A0's "NPCs entering a building must route to the door, never a wall" item (`tools/check-door-routes.mjs`), confirming src/doorRouting.js's BUILDING_ROUTES data is internally consistent with what the follower routing code assumes of it; also cleared a stale dead-tool item off docs/NEEDS_YOU.md
+
+- Fresh container again this firing: `git status`/`git log` showed local `main` already at `origin/main`'s tip
+  (`282a503`, entry 19's own commit) with a clean working tree. `npm install` re-run as always (`node_modules`
+  empty in a fresh container). `Places V1/`, `reference-from-unity/` and Blender all confirmed absent again
+  (same as every recent entry).
+- Section A of BACKLOG.md: same state entry 19 left it (everything either ticked, or blocked on Places V1/her
+  verdict/a working screenshot pipeline, or out of scope per 5a-MAP's map-uproot rule). Per CLAUDE.md 5a-MAP/
+  section 2, stayed in the standing-permission "systems (collision...)" category, this time on a different A0
+  line than entries 16-19 all used: "NPCs entering a building must route to the door and pass through the
+  opening, never a wall; re-path any routine that cannot." Its last progress note (2026-10-23) had already
+  established the real behaviour (followers walk door points via src/doorRouting.js; no other NPC routine
+  enters a building - checked again this cycle by re-reading src/main.js: only `maaFollow`/`sisterFollow` ever
+  pass `buildings: BUILDING_ROUTES`, and the comment at src/main.js:495 confirms bazaar/shop units have "no
+  walkable interior, none feeds a quest") but had never verified the ROUTING DATA ITSELF is self-consistent -
+  the actual thing src/npcRoutines.js's `doorLegs()` trusts without checking.
+- Confirmed src/doorRouting.js and the village.js constants it imports are pure coordinate math with no THREE
+  scene or DOM dependency (`BUILDING_ROUTES` imported and ran standalone in plain Node in well under a second,
+  no browser) - so unlike the "needs a live scene" blocker on BACKLOG A0's waypoint-validation item (still open,
+  same reason entries 18/19 logged), this one genuinely doesn't need the broken render pipeline at all.
+- Built `tools/check-door-routes.mjs`: checks (1) `links[i][0]` really resolves to zone `i` and `links[i][1]`
+  really resolves to zone `i+1` via the real `zoneOf()` function on each route (get this backwards or
+  mis-ordered and `doorLegs()`'s index-ordered queue walk sends a follower to a point that isn't actually in
+  the room it thinks it's in/leaving - i.e. toward a wall, not the opening), (2) the two points of one link are
+  under 5 m apart (a plausible door width - catches a miscopied-coordinate bug that would still pass check 1),
+  (3) every zone from 0 to `links.length` is reachable by at least one link point (catches a future building
+  whose `zoneOf` has a gap `doorLegs()`'s `for` loop would walk off the end of).
+- Self-tested same discipline as entry 19's tool: 4 deliberately broken synthetic routes (link[0]'s two points
+  reversed, link[0][1] moved 50 m away, a skipped zone, a malformed pair) were each confirmed flagged, and one
+  correct synthetic route was confirmed to pass clean with 0 gaps - 4/4 faults caught, no false positive.
+- Ran against the real `BUILDING_ROUTES`: 0 gaps. Both routes (house: 2 links/3 zones, school_room: 1 link/2
+  zones) check out - `links[i][0]`/`links[i][1]` land in the right zone every time, every link is 2.0-2.4 m
+  (a real door width), and zones 0/1/2 (house) and 0/1 (school_room) are all reachable.
+- This closes the "is the door-routing DATA right" half of the backlog item with a real, reusable, self-tested
+  check; it does NOT close the "does it stay clear of the real wall mesh" half (that still needs
+  world-validator.js's check 9 or a live walkthrough, both blocked on this container's render-pipeline OOM, not
+  a new blocker - logged by every recent entry). Updated BACKLOG.md's item in place with this, not ticked.
+- Separately, cleared a small stale item off docs/NEEDS_YOU.md: `tools/shrink-character.js` (a dead tool from
+  an abandoned shrink attempt, per the 23 Nov note already in NEEDS_YOU, "redundant now... safe to ignore or
+  remove it"). Per CLAUDE.md's "never `rm` anything, one-off scripts go in `tmp/`" rule, moved it (not deleted)
+  from `tools/` to `tmp/` via `git mv` then un-staged the `tmp/` half (gitignored, stays local, matches how
+  every other scratch file in this repo is handled) - so it's physically preserved but no longer sitting in
+  `tools/` looking like a live, maintained tool. Marked that NEEDS_YOU line `status: done`.
+- Verified: `node tools/check-door-routes.mjs` (self-test 4/4, real check 0 gaps, exit 0); re-ran the full
+  existing static suite to confirm nothing regressed - `node tools/check-position-writes.mjs` (213 files, 0 gap
+  candidates, exit 0), `node tools/collider-coverage-audit.mjs` (227 covered/22 excluded/7 verified-safe/0
+  gaps, unchanged from entry 19), `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same
+  pre-existing Tripo-plan warning), `node tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs`
+  PASS (49 scanned), `node tools/place-visibility-check.js` PASS, `npx vite build` clean (no errors), `node
+  tools/check-budget.js` (same pre-existing breaches as every recent entry - her own deferred `WEB_QUALITY='full'`
+  call, logged in NEEDS_YOU; no asset touched this cycle). The full `npm run build` chain (world-validator/
+  collision-test) still OOMs this container exactly as entries 15-19 documented; not fought, per standing
+  instruction.
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see below).
+- Nothing new for `docs/NEEDS_YOU.md` beyond closing the shrink-character line above - no decision needed from
+  her, no money/credits spent, no layout/position change, no taste call.
+- NEXT: BACKLOG A0's remaining open items ("validate every waypoint path walkable at build time", "verify
+  across a multi-minute continuous run") both still need either the renderer (broken here) or the much larger
+  static effort entry 19 already scoped and declined to attempt (reconstructing real building footprints
+  without three.js) - not attempted again this entry, same constraint. A future firing with a working
+  screenshot/world-validator pipeline should run check 9 specifically against the two routes
+  `tools/check-door-routes.mjs` now guards, to close the "stays clear of the real wall mesh" half this entry
+  left open.
+
 # 24 Nov (19) - turned entries 16/17/18's own repeated-by-hand "no routine sets position directly without a collision check" grep into a real, self-tested tool (`tools/check-position-writes.mjs`), and used it to find and clear one real hit no earlier cycle had actually read (`src/roadEvents.js:430`, confirmed safe)
 
 - Fresh container again this firing: `git status`/`git log` showed local `main` already at `origin/main`'s tip
