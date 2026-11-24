@@ -2161,7 +2161,7 @@
       "author": "bhagathartworks",
       "licence": "CC BY 4.0",
       "creditsKey": "Autorikshaw - Indian Tuk Tuk",
-      "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP) and set solid/two-sided in this repo"
+      "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP) and set solid/two-sided in this repo. 25 Nov: brand check done. Tiny plate-like sticker on the 512 px atlas painted over; no maker badge or legible lettering found; body colour shifted slightly (hue +8 deg, brightness +10 percent)."
     },
     {
       "match": [
@@ -2174,7 +2174,7 @@
       "author": "Lassi Kaukonen (thesidekick)",
       "licence": "CC BY 4.0",
       "creditsKey": "David Brown 25D tractor",
-      "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP, 136k to 59k triangles) in this repo; brand text to be removed before final"
+      "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP, 136k to 59k triangles) in this repo. 25 Nov: brand removed. Material renamed from the real maker and model name to old_tractor_body; no legible badge or lettering left on the 512 px atlas (hood strips were already painted over); body red shifted slightly (hue +8 deg, brightness -10 percent). Mesh shape of the real model is unchanged."
     },
     {
       "match": [
@@ -2239,7 +2239,7 @@
       "author": "alnmathew",
       "licence": "CC BY 4.0",
       "creditsKey": "Tuk Tuk Rikshaw",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo. 25 Nov: brand check done. No badge, logo or lettering found in any texture; body yellow shifted slightly (hue +6 deg, brightness -9 percent)."
     },
     {
       "match": [
@@ -2252,7 +2252,7 @@
       "author": "cansuaydin",
       "licence": "CC BY 4.0",
       "creditsKey": "Rusty Motorbike",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo. 25 Nov: brand check done. No badge, tank logo or plate lettering legible at 512 px; body rust-brown shifted slightly (hue +8 deg, brightness +10 percent)."
     },
     {
       "match": [
@@ -2265,7 +2265,7 @@
       "author": "bikramthapa",
       "licence": "CC BY 4.0",
       "creditsKey": "Thela Gadi",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo; film-poster images painted over"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo; film-poster images painted over. 25 Nov: brand removed. Stock photo of a biscuit jar in the atlas replaced with a plain tin tile; no signboard lettering left in the texture (smudged areas were already blurred); wood shifted slightly (hue -7 deg, brightness -9 percent)."
     },
     {
       "match": [
@@ -2278,7 +2278,7 @@
       "author": "VladNeko",
       "licence": "CC BY 4.0",
       "creditsKey": "Vintage Bicycle",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo. 25 Nov: brand removed. About 25 small coloured stickers with lettering on the frame texture painted over, same areas flattened in the normal map; frame red shifted slightly (hue +8 deg, brightness +10 percent)."
     },
     {
       "match": [
@@ -2291,7 +2291,7 @@
       "author": "Fredrik Johansen (kird3rf)",
       "licence": "CC BY 4.0",
       "creditsKey": "Moped - Vespa Piaggio Bravo",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo; tiny brand decals on body may remain, to be checked"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo; tiny brand decals on body may remain, to be checked. 25 Nov: brand removed. White mark on the red panel painted over in colour, occlusion and normal maps; red shifted slightly (hue +7 deg, brightness -10 percent). Real-model shapes in the mesh (front shield, body styling) cannot be changed without editing geometry."
     },
     {
       "match": [
@@ -2304,7 +2304,7 @@
       "author": "Armored Wave",
       "licence": "CC BY 4.0",
       "creditsKey": "Autosan D46 farming trailer Pack",
-      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo"
+      "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo. 25 Nov: brand removed. Tiny lettering fragments on the wheel texture painted over (colour and normal maps); no badge found on the body atlas; body red shifted slightly (hue +7 deg, brightness +12 percent)."
     },
     {
       "match": [
