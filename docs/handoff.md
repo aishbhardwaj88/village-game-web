@@ -1,4 +1,76 @@
-# 24 Nov (20) - built a new static, self-tested check for BACKLOG A0's "NPCs entering a building must route to the door, never a wall" item (`tools/check-door-routes.mjs`), confirming src/doorRouting.js's BUILDING_ROUTES data is internally consistent with what the follower routing code assumes of it; also cleared a stale dead-tool item off docs/NEEDS_YOU.md
+# 24 Nov (21) - recovered 2 orphaned commits (entry 20's own work) from a detached-HEAD checkout onto `main`; found and fixed a real pause-menu bug (`src/pause.js`): clicking a quality-preset button re-registered a second `pointerdown` listener on the minimap toggle button every time, so the minimap button silently stopped working (or flickered) for any player who had touched a quality button first - first new "systems: menus" item this loop has worked, not another collision audit
+
+- Fresh container again this firing: `HEAD` was detached at `0a035a2` (entry 20's own 2 commits:
+  `check-door-routes.mjs` + the NEEDS_YOU cleanup), local `main`'s branch pointer stale at `f00f10f`
+  (2 commits behind). `git fetch origin main` confirmed `origin/main` was ALSO still at `f00f10f` - so
+  entry 20's work had never actually been pushed (unlike entry 18's near-identical-looking case, where
+  origin already had the tip and it was only the local branch ref that was stale). Fixed the only way
+  that's safe for genuinely unpushed work: `git checkout main && git merge --ff-only 0a035a2 && git push
+  origin main` (fast-forward, no new commit, confirmed "up to date" after). Recorded here so a future
+  firing doesn't skip the `git fetch origin` step this entry's own instructions call for before deciding
+  anything is "just a stale pointer" - this time it genuinely wasn't pushed. `npm install` re-run as
+  always (`node_modules` empty in a fresh container). `Places V1/`, `reference-from-unity/` and Blender
+  all confirmed absent again.
+- Section A/BACKLOG A0: same state as every recent entry (everything ticked, blocked on Places V1/her
+  verdict/the broken screenshot pipeline, or out of scope per 5a-MAP's map-uproot rule) - and, per this
+  firing's own instructions, the screenshot/world-validator pipeline is known-broken in this container and
+  not worth fighting again. Entries 16-20 had each mined BACKLOG A0's "collision" sub-items for static,
+  no-browser work; by entry 20 that vein was close to exhausted (every remaining A0 line needs either a
+  live render trace or a much larger static effort already scoped and declined). Per CLAUDE.md 5a-MAP's
+  standing-permission list - "systems (collision, missions, audio, menus, mobile)" - this entry deliberately
+  looked at a DIFFERENT system in that list for the first time: **menus** (`src/pause.js`, `src/controls.js`,
+  `src/quality.js`), rather than re-running the collision line again.
+- Read `src/pause.js` end to end (the pause/settings menu: Esc/touch-button open, quality presets, volume
+  slider, minimap toggle, credits/controls/notebook/visit/tasks buttons). Found a real bug in
+  `setQualityButtonsUI(level)`: its body contained `document.getElementById('pause-minimap-btn')
+  ?.addEventListener('pointerdown', () => onToggleMinimap?.())` - i.e. the minimap button's click listener
+  was wired *inside* the function that updates which quality button looks active, instead of being wired
+  once at setup. That function runs once at setup AND again every time any quality button
+  (High/Medium/Low) is clicked (`setQualityButtonsUI(level); onQualityChange?.(level);` in the quality
+  button's own click handler) - so every quality-preset click silently added one MORE 'pointerdown'
+  listener onto the same minimap button, on top of the ones already there. A player who presses a quality
+  button N times before next tapping the minimap toggle gets `onToggleMinimap` fired N+1 times on that one
+  tap - an even N+1 (e.g. after 1 quality click, 2 fires) cancels itself out and the minimap button looks
+  completely broken; an odd one fires an extra, silently-wrong number of toggles. Indentation in the
+  original code was already visibly broken (a stray closing brace one line early) - a tell that this was a
+  botched edit, not an intentional pattern.
+- Fixed: moved the `pause-minimap-btn` listener registration out of `setQualityButtonsUI` to run exactly
+  once, alongside the other one-time button wiring (credits/controls/notebook/visit/tasks), right before
+  the function is first defined. `setQualityButtonsUI` now only does what its name says: toggle the
+  `active` class on the three quality buttons.
+- Verified with a deterministic unit test against the real, unmodified `src/pause.js`
+  (`tmp/unit-test-pause-minimap.mjs`, same style as entries 15-20's own tests): a minimal in-Node fake DOM
+  (classList with add/remove/toggle, addEventListener/dispatch, dataset, getElementById/querySelectorAll)
+  drives the real `setupPauseMenu()` export directly, no browser needed since this file is pure DOM
+  wiring with no THREE/canvas dependency. Confirmed the bug first (pre-fix: 1 quality click + 1 minimap
+  click -> `onToggleMinimap` fired 2 times; 3 more quality clicks + 1 minimap click -> fired 5 times), then
+  re-ran after the fix (both cases now fire exactly 1 time, exit 0). Also read `src/main.js`'s only caller
+  (`setupPauseMenu({ onToggleMinimap: () => { minimap.setHidden(!minimap.isHidden()); syncMinimapBtn(); },
+  ... })`, line ~2983) and confirmed it is the single source of truth for this button - nothing elsewhere in
+  `src/` or `index.html` wires `#pause-minimap-btn` a second time, so the fix is the complete fix, not a
+  partial one.
+- This is a real player-facing functional bug (the minimap toggle button silently stops doing what it
+  says), not a taste call - no art-director decision involved, nothing in `docs/NEEDS_YOU.md`.
+- `node tools/check-position-writes.mjs` (213 files, 0 gap candidates, exit 0, unchanged from entry 20),
+  `node tools/check-door-routes.mjs` (self-test 4/4, real check 0 gaps, exit 0, unchanged), `node
+  tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same pre-existing Tripo-plan warning), `node
+  tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs` PASS (49 scanned), `node
+  tools/place-visibility-check.js` PASS, `node tools/check-budget.js` (same pre-existing breaches as every
+  recent entry - her own deferred `WEB_QUALITY='full'` call, logged in NEEDS_YOU; no asset touched this
+  cycle). `npx vite build` clean (234 modules, 1.3 s, no errors). The full `npm run build` chain
+  (world-validator/collision-test) still OOMs this container per this firing's own instructions and every
+  recent entry; not fought.
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see below).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent, no
+  layout/position change, no taste call.
+- NEXT: the "menus" system still has `src/ui.js`, `src/save.js`, `src/controlsHelp.js` and the title-screen
+  settings panel unaudited the same way; "audio" (`src/audio.js`, `src/villageSounds.js`) and "mobile"
+  (`src/controls.js`'s touch joystick/look-zone, `src/quality.js`'s touch presets) are two more whole
+  categories in CLAUDE.md 5a-MAP's standing-permission list this loop hadn't touched before this entry -
+  worth a read-through-for-bugs pass each, the same way this entry found a real one in pause.js, rather
+  than only re-running the existing collision checks every cycle.
+
+
 
 - Fresh container again this firing: `git status`/`git log` showed local `main` already at `origin/main`'s tip
   (`282a503`, entry 19's own commit) with a clean working tree. `npm install` re-run as always (`node_modules`

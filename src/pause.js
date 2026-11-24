@@ -24,12 +24,19 @@ export function setupPauseMenu({ isTouch, initialQuality, initialVolume = 1, onO
 
   let open = false;
 
-  function setQualityButtonsUI(level) {
-    document.getElementById('pause-minimap-btn')?.addEventListener('pointerdown', () => {
+  // Bugfix (24 Nov, systems/menus): this used to be registered *inside*
+  // setQualityButtonsUI below, which re-adds a brand new 'pointerdown' listener to
+  // #pause-minimap-btn every time that function runs — once at setup, then again on
+  // every single quality-preset click. After N quality clicks, one minimap tap fired
+  // onToggleMinimap N+1 times, toggling the minimap back and forth and leaving it
+  // unchanged (or visibly flickering) for any player who had touched a quality button
+  // first. Wired once, here, outside the function that quality clicks re-invoke.
+  document.getElementById('pause-minimap-btn')?.addEventListener('pointerdown', () => {
     onToggleMinimap?.();
   });
 
-  for (const btn of qualityBtns) {
+  function setQualityButtonsUI(level) {
+    for (const btn of qualityBtns) {
       btn.classList.toggle('active', btn.dataset.quality === level);
     }
   }
