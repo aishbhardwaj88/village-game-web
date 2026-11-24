@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTiledMaterial, applySurfaceVariation, loadRaw } from '../materials.js';
+import { getTiledMaterial, cloneTiledMaterial, applySurfaceVariation, loadRaw } from '../materials.js';
 
 /**
  * The library materials this kit uses, by name. Geometry carries its UVs in texture tiles and its tint in vertex colours,
@@ -28,10 +28,47 @@ function rustMaterial() {
   return m;
 }
 
+/**
+ * Wall variety for batched kits (shops): every instance of a BatchedMesh shares one plaster/brick/concrete material, so the
+ * tile phase and scale are shifted per instance from the instance's own position (no extra texture, no extra draw call).
+ * Neighbouring buildings therefore never show the same tile at the same place or scale. Works on a clone, so the shared
+ * library material that other callers get from getTiledMaterial() is untouched.
+ */
+function perInstanceWallVariety(base) {
+  const m = cloneTiledMaterial(base);
+  const prev = Object.prototype.hasOwnProperty.call(m, 'onBeforeCompile') ? m.onBeforeCompile : null;
+  const prevKey = Object.prototype.hasOwnProperty.call(m, 'customProgramCacheKey') ? m.customProgramCacheKey() : '';
+  m.onBeforeCompile = (shader, renderer) => {
+    if (prev) prev(shader, renderer);
+    shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      #ifdef USE_BATCHING
+      {
+        vec3 wv_ = batchingMatrix[3].xyz;
+        float wh_ = fract(sin(dot(wv_.xz, vec2(12.9898, 78.233))) * 43758.5453);
+        float ws_ = 0.85 + 0.3 * fract(wh_ * 7.31);
+        vec2 wo_ = vec2(fract(wh_ * 3.17), fract(wh_ * 9.71)) * 3.0;
+        #ifdef USE_MAP
+          vMapUv = vMapUv * ws_ + wo_;
+        #endif
+        #ifdef USE_NORMALMAP
+          vNormalMapUv = vNormalMapUv * ws_ + wo_;
+        #endif
+        #ifdef USE_ROUGHNESSMAP
+          vRoughnessMapUv = vRoughnessMapUv * ws_ + wo_;
+        #endif
+      }
+      #endif`);
+  };
+  m.customProgramCacheKey = () => 'wallVar1' + (prevKey ? '|' + prevKey : '');
+  m.name = base.name + '_wallvar';
+  return m;
+}
+
 /** name: plaster | brick | concrete | wood | rust | terracotta | ground | grass | lane | crop */
 export function landMaterial(name) {
   if (cache.has(name)) return cache.get(name);
-  const m = name === 'rust' ? rustMaterial() : getTiledMaterial(name, { vertexColors: true });
+  let m = name === 'rust' ? rustMaterial() : getTiledMaterial(name, { vertexColors: true });
+  if (name === 'plaster' || name === 'brick' || name === 'concrete') m = perInstanceWallVariety(m);
   cache.set(name, m);
   return m;
 }

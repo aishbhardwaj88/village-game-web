@@ -6,7 +6,7 @@ import { houseQuality } from './housesQuality.js';
  *
  * The texture atlas is composed at runtime in a canvas from the approved texture sets that already ship in
  * public/assets/textures (brick, plaster, concrete, wood, rust, terracotta, dryearth): no new files, 0 MB added.
- * 4 x 2 cells of 512 px, each cell = one tile of its set with a 24 px wrapped margin, for colour, normal and roughness.
+ * 4 x 3 cells of 512 px, each cell = one tile of its set with a 24 px wrapped margin, for colour, normal and roughness.
  *
  *   cell 0 lime plaster   1 concrete / cement   2 brick   3 brick with whitewash patches
  *   cell 4 wood           5 rusted steel        6 terracotta (fired clay)   7 mud plaster
@@ -22,7 +22,11 @@ export const CELL = { plaster: 0, concrete: 1, brick: 2, brickWash: 3, wood: 4, 
 /** Tiles per metre for each cell, from the library table (tools/blender/arch.py: brick 1.2, plaster 0.5, wood 1.0, metal 1.0). */
 export const CELL_REPEAT = [0.5, 0.5, 1.2, 1.2, 1.0, 1.0, 1.0, 0.7];
 
-const COLS = 4, ROWS = 2, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
+const COLS = 4, ROWS = 3, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
+// cells 8..11: extra wall surfaces picked per house by its seed (ambientCG CC0, shared library names plaster_j/m/p, concrete_e).
+// They start as copies of the plaster cell and are swapped in after the game has started (loadHouseVariants), so they add
+// no request before Play.
+export const WALL_VARIANTS = ['plaster_j', 'plaster_m', 'plaster_p', 'concrete_e'];
 const SETS = [
   ['plaster', 'plaster'], ['concrete', 'concrete'], ['brick', 'brick'], ['brick', 'brickWash'],
   ['wood', 'wood'], ['rust', 'rust'], ['terracotta', 'terracotta'], ['dryearth', 'mud'],
@@ -70,6 +74,7 @@ function drawTile(g, img, col, row, sw = null) {
 }
 
 let atlasPromise = null;
+const atlasParts = {};
 /** { map, normalMap, roughnessMap } CanvasTextures, built once. `base` = the game's asset base url. */
 export function buildHouseAtlas(base = 'assets/textures/') {
   if (atlasPromise) return atlasPromise;
@@ -80,6 +85,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
     await Promise.all(sets.flatMap((s) => kinds.map(async (k) => { bm[s + k] = await loadBitmap(`${base}${s}/${s}_${k}.webp`); })));
     const wash = noiseCanvas(256, 3.7, 4, 0.42, 0.18);
     const out = {};
+    const plasterSq = {};
     for (const k of kinds) {
       const c = document.createElement('canvas');
       c.width = CS * COLS; c.height = CS * ROWS;
@@ -94,6 +100,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
           img = sq;
         }
         drawTile(g, img, col, row);
+        if (name === 'plaster') { plasterSq[k] = img; WALL_VARIANTS.forEach((_, vi) => drawTile(g, img, (8 + vi) % COLS, Math.floor((8 + vi) / COLS))); }
         if (name === 'brickWash' && false) { // lime whitewash brushed over the brick in ragged patches: paler, flatter, smoother where it sits
           const x0 = col * CS, y0 = row * CS;
           g.save(); g.beginPath(); g.rect(x0, y0, CS, CS); g.clip();
@@ -114,7 +121,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
       t.generateMipmaps = true;
       t.minFilter = THREE.LinearMipmapLinearFilter;
       if (k === 'color') t.colorSpace = THREE.SRGBColorSpace;
-      out[k] = t;
+      out[k] = t; atlasParts[k] = { g, t };
     }
     return { map: out.color, normalMap: out.normal, roughnessMap: out.roughness };
   })();
@@ -193,8 +200,8 @@ export function getHouseMaterial() {
         }
         // tile inside atlas cell c; the gradient comes from the continuous coordinate so the mip level is right across fract()
         vec4 atlasTex(sampler2D t, vec2 uv, float c) {
-          vec2 cell = vec2(mod(c, 4.0), 1.0 - floor(c / 4.0));
-          vec2 sz = vec2(0.25, 0.5);
+          vec2 cell = vec2(mod(c, 4.0), 2.0 - floor(c / 4.0));
+          vec2 sz = vec2(0.25, 1.0 / 3.0);
           float m = ${(MARGIN / CS).toFixed(5)};
           vec2 f = fract(uv);
           vec2 a = (cell + vec2(m) + f * (1.0 - 2.0 * m)) * sz;
@@ -206,10 +213,15 @@ export function getHouseMaterial() {
           return textureGrad(t, a, gx, gy);
         }`)
       .replace('#include <map_fragment>', `
-        vec2 hUv = vMapUv + vec2(fract(vSeed * 7.13), fract(vSeed * 3.71)) * 4.0;
+        // per-house tile scale (+-15%) and offset: neighbours never show the same tile phase
+        vec2 hUv = vMapUv * (0.85 + 0.3 * fract(vSeed * 5.37)) + vec2(fract(vSeed * 7.13), fract(vSeed * 3.71)) * 4.0;
         float hCell = floor(vCell + 0.5);
+        // plaster walls pick one of 5 surfaces by the house seed (cell 0 or the variant cells 8..11)
+        float hAt = hCell < 0.5 ? floor(fract(vSeed * 17.31) * 5.0) : hCell;
+        if (hCell < 0.5 && hAt > 0.5) hAt += 7.0;
+        if (hCell >= 0.5) hAt = hCell;
         {
-          vec4 tex_ = atlasTex(map, hUv, hCell);
+          vec4 tex_ = atlasTex(map, hUv, hAt);
           tex_.rgb *= CELL_BOOST[int(hCell)];
           diffuseColor *= tex_;
         }`)
@@ -269,20 +281,20 @@ export function getHouseMaterial() {
       .replace('#include <roughnessmap_fragment>', `
         float roughnessFactor = roughness;
         {
-          vec4 texelRoughness = atlasTex(roughnessMap, hUv, hCell);
+          vec4 texelRoughness = atlasTex(roughnessMap, hUv, hAt);
           roughnessFactor *= texelRoughness.g;
           float rn_ = hn_(vHW * 0.8 + 41.0) * 0.65 + hn_(vHW * 5.3 + 17.0) * 0.35;
           roughnessFactor = clamp(roughnessFactor * (0.86 + 0.28 * rn_), hCell == 5.0 ? 0.55 : 0.62, 1.0);
         }`)
       .replace('#include <normal_fragment_maps>', `
         {
-          vec3 mapN = atlasTex(normalMap, hUv, hCell).xyz * 2.0 - 1.0;
+          vec3 mapN = atlasTex(normalMap, hUv, hAt).xyz * 2.0 - 1.0;
           float ns_ = 0.6 + 0.6 * hn_(vHW * 0.7 + 63.0);
           mapN.xy *= normalScale * ns_ * CELL_NORMAL[int(hCell)];
           normal = normalize( tbn * mapN );
         }`);
   };
-  material.customProgramCacheKey = () => 'houses_s7_atlas_v1';
+  material.customProgramCacheKey = () => 'houses_s7_atlas_v2';
   return material;
 }
 
@@ -292,6 +304,21 @@ export function houseMaterialReady(base) {
   return buildHouseAtlas(base).then((a) => {
     m.map = a.map; m.normalMap = a.normalMap; m.roughnessMap = a.roughnessMap;
     m.needsUpdate = true;
+    if (typeof window !== 'undefined') setTimeout(() => (window.requestIdleCallback || setTimeout)(() => loadHouseVariants(), 1), 8000);
     return m;
   });
+}
+
+/** After the game has started: swap the real variant surfaces into cells 8..11 (12 small WebP files, 1.3 MB). */
+export function loadHouseVariants(base = 'assets/textures_mix/') {
+  const kinds = ['color', 'normal', 'roughness'];
+  return Promise.all(WALL_VARIANTS.flatMap((v) => kinds.map((k) => loadBitmap(`${base}${v}/${v}_${k}.webp`).then((img) => ({ v, k, img })))))
+    .then((all) => {
+      for (const { v, k, img } of all) {
+        const i = 8 + WALL_VARIANTS.indexOf(v), p = atlasParts[k];
+        if (!p) continue;
+        drawTile(p.g, img, i % COLS, Math.floor(i / COLS));
+        p.t.needsUpdate = true;
+      }
+    }).catch(() => { /* variants stay as plain plaster */ });
 }

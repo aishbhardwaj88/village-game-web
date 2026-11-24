@@ -71,6 +71,12 @@ const SETS = {
   // std 0.012-0.019 - both clear of the 0.012 flatness floor, no longer held back.
   plaster_h: { base: 'assets/textures_mix/plaster_h/', maps: ['color', 'normal', 'roughness'] }, // worn_cracked_plaster
   plaster_i: { base: 'assets/textures_mix/plaster_i/', maps: ['color', 'normal', 'roughness'] }, // yellow_plaster
+  // 24 Nov, ambientCG CC0 wall surfaces for wall variety (house atlas cells 8..11 in src/kit/housesMaterial.js, and available
+  // by name here). Not in MIX_GROUPS on purpose: adding them there would add texture requests before Play.
+  plaster_j: { base: 'assets/textures_mix/plaster_j/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster001
+  plaster_m: { base: 'assets/textures_mix/plaster_m/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster004
+  plaster_p: { base: 'assets/textures_mix/plaster_p/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster007
+  concrete_e: { base: 'assets/textures_mix/concrete_e/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Concrete034
 };
 
 // Real villages don't paint every wall and roof from one tin/one lane/one plaster -

@@ -3436,6 +3436,58 @@
       "licence": "CC0",
       "creditsKey": "ph:ceramic_pot",
       "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_j/*"
+      ],
+      "category": "credited",
+      "title": "Plaster001 (wall variety, house atlas, 24 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Plaster001",
+      "author": "ambientCG",
+      "licence": "CC0",
+      "creditsKey": "Plaster001",
+      "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; AO and Displacement ignored."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_m/*"
+      ],
+      "category": "credited",
+      "title": "Plaster004 (wall variety, house atlas, 24 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Plaster004",
+      "author": "ambientCG",
+      "licence": "CC0",
+      "creditsKey": "Plaster004",
+      "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; AO and Displacement ignored."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/plaster_p/*"
+      ],
+      "category": "credited",
+      "title": "Plaster007 (wall variety, house atlas, 24 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Plaster007",
+      "author": "ambientCG",
+      "licence": "CC0",
+      "creditsKey": "Plaster007",
+      "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; AO and Displacement ignored."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/concrete_e/*"
+      ],
+      "category": "credited",
+      "title": "Concrete034 (wall variety, house atlas, 24 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Concrete034",
+      "author": "ambientCG",
+      "licence": "CC0",
+      "creditsKey": "Concrete034",
+      "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; AO and Displacement ignored."
     }
   ],
   "worthKnowing": [
