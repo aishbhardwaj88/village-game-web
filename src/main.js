@@ -3427,7 +3427,19 @@ async function main() {
       }
     }
     const _pt2 = performance.now();
-    if (_pt2 - _pt0 > 300) (window.__longFrames = window.__longFrames || []).push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); // D1 load-time probe: [start, logic ms, render ms]
+    // D1 load-time probe: [start, logic ms, render ms]. Confirmed memory leak (24 Nov,
+    // same bug class as placeBatch.js's __pbDbg, found in the same cycle): this ran
+    // ungated in every real player's game for the whole session (`tick` is the
+    // permanent RAF loop, not a load-only phase — see `requestAnimationFrame(tick)`
+    // below), one entry per frame over 300ms, forever, with nothing ever clearing or
+    // capping it. Its only reader (grepped all of src/ and tools/) is
+    // tools/boot-profile.mjs, which only ever looks at the array's FIRST 10-15
+    // entries (`.slice(0, 10)`/`.slice(0, 15)`) — and that tool's own default
+    // (no-RIDE) boot-table mode loads with no `?dev=1`/`?proof=1` flag at all, so
+    // this can't be gated behind a dev flag the way __pbDbg was without breaking
+    // that default use. Capped at 500 entries instead (far more than any consumer
+    // ever reads) so it stops growing without changing what any real reader sees.
+    if (_pt2 - _pt0 > 300) { const _lf = (window.__longFrames = window.__longFrames || []); if (_lf.length < 500) _lf.push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); }
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);
   }
