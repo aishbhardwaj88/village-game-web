@@ -3540,6 +3540,201 @@
       "licence": "CC0",
       "creditsKey": "Clay005",
       "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; AO and Displacement ignored."
+    },
+    {
+      "match": [
+        "public/assets/props_ph/plastic_monobloc_chair_01.glb"
+      ],
+      "category": "credited",
+      "title": "plastic_monobloc_chair_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/plastic_monobloc_chair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:plastic_monobloc_chair_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/painted_wooden_chair_01.glb"
+      ],
+      "category": "credited",
+      "title": "painted_wooden_chair_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_chair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:painted_wooden_chair_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/outdoor_table_chair_set_01.glb"
+      ],
+      "category": "credited",
+      "title": "outdoor_table_chair_set_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/outdoor_table_chair_set_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:outdoor_table_chair_set_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/planter_pot_clay.glb"
+      ],
+      "category": "credited",
+      "title": "planter_pot_clay (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/planter_pot_clay",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:planter_pot_clay",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/potted_plant_01.glb"
+      ],
+      "category": "credited",
+      "title": "potted_plant_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:potted_plant_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/potted_plant_02.glb"
+      ],
+      "category": "credited",
+      "title": "potted_plant_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:potted_plant_02",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/potted_plant_04.glb"
+      ],
+      "category": "credited",
+      "title": "potted_plant_04 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/potted_plant_04",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:potted_plant_04",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/planter_box_02.glb"
+      ],
+      "category": "credited",
+      "title": "planter_box_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/planter_box_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:planter_box_02",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/planter_box_03.glb"
+      ],
+      "category": "credited",
+      "title": "planter_box_03 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/planter_box_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:planter_box_03",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/wicker_basket_01.glb"
+      ],
+      "category": "credited",
+      "title": "wicker_basket_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wicker_basket_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:wicker_basket_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/vintage_telephone_wall_clock.glb"
+      ],
+      "category": "credited",
+      "title": "vintage_telephone_wall_clock (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/vintage_telephone_wall_clock",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:vintage_telephone_wall_clock",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_lime_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_lime_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_lime_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_lime_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_ginger_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_ginger_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_ginger_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_ginger_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_lychee_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_lychee_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_lychee_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_lychee_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_pears_asian_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_pears_asian_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_pears_asian_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_pears_asian_01",
+      "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
     }
   ],
   "worthKnowing": [

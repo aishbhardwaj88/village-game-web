@@ -985,5 +985,245 @@
   "source": "https://polyhaven.com/a/ceramic_pot",
   "licence": "CC0",
   "size_kb": 85
+ },
+ {
+  "file": "public/assets/props_ph/plastic_monobloc_chair_01.glb",
+  "name": "plastic_monobloc_chair_01",
+  "height_m": 0.88,
+  "width_m": 0.642,
+  "depth_m": 0.628,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "outside houses",
+   "street",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_monobloc_chair_01",
+  "licence": "CC0",
+  "size_kb": 276
+ },
+ {
+  "file": "public/assets/props_ph/painted_wooden_chair_01.glb",
+  "name": "painted_wooden_chair_01",
+  "height_m": 0.956,
+  "width_m": 0.432,
+  "depth_m": 0.54,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "houses",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/painted_wooden_chair_01",
+  "licence": "CC0",
+  "size_kb": 195
+ },
+ {
+  "file": "public/assets/props_ph/outdoor_table_chair_set_01.glb",
+  "name": "outdoor_table_chair_set_01",
+  "height_m": 0.859,
+  "width_m": 0.776,
+  "depth_m": 1.831,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "chai stall",
+   "courtyard"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/outdoor_table_chair_set_01",
+  "licence": "CC0",
+  "size_kb": 392
+ },
+ {
+  "file": "public/assets/props_ph/planter_pot_clay.glb",
+  "name": "planter_pot_clay",
+  "height_m": 0.222,
+  "width_m": 0.266,
+  "depth_m": 0.263,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "outside houses",
+   "courtyard"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/planter_pot_clay",
+  "licence": "CC0",
+  "size_kb": 76
+ },
+ {
+  "file": "public/assets/props_ph/potted_plant_01.glb",
+  "name": "potted_plant_01",
+  "height_m": 1.335,
+  "width_m": 0.577,
+  "depth_m": 0.629,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "outside houses",
+   "courtyard"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/potted_plant_01",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/potted_plant_02.glb",
+  "name": "potted_plant_02",
+  "height_m": 0.84,
+  "width_m": 0.701,
+  "depth_m": 0.655,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "house interior",
+   "courtyard"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/potted_plant_02",
+  "licence": "CC0",
+  "size_kb": 104
+ },
+ {
+  "file": "public/assets/props_ph/potted_plant_04.glb",
+  "name": "potted_plant_04",
+  "height_m": 0.267,
+  "width_m": 0.166,
+  "depth_m": 0.183,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "house interior",
+   "shop counter"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/potted_plant_04",
+  "licence": "CC0",
+  "size_kb": 90
+ },
+ {
+  "file": "public/assets/props_ph/planter_box_02.glb",
+  "name": "planter_box_02",
+  "height_m": 0.453,
+  "width_m": 1.252,
+  "depth_m": 0.467,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "outside houses",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/planter_box_02",
+  "licence": "CC0",
+  "size_kb": 378
+ },
+ {
+  "file": "public/assets/props_ph/planter_box_03.glb",
+  "name": "planter_box_03",
+  "height_m": 0.855,
+  "width_m": 0.914,
+  "depth_m": 0.656,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "outside houses",
+   "kitchen garden"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/planter_box_03",
+  "licence": "CC0",
+  "size_kb": 386
+ },
+ {
+  "file": "public/assets/props_ph/wicker_basket_01.glb",
+  "name": "wicker_basket_01",
+  "height_m": 0.117,
+  "width_m": 0.383,
+  "depth_m": 0.294,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "market",
+   "house interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/wicker_basket_01",
+  "licence": "CC0",
+  "size_kb": 113
+ },
+ {
+  "file": "public/assets/props_ph/vintage_telephone_wall_clock.glb",
+  "name": "vintage_telephone_wall_clock",
+  "height_m": 0.499,
+  "width_m": 0.342,
+  "depth_m": 0.193,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "post office"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/vintage_telephone_wall_clock",
+  "licence": "CC0",
+  "size_kb": 84
+ },
+ {
+  "file": "public/assets/props_ph/food_lime_01.glb",
+  "name": "food_lime_01",
+  "height_m": 0.075,
+  "width_m": 0.06,
+  "depth_m": 0.061,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "market stall",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_lime_01",
+  "licence": "CC0",
+  "size_kb": 80
+ },
+ {
+  "file": "public/assets/props_ph/food_ginger_01.glb",
+  "name": "food_ginger_01",
+  "height_m": 0.575,
+  "width_m": 0.24,
+  "depth_m": 0.147,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "market stall",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_ginger_01",
+  "licence": "CC0",
+  "size_kb": 86
+ },
+ {
+  "file": "public/assets/props_ph/food_lychee_01.glb",
+  "name": "food_lychee_01",
+  "height_m": 0.05,
+  "width_m": 0.041,
+  "depth_m": 0.042,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "market stall"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_lychee_01",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/food_pears_asian_01.glb",
+  "name": "food_pears_asian_01",
+  "height_m": 0.109,
+  "width_m": 0.155,
+  "depth_m": 0.178,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "market stall",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_pears_asian_01",
+  "licence": "CC0",
+  "size_kb": 59
  }
 ]
