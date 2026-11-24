@@ -604,11 +604,23 @@ export function applyGroundNoiseDetail(
         }`
       );
   };
-  // Distinct cache key per material instance sharing this hook, so three.js doesn't
-  // reuse a compiled program from a material that didn't request the noise/detail
-  // pass (or vice versa).
-  material.customProgramCacheKey = () =>
-    `ground-noise-detail-v5-${noiseCellMetres}-${detailTileMultiplier}-${detailFadeMetres}-${grassTint || 'none'}-${grassCellMetres}-${grassCoverage}-${dampSpots.length}-${patchContrast}-${furrows ? 'f' + furrows.spacing : 'nf'}`;
+  // 24 Nov (efficiency-audit B6, "90 shader programs from 132 materials"): every one of
+  // noiseCellMetres/detailTileMultiplier/detailFadeMetres/grassTint/grassCellMetres/
+  // grassCoverage/dampSpots/patchContrast/furrows is consumed ONLY as a uniform value
+  // above (uNoiseScale, uDetailScale, uGrassTint, uDampPos0/1, uPatchContrast, uFurrow,
+  // ...) — none of them is ever interpolated into the GLSL source text itself, and every
+  // #include replacement above runs unconditionally regardless of their values (grass/
+  // furrow branches are `if (uGrassEnabled > 0.5)`/`if (uFurrow.x > 0.0)` runtime checks
+  // on a uniform, not `#ifdef`). The compiled shader is therefore byte-identical for
+  // every call to this function, whatever options it's given — so baking those values
+  // into the cache key was forcing a needless separate compiled program (and a needless
+  // recompile) per distinct options object, when every one of them could already share
+  // the one program three.js's own WebGLPrograms cache would hand out (verified: see
+  // tmp/verify-ground-cache-key.mjs). A real materials structural difference (map/
+  // aoMap/vertexColors present or not, etc.) is still caught by three's OWN automatic
+  // part of the program cache key, which this custom key is only ever appended to —
+  // this fix only removes the needless extra fragmentation on top of that.
+  material.customProgramCacheKey = () => 'ground-noise-detail-v6';
   return material;
 }
 
