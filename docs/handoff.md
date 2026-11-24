@@ -1,6 +1,16 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (35) - MAIN lane, first run of the 3-lane 24-hour push. docs/lanes/
+doesn't exist yet (MISSIONS/LOAD haven't run) - nothing to integrate. Part C: C1
+DONE, added a real 20k-triangle-per-character gate to tools/check-budget.js
+(tris read from accessors[].count in the glTF JSON, no buffer scan needed;
+previously computed nowhere, only size was gated). Verified against the build:
+full cast reports 40-60k tris each (expected, WEB_QUALITY is still 'full' per her
+21 Nov call - WARN only, doesn't fail). C2: reviewed, already built (S7 21 Nov),
+left as-is (see STATE.md). Closed the Tripo-plan NEEDS_YOU line per her standing
+order. Tier 1: build:unchecked + 4 instant checks all clean. NEXT: B8.
+
 # 24 Nov (34) - docs-only (A5 exception, no code this entry). Closed out B6 in
 docs/STATE.md: entries 28-31 already established it's exhausted (only real
 over-specific-cache-key instance fixed in ea5cc0f, 0 further programs to merge

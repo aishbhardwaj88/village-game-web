@@ -10,7 +10,8 @@
  *
  * File budgets (checked here, from dist/):
  *   - whole shipped game (dist/) <= 90 MB
- *   - each character GLB (any GLB with a skin) <= 1.5 MB; heroes (the 10 named cast) <= 2.5 MB
+ *   - each character GLB (any GLB with a skin) <= 1.5 MB; heroes (the 10 named cast) <= 2.5 MB; <= 20,000
+ *     triangles each (prep for the character slot, ORDER-24NOV Part C - no character shipped yet)
  *   - any other single model <= 5 MB (docs/budgets.md)
  *   - texture files <= 1024 px, props/ <= 512 px (docs/budgets.md)
  *   - advisory only (never fails): images inside GLBs over 1024 / 512 (props) / 2048 (characters) px
@@ -43,6 +44,7 @@ export const BUDGET = {
   textureMax: 1024,
   propTextureMax: 512,
   characterTextureMax: 2048,
+  characterTris: 20000,
   beforePlayMB: 8,
   playReadyMs: 4000,
   villageAfterPlayMs: 2000,
@@ -107,7 +109,22 @@ export function inspectGlb(file) {
     const dims = imageSize(buf.subarray(start, start + Math.min(bv.byteLength, 65536)));
     if (dims) images.push({ ...dims, bytes: bv.byteLength, mime: img.mimeType });
   }
-  return { skinned: Array.isArray(json.skins) && json.skins.length > 0, images };
+  const skinned = Array.isArray(json.skins) && json.skins.length > 0;
+  // Triangle count (C1, ORDER-24NOV Part C): same count char-diet.mjs computes - indices count if
+  // indexed, else POSITION accessor count. accessors[].count is a plain JSON field, no buffer read needed.
+  let tris;
+  if (skinned) {
+    let verts = 0;
+    for (const mesh of json.meshes || []) {
+      for (const prim of mesh.primitives || []) {
+        if (prim.mode !== undefined && prim.mode !== 4) continue; // 4 = TRIANGLES (the glTF default); skip lines/points/strips/fans
+        const acc = prim.indices !== undefined ? json.accessors[prim.indices] : json.accessors[prim.attributes?.POSITION];
+        if (acc) verts += acc.count;
+      }
+    }
+    tris = Math.round(verts / 3); // one triangle per 3 indices/verts in a TRIANGLES-mode primitive
+  }
+  return { skinned, images, tris };
 }
 
 function checkFiles() {
@@ -133,8 +150,10 @@ function checkFiles() {
       if (info.skinned) {
         const hero = HEROES.has(name);
         const limit = (hero ? BUDGET.heroMB : BUDGET.characterMB) * MB;
-        characters.push({ name, mb: +(size / MB).toFixed(2), hero, ok: size <= limit });
+        const trisOk = !Number.isFinite(info.tris) || info.tris <= BUDGET.characterTris;
+        characters.push({ name, mb: +(size / MB).toFixed(2), tris: info.tris, hero, ok: size <= limit && trisOk });
         if (size > limit) breaches.push({ what: 'character', msg: `character ${name}${hero ? ' (hero)' : ''} is ${mb(size)}, limit ${hero ? BUDGET.heroMB : BUDGET.characterMB} MB` });
+        if (!trisOk) breaches.push({ what: 'character', msg: `character ${name}${hero ? ' (hero)' : ''} is ${info.tris} triangles, limit ${BUDGET.characterTris}` });
       } else if (size > BUDGET.modelMB * MB) {
         breaches.push({ what: 'model', msg: `model ${rel} is ${mb(size)}, limit ${BUDGET.modelMB} MB` });
       }
@@ -190,7 +209,7 @@ function main() {
   if (files.facts.distMB !== undefined) console.log(`  shipped game: ${files.facts.distMB} MB (limit ${BUDGET.distTotalMB} MB)`);
   if (files.facts.characters?.length) {
     const c = files.facts.characters;
-    console.log(`  characters: ${c.length}, ${c.filter((x) => x.ok).length} within budget; sizes ${c.map((x) => `${x.name} ${x.mb}`).join(', ')}`);
+    console.log(`  characters: ${c.length}, ${c.filter((x) => x.ok).length} within budget; sizes ${c.map((x) => `${x.name} ${x.mb}MB/${x.tris}tris`).join(', ')}`);
   }
   console.log(`  runtime: ${ride.note}`);
   const all = [...files.breaches, ...ride.breaches];
