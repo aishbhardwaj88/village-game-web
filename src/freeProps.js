@@ -50,7 +50,7 @@ export const PH_INDOOR = [
   o('cassette_player', 0.236), o('alarm_clock_01', 0.172), o('pocket_watch', 0.076), o('bananas', 0.179), o('food_apple_01', 0.085),
   o('food_pomegranate_01', 0.115), o('lemon', 0.095), o('sweet_potato', 0.1), o('yellow_onion', 0.086),
 ];
-// the review rows sit around x 606, z 33; props load within 80 m of it and are freed beyond 120 m (src/propGate.js)
+// the review rows sit around x 606, z 33; props load within 50 m of it and are freed beyond 120 m (src/propGate.js)
 const PROPS_CENTER = { x: 606, z: 33 };
 export function addFreeProps(scene, groundAt, getPlayerPos) {
   return gateByDistance(scene, 'free_props', PROPS_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadFreeProps(group, groundAt), requestColliderRebuild);

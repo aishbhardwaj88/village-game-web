@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { addPilotVehicles } from './pilotVehicles.js';
+import { setPropGateRenderer } from './propGate.js';
 import { addFreeProps } from './freeProps.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
@@ -1463,6 +1464,7 @@ async function main() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
     const off = new URLSearchParams(window.location.search).get('off') || ''; // isolate lag: ?off=props, ?off=vehicles, ?off=walls (or a,b)
+    setPropGateRenderer(renderer);
     if (!off.includes('vehicles')) addPilotVehicles(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-vehicle pilot, after Play only (src/pilotVehicles.js)
     if (!off.includes('props')) addFreeProps(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-prop review row, after Play only (src/freeProps.js)
     if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());

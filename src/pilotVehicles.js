@@ -17,10 +17,10 @@ export const PILOT_VEHICLES = [
   { file: 'thela_gadi', x: 603.8, z: 47.4, yaw: 0.3, length: 2.4 },
   { file: 'bicycle', x: 609.2, z: 49.2, yaw: 1.9, length: 1.8 },
   { file: 'moped', x: 603.6, z: 51.2, yaw: 0.9, length: 1.8 },
-  { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 4.5 },
+  { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 2.28 },
 ];
 
-const VEHICLES_CENTER = { x: 606, z: 50 }; // load within 80 m, freed beyond 120 m (src/propGate.js)
+const VEHICLES_CENTER = { x: 606, z: 50 }; // load within 50 m, freed beyond 120 m (src/propGate.js)
 export function addPilotVehicles(scene, groundAt, getPlayerPos) {
   return gateByDistance(scene, 'pilot_vehicles', VEHICLES_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadPilotVehicles(group, groundAt), requestColliderRebuild);
 }
