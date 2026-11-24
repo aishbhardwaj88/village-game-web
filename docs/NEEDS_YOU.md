@@ -39,6 +39,7 @@
 - Small open questions (Oct - 3 Nov): do the two rich kit houses G and H stay; may code-built trees stand until real ones arrive; hand-sculpt a lotus for the pond; keep or remove the code-built sugarcane, mustard and wheat; is about 10k triangles per haystack fine. - status: open
 - Tripo (Oct): when you want people or animals made, top up 5 dollars of Tripo credits and paste the real API key in the dashboard (a fake test key is in your local .env; paste over it). Nothing is generated until you say yes. Cost details in docs/tripo-batch-1.md. - status: open
 
+- Two buildings in the chauraha road (24 Nov playtest, item 2): could not find them. The static layout validator (tools/layout-tests.mjs, checks all 926 footprints for on-road overlaps) reports a clean PASS right now, including THE SQUARE district (36 named buildings, 0 on-road failures) - and this container's headless browser still can't reach the dev server's required external host to screenshot it myself (same block as the sound-check item above). Either this was already fixed by another run since your playtest, or I need the building names or a closer description (what's painted on them, roughly which road arm) to track it down. Review: https://aishbhardwaj88.github.io/village-game-web/?at=608,40 - status: open
 Plain-language list of anything blocked on you. No jargon. The dashboard shows this at
 the top. Mark an item done from the dashboard, or edit this file directly. Keep each
 item as a single line (do not wrap it across lines), ending in `- status: open` or

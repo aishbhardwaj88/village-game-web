@@ -1,40 +1,41 @@
 # State - rewritten every run, max 40 lines
 
-Last updated: 24 Nov (late). MAIN owns ORDER-24NOV's PUSH LIST solo now
-(missions/load lanes paused 23:15 IST, no output in 3 MAIN runs, escalated).
+Last updated: 24 Nov (late). Working the LOOKS LIST (her 24 Nov playtest notes,
+items 1-7, priority order; she approved Claude chat acting for her 25 Nov).
 
 ## Current state
-PUSH LIST 1+2 (M1-M8 + trolley/side-jobs, first new-map proof): ran
-`tools/missions-check.mjs` (static, no browser) fresh - 358 PASS, 0 FAIL, 4
-WARN (3 milk-aunty stops on a back-lane gali, 1 ambient temple-bell note,
-both WARN by design), all 8 missions/10 side jobs/tractor+cart spawns.
-Real-browser proof (missions-smoke.mjs) still blocked: built dist-smoke,
-ran it, renderer crashed again even with characters 404'd out - same
-container OOM as every prior entry, not this diff; didn't rerun (A7).
-Fixed a real bug found reading the school code: school_bell (item 4) was
-hardcoded y=0; build_school.py's verandah apron there is y=0.12 - the known
-"~0.12 m float". Fixed in src/props.js. BELL_POSITION (collider/
-interaction, XZ-only) untouched - purely visual. Tier 1 clean; missions-
-check rerun after, same 358/0/4. distanceToCanalWater (item 4's other
-glitch) already fixed 24 Nov (d39496b) - confirmed by reading, not retouched.
+- Item 1 (wall variety): a concurrent run landed "5 plaster surfaces per house"
+  the same hour (c9a5524) - not retouched.
+- Item 2 (buildings in the chauraha road): could NOT reproduce - tools/
+  layout-tests.mjs (926 footprints, on-road check) is a clean PASS, incl. THE
+  SQUARE; no screenshot possible either. Logged to NEEDS_YOU - fixed already, or
+  needs her exact names.
+- Item 3 (haystacks shiny): FIXED (71f855f) - stagingYard.js addWeathering()
+  floored thatch roughness at 0.5 under IBL; forced to 1.0 (matte), thatch only.
+- Items 4/5 (pots/plants, street furniture): root cause found+fixed
+  (87da25f/fbfc8a8) - scenery.js's only doorstep-prop system loops ROWS_DRAWN,
+  empty under the live default layout=new, so all 492 new-map houses had ZERO
+  pots/furniture. Added src/kit/newHouseProps.js off NEW_HOUSES, wired 2
+  unused-but-licensed CC0 props into villageProps.js. No creepers (no real asset).
+- Items 6/7 (cycle feel, load speed) not started this run.
+- Every commit verified: build:unchecked + 4 Tier-1 checks + layout-tests.mjs +
+  missions-check.mjs, all clean (358/0/4, same baseline).
+- Container limit confirmed again: headless Chromium can't reach
+  accounts.google.com (egress refusal) - no screenshot proof possible here.
 
 ## Next 5 items
-1. Item 5: texture double-fetch count needs a network log (browser-blocked)
-   - find a static check next run.
-2. Item 6 (B4): mapData.json (758 KB inlined) + approved-map json (664 KB
-   fetched) ship the map twice - read both consumers' fields, then merge.
-3. 4th MAIN run with no lanes/missions.md or lanes/load.md -> escalate harder.
-4. Prep B7/C3 before/after shot pairs for her yes.
-5. More PUSH LIST / BACKLOG.md work once the above PASS or are parked.
+1. Item 6: cycle feel (pickup/cruise/sprint speeds, pedalling, lean into turns).
+2. Item 7 (= B4): load speed + double-fetch + map shipped twice (mapData.json +
+   approved-map-2026-11-21.json) + shader warm-up; measure before/after.
+3. Once 1-7 done/parked: one NEEDS_YOU "Looks fixes ready" line, ?at= per item.
+4. Then PUSH LIST (M1-M8 + side jobs on the new map) still open underneath.
 
 ## Blockers
-- Real in-browser proof: container OOM, confirmed again this run.
-- B7/C3 need her yes on a before/after shot. Tripo CLOSED, B8/B7/B9 deferred.
-LAST_FULL_PASS=82c337c (browser chain unreliable here).
+- No in-browser screenshot/proof possible here; item 2 needs her eye or names.
+LAST_FULL_PASS=82c337c (browser chain unreliable here; code+Tier 1 used instead).
 
 ## Known about this container
-- node_modules empty every fresh container - `npm ci` once per run.
-- HEAD starts detached on a stale local main - fetch+checkout -B fixes it.
-- Browser checks crash/hang (confirmed again: dist-smoke + missions-smoke.mjs
-  "page crashed" even with characters blocked). Use missions-check.mjs
-  (static) for mission/job proof instead.
+- node_modules empty every fresh container (npm ci once/run); HEAD starts
+  detached on a stale local main (fetch+checkout -B fixes it).
+- Headless Chromium can never reach accounts.google.com here - screenshot.js/
+  world-validator.js/regression-check.js hang or crash. Use static tools instead.
