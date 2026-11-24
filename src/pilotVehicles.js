@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js';
 import { gateByDistance } from './propGate.js';
+import { addThelaSign } from './thelaSign.js';
 
 export const PILOT_VEHICLES = [
   { file: 'auto_rickshaw', x: 607.6, z: 45.6, yaw: 1.2, length: 2.65 },
@@ -37,6 +38,9 @@ function loadPilotVehicles(group, groundAt) {
     m.scale.multiplyScalar(k);
     m.position.set(-c.x * k, -box.min.y * k, -c.z * k);
     holder.add(m);
+    // the thela has no lettering of its own: hang the painted Hindi/English board on its canopy (src/thelaSign.js); it reads the
+    // holder bounds synchronously, so it must be called here, before the holder is positioned and rotated
+    if (v.file === 'thela_gadi') addThelaSign(holder).catch((e) => console.warn('[thelaSign]', e));
     holder.position.set(v.x, groundAt ? groundAt(v.x, v.z) : 0, v.z);
     holder.rotation.y = v.yaw;
     m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });

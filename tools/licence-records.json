@@ -2168,12 +2168,13 @@
         "public/assets/vehicles_free/old_tractor.glb"
       ],
       "category": "credited",
-      "title": "David Brown 25D tractor (model)",
+      "title": "Old farm tractor (model)",
+      "originalTitle": "David Brown 25D tractor",
       "source": "Sketchfab",
       "url": "https://sketchfab.com/3d-models/david-brown-25d-tractor-85720bad20b341ec8508ddbc84f11795",
       "author": "Lassi Kaukonen (thesidekick)",
       "licence": "CC BY 4.0",
-      "creditsKey": "David Brown 25D tractor",
+      "creditsKey": "Old farm tractor",
       "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP, 136k to 59k triangles) in this repo. 25 Nov: brand removed. Material renamed from the real maker and model name to old_tractor_body; no legible badge or lettering left on the 512 px atlas (hood strips were already painted over); body red shifted slightly (hue +8 deg, brightness -10 percent). Mesh shape of the real model is unchanged."
     },
     {
@@ -2285,12 +2286,13 @@
         "public/assets/vehicles_free/moped.glb"
       ],
       "category": "credited",
-      "title": "Moped - Vespa Piaggio Bravo (model)",
+      "title": "Vintage scooter (model)",
+      "originalTitle": "Moped - Vespa Piaggio Bravo",
       "source": "Sketchfab",
       "url": "https://sketchfab.com/3d-models/moped-vespa-piaggio-bravo-bb7549d851784b238b917ade58dad1c5",
       "author": "Fredrik Johansen (kird3rf)",
       "licence": "CC BY 4.0",
-      "creditsKey": "Moped - Vespa Piaggio Bravo",
+      "creditsKey": "Vintage scooter",
       "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo; tiny brand decals on body may remain, to be checked. 25 Nov: brand removed. White mark on the red panel painted over in colour, occlusion and normal maps; red shifted slightly (hue +7 deg, brightness -10 percent). Real-model shapes in the mesh (front shield, body styling) cannot be changed without editing geometry."
     },
     {
@@ -2298,12 +2300,13 @@
         "public/assets/vehicles_free/trailer_pack.glb"
       ],
       "category": "credited",
-      "title": "Autosan D46 farming trailer Pack (model)",
+      "title": "Farm trailer (model)",
+      "originalTitle": "Autosan D46 farming trailer Pack",
       "source": "Sketchfab",
       "url": "https://sketchfab.com/3d-models/autosan-d46-farming-trailer-pack-0b033f7a2e904aca940dfba0230e29d9",
       "author": "Armored Wave",
       "licence": "CC BY 4.0",
-      "creditsKey": "Autosan D46 farming trailer Pack",
+      "creditsKey": "Farm trailer",
       "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo. 25 Nov: brand removed. Tiny lettering fragments on the wheel texture painted over (colour and normal maps); no badge found on the body atlas; body red shifted slightly (hue +7 deg, brightness +12 percent)."
     },
     {
