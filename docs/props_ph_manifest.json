@@ -1225,5 +1225,803 @@
   "source": "https://polyhaven.com/a/food_pears_asian_01",
   "licence": "CC0",
   "size_kb": 59
+ },
+ {
+  "file": "public/assets/props_ph/nature/anthurium_botany_01.glb",
+  "name": "anthurium_botany_01",
+  "height_m": 0.498,
+  "width_m": 2.792,
+  "depth_m": 1.797,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/anthurium_botany_01",
+  "licence": "CC0",
+  "size_kb": 114,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/barrel_stove.glb",
+  "name": "barrel_stove",
+  "height_m": 0.856,
+  "width_m": 0.589,
+  "depth_m": 0.593,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home",
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/barrel_stove",
+  "licence": "CC0",
+  "size_kb": 113
+ },
+ {
+  "file": "public/assets/props_ph/brass_pan_01.glb",
+  "name": "brass_pan_01",
+  "height_m": 0.053,
+  "width_m": 0.191,
+  "depth_m": 0.45,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/brass_pan_01",
+  "licence": "CC0",
+  "size_kb": 85
+ },
+ {
+  "file": "public/assets/props_ph/nature/calathea_orbifolia_01.glb",
+  "name": "calathea_orbifolia_01",
+  "height_m": 0.424,
+  "width_m": 2.492,
+  "depth_m": 1.194,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/calathea_orbifolia_01",
+  "licence": "CC0",
+  "size_kb": 109,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/nature/celandine_01.glb",
+  "name": "celandine_01",
+  "height_m": 0.914,
+  "width_m": 3.485,
+  "depth_m": 0.891,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/celandine_01",
+  "licence": "CC0",
+  "size_kb": 239,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/concrete_road_barrier.glb",
+  "name": "concrete_road_barrier",
+  "height_m": 0.83,
+  "width_m": 1.544,
+  "depth_m": 0.639,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/concrete_road_barrier",
+  "licence": "CC0",
+  "size_kb": 395
+ },
+ {
+  "file": "public/assets/props_ph/concrete_road_barrier_02.glb",
+  "name": "concrete_road_barrier_02",
+  "height_m": 1.106,
+  "width_m": 1.562,
+  "depth_m": 0.437,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/concrete_road_barrier_02",
+  "licence": "CC0",
+  "size_kb": 223
+ },
+ {
+  "file": "public/assets/props_ph/covered_car.glb",
+  "name": "covered_car",
+  "height_m": 1.411,
+  "width_m": 1.789,
+  "depth_m": 4.38,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/covered_car",
+  "licence": "CC0",
+  "size_kb": 317
+ },
+ {
+  "file": "public/assets/props_ph/nature/dandelion_01.glb",
+  "name": "dandelion_01",
+  "height_m": 0.17,
+  "width_m": 4.214,
+  "depth_m": 0.258,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/dandelion_01",
+  "licence": "CC0",
+  "size_kb": 154,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/nature/dry_branches_medium_01.glb",
+  "name": "dry_branches_medium_01",
+  "height_m": 0.34,
+  "width_m": 1.059,
+  "depth_m": 1.299,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/dry_branches_medium_01",
+  "licence": "CC0",
+  "size_kb": 214,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/gallinera_chair.glb",
+  "name": "gallinera_chair",
+  "height_m": 1.033,
+  "width_m": 0.58,
+  "depth_m": 0.603,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/gallinera_chair",
+  "licence": "CC0",
+  "size_kb": 107
+ },
+ {
+  "file": "public/assets/props_ph/gallinera_table.glb",
+  "name": "gallinera_table",
+  "height_m": 0.488,
+  "width_m": 0.83,
+  "depth_m": 0.518,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/gallinera_table",
+  "licence": "CC0",
+  "size_kb": 208
+ },
+ {
+  "file": "public/assets/props_ph/garden_gloves_01.glb",
+  "name": "garden_gloves_01",
+  "height_m": 0.075,
+  "width_m": 0.223,
+  "depth_m": 0.297,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/garden_gloves_01",
+  "licence": "CC0",
+  "size_kb": 81
+ },
+ {
+  "file": "public/assets/props_ph/garden_hose_wall_mounted_01.glb",
+  "name": "garden_hose_wall_mounted_01",
+  "height_m": 0.551,
+  "width_m": 0.462,
+  "depth_m": 0.25,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/garden_hose_wall_mounted_01",
+  "licence": "CC0",
+  "size_kb": 110
+ },
+ {
+  "file": "public/assets/props_ph/garden_sprinkler_01.glb",
+  "name": "garden_sprinkler_01",
+  "height_m": 0.203,
+  "width_m": 0.351,
+  "depth_m": 0.249,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/garden_sprinkler_01",
+  "licence": "CC0",
+  "size_kb": 91
+ },
+ {
+  "file": "public/assets/props_ph/gate_latch_01.glb",
+  "name": "gate_latch_01",
+  "height_m": 0.085,
+  "width_m": 0.205,
+  "depth_m": 0.075,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/gate_latch_01",
+  "licence": "CC0",
+  "size_kb": 113
+ },
+ {
+  "file": "public/assets/props_ph/greenchair_01.glb",
+  "name": "greenchair_01",
+  "height_m": 1.059,
+  "width_m": 0.673,
+  "depth_m": 0.664,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/GreenChair_01",
+  "licence": "CC0",
+  "size_kb": 108
+ },
+ {
+  "file": "public/assets/props_ph/industrial_pipe_lamp.glb",
+  "name": "industrial_pipe_lamp",
+  "height_m": 0.364,
+  "width_m": 0.183,
+  "depth_m": 0.262,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/industrial_pipe_lamp",
+  "licence": "CC0",
+  "size_kb": 107
+ },
+ {
+  "file": "public/assets/props_ph/industrial_storage_cart.glb",
+  "name": "industrial_storage_cart",
+  "height_m": 1.377,
+  "width_m": 1.603,
+  "depth_m": 1.103,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/industrial_storage_cart",
+  "licence": "CC0",
+  "size_kb": 373
+ },
+ {
+  "file": "public/assets/props_ph/industrial_wall_lamp.glb",
+  "name": "industrial_wall_lamp",
+  "height_m": 0.428,
+  "width_m": 0.273,
+  "depth_m": 0.139,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/industrial_wall_lamp",
+  "licence": "CC0",
+  "size_kb": 75
+ },
+ {
+  "file": "public/assets/props_ph/large_iron_gate.glb",
+  "name": "large_iron_gate",
+  "height_m": 2.928,
+  "width_m": 2.95,
+  "depth_m": 0.097,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/large_iron_gate",
+  "licence": "CC0",
+  "size_kb": 371
+ },
+ {
+  "file": "public/assets/props_ph/megaphone_01.glb",
+  "name": "megaphone_01",
+  "height_m": 0.3,
+  "width_m": 0.371,
+  "depth_m": 0.228,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/Megaphone_01",
+  "licence": "CC0",
+  "size_kb": 101
+ },
+ {
+  "file": "public/assets/props_ph/metal_trash_can.glb",
+  "name": "metal_trash_can",
+  "height_m": 0.906,
+  "width_m": 1.777,
+  "depth_m": 0.545,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_trash_can",
+  "licence": "CC0",
+  "size_kb": 276
+ },
+ {
+  "file": "public/assets/props_ph/modular_chainlink_fence.glb",
+  "name": "modular_chainlink_fence",
+  "height_m": 2.5,
+  "width_m": 8.114,
+  "depth_m": 2.148,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/modular_chainlink_fence",
+  "licence": "CC0",
+  "size_kb": 489
+ },
+ {
+  "file": "public/assets/props_ph/nature/nettle_plant.glb",
+  "name": "nettle_plant",
+  "height_m": 0.218,
+  "width_m": 1.082,
+  "depth_m": 0.095,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/nettle_plant",
+  "licence": "CC0",
+  "size_kb": 195,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/old_tyre.glb",
+  "name": "old_tyre",
+  "height_m": 0.6,
+  "width_m": 0.6,
+  "depth_m": 0.165,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/old_tyre",
+  "licence": "CC0",
+  "size_kb": 116
+ },
+ {
+  "file": "public/assets/props_ph/painted_wooden_bench.glb",
+  "name": "painted_wooden_bench",
+  "height_m": 0.889,
+  "width_m": 1.165,
+  "depth_m": 0.496,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/painted_wooden_bench",
+  "licence": "CC0",
+  "size_kb": 254
+ },
+ {
+  "file": "public/assets/props_ph/painted_wooden_stool.glb",
+  "name": "painted_wooden_stool",
+  "height_m": 0.579,
+  "width_m": 0.385,
+  "depth_m": 0.406,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home",
+   "shop interior",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/painted_wooden_stool",
+  "licence": "CC0",
+  "size_kb": 86
+ },
+ {
+  "file": "public/assets/props_ph/pastic_torch_6v.glb",
+  "name": "pastic_torch_6v",
+  "height_m": 0.142,
+  "width_m": 0.137,
+  "depth_m": 0.224,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/pastic_torch_6v",
+  "licence": "CC0",
+  "size_kb": 116
+ },
+ {
+  "file": "public/assets/props_ph/plastic_container.glb",
+  "name": "plastic_container",
+  "height_m": 0.43,
+  "width_m": 0.895,
+  "depth_m": 0.626,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_container",
+  "licence": "CC0",
+  "size_kb": 87
+ },
+ {
+  "file": "public/assets/props_ph/plastic_crate_03.glb",
+  "name": "plastic_crate_03",
+  "height_m": 0.265,
+  "width_m": 0.481,
+  "depth_m": 0.265,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_crate_03",
+  "licence": "CC0",
+  "size_kb": 165
+ },
+ {
+  "file": "public/assets/props_ph/portable_searchlight.glb",
+  "name": "portable_searchlight",
+  "height_m": 0.185,
+  "width_m": 0.165,
+  "depth_m": 0.253,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/portable_searchlight",
+  "licence": "CC0",
+  "size_kb": 110
+ },
+ {
+  "file": "public/assets/props_ph/rollershutter_door.glb",
+  "name": "rollershutter_door",
+  "height_m": 2.4,
+  "width_m": 1.08,
+  "depth_m": 0.3,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rollershutter_door",
+  "licence": "CC0",
+  "size_kb": 148,
+  "note": "clean shutter only, graffiti variant removed"
+ },
+ {
+  "file": "public/assets/props_ph/rollershutter_window_01.glb",
+  "name": "rollershutter_window_01",
+  "height_m": 1.851,
+  "width_m": 2.1,
+  "depth_m": 0.3,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rollershutter_window_01",
+  "licence": "CC0",
+  "size_kb": 149,
+  "note": "clean shutter only, graffiti variant removed"
+ },
+ {
+  "file": "public/assets/props_ph/rollershutter_window_02.glb",
+  "name": "rollershutter_window_02",
+  "height_m": 1.561,
+  "width_m": 1.6,
+  "depth_m": 0.168,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rollershutter_window_02",
+  "licence": "CC0",
+  "size_kb": 129,
+  "note": "clean shutter only, graffiti variant removed"
+ },
+ {
+  "file": "public/assets/props_ph/rollershutter_window_03.glb",
+  "name": "rollershutter_window_03",
+  "height_m": 1.546,
+  "width_m": 0.976,
+  "depth_m": 0.153,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rollershutter_window_03",
+  "licence": "CC0",
+  "size_kb": 139,
+  "note": "clean shutter only, graffiti variant removed"
+ },
+ {
+  "file": "public/assets/props_ph/round_spectacles.glb",
+  "name": "round_spectacles",
+  "height_m": 0.046,
+  "width_m": 0.157,
+  "depth_m": 0.149,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/round_spectacles",
+  "licence": "CC0",
+  "size_kb": 120
+ },
+ {
+  "file": "public/assets/props_ph/round_wooden_table_01.glb",
+  "name": "round_wooden_table_01",
+  "height_m": 1.005,
+  "width_m": 1.399,
+  "depth_m": 1.399,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "home"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/round_wooden_table_01",
+  "licence": "CC0",
+  "size_kb": 155
+ },
+ {
+  "file": "public/assets/props_ph/rusted_wheel_rim_02.glb",
+  "name": "rusted_wheel_rim_02",
+  "height_m": 0.337,
+  "width_m": 0.337,
+  "depth_m": 0.119,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rusted_wheel_rim_02",
+  "licence": "CC0",
+  "size_kb": 104
+ },
+ {
+  "file": "public/assets/props_ph/seeding_tray_01.glb",
+  "name": "seeding_tray_01",
+  "height_m": 0.061,
+  "width_m": 0.22,
+  "depth_m": 0.22,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature",
+   "farm"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/seeding_tray_01",
+  "licence": "CC0",
+  "size_kb": 115
+ },
+ {
+  "file": "public/assets/props_ph/nature/shrub_02.glb",
+  "name": "shrub_02",
+  "height_m": 1.382,
+  "width_m": 4.919,
+  "depth_m": 1.857,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/shrub_02",
+  "licence": "CC0",
+  "size_kb": 138,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/nature/shrub_03.glb",
+  "name": "shrub_03",
+  "height_m": 0.403,
+  "width_m": 1.367,
+  "depth_m": 0.151,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/shrub_03",
+  "licence": "CC0",
+  "size_kb": 128,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/nature/shrub_04.glb",
+  "name": "shrub_04",
+  "height_m": 0.28,
+  "width_m": 0.747,
+  "depth_m": 0.187,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/shrub_04",
+  "licence": "CC0",
+  "size_kb": 126,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/nature/shrub_sorrel_01.glb",
+  "name": "shrub_sorrel_01",
+  "height_m": 0.058,
+  "width_m": 0.352,
+  "depth_m": 0.146,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/shrub_sorrel_01",
+  "licence": "CC0",
+  "size_kb": 94,
+  "note": "plant files hold several variants laid out in a row (width_m covers the whole row); alpha cutout (MASK, double sided)"
+ },
+ {
+  "file": "public/assets/props_ph/small_plastic_torch.glb",
+  "name": "small_plastic_torch",
+  "height_m": 0.054,
+  "width_m": 0.097,
+  "depth_m": 0.227,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/small_plastic_torch",
+  "licence": "CC0",
+  "size_kb": 86
+ },
+ {
+  "file": "public/assets/props_ph/nature/stone_01.glb",
+  "name": "stone_01",
+  "height_m": 0.07,
+  "width_m": 0.146,
+  "depth_m": 0.089,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/stone_01",
+  "licence": "CC0",
+  "size_kb": 245
+ },
+ {
+  "file": "public/assets/props_ph/stone_fire_pit.glb",
+  "name": "stone_fire_pit",
+  "height_m": 0.381,
+  "width_m": 1.445,
+  "depth_m": 1.433,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/stone_fire_pit",
+  "licence": "CC0",
+  "size_kb": 73
+ },
+ {
+  "file": "public/assets/props_ph/nature/tree_stump_02.glb",
+  "name": "tree_stump_02",
+  "height_m": 0.518,
+  "width_m": 1.517,
+  "depth_m": 1.387,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "nature"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/tree_stump_02",
+  "licence": "CC0",
+  "size_kb": 317
+ },
+ {
+  "file": "public/assets/props_ph/utility_box_01.glb",
+  "name": "utility_box_01",
+  "height_m": 1.12,
+  "width_m": 0.52,
+  "depth_m": 0.432,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/utility_box_01",
+  "licence": "CC0",
+  "size_kb": 94
+ },
+ {
+  "file": "public/assets/props_ph/utility_box_02.glb",
+  "name": "utility_box_02",
+  "height_m": 1.12,
+  "width_m": 0.92,
+  "depth_m": 0.432,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/utility_box_02",
+  "licence": "CC0",
+  "size_kb": 107
+ },
+ {
+  "file": "public/assets/props_ph/water_manhole_cover.glb",
+  "name": "water_manhole_cover",
+  "height_m": 0.068,
+  "width_m": 0.691,
+  "depth_m": 0.691,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/water_manhole_cover",
+  "licence": "CC0",
+  "size_kb": 110
  }
 ]
