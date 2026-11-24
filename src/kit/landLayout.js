@@ -5,6 +5,19 @@
  * fetches the approved export itself. import.meta.glob returns {} for a missing file, so the build never breaks either way.
  * The JSON is emitted as its own asset (?url) and only fetched under ?layout=new, so it never adds to the Before-Play download.
  *
+ * Tried 24 Nov (efficiency item 7, "map shipped twice"): the getLayout() success check below never actually succeeds
+ * (`Array.isArray(lay.places)` is always false — getLayout() returns `places` as an id-keyed dict, not an array, so this
+ * always falls through to the raw fetch, costing an extra ~664 KB/125 KB-gzip request every load). Tried switching to
+ * `lay.list` (the real places array getLayout() keeps alongside the dict) — shape-compatible with every consumer
+ * checked (shopsPlace.js/matchPlace, landTrees.js, landFields.js, landCanal.js, landProps.js all just need an
+ * iterable array of {id,name,x,z,front,existing}, which mapData.json's `list` is, same fields as the raw file plus
+ * more) — but it changed which objects get `o.rect` (the corrected, road-snapped footprint from tools/layout-pack.mjs),
+ * and that REGRESSED tools/world-validator.js's "nothing buried" check: 3 merged house-batch meshes
+ * (village_static_merged/hb_main_25, hb_wood_26, hb_props_27) sank underground that are clean on the unmodified raw-
+ * fetch path. Reverted here; the real fix needs someone who can see WHY those three batches sink under the packed
+ * footprints (a Y/height mismatch between mapData.json's footprint data and whatever reads it for ground height),
+ * not a blind swap. Left as a NEEDS_YOU/BACKLOG item instead of shipped broken.
+ *
  * Map coords = game world coords (x east, z south, metres). Checked 21 Nov against three running places:
  * house 652.1,40.2 / school 556.5,108.5 / halwai 637.4,21.4 / temple 695.7,-78.3 = anchors.js + MAP_SHIFT (600,0). All match.
  */

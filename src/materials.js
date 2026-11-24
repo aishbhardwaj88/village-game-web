@@ -122,7 +122,10 @@ const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
  * content at the same public/ path (no content hash, unlike the built JS/CSS) is never
  * served stale from the browser cache or GitHub Pages' CDN after a deploy. */
 const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
-function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
+// Exported so any other subsystem with its own raw TextureLoader/ImageLoader call site (sharedTextures.js's
+// GLTF-relink path) can request the exact same URL loadRaw() does, so a texture used by both the tiled-
+// material builder and a legacy relinked model shares one browser/frameQueue fetch instead of two.
+export function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
 
 // Exported so the few call sites that need a raw library texture but build their own
 // bespoke Material (landFields.js's painted-crop ground shader, landMaterials.js's

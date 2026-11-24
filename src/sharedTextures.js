@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { applySurfaceVariation, surfaceFamilyFor } from './materials.js';
+import { applySurfaceVariation, surfaceFamilyFor, bust } from './materials.js';
 
 /**
  * Shared library textures for the OLDER Blender models (gaushala, temple, house_compound, abadi rows, chowk, shops...).
@@ -9,13 +9,24 @@ import { applySurfaceVariation, surfaceFamilyFor } from './materials.js';
  * back before the load resolves, so every load site sees the same material it always did, and each image is downloaded once
  * for the whole game instead of once per model. Unlike stagingYard.js swapShared(), the material is NOT replaced; the only
  * addition is materials.js applySurfaceVariation (subtle world-space mottling/roughness/cavity, shader values only).
+ *
+ * Found + fixed 24 Nov (efficiency item 7, "textures fetched twice"): this used its own private, UNBUSTED
+ * THREE.ImageLoader straight at `assets/textures/<set>/...webp`, a totally separate fetch + cache from
+ * materials.js's getTiledMaterial()/loadRaw() (the "one shared, cache-busted, dedup-by-URL fetch" those already
+ * use, see materials.js's own comment on loadRaw — this was exactly that same bug, just in a third call site
+ * the 24 Nov fix of landFields.js/landMaterials.js missed). Any place using one of these sets BOTH on a legacy
+ * relinked model and directly via getTiledMaterial() (true for every set here: wood, plaster, brick, tin,
+ * concrete, metal, ground, grass, crop, terracotta...) downloaded the same bytes twice. Now goes through
+ * THREE.TextureLoader (not ImageLoader) at the SAME bust()-ed URL loadRaw() requests, which frameQueue.js's
+ * bitmap-patched TextureLoader.load dedupes by exact resolved URL across every caller in the game (one real
+ * fetch, shared) - measured 24 Nov: cut every one of these sets from 2 real downloads to 1.
  */
 const images = new Map();   // url -> Promise<THREE.Source>
 function sourceFor(set, kind) {
   const url = `assets/textures/${set}/${set}_${kind}.webp`;
   let p = images.get(url);
   if (!p) {
-    p = new THREE.ImageLoader().loadAsync(url).then((img) => new THREE.Source(img));
+    p = new THREE.TextureLoader().loadAsync(bust(url)).then((tex) => tex.source);
     images.set(url, p);
   }
   return p;

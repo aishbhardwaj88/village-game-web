@@ -1,6 +1,22 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (39) - LOOKS item 7 (load speed): found+fixed "textures fetched twice" for real, "map shipped twice" tried+reverted
+- Root cause (CDP network capture, not guesswork): index.html's opening-view <link preload> tags were `as="image"`
+  but the real loader (frameQueue.js) uses `fetch()`, a destination preload "image" never matches - genuine 2nd
+  download of every one of ~14 shared texture sets, whatever their URL said. Fixed: `as="fetch"` (matches the
+  already-correct .glb model preloads) + stamped the same build ?v= token materials.js's bust() uses. Also found
+  sharedTextures.js's GLTF-relink path had its own private unbusted ImageLoader for the same sets - same bug, 3rd
+  call site missed by the 24 Nov B2 fix; routed through loadRaw()'s shared bust()+frameQueue cache instead.
+- Measured before/after (built dist/, Playwright+CDP, real encodedDataLength not just byte-counting): 182 req/
+  19.6 MB real wire/41 true duplicate fetches/~11.2s ready -> 117 req/11.6 MB/0 duplicates/~8.8s ready.
+- Tried the matching "map shipped twice" fix (landLayout.js's loadLandMap() Array.isArray(lay.places) check is
+  always false, always re-fetches the 664KB raw map) - REGRESSED world-validator's buried-objects check (3 house-
+  batch meshes sank), reverted; left as a BACKLOG item with the exact cause written in the file's own comment.
+- Verified: npm run build full chain (world-validator ran this time: wall-overlap PASS, buried PASS matches
+  baseline, float FAIL is the known pre-existing school_bell 0.12m); licence/dup-models/material-clone/place-
+  visibility/missions-check/layout-tests all clean, same baseline counts. Screenshot: title ready, clean.
+
 # 24 Nov (37) - MAIN lane, 3rd run of the 3-lane push. docs/lanes/ still
 doesn't exist after 2 full MAIN runs (~2h) - MISSIONS/LOAD haven't logged or
 committed anything; flagged in NEEDS_YOU as a pattern now. Part A/C still

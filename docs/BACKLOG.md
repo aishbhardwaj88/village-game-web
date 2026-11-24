@@ -62,11 +62,11 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       wait for the new map.
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
-
-## Stale, corrected by a later rule (archived, listed so nobody repeats them)
-- Signboard hierarchy flip (23 Oct note, "Hindi smaller/lighter on top") is SUPERSEDED
-  by CLAUDE.md section 7's 25 Oct FINAL rule (Hindi bold/larger first). Follow CLAUDE.md
-  7, not this file, for any signboard work.
+- [ ] [ACTIVE] src/kit/landLayout.js loadLandMap(): getLayout()-success check is always
+      false (places comes back as a dict, not an array), so it always re-fetches the raw
+      664KB map (24 Nov item 7 dup download). Shape-compatible fix tried 24 Nov
+      REGRESSES world-validator buried-objects (3 house-batch meshes sink) - see that
+      file's own 24 Nov comment for the exact cause still needed before retrying.
 
 GAME_COMPLETE.md is fully ticked and audit-confirmed; everything above is optional
 future polish layered on a finished game. See docs/NEEDS_YOU.md for anything blocked on
