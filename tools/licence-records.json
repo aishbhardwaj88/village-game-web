@@ -2617,6 +2617,682 @@
       "licence": "CC BY 4.0",
       "creditsKey": "Water Tower Water Tanker_14_MB",
       "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/alarm_clock_01.glb"
+      ],
+      "category": "credited",
+      "title": "alarm_clock_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/alarm_clock_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:alarm_clock_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/bananas.glb"
+      ],
+      "category": "credited",
+      "title": "bananas (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/bananas",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:bananas",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/barbershopchair_01.glb"
+      ],
+      "category": "credited",
+      "title": "BarberShopChair_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/BarberShopChair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:BarberShopChair_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/barrel_01.glb"
+      ],
+      "category": "credited",
+      "title": "Barrel_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/Barrel_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:Barrel_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/barrel_02.glb"
+      ],
+      "category": "credited",
+      "title": "Barrel_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/Barrel_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:Barrel_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/barrel_03.glb"
+      ],
+      "category": "credited",
+      "title": "barrel_03 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/barrel_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:barrel_03",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/binder_notebook.glb"
+      ],
+      "category": "credited",
+      "title": "binder_notebook (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/binder_notebook",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:binder_notebook",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/boombox.glb"
+      ],
+      "category": "credited",
+      "title": "boombox (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/boombox",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:boombox",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/cardboard_box_01.glb"
+      ],
+      "category": "credited",
+      "title": "cardboard_box_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/cardboard_box_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:cardboard_box_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/cashregister_01.glb"
+      ],
+      "category": "credited",
+      "title": "CashRegister_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/CashRegister_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:CashRegister_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/cassette_player.glb"
+      ],
+      "category": "credited",
+      "title": "cassette_player (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/cassette_player",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:cassette_player",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/ceiling_fan.glb"
+      ],
+      "category": "credited",
+      "title": "ceiling_fan (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ceiling_fan",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:ceiling_fan",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/folding_wooden_stool.glb"
+      ],
+      "category": "credited",
+      "title": "folding_wooden_stool (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/folding_wooden_stool",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:folding_wooden_stool",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_apple_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_apple_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_apple_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_apple_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/food_pomegranate_01.glb"
+      ],
+      "category": "credited",
+      "title": "food_pomegranate_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/food_pomegranate_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:food_pomegranate_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/football.glb"
+      ],
+      "category": "credited",
+      "title": "football (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/football",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:football",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/hand_truck.glb"
+      ],
+      "category": "credited",
+      "title": "hand_truck (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/hand_truck",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:hand_truck",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/lantern_01.glb"
+      ],
+      "category": "credited",
+      "title": "Lantern_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/Lantern_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:Lantern_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/lemon.glb"
+      ],
+      "category": "credited",
+      "title": "lemon (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/lemon",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:lemon",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/lightbulb_01.glb"
+      ],
+      "category": "credited",
+      "title": "lightbulb_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/lightbulb_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:lightbulb_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_jerrycan.glb"
+      ],
+      "category": "credited",
+      "title": "metal_jerrycan (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_jerrycan",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:metal_jerrycan",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_stool_02.glb"
+      ],
+      "category": "credited",
+      "title": "metal_stool_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_stool_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:metal_stool_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/mounted_fluorescent_lights.glb"
+      ],
+      "category": "credited",
+      "title": "mounted_fluorescent_lights (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/mounted_fluorescent_lights",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:mounted_fluorescent_lights",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/ornate_mirror_01.glb"
+      ],
+      "category": "credited",
+      "title": "ornate_mirror_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ornate_mirror_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:ornate_mirror_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/painted_wooden_shelves.glb"
+      ],
+      "category": "credited",
+      "title": "painted_wooden_shelves (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_shelves",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:painted_wooden_shelves",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/painted_wooden_table.glb"
+      ],
+      "category": "credited",
+      "title": "painted_wooden_table (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_wooden_table",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:painted_wooden_table",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/periwinkle_plant.glb"
+      ],
+      "category": "credited",
+      "title": "periwinkle_plant (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/periwinkle_plant",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:periwinkle_plant",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/planter_box_01.glb"
+      ],
+      "category": "credited",
+      "title": "planter_box_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/planter_box_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:planter_box_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/plastic_crate_01.glb"
+      ],
+      "category": "credited",
+      "title": "plastic_crate_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/plastic_crate_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:plastic_crate_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/plastic_crate_02.glb"
+      ],
+      "category": "credited",
+      "title": "plastic_crate_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/plastic_crate_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:plastic_crate_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/plastic_jerrycan.glb"
+      ],
+      "category": "credited",
+      "title": "plastic_jerrycan (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/plastic_jerrycan",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:plastic_jerrycan",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/pocket_watch.glb"
+      ],
+      "category": "credited",
+      "title": "pocket_watch (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/pocket_watch",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:pocket_watch",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/power_box_01.glb"
+      ],
+      "category": "credited",
+      "title": "power_box_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/power_box_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:power_box_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/rusted_spade_01.glb"
+      ],
+      "category": "credited",
+      "title": "rusted_spade_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/rusted_spade_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:rusted_spade_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/rusted_wheel_rim_01.glb"
+      ],
+      "category": "credited",
+      "title": "rusted_wheel_rim_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/rusted_wheel_rim_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:rusted_wheel_rim_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/schoolchair_01.glb"
+      ],
+      "category": "credited",
+      "title": "SchoolChair_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/SchoolChair_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:SchoolChair_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/schooldesk_01.glb"
+      ],
+      "category": "credited",
+      "title": "SchoolDesk_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/SchoolDesk_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:SchoolDesk_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/standing_chalkboard_01.glb"
+      ],
+      "category": "credited",
+      "title": "standing_chalkboard_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/standing_chalkboard_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:standing_chalkboard_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/stationery_supplies.glb"
+      ],
+      "category": "credited",
+      "title": "stationery_supplies (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/stationery_supplies",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:stationery_supplies",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/steel_frame_shelves_01.glb"
+      ],
+      "category": "credited",
+      "title": "steel_frame_shelves_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/steel_frame_shelves_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:steel_frame_shelves_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/steel_frame_shelves_02.glb"
+      ],
+      "category": "credited",
+      "title": "steel_frame_shelves_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/steel_frame_shelves_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:steel_frame_shelves_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/sweet_potato.glb"
+      ],
+      "category": "credited",
+      "title": "sweet_potato (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/sweet_potato",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:sweet_potato",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/television_02.glb"
+      ],
+      "category": "credited",
+      "title": "television_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/television_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:television_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/tire_pump.glb"
+      ],
+      "category": "credited",
+      "title": "tire_pump (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/tire_pump",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:tire_pump",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/wall_clock.glb"
+      ],
+      "category": "credited",
+      "title": "wall_clock (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wall_clock",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:wall_clock",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/watering_can_metal_01.glb"
+      ],
+      "category": "credited",
+      "title": "watering_can_metal_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/watering_can_metal_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:watering_can_metal_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/wooden_broom.glb"
+      ],
+      "category": "credited",
+      "title": "wooden_broom (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_broom",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:wooden_broom",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/wooden_ladder.glb"
+      ],
+      "category": "credited",
+      "title": "wooden_ladder (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/wooden_ladder",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:wooden_ladder",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/woodentable_01.glb"
+      ],
+      "category": "credited",
+      "title": "WoodenTable_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/WoodenTable_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:WoodenTable_01",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/woodentable_02.glb"
+      ],
+      "category": "credited",
+      "title": "WoodenTable_02 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/WoodenTable_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:WoodenTable_02",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/worn_metal_rack.glb"
+      ],
+      "category": "credited",
+      "title": "worn_metal_rack (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/worn_metal_rack",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:worn_metal_rack",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/yellow_onion.glb"
+      ],
+      "category": "credited",
+      "title": "yellow_onion (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/yellow_onion",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:yellow_onion",
+      "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
     }
   ],
   "worthKnowing": [

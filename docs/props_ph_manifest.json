@@ -1,0 +1,815 @@
+[
+ {
+  "file": "public/assets/props_ph/alarm_clock_01.glb",
+  "name": "alarm_clock_01",
+  "height_m": 0.172,
+  "width_m": 0.131,
+  "depth_m": 0.066,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/alarm_clock_01",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/bananas.glb",
+  "name": "bananas",
+  "height_m": 0.179,
+  "width_m": 0.6,
+  "depth_m": 0.244,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/bananas",
+  "licence": "CC0",
+  "size_kb": 75
+ },
+ {
+  "file": "public/assets/props_ph/barbershopchair_01.glb",
+  "name": "barbershopchair_01",
+  "height_m": 1.489,
+  "width_m": 0.757,
+  "depth_m": 1.328,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/barbershopchair_01",
+  "licence": "CC0",
+  "size_kb": 392
+ },
+ {
+  "file": "public/assets/props_ph/barrel_01.glb",
+  "name": "barrel_01",
+  "height_m": 0.88,
+  "width_m": 0.563,
+  "depth_m": 0.563,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/barrel_01",
+  "licence": "CC0",
+  "size_kb": 384
+ },
+ {
+  "file": "public/assets/props_ph/barrel_02.glb",
+  "name": "barrel_02",
+  "height_m": 0.88,
+  "width_m": 0.488,
+  "depth_m": 0.485,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/barrel_02",
+  "licence": "CC0",
+  "size_kb": 151
+ },
+ {
+  "file": "public/assets/props_ph/barrel_03.glb",
+  "name": "barrel_03",
+  "height_m": 0.93,
+  "width_m": 0.634,
+  "depth_m": 0.639,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/barrel_03",
+  "licence": "CC0",
+  "size_kb": 291
+ },
+ {
+  "file": "public/assets/props_ph/binder_notebook.glb",
+  "name": "binder_notebook",
+  "height_m": 0.025,
+  "width_m": 0.584,
+  "depth_m": 0.2,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/binder_notebook",
+  "licence": "CC0",
+  "size_kb": 96
+ },
+ {
+  "file": "public/assets/props_ph/boombox.glb",
+  "name": "boombox",
+  "height_m": 0.406,
+  "width_m": 0.723,
+  "depth_m": 0.186,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/boombox",
+  "licence": "CC0",
+  "size_kb": 114
+ },
+ {
+  "file": "public/assets/props_ph/cardboard_box_01.glb",
+  "name": "cardboard_box_01",
+  "height_m": 0.342,
+  "width_m": 0.387,
+  "depth_m": 0.516,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/cardboard_box_01",
+  "licence": "CC0",
+  "size_kb": 100
+ },
+ {
+  "file": "public/assets/props_ph/cashregister_01.glb",
+  "name": "cashregister_01",
+  "height_m": 0.62,
+  "width_m": 0.594,
+  "depth_m": 0.62,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/cashregister_01",
+  "licence": "CC0",
+  "size_kb": 405
+ },
+ {
+  "file": "public/assets/props_ph/cassette_player.glb",
+  "name": "cassette_player",
+  "height_m": 0.236,
+  "width_m": 0.129,
+  "depth_m": 0.048,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/cassette_player",
+  "licence": "CC0",
+  "size_kb": 115
+ },
+ {
+  "file": "public/assets/props_ph/ceiling_fan.glb",
+  "name": "ceiling_fan",
+  "height_m": 0.516,
+  "width_m": 1.463,
+  "depth_m": 1.463,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/ceiling_fan",
+  "licence": "CC0",
+  "size_kb": 107
+ },
+ {
+  "file": "public/assets/props_ph/folding_wooden_stool.glb",
+  "name": "folding_wooden_stool",
+  "height_m": 0.442,
+  "width_m": 0.527,
+  "depth_m": 0.547,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/folding_wooden_stool",
+  "licence": "CC0",
+  "size_kb": 106
+ },
+ {
+  "file": "public/assets/props_ph/food_apple_01.glb",
+  "name": "food_apple_01",
+  "height_m": 0.085,
+  "width_m": 0.097,
+  "depth_m": 0.096,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_apple_01",
+  "licence": "CC0",
+  "size_kb": 64
+ },
+ {
+  "file": "public/assets/props_ph/food_pomegranate_01.glb",
+  "name": "food_pomegranate_01",
+  "height_m": 0.115,
+  "width_m": 0.114,
+  "depth_m": 0.115,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/food_pomegranate_01",
+  "licence": "CC0",
+  "size_kb": 73
+ },
+ {
+  "file": "public/assets/props_ph/football.glb",
+  "name": "football",
+  "height_m": 0.22,
+  "width_m": 0.508,
+  "depth_m": 0.222,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/football",
+  "licence": "CC0",
+  "size_kb": 94
+ },
+ {
+  "file": "public/assets/props_ph/hand_truck.glb",
+  "name": "hand_truck",
+  "height_m": 1.402,
+  "width_m": 0.579,
+  "depth_m": 0.692,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/hand_truck",
+  "licence": "CC0",
+  "size_kb": 358
+ },
+ {
+  "file": "public/assets/props_ph/lantern_01.glb",
+  "name": "lantern_01",
+  "height_m": 0.234,
+  "width_m": 0.116,
+  "depth_m": 0.095,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/lantern_01",
+  "licence": "CC0",
+  "size_kb": 116
+ },
+ {
+  "file": "public/assets/props_ph/lemon.glb",
+  "name": "lemon",
+  "height_m": 0.095,
+  "width_m": 0.069,
+  "depth_m": 0.068,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/lemon",
+  "licence": "CC0",
+  "size_kb": 96
+ },
+ {
+  "file": "public/assets/props_ph/lightbulb_01.glb",
+  "name": "lightbulb_01",
+  "height_m": 0.099,
+  "width_m": 0.058,
+  "depth_m": 0.059,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/lightbulb_01",
+  "licence": "CC0",
+  "size_kb": 81
+ },
+ {
+  "file": "public/assets/props_ph/metal_jerrycan.glb",
+  "name": "metal_jerrycan",
+  "height_m": 0.454,
+  "width_m": 0.348,
+  "depth_m": 0.169,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_jerrycan",
+  "licence": "CC0",
+  "size_kb": 73
+ },
+ {
+  "file": "public/assets/props_ph/metal_stool_02.glb",
+  "name": "metal_stool_02",
+  "height_m": 0.458,
+  "width_m": 0.448,
+  "depth_m": 0.473,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_stool_02",
+  "licence": "CC0",
+  "size_kb": 116
+ },
+ {
+  "file": "public/assets/props_ph/mounted_fluorescent_lights.glb",
+  "name": "mounted_fluorescent_lights",
+  "height_m": 0.035,
+  "width_m": 0.912,
+  "depth_m": 0.645,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/mounted_fluorescent_lights",
+  "licence": "CC0",
+  "size_kb": 98
+ },
+ {
+  "file": "public/assets/props_ph/ornate_mirror_01.glb",
+  "name": "ornate_mirror_01",
+  "height_m": 0.744,
+  "width_m": 0.487,
+  "depth_m": 0.026,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/ornate_mirror_01",
+  "licence": "CC0",
+  "size_kb": 82
+ },
+ {
+  "file": "public/assets/props_ph/painted_wooden_shelves.glb",
+  "name": "painted_wooden_shelves",
+  "height_m": 1.125,
+  "width_m": 0.511,
+  "depth_m": 0.367,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/painted_wooden_shelves",
+  "licence": "CC0",
+  "size_kb": 296
+ },
+ {
+  "file": "public/assets/props_ph/painted_wooden_table.glb",
+  "name": "painted_wooden_table",
+  "height_m": 0.959,
+  "width_m": 2.406,
+  "depth_m": 1.137,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/painted_wooden_table",
+  "licence": "CC0",
+  "size_kb": 140
+ },
+ {
+  "file": "public/assets/props_ph/periwinkle_plant.glb",
+  "name": "periwinkle_plant",
+  "height_m": 0.346,
+  "width_m": 1.235,
+  "depth_m": 0.321,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/periwinkle_plant",
+  "licence": "CC0",
+  "size_kb": 195
+ },
+ {
+  "file": "public/assets/props_ph/planter_box_01.glb",
+  "name": "planter_box_01",
+  "height_m": 0.425,
+  "width_m": 0.913,
+  "depth_m": 0.413,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/planter_box_01",
+  "licence": "CC0",
+  "size_kb": 105
+ },
+ {
+  "file": "public/assets/props_ph/plastic_crate_01.glb",
+  "name": "plastic_crate_01",
+  "height_m": 0.264,
+  "width_m": 0.298,
+  "depth_m": 0.408,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_crate_01",
+  "licence": "CC0",
+  "size_kb": 163
+ },
+ {
+  "file": "public/assets/props_ph/plastic_crate_02.glb",
+  "name": "plastic_crate_02",
+  "height_m": 0.254,
+  "width_m": 0.506,
+  "depth_m": 0.406,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "shop interior",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_crate_02",
+  "licence": "CC0",
+  "size_kb": 110
+ },
+ {
+  "file": "public/assets/props_ph/plastic_jerrycan.glb",
+  "name": "plastic_jerrycan",
+  "height_m": 0.318,
+  "width_m": 0.265,
+  "depth_m": 0.34,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/plastic_jerrycan",
+  "licence": "CC0",
+  "size_kb": 109
+ },
+ {
+  "file": "public/assets/props_ph/pocket_watch.glb",
+  "name": "pocket_watch",
+  "height_m": 0.076,
+  "width_m": 0.058,
+  "depth_m": 0.016,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/pocket_watch",
+  "licence": "CC0",
+  "size_kb": 110
+ },
+ {
+  "file": "public/assets/props_ph/power_box_01.glb",
+  "name": "power_box_01",
+  "height_m": 0.503,
+  "width_m": 0.34,
+  "depth_m": 0.107,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/power_box_01",
+  "licence": "CC0",
+  "size_kb": 108
+ },
+ {
+  "file": "public/assets/props_ph/rusted_spade_01.glb",
+  "name": "rusted_spade_01",
+  "height_m": 1.101,
+  "width_m": 0.168,
+  "depth_m": 0.046,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rusted_spade_01",
+  "licence": "CC0",
+  "size_kb": 117
+ },
+ {
+  "file": "public/assets/props_ph/rusted_wheel_rim_01.glb",
+  "name": "rusted_wheel_rim_01",
+  "height_m": 0.439,
+  "width_m": 0.43,
+  "depth_m": 0.155,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/rusted_wheel_rim_01",
+  "licence": "CC0",
+  "size_kb": 102
+ },
+ {
+  "file": "public/assets/props_ph/schoolchair_01.glb",
+  "name": "schoolchair_01",
+  "height_m": 1.006,
+  "width_m": 0.566,
+  "depth_m": 0.675,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/schoolchair_01",
+  "licence": "CC0",
+  "size_kb": 197
+ },
+ {
+  "file": "public/assets/props_ph/schooldesk_01.glb",
+  "name": "schooldesk_01",
+  "height_m": 0.883,
+  "width_m": 0.712,
+  "depth_m": 0.546,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/schooldesk_01",
+  "licence": "CC0",
+  "size_kb": 117
+ },
+ {
+  "file": "public/assets/props_ph/standing_chalkboard_01.glb",
+  "name": "standing_chalkboard_01",
+  "height_m": 1.509,
+  "width_m": 0.92,
+  "depth_m": 0.759,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/standing_chalkboard_01",
+  "licence": "CC0",
+  "size_kb": 263
+ },
+ {
+  "file": "public/assets/props_ph/stationery_supplies.glb",
+  "name": "stationery_supplies",
+  "height_m": 0.164,
+  "width_m": 0.302,
+  "depth_m": 0.084,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/stationery_supplies",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/steel_frame_shelves_01.glb",
+  "name": "steel_frame_shelves_01",
+  "height_m": 2.141,
+  "width_m": 1.097,
+  "depth_m": 0.502,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/steel_frame_shelves_01",
+  "licence": "CC0",
+  "size_kb": 183
+ },
+ {
+  "file": "public/assets/props_ph/steel_frame_shelves_02.glb",
+  "name": "steel_frame_shelves_02",
+  "height_m": 2.142,
+  "width_m": 0.593,
+  "depth_m": 0.502,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/steel_frame_shelves_02",
+  "licence": "CC0",
+  "size_kb": 179
+ },
+ {
+  "file": "public/assets/props_ph/sweet_potato.glb",
+  "name": "sweet_potato",
+  "height_m": 0.1,
+  "width_m": 0.058,
+  "depth_m": 0.061,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/sweet_potato",
+  "licence": "CC0",
+  "size_kb": 54
+ },
+ {
+  "file": "public/assets/props_ph/television_02.glb",
+  "name": "television_02",
+  "height_m": 0.411,
+  "width_m": 0.4,
+  "depth_m": 0.35,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/television_02",
+  "licence": "CC0",
+  "size_kb": 124
+ },
+ {
+  "file": "public/assets/props_ph/tire_pump.glb",
+  "name": "tire_pump",
+  "height_m": 0.58,
+  "width_m": 0.255,
+  "depth_m": 0.101,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/tire_pump",
+  "licence": "CC0",
+  "size_kb": 92
+ },
+ {
+  "file": "public/assets/props_ph/wall_clock.glb",
+  "name": "wall_clock",
+  "height_m": 0.32,
+  "width_m": 0.32,
+  "depth_m": 0.047,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/wall_clock",
+  "licence": "CC0",
+  "size_kb": 91
+ },
+ {
+  "file": "public/assets/props_ph/watering_can_metal_01.glb",
+  "name": "watering_can_metal_01",
+  "height_m": 0.192,
+  "width_m": 0.19,
+  "depth_m": 0.452,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "kitchen",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/watering_can_metal_01",
+  "licence": "CC0",
+  "size_kb": 80
+ },
+ {
+  "file": "public/assets/props_ph/wooden_broom.glb",
+  "name": "wooden_broom",
+  "height_m": 1.444,
+  "width_m": 0.49,
+  "depth_m": 0.113,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/wooden_broom",
+  "licence": "CC0",
+  "size_kb": 104
+ },
+ {
+  "file": "public/assets/props_ph/wooden_ladder.glb",
+  "name": "wooden_ladder",
+  "height_m": 1.335,
+  "width_m": 0.959,
+  "depth_m": 0.5,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "street",
+   "outside houses"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/wooden_ladder",
+  "licence": "CC0",
+  "size_kb": 251
+ },
+ {
+  "file": "public/assets/props_ph/woodentable_01.glb",
+  "name": "woodentable_01",
+  "height_m": 0.549,
+  "width_m": 1.8,
+  "depth_m": 0.657,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/woodentable_01",
+  "licence": "CC0",
+  "size_kb": 238
+ },
+ {
+  "file": "public/assets/props_ph/woodentable_02.glb",
+  "name": "woodentable_02",
+  "height_m": 0.418,
+  "width_m": 0.301,
+  "depth_m": 0.301,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/woodentable_02",
+  "licence": "CC0",
+  "size_kb": 210
+ },
+ {
+  "file": "public/assets/props_ph/worn_metal_rack.glb",
+  "name": "worn_metal_rack",
+  "height_m": 1.9,
+  "width_m": 0.915,
+  "depth_m": 0.6,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/worn_metal_rack",
+  "licence": "CC0",
+  "size_kb": 248
+ },
+ {
+  "file": "public/assets/props_ph/yellow_onion.glb",
+  "name": "yellow_onion",
+  "height_m": 0.086,
+  "width_m": 0.072,
+  "depth_m": 0.069,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "kitchen"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/yellow_onion",
+  "licence": "CC0",
+  "size_kb": 73
+ }
+]
