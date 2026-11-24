@@ -94,7 +94,8 @@ export function buildShops(map, { camera = null } = {}) {
     if (front > back + 0.5 && front > 4) report.backToRoad.push(`${opts.signName || key} at ${rect.x.toFixed(1)},${rect.z.toFixed(1)} (front ${front.toFixed(1)} m from a road, back ${back.toFixed(1)} m)`);
     if (rect.skewDeg > 3) report.skewed.push(`${opts.signName || key} plot edge is ${rect.skewDeg.toFixed(1)} deg off its front`);
     colliders.push(...orientedBoxes(rect.x, rect.z, rect.ry, opts.colW ?? rect.width, opts.colD ?? rect.depth));
-    muralBoxes.push({ x: rect.x, z: rect.z, ry: rect.ry, w: opts.colW ?? rect.width, d: opts.colD ?? rect.depth, seed: i, kind: 'shop' });
+    // posters only on real walls (24 Nov): shop-houses and single shops, never kiosks, carts or sheds, and never on the open otla in front
+    if (type === 'shopHouse' || type === 'shop') muralBoxes.push({ x: rect.x, z: rect.z, ry: rect.ry, w: rect.width, d: rect.depth, seed: i, kind: 'shop', zFront: rect.depth / 2 - Math.min(type === 'shopHouse' ? 1.1 : 1.0, rect.depth * (type === 'shopHouse' ? 0.16 : 0.18)) - 0.12 });
   };
 
   let i = 0;

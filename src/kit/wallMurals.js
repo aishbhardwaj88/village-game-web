@@ -477,20 +477,23 @@ function repaintWhenFontReady(canvas, g) {
 
 /** A flat quad facing `normal` (unit, horizontal), centred at `center`, `w` wide along `tangent` (unit, horizontal), `h` tall. */
 function addQuad(pos, nor, uv, idx, center, tangent, normal, w, h, uvRect) {
+  // 24 Nov fix (posters upside down): the corners are now derived from the OUTWARD NORMAL alone. A viewer standing in front of
+  // the wall has right = up x normal, whatever sign the caller's tangent happens to have (the left wall, front strips and
+  // segment runs passed a tangent pointing the other way, which rotated the poster 180 degrees). The UV rect's top edge
+  // (v1) goes to the top corners, so text reads upright and unmirrored.
   const base = pos.length / 3;
   const hw = w / 2, hh = h / 2;
+  const rx = normal[2], rz = -normal[0], rl = Math.hypot(rx, rz) || 1, Rx = rx / rl, Rz = rz / rl;
   const corners = [
-    [center[0] - tangent[0] * hw, center[1] - hh, center[2] - tangent[2] * hw],
-    [center[0] + tangent[0] * hw, center[1] - hh, center[2] + tangent[2] * hw],
-    [center[0] + tangent[0] * hw, center[1] + hh, center[2] + tangent[2] * hw],
-    [center[0] - tangent[0] * hw, center[1] + hh, center[2] - tangent[2] * hw],
+    [center[0] - Rx * hw, center[1] - hh, center[2] - Rz * hw], // bottom-left as seen from the front
+    [center[0] + Rx * hw, center[1] - hh, center[2] + Rz * hw], // bottom-right
+    [center[0] + Rx * hw, center[1] + hh, center[2] + Rz * hw], // top-right
+    [center[0] - Rx * hw, center[1] + hh, center[2] - Rz * hw], // top-left
   ];
-  const [u0, v0, u1, v1] = uvRect;
-  const uvs = [[u0, v1], [u1, v1], [u1, v0], [u0, v0]];
+  const [u0, v0, u1, v1] = uvRect; // v0 = bottom of the picture, v1 = top (canvas texture, flipY)
+  const uvs = [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
   corners.forEach((p, k) => { pos.push(p[0], p[1], p[2]); nor.push(normal[0], normal[1] || 0, normal[2]); uv.push(uvs[k][0], uvs[k][1]); });
-  // winding: cross(tangent, up) = -normal (since normal = up x tangent for our wall convention), so the CCW-from-normal
-  // face needs the reverse triangle order from the naive (0,1,2)/(0,2,3) — verified against the back-wall normal below.
-  idx.push(base, base + 2, base + 1, base, base + 3, base + 2);
+  idx.push(base, base + 1, base + 2, base, base + 2, base + 3); // counter-clockwise seen from the front
 }
 
 function pickDesign(seed) { return DESIGNS[Math.floor(hash(seed, 2) * DESIGNS.length) % DESIGNS.length]; }
@@ -516,8 +519,10 @@ export function buildWallMurals(boxes, opts = {}) {
     if (width < 0.6) return false;
     const height = width * aspect;
     const uvRect = [rect.x0 / W, 1 - rect.y1 / H, rect.x1 / W, 1 - rect.y0 / H];
-    addQuad(pos, nor, uv, idx, [cx, cy + height / 2, cz], [tWx, 0, tWz], [nWx, 0, nWz], width, height, uvRect);
-    instances.push({ cx, cy: cy + height / 2, cz, nx: nWx, nz: nWz, width, height, design: design.id });
+    // eye height: the poster's centre sits at ~1.5 m above the wall's own base (cy = that base), never lower than 0.65 m (clear of the plinth)
+    const bottom = Math.max(0.65, 1.5 + (hash(seed, 5) - 0.5) * 0.2 - height / 2), cyy = cy + bottom;
+    addQuad(pos, nor, uv, idx, [cx, cyy + height / 2, cz], [tWx, 0, tWz], [nWx, 0, nWz], width, height, uvRect);
+    instances.push({ cx, cy: cyy + height / 2, cz, nx: nWx, nz: nWz, width, height, design: design.id });
     placed++;
     return true;
   };
@@ -537,7 +542,7 @@ export function buildWallMurals(boxes, opts = {}) {
         const segSeed = (b.seed ?? 0) * 97 + k * 13 + 1;
         const cx0 = x1 + dx * t + nx * offset, cz0 = z1 + dz * t + nz * offset;
         const maxLen = Math.max(0.6, Math.min(1.5, len / slots - 0.15));
-        if (addPoster(segSeed, cx0, segY + 0.75 + hash(segSeed, 5) * 0.3, cz0, tx, tz, nx, nz, maxLen) && roadFacing) roadFacingPlaced++;
+        if (addPoster(segSeed, cx0, segY, cz0, tx, tz, nx, nz, maxLen) && roadFacing) roadFacingPlaced++;
       }
       continue;
     }
@@ -547,15 +552,16 @@ export function buildWallMurals(boxes, opts = {}) {
     const seed = b.seed ?? (x * 7 + z * 13);
     const c = Math.cos(ry), s = Math.sin(ry);
     const isShop = b.kind === 'shop';
+    const wallEnd = b.zFront ?? d / 2; // local z where the side walls end (a shop's open otla has no wall)
 
     // candidate walls in local coords: back (-z), left (-x), right (+x) for every building; front (+z) only for a
     // house with a known door, as the strip(s) beside the door — a shop's front always keeps its own sign board clear.
     const walls = [
       { key: 'back', lx: 0, lz: -d / 2, nlx: 0, nlz: -1, tlx: 1, tlz: 0, len: w, base: 0.46 },
-      { key: 'left', lx: -w / 2, lz: 0, nlx: -1, nlz: 0, tlx: 0, tlz: 1, len: d, base: 0.22 },
-      { key: 'right', lx: w / 2, lz: 0, nlx: 1, nlz: 0, tlx: 0, tlz: 1, len: d, base: 0.22 },
+      { key: 'left', lx: -w / 2, lz: (-d / 2 + wallEnd) / 2, nlx: -1, nlz: 0, tlx: 0, tlz: 1, len: wallEnd + d / 2, base: 0.22 },
+      { key: 'right', lx: w / 2, lz: (-d / 2 + wallEnd) / 2, nlx: 1, nlz: 0, tlx: 0, tlz: 1, len: wallEnd + d / 2, base: 0.22 },
     ];
-    if (!isShop && b.door) {
+    if (false && !isShop && b.door) { // 24 Nov: front walls carry the door and windows, so no poster ever goes there
       const hw = w / 2, leftLen = b.door.x0 + hw, rightLen = hw - b.door.x1;
       if (leftLen > 0.6 + minClear) walls.push({ key: 'frontL', lx: (-hw + b.door.x0) / 2, lz: d / 2, nlx: 0, nlz: 1, tlx: 1, tlz: 0, len: leftLen, base: 0.05 });
       if (rightLen > 0.6 + minClear) walls.push({ key: 'frontR', lx: (b.door.x1 + hw) / 2, lz: d / 2, nlx: 0, nlz: 1, tlx: 1, tlz: 0, len: rightLen, base: 0.05 });
@@ -591,8 +597,15 @@ export function buildWallMurals(boxes, opts = {}) {
     const maxJitter = Math.max(0, chosen.len / 2 - clearHalf - 0.2);
     const jitter = (hash(seed, 4) * 2 - 1) * maxJitter;
     const cx = wx + tWx * jitter + nWx * offset, cz = wz + tWz * jitter + nWz * offset;
-    const baseY = (b.y || 0) + 0.75 + hash(seed, 5) * 0.3; // sill well clear of the plinth, varies a little building to building
+    const baseY = b.y || 0; // the wall's own base; addPoster puts the poster at eye height above it
 
+    // never wedged in the gap between two buildings: nothing else may stand within 1.1 m in front of the poster
+    const blocked = boxes.some((o) => {
+      if (o === b || o.segment) return false;
+      const oc = Math.cos(o.ry), os = Math.sin(o.ry);
+      return [0.35, 0.8, 1.1].some((k) => { const dx = cx + nWx * k - o.x, dz = cz + nWz * k - o.z; return Math.abs(dx * oc - dz * os) <= o.w / 2 + 0.05 && Math.abs(dx * os + dz * oc) <= o.d / 2 + 0.05; });
+    });
+    if (blocked) { skippedShort++; continue; }
     if (addPoster(seed, cx, baseY, cz, tWx, tWz, nWx, nWz, chosen.len - clearHalf * 2)) {
       if (chosen.roadFacing) roadFacingPlaced++;
     } else skippedShort++;
