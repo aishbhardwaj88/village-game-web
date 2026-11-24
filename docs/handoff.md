@@ -1,3 +1,95 @@
+# 24 Nov (19) - turned entries 16/17/18's own repeated-by-hand "no routine sets position directly without a collision check" grep into a real, self-tested tool (`tools/check-position-writes.mjs`), and used it to find and clear one real hit no earlier cycle had actually read (`src/roadEvents.js:430`, confirmed safe)
+
+- Fresh container again this firing: `git status`/`git log` showed local `main` already at `origin/main`'s tip
+  (`f00f10f`, entry 18's own commit) with a clean working tree - no detached-HEAD/stale-branch recovery needed this
+  time (unlike entries 16-18, each of which hit that same fresh-container quirk). `npm install` re-run as always
+  (`node_modules` empty in a fresh container). `Places V1/`, `reference-from-unity/` and Blender all confirmed
+  absent again (J1-OLD2/J1-OLD/J2 still un-runnable here).
+- Section A of BACKLOG.md: same state entry 18 left it in (everything either ticked, or blocked on Places V1/her
+  verdict/a working screenshot pipeline, or out of scope per 5a-MAP's map-uproot rule). Per CLAUDE.md 5a-MAP/
+  section 2, picked the same standing-permission "systems (collision...)" category entries 15-18 all used, on
+  BACKLOG A0's own still-open top item: "Route every NPC and animal through the same collision resolver the
+  player uses; no routine sets position directly without a collision check." Entries 16, 17 and 18 each re-ran
+  this item's check by hand (a one-off `grep -rnE` command, re-typed from scratch each cycle since no previous
+  entry's exact command survives anywhere but its own prose) and each found it clean. Re-running the same grep
+  today surfaced hits none of their write-ups actually walked through one by one (`src/roadEvents.js:430`,
+  several `src/main.js` world-edge clamps, `src/kit/housesPlan.js:292`, `src/waypoint.js:47-48`) - not new bugs
+  (all read and confirmed safe below), but proof the manual-grep approach itself doesn't reliably cover its own
+  past findings cycle to cycle, which is exactly the kind of repeated-by-hand work this hourly loop should instead
+  make permanent.
+- Built `tools/check-position-writes.mjs`: scans every `src/**/*.js` (213 files) for the same
+  `.x +=`/`.z +=`/`.position.(x|z) =` pattern this item has always been about. A hit is auto-cleared when a
+  resolveMove/resolveOrientedMove/resolveOrientedCollisions/resolveCollisions call sits within 6 lines in the
+  same file (19 hits cleared this way - the dog/goat fixes from entries 16/17, the player/vehicle/cycle movement
+  functions in main.js, the Blender-matka/trim shader uniforms, etc.), or when it sits inside a GLSL
+  template-literal shader string (detected by counting un-escaped backticks seen so far in the file - odd count
+  means inside one; this is what npcRoutines.js's rooftop-chase leg narrowly avoided needing, see below).
+  Everything else must be in a hand-verified EXEMPT table with the actual reasoning written out, never added
+  just to silence a hit.
+- Populated EXEMPT with 4 entries, each read and confirmed by hand this cycle:
+  1. `npcRoutines.js`'s `createWaypointRun` rooftop-chase leg (`npcGroup.position.x/z +=`, gated by
+     `(target.y ?? 0) > 0.5 || npcGroup.position.y > 0.5`) - the same documented M6-monkey exception entries
+     before 16 already named (its own doc comment above the function explains it: 2D collision would block a
+     roof walk, so an elevated leg deliberately walks over the walls beneath it).
+  2. `roadEvents.js:430` - the road-crossing goat herd nudging a too-close player sideways
+     (`player.position.x = nx; player.position.z = nz;`, NOT the player's own WASD movement, which still goes
+     through `movePlayerBy`/`resolveMove` untouched). Read `clearAt()` (`src/roadEvents.js:59`,
+     `!circleHitsAnyBox({x,z}, r, staticBoxesNear(x,z,r+1))`) - it checks the destination circle against the same
+     static-collider source resolveMove itself uses, called immediately before the write. Also guarded by
+     `player.parent === scene` (skipped entirely while mounted on a vehicle, where the player group is
+     reparented - so this can't fight the vehicle-mount invariant) and a push capped at `(0.62 - d) * 0.35`,
+     under 0.22 m at its largest - too small to tunnel any wall even without resolveMove's own swept-substep
+     check, which only matters for continuous per-frame movement, not a single capped nudge. Safe by a different
+     but equally real collision check, not an unchecked write.
+  3. `waypoint.js:47-48` - the objective waypoint glow mesh (name `waypoint_glow`, already in
+     world-validator.js's own non-solid EXCLUDE set) following the current objective point; a ground decal, not
+     a body.
+  4. `kit/housesPlan.js:292` - a BUILD-TIME layout solver inside the house-kit plan generator (push two
+     overlapping house footprints apart while laying out the plan), not a runtime scene body at all: it mutates
+     a plain `{x, z, corners}` record in an array, long before any of it becomes a THREE object, and explicitly
+     gives up and records `solidOverlap` rather than let a house step onto a road or another house (read the
+     surrounding `hitsAnotherHouse`/`hitsRoad` checks to confirm). No live body exists here for a player/vehicle/
+     NPC to ever meet mid-nudge.
+  Several `main.js` hits (`player.position.z = THREE.MathUtils.clamp(...)` and two vehicle equivalents) needed a
+  5th, more general EXEMPT entry rather than a one-off: the GROUND_HALF_EXTENT/GROUND_HALF_Z world-edge clamp
+  pattern, applied every time right after the real resolver already ran earlier in the same step function
+  (`movePlayerBy`/`stepCycle` call resolveMove/resolveOrientedMove inline; the vehicle step functions call it
+  through `moveSmallVehicle()`, which itself calls resolveMove/resolveOrientedMove/resolveOrientedCollisions a
+  few lines above its own clamp - so the text-only nearby-call window can't always see across that one extra
+  layer of function call). This is a stay-on-the-map clamp, never a wall check, and it's the same pattern
+  repeated by design every time a body's position is finalized for the frame.
+- Self-tested the tool actually catches a real violation, not just a script that always passes: wrote a scratch
+  file `src/__posWriteTestTmp.js` with a fake routine (`o.x += (tx - o.x) * dt; o.z += (tz - o.z) * dt;`, no
+  resolver call anywhere nearby), ran the tool - correctly flagged both lines as GAP CANDIDATEs and exited 1 -
+  then deleted the scratch file and re-ran: 0 gap candidates, exit 0, matching the real codebase's clean state.
+  Nothing from this test is in the commit; `git status` confirmed clean before committing.
+- Not wired into `npm run build` or `package.json`, on purpose and by precedent: `tools/collider-coverage-audit.mjs`
+  (entry from 2026-11-22, the same style of static heuristic audit for a sibling A0 item) isn't wired in either -
+  both are standalone checks meant to be run by hand or at the top of a future cycle, not a CI gate, because a
+  genuinely new state-writing routine should get a human/agent's own EXEMPT-table judgement and reasoning, not an
+  automatic pass (a reason could be wrong) or a surprise deploy failure (this container still can't prove the
+  real runtime behaviour, only the text).
+- `node tools/check-position-writes.mjs`: 213 files, 19 auto-cleared, 7 hand-exempted, 0 gap candidates, exit 0.
+  `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same pre-existing Tripo-plan warning),
+  `node tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs` PASS (49 scanned, 0 unwrapped
+  clones), `node tools/place-visibility-check.js` PASS, `node tools/collider-coverage-audit.mjs` re-run as a
+  cross-check (227 covered, 22 excluded, 7 verified-safe, 0 gaps - unchanged from 22 Nov plus one newly-covered
+  builder), `node tools/check-budget.js` (same pre-existing breaches as every recent entry - her own deferred
+  `WEB_QUALITY='full'` call, logged in NEEDS_YOU; no asset touched this cycle). `npx vite build` clean (234
+  modules, no errors). The full `npm run build` chain (world-validator/collision-test) still OOMs this container
+  exactly as entries 15-18 documented; not fought, per standing instruction - this cycle's new tool needs none of
+  that pipeline.
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see below).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent, no
+  layout/position CHANGE (this only reads and documents existing code; it doesn't move or touch anything that
+  moves in the game), no taste call.
+- NEXT: run `tools/check-position-writes.mjs` at the start of any future cycle that touches a moving NPC/vehicle/
+  animal routine, instead of re-deriving the grep from scratch - add any genuinely new hit to its EXEMPT table
+  with real reasoning, or route it through the resolver if it turns out unsafe. The other BACKLOG A0 open item
+  ("Validate every waypoint path as walkable at build time") still needs either the renderer (broken here) or a
+  much larger static effort (reconstructing real building footprints without three.js, which `buildCollidersFromScene`
+  currently requires a live scene for) - not attempted again this entry, same constraint entry 18 logged.
+
 # 24 Nov (18) - recovered 6 orphaned commits (entries 14-17's own work) from a detached-HEAD checkout onto `main`; extended `devCheckPenetration()` to cover the cyclist dog and goat herd (BACKLOG A0's own gap note), closing the loop entries 16/17 opened
 
 - Fresh container again this firing: `HEAD` was detached at `68668dd` (entries 14-17's own 6 commits:
