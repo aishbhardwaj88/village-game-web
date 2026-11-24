@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Parts } from './landInstancing.js';
+import { stockInterior } from './shopsStock.js';
 
 /**
  * Shop bodies for ?layout=new, code-built from the approved library materials only (brick, plaster, concrete, wood,
@@ -161,6 +162,7 @@ function interior(P, x0, x1, zBack, zFront, yFloor, yCeil, trade, seed) {
     P.box('plaster', cx + w * 0.1, yFloor + 0.45, zFront - 0.55, w * 0.6, 0.9, 0.5, { color: 0xd8d0c0, skip: ['ny'] });
     return;
   }
+  if (stockInterior(P, trade, { x0, x1, zBack, zFront, yFloor, yCeil, seed })) return; // trade-specific stock (src/kit/shopsStock.js)
   // stock shelves on the back wall and one side: planks on uprights, boxes / bales / tins on each level
   const levels = 4, sh = (yCeil - yFloor - 0.5) / levels;
   for (const [sx0, sx1, sz, along] of [[x0 + 0.1, x1 - 0.1, zBack + 0.25, 'x'], [x0 + 0.1, x0 + 0.5, null, 'z']]) {

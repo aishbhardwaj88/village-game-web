@@ -7,6 +7,7 @@ import { SignAtlas, boardGeometry, signNameFor, SHAPES, CW, layoutFor } from './
 import { kitMaterials } from './landMaterials.js';
 import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from './landLayout.js';
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
+import { stockTradeOf } from './shopsStock.js';
 import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 
 /**
@@ -27,6 +28,7 @@ const SHEDS = new Set(['Bus shelter', 'Cycle stand', 'Jaggery making unit', 'Mil
 
 export function tradeOf(name) {
   const n = name.toLowerCase();
+  if (!/chemist \(health|repair|workshop|tractor|tent|puncture/.test(n) || /watch|electrical/.test(n)) { const st = stockTradeOf(name); if (st) return st; }
   if (/bank|library|clinic|hospital|cooperative|community hall|collection point|chemist \(health/.test(n)) return 'office';
   if (/dhaba|tea stall|samosa|snacks|lassi|tea and/.test(n)) return 'dhaba';
   if (/repair|workshop|blacksmith|carpenter|tractor|tent/.test(n)) return 'workshop';
