@@ -106,10 +106,8 @@ export function registerStalls(api, env) {
       radius: 2.4,
       priority: 1,
       label: { en: `Buy from the ${s.seller.en.toLowerCase()}`, hi: `${s.seller.hi} से खरीदें` },
-      onInteract: () => {
-        api.discoverJob; // (stalls are map places, not jobs)
-        openMenu(api, { seller: s.seller, items: s.items, greeting: s.greeting });
-      },
+      // Stalls are map places, not jobs (docs/MISSIONS_PLAN.md section 2) - no discoverJob() call here, on purpose.
+      onInteract: () => openMenu(api, { seller: s.seller, items: s.items, greeting: s.greeting }),
     });
   }
 }
