@@ -239,9 +239,15 @@ const GROUND_HALF_EXTENT = -WORLD.minX; // keep the player a couple metres insid
 const GROUND_HALF_Z = WORLD.maxZ;
 const GROUND_HALF_X = WORLD.maxX; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches further still
 const MOVE_SPEED = 4.2; // m/s, walking pace
-const CYCLE_TOP_SPEED = 7.5; // m/s, 27 km/h (9 Nov playtest: 5.5 felt like a punctured tyre); a fixed cycle speed, not a walking multiple (7 Nov), so a motorbike can get its own
-const CYCLE_SPRINT_SPEED = 9.5; // m/s, Shift held
-const CYCLE_ACCEL = CYCLE_TOP_SPEED / 1.0; // pedal to top speed in about 1 s
+// 24 Nov playtest note (LOOKS LIST item 6): "feels like a motorcycle. Pickup is instant... make pickup about 3 s,
+// cruise about 20 km/h, sprint 27 km/h". Before, there was one top speed (27, reached in ~1 s) plus a separate
+// Shift-sprint on top of THAT (34 km/h) - this splits it the way she asked: 20 is the ordinary cruise (the 9 Nov
+// note about 5.5 m/s "feeling like a punctured tyre" was against a single-speed bike with no faster Shift gear;
+// now Shift covers that fast case at 27, same number as the old single top speed). A fixed cycle speed, not a
+// walking multiple (7 Nov), so a motorbike can get its own.
+const CYCLE_TOP_SPEED = 20 / 3.6; // m/s, 20 km/h cruise (pedal, no Shift)
+const CYCLE_SPRINT_SPEED = 27 / 3.6; // m/s, 27 km/h, Shift held
+const CYCLE_ACCEL = CYCLE_TOP_SPEED / 3.0; // pedal to cruise speed in about 3 s (was 1 s) - reaches sprint in ~4 s, a bit more effort for the faster gear
 const CYCLE_COAST = CYCLE_TOP_SPEED / 5; // no input: coast to a stop in about 5 s
 const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
 const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
