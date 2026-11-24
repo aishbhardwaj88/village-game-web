@@ -67,6 +67,11 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       664KB map (24 Nov item 7 dup download). Shape-compatible fix tried 24 Nov
       REGRESSES world-validator buried-objects (3 house-batch meshes sink) - see that
       file's own 24 Nov comment for the exact cause still needed before retrying.
+- [ ] [ACTIVE] Item 7 shader-warm-up/slot-release, measured 24 Nov (window.__loadMarks
+      on built dist/): texWarmed stuck at 2 all run, modelsReleased fired at ~9.38s -
+      right on main.js's 9000ms SAFETY timeout, so the real "slots loaded" signal never
+      resolved organically here. Could be this headless/no-GPU container or a real
+      stuck-slot bug - check on a real browser before acting either way.
 
 GAME_COMPLETE.md is fully ticked and audit-confirmed; everything above is optional
 future polish layered on a finished game. See docs/NEEDS_YOU.md for anything blocked on
