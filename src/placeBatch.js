@@ -36,6 +36,13 @@ function setKey(mat) {
 const Material = THREE.Material;
 const leaders = new Map(); // setKey -> leader material
 
+// tools/draw-call-audit.mjs's only consumer (window.__pbDbg, deduped into a Set there). Gated the same way src/main.js
+// gates window.__dopahar itself (`?dev=1` or `?proof=1`, the query param that tool actually loads with) — found ungated,
+// so every real player's session was pushing one string onto a never-cleared, never-read global array for every single
+// batched mesh instance for the whole session (every place streamed in, forever): an unbounded memory leak in normal
+// play, invisible to any one-frame screenshot check. Computed once at module load, not per call.
+const PB_DEBUG = typeof location !== 'undefined' && (new URLSearchParams(location.search).has('dev') || new URLSearchParams(location.search).has('proof'));
+
 /** One attribute as plain Float32 (`scale` per component, or null). Plain Float32 arrays copy in one go; quantised/normalised
  *  or interleaved attributes go through getComponent (the per-vertex getX/getY/getZ .call loop cost ~170 ms per big place). */
 function plainFloat(a, size, scale) {
@@ -111,7 +118,7 @@ function batchOne(o, key, exactCast) {
       if (!lead) leaders.set(sk, mat);
       else if (lead !== mat) { ratio = [mat.map.repeat.x / lead.map.repeat.x, mat.map.repeat.y / lead.map.repeat.y]; mat = lead; }
     }
-    (globalThis.__pbDbg ||= []).push(sk || ('NOKEY|' + mat.name));
+    if (PB_DEBUG) (globalThis.__pbDbg ||= []).push(sk || ('NOKEY|' + mat.name));
     const b = batchFor(mat, exactCast || mat.userData.worldBakedOnly ? o.castShadow : true, exactCast);
     const ck = key + '|' + o.name + '|' + (o.material.userData.siteProps ? 'sp' + o.geometry.attributes.position.count + '|' + o.material.name + '|' + o.material.roughness : o.material.uuid); // site builders make a fresh material clone per build; geometry is deterministic, so key by shape to avoid re-adding on every re-stream
     let gid = geoCache.get(ck);
