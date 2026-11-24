@@ -424,7 +424,7 @@ export function createRoadEvents(scene) {
       // part round the player: each goat steps sideways, and nudges a slow player gently aside (soft, never a wall)
       if (player) {
         const dx = g.x - player.position.x, dz = g.z - player.position.z, d = Math.hypot(dx, dz);
-        if (d < 1.2 && d > 1e-3) g.dodge.addScaledVector(new THREE.Vector2(dx / d, dz / d), (1.2 - d) * dt * 5);
+        if (d < 1.2 && d > 1e-3) { const k = (1.2 - d) * dt * 5 / d; g.dodge.x += dx * k; g.dodge.y += dz * k; } // no per-frame Vector2
         if (d < 0.62 && d > 1e-3 && player.parent === scene) {
           const push = (0.62 - d) * 0.35, nx = player.position.x - dx / d * push, nz = player.position.z - dz / d * push;
           if (clearAt(nx, nz, 0.45)) { player.position.x = nx; player.position.z = nz; }

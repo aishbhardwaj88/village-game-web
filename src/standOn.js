@@ -34,45 +34,70 @@ const boxCache = new WeakMap();
 function topName(o) { let t = o; while (t.parent && !t.parent.isScene) t = t.parent; return t.name || ''; }
 function shown(o) { for (let q = o; q; q = q.parent) { if (q.visible === false) return false; if (q.isScene) return true; } return false; }
 let indexGen = 0;
-function buildIndex(scene) {
-  const _t = performance.now();
-  const cells = new Map(), big = [];
-  const first = !index || index.scene !== scene, fresh = [];
-  scene.updateMatrixWorld();
-  scene.traverse((o) => {
-    if (!o.isMesh || o.isBatchedMesh || FIGURES.has(o)) return;
-    if (!shown(o)) return;
-    const top = topName(o);
-    if (top === 'ground' || SKIP_TOP.test(top)) return;
-    const mat = Array.isArray(o.material) ? o.material[0] : o.material;
-    const nm = o.name.replace(NOOK, 'nook'), tn = top.replace(NOOK, 'nook'); // a nook's own name (laundry...) must not hide its charpai
-    if (SKIP.test(nm) || SKIP.test(tn) || (mat && SKIP.test(mat.name || ''))) return;
-    if (mat && mat.transparent && mat.opacity < 0.5) return;
-    const e = o.matrixWorld.elements; let stamp = 0; for (let q = 0; q < 16; q++) stamp += e[q] * (q * 2 + 1); // any move, turn or scale rebuilds its box and triangle grid
-    let c = boxCache.get(o);
-    const gp = o.geometry && o.geometry.attributes.position, gn = gp ? gp.count : 0; // streamed meshes swap or refill geometry under one transform
-    if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o), seen: performance.now() }; boxCache.set(o, c); }
-    const b = c.box;
-    if (!isFinite(b.min.x)) return;
-    if (c.gen !== indexGen) fresh.push(b); // not in the last index: a new or changed surface (a zone .glb swapped in, a house shown again), so figures over it settle again
-    c.gen = indexGen + 1;
-    const s = { o, b, stamp };
-    noteStatic(o, top);
-    const x0 = Math.floor(b.min.x / CELL), x1 = Math.floor(b.max.x / CELL), z0 = Math.floor(b.min.z / CELL), z1 = Math.floor(b.max.z / CELL);
-    if ((x1 - x0 + 1) * (z1 - z0 + 1) > 64) { big.push(s); return; }
-    for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) {
-      const k = i * 100003 + j;
-      let a = cells.get(k); if (!a) cells.set(k, (a = [])); a.push(s);
-    }
-  });
-  index = { scene, cells, big, at: performance.now() };
+// One mesh into the index under construction (shared by the whole-scene build and the chunked background build).
+function visitForIndex(o, st) {
+  if (!o.isMesh || o.isBatchedMesh || FIGURES.has(o)) return;
+  if (!shown(o)) return;
+  const top = topName(o);
+  if (top === 'ground' || SKIP_TOP.test(top)) return;
+  const mat = Array.isArray(o.material) ? o.material[0] : o.material;
+  const nm = o.name.replace(NOOK, 'nook'), tn = top.replace(NOOK, 'nook'); // a nook's own name (laundry...) must not hide its charpai
+  if (SKIP.test(nm) || SKIP.test(tn) || (mat && SKIP.test(mat.name || ''))) return;
+  if (mat && mat.transparent && mat.opacity < 0.5) return;
+  const e = o.matrixWorld.elements; let stamp = 0; for (let q = 0; q < 16; q++) stamp += e[q] * (q * 2 + 1); // any move, turn or scale rebuilds its box and triangle grid
+  let c = boxCache.get(o);
+  const gp = o.geometry && o.geometry.attributes.position, gn = gp ? gp.count : 0; // streamed meshes swap or refill geometry under one transform
+  if (!c || c.stamp !== stamp || c.geo !== o.geometry || c.gn !== gn || c.ic !== o.count) { c = { stamp, geo: o.geometry, gn, ic: o.count, box: new THREE.Box3().setFromObject(o), seen: performance.now() }; boxCache.set(o, c); }
+  const b = c.box;
+  if (!isFinite(b.min.x)) return;
+  if (c.gen !== indexGen) st.fresh.push(b); // not in the last index: a new or changed surface (a zone .glb swapped in, a house shown again), so figures over it settle again
+  c.gen = indexGen + 1;
+  const s = { o, b, stamp };
+  noteStatic(o, top);
+  const x0 = Math.floor(b.min.x / CELL), x1 = Math.floor(b.max.x / CELL), z0 = Math.floor(b.min.z / CELL), z1 = Math.floor(b.max.z / CELL);
+  if ((x1 - x0 + 1) * (z1 - z0 + 1) > 64) { st.big.push(s); return; }
+  for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) {
+    const k = i * 100003 + j;
+    let a = st.cells.get(k); if (!a) st.cells.set(k, (a = [])); a.push(s);
+  }
+}
+function commitIndex(scene, st, _t) {
+  const first = !index || index.scene !== scene, fresh = st.fresh;
+  index = { scene, cells: st.cells, big: st.big, at: performance.now() };
   if (!first) for (const e of ENTRIES) if (e.fb && e.stage > 0) for (const b of fresh) {
     if (b.max.x < e.fb[0] - 0.3 || b.min.x > e.fb[1] + 0.3 || b.max.z < e.fb[2] - 0.3 || b.min.z > e.fb[3] + 0.3) continue;
     e.redo = true; break;
   }
   if (typeof window !== 'undefined') { const w = (window.__standOnIdx = window.__standOnIdx || { n: 0, ms: 0, fresh: 0 }); w.n++; w.ms += performance.now() - _t; w.fresh += first ? 0 : fresh.length; }
   indexGen++;
+}
+let job = null; // chunked background rebuild in progress (see stepIndexJob)
+function buildIndex(scene) {
+  const _t = performance.now();
+  job = null; // a whole-scene build supersedes any background pass
+  const st = { cells: new Map(), big: [], fresh: [] };
+  scene.updateMatrixWorld();
+  scene.traverse((o) => visitForIndex(o, st));
+  commitIndex(scene, st, _t);
   pAdd('standOn.buildIndex', performance.now() - _t);
+}
+/** Background refresh: the same walk as buildIndex, depth first in the same order, but at most `ms` per call (the renderer already
+ * updates world matrices every frame). The new index replaces the old one only when the walk finishes, so readers never see half. */
+const JOB_MS = 2;
+function stepIndexJob(scene, ms = JOB_MS) {
+  const _t = performance.now();
+  if (!job || job.scene !== scene) job = { scene, stack: [scene], st: { cells: new Map(), big: [], fresh: [] }, spent: 0 };
+  const j = job; let n = 0;
+  while (j.stack.length) {
+    const o = j.stack.pop();
+    for (let c = o.children.length - 1; c >= 0; c--) j.stack.push(o.children[c]);
+    visitForIndex(o, j.st);
+    if ((++n & 15) === 0 && performance.now() - _t > ms) break;
+  }
+  j.spent += performance.now() - _t;
+  if (!j.stack.length) { job = null; commitIndex(scene, j.st, performance.now() - j.spent); pAdd('standOn.buildIndex', j.spent); return true; }
+  pAdd('standOn.buildIndexSlice', performance.now() - _t);
+  return false;
 }
 const INDEX_MAX_AGE = 5000; // a full-scene traverse is a visible hitch: rebuild rarely, never from a per-frame caller
 let inRun = false; // inside a scheduled settle run: runEntry already refreshed the index once, never again per ray
@@ -352,8 +377,8 @@ function tick() {
   const budgetMs = Math.max(4, frame * 0.15);
   // Surfaces that stream in after a figure's last timed stage (a house zone built when the player rides near) were never seen:
   // refresh the index every few seconds; buildIndex flags the entries whose feet a new surface covers (e.redo).
-  if (!/[?&]off=[^&]*settle/.test(location.search) && index && index.scene && now - index.at > REFRESH_MS) buildIndex(index.scene); // ?off=settle skips this 4 s full-scene traverse (lag test)
-  const _t = performance.now(); // the ~150 ms index rebuild above is not part of the settle budget: counted, it ate the whole slice on slow frames and entries sat at stage 2-4 after 60 s (feet-check 2-5 sunk)
+  if (!/[?&]off=[^&]*settle/.test(location.search) && index && index.scene && (job || now - index.at > REFRESH_MS)) stepIndexJob(index.scene); // ?off=settle skips this refresh (lag test); the old 150 ms full traverse is now ~2 ms a frame
+  const _t = performance.now(); // the index refresh above is not part of the settle budget: counted, it ate the whole slice on slow frames and entries sat at stage 2-4 after 60 s (feet-check 2-5 sunk)
   const N = ENTRIES.length;
   for (let k = 0; k < N && ENTRIES.length; k++) {
     if (performance.now() - _t > budgetMs) break;

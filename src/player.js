@@ -100,12 +100,16 @@ export class ThirdPersonCamera {
       // obstacle list from a ray fixed at the start of a pass; the result is committed when the pass ends, and a new pass
       // starts at once. A changed ray length restarts the pass (and the first pass runs whole, so there is always a result).
       const sl = this._slice;
-      if (!sl || this._rayLen !== desiredDistance || this._rayObs !== this._obstacles) {
-        this._slice = { stack: this._obstacles.slice().reverse(), n: 0, best: desiredDistance, ox: this._pivot.x, oy: this._pivot.y, oz: this._pivot.z, dx: this._offsetDir.x, dy: this._offsetDir.y, dz: this._offsetDir.z };
+      const restart = !sl && this._rayHit !== undefined && this._rayLen === desiredDistance && this._rayObs === this._obstacles;
+      if (restart && this._occGap > 0) this._occGap--; // pass just finished: rest one frame, reuse the last result (every 2nd frame at most)
+      else if (!sl || this._rayLen !== desiredDistance || this._rayObs !== this._obstacles) {
+        const stk = this._occStack || (this._occStack = []); // reused buffer: no slice().reverse() copy per pass
+        const ob = this._obstacles; stk.length = 0; for (let i = ob.length - 1; i >= 0; i--) stk.push(ob[i]);
+        this._slice = { stack: stk, n: 0, best: desiredDistance, ox: this._pivot.x, oy: this._pivot.y, oz: this._pivot.z, dx: this._offsetDir.x, dy: this._offsetDir.y, dz: this._offsetDir.z };
         this._rayLen = desiredDistance; this._rayObs = this._obstacles;
         if (this._rayHit === undefined) this._sliceBudget = Infinity;
       }
-      {
+      if (this._slice) {
         const S = this._slice, obs = this._obstacles;
         const t0 = performance.now(), budget = this._sliceBudget || 4;
         this._raycaster.set(_rayO.set(S.ox, S.oy, S.oz), _rayD.set(S.dx, S.dy, S.dz));
@@ -122,7 +126,7 @@ export class ThirdPersonCamera {
           }
           if ((++S.n & 7) === 0 && performance.now() - t0 > budget) break;
         }
-        if (!S.stack.length) { this._rayHit = S.best; this._sliceBudget = 4; this._slice = null; }
+        if (!S.stack.length) { this._rayHit = S.best; this._sliceBudget = 4; this._slice = null; this._occGap = 1; }
       }
       targetDistance = Math.min(desiredDistance, this._rayHit ?? desiredDistance);
     }

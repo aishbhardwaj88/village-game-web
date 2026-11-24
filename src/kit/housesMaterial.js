@@ -325,12 +325,21 @@ export function houseMaterialReady(base) {
 export function loadHouseVariants(base = 'assets/textures_mix/') {
   const kinds = ['color', 'normal', 'roughness'];
   return Promise.all(ALL_VARIANTS.flatMap((v) => kinds.map((k) => loadBitmap(`${base}${v}/${v}_${k}.webp`).then((img) => ({ v, k, img })))))
-    .then((all) => {
-      for (const { v, k, img } of all) {
-        const i = 8 + ALL_VARIANTS.indexOf(v), p = atlasParts[k];
-        if (!p) continue;
-        drawTile(p.g, img, i % COLS, Math.floor(i / COLS));
-        p.t.needsUpdate = true;
-      }
-    }).catch(() => { /* variants stay as plain plaster */ });
+    .then((all) => new Promise((resolve) => {
+      // Spread over frames: 4 tiles per frame, and each texture is re-uploaded once, when its last tile is drawn (was 24 draws in one hitch).
+      const queue = [];
+      for (const k of kinds) { const items = all.filter((a) => a.k === k); items.forEach((it, n) => queue.push({ ...it, last: n === items.length - 1 })); }
+      const step = () => {
+        for (let n = 0; n < 4 && queue.length; n++) {
+          const { v, k, img, last } = queue.shift();
+          const i = 8 + ALL_VARIANTS.indexOf(v), p = atlasParts[k];
+          if (!p) continue;
+          drawTile(p.g, img, i % COLS, Math.floor(i / COLS));
+          if (last) p.t.needsUpdate = true;
+        }
+        if (queue.length) requestAnimationFrame(step); else resolve();
+      };
+      requestAnimationFrame(step);
+    }))
+    .catch(() => { /* variants stay as plain plaster */ });
 }

@@ -734,6 +734,7 @@ async function main() {
   initStaticColliders(scene);
 
   const vehicles = spawnVehicles(scene);
+  const _csEntries = [], _csPool = [], _csTrolley = { x: 0, z: 0, radiusX: 1.2, radiusZ: 1.8 }; // contact-shadow scratch, reused every frame
 
   // Item 3 (real playtest bug — the trolley spawned inside the general store
   // with zero player input, never caught because every existing test only
@@ -3366,10 +3367,18 @@ async function main() {
       const _qd = performance.now();
       dust.update(dt, now / 1000);
       updateSky(sky, now / 1000, camera);
-      contactShadows.update([
-        ...vehicles.map((v) => ({ x: v.group.position.x, z: v.group.position.z, radiusX: v.preset.body.w / 2 + 0.3, radiusZ: v.preset.body.d / 2 + 0.3 })),
-        { x: trolleyForShadows.group.position.x, z: trolleyForShadows.group.position.z, radiusX: 1.2, radiusZ: 1.8 },
-      ]);
+      { // reused entry objects and array: no per-frame allocation
+        const cs = _csEntries, nv = vehicles.length;
+        cs.length = nv + 1;
+        for (let i = 0; i < nv; i++) {
+          const v = vehicles[i], e = _csPool[i] || (_csPool[i] = { x: 0, z: 0, radiusX: 0, radiusZ: 0 });
+          e.x = v.group.position.x; e.z = v.group.position.z; e.radiusX = v.preset.body.w / 2 + 0.3; e.radiusZ = v.preset.body.d / 2 + 0.3;
+          cs[i] = e;
+        }
+        _csTrolley.x = trolleyForShadows.group.position.x; _csTrolley.z = trolleyForShadows.group.position.z;
+        cs[nv] = _csTrolley;
+        contactShadows.update(cs);
+      }
       pAdd('dustSkyShadow', performance.now() - _qd);
       updateDayline(dayProgressForQuestStep(quest.step), dt);
       night.update(dt);
