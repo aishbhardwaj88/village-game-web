@@ -2,13 +2,13 @@
 
 Standing instructions for Claude Code in this repo. Keep this file under 120 lines.
 
-## 0. Read exactly these five files at the start of every session
+## 0. Read exactly these files at the start of every session
 
-1. This file
-2. `docs/FINISH_LINE.md` - the only definition of done. Locked.
-3. `docs/NEEDS_YOU.md` - questions waiting for Aishwarya
-4. `docs/handoff.md` - top entry only, where the last run stopped
-5. `docs/BACKLOG.md` - the story board, section A is the current work
+Reading is governed by `docs/efficiency.md` (ORDER-24NOV, her yes 24 Nov): read only
+this file, `docs/efficiency.md`, and `docs/STATE.md` before starting work. That
+replaces the old five-file list (FINISH_LINE, NEEDS_YOU, handoff, BACKLOG) - those are
+still real and still law, just read on demand (grep or line range), not in full, every
+run. `docs/efficiency.md` also replaces section 10 below for which checks run when.
 
 **Read nothing else until a task needs it.** Read on demand, named here so you can find them:
 `docs/WORLD.md` (what is built), `docs/STORY.md`, `docs/MISSIONS_PLAN.md`,
@@ -267,20 +267,20 @@ Full spec: `reference-from-unity/docs/art-direction.md`. Read before any visual 
 A scene with great lighting and plain geometry reads as real. A detailed mesh with flat
 textures reads as a toy. Spend effort in that order.
 
-## 10. Verify before reporting - all three, every time
+## 10. Verify before reporting
 
-1. `node tools/screenshot.js`, then **look at the images.** Fix anything black, flat,
-   washed-out, smeared or broken before reporting done. "It built" is not evidence.
-2. `npm run build && node tools/regression-check.js` before any commit touching
-   `src/vehicles.js`, `src/main.js`, `src/collision.js` or anything driving movement.
-   Never patch on top of a regression. Never re-save the baseline over a real one.
-3. `tools/world-validator.js` runs inside `npm run build`. Every new building, prop,
-   vehicle or model must pass it. A new asset that breaks a check is not finished.
-   Never silently loosen a check to make a problem disappear.
+Which checks run for which change is governed by `docs/efficiency.md`'s verification
+tiers (ORDER-24NOV, her yes 24 Nov) - read that, not a fixed list here. In short: low
+risk gets the fast chain (`npm run build:unchecked` + the four instant checks), risky
+changes (movement/collision/vehicles/materials/loaders/main.js boot/config/>8 files)
+get the full `npm run build` + `node tools/regression-check.js`, and the full chain
+also runs every 6th run regardless. A failing check is never loosened or skipped to
+get a commit through. "It built" is never evidence on its own - look at what a
+screenshot check shows when one runs.
 
 **One screenshot of one moment proves nothing about anything that changes over time**
 (accumulating rotation, a follow spring, a collision response). Check across a real
-span of play.
+span of play when a visual check runs at all.
 
 ## 11. You may not grade your own work
 

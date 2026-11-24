@@ -3,6 +3,9 @@
 Web version of Dopahar (village: Amrai Khera). three.js + Vite, opens on a link, phone and desktop.
 The Unity project lives in ../Village nostalgia and is NOT deleted. It is the future downloadable version.
 
+Build-loop reading order and verification tiers live in `docs/efficiency.md` - read
+that, `CLAUDE.md` and `docs/STATE.md` before starting any build-loop work.
+
 ## Folders
 - Places V1/        2D place references from Gemini (hero sheet + ortho sheet per place). LAYOUT.md in each = authority for counts, names, sizes.
 - Characters V1/    2D character references. Stylised set is being regenerated as *_real.png (photoreal) before Tripo.

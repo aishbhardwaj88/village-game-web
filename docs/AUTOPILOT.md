@@ -159,13 +159,10 @@ pick a BACKLOG item, do not add a new place or feature, until that block is clea
 
 ## Read first (only these)
 
-- `CLAUDE.md`
-- `docs/FINISH_LINE.md` - the definition of done
-- `docs/NEEDS_YOU.md` - what is already queued for her
-- `docs/handoff.md` - top entry only
-- `docs/FEEDBACK.md` - her latest feedback, newest first, top priority
-
-Anything else only when the current task needs it.
+Reading is governed by `docs/efficiency.md` (ORDER-24NOV, her yes 24 Nov): read
+`CLAUDE.md`, `docs/efficiency.md`, and `docs/STATE.md` before starting. Everything
+else below (FINISH_LINE, NEEDS_YOU, handoff, FEEDBACK) is read on demand, by grep or
+line range, only when the current task needs it - not in full, every run.
 
 ## Characters and Tripo are parked until 29 Oct 2026 (extended 24 Oct)
 
@@ -188,11 +185,13 @@ Anything else only when the current task needs it.
 1. Read `docs/FEEDBACK.md` and `docs/ART_REVIEW.md`. Rework any FAIL, then any FIX.
 2. Pick the top unticked item in `docs/BACKLOG.md` section A. Skip any `- [!]` item.
 3. Build it.
-4. Verify: `npm run build` (runs the world validator), `npm run check-budget`,
-   `node tools/regression-check.js` if movement code was touched.
-5. `node tools/screenshot.js`, then **look at the images** against
-   `reference-from-unity/docs/art-direction.md`. Fix anything smeared, flat, black or
-   toy-like before moving on.
+4. Verify per `docs/efficiency.md`'s tiers: fast chain for low risk, full
+   `npm run build` + `node tools/regression-check.js` for movement/collision/
+   vehicles/materials/loaders/main.js-boot/config changes, full chain every 6th run
+   regardless.
+5. For a visual change, `node tools/screenshot.js`, then **look at the images**
+   against `reference-from-unity/docs/art-direction.md`. Fix anything smeared, flat,
+   black or toy-like before moving on.
 6. Commit. Push if possible.
 7. Tick the box with the screenshot path as proof. Never reword the item.
 8. Update `docs/handoff.md` (one entry, at the top) and `docs/status.json`.
@@ -255,8 +254,9 @@ End with: boxes ticked x of y, what changed in the game this cycle, anything new
 
 ## Token discipline (tech lead's rules, follow exactly)
 
-- Read only the four session files. Never read `docs/archive/`, never read a doc the
-  current task does not need, never re-read a file you have already read this run.
+- Read only `CLAUDE.md`, `docs/efficiency.md` and `docs/STATE.md` up front. Never
+  read `docs/archive/`, never read a doc the current task does not need, never
+  re-read a file you have already read this run.
 - Do not re-summarise the repo, re-explain the plan, or restate CLAUDE.md back.
 - Do not run broad searches across the repo for context you already have in WORLD.md.
 - One screenshot run per task, not per edit.
