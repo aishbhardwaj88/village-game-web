@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { addPilotVehicles } from './pilotVehicles.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
@@ -1447,6 +1448,7 @@ async function main() {
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
+    addPilotVehicles(scene, (x, z) => groundHeightAt(x, z, 0)); // free-vehicle pilot, after Play only (src/pilotVehicles.js)
     if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());
     else scheduleFrameWork(deferredSteps(), 'deferredContent');
   }
