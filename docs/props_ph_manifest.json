@@ -811,5 +811,179 @@
   "source": "https://polyhaven.com/a/yellow_onion",
   "licence": "CC0",
   "size_kb": 73
+ },
+ {
+  "file": "public/assets/props_ph/metal_jug.glb",
+  "name": "metal_jug",
+  "height_m": 0.288,
+  "width_m": 0.197,
+  "depth_m": 0.195,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "village kitchen",
+   "milk or water jug"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/Metal_Jug",
+  "licence": "CC0",
+  "size_kb": 77
+ },
+ {
+  "file": "public/assets/props_ph/metal_stool_03.glb",
+  "name": "metal_stool_03",
+  "height_m": 1.023,
+  "width_m": 0.461,
+  "depth_m": 0.47,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop",
+   "tea stall seating"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_stool_03",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/metal_toolbox.glb",
+  "name": "metal_toolbox",
+  "height_m": 0.305,
+  "width_m": 0.4,
+  "depth_m": 0.269,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "mechanic workshop",
+   "farm shed"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_toolbox",
+  "licence": "CC0",
+  "size_kb": 91
+ },
+ {
+  "file": "public/assets/props_ph/metal_tool_chest.glb",
+  "name": "metal_tool_chest",
+  "height_m": 1.016,
+  "width_m": 2,
+  "depth_m": 2,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "mechanic workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/metal_tool_chest",
+  "licence": "CC0",
+  "size_kb": 353
+ },
+ {
+  "file": "public/assets/props_ph/shelf_01.glb",
+  "name": "shelf_01",
+  "height_m": 2.08,
+  "width_m": 1.003,
+  "depth_m": 0.257,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "shop interior",
+   "house storage"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/Shelf_01",
+  "licence": "CC0",
+  "size_kb": 365
+ },
+ {
+  "file": "public/assets/props_ph/woodentable_03.glb",
+  "name": "woodentable_03",
+  "height_m": 0.83,
+  "width_m": 1.327,
+  "depth_m": 0.562,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "house interior",
+   "shop counter cabinet"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/WoodenTable_03",
+  "licence": "CC0",
+  "size_kb": 286
+ },
+ {
+  "file": "public/assets/props_ph/bench_vice_01.glb",
+  "name": "bench_vice_01",
+  "height_m": 2,
+  "width_m": 1.811,
+  "depth_m": 2,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "workshop",
+   "blacksmith or carpenter bench"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/bench_vice_01",
+  "licence": "CC0",
+  "size_kb": 120
+ },
+ {
+  "file": "public/assets/props_ph/adjustable_wrench.glb",
+  "name": "adjustable_wrench",
+  "height_m": 0.253,
+  "width_m": 0.068,
+  "depth_m": 0.029,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "mechanic workshop"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/adjustable_wrench",
+  "licence": "CC0",
+  "size_kb": 83
+ },
+ {
+  "file": "public/assets/props_ph/dustpan.glb",
+  "name": "dustpan",
+  "height_m": 0.1,
+  "width_m": 0.332,
+  "depth_m": 0.368,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "house yard",
+   "school"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/dustpan",
+  "licence": "CC0",
+  "size_kb": 118
+ },
+ {
+  "file": "public/assets/props_ph/hatchet.glb",
+  "name": "hatchet",
+  "height_m": 0.289,
+  "width_m": 0.026,
+  "depth_m": 0.104,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "wood pile",
+   "farm shed"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/hatchet",
+  "licence": "CC0",
+  "size_kb": 103
+ },
+ {
+  "file": "public/assets/props_ph/ceramic_pot.glb",
+  "name": "ceramic_pot",
+  "height_m": 0.372,
+  "width_m": 0.656,
+  "depth_m": 0.502,
+  "real_world_size_note": "metres from glb bounds, 1 unit = 1 m, origin as exported (centre of model, Y up)",
+  "suggested_use": [
+   "village kitchen",
+   "pottery stall"
+  ],
+  "colour_shifted": true,
+  "source": "https://polyhaven.com/a/ceramic_pot",
+  "licence": "CC0",
+  "size_kb": 85
  }
 ]

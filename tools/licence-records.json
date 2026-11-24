@@ -3293,6 +3293,149 @@
       "licence": "CC0",
       "creditsKey": "ph:yellow_onion",
       "evidence": "Poly Haven 4K Blender download; re-exported to glTF, textures cut to 256-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_jug.glb"
+      ],
+      "category": "credited",
+      "title": "Metal_Jug (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/Metal_Jug",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:Metal_Jug",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_stool_03.glb"
+      ],
+      "category": "credited",
+      "title": "metal_stool_03 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_stool_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:metal_stool_03",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_toolbox.glb"
+      ],
+      "category": "credited",
+      "title": "metal_toolbox (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_toolbox",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:metal_toolbox",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/metal_tool_chest.glb"
+      ],
+      "category": "credited",
+      "title": "metal_tool_chest (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/metal_tool_chest",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:metal_tool_chest",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/shelf_01.glb"
+      ],
+      "category": "credited",
+      "title": "Shelf_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/Shelf_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:Shelf_01",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/woodentable_03.glb"
+      ],
+      "category": "credited",
+      "title": "WoodenTable_03 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/WoodenTable_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:WoodenTable_03",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/bench_vice_01.glb"
+      ],
+      "category": "credited",
+      "title": "bench_vice_01 (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/bench_vice_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:bench_vice_01",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/adjustable_wrench.glb"
+      ],
+      "category": "credited",
+      "title": "adjustable_wrench (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/adjustable_wrench",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:adjustable_wrench",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/dustpan.glb"
+      ],
+      "category": "credited",
+      "title": "dustpan (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/dustpan",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:dustpan",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/hatchet.glb"
+      ],
+      "category": "credited",
+      "title": "hatchet (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/hatchet",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:hatchet",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/assets/props_ph/ceramic_pot.glb"
+      ],
+      "category": "credited",
+      "title": "ceramic_pot (Poly Haven model)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ceramic_pot",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ph:ceramic_pot",
+      "evidence": "Poly Haven Blender download; re-exported to glTF, textures cut to 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
     }
   ],
   "worthKnowing": [
