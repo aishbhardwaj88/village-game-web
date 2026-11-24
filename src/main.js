@@ -224,6 +224,7 @@ import { createVillageSounds } from './villageSounds.js';
 import { createAfternoonMood, addHeatShimmer } from './afternoonMood.js';
 import { createAmbientBeds } from './ambientBeds.js';
 import { createPlayerCycle } from './playerCycle.js';
+import { createRiderLegs } from './riderLegs.js';
 import { initPerfS7 } from './renderer.js'; // S7 WIRING (perf)
 import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 // S7 WIRING (shops-land)
@@ -239,15 +240,12 @@ const GROUND_HALF_EXTENT = -WORLD.minX; // keep the player a couple metres insid
 const GROUND_HALF_Z = WORLD.maxZ;
 const GROUND_HALF_X = WORLD.maxX; // the staging yard (src/stagingYard.js) lies east of the village; the drawn ground reaches further still
 const MOVE_SPEED = 4.2; // m/s, walking pace
-// 24 Nov playtest note (LOOKS LIST item 6): "feels like a motorcycle. Pickup is instant... make pickup about 3 s,
-// cruise about 20 km/h, sprint 27 km/h". Before, there was one top speed (27, reached in ~1 s) plus a separate
-// Shift-sprint on top of THAT (34 km/h) - this splits it the way she asked: 20 is the ordinary cruise (the 9 Nov
-// note about 5.5 m/s "feeling like a punctured tyre" was against a single-speed bike with no faster Shift gear;
-// now Shift covers that fast case at 27, same number as the old single top speed). A fixed cycle speed, not a
-// walking multiple (7 Nov), so a motorbike can get its own.
-const CYCLE_TOP_SPEED = 20 / 3.6; // m/s, 20 km/h cruise (pedal, no Shift)
-const CYCLE_SPRINT_SPEED = 27 / 3.6; // m/s, 27 km/h, Shift held
-const CYCLE_ACCEL = CYCLE_TOP_SPEED / 3.0; // pedal to cruise speed in about 3 s (was 1 s) - reaches sprint in ~4 s, a bit more effort for the faster gear
+// 25 Nov playtest: the 24 Nov split (20 / 27 km/h, 3 s pickup) felt far too slow, a real cycle moves faster. Now 25 cruise, 32 sprint,
+// about 2 s pickup with a firm push-off (not instant, not a motorbike). Fixed cycle speeds, not a walking multiple (7 Nov).
+const CYCLE_TOP_SPEED = 25 / 3.6; // m/s, 25 km/h cruise (pedal, no Shift)
+const CYCLE_SPRINT_SPEED = 32 / 3.6; // m/s, 32 km/h, Shift held
+const CYCLE_PUSH_ACCEL = 6.0, CYCLE_ROLL_ACCEL = 2.0; // m/s2: firm push-off from rest, easing to a steady pedal at cruise; ~1.9 s from rest to cruise, ~3 s to sprint
+const cycleAccelAt = (v) => Math.max(CYCLE_ROLL_ACCEL, CYCLE_PUSH_ACCEL - (CYCLE_PUSH_ACCEL - CYCLE_ROLL_ACCEL) * Math.max(0, v) / CYCLE_TOP_SPEED);
 const CYCLE_COAST = CYCLE_TOP_SPEED / 5; // no input: coast to a stop in about 5 s
 const CYCLE_BRAKE = CYCLE_TOP_SPEED / 0.8;
 const CYCLE_HALF_W = 0.3, CYCLE_HALF_L = 0.9; // 0.6 m wide by 1.8 m long footprint, oriented along the heading
@@ -1976,6 +1974,7 @@ async function main() {
           const bike = buildBikeGroup();
           bike.group.rotation.y = Math.PI; // bike front is -Z, routines face +Z
           rider.add(bike.group);
+          const legs = createRiderLegs(rider, [0.28, -0.15], [1.15, -0.62], 0.34); // legs pedal with the wheels (src/riderLegs.js)
           bike.group.traverse((o) => { if (o.isMesh) markFigure(o); }); // the bike is never the surface its own rider stands on (G3 walker ground)
           group.add(rider);
           const ride = createWaypointLoop(rider, (() => {
@@ -1989,6 +1988,7 @@ async function main() {
             const v = dt > 0 ? moved / dt : 0;
             updateWheel(bike.frontWheel, { linearSpeed: v, radius: 0.34, dt });
             updateWheel(bike.rearWheel, { linearSpeed: v, radius: 0.34, dt });
+            legs.update(v, dt);
           } };
         },
       });
@@ -2659,7 +2659,7 @@ async function main() {
     // Speed (signed: negative = walked backwards).
     if (pedal > 0.1) {
       const top = (sprint ? CYCLE_SPRINT_SPEED : CYCLE_TOP_SPEED) * Math.min(1, pedal);
-      if (cycleSpeed < top) cycleSpeed = Math.min(top, cycleSpeed + (cycleSpeed < 0 ? CYCLE_BRAKE : CYCLE_ACCEL) * dt);
+      if (cycleSpeed < top) cycleSpeed = Math.min(top, cycleSpeed + (cycleSpeed < 0 ? CYCLE_BRAKE : cycleAccelAt(cycleSpeed)) * dt);
       else cycleSpeed = Math.max(top, cycleSpeed - CYCLE_COAST * 2 * dt); // letting go of Shift eases back to cruising speed
     } else if (pedal < -0.1) {
       if (cycleSpeed > 0) cycleSpeed = Math.max(0, cycleSpeed - CYCLE_BRAKE * dt); // S brakes; once stopped it walks the cycle back
