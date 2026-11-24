@@ -41,6 +41,7 @@ import { turnSiteGroup, applyTurn } from './turn.js';
 import { MAP_COMPOUND_WALLS, createMapCompoundWall } from './mapCompoundWalls.js';
 import { wireSiteSlot, slotInfo, isPlaceSite } from './siteSlots.js';
 import { pAdd, perfProbe } from './perfProbe.js';
+import { setupDebug, OFF as DBG_OFF } from './debugPanel.js';
 import { resolveMove, resolveOrientedMove, resolveTowedMove, positionBlocked } from './movement.js';
 import { AudioEngine } from './audio.js';
 import { buildBackgroundHouses, abadiGardenPlants, abadiSmokeSources, abadiPropSites, abadiRoofSites } from './scenery.js';
@@ -1066,6 +1067,7 @@ async function main() {
   if (!touch) addHeatShimmer(composer, camera, shimmerStrength);
 
   const fps = setupFpsCounter();
+  const dbg = setupDebug(renderer, scene); // ?debug=1 panel and ?off=shadows,post,crops,npcs,traffic,vegetation (src/debugPanel.js)
 
   // HDRI lighting (IBL) loads async, AFTER Play unlocks (see slotLoads below): the PMREM bake is a single long
   // main-thread task (4 s on the software-GL load test) and the HDR download shares the opening bandwidth, and
@@ -3443,7 +3445,7 @@ async function main() {
       warmTextures(_pt1, 8);
       if (_pt1 >= postPressCompileAt) { postPressCompileAt = _pt1 + 800; preCompile(); }
     }
-    if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; composer.render(); if (!_lm.firstRender) { _lm.firstRender = performance.now(); _lm.programs = renderer.info.programs.length; _lm.textures = renderer.info.memory.textures; _lm.geometries = renderer.info.memory.geometries; _lm.calls = renderer.info.render.calls; } }
+    if (renderOK) { if (!_lm.firstRender) _lm.firstRenderStart = _pt1; (DBG_OFF.has('post') ? renderer.render(scene, camera) : composer.render()); if (!_lm.firstRender) { _lm.firstRender = performance.now(); _lm.programs = renderer.info.programs.length; _lm.textures = renderer.info.memory.textures; _lm.geometries = renderer.info.memory.geometries; _lm.calls = renderer.info.render.calls; } }
     // L1 (10 Nov): "Village in X.X s" on the F overlay = Play press to the first frame drawn after the opening view is fully
     // built: deferred assembly done, no zone near the player waiting or half-built, no queued job, no group waiting to batch.
     // settledAll also waits for every in-flight download (far models keep streaming, so it lands later).
@@ -3472,6 +3474,7 @@ async function main() {
     if (_pt2 - _pt0 > 300) { const _lf = (window.__longFrames = window.__longFrames || []); if (_lf.length < 500) _lf.push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); }
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
     fps.update(now);
+    dbg.frame(now);
   }
   requestAnimationFrame(tick);
   _lm.mainSyncEnd = performance.now();

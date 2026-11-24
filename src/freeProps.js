@@ -76,7 +76,7 @@ function loadFreeProps(group, groundAt) {
       m.position.set(-c.x * k, -box.min.y * k, -c.z * k);
       holder.add(m);
       holder.position.set(x, groundAt ? groundAt(x, z) : 0, z);
-      const bigEnough = Math.max(w, d, size.y * k) >= 0.6; // small props skip the shadow pass (each caster is drawn twice)
+      const bigEnough = Math.max(w, d, size.y * k) >= 1.5; // props under 1.5 m skip the shadow pass (each caster is drawn twice)
       m.traverse((o) => { if (o.isMesh) { o.castShadow = bigEnough; o.receiveShadow = true; } });
       if (v.solid) holder.userData.colliderBoxes = [colliderBoxFromTransform(w, d, new THREE.Matrix4().setPosition(x, 0, z))];
       group.add(holder);

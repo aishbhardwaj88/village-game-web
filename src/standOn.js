@@ -352,7 +352,7 @@ function tick() {
   const budgetMs = Math.max(4, frame * 0.15);
   // Surfaces that stream in after a figure's last timed stage (a house zone built when the player rides near) were never seen:
   // refresh the index every few seconds; buildIndex flags the entries whose feet a new surface covers (e.redo).
-  if (index && index.scene && now - index.at > REFRESH_MS) buildIndex(index.scene);
+  if (!/[?&]off=[^&]*settle/.test(location.search) && index && index.scene && now - index.at > REFRESH_MS) buildIndex(index.scene); // ?off=settle skips this 4 s full-scene traverse (lag test)
   const _t = performance.now(); // the ~150 ms index rebuild above is not part of the settle budget: counted, it ate the whole slice on slow frames and entries sat at stage 2-4 after 60 s (feet-check 2-5 sunk)
   const N = ENTRIES.length;
   for (let k = 0; k < N && ENTRIES.length; k++) {

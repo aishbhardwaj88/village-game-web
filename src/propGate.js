@@ -4,7 +4,7 @@
  * makeGroup() gives an empty THREE.Group; load(group) returns a promise that fills it.
  * 25 Nov 2026, lag fix (GPU texture memory, draw calls).
  */
-export const LOAD_M = 80, UNLOAD_M = 120;
+export const LOAD_M = 50, UNLOAD_M = 70;
 
 export function disposeTree(root) {
   root.traverse((o) => {
