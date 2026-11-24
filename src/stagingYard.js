@@ -99,7 +99,8 @@ function addWeathering(m, set) {
           float damp_ = 1.0 - smoothstep(0.0, 0.5, vWxyz.y);
           roughnessFactor = clamp(roughnessFactor * (0.84 + 0.30 * rn_) - 0.07 * damp_ * rn_, 0.5, 1.0);
         }
-        ${set === 'tin' ? 'roughnessFactor = max(roughnessFactor, 0.62);   // weathered galvanised sheet is dull, not mirror-bright' : ''}`)
+        ${set === 'tin' ? 'roughnessFactor = max(roughnessFactor, 0.62);   // weathered galvanised sheet is dull, not mirror-bright' : ''}
+        ${set === 'thatch' ? 'roughnessFactor = 1.0;   // her 24 Nov playtest note: haystacks read shiny - dry straw is never shiny, roughness 1, no specular, fully matte' : ''}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           diffuseColor.rgb *= ${set === 'thatch' ? 'vec3(4.0, 3.4, 2.5)' : boost.toFixed(2)};   // thatch scan is a neutral dark grey: warm it to straw
