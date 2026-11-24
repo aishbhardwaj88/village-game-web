@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (36) - MAIN lane, 2nd run of the 3-lane push. docs/lanes/ still doesn't
+exist (MISSIONS/LOAD haven't logged) - nothing to integrate. Part A/C already
+done (entry 35), nothing new there. Verified main healthy (fresh npm ci,
+build:unchecked clean, same pre-existing budget WARNs, 4 instant checks PASS).
+Took 2 unowned BACKLOG items to zero: pond lotus (re-searched CC0, none found,
+closed pads-only-final) and halwai flame/heat (soot+steam already built; added
+a real flickering PointLight per bhatti in src/halwaiFire.js since the flame
+cast no light before - wired in src/main.js). B8/B7/B9 are explicitly deferred
+to after the push, not touched. NEXT: more unowned BACKLOG, or integrate lanes
+once they log.
+
 # 24 Nov (35) - MAIN lane, first run of the 3-lane 24-hour push. docs/lanes/
 doesn't exist yet (MISSIONS/LOAD haven't run) - nothing to integrate. Part C: C1
 DONE, added a real 20k-triangle-per-character gate to tools/check-budget.js

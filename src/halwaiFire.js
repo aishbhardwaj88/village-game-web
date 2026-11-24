@@ -5,6 +5,17 @@ import * as THREE from 'three';
  * thin oil steam. One THREE.Points object = one draw call, decorative only (no collision). `sources` = [{ x, y, z }]
  * world positions of each kadhai's centre at rim height. Per-particle size/alpha/colour are attributes so flame,
  * smoke and steam share the one draw call.
+ *
+ * BACKLOG item "halwai: visible flame/heat shimmer" (24 Nov) - soot was already baked into the geometry
+ * (tools/blender/build_halwai.py's 'fire_soot' paint patch at the fire mouth arch) and steam already existed
+ * below; the one piece genuinely missing was actual light: the flame drew bright pixels but cast nothing onto
+ * the kadhai, counter or the halwai's own face, which is why the stall still read "switched off" at a glance.
+ * Fixed with one flickering PointLight per bhatti (warm, short range, no shadow - cheap, this is 2 extra lights
+ * total, not per-frame-regenerated geometry) instead of a screen-space heat-haze shader, which would need the
+ * EffectPass/composer (main.js boot code, Tier 2, out of scope for this size of fix) to sample what's behind
+ * the flame for real refraction - a fake non-refracting shimmer card would not actually look like heat, so it
+ * was left out rather than shipped as decoration that doesn't do what it claims (CLAUDE.md 5a1: a look call,
+ * not reworked without her eye on it; this is a lighting/technical addition, not a restyle of the existing look).
  */
 const FLAME = 14;
 const SMOKE = 10;
@@ -53,6 +64,17 @@ export function createHalwaiFire(sources) {
   points.name = 'halwai_fire';
   points.frustumCulled = false;
 
+  // one warm flicker-light per bhatti, placed at the fire mouth (customer side, -x face) where the mouth-flame
+  // and soot patch already are - short range so it only warms the kadhai/counter/halwai immediately around it,
+  // no shadow (two extra shadow casters would cost real frame time for a decorative light)
+  const lights = sources.map((o) => {
+    const light = new THREE.PointLight(0xff8a3c, 1.1, 2.4, 2.1);
+    light.position.set(o.x - 0.4, o.y - 0.3, o.z);
+    light.castShadow = false;
+    light.name = 'halwai_fire_light';
+    return light;
+  });
+
   const rnd = (i, s) => { const v = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return v - Math.floor(v); };
   let t = 0;
 
@@ -60,6 +82,13 @@ export function createHalwaiFire(sources) {
     t += dt;
     for (let s = 0; s < sources.length; s++) {
       const o = sources[s];
+      // flicker the matching light: fast small jitter (real flame flicker) plus a slower breathing term, both
+      // seeded per-bhatti so the two kadhais never flicker in lockstep
+      const l = lights[s];
+      const fast = Math.sin(t * 11 + s * 7.3) * 0.18; // quick lick-of-flame jitter
+      const slow = 0.5 + 0.5 * Math.sin(t * 2.3 + s * 3.1); // slower breathing, 0..1
+      const jitter = rnd(s + 1, Math.floor(t * 9)) * 0.12; // stepped random flicker, re-rolled ~9x/sec
+      l.intensity = 0.85 + fast + slow * 0.25 + jitter;
       for (let i = 0; i < per; i++) {
         const k = s * per + i;
         const seed = k + 1;
@@ -118,5 +147,5 @@ export function createHalwaiFire(sources) {
     geometry.attributes.aAlpha.needsUpdate = true;
   }
   update(0);
-  return { points, update };
+  return { points, lights, update };
 }

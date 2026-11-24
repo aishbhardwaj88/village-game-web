@@ -628,3 +628,20 @@ genuinely optional future polish, not required for "the game is done."
 ## Parked / needs-you items
 
 See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain language.
+
+## Closed 24 Nov (MAIN lane, 3-lane push)
+
+- [x] Pond lotus CC0 search: re-searched (WebSearch, several queries incl.
+      poly.pizza/Sketchfab); no usable CC0/CC-BY flower model turned up (same thin
+      result as the earlier wheat/grass searches - real hits are all cgtrader/paid or
+      unverified licence). Confirmed pads-only stays final; the hand-built
+      `lotusFlowerGeos()`/`lotusPetalTexture()` in src/farmSites.js stays unused code,
+      kept for when/if a real source turns up or she asks for the flower built by hand.
+- [x] Halwai flame/heat shimmer, soot, steam: soot and steam were already built (soot
+      baked into geometry via tools/blender/build_halwai.py's 'fire_soot' arch patch;
+      steam already in src/halwaiFire.js). The one real gap was no actual light cast by
+      the flame, which is why the stall read "switched off". Added one flickering warm
+      PointLight per bhatti in src/halwaiFire.js (no shadow, short range), wired through
+      src/main.js alongside the existing fire-points visibility gate. True screen-space
+      heat-haze (refraction) would need the EffectPass/composer - out of scope for this
+      fix, logged in the file's own comment for whoever picks this up next.

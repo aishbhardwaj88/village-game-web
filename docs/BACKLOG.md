@@ -23,8 +23,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       once at 2m per panel, send, wait for her verdict only on THIS item, keep working
       everything else). Once approved: freeze in docs/material-library.md, apply by name
       everywhere, re-render staged places against it. BLOCKED: her taste verdict.
-- [ ] [ACTIVE] Pond lotus: search CC0 sources again (poly.pizza was unchecked before);
-      if none exists, confirm pads-only stays final (already the de facto state).
 - [ ] [PAUSED-MAP] Diegetic wayfinding (signs, notice board, milestones) and lane
       continuity - layout-dependent, wait for the new map.
 - [ ] [ACTIVE] Architecture: every place as one self-contained unit (geometry, props,
@@ -47,8 +45,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       seating, signage, use-wear): ration shop, post office, atta chakki, school, temple
       complex - build/finish the INTERNALS now (survives a map move); final position is
       the new map's job.
-- [ ] [ACTIVE] Halwai: visible flame/heat shimmer, soot, steam - the stall still reads
-      "switched off".
 - [ ] [ACTIVE] Street lamps: research real UP references, two distinct pole types,
       concrete/rusted-steel texture with wear, per-instance variation - design/material
       work, independent of exact lane position.

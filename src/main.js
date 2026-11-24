@@ -465,6 +465,7 @@ async function main() {
   // live fire under the halwai's two kadhais (bhatti centres from tools/blender/build_halwai.py: x = centre - 2.25 + 0.495, z = +-1.15, rim y ~1.45)
   const halwaiFire = createHalwaiFire([-1.15, 1.15].map((dz) => ({ ...halwaiXZ(HALWAI_CENTER.x - 1.755, HALWAI_CENTER.z + dz), y: 1.45 })));
   scene.add(halwaiFire.points);
+  for (const l of halwaiFire.lights) scene.add(l); // warm flicker-light per bhatti, toggled with the fire points below
   // Blender tea stall + general store (2026-10-21, docs/tea-stall-checklist.md / docs/general-store-checklist.md):
   // the code-built walls/roofs/counters/posts/goods are now the INVISIBLE collision backing in 'tea_old' + 'store_old'
   // ('tea_old' / 'store_old', kept un-merged by the village-wide merge, hidden by the slots below); tools/blender/build_tea_stall.py and
@@ -3380,6 +3381,7 @@ async function main() {
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
       if (teaSteam.points.visible) teaSteam.update(dt);
       halwaiFire.points.visible = Math.abs(listenerPos.x - HALWAI_CENTER.x) < 30 && Math.abs(listenerPos.z - HALWAI_CENTER.z) < 30;
+      for (const l of halwaiFire.lights) l.visible = halwaiFire.points.visible;
       if (halwaiFire.points.visible) halwaiFire.update(dt);
       updateWater(performance.now() / 1000);
       for (const m of distGated) { const g = m.userData.distGate; const v = Math.hypot(camera.position.x - g.x, camera.position.z - g.z) < g.r + g.range; if (v !== m.visible) { m.visible = v; requestColliderRebuild(); } } // stock cells carry derived colliders only while drawn
