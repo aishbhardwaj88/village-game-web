@@ -1460,8 +1460,8 @@ async function main() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
     const off = new URLSearchParams(window.location.search).get('off') || ''; // isolate lag: ?off=props, ?off=vehicles, ?off=walls (or a,b)
-    if (!off.includes('vehicles')) addPilotVehicles(scene, (x, z) => groundHeightAt(x, z, 0)); // free-vehicle pilot, after Play only (src/pilotVehicles.js)
-    if (!off.includes('props')) addFreeProps(scene, (x, z) => groundHeightAt(x, z, 0)); // free-prop review row, after Play only (src/freeProps.js)
+    if (!off.includes('vehicles')) addPilotVehicles(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-vehicle pilot, after Play only (src/pilotVehicles.js)
+    if (!off.includes('props')) addFreeProps(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-prop review row, after Play only (src/freeProps.js)
     if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());
     else scheduleFrameWork(deferredSteps(), 'deferredContent');
   }

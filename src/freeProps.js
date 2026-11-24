@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js';
+import { gateByDistance } from './propGate.js';
 
 // dim: 'h' = height, 'l' = longest horizontal side, in metres. solid: gets a collider.
 export const FREE_PROPS = [
@@ -49,10 +50,12 @@ export const PH_INDOOR = [
   o('cassette_player', 0.236), o('alarm_clock_01', 0.172), o('pocket_watch', 0.076), o('bananas', 0.179), o('food_apple_01', 0.085),
   o('food_pomegranate_01', 0.115), o('lemon', 0.095), o('sweet_potato', 0.1), o('yellow_onion', 0.086),
 ];
-export function addFreeProps(scene, groundAt) {
-  const group = new THREE.Group();
-  group.name = 'free_props';
-  scene.add(group);
+// the review rows sit around x 606, z 33; props load within 80 m of it and are freed beyond 120 m (src/propGate.js)
+const PROPS_CENTER = { x: 606, z: 33 };
+export function addFreeProps(scene, groundAt, getPlayerPos) {
+  return gateByDistance(scene, 'free_props', PROPS_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadFreeProps(group, groundAt), requestColliderRebuild);
+}
+function loadFreeProps(group, groundAt) {
   // one placer per set of rows; each keeps its own cursor so groups of one set continue where the last stopped
   const placer = (rows) => {
     let cx = ROW_X0, row = 0;

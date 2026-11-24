@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { getGLTFLoader } from './loaders.js';
 import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js';
+import { gateByDistance } from './propGate.js';
 
 export const PILOT_VEHICLES = [
   { file: 'auto_rickshaw', x: 607.6, z: 45.6, yaw: 1.2, length: 2.65 },
@@ -19,10 +20,11 @@ export const PILOT_VEHICLES = [
   { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 4.5 },
 ];
 
-export function addPilotVehicles(scene, groundAt) {
-  const group = new THREE.Group();
-  group.name = 'pilot_vehicles';
-  scene.add(group);
+const VEHICLES_CENTER = { x: 606, z: 50 }; // load within 80 m, freed beyond 120 m (src/propGate.js)
+export function addPilotVehicles(scene, groundAt, getPlayerPos) {
+  return gateByDistance(scene, 'pilot_vehicles', VEHICLES_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadPilotVehicles(group, groundAt), requestColliderRebuild);
+}
+function loadPilotVehicles(group, groundAt) {
   return Promise.all(PILOT_VEHICLES.map((v) => getGLTFLoader().loadAsync(`assets/vehicles_free/${v.file}.glb`).then((gltf) => {
     const m = gltf.scene;
     m.updateMatrixWorld(true);
