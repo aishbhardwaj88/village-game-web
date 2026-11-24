@@ -4401,6 +4401,19 @@
       "licence": "CC0",
       "creditsKey": "ph:water_manhole_cover",
       "evidence": "Poly Haven 1K Blender download; re-exported to glTF, textures 512-1024 WebP, meshopt, simplified, small colour shift, printed lettering painted out where present"
+    },
+    {
+      "match": [
+        "public/basis/*"
+      ],
+      "category": "credited",
+      "title": "Basis Universal transcoder (KTX2 texture decoder, copied unchanged from three.js examples/jsm/libs/basis)",
+      "source": "Binomial LLC / three.js",
+      "url": "https://github.com/BinomialLLC/basis_universal",
+      "author": "Binomial LLC",
+      "licence": "Apache-2.0",
+      "creditsKey": "Basis Universal transcoder",
+      "evidence": "byte-identical to node_modules/three/examples/jsm/libs/basis; Basis Universal is Apache-2.0"
     }
   ],
   "worthKnowing": [
