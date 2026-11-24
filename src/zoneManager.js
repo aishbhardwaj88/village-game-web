@@ -107,7 +107,21 @@ export function createZoneManager(scene) {
       if (o.geometry) o.geometry.dispose();
       if (o.material) {
         const mats = Array.isArray(o.material) ? o.material : [o.material];
-        for (const m of mats) m.dispose();
+        // src/materials.js's getTiledMaterial() hands out the exact same cached Material object
+        // (materialCache, keyed by name/repeat/tint) to every caller asking for that combo -
+        // confirmed live across dozens of files (bazaar.js, shops.js, temple.js, props.js's
+        // createStreetLamps/createWaterTankProp...) and, concretely, every lamp zone this module
+        // itself registers (lamps_bazaar_*, lamps_temple_*, lamps_gali_*, lamps_<spur>) shares one
+        // literal 'concrete' material and one literal lamp-tin material (props.js's module-level
+        // `_lampTinMat` singleton) across the whole village. Disposing one zone's copy of a shared
+        // material (dpTiledLibrary flag, set by getTiledMaterial) would silently break every OTHER
+        // still-active or not-yet-built zone referencing that exact object: the renderer drops its
+        // compiled GPU program for that material (WebGLRenderer's onMaterialDispose ->
+        // deallocateMaterial) and has to recompile the shader the next time ANY of those other
+        // meshes draws - a stutter on a random later frame, not at this teardown, so it would never
+        // show up in a one-frame screenshot check. Geometry is never cached/shared this way (no
+        // scene-wide geometry cache exists in src/), so it is always safe to dispose here.
+        for (const m of mats) if (!m.userData?.dpTiledLibrary) m.dispose();
       }
     });
   }

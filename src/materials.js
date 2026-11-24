@@ -167,6 +167,15 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 
   mat = new THREE.MeshStandardMaterial(opts);
   mat.name = name;
+  // src/zoneManager.js's disposeObject() must never call .dispose() on this: it is a cache entry
+  // (materialCache above) handed out by reference to every caller that asks for this exact
+  // name/repeat/tint/roughness combo across the whole game (CLAUDE.md 5a2 "materials are a shared
+  // library"), not a copy. .clone() deep-copies userData (three.js Material.copy()), so this flag
+  // survives onto cloneTiledMaterial() results and other clones of this material too - correctly
+  // conservative, since a clone that itself memoizes/reuses across call sites (e.g. props.js's
+  // lampTinMaterial()) needs the same protection, and a clone that doesn't just costs one retained
+  // Material object, never a correctness bug.
+  mat.userData.dpTiledLibrary = true;
   // vertexColors requested separately from the cache key above so a wall using baked
   // dirt/bleach/blotch vertex colours (texturedWallBox, Fix 4/4) never accidentally
   // shares a material with a caller at the same repeat/tint that has no 'color'
