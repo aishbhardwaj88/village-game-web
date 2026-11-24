@@ -1,6 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (33) - ORDER-24NOV B2, finish it. Found the real remaining duplicate-fetch
+site: `src/stagingYard.js`'s `setTexture()` opened its own private, unbusted
+TextureLoader at the same `assets/textures/<set>/<set>_<kind>.webp` paths
+materials.js's `getTiledMaterial()`/`loadRaw()` already fetches (busted,
+shared-cached) for every non-staged building - so any set a staged place AND a
+regular building both use (plaster, brick, wood, tin, terracotta, concrete) was
+downloaded twice. Routed stagingYard.js through the already-exported `loadRaw()`
+instead; removed its now-redundant private loader/cache. Verified: build:unchecked
+3s clean, all 4 instant checks PASS, no new findings (Tier 1, src/stagingYard.js is
+a builder file, not movement/collision/vehicles/main.js-boot). B2 is now done -
+landFields.js/landMaterials.js were already fixed earlier, this was the last site.
+Nothing for NEEDS_YOU.md. NEXT: B6 (shader program merge, finish it).
+
 # 24 Nov (32) - ORDER-24NOV Part A done. Created docs/efficiency.md (A1-A11: 3-file
 mandatory reading, verification tiers, 8-line handoff cap, no-audit rule) and
 docs/STATE.md (current state/next 5/blockers/container notes, rewritten each run).

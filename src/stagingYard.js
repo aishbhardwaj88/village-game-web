@@ -13,6 +13,7 @@ import { addSchoolProps } from './schoolProps.js';
 import { isDevMode } from './ui.js';
 import { batchPlaceModel } from './placeBatch.js';
 import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
+import { loadRaw } from './materials.js';
 
 /**
  * The STAGING YARD (art director, 25 Oct 2026): she is going to rearrange the map herself, so every newly built place
@@ -24,14 +25,17 @@ import { loadKitModels, placeKitHouses, KIT_TYPES } from './houseKit.js';
  * metres with the front toward +z. Collision is derived from the visible model (src/autoColliders.js), nothing is
  * hand-boxed, so doors, windows and gaps are exactly what you see.
  */
-const texLoader = new THREE.TextureLoader();
-const rawTex = new Map();
 const sharedMats = new Map();
+// 24 Nov fix (efficiency audit B2): this used to open its own private TextureLoader,
+// unbusted, at the exact same public/assets/textures/<set>/ paths materials.js's
+// getTiledMaterial()/loadRaw() already fetches (busted, shared-cached) for every
+// non-staged building using the same material set - so any set used by both a
+// staged place and a regular building downloaded twice. Routes through the one
+// shared, cache-busted, dedup-by-URL loader instead; no behaviour change (loadRaw
+// already returns a cached Texture per clean url, same as the old rawTex map did).
 function setTexture(set, kind) {
   const url = `assets/textures/${set}/${set}_${kind}.webp`;
-  let t = rawTex.get(url);
-  if (!t) { t = texLoader.load(url); if (kind === 'color') t.colorSpace = THREE.SRGBColorSpace; rawTex.set(url, t); }
-  return t;
+  return loadRaw(url, kind === 'color');
 }
 /**
  * Staged models ship WITHOUT texture copies (tools/strip-textures.mjs): each material's extras name its CC0 set and repeat, and the
