@@ -81,10 +81,20 @@ export function createSideJobs(env) {
       }
     }
     setButtons(buttons);
-    build?.(body, ctrl);
+    // Bugfix (24 Nov, systems/menus): used to call build() BEFORE marking the overlay
+    // visible and arming modalCloseHook. closeModal() no-ops while the overlay isn't
+    // marked 'visible' (see its own guard above) - so a build() callback that calls
+    // ctrl.close() synchronously (not from a later user-input event, which every
+    // current job's build() happens to do, but nothing stops a future one) would
+    // silently fail to close: body/actions never cleared, the world stays frozen,
+    // and the caller's onClose never fires, because modalCloseHook wasn't even set
+    // yet. Mark the overlay open and arm the close hook first; build() only fills
+    // DOM content, so this ordering changes nothing it could depend on (checked: no
+    // build() in src/jobs/*.js reads layout/geometry off the overlay).
     modalCloseHook = onClose || null;
     overlay.classList.add('visible');
     env.setFrozen(true);
+    build?.(body, ctrl);
     return ctrl;
   }
 
