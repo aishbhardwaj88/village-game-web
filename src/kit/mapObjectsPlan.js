@@ -30,19 +30,57 @@ export function ringCentre(ring) {
   return [x / ring.length, z / ring.length];
 }
 
-/** Nearest road point: { d (to the centre line), half, dir [ux, uz], p [x, z], id, kind } */
-export function nearestRoad(roads, x, z) {
-  let best = null;
+// Perf (24 Nov efficiency audit, see docs project "efficiency-audit-24nov.md"): nearestRoad() is the single
+// hottest function at boot — pondSqueeze()'s limit() ray-walk alone called it 184,827 times on the real map,
+// 64% (13.8 s of 21.7 s) of time-to-Play on a slow box, because every call rescanned all 876 road segments
+// from scratch (two divides, a sqrt and an allocation each). Segment geometry is static for the life of a
+// `roads` array (it's the game's own loaded map data, read once at boot — see buildGroundAndWater's one call
+// site), so it is derived once per array and cached here; nearestRoad() itself still returns the exact same
+// object shape and values, just without repeating that work per call.
+const _segCache = new WeakMap(); // roads array -> flattened [{ax,az,dx,dz,L2,half,minX,maxX,minZ,maxZ,id,kind}]
+function segmentsFor(roads) {
+  let segs = _segCache.get(roads);
+  if (segs) return segs;
+  segs = [];
   for (const r of roads) {
+    const half = (r.width || 4) / 2;
     for (let i = 0; i + 1 < r.pts.length; i++) {
       const [ax, az] = r.pts[i], [bx, bz] = r.pts[i + 1];
       const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1;
-      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2));
-      const px = ax + dx * t, pz = az + dz * t, d = Math.hypot(x - px, z - pz);
-      if (!best || d - (r.width || 4) / 2 < best.d - best.half) {
-        const L = Math.sqrt(L2);
-        best = { d, half: (r.width || 4) / 2, dir: [dx / L, dz / L], p: [px, pz], id: r.id, kind: r.kind };
-      }
+      segs.push({
+        ax, az, dx, dz, L2, half,
+        minX: Math.min(ax, bx), maxX: Math.max(ax, bx),
+        minZ: Math.min(az, bz), maxZ: Math.max(az, bz),
+        id: r.id, kind: r.kind,
+      });
+    }
+  }
+  _segCache.set(roads, segs);
+  return segs;
+}
+
+/** Nearest road point: { d (to the centre line), half, dir [ux, uz], p [x, z], id, kind } */
+export function nearestRoad(roads, x, z) {
+  const segs = segmentsFor(roads);
+  let best = null;
+  let bestScore = Infinity; // d - half of the current best, kept as a number so the skip test below needs no `best` dereference
+  for (const s of segs) {
+    // Cheap reject: the true distance from (x,z) to this segment is never less than its distance to the
+    // segment's own (unpadded) bounding box, and a per-axis max() is never more than that true box distance —
+    // so max(dx-to-box, dz-to-box) - half is a valid lower bound on this segment's real score (d - half). If
+    // that lower bound already can't beat the best score found so far, the segment cannot win and the exact
+    // projection (two divides + a sqrt) is skipped. This can only skip segments that provably can't improve
+    // `best`, so the result is identical to scoring every segment in full, never an approximation.
+    const bx = x < s.minX ? s.minX - x : (x > s.maxX ? x - s.maxX : 0);
+    const bz = z < s.minZ ? s.minZ - z : (z > s.maxZ ? z - s.maxZ : 0);
+    if ((bx > bz ? bx : bz) - s.half >= bestScore) continue;
+    const t = Math.max(0, Math.min(1, ((x - s.ax) * s.dx + (z - s.az) * s.dz) / s.L2));
+    const px = s.ax + s.dx * t, pz = s.az + s.dz * t, d = Math.hypot(x - px, z - pz);
+    const score = d - s.half;
+    if (score < bestScore) {
+      bestScore = score;
+      const L = Math.sqrt(s.L2);
+      best = { d, half: s.half, dir: [s.dx / L, s.dz / L], p: [px, pz], id: s.id, kind: s.kind };
     }
   }
   return best;
