@@ -776,6 +776,11 @@ async function main() {
   const OPENING_SPAWN = { x: 4 + OLD_SHIFT.x, z: 27 }; // on the 1 Nov map: the paved village square, by the peepal and the chowk
   const OPENING_YAW = 2.9;
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
+  { // review link: ?at=x,z starts the player at a given spot (24 Nov, her rule: every new model review link drops her right next to it)
+    const at = new URLSearchParams(window.location.search).get('at');
+    const [ax, az] = at ? at.split(',').map(Number) : [];
+    if (Number.isFinite(ax) && Number.isFinite(az)) { OPENING_SPAWN.x = ax; OPENING_SPAWN.z = az; player.position.set(ax, 0, az); }
+  }
   scene.add(player);
   const playerCycle = createPlayerCycle(player);
   // Wheels sit on the ground, never in it (9 Nov playtest S3). G3 (10 Nov): also on the road / lane surfaces, which stand 1-8 cm
