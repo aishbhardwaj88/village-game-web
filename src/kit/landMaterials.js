@@ -78,7 +78,7 @@ function lateVariant(name) {
     setTimeout(() => (window.requestIdleCallback || setTimeout)(() => {
       const t = (k, srgb) => { const x = loadRaw(`assets/textures_mix/${dir}/${dir}_${k}.webp`, srgb).clone(); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; return x; };
       try { m.map = t('color', true); m.normalMap = t('normal', false); m.roughnessMap = t('roughness', false); m.needsUpdate = true; } catch (e) { /* stays plain */ }
-    }, 1), 8000);
+    }, window.requestIdleCallback ? { timeout: 1000 } : 1), 8000);
   }
   return m;
 }

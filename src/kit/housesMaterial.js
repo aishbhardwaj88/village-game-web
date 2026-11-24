@@ -316,7 +316,7 @@ export function houseMaterialReady(base) {
   return buildHouseAtlas(base).then((a) => {
     m.map = a.map; m.normalMap = a.normalMap; m.roughnessMap = a.roughnessMap;
     m.needsUpdate = true;
-    if (typeof window !== 'undefined') setTimeout(() => (window.requestIdleCallback || setTimeout)(() => loadHouseVariants(), 1), 8000);
+    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) setTimeout(() => (window.requestIdleCallback || setTimeout)(() => loadHouseVariants(), window.requestIdleCallback ? { timeout: 1000 } : 1), 8000);
     return m;
   });
 }
