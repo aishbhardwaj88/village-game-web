@@ -225,11 +225,10 @@ export async function dietDocument(doc, name, dir, ktx) {
   const st = { name, dir };
   st.tris0 = triCount(doc); st.prims0 = primCount(doc); st.gpu0 = gpuBytes(doc); st.verts0 = vertCount(doc);
   if (TEXONLY) {
-    await doc.transform(dequantize());
     const b0 = getBounds(doc.getRoot().listScenes()[0]); const d0 = b0.max.map((v, i) => v - b0.min[i]); const k0 = gameScale(name, dir, d0);
     st.sizeM = k0 ? Math.max(...d0) * k0 : null; st.cls = st.sizeM ? sizeClass(st.sizeM) : 'unknown';
     await dietTextures(doc, TEX_CLASS && st.sizeM ? texCap(st.sizeM) : 512, ktx, st);
-    await doc.transform(meshopt({ encoder: MeshoptEncoder, level: LEVEL }));
+    // geometry accessors are left exactly as they are (no dequantize / re-quantize: tiled UVs would shift); the writer re-packs them
     st.tris1 = st.tris0; st.prims1 = st.prims0; st.gpu1 = gpuBytes(doc); st.verts1 = st.verts0;
     return st;
   }
