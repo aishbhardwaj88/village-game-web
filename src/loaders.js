@@ -1,8 +1,19 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { sharedTexturePlugin } from './sharedTextures.js';
 
 let sharedLoader = null;
+
+/** KTX2 (Basis) GPU textures for props and vehicles. The transcoder (public/basis/) is only fetched when the first KTX2
+ * texture is parsed, which happens after Play, so nothing here touches the title screen. Needs the renderer once, to
+ * ask which GPU formats it takes (BC7 / ASTC / ETC2, else RGBA8 as a fallback, so every browser works). */
+let ktx2 = null;
+export function setLoaderRenderer(renderer) {
+  if (!ktx2) ktx2 = new KTX2Loader().setTranscoderPath(`${import.meta.env.BASE_URL}basis/`).setWorkerLimit(2);
+  ktx2.detectSupport(renderer);
+  if (sharedLoader) sharedLoader.setKTX2Loader(ktx2);
+}
 
 /** Bumped every time a .glb finishes loading. Models are swapped into the scene by the caller's own callback after this
  * fires, and their collision boxes only exist once that has happened, so src/zoneManager.js watches this counter and
@@ -21,6 +32,7 @@ export function getGLTFLoader() {
   if (!sharedLoader) {
     sharedLoader = new GLTFLoader();
     sharedLoader.setMeshoptDecoder(MeshoptDecoder);
+    if (ktx2) sharedLoader.setKTX2Loader(ktx2);
     sharedLoader.register(sharedTexturePlugin); // older models ship without their library textures (tools/strip-textures.mjs --relink)
     const loadAsync = sharedLoader.loadAsync.bind(sharedLoader);
     const load = sharedLoader.load.bind(sharedLoader);

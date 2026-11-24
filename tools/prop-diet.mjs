@@ -36,6 +36,7 @@ const GEOM = arg('geom', 'class'), ERR_MM = +arg('err-mm', 2), LOCK = !!arg('loc
 const VEH_GEOM = !!arg('vehicle-geom', false), COLOR = arg('color', 'uastc'), TEX_CLASS = !arg('no-tex-class', false);
 const KEEP_TAN = !arg('drop-tangents', false), LEVEL = arg('level', 'high'), PACK = !!arg('pack', false), QUIET = !!arg('quiet', false);
 let TEX = arg('tex', 'webp');
+const TEXONLY = !!arg('tex-only', false); // textures only: no flatten/join/simplify, geometry and node tree untouched (vehicles)
 const GATE = { color: +arg('gate-color', 40), normal: +arg('gate-normal', 40), orm: +arg('gate-orm', 38) };
 const QL = arg('qlevel', '255'), ORM = arg('orm', 'uastc'), RDO = +arg('rdo', 1), NRM = arg('normal', 'uastc');
 const CACHE = path.join(os.tmpdir(), 'propdiet-cache');
@@ -223,7 +224,15 @@ async function dietTextures(doc, cap, ktx, stats) {
 export async function dietDocument(doc, name, dir, ktx) {
   const st = { name, dir };
   st.tris0 = triCount(doc); st.prims0 = primCount(doc); st.gpu0 = gpuBytes(doc); st.verts0 = vertCount(doc);
-  await doc.transform(dequantize());
+  if (TEXONLY) {
+    await doc.transform(dequantize());
+    const b0 = getBounds(doc.getRoot().listScenes()[0]); const d0 = b0.max.map((v, i) => v - b0.min[i]); const k0 = gameScale(name, dir, d0);
+    st.sizeM = k0 ? Math.max(...d0) * k0 : null; st.cls = st.sizeM ? sizeClass(st.sizeM) : 'unknown';
+    await dietTextures(doc, TEX_CLASS && st.sizeM ? texCap(st.sizeM) : 512, ktx, st);
+    await doc.transform(meshopt({ encoder: MeshoptEncoder, level: LEVEL }));
+    st.tris1 = st.tris0; st.prims1 = st.prims0; st.gpu1 = gpuBytes(doc); st.verts1 = st.verts0;
+    return st;
+  }
   st.skins = bakeSkins(doc);
   await doc.transform(unpartition(), flatten(), prune({ keepLeaves: false }));
   st.dropped = dropAttributes(doc);

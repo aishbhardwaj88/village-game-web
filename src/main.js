@@ -28,7 +28,7 @@ import { updateCharacterAnims } from './characterAnim.js';
 import { setupGather } from './gatherScene.js';
 // S7 WIRING (characters): distance tiers for the Tripo characters (src/characterLOD.js)
 import { initCharacterLOD } from './characterLOD.js';
-import { holdModelLoads, releaseModelLoads } from './loaders.js';
+import { holdModelLoads, releaseModelLoads, setLoaderRenderer } from './loaders.js';
 import { buildField, FIELD_CENTER, FIELD_SIZE, TRACK_CORNERS } from './field.js';
 import { buildCanal, distanceToCanalWater } from './canal.js';
 import { buildFieldChannel } from './fieldChannel.js';
@@ -340,6 +340,7 @@ async function main() {
 
   const canvas = document.getElementById('scene');
   const renderer = createRenderer(canvas, touch);
+  setLoaderRenderer(renderer); // KTX2 texture support, the transcoder itself loads lazily after Play
 
   const scene = createScene();
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
