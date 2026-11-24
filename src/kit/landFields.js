@@ -3,6 +3,7 @@ import { LAND_QUALITY } from './landQuality.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { cropTuftParts, buildCaneClumps, FIELD_CENTER, FIELD_SIZE } from '../field.js';
 import { labelKey, labelName, inRing, makeRoadIndex, hash01 } from './landLayout.js';
+import { loadRaw } from '../materials.js';
 
 /**
  * Fields, orchards floors and green strips of the approved map (?layout=new), as big painted ground patches:
@@ -42,8 +43,10 @@ let fieldMat = null;
 /** The one field material: library 'ground' photo set (colour, normal, roughness) + the row painter. */
 export function fieldMaterial() {
   if (fieldMat) return fieldMat;
-  const L = new THREE.TextureLoader();
-  const t = (m, srgb) => { const x = L.load(`assets/textures/ground/ground_${m}.webp`); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 8; if (srgb) x.colorSpace = THREE.SRGBColorSpace; return x; };
+  // Same 'ground' library files src/scene.js and src/field.js load via getTiledMaterial('ground', ...)
+  // — go through the shared, cache-busted loadRaw() so this doesn't fetch them a second time, unbusted,
+  // from a private TextureLoader (see loadRaw's own doc comment in materials.js).
+  const t = (m, srgb) => { const x = loadRaw(`assets/textures/ground/ground_${m}.webp`, srgb).clone(); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 8; return x; };
   const mat = new THREE.MeshStandardMaterial({ map: t('color', true), normalMap: t('normal'), roughnessMap: t('roughness'), roughness: 1, vertexColors: true });
   mat.name = 's7_fields';
   mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -2;

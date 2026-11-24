@@ -118,7 +118,15 @@ const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
 const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
 function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
 
-function loadRaw(url, srgb) {
+// Exported so the few call sites that need a raw library texture but build their own
+// bespoke Material (landFields.js's painted-crop ground shader, landMaterials.js's
+// rust material — neither can use a cached getTiledMaterial() result directly: one
+// needs its own onBeforeCompile hook, the other its own metalness) still go through
+// the one shared, cache-busted, dedup-by-URL fetch instead of opening a second
+// TextureLoader straight at the same public/ path. Before this, those two call sites
+// fetched 'assets/textures/ground/*' / 'assets/textures/rust/*' a second time, unbusted
+// (see docs efficiency audit, 24 Nov, B2: "50 textures downloaded twice since e53e30d").
+export function loadRaw(url, srgb) {
   // One real load() per URL, reused via clone() for every repeat/tint variant — this
   // is what keeps a scene with many wall/roof boxes to a handful of actual network
   // fetches and image decodes (load target: playable within 8s on 4G, item 6).
