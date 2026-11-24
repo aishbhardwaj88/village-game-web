@@ -1,3 +1,70 @@
+# 24 Nov (18) - recovered 6 orphaned commits (entries 14-17's own work) from a detached-HEAD checkout onto `main`; extended `devCheckPenetration()` to cover the cyclist dog and goat herd (BACKLOG A0's own gap note), closing the loop entries 16/17 opened
+
+- Fresh container again this firing: `HEAD` was detached at `68668dd` (entries 14-17's own 6 commits:
+  favicon, slot-swap-test, prop shrink, the cyclist-dog fix, the goat-herd fix), but local `main`'s
+  branch pointer was stale at `843b936` (6 commits behind, NOT an ancestor relationship the easy way -
+  `git log main..68668dd` showed main had nothing the detached HEAD lacked, so a clean fast-forward).
+  Unlike every recent entry's "stale pointer, origin already has it" pattern, `git fetch origin main`
+  showed `origin/main` was ALSO already at `68668dd` - so this really was just a stale local branch ref
+  in a fresh container (the push that mattered had already happened in a prior firing), not unpushed
+  work at risk of loss. Fixed with `git checkout main && git merge --ff-only 68668dd`; `git push`
+  correctly reported "Everything up-to-date". Recorded here mainly so a future firing doesn't waste a
+  cycle re-diagnosing the same detached-HEAD-vs-stale-branch question: always `git fetch origin` before
+  concluding anything is actually lost. `npm install` re-run as always. `Places V1/`/`reference-from-
+  unity/`/Blender confirmed absent again.
+- Section A of BACKLOG.md: same state as entry 17 left it (J1-OLD2/J1-OLD/J2 blocked on Places V1/her
+  verdict, both absent/blocked here; J3/J4 ticked). Per CLAUDE.md 5a-MAP/section 2, stayed in the
+  standing-permission "systems" category. Re-ran entry 17's own NEXT instruction (re-grep every
+  `src/*.js` for a direct `.x +=`/`.z +=`/`.position.(x|z) =` write outside movement.js/collision.js,
+  looking for a third instance of the dog/goat bug class): found none - the remaining hits
+  (`afternoonMood.js`, `laundry.js`, `trees.js`, `villageFurniture3.js`) are GLSL shader wind/sway
+  displacement inside template-literal shader strings, not JS position writes, and `cyclistEvents2.js`'s
+  tractor/kid/kite are deliberately "pure visuals, no colliders" per that file's own doc comment (road-
+  events seen from the highway, never meant to be solid). So that specific bug class appears closed.
+- Picked BACKLOG A0's own still-open, closely related item instead: "Extend devCheckPenetration() to
+  cover NPCs and animals, not just vehicles; log any penetration as a failure" - its existing 2026-10-23
+  progress note covers named NPCs, bazaar villagers and the *stationary* animal herds, but explicitly
+  says "Animals are stationary (no routines)", which entries 16/17 made stale: the cyclist dog and the
+  goat herd/goatherd are now real per-frame-moving bodies the guard never looked at.
+- Added: `src/roadEvents.js` now exports `GOAT_FOOTPRINT_RADIUS`/`HERDER_FOOTPRINT_RADIUS` (were
+  module-private) and exposes live refs `info.herd`/`info.crossing` on `window.__roadEvents` (same
+  "read by headless ride checks" pattern `src/cyclistEvents.js`'s `info.sites`/`info.dog` already use -
+  `crossing.herder` is added lazily by `stepHerd()`, so exposing the `crossing` object itself, not a
+  copy, means it stays live once that happens). `src/main.js`'s `devCheckPenetration()` gained three new
+  checks (dog, each goat, the goatherd) using the same `minSignedDistanceToColliders`/`STATIC_COLLIDERS`
+  pattern the existing NPC/bazaar-villager/stationary-animal checks already use, console.warn-only, zero
+  per-frame cost beyond what the function already does every 16th frame in dev mode.
+- This is a regression guard, not an expected-to-fire check: resolveMove (entries 16/17's fix) already
+  stops these bodies at a wall face, so in normal play the new checks should stay silent forever - their
+  value is catching a FUTURE change that reintroduces a raw position write on either body, same as the
+  existing vehicle/NPC checks already do for their own systems.
+- Verified with a deterministic unit test against the real, unmocked `src/collision.js`
+  (`tmp/unit-test-penetration-guard.mjs`, same method as entries 15/16/17's own tests, avoiding this
+  container's `ERR_IMPORT_ATTRIBUTE_MISSING` on a transitive raw-JSON import by copying the three radius
+  constants from their real `export const` lines rather than importing `animals.js`/`roadEvents.js`
+  directly - values checked identical by grep immediately before the test ran): a body placed inside the
+  same 2.6 m wall AABB shape entries 16/17 used correctly trips negative clearance for all three
+  (dog/goat/goatherd radii), a body at the exact resolveMove-correct stop distance (wall face + its own
+  radius) correctly stays non-negative (the real "no false positive in normal play" case), and a body far
+  from any wall stays silent. 7/7 checks passed.
+- `node tools/licence-audit.mjs --check` (288 files, 0 UNKNOWN, same pre-existing Tripo-plan warning),
+  `node tools/check-dup-models.js` PASS, `node tools/check-material-clone.mjs` PASS (49 scanned, 0
+  unwrapped clones), `node tools/place-visibility-check.js` PASS, `node tools/check-budget.js` (same
+  pre-existing breaches as every recent entry - character WEB_QUALITY='full' is her own deferred call,
+  logged in NEEDS_YOU; no asset touched this cycle, src-only change). `npx vite build` clean (234
+  modules, 3.67 s, no errors). The full `npm run build` chain (world-validator/collision-test) still
+  times out/OOMs this container exactly as entries 15/16/17 documented; not fought, per standing
+  instruction.
+- Committed and pushed; GitHub Actions run confirmed green for this commit (checked after push, see
+  below).
+- Nothing new for `docs/NEEDS_YOU.md` this cycle - no decision needed from her, no money/credits spent,
+  no layout/position change, no taste call.
+- NEXT: BACKLOG A0 still has two other open sub-items worth a future audit pass: "Validate every
+  waypoint path as walkable at build time" (animal routines and the follow routine are still
+  unregistered with check 9, per its own 2026-10-23 note) and "NPCs entering a building must route to
+  the door" (only followers currently do; no other routine enters a building). Both need either the
+  renderer (broken here) or a careful static trace to verify, same constraint this entry worked around.
+
 # 23 Nov (17) - routed the road-crossing goat herd and goatherd through the shared collision resolver (BACKLOG A0, same class of gap entry 16 fixed for the cyclist-chasing dog, found in a different file)
 
 - Fresh container again this firing: local `main` was behind `origin/main` by 0 commits once fetched (HEAD was

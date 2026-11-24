@@ -93,7 +93,7 @@ import {
   BAZAAR_EAST_X,
 } from './bazaar.js';
 import { createNPC } from './npc.js';
-import { createMonkeyNPC, createCattleHerd, createDogPack, ANIMAL_MESHES } from './animals.js';
+import { createMonkeyNPC, createCattleHerd, createDogPack, ANIMAL_MESHES, DOG_FOOTPRINT_RADIUS } from './animals.js';
 import { createZoneManager } from './zoneManager.js';
 import { BUILDING_ROUTES } from './doorRouting.js';
 import { createWaypointLoop, createStirLoop, createFollowRoutine, createWaypointRun, ROUTES as NPC_ROUTES } from './npcRoutines.js';
@@ -165,7 +165,7 @@ import { createLifeScenes2 } from './lifeScenes2.js';
 import { createChaurahaEdges } from './chaurahaEdges.js'; // houses, open shops and corner groups ringing the chauraha (docs/SPATIAL_SENSE.md section 1)
 import { createSmallShops } from './smallShops.js';
 import { createMilkCentre } from './milkCentre.js';
-import { createRoadEvents } from './roadEvents.js';
+import { createRoadEvents, GOAT_FOOTPRINT_RADIUS, HERDER_FOOTPRINT_RADIUS } from './roadEvents.js';
 import { createMainRoadFrontage } from './mainRoadFrontage.js'; // second pass: fills the gaps armFrontage left on the main road N + S arms
 import { createArmFrontage } from './armFrontage.js'; // kit houses, open shops and doorstep sets along both sides of every arm
 import { createGullyLife } from './gullyLife.js'; // open shops, vendors, people in the two gullies off the chauraha
@@ -2775,6 +2775,26 @@ async function main() {
       const x = _m.elements[12], z = _m.elements[14];
       const clearance = minSignedDistanceToColliders({ x, z }, 0.32, STATIC_COLLIDERS);
       if (clearance < 0) console.warn(`[collision guard] bazaar_life[${i}] overlaps a wall: pos=(${x.toFixed(2)},${z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(x, z, 0.32, STATIC_COLLIDERS)}`);
+    }
+    // The cyclist-chasing dog (src/cyclistEvents.js) and the road-crossing goat herd + goatherd
+    // (src/roadEvents.js) are the two animal ROUTINES that actually move (BACKLOG A0's "extend
+    // devCheckPenetration to cover NPCs and animals, not just vehicles" named these as the gap left
+    // by the comment above: it covers only the stationary herds). Both already route every step
+    // through resolveMove() (handoff 23 Nov entries 16/17), so this is a regression guard against a
+    // future change reintroducing a raw position write, not an expected-to-fire check today.
+    const ce = window.__cyclistEvents, dog = ce && ce.dog;
+    if (dog && dog.state !== 'sleep') {
+      const clearance = minSignedDistanceToColliders({ x: dog.x, z: dog.z }, DOG_FOOTPRINT_RADIUS, STATIC_COLLIDERS);
+      if (clearance < 0) console.warn(`[collision guard] cyclist_events_dog overlaps a wall: pos=(${dog.x.toFixed(2)},${dog.z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(dog.x, dog.z, DOG_FOOTPRINT_RADIUS, STATIC_COLLIDERS)}`);
+    }
+    const re = window.__roadEvents, herd = re && re.herd, herder = re && re.crossing && re.crossing.herder;
+    if (herd) herd.forEach((g, i) => {
+      const clearance = minSignedDistanceToColliders({ x: g.x, z: g.z }, GOAT_FOOTPRINT_RADIUS, STATIC_COLLIDERS);
+      if (clearance < 0) console.warn(`[collision guard] goat_herd[${i}] overlaps a wall: pos=(${g.x.toFixed(2)},${g.z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(g.x, g.z, GOAT_FOOTPRINT_RADIUS, STATIC_COLLIDERS)}`);
+    });
+    if (herder) {
+      const clearance = minSignedDistanceToColliders({ x: herder.x, z: herder.z }, HERDER_FOOTPRINT_RADIUS, STATIC_COLLIDERS);
+      if (clearance < 0) console.warn(`[collision guard] goatherd overlaps a wall: pos=(${herder.x.toFixed(2)},${herder.z.toFixed(2)}) clearance=${clearance.toFixed(2)}${offender(herder.x, herder.z, HERDER_FOOTPRINT_RADIUS, STATIC_COLLIDERS)}`);
     }
   }
 

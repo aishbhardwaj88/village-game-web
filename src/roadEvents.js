@@ -34,8 +34,8 @@ import { resolveMove } from './movement.js';
  */
 
 const TILE = { wood: 1.0, concrete: 1.0 };
-const GOAT_FOOTPRINT_RADIUS = 0.22; // roughly the goat's own body half-width (buildGoatGeometry's barrel)
-const HERDER_FOOTPRINT_RADIUS = 0.3; // matches herderGeometry()'s own capsule radius
+export const GOAT_FOOTPRINT_RADIUS = 0.22; // roughly the goat's own body half-width (buildGoatGeometry's barrel)
+export const HERDER_FOOTPRINT_RADIUS = 0.3; // matches herderGeometry()'s own capsule radius
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const jit = (c, i, amt = 0.08) => new THREE.Color(c).multiplyScalar(1 + (rnd(i) - 0.5) * 2 * amt).getHex();
 const P = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -297,6 +297,7 @@ export function createRoadEvents(scene) {
       }
       crossing.u = -crossing.half; crossing.dir = 1; crossing.wait = 6; crossing.speed = 0;
       info.placed.goats = { x: +crossing.f.x.toFixed(2), z: +crossing.f.z.toFixed(2), road: GOAT_SITE.road, span: crossing.half * 2 };
+      info.herd = herd; info.crossing = crossing; // live refs: devCheckPenetration (src/main.js) reads these each frame; crossing.herder is added lazily by stepHerd()
     }
 
     // 3. thela on the council lane verge, a dog asleep in its shade
