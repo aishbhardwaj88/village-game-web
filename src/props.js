@@ -8,6 +8,15 @@ import { getGLTFLoader } from './loaders.js';
 import { registerLampSites } from './lampPools.js';
 import { batchPlaceModelWhenRooted } from './placeBatch.js';
 
+// The bell hangs on the school's own north verandah (BELL_POSITION = schoolV(-6, 4), between
+// the Blender model's main-block pillars at local x -8/-4, z 4 — tools/blender/build_school.py's
+// `verandah(main, 'N', -9, 9, [-8, -4, 0, 4, 8], 3.7)`). That same script builds the verandah's
+// own floor apron from y=0 to y=0.12 (`kit.add('apron', b.fb(face, u0-0.2, u1+0.2, 0, V+0.3, 0, 0.12, 0.012))`),
+// i.e. the real floor the bell post should stand on is 0.12 m above bare yard ground, not at y=0 -
+// the known "school_bell floats ~0.12 m" glitch (ORDER-24NOV push list item 4). Documented precedent
+// for the same 0.12 m slab: interactions.js TEACHER_POSITION's 9 Nov comment ("the 12 cm paved slab").
+const VERANDAH_APRON_Y = 0.12;
+
 /** School bell (item 5): a post, a short arm, and a small hanging bell — enough to
  * read as "the thing you ring," not a modelled asset. */
 export function createBellProp(position) {
@@ -26,7 +35,7 @@ export function createBellProp(position) {
   bell.castShadow = false; // thin/small prop: its shadow pass cost a call at the hero-zone ceiling
   group.add(bell);
 
-  group.position.set(position.x, 0, position.z);
+  group.position.set(position.x, VERANDAH_APRON_Y, position.z);
   return group;
 }
 

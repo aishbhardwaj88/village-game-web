@@ -1460,3 +1460,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Lesson reinforced again this session: "it built" / build:unchecked passing is not evidence - every fix this session was verified by loading the real deployed site and reading scene/console state directly; two real silent-failure bugs were only caught that way.
 - NEXT: nothing blocked. Natural next items: more realism pass per docs/BACKLOG.md J0 (materials/edge wear), or whatever she flags next. Scoped-not-built: nothing currently.
 
+
+# 24 Nov (38) - missions-check: first PASS proof on new map; fixed school_bell's 0.12m float
+- PUSH LIST 1+2: ran tools/missions-check.mjs (static, no browser) fresh against ?layout=new - 358 PASS, 0 FAIL, 4 WARN (3 milk stops on a back-lane gali, 1 ambient temple-bell note, both WARN by design) across all 8 missions, 10 side jobs, tractor+trolley/cart spawns. First recorded run of this tool this session.
+- Real-browser proof (missions-smoke.mjs) still blocked: built dist-smoke, ran it, renderer crashed again even with character models 404'd out - same confirmed container OOM as every prior entry, not this diff; not rerun (A7).
+- Found + fixed a real bug while reading the school code for this: school_bell (item 4) was hardcoded to y=0; tools/blender/build_school.py's verandah apron there is really y=0.12 - exactly the known "~0.12 m float". Fixed in src/props.js (VERANDAH_APRON_Y). BELL_POSITION (collider/interaction, XZ-only) untouched, purely visual.
+- distanceToCanalWater (item 4's other glitch) already fixed 24 Nov (d39496b) - confirmed by reading, not retouched.
+- Tier 1 clean: build:unchecked, licence-audit, dup-models, material-clone, place-visibility. missions-check rerun after the fix, same 358/0/4.
