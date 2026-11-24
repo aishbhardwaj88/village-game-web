@@ -11,6 +11,12 @@ import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js
 export const PILOT_VEHICLES = [
   { file: 'auto_rickshaw', x: 607.6, z: 45.6, yaw: 1.2, length: 2.65 },
   { file: 'old_tractor', x: 606.1, z: 52.2, yaw: 1.25, length: 3.1 },
+  { file: 'tuk_tuk', x: 604.2, z: 42.8, yaw: 0.6, length: 2.65 },
+  { file: 'motorbike', x: 608.8, z: 41.8, yaw: 2.2, length: 2.0 },
+  { file: 'thela_gadi', x: 603.8, z: 47.4, yaw: 0.3, length: 2.4 },
+  { file: 'bicycle', x: 609.2, z: 49.2, yaw: 1.9, length: 1.8 },
+  { file: 'moped', x: 603.6, z: 51.2, yaw: 0.9, length: 1.8 },
+  { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 4.5 },
 ];
 
 export function addPilotVehicles(scene, groundAt) {
