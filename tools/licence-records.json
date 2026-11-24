@@ -2305,6 +2305,318 @@
       "licence": "CC BY 4.0",
       "creditsKey": "Autosan D46 farming trailer Pack",
       "evidence": "GLB asset.extras states license CC-BY-4.0 and author; slimmed (meshopt, WebP), solid/two-sided, matte in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/radio.glb"
+      ],
+      "category": "credited",
+      "title": "Old Radio (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/old-radio-60279aff8aae432a9933b9fb6374c2f1",
+      "author": "gorzi",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Old Radio",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; \"Radio\" word and back label painted out in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/kettle.glb"
+      ],
+      "category": "credited",
+      "title": "Kettle (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/kettle-0a1e47c63bf643fd9abdec7517dbd7e1",
+      "author": "bloooob",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Kettle",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; bird mark painted out in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/pressure_cooker.glb"
+      ],
+      "category": "credited",
+      "title": "Pressure Cooker (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/pressure-cooker-b19091a1e1f040e08c8ae3641385bc40",
+      "author": "GiyoP",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Pressure Cooker",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/kerosene_lamp.glb"
+      ],
+      "category": "credited",
+      "title": "Kerosene lamp (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/kerosene-lamp-cb2e60edf56d45e8bb99a3b4af05d514",
+      "author": "Kesenkai",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Kerosene lamp",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; lettering painted out in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/trunk.glb"
+      ],
+      "category": "credited",
+      "title": "Trunk (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/trunk-d0577f0b70ef4e02b9bf06aa57b4f566",
+      "author": "Samad.Ahmed",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Trunk",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; repainted green in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/bucket.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Bucket Sprinkler (bucket part) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wooden-bucket-sprinkler-4-part-25-mb-590abd150ca644809ad53c7af60e7b91",
+      "author": "Mehdi Shahsavan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wooden Bucket Sprinkler (bucket part)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; one part of a 4-part file in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/bucket_b.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Bucket Sprinkler (second bucket) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wooden-bucket-sprinkler-4-part-25-mb-590abd150ca644809ad53c7af60e7b91",
+      "author": "Mehdi Shahsavan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wooden Bucket Sprinkler (second bucket)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; one part of a 4-part file in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/watering_can.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden Bucket Sprinkler (watering can) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wooden-bucket-sprinkler-4-part-25-mb-590abd150ca644809ad53c7af60e7b91",
+      "author": "Mehdi Shahsavan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wooden Bucket Sprinkler (watering can)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; one part of a 4-part file in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/sewing_machine.glb"
+      ],
+      "category": "credited",
+      "title": "Vintage sewing machine (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/vintage-sewing-machine-4f6c74f9f904439b8554078d1be14821",
+      "author": "Halil Kantarci",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Vintage sewing machine",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; maker name and badge painted out in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/gate.glb"
+      ],
+      "category": "credited",
+      "title": "Wooden gate (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wooden-gate-b8fa672cbd60481fad6be5b686d77d0f",
+      "author": "adam127",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wooden gate",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/well_a.glb"
+      ],
+      "category": "credited",
+      "title": "Water Well (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/water-well-a448626cf62e46018f358ddaeb487e34",
+      "author": "unrealmahin",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Water Well",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/well_c.glb"
+      ],
+      "category": "credited",
+      "title": "Old village well (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/old-village-well-f17be5e2abf447f59d800b253322e013",
+      "author": "Amagitsune",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Old village well",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/milk_can.glb"
+      ],
+      "category": "credited",
+      "title": "Milk Can (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/milk-can-12395e6ea77c4f519e0bd37bb086f86f",
+      "author": "hellboy_hunts",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Milk Can",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/grind_stone.glb"
+      ],
+      "category": "credited",
+      "title": "Grind Stone (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/grind-stone-824ff2b6929b457fbb27c8deb44a27b3",
+      "author": "GetDeadEntertainment",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Grind Stone",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/pitchfork_a.glb"
+      ],
+      "category": "credited",
+      "title": "Pitchfork (steel tines) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/pitchfork-24e08392fa484f9b8de902982eded814",
+      "author": "DJMaesen",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Pitchfork (steel tines)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/pitchfork_b.glb"
+      ],
+      "category": "credited",
+      "title": "Pitchfork (wooden hay fork) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/pitchfork-c8d37a31d890495aba98c435136b3301",
+      "author": "Lodgelus",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Pitchfork (wooden hay fork)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift; stood upright in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/sickle.glb"
+      ],
+      "category": "credited",
+      "title": "Sickle (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/sickle-0c3d6826668b4c7ea9477484d4ebeed4",
+      "author": "ViktorKom",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Sickle",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/handpump.glb"
+      ],
+      "category": "credited",
+      "title": "Handpump Indian style (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/handpump-indian-style-3c06591ec53543ba86dd260a53a69719",
+      "author": "nayan pachori",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Handpump Indian style",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/charpai_a.glb"
+      ],
+      "category": "credited",
+      "title": "Indian Bed (Charpayi) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/indian-bed-charpayi-5dba679f351f47de9304ad5fdcd46116",
+      "author": "Prem Rastogi",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Indian Bed (Charpayi)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/charpai_b.glb"
+      ],
+      "category": "credited",
+      "title": "Asian Charpai - Wooden Bed (Low Poly) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/asian-charpai-wooden-bed-low-poly-179b11c138204f8597fdba64887d73b2",
+      "author": "00amza",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Asian Charpai - Wooden Bed (Low Poly)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/matka.glb"
+      ],
+      "category": "credited",
+      "title": "Indian Terracotta Matka (Red Clay Water Pot) (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/indian-terracotta-matka-red-clay-water-pot-fd710056e1ae4da1b7b7cd8f02f233ec",
+      "author": "Rahul Barate",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Indian Terracotta Matka (Red Clay Water Pot)",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/hay_bale.glb"
+      ],
+      "category": "credited",
+      "title": "Hay bale (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/hay-bale-e01a6a0f9ed843279adfac2427c99679",
+      "author": "NoodlePoodle",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Hay bale",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/wheelbarrow.glb"
+      ],
+      "category": "credited",
+      "title": "Wheelbarrow_13_MB (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wheelbarrow-13-mb-4bc60cee597d4330998d411d71ac58e3",
+      "author": "Mehdi Shahsavan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wheelbarrow_13_MB",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
+    },
+    {
+      "match": [
+        "public/assets/props_free/water_tank.glb"
+      ],
+      "category": "credited",
+      "title": "Water Tower Water Tanker_14_MB (model)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/water-tower-water-tanker-14-mb-69811beb5b2d4c31901b3c99e1fcf219",
+      "author": "Mehdi Shahsavan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Water Tower Water Tanker_14_MB",
+      "evidence": "Licence read from the GLB metadata (CC-BY-4.0); slimmed (meshopt, WebP), matte, small colour shift in this repo"
     }
   ],
   "worthKnowing": [
