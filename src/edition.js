@@ -97,8 +97,8 @@ const PRESETS = {
     canvasAA: true,
   }),
   // WEB (24 Nov, art director: lighter, but no visible quality drop; compare with ?quality=full). Same as 'full' except:
-  //  - pixel ratio cap 1.5, stepping down to 1.0 only when slow (src/dynamicRes.js)
-  //  - sun shadow 2048 px over a 50 m half-width box = 0.049 m per texel (full: 4096 over 120 m = 0.059 m per texel), casters within 45 m (full 120 m)
+  //  - pixel ratio 1.0, climbing to 1.5 only when frames are fast (src/dynamicRes.js); ?pr=1.5 forces a ratio
+  //  - sun shadow 2048 px over a 50 m half-width box = 0.049 m per texel (full: 4096 over 120 m = 0.059 m per texel), casters within 50 m (full 120 m)
   //  - nothing under 1.0 m casts a shadow
   //  - canvas antialias off: the scene is drawn into the composer's own buffer, so the canvas MSAA never touched it
   //  - background houses stop at 420 m (full 460 m), where the fog has hidden them (fog left at 420 m: 0.85%)
@@ -110,13 +110,14 @@ const PRESETS = {
     charFar: 80,
     charMidHz: 20,
     charLoadRadius: 90,
-    shadowRadius: 45,
+    shadowRadius: 50,
     charShadowRadius: 30,
     blobMaxDistance: 80,
     shadowMapSize: 2048,
     shadowExtent: 50,
     shadowFar: 200,
-    pixelRatioMax: 1.5,
+    pixelRatioMax: 1.0, // default and floor; same pixel count as the old real behaviour
+    pixelRatioUpMax: 1.5, // adaptive resolution may climb to this when frames are fast (src/dynamicRes.js)
     zoneAlwaysExtra: 110,
     zoneSightExtra: 300,
     zoneVisExtra: 130,

@@ -22,7 +22,7 @@ export function createRenderer(canvas, isTouch = false) {
   let postOff = false;
   try { postOff = (new URLSearchParams(location.search).get('off') || '').split(',').includes('post'); } catch (e) { /* node */ }
   const antialias = QUALITY.canvasAA !== false || postOff;
-  configureDynamicRes({ enabled: QUALITY.adaptiveRes && !isTouch, cap: QUALITY.pixelRatioMax });
+  configureDynamicRes({ enabled: QUALITY.adaptiveRes && !isTouch, base: QUALITY.pixelRatioMax, upMax: QUALITY.pixelRatioUpMax || QUALITY.pixelRatioMax });
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias,
@@ -54,7 +54,7 @@ export function resizeRendererToDisplaySize(renderer, camera, isTouch = false) {
   // NOTE (found 24 Nov): main.js passes a pixel-ratio NUMBER here, which is truthy, so on desktop 'full' this has always
   // resolved to the touch cap of 1.0, whatever the preset says. Left as is for 'full' so ?quality=full is exactly yesterday.
   // The web edition's adaptive resolution (src/dynamicRes.js) owns the ratio instead.
-  const ratio = DYN.enabled ? dynamicRatio() : maxPixelRatioFor(isTouch);
+  const ratio = DYN.enabled || DYN.forced ? dynamicRatio() : maxPixelRatioFor(isTouch);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ratio));
   renderer.setSize(width, height, false);
   camera.aspect = width / height;

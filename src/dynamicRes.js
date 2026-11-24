@@ -3,39 +3,45 @@ import * as THREE from 'three';
 /**
  * Adaptive render resolution for the web edition (art director's brief, 24 Nov: lighter, no visible quality drop).
  *
- * The pixel ratio sits at the cap (1.5 on web) and only steps DOWN, in 0.25 steps toward 1.0, when the average of the last
- * 30 frames stays above 20 ms for 2 s. It steps back UP slowly: only after 6 s of 30-frame averages under 14 ms, and each
- * step down doubles the wait before that level may be tried again (30 s, 60 s ... 300 s) so it cannot flap. Never more than
- * one change per 2 s. Gaps over 200 ms (hidden tab, loading hitch) are not counted.
+ * Default and floor = 1.0 (the pixel count the game really rendered before). It may step UP in 0.25 steps toward 1.5 only
+ * when the 30-frame average stays under 12 ms for 6 s, and steps back DOWN at once (one step per 30-frame refresh) when the
+ * average is above 18 ms for 1 s. After a step down the level just left is blocked for 30 s, doubling each time (max 300 s),
+ * so it cannot flap. Up-steps are at least 2 s apart. Gaps over 200 ms (hidden tab, loading hitch) are not counted.
  *
- * Off on touch (already 1.0 there), off in 'full'/'light' presets (adaptiveRes false) and with ?dynres=0.
- * It changes only the renderer's pixel ratio, through the 'dopahar-res' window event that main.js answers.
- * State for tests: window.__perfS7.dynres, and ?debug=1 readers.
+ * Off on touch, off in 'full'/'light' (adaptiveRes false), off with ?dynres=0. ?pr=1.5 forces one ratio (any preset).
+ * It only changes the renderer's pixel ratio, through the 'dopahar-res' window event that main.js answers.
+ * State for tests: window.__perfS7.dynres.
  */
-export const DYN = { enabled: false, cap: 1.5, floor: 1.0, current: 1.5, avgMs: 0, changes: 0, lastChange: -Infinity, downs: 0 };
+export const DYN = { enabled: false, forced: 0, base: 1.0, upMax: 1.5, floor: 1.0, cap: 1.5, current: 1.0, avgMs: 0, changes: 0, lastChange: -Infinity, downs: 0 };
 
-const STEP = 0.25, WINDOW = 30, SLOW_MS = 20, FAST_MS = 14, DOWN_AFTER = 2000, UP_AFTER = 6000, MIN_GAP = 2000;
+const STEP = 0.25, WINDOW = 30, SLOW_MS = 18, FAST_MS = 12, DOWN_AFTER = 1000, UP_AFTER = 6000, MIN_UP_GAP = 2000;
 
-export function configureDynamicRes({ enabled, cap }) {
-  let off = false;
-  try { off = new URLSearchParams(globalThis.location?.search || '').get('dynres') === '0'; } catch (e) { /* node */ }
-  DYN.enabled = !!enabled && !off;
-  if (cap) { DYN.cap = cap; if (DYN.current > cap || !DYN.enabled) DYN.current = cap; }
+export function configureDynamicRes({ enabled, base = 1.0, upMax = 1.5 }) {
+  let off = false, pr = 0;
+  try {
+    const q = new URLSearchParams(globalThis.location?.search || '');
+    off = q.get('dynres') === '0';
+    pr = parseFloat(q.get('pr')) || 0;
+  } catch (e) { /* node */ }
+  DYN.forced = pr > 0 ? Math.min(Math.max(pr, 0.5), 3) : 0;
+  DYN.enabled = !!enabled && !off && !DYN.forced;
+  DYN.base = base; DYN.upMax = upMax; DYN.floor = base; DYN.cap = upMax; DYN.current = base;
 }
 
-/** Pause menu / quality change: a new ceiling. Current ratio is clamped under it (and starts at it). */
-export function setDynamicResCap(cap) {
-  DYN.cap = cap;
-  DYN.current = Math.min(DYN.current, cap);
-  if (DYN.current < DYN.floor) DYN.current = Math.min(cap, DYN.floor);
+/** Pause menu level: lower levels lower the floor/ceiling; 'high' passes Infinity (no change). */
+export function setDynamicResCap(menuCap) {
+  DYN.floor = Math.min(DYN.base, menuCap);
+  DYN.cap = Math.max(DYN.floor, Math.min(DYN.upMax, menuCap));
+  DYN.current = Math.min(Math.max(DYN.current, DYN.floor), DYN.cap);
 }
 
 /** The ratio the renderer should use right now (before the screen's own devicePixelRatio limit). */
-export function dynamicRatio() { return Math.max(Math.min(DYN.floor, DYN.cap), Math.min(DYN.current, DYN.cap)); }
+export function dynamicRatio() { return DYN.forced || DYN.current; }
 
 export function createDynamicResSentinel(scene) {
   const gaps = new Float32Array(WINDOW);
-  let n = 0, idx = 0, last = 0, slowSince = 0, fastSince = 0, upBlockedUntil = 0, sum = 0;
+  let n = 0, idx = 0, last = 0, slowSince = 0, fastSince = 0, sum = 0;
+  const blockedUp = new Map(); // level -> time before which it may not be tried again
   const sentinel = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ size: 0, colorWrite: false, depthWrite: false, depthTest: false }));
   sentinel.name = 'perf_dynres_sentinel';
   sentinel.frustumCulled = false;
@@ -44,7 +50,7 @@ export function createDynamicResSentinel(scene) {
   function change(now, next, down) {
     if (next === DYN.current) return;
     DYN.current = next; DYN.lastChange = now; DYN.changes++;
-    if (down) { DYN.downs++; upBlockedUntil = now + Math.min(300000, 30000 * 2 ** (DYN.downs - 1)); }
+    if (down) { DYN.downs++; blockedUp.set(DYN.current + STEP, now + Math.min(300000, 30000 * 2 ** (DYN.downs - 1))); }
     slowSince = 0; fastSince = 0; n = 0; idx = 0; sum = 0; // fresh window at the new resolution
     window.dispatchEvent(new Event('dopahar-res'));
   }
@@ -59,7 +65,6 @@ export function createDynamicResSentinel(scene) {
     if (n < WINDOW) return;
     const avg = sum / WINDOW;
     DYN.avgMs = +avg.toFixed(1);
-    if (now - DYN.lastChange < MIN_GAP) { slowSince = 0; fastSince = 0; return; }
     if (avg > SLOW_MS) {
       fastSince = 0;
       if (!slowSince) slowSince = now;
@@ -67,7 +72,8 @@ export function createDynamicResSentinel(scene) {
     } else if (avg < FAST_MS) {
       slowSince = 0;
       if (!fastSince) fastSince = now;
-      if (now - fastSince >= UP_AFTER && now >= upBlockedUntil && DYN.current < DYN.cap) change(now, Math.min(DYN.cap, DYN.current + STEP), false);
+      const next = Math.min(DYN.cap, DYN.current + STEP);
+      if (now - fastSince >= UP_AFTER && now - DYN.lastChange >= MIN_UP_GAP && now >= (blockedUp.get(next) || 0) && DYN.current < DYN.cap) change(now, next, false);
     } else { slowSince = 0; fastSince = 0; }
   };
   scene.add(sentinel);

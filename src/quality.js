@@ -87,7 +87,7 @@ export function applyQuality(level, { renderer, sun, isTouch }) {
   const p = getPreset(level);
 
   const pixelRatioCap = isTouch ? p.pixelRatioTouch : p.pixelRatioDesktop;
-  if (!isTouch) setDynamicResCap(pixelRatioCap); // web edition: the adaptive resolution's ceiling follows the menu level (no-op unless adaptive)
+  if (!isTouch) setDynamicResCap(level === 'high' ? Infinity : pixelRatioCap); // web edition: the adaptive resolution's ceiling follows the menu level (no-op unless adaptive)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
 
   const mapSize = isTouch ? p.shadowMapSizeTouch : p.shadowMapSize;
