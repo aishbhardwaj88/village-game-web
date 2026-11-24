@@ -6,20 +6,21 @@ Last updated: 24 Nov, run that created docs/efficiency.md (ORDER-24NOV Part A).
 Game is past GAME_COMPLETE (all 8 missions built, verified). Current work is
 ORDER-24NOV: cut load time, build time, loop token spend (her 24 Nov approval,
 full order in project doc claude/efficiency-audit-24nov.md). Part A done (entry
-32). B1/B3/B5 done (entries 25-31). B2 now DONE (entry 33: stagingYard.js's last
-duplicate-fetch site routed through materials.js's loadRaw()). B6 partly done. B4
-parked (map being uprooted, 5a-MAP). B7/C1-C3 need her yes on a before/after image
-first - not started.
+32). B1/B3/B5 done (entries 25-31). B2 DONE (entry 33). B6 EXHAUSTED per entries
+28-31 (only real over-specific-cache-key instance already fixed, 0 further
+programs to merge today; renderer.compileAsync behind the title screen already
+wired in main.js/ui.js's readyGate, predates this order) - don't re-investigate,
+that's an audit (A6). B4 parked (map being uprooted, 5a-MAP). Remaining for
+"ORDER-24NOV: DONE": B8, C1, C2 (C3/B7 are gated on her yes, prep only). Still open.
 
 ## Next 5 items
-1. B6: finish it - merge shader variants that differ only by uniforms; compile
-   behind the title screen with renderer.compileAsync.
-2. B8: spawn-zone-only loading before Play; target 8 MB/60 requests/<4s (baseline
+1. B8: spawn-zone-only loading before Play; target 8 MB/60 requests/<4s (baseline
    214 req, 20.3 MB, 21.7s).
-3. C1: character budget tool + check-budget enforcement (1.5 MB/20k tris/one 2048
+2. C1: character budget tool + check-budget enforcement (1.5 MB/20k tris/one 2048
    or 1024 texture/shared clips).
-4. C2: character load-by-distance (no downloads before Play, 8 loaded max, unload
+3. C2: character load-by-distance (no downloads before Play, 8 loaded max, unload
    past 80m).
+4. Prep B7/C3 before/after screenshot pairs for her yes (don't roll out without it).
 5. Real game work from docs/BACKLOG.md once the above has a parked line or is done
    (grep BACKLOG.md, don't read it whole).
 

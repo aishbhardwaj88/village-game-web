@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (34) - docs-only (A5 exception, no code this entry). Closed out B6 in
+docs/STATE.md: entries 28-31 already established it's exhausted (only real
+over-specific-cache-key instance fixed in ea5cc0f, 0 further programs to merge
+today since only 2 call sites remain and differ for a real reason; compileAsync
+behind the title screen already wired via ui.js's readyGate, predates this order).
+Did not re-investigate - that would be an audit (A6), and it's already logged.
+Updated STATE.md's next-5 list to drop B6, add B8/C1/C2/B7-C3-prep. NEXT: B8
+(spawn-zone-only loading) is the next real item with no her-yes gate.
+
 # 24 Nov (33) - ORDER-24NOV B2, finish it. Found the real remaining duplicate-fetch
 site: `src/stagingYard.js`'s `setTexture()` opened its own private, unbusted
 TextureLoader at the same `assets/textures/<set>/<set>_<kind>.webp` paths
