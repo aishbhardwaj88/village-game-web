@@ -16,7 +16,8 @@ import { createWayfinding } from './wayfinding.js';
 import { createMapGates } from './mapGates.js';
 import { milestoneSites, createMilestone } from './milestones.js';
 import { roadLegs, spurLegs, roadAt } from './eastRoad.js';
-import { propCells, createPropCell } from './villageProps.js';
+import { propCells, createPropCell, PLANT_MODELS } from './villageProps.js';
+import { newHousePlantSites, newHouseFurnitureSites } from './kit/newHouseProps.js';
 import { roofCells, createRoofCell } from './rooftops.js';
 import { mergeAcrossGroups, mergeGroupByMaterial } from './mergeUtils.js';
 import { buildContactShadows } from './contactShadows.js';
@@ -1636,7 +1637,18 @@ async function main() {
     yield;
     villageHouses = createVillageHouses(scene); // src/villageHouses.js, distance-gated per cluster in the frame loop
     cameraObstacles.push(villageHouses.group);
-    { const nh = initNewMapHouses(scene); if (nh && nh.group) cameraObstacles.push(nh.group); } // S7 WIRING (houses): ?layout=new only; builds itself, LOD rides the camera, colliders rebuilt when it stands
+    {
+      const nh = initNewMapHouses(scene); // S7 WIRING (houses): ?layout=new only; builds itself, LOD rides the camera, colliders rebuilt when it stands
+      if (nh && nh.group) cameraObstacles.push(nh.group);
+      // 24 Nov playtest items 4/5 (NEW_HOUSES, src/kit/houses.js, is only populated once nh.ready resolves - the old
+      // abadi doorstep-prop system this reuses, src/villageProps.js, is otherwise empty under ?layout=new).
+      if (nh && nh.ready) nh.ready.then(() => {
+        // propCells() always names a cell 'props_<gridkey>', so two separate calls (plants/furniture) would collide
+        // and silently overwrite one another in zoneManager's name map - prefix each distinctly.
+        for (const cell of propCells(newHousePlantSites())) zoneManager.register(`newhouse_plant_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell, PLANT_MODELS) });
+        for (const cell of propCells(newHouseFurnitureSites())) zoneManager.register(`newhouse_furn_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
+      }).catch(() => {});
+    }
     yield;
     buildingKit.finalize(scene); // flush the background houses' plinth/pilaster instances too
     yield;

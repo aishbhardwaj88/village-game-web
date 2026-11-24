@@ -15,8 +15,18 @@ const MODELS = [
   ['wicker_basket_01', 0.34, 2], ['wicker_basket_02', 0.3, 2], ['potted_plant_02', 0.6, 4], ['brass_pot_01', 0.3, 2],
   ['potted_plant_04', 0.3, 2], ['metal_jug', 0.28, 2], ['wooden_crate_01', 0.38, 2], ['wooden_crate_02', 0.34, 2],
   ['old_tyre', 0.22, 1], ['potted_plant_02', 0.7, 2], ['plastic_monobloc_chair_01', 0.82, 2], ['painted_wooden_bench', 0.5, 1],
+  // 24 Nov playtest note (item 5, "street life ... tables, chairs ... existing props ... placed too rarely"): already-shrunk,
+  // already-credited (docs/CREDITS.md) CC0 props not yet wired into the doorstep scatter - small_wooden_table_01 was flagged
+  // there as "Not found in the game code (maybe unused)"; round_wooden_table_01/painted_wooden_chair_01 are already used in
+  // the Carrom scene (src/farmSites.js) and share loadModel()'s cache, so reusing them here adds no new fetch.
+  ['small_wooden_table_01', 0.68, 2], ['round_wooden_table_01', 0.72, 1], ['painted_wooden_chair_01', 0.82, 3],
 ];
 const TABLE = MODELS.flatMap((m, i) => Array(m[2]).fill(i));
+// Dedicated pool for item 4 ("houses need flower pots, plants and climbers ... use the existing props potted_plant_*,
+// planter_pot_clay"): a doorstep/parapet site list that should read as plants, not furniture, uses this instead of MODELS.
+export const PLANT_MODELS = [
+  ['potted_plant_01', 0.45, 3], ['potted_plant_02', 0.6, 3], ['potted_plant_04', 0.3, 2], ['planter_pot_clay', 0.35, 2],
+];
 const CELL = 36; // metres
 const RADIUS = 0.3;
 
@@ -51,19 +61,22 @@ export function propCells(sites) {
   return [...cells.values()];
 }
 
-export function createPropCell(cell) {
+/** `models`: an optional MODELS-shaped override (e.g. PLANT_MODELS) so a caller's sites read as one kind of prop (plants)
+ *  instead of the default general furniture mix. Default behaviour (no 3rd arg) is unchanged. */
+export function createPropCell(cell, models = MODELS) {
+  const table = models === MODELS ? TABLE : models.flatMap((m, i) => Array(m[2]).fill(i));
   const group = new THREE.Group();
   group.name = cell.id;
   const byModel = new Map();
   for (const s of cell.sites) {
     if (circleHitsAnyBox({ x: s.x, z: s.z }, RADIUS, STATIC_COLLIDERS)) continue;
-    const mi = TABLE[s.pick % TABLE.length];
+    const mi = table[s.pick % table.length];
     if (!byModel.has(mi)) byModel.set(mi, []);
     byModel.get(mi).push(s);
   }
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
   for (const [mi, list] of byModel) {
-    const [file, height] = MODELS[mi];
+    const [file, height] = models[mi];
     loadModel(file, height).then((parts) => {
       for (const part of parts) {
         const inst = new THREE.InstancedMesh(part.geometry, part.material, list.length);
