@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 24 Nov (37) - MAIN lane, 3rd run of the 3-lane push. docs/lanes/ still
+doesn't exist after 2 full MAIN runs (~2h) - MISSIONS/LOAD haven't logged or
+committed anything; flagged in NEEDS_YOU as a pattern now. Part A/C still
+done, nothing new. Verified main healthy (npm ci, build:unchecked clean, same
+pre-existing WARNs, 4 instant checks PASS). Took 1 unowned BACKLOG item (per-
+place interior furnishing): post office's own code comment promised a
+pigeonhole letter rack that was never actually built - added it in
+src/newShops.js, same no-interior pattern as the general store's shelves.
+
 # 24 Nov (36) - MAIN lane, 2nd run of the 3-lane push. docs/lanes/ still doesn't
 exist (MISSIONS/LOAD haven't logged) - nothing to integrate. Part A/C already
 done (entry 35), nothing new there. Verified main healthy (fresh npm ci,

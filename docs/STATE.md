@@ -1,48 +1,39 @@
 # State - rewritten every run, max 40 lines
 
-Last updated: 24 Nov, MAIN lane run (entry 36), second run of the 3-lane push.
+Last updated: 24 Nov, MAIN lane run (entry 37), third run of the 3-lane push.
 
 ## Current state
-Past GAME_COMPLETE (all 8 missions built, verified). 24-hour push (her order, 24
-Nov evening): no-characters-complete by Wed 25 Nov 20:00 IST, 3 hourly lanes.
-MAIN owns rulebook/integration/STATE.md/char slot (Part C). docs/lanes/ still
-doesn't exist - MISSIONS/LOAD haven't logged yet, nothing to integrate this run
-either. Part A (efficiency.md A1-A11) and Part C (C1/C2) both confirmed done,
-nothing new needed there this run. Verified main is healthy: fresh `npm ci`
-(node_modules starts empty every container), `npm run build:unchecked` clean,
-same pre-existing budget breaches as entry 35 (characters over 2.5MB/20k tris at
-WEB_QUALITY='full', her 21 Nov call, WARN only), all 4 instant checks PASS. Took
-2 BACKLOG items no lane owns: pond lotus (searched CC0 again, none found, closed
-pads-only-final) and halwai flame/heat (soot+steam already existed, added a real
-flicker PointLight per bhatti since the fire cast no light before - see
-src/halwaiFire.js's own comment for why heat-haze/refraction was left out).
+Past GAME_COMPLETE (all 8 missions verified). 24-hour push (her order): no-
+characters-complete by Wed 25 Nov 20:00 IST, 3 hourly lanes. MAIN owns
+rulebook/integration/STATE.md/char slot (Part C). docs/lanes/ still doesn't
+exist after 2 full MAIN runs (~2h) - MISSIONS/LOAD haven't logged or
+committed; flagged in NEEDS_YOU as a pattern, not a one-off. Part A/Part C
+both confirmed done again, nothing new. Main verified healthy: fresh `npm
+ci`, `build:unchecked` clean, same pre-existing budget WARNs as entry 36
+(characters over budget at WEB_QUALITY='full', her 21 Nov call), 4 instant
+checks PASS. Took 1 unowned BACKLOG item: post office pigeonhole letter rack
+- the file's own comment promised one but it was never built. Added in
+src/newShops.js on the back wall, same no-interior pattern as the general
+store's shelves. Not screenshot-verified (container renderer crash, A7) -
+code-pattern match + Tier 1 checks clean instead.
 
-## Next 5 items
+## Next 4 items
 1. Integrate docs/lanes/missions.md + load.md once they exist (next MAIN run).
-2. Prep B7/C3 before/after screenshot pairs for her yes (don't ship without it).
-3. Real game work from BACKLOG.md once lanes are parked or producing (grep it).
-4. B8/B7/B9 are explicitly "after the push" per the 24-hour-push order - do not
-   start them before ORDER-24NOV reads DONE.
-5. If docs/lanes/ still doesn't exist next run too, check whether MISSIONS/LOAD
-   are actually firing (not MAIN's call to fix, just worth noting in NEEDS_YOU).
+2. If lanes still haven't logged next run too, escalate harder in NEEDS_YOU.
+3. Prep B7/C3 before/after screenshot pairs for her yes (don't ship without it).
+4. More real game work from BACKLOG.md once lanes are parked or producing.
 
 ## Blockers
 - B7 (KTX2) and C3 (character quality) need her yes on a before/after shot first.
-- Tripo plan question CLOSED (NEEDS_YOU.md), licence-audit.mjs's own WARN-only
-  note is separate, expected, left as-is every run.
-
-LAST_FULL_PASS=82c337c (baseline for git diff; browser chain unreliable here, not
-a confirmed-green browser pass). Runs since: unknown (see below).
+- Tripo plan CLOSED. B8/B7/B9 deferred to after the push, not before DONE.
+LAST_FULL_PASS=82c337c (baseline for git diff; browser chain unreliable here).
 
 ## Known about this container
-- node_modules starts empty every fresh container - `npm ci` once per run. The
-  earlier `ls node_modules | head -1 && echo PRESENT || echo MISSING` check in an
-  older firing's setup step is a false positive (head always exits 0) - always
-  just run `npm ci` if build:unchecked reports "vite: not found".
+- node_modules starts empty every fresh container - `npm ci` once per run.
 - Blender absent. Places V1/ absent (gitignored, reference-only).
 - HEAD starts detached on a stale local main - `git fetch origin main && git
   checkout -B main origin/main` fixes it, don't investigate further.
-- Browser checks slow/unreliable: `npm run build`'s world-validator didn't finish
-  in 300s (24 Nov); `screenshot.js` ran 238s then crashed. Not your diff's fault
-  unless it plausibly touches what's checked - efficiency.md A7.
+- Browser checks slow/unreliable: `npm run build`'s world-validator didn't
+  finish in 300s; `screenshot.js` ran 238s then crashed - not your diff's
+  fault unless it plausibly touches what's checked (A7).
 - chromium needs the full `chrome` binary (fixed).

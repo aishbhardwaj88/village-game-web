@@ -1,5 +1,10 @@
 # Needs you
 
+- 24-hour push lanes (24 Nov, not blocking anything): MISSIONS and LOAD haven't
+  logged or committed anything after 2 hours of MAIN's own runs, which usually
+  means those two scheduled tasks aren't actually firing on schedule - worth a
+  quick look next time you're at a screen, nothing for me to fix from in here.
+  MAIN keeps taking real BACKLOG work either way. - status: open
 - Halwai stall now casts real light from its fire (24 Nov): soot and steam were already
   built, but the flame itself lit nothing around it, which is why the stall read
   "switched off" even up close. Added a flickering warm light at each bhatti so the

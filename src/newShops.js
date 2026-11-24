@@ -210,6 +210,29 @@ export function buildNewShopProps(postOfficePos, postOfficeRot, rationShopPos, r
     const world = wallWorldMatrix(postOfficePos, postOfficeRot);
     const d = POST_OFFICE.d;
     const fx = POST_OFFICE.w / 2 + 0.4;
+
+    // Pigeonhole letter rack on the back wall, seen through the counter window the
+    // same way src/shops.js's general-store shelves read from outside (no walkable
+    // interior here either). 4 columns x 3 rows: a backing board, shelves, vertical
+    // dividers, and envelopes left in some but not all holes so it reads as in use,
+    // not a fresh prop (CLAUDE.md 5b rule 3/4).
+    {
+      const rackCols = 4, rackRows = 3, rackW = 1.0, cellW = rackW / rackCols, cellH = 0.22;
+      const rackX = 0, rackBaseY = 1.0, backZ = -d / 2 + 0.1;
+      box(woodGeos, world, rackW + 0.08, rackRows * cellH + 0.08, 0.03, rackX, rackBaseY - 0.04, backZ, 0, darken(PALETTE.woodTrim, 0.75)); // backing board
+      for (let r = 0; r <= rackRows; r++) box(woodGeos, world, rackW, 0.02, 0.16, rackX, rackBaseY + r * cellH, backZ + 0.08, 0, darken(PALETTE.woodTrim, 0.8)); // shelves
+      for (let c = 0; c <= rackCols; c++) box(woodGeos, world, 0.02, rackRows * cellH, 0.16, rackX - rackW / 2 + c * cellW, rackBaseY, backZ + 0.08, 0, darken(PALETTE.woodTrim, 0.8)); // dividers
+      const ENVELOPE = [0xe8e2cf, 0xd8ccb0, 0xc9d6df, 0xdcd3b8, 0xe2d8c3];
+      for (let r = 0; r < rackRows; r++) for (let c = 0; c < rackCols; c++) {
+        if (rnd() > 0.55) continue; // some holes empty - looks used, not staged
+        const cx = rackX - rackW / 2 + (c + 0.5) * cellW + jit(0.02);
+        box(woodGeos, world, cellW - 0.06, 0.03, 0.08 + jit(0.02), cx, rackBaseY + r * cellH + 0.01, backZ + 0.14, jit(0.2), ENVELOPE[(r * rackCols + c) % ENVELOPE.length]);
+      }
+      // No collider: behind the counter window like the general store's shelf goods
+      // (src/shops.js buildGeneralStoreGoods) - not in walkable space, the wall shell
+      // already blocks the player.
+    }
+
     for (let i = 0; i < 3; i++) sack(world, fx + jit(0.04), i === 2 ? 0.34 : 0, d / 2 - 0.7 + (i % 2) * 0.5, jit(0.4) + Math.PI / 2, JUTE[i % 4]); // post bags
     colliders.push(colliderBoxFromTransform(0.7, 1.2, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(fx, 0.3, d / 2 - 0.3))));
     const cy = POST_OFFICE.counterTopY, cz = d / 2 + 0.15;
