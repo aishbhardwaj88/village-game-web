@@ -470,3 +470,15 @@ export function stockStall(P, kind, x0, x1, z, y, seed) {
     default: return false;
   }
 }
+
+/** Which kiosk/cart stock a name sells (null = the generic crates). */
+export function stallGoodsOf(name) {
+  const n = name.toLowerCase();
+  if (/fruit/.test(n)) return 'fruit';
+  if (/bangle/.test(n)) return 'bangle';
+  if (/toy|balloon/.test(n)) return 'toy';
+  if (/mobile/.test(n)) return 'mobile';
+  if (/lassi|juice|gola|kulfi/.test(n)) return 'drink';
+  if (/golgappa|samosa|chai|tikki|bhutta|corn|chana|moongphali|namkeen|rewari|dosa|momos/.test(n)) return 'food';
+  return null;
+}

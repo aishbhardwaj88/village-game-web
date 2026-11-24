@@ -2175,6 +2175,58 @@
       "licence": "CC BY 4.0",
       "creditsKey": "David Brown 25D tractor",
       "evidence": "Sketchfab download dialog shows CC Attribution, commercial use allowed; slimmed (meshopt, WebP, 136k to 59k triangles) in this repo; brand text to be removed before final"
+    },
+    {
+      "match": [
+        "public/fonts/sign-yatra-one/*"
+      ],
+      "category": "credited",
+      "title": "Yatra One (shop signboard font, Hindi + Latin subsets) + its OFL licence text",
+      "source": "Google Fonts via the @fontsource/yatra-one npm package",
+      "url": "https://fonts.google.com/specimen/Yatra+One",
+      "author": "The Yatra Project Authors",
+      "licence": "OFL-1.1",
+      "creditsKey": "Yatra One",
+      "evidence": "Unmodified woff2 subsets from @fontsource/yatra-one 5.3.0 (devanagari + latin); OFL.txt ships beside them"
+    },
+    {
+      "match": [
+        "public/fonts/sign-rozha-one/*"
+      ],
+      "category": "credited",
+      "title": "Rozha One (shop signboard font, Hindi + Latin subsets) + its OFL licence text",
+      "source": "Google Fonts via the @fontsource/rozha-one npm package",
+      "url": "https://fonts.google.com/specimen/Rozha+One",
+      "author": "The Rozha Project Authors",
+      "licence": "OFL-1.1",
+      "creditsKey": "Rozha One",
+      "evidence": "Unmodified woff2 subsets from @fontsource/rozha-one 5.3.0 (devanagari + latin); OFL.txt ships beside them"
+    },
+    {
+      "match": [
+        "public/fonts/sign-kalam/*"
+      ],
+      "category": "credited",
+      "title": "Kalam (shop signboard font, Hindi + Latin subsets) + its OFL licence text",
+      "source": "Google Fonts via the @fontsource/kalam npm package",
+      "url": "https://fonts.google.com/specimen/Kalam",
+      "author": "The Kalam Project Authors (Indian Type Foundry)",
+      "licence": "OFL-1.1",
+      "creditsKey": "Kalam",
+      "evidence": "Unmodified woff2 subsets from @fontsource/kalam 5.3.0 (devanagari + latin); OFL.txt ships beside them"
+    },
+    {
+      "match": [
+        "public/fonts/sign-teko/*"
+      ],
+      "category": "credited",
+      "title": "Teko (shop signboard font, Hindi + Latin subsets) + its OFL licence text",
+      "source": "Google Fonts via the @fontsource/teko npm package",
+      "url": "https://fonts.google.com/specimen/Teko",
+      "author": "The Teko Project Authors (Indian Type Foundry)",
+      "licence": "OFL-1.1",
+      "creditsKey": "Teko",
+      "evidence": "Unmodified woff2 subsets from @fontsource/teko 5.3.0 (devanagari + latin); OFL.txt ships beside them"
     }
   ],
   "worthKnowing": [

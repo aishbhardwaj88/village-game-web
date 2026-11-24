@@ -18,13 +18,26 @@ export const EN_CAP_RATIO_MIN = 0.58; // ... and only go down to this when the E
 export const hiFont = (px) => `${HI_WEIGHT} ${px}px ${HI_FAMILY}`;
 export const enFont = (px) => `${EN_WEIGHT} ${px}px ${EN_FAMILY}`;
 
+/**
+ * Extra OFL sign-painter faces (24 Nov, boards must not all look alike). Each set pairs a Hindi font with an English one; the
+ * faces themselves are registered by src/kit/shopsSigns.js (FontFace, public/fonts/sign-*). 'noto' is the original look.
+ */
+const SF = (n) => `"${n}", "Noto Sans Devanagari", sans-serif`;
+export const FONT_SETS = {
+  noto: { hi: hiFont, en: enFont },
+  yatra: { hi: (px) => `400 ${px}px ${SF('SignYatra')}`, en: (px) => `600 ${px}px "SignTeko", ${EN_FAMILY}` },
+  rozha: { hi: (px) => `400 ${px}px ${SF('SignRozha')}`, en: enFont },
+  kalam: { hi: (px) => `700 ${px}px ${SF('SignKalam')}`, en: (px) => `600 ${px}px "SignTeko", ${EN_FAMILY}` },
+  teko: { hi: (px) => `600 ${px}px ${SF('SignTeko')}`, en: (px) => `500 ${px}px "SignTeko", ${EN_FAMILY}` },
+};
+
 // capPerPx only depends on the font string and the probe character, both fixed per call site (hiFont/'क',
 // enFont/'H') - every board asks for the same two numbers, so cache them instead of re-measuring per board
 // (measured 24 Nov: this and the full layout below together cost 1.4s/529 calls across a real playthrough's
 // signboards, see layoutBilingual's own cache below for the bigger half of that).
 const _capCache = new Map();
-function capPerPx(ctx, font, ch) {
-  const key = font(100) + '|' + ch;
+function capPerPx(ctx, font, ch, set = 'noto') {
+  const key = set + '|' + font(100) + '|' + ch;
   const hit = _capCache.get(key);
   if (hit !== undefined) return hit;
   ctx.font = font(100);
@@ -45,18 +58,19 @@ function capPerPx(ctx, font, ch) {
  * `.font`, and the font metrics it measures don't depend on which canvas asked.
  */
 const _layoutCache = new Map();
-export function layoutBilingual(ctx, hi, en, w, h, { maxHiPx = h, fillFraction = 0.9, gapFraction = 0.1 } = {}) {
-  const cacheKey = hi + '\u0001' + en + '\u0001' + w + '\u0001' + h + '\u0001' + maxHiPx + '\u0001' + fillFraction + '\u0001' + gapFraction;
+export function layoutBilingual(ctx, hi, en, w, h, { maxHiPx = h, fillFraction = 0.9, gapFraction = 0.1, set = 'noto' } = {}) {
+  const cacheKey = set + '\u0001' + hi + '\u0001' + en + '\u0001' + w + '\u0001' + h + '\u0001' + maxHiPx + '\u0001' + fillFraction + '\u0001' + gapFraction;
   const cached = _layoutCache.get(cacheKey);
   if (cached !== undefined) return cached;
-  const result = layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction);
+  const result = layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction, set);
   _layoutCache.set(cacheKey, result);
   return result;
 }
 
-function layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction) {
-  const hiCap = capPerPx(ctx, hiFont, 'क');
-  const enCap = capPerPx(ctx, enFont, 'H');
+function layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction, set = 'noto') {
+  const hiFont = FONT_SETS[set].hi, enFont = FONT_SETS[set].en; // shadow the defaults for this set
+  const hiCap = capPerPx(ctx, hiFont, 'क', set);
+  const enCap = capPerPx(ctx, enFont, 'H', set);
   let hiPx = Math.min(maxHiPx, h * 0.6);
   let ratio = EN_CAP_RATIO;
   for (let guard = 0; guard < 80; guard++) {
@@ -91,8 +105,9 @@ function layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFr
  * Paints both lines into the rect (x, y, w, h): Hindi on top, English below, `fg` for both. `align` is 'center'
  * (default), 'left' or 'right'; `x` is then the centre, left edge or right edge of the text.
  */
-export function drawBilingual(ctx, hi, en, { x, y, w, h, fg, align = 'center', maxHiPx, fillFraction, gapFraction }) {
-  const L = layoutBilingual(ctx, hi, en, w, h, { maxHiPx, fillFraction, gapFraction });
+export function drawBilingual(ctx, hi, en, { x, y, w, h, fg, align = 'center', maxHiPx, fillFraction, gapFraction, set = 'noto' }) {
+  const hiFont = FONT_SETS[set].hi, enFont = FONT_SETS[set].en;
+  const L = layoutBilingual(ctx, hi, en, w, h, { maxHiPx, fillFraction, gapFraction, set });
   if (!L) return null;
   ctx.fillStyle = fg;
   ctx.textAlign = align;
@@ -106,3 +121,6 @@ export function drawBilingual(ctx, hi, en, { x, y, w, h, fg, align = 'center', m
   ctx.fillText(en, x, enBase);
   return { ...L, hiBase, enBase };
 }
+
+/** Forget measured layouts (call after a sign font finishes loading, so the repaint measures the real glyphs). */
+export function clearSignLayoutCache() { _layoutCache.clear(); _capCache.clear(); }

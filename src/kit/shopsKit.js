@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Parts } from './landInstancing.js';
-import { stockInterior } from './shopsStock.js';
+import { stockInterior, stockStall } from './shopsStock.js';
 
 /**
  * Shop bodies for ?layout=new, code-built from the approved library materials only (brick, plaster, concrete, wood,
@@ -327,7 +327,7 @@ export function shop({ W, D, H = 3.6, front = 'shutter', shutterDown = false, tr
 }
 
 /** Kiosk. kind 'gumti' (steel box) or 'stall' (wooden table under a sheet roof). Fits inside W x D. */
-export function kiosk({ W, D, kind = 'gumti', seed = 1, lite = false }) {
+export function kiosk({ W, D, kind = 'gumti', seed = 1, lite = false, goods = null }) {
   LITE = lite;
   const P = new Parts(TILES);
   const w = Math.min(W - 0.3, 2.6), d = Math.min(D - 0.4, 1.8);
@@ -349,6 +349,7 @@ export function kiosk({ W, D, kind = 'gumti', seed = 1, lite = false }) {
       P.box('wood', 0, y0 + 1.25 + l * 0.35, -d / 2 + 0.2, w - 0.16, 0.03, 0.28, { color: 0x8a6a4a });
       for (let k = 0; k < 6; k++) P.box('concrete', -w / 2 + 0.25 + k * (w - 0.4) / 5, y0 + 1.36 + l * 0.35, -d / 2 + 0.2, 0.16, 0.2, 0.2, { color: GOODS[(seed + k + l * 3) % GOODS.length] });
     }
+    if (goods && !LITE) stockStall(P, goods, -w / 2 + 0.1, w / 2 - 0.1, zf - 0.15, y0 + 0.945, seed);
     // the flap awning propped up on two rods
     const fl = 0.7;
     const flap = new THREE.Matrix4().makeTranslation(0, y0 + h - 0.05, zf).multiply(new THREE.Matrix4().makeRotationX(-0.35));
@@ -368,11 +369,12 @@ export function kiosk({ W, D, kind = 'gumti', seed = 1, lite = false }) {
     P.box('wood', cx, 0.95, 0.1, 0.45, 0.2, 0.35, { color: 0x9a7a52 });
     P.box('concrete', cx, 1.06, 0.1, 0.4, 0.04, 0.3, { color: GOODS[(seed * 3 + k) % GOODS.length] });
   }
+  if (goods && !LITE) stockStall(P, goods, -w / 2 + 0.1, w / 2 - 0.1, 0.1, 1.07, seed);
   return { geo: P.build(), sign: { x: 0, y: h - 0.5, z: d / 2 + 0.06, w: w * 0.85, h: 0.4 } };
 }
 
 /** Thela cart on two spoked wheels with a canopy. */
-export function cart({ W, D, seed = 1, food = false, lite = false }) {
+export function cart({ W, D, seed = 1, food = false, lite = false, goods = null }) {
   LITE = lite;
   const P = new Parts(TILES);
   const L = Math.min(Math.max(W, D) - 0.2, 2.0), B = Math.min(Math.min(W, D) - 0.2, 1.0);
@@ -416,6 +418,7 @@ export function cart({ W, D, seed = 1, food = false, lite = false }) {
       P.box('concrete', cx, bedY + 0.27, 0.05, 0.38, 0.06, B * 0.64, { color: GOODS[(seed + k * 2) % GOODS.length], skip: ['ny'] }); // the heap of produce in the crate
     }
   }
+  if (goods && !LITE) stockStall(P, goods, -L / 2 + 0.1, L / 2 - 0.1, 0.05, bedY + 0.31, seed);
   // canopy: four thin poles and a rusted sheet
   const ch = 2.05;
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) P.box('wood', sx * (L / 2 - 0.05), (bedY + ch) / 2, sz * (B / 2 - 0.05), 0.035, ch - bedY, 0.035, { color: 0x5a4430 });

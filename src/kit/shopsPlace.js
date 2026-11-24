@@ -7,7 +7,7 @@ import { SignAtlas, boardGeometry, signNameFor, SHAPES, CW, layoutFor } from './
 import { kitMaterials } from './landMaterials.js';
 import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from './landLayout.js';
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
-import { stockTradeOf } from './shopsStock.js';
+import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 
 /**
@@ -144,11 +144,13 @@ export function buildShops(map, { camera = null } = {}) {
       if (isCart) {
         const food = /dosa|momos|tikki|corn|bhutta|chai|golgappa|chana/i.test(name);
         // a cart stands with its long side to the road: its own size, not the whole marker
-        put('cart', `cart|${food ? 1 : 0}|${v}`, (lite) => cart({ W: 2.4, D: 1.6, seed: v + 1, food, lite }), { ...rect, width: Math.max(rect.width, 2.2), depth: Math.max(rect.depth, 1.4) }, { signName: name, colW: 2.3, colD: 1.4 }, i);
+        const gd = stallGoodsOf(name);
+        put('cart', `cart|${food ? 1 : 0}|${v}|${gd}`, (lite) => cart({ W: 2.4, D: 1.6, seed: v + 1, food, lite, goods: gd }), { ...rect, width: Math.max(rect.width, 2.2), depth: Math.max(rect.depth, 1.4) }, { signName: name, colW: 2.3, colD: 1.4 }, i);
         report.carts++;
       } else {
         const kind = hash01(i, 4) < 0.5 ? 'gumti' : 'stall';
-        put('kiosk', `kiosk|${kind}|${Math.min(W, 3.2)}|${Math.min(D, 3.2)}|${v}`, (lite) => kiosk({ W: Math.min(W, 3.2), D: Math.min(D, 3.2), kind, seed: v + 2, lite }), rect, { signName: name, colW: Math.min(W - 0.2, 2.8), colD: Math.min(D - 0.3, 2.0) }, i);
+        const gd = stallGoodsOf(name);
+        put('kiosk', `kiosk|${kind}|${Math.min(W, 3.2)}|${Math.min(D, 3.2)}|${v}|${gd}`, (lite) => kiosk({ W: Math.min(W, 3.2), D: Math.min(D, 3.2), kind, seed: v + 2, lite, goods: gd }), rect, { signName: name, colW: Math.min(W - 0.2, 2.8), colD: Math.min(D - 0.3, 2.0) }, i);
         report.kiosks++;
       }
     } else if (SHEDS.has(name)) {
