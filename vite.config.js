@@ -1,11 +1,32 @@
 import { defineConfig } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { genModelManifest, MODELS_DIR } from './tools/gen-model-manifest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Keeps public/assets/models/manifest.json in sync while `vite` (the dev server) is running,
+// so dropping a new slot .glb in and reloading (docs/asset-slots.md's whole workflow) works
+// without a manual `npm run gen-manifest` step — src/assetSlots.js's urlExists() trusts this
+// file instead of sending a live HEAD request per slot (24 Nov efficiency audit, B3).
+function genModelManifestPlugin() {
+  return {
+    name: 'gen-model-manifest',
+    configureServer(server) {
+      genModelManifest({ log: (m) => server.config.logger.info(`[manifest] ${m}`) });
+      const onGlbChange = (path) => {
+        if (!path.endsWith('.glb')) return;
+        genModelManifest({ log: (m) => server.config.logger.info(`[manifest] ${m}`) });
+      };
+      server.watcher.add(MODELS_DIR);
+      server.watcher.on('add', onGlbChange).on('unlink', onGlbChange);
+    },
+  };
+}
+
 export default defineConfig({
   base: '/village-game-web/',
+  plugins: [genModelManifestPlugin()],
   // Cache-busting token for the raw files under public/assets/ (textures, grass, trees).
   // Vite copies public/ verbatim with NO content hash in the filename (unlike the hashed
   // JS/CSS chunks below), so a texture that changes content at the same URL (e.g. a

@@ -16,6 +16,17 @@ placeholder itself is hidden, not deleted — if the file is missing, broken, or
 to load for any reason, the placeholder just stays visible and the game keeps working
 exactly as it does today.
 
+### Asset manifest (24 Nov)
+
+`public/assets/models/manifest.json` lists every `.glb` already in that folder — it's
+how the game knows which slots have a real file without asking the server about each
+one individually (used to be a live network request per slot, almost always "no, not
+yet", 33 of them failing outright per the 24 Nov efficiency audit). `npm run dev`
+regenerates it automatically the moment you drop or remove a file, so step 3 above
+("reload the game") still just works. `npm run build`/`build:unchecked` regenerate it
+too. The only time you'd run it by hand is `npm run gen-manifest` (or
+`node tools/gen-model-manifest.mjs`) — never needed in the normal drop-a-file workflow.
+
 ## Slot names and sizes
 
 | Slot (filename) | What it replaces | Target size (w × h × d, metres) |

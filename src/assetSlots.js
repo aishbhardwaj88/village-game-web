@@ -65,7 +65,25 @@ function enforceMatteMaterial(material) {
   if ('sheen' in material) material.sheen = 0;
 }
 
-async function urlExists(url) {
+// Build-time list of every model file that actually exists (tools/gen-model-manifest.mjs,
+// run before every `npm run build`/`build:unchecked`) — see docs/asset-slots.md's "Asset
+// manifest" note. Before this, every registered slot (80+ named ones, plus one per
+// zone-streamed place via src/siteSlots.js) sent its own live HEAD request on every page
+// load just to learn "no file yet", almost always 404 (24 Nov efficiency audit, B3: 33
+// failed requests for 11 missing slot models). Now that's one JSON fetch, checked from
+// memory after that — zero requests for any slot not in the list, known or future.
+let manifestPromise = null;
+function loadManifest() {
+  if (!manifestPromise) {
+    manifestPromise = fetch(`${MODEL_BASE}manifest.json`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((names) => new Set(names))
+      .catch(() => null); // null, not an empty set: falls back to the old per-file check below
+  }
+  return manifestPromise;
+}
+
+async function urlExistsByHead(url) {
   try {
     const res = await fetch(url, { method: 'HEAD' });
     if (!res.ok) return false;
@@ -79,6 +97,13 @@ async function urlExists(url) {
   } catch (e) {
     return false;
   }
+}
+
+/** `file` — the slot's basename, no extension (e.g. "tractor", not "tractor.glb"). */
+async function urlExists(url, file) {
+  const manifest = await loadManifest();
+  if (manifest) return manifest.has(file); // the normal path: answered from the one manifest fetch, no per-slot request at all
+  return urlExistsByHead(url); // manifest missing or unreadable (a dev checkout that hasn't run the generator, or a fetch error) — fall back to the old per-file check rather than silently skip every slot
 }
 
 export function createAssetSlotRegistry() {
@@ -108,8 +133,9 @@ export function createAssetSlotRegistry() {
   }
 
   async function resolveSlotOnce(slot) {
-    const url = `${MODEL_BASE}${slot.file || slot.name}.glb`;
-    if (!(await urlExists(url))) return { name: slot.name, replaced: false };
+    const file = slot.file || slot.name;
+    const url = `${MODEL_BASE}${file}.glb`;
+    if (!(await urlExists(url, file))) return { name: slot.name, replaced: false };
 
     let gltf;
     try {
