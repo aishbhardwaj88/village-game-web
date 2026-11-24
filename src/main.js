@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { addPilotVehicles } from './pilotVehicles.js';
-import { setPropGateRenderer } from './propGate.js';
-import { addFreeProps } from './freeProps.js';
+import { registerPilotVehicles } from './pilotVehicles.js';
+import { setPropGateRenderer, startPrefetch, startStreaming } from './propGate.js';
+import { registerFreeProps } from './freeProps.js';
+import { showPropReveal } from './propReveal.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
@@ -1465,10 +1466,6 @@ async function main() {
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
-    const off = new URLSearchParams(window.location.search).get('off') || ''; // isolate lag: ?off=props, ?off=vehicles, ?off=walls (or a,b)
-    setPropGateRenderer(renderer);
-    if (!off.includes('vehicles')) addPilotVehicles(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-vehicle pilot, after Play only (src/pilotVehicles.js)
-    if (!off.includes('props')) addFreeProps(scene, (x, z) => groundHeightAt(x, z, 0), () => (mountedVehicle ? mountedVehicle.group.position : player.position)); // free-prop review row, after Play only (src/freeProps.js)
     if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());
     else scheduleFrameWork(deferredSteps(), 'deferredContent');
   }
@@ -2148,6 +2145,17 @@ async function main() {
 
   const audio = new AudioEngine();
   createVillageSounds(audio, () => (mountedVehicle ? mountedVehicle.group.position : player.position));
+  // Props and vehicles (src/propGate.js): registered now (free), bytes prefetched at low priority once the title has painted,
+  // streamed in a ring around the player after Play. ?off=props / ?off=vehicles still switch them off.
+  const propPos = () => (mountedVehicle ? mountedVehicle.group.position : player.position);
+  const propGround = (x, z) => groundHeightAt(x, z, 0);
+  setPropGateRenderer(renderer, (g) => { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(g, camera, scene); renderer.setRenderTarget(_rt); return p; });
+  if (!DBG_OFF.has('vehicles')) registerPilotVehicles(propGround);
+  if (!DBG_OFF.has('props')) registerFreeProps(propGround);
+  { // never before the title has painted: two frames, then idle time
+    const go = () => startPrefetch({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z });
+    requestAnimationFrame(() => requestAnimationFrame(() => (window.requestIdleCallback ? window.requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 1000))));
+  }
   let started = false;
   const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
   setupStartOverlay({
@@ -2157,6 +2165,7 @@ async function main() {
     onStart: (isContinue) => {
       started = true;
       renderOK = true; _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
+      { const ps = startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); if (ps.hasWork) showPropReveal(ps).then((ms) => { _lm.propReveal = Math.round(ms); console.info(`[props] revealed after ${Math.round(ms)} ms`); }); }
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();

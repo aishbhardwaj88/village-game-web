@@ -1,13 +1,12 @@
 /**
  * Free-prop review row (24 Nov 2026): Sketchfab CC BY props, slimmed (meshopt + WebP, matte, colour-shifted, brands
- * painted out) and lined up on open ground at x 600-612, z 36-40 for the art director to judge. Loaded only AFTER Play,
- * in small groups (Poly Haven rows at z 26-34 too), so nothing here costs start-up time. Other workers place them in the village later.
+ * painted out) and lined up on open ground at x 600-612, z 36-40 for the art director to judge. Streamed by src/propGate.js (prefetched while the title idles,
+ * parsed and uploaded before the player can see them). Other workers place them in the village later.
  * Credits: docs/CREDITS.md. Files: public/assets/props_free/.
  */
 import * as THREE from 'three';
-import { getGLTFLoader } from './loaders.js';
-import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js';
-import { gateByDistance } from './propGate.js';
+import { colliderBoxFromTransform } from './collision.js';
+import { registerPropSite } from './propGate.js';
 
 // dim: 'h' = height, 'l' = longest horizontal side, in metres. solid: gets a collider.
 export const FREE_PROPS = [
@@ -50,16 +49,28 @@ export const PH_INDOOR = [
   o('cassette_player', 0.236), o('alarm_clock_01', 0.172), o('pocket_watch', 0.076), o('bananas', 0.179), o('food_apple_01', 0.085),
   o('food_pomegranate_01', 0.115), o('lemon', 0.095), o('sweet_potato', 0.1), o('yellow_onion', 0.086),
 ];
-// the review rows sit around x 606, z 33; props load within 50 m of it and are freed beyond 120 m (src/propGate.js)
-const PROPS_CENTER = { x: 606, z: 33 };
-export function addFreeProps(scene, groundAt, getPlayerPos) {
-  return gateByDistance(scene, 'free_props', PROPS_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadFreeProps(group, groundAt), requestColliderRebuild);
+// the review rows sit around x 606, z 33; src/propGate.js loads the site within 150 m of its edge and shows each prop by size
+const PROPS_SITE = { x: 606, z: 33, extent: 14 };
+const SETS = [
+  { list: FREE_PROPS, dir: 'assets/props_free/', rows: ROW_Z },
+  { list: PH_OUTDOOR, dir: PH, rows: [33.5, 31.3] },
+  { list: PH_INDOOR, dir: PH, rows: [29.4, 28.0, 26.9] },
+];
+export function registerFreeProps(groundAt) {
+  const items = [];
+  for (const set of SETS) for (const v of set.list) items.push({ url: `${set.dir}${v.file}.glb`, v, set });
+  registerPropSite({
+    name: 'free_props', center: { x: PROPS_SITE.x, z: PROPS_SITE.z }, extent: PROPS_SITE.extent, items,
+    makeGroup: () => new THREE.Group(), build: (gltfs, group) => buildFreeProps(items, gltfs, group, groundAt),
+  });
 }
-function loadFreeProps(group, groundAt) {
-  // one placer per set of rows; each keeps its own cursor so groups of one set continue where the last stopped
-  const placer = (rows) => {
+function buildFreeProps(items, gltfs, group, groundAt) {
+  // one placer per set of rows; each keeps its own cursor, so props are placed in list order once all are parsed
+  const placers = new Map();
+  const placer = (set) => {
+    if (placers.has(set)) return placers.get(set);
     let cx = ROW_X0, row = 0;
-    return (v, gltf) => {
+    const fn = (v, gltf) => {
       const m = gltf.scene;
       m.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(m);
@@ -67,33 +78,23 @@ function loadFreeProps(group, groundAt) {
       const k = v.size / (v.dim === 'h' ? size.y : Math.max(size.x, size.z));
       const c = box.getCenter(new THREE.Vector3());
       const w = size.x * k, d = size.z * k;
-      if (cx + w > ROW_X1 && cx > ROW_X0) { cx = ROW_X0; row = Math.min(row + 1, rows.length - 1); }
-      const x = cx + w / 2, z = rows[row];
+      if (cx + w > ROW_X1 && cx > ROW_X0) { cx = ROW_X0; row = Math.min(row + 1, set.rows.length - 1); }
+      const x = cx + w / 2, z = set.rows[row];
       cx += w + GAP;
       const holder = new THREE.Group();
       holder.name = `free_${v.file}`;
+      holder.userData.propSize = Math.max(w, d, size.y * k); // longest side in m: picks the show radius in propGate
       m.scale.multiplyScalar(k);
       m.position.set(-c.x * k, -box.min.y * k, -c.z * k);
       holder.add(m);
       holder.position.set(x, groundAt ? groundAt(x, z) : 0, z);
-      const bigEnough = Math.max(w, d, size.y * k) >= 1.5; // props under 1.5 m skip the shadow pass (each caster is drawn twice)
+      const bigEnough = holder.userData.propSize >= 1.5; // props under 1.5 m skip the shadow pass (each caster is drawn twice)
       m.traverse((o) => { if (o.isMesh) { o.castShadow = bigEnough; o.receiveShadow = true; } });
       if (v.solid) holder.userData.colliderBoxes = [colliderBoxFromTransform(w, d, new THREE.Matrix4().setPosition(x, 0, z))];
       group.add(holder);
     };
+    placers.set(set, fn);
+    return fn;
   };
-  const jobs = [];
-  const pFree = placer(ROW_Z);
-  let from = 0;
-  for (const n of GROUPS) { jobs.push({ part: FREE_PROPS.slice(from, from + n), place: pFree, dir: 'assets/props_free/' }); from += n; }
-  const pOut = placer([33.5, 31.3]), pIn = placer([29.4, 28.0, 26.9]);
-  for (let i = 0; i < PH_OUTDOOR.length; i += 10) jobs.push({ part: PH_OUTDOOR.slice(i, i + 10), place: pOut });
-  for (let i = 0; i < PH_INDOOR.length; i += 10) jobs.push({ part: PH_INDOOR.slice(i, i + 10), place: pIn });
-  let chain = Promise.resolve();
-  for (const j of jobs) {
-    chain = chain.then(() => Promise.all(j.part.map((v) => getGLTFLoader().loadAsync(`${j.dir}${v.file}.glb`)
-      .catch((e) => { console.warn('[freeProps]', v.file, e); return null; })))
-      .then((gs) => { gs.forEach((g, i) => { if (g) j.place(j.part[i], g); }); requestColliderRebuild(); }));
-  }
-  return chain;
+  items.forEach((it, i) => { if (gltfs[i]) placer(it.set)(it.v, gltfs[i]); });
 }

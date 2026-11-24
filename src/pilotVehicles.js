@@ -1,13 +1,12 @@
 /**
  * Free-vehicle pilot (24 Nov 2026, her request): two Sketchfab CC BY vehicles parked near the opening spawn
- * so she can judge if slimmed free models look good in the game. Loaded only after Play (no start-up cost).
+ * so she can judge if slimmed free models look good in the game. Streamed by src/propGate.js (prefetched during the title, ready before they can be seen).
  * Files were slimmed in a separate pass (meshopt geometry + WebP textures; auto rickshaw also switched from
  * see-through to solid, which was the cause of its "broken" look). Credits: docs/CREDITS.md.
  */
 import * as THREE from 'three';
-import { getGLTFLoader } from './loaders.js';
-import { colliderBoxFromTransform, requestColliderRebuild } from './collision.js';
-import { gateByDistance } from './propGate.js';
+import { colliderBoxFromTransform } from './collision.js';
+import { registerPropSite } from './propGate.js';
 import { addThelaSign } from './thelaSign.js';
 
 export const PILOT_VEHICLES = [
@@ -21,13 +20,18 @@ export const PILOT_VEHICLES = [
   { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 2.28 },
 ];
 
-const VEHICLES_CENTER = { x: 606, z: 50 }; // load within 50 m, freed beyond 120 m (src/propGate.js)
-export function addPilotVehicles(scene, groundAt, getPlayerPos) {
-  return gateByDistance(scene, 'pilot_vehicles', VEHICLES_CENTER, getPlayerPos, () => new THREE.Group(), (group) => loadPilotVehicles(group, groundAt), requestColliderRebuild);
+const VEHICLES_SITE = { x: 606, z: 50, extent: 14 }; // src/propGate.js loads within 150 m of its edge
+export function registerPilotVehicles(groundAt) {
+  registerPropSite({
+    name: 'pilot_vehicles', center: { x: VEHICLES_SITE.x, z: VEHICLES_SITE.z }, extent: VEHICLES_SITE.extent,
+    items: PILOT_VEHICLES.map((v) => ({ url: `assets/vehicles_free/${v.file}.glb` })),
+    makeGroup: () => new THREE.Group(), build: (gltfs, group) => buildPilotVehicles(gltfs, group, groundAt),
+  });
 }
-function loadPilotVehicles(group, groundAt) {
-  return Promise.all(PILOT_VEHICLES.map((v) => getGLTFLoader().loadAsync(`assets/vehicles_free/${v.file}.glb`).then((gltf) => {
-    const m = gltf.scene;
+function buildPilotVehicles(gltfs, group, groundAt) {
+  PILOT_VEHICLES.forEach((v, i) => {
+    if (!gltfs[i]) return;
+    const m = gltfs[i].scene;
     m.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m);
     const size = box.getSize(new THREE.Vector3());
@@ -35,6 +39,7 @@ function loadPilotVehicles(group, groundAt) {
     const c = box.getCenter(new THREE.Vector3());
     const holder = new THREE.Group();
     holder.name = `pilot_${v.file}`;
+    holder.userData.propSize = v.length;
     m.scale.multiplyScalar(k);
     m.position.set(-c.x * k, -box.min.y * k, -c.z * k);
     holder.add(m);
@@ -48,5 +53,5 @@ function loadPilotVehicles(group, groundAt) {
     const w = size.x * k, d = size.z * k;
     holder.userData.colliderBoxes = [colliderBoxFromTransform(w, d, new THREE.Matrix4().makeRotationY(v.yaw).setPosition(v.x, 0, v.z))];
     group.add(holder);
-  }).catch((e) => console.warn('[pilotVehicles]', v.file, e)))).then(() => requestColliderRebuild());
+  });
 }
