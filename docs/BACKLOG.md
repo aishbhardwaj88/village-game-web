@@ -33,27 +33,11 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
 - [ ] [ACTIVE] Texture pipeline: verify UVs/tiling survive arch.py -> strip-textures.mjs
       -> stagingYard.js for any place reworked; re-tint from sampled Places V1 colours,
       not picked by eye.
-- [ ] [ACTIVE] Collider coverage: every solid prop (trees, poles, pumps, charpais, carts)
-      needs a collider - audit and fix on sight when touching a place, not as a standalone
-      audit run (A6).
 - [ ] [PAUSED-MAP] NPC/animal path validation against walls, door-routing through
       openings - path geometry is layout-dependent, wait for the new map.
 - [ ] [ACTIVE] CC0 prop sourcing before hand-building, for any place still using
       hand-built generic props (pumps, matkas, pots, stools, charpais, carts, buckets,
       crates, tools). Check source + budget before each swap.
-- [ ] [ACTIVE] Per-place interiors still owed real furnishing (trade tools, stock,
-      seating, signage, use-wear): ration shop, post office, atta chakki, school, temple
-      complex - build/finish the INTERNALS now (survives a map move); final position is
-      the new map's job.
-- [ ] [ACTIVE] Street lamps: research real UP references, two distinct pole types,
-      concrete/rusted-steel texture with wear, per-instance variation - design/material
-      work, independent of exact lane position.
-- [ ] [ACTIVE] Drying clothes rework (real garment meshes, CC0 fabric textures, drape,
-      breeze sway, cloth pins) - CLAUDE.md 5a-MAP names this a shared instanced asset
-      that survives the map move. One garment set, reused everywhere.
-- [ ] [ACTIVE] Plants: finish the CC0 alpha-cutout rebuild (5+ species, crossed quads,
-      per-instance tint) for any species still code-shape; low vegetation/ground cover
-      textures.
 - [ ] [PAUSED-MAP] Crop-plot specifics (which plot is which crop, growth-stage mix,
       density per plot) - plot positions are moving, wait for the new map. Crop mesh/
       texture quality itself (not position) stays [ACTIVE].
@@ -62,11 +46,15 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       wait for the new map.
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
-- [ ] [ACTIVE] src/kit/landLayout.js loadLandMap(): getLayout()-success check is always
-      false (places comes back as a dict, not an array), so it always re-fetches the raw
-      664KB map (24 Nov item 7 dup download). Shape-compatible fix tried 24 Nov
-      REGRESSES world-validator buried-objects (3 house-batch meshes sink) - see that
-      file's own 24 Nov comment for the exact cause still needed before retrying.
+- [ ] [PAUSED-MAP] src/kit/landLayout.js loadLandMap() (24 Nov item 7 dup download):
+      the dead always-false getLayout() attempt is removed (24 Nov) - this now just
+      fetches the raw map once, same behaviour, less wasted work. The real win (serve
+      mapData.json instead of re-fetching the raw file) stays unsafe: field-by-field
+      check found the two files have really diverged (887/1643 objects have a packed
+      `.rect` in mapData.json vs 0/1643 in the raw file; places carry an `adjust`
+      nudge too, e.g. house ~6.3 m moved) - switching changes real positions for every
+      consumer (shopsPlace.js, every o.rect reader), already proven once to sink 3
+      house-batch meshes. Real layout/position work - wait for the new map, per 5a-MAP.
 - [ ] [ACTIVE] Item 7 shader-warm-up/slot-release, measured 24 Nov (window.__loadMarks
       on built dist/): texWarmed stuck at 2 all run, modelsReleased fired at ~9.38s -
       right on main.js's 9000ms SAFETY timeout, so the real "slots loaded" signal never

@@ -1,30 +1,32 @@
 /**
  * Shops-land: the one place this kit reads the approved map (docs/layout/approved-map-2026-11-21.json).
  *
- * Prefers the layout agent's loader (src/layout/layout.js: getLayout()) when that file exists in the build, and otherwise
- * fetches the approved export itself. import.meta.glob returns {} for a missing file, so the build never breaks either way.
- * The JSON is emitted as its own asset (?url) and only fetched under ?layout=new, so it never adds to the Before-Play download.
- *
- * Tried 24 Nov (efficiency item 7, "map shipped twice"): the getLayout() success check below never actually succeeds
- * (`Array.isArray(lay.places)` is always false — getLayout() returns `places` as an id-keyed dict, not an array, so this
- * always falls through to the raw fetch, costing an extra ~664 KB/125 KB-gzip request every load). Tried switching to
- * `lay.list` (the real places array getLayout() keeps alongside the dict) — shape-compatible with every consumer
- * checked (shopsPlace.js/matchPlace, landTrees.js, landFields.js, landCanal.js, landProps.js all just need an
- * iterable array of {id,name,x,z,front,existing}, which mapData.json's `list` is, same fields as the raw file plus
- * more) — but it changed which objects get `o.rect` (the corrected, road-snapped footprint from tools/layout-pack.mjs),
- * and that REGRESSED tools/world-validator.js's "nothing buried" check: 3 merged house-batch meshes
- * (village_static_merged/hb_main_25, hb_wood_26, hb_props_27) sank underground that are clean on the unmodified raw-
- * fetch path. Reverted here; the real fix needs someone who can see WHY those three batches sink under the packed
- * footprints (a Y/height mismatch between mapData.json's footprint data and whatever reads it for ground height),
- * not a blind swap. Left as a NEEDS_YOU/BACKLOG item instead of shipped broken.
+ * Always fetches the raw export itself (?url, lazy — never adds to the Before-Play download). An earlier version of
+ * this file also tried src/layout/layout.js's getLayout() first, to skip the fetch when that data was already in
+ * memory. Removed 24 Nov (item 7, "map shipped twice") after actually comparing the two files field by field, not
+ * just by shape:
+ *   - The always-false part was real and harmless to drop: getLayout()'s `places` is an id-keyed dict by design
+ *     (`getPlace = (id) => getLayout().places[id]`), so `Array.isArray(lay.places)` can never pass — the old code
+ *     always fell through to this same fetch anyway, just after wastefully importing layout.js and dict-building
+ *     1643 objects first. Gone now; behaviour is unchanged (always this fetch), cost is lower (no wasted work).
+ *   - The real fix (serve getLayout()'s already-in-memory mapData.json instead of re-fetching the raw file) is NOT
+ *     safe to do blindly, for a bigger reason than a shape mismatch: the two files have genuinely diverged data, not
+ *     just an extra `rect` key. Checked 24 Nov: raw export objects have 0/1643 with `.rect` (pure ring footprints);
+ *     mapData.json objects have 887/1643 with `.rect` (tools/layout-pack.mjs's road-snapped footprints) — AND
+ *     mapData.json's `places` carry an `adjust: {turnDeg, dx, dz}` nudge vs the raw file's own place positions (e.g.
+ *     place "house": raw x/z 650.1/34.8, mapData x/z 656.43/35.32 — a real ~6.3 m shift, not rounding noise). Swapping
+ *     either field changes real positions for every consumer of this loader (shopsPlace.js's `map.places`, every
+ *     `o.rect` reader) — confirmed once already: switching objects alone sank 3 merged house-batch meshes
+ *     (village_static_merged/hb_main_25, hb_wood_26, hb_props_27) that are clean on this raw-fetch path, a genuine
+ *     Y/ground mismatch under the corrected footprints, not a bug in the switch itself. That is layout/position
+ *     work, which CLAUDE.md 5a-MAP says to leave alone until the new map lands (she is replacing the whole map) —
+ *     so this is parked as [PAUSED-MAP] in docs/BACKLOG.md, not re-attempted here.
  *
  * Map coords = game world coords (x east, z south, metres). Checked 21 Nov against three running places:
  * house 652.1,40.2 / school 556.5,108.5 / halwai 637.4,21.4 / temple 695.7,-78.3 = anchors.js + MAP_SHIFT (600,0). All match.
  */
 import mapUrl from '../../docs/layout/approved-map-2026-11-21.json?url';
 import { isNewLayout } from '../layout/layout.js';
-
-const layoutModules = import.meta.glob('../layout/layout.js');
 
 // Fixed 24 Nov: this was its own literal ?layout=new query-string check (same stale-default bug fixed in
 // landInit.js/mapObjectsInit.js/canal.js). Currently unused (no importer left in src/), kept exported and
@@ -36,19 +38,7 @@ export function isNewLayoutParam() {
 let loading = null;
 /** Resolves to the raw approved map { places, roads, objects, canal }. */
 export function loadLandMap() {
-  if (loading) return loading;
-  loading = (async () => {
-    const load = layoutModules['../layout/layout.js'];
-    if (load) {
-      try {
-        const L = await load();
-        const lay = L.getLayout ? await L.getLayout() : null;
-        if (lay && Array.isArray(lay.objects) && Array.isArray(lay.places)) return lay;
-      } catch (e) { /* fall back to the export below */ }
-    }
-    const res = await fetch(mapUrl);
-    return res.json();
-  })();
+  if (!loading) loading = fetch(mapUrl).then((res) => res.json());
   return loading;
 }
 

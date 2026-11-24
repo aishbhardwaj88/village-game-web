@@ -645,3 +645,32 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
       src/main.js alongside the existing fire-points visibility gate. True screen-space
       heat-haze (refraction) would need the EffectPass/composer - out of scope for this
       fix, logged in the file's own comment for whoever picks this up next.
+
+## Pruned stale 24 Nov (found already built while working item 7; condensed-list entries
+   had gone stale relative to the repo - re-verified with real evidence below, not reopened)
+
+- [x] Street lamps (two distinct pole types, concrete/rusted-steel texture with wear,
+      per-instance variation): already built and wired. tools/blender/build_street_lamp.py
+      (RCC concrete pole + panchayat solar pole, two variants each, real weathering -
+      rust bleed, chipped cement, painted bands, wiring/cable detail); placed via
+      src/props.js (street_lamp_poles/street_lamp_fittings groups, concrete/tin material
+      sets at proper tile scale).
+- [x] Drying clothes rework (real garment meshes, CC0 fabric textures, drape, breeze
+      sway, cloth pins): already built. src/laundry.js - distinct garment silhouettes
+      (sari, dhoti, kurta, salwar, dupatta, shirt, trousers, frock, towel, bedsheet,
+      gamcha), shared woven-cotton atlas with a generated normal map (not flat colour),
+      vertex-shader breeze sway, cloth pegs.
+- [x] Plants: finish the CC0 alpha-cutout rebuild: already built. src/realPlants.js -
+      real CC0 Poly Haven scans (public/assets/plants3d, credited docs/CREDITS.md),
+      two-sided alpha-cutout materials, scan's own maps kept.
+- [x] Collider coverage audit: ran the existing tools/collider-coverage-audit.mjs (no new
+      tool written, per A6) - 235 covered, 22 excluded-ok, 7 verified-safe, 0 uncertain,
+      0 gap candidates. Nothing to fix right now.
+- [x] Per-place interiors (ration shop, post office, atta chakki, school, temple
+      complex): already built. tools/blender/build_ration_shop.py (sack stacks, platform
+      scale, drums, scoops, ledger table), build_atta_chakki.py (stone mill, hopper,
+      chute, motor+belt, wheat sacks), build_post_office.py (clerk's desk+drawers, stamp,
+      letter scale, chair, pigeonhole rack), build_school.py (benches, bags, blackboard).
+      Temple interior is deliberately bare (CLAUDE.md 7 "zero tasks at any of the four
+      faith buildings" + the art director's own "no deity figures/imagery" rule in
+      build_temple.py) - not a furnishing gap.
