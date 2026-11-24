@@ -8,6 +8,7 @@ const editionMods = import.meta.glob('../edition.js', { eager: true });
 const PRESETS = {
   light: { shopNearM: 35, shopMidM: 100, treeNearM: 42, treeMidM: 95, treeVariants: 3, propM: 70, plantM: 60 },
   full: { shopNearM: 60, shopMidM: 160, treeNearM: 90, treeMidM: 170, treeVariants: 4, propM: 100, plantM: 80 },
+  web: { shopNearM: 60, shopMidM: 160, treeNearM: 90, treeMidM: 170, treeVariants: 4, propM: 100, plantM: 80 }, // 24 Nov: same as full on purpose; none of these distances is hidden by fog (fog 1% at 413 m)
 };
 
 function pick() {
@@ -18,7 +19,7 @@ function pick() {
   } catch (e) { /* fall through */ }
   const url = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('quality') : null;
   if (url && PRESETS[url]) return { name: url, ...PRESETS[url] };
-  return { name: 'full', ...PRESETS.full }; // the web runs 'full' too until she approves the village (src/edition.js WEB_QUALITY)
+  return { name: 'web', ...PRESETS.web }; // the web runs 'web' (src/edition.js WEB_QUALITY)
 }
 
 export const LAND_QUALITY = pick();

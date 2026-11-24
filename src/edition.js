@@ -41,6 +41,9 @@ export const EDITIONS = ['web', 'desktop'];
  *   zoneAlwaysExtra    zones within buildRadius + this are built whichever way the camera faces        (src/zoneManager.js ALWAYS_EXTRA)
  *   zoneSightExtra     zones within buildRadius + this are built when in view or ahead                 (SIGHT_EXTRA)
  *   zoneVisExtra       a built zone is drawn within buildRadius + this                                 (VIS_EXTRA)
+ *   shadowMinCasterM   a mesh whose longest side is under this many metres casts no sun shadow (0 = no limit)   (src/renderer.js)
+ *   adaptiveRes        true = pixel ratio steps down to 1.0 when frames run slow, and back up slowly         (src/dynamicRes.js)
+ *   canvasAA           WebGL canvas antialias flag (the composer draws the scene, so it only matters with ?off=post) (src/renderer.js)
  *   sunShadows         true = real sun shadows on by default (today web needs ?shadows=follow)        (src/main.js FOLLOW_SUN_SHADOWS)
  */
 const PRESETS = {
@@ -64,6 +67,9 @@ const PRESETS = {
     zoneSightExtra: 230,
     zoneVisExtra: 80,
     sunShadows: false,
+    shadowMinCasterM: 0,
+    adaptiveRes: false,
+    canvasAA: true,
   }),
   full: Object.freeze({
     name: 'full',
@@ -86,6 +92,38 @@ const PRESETS = {
     zoneVisExtra: 130,
     // Real sun shadows: the biggest visual gain of the full edition. She left it to us (22 Nov: premium look first), so ON.
     sunShadows: true, // her call 22 Nov: "if it makes the game look better, add it": on Mac it grounds every shop, cart and person; render cost 3.5 -> 3.7 ms
+    shadowMinCasterM: 0,
+    adaptiveRes: false,
+    canvasAA: true,
+  }),
+  // WEB (24 Nov, art director: lighter, but no visible quality drop; compare with ?quality=full). Same as 'full' except:
+  //  - pixel ratio cap 1.5, stepping down to 1.0 only when slow (src/dynamicRes.js)
+  //  - sun shadow 2048 px over a 50 m half-width box = 0.049 m per texel (full: 4096 over 120 m = 0.059 m per texel), casters within 45 m (full 120 m)
+  //  - nothing under 1.0 m casts a shadow
+  //  - canvas antialias off: the scene is drawn into the composer's own buffer, so the canvas MSAA never touched it
+  //  - background houses stop at 420 m (full 460 m), where the fog has hidden them (fog left at 420 m: 0.85%)
+  web: Object.freeze({
+    name: 'web',
+    charTextures: 'original',
+    charNear: 40,
+    charMaxFull: 24,
+    charFar: 80,
+    charMidHz: 20,
+    charLoadRadius: 90,
+    shadowRadius: 45,
+    charShadowRadius: 30,
+    blobMaxDistance: 80,
+    shadowMapSize: 2048,
+    shadowExtent: 50,
+    shadowFar: 200,
+    pixelRatioMax: 1.5,
+    zoneAlwaysExtra: 110,
+    zoneSightExtra: 300,
+    zoneVisExtra: 130,
+    sunShadows: true,
+    shadowMinCasterM: 1.0,
+    adaptiveRes: true,
+    canvasAA: false,
   }),
 };
 
@@ -119,9 +157,9 @@ export function getDesktopVersion() {
  * EVERYWHERE, the web included. The 'light' preset is a stub (same keys, today's web values) to be tuned once she has
  * approved the village. When the light web edition is switched on, change this ONE line to 'light'.
  */
-export const WEB_QUALITY = 'full';
+export const WEB_QUALITY = 'web';
 
-/** Name of the preset in force: always 'full' on desktop; WEB_QUALITY on the web. `?quality=light|full` overrides, for testing. */
+/** Name of the preset in force: always 'full' on desktop; WEB_QUALITY ('web') on the web. `?quality=web|light|full` overrides, for testing. */
 export function getQualityName() {
   const forced = param('quality');
   if (forced && PRESETS[forced]) return forced;

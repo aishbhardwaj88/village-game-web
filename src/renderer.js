@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { buildContactShadows } from './contactShadows.js';
 import { currentLayout, worldBounds } from './zoneManager.js';
 import { getQuality } from './edition.js'; // S7 (desktop): distances and caps come from the quality preset
+import { DYN, configureDynamicRes, dynamicRatio, createDynamicResSentinel } from './dynamicRes.js';
 
 const QUALITY = getQuality();
 
@@ -16,9 +17,15 @@ function maxPixelRatioFor(isTouch) {
 }
 
 export function createRenderer(canvas, isTouch = false) {
+  // Web edition: the scene is drawn by the composer into its own buffer (no multisampling), so the canvas's own MSAA never
+  // touched it; it only covers ?off=post, which draws straight to the canvas. Off there keeps AA, off elsewhere saves the buffer.
+  let postOff = false;
+  try { postOff = (new URLSearchParams(location.search).get('off') || '').split(',').includes('post'); } catch (e) { /* node */ }
+  const antialias = QUALITY.canvasAA !== false || postOff;
+  configureDynamicRes({ enabled: QUALITY.adaptiveRes && !isTouch, cap: QUALITY.pixelRatioMax });
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias,
     powerPreference: 'high-performance',
   });
 
@@ -44,7 +51,11 @@ export function createRenderer(canvas, isTouch = false) {
 export function resizeRendererToDisplaySize(renderer, camera, isTouch = false) {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatioFor(isTouch)));
+  // NOTE (found 24 Nov): main.js passes a pixel-ratio NUMBER here, which is truthy, so on desktop 'full' this has always
+  // resolved to the touch cap of 1.0, whatever the preset says. Left as is for 'full' so ?quality=full is exactly yesterday.
+  // The web edition's adaptive resolution (src/dynamicRes.js) owns the ratio instead.
+  const ratio = DYN.enabled ? dynamicRatio() : maxPixelRatioFor(isTouch);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, ratio));
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
@@ -58,12 +69,27 @@ export function resizeRendererToDisplaySize(renderer, camera, isTouch = false) {
 const SHADOW_RADIUS = QUALITY.shadowRadius; // S7: 'full' 120, 'light' 60. Metres: things further than this from the player stop casting real sun shadows
 const CHAR_SHADOW_RADIUS = QUALITY.charShadowRadius; // S7: 'full' 30, 'light' 15. Characters further than this get a soft blob under the feet instead
 const BLOB_MAX_DISTANCE = QUALITY.blobMaxDistance; // S7: 'full' 80, 'light' 50. Characters beyond this are hidden by the character tiers anyway
+const MIN_CASTER_M = QUALITY.shadowMinCasterM || 0; // S7 web: nothing smaller than this casts a real sun shadow (0 = no limit)
 const BLOB_SLOTS = QUALITY.blobMaxDistance > 50 ? 64 : 40; // S7: more room for blobs when characters show further out
 const RESCAN_MS = 2000; // full scene walk for new casters (zones stream in and out)
 const TICK_MS = 250; // distance test on the cached list
 
 const _v = new THREE.Vector3();
 const _sph = new THREE.Sphere();
+const _sc = new THREE.Vector3();
+
+/** Longest side of a mesh in metres (its geometry box times its world scale; instanced meshes: one instance at scale 1). Cached. */
+function casterSize(o) {
+  if (o.userData.casterSizeM !== undefined) return o.userData.casterSizeM;
+  const g = o.geometry;
+  if (!g) return (o.userData.casterSizeM = Infinity);
+  if (!g.boundingBox) g.computeBoundingBox();
+  const b = g.boundingBox;
+  const side = Math.max(b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z);
+  o.updateWorldMatrix(true, false);
+  _sc.setFromMatrixScale(o.matrixWorld);
+  return (o.userData.casterSizeM = side * (o.isInstancedMesh ? 1 : Math.max(_sc.x, _sc.y, _sc.z)));
+}
 
 function shownInScene(o) {
   for (let p = o; p; p = p.parent) { if (!p.visible) return false; if (p.isScene) return true; }
@@ -87,7 +113,7 @@ export function createShadowDistanceManager({ scene, sun, player, radius = SHADO
   blobs.mesh.userData.noCollide = true;
   scene.add(blobs.mesh);
   const blobEntries = Array.from({ length: BLOB_SLOTS }, () => ({ x: 0, z: -9999, radiusX: 0, radiusZ: 0 }));
-  const stats = { casters: 0, castingNow: 0, characters: 0, blobs: 0, lastTickMs: 0 };
+  const stats = { casters: 0, castingNow: 0, tinySkipped: 0, characters: 0, blobs: 0, lastTickMs: 0 };
 
   function scan() {
     scene.traverse((o) => {
@@ -110,7 +136,7 @@ export function createShadowDistanceManager({ scene, sun, player, radius = SHADO
   function tick() {
     const t0 = performance.now();
     const px = player.position.x, pz = player.position.z;
-    let casting = 0;
+    let casting = 0, tiny = 0;
     for (let i = casters.length - 1; i >= 0; i--) {
       const c = casters[i], o = c.o;
       if (!o.parent) { casters.splice(i, 1); known.delete(o); continue; } // torn down with its zone
@@ -119,6 +145,9 @@ export function createShadowDistanceManager({ scene, sun, player, radius = SHADO
       if (c.char) {
         o.getWorldPosition(_v);
         near = Math.hypot(_v.x - px, _v.z - pz) <= charRadius;
+      } else if (MIN_CASTER_M > 0 && casterSize(o) < MIN_CASTER_M) {
+        near = false; // under 1 m: costs a shadow draw, adds nothing the eye reads
+        tiny++;
       } else {
         const bs = o.isInstancedMesh ? (o.boundingSphere || (o.computeBoundingSphere(), o.boundingSphere)) : (o.geometry.boundingSphere || (o.geometry.computeBoundingSphere(), o.geometry.boundingSphere));
         _sph.copy(bs).applyMatrix4(o.matrixWorld);
@@ -140,7 +169,7 @@ export function createShadowDistanceManager({ scene, sun, player, radius = SHADO
     }
     for (let i = n; i < BLOB_SLOTS; i++) { const e = blobEntries[i]; e.x = 0; e.z = -9999; e.radiusX = 0; e.radiusZ = 0; }
     blobs.update(blobEntries);
-    stats.casters = casters.length; stats.castingNow = casting; stats.characters = chars.size; stats.blobs = n;
+    stats.casters = casters.length; stats.castingNow = casting; stats.tinySkipped = tiny; stats.characters = chars.size; stats.blobs = n;
     stats.lastTickMs = +(performance.now() - t0).toFixed(2);
   }
 
@@ -206,6 +235,7 @@ export function extendGroundForLayout(scene, layout = currentLayout()) {
 export function initPerfS7({ scene, sun, player }) {
   extendGroundForLayout(scene);
   const shadows = createShadowDistanceManager({ scene, sun, player });
-  if (typeof window !== 'undefined') window.__perfS7 = { shadows: shadows.stats, layout: currentLayout(), bounds: worldBounds() };
+  if (DYN.enabled) createDynamicResSentinel(scene);
+  if (typeof window !== 'undefined') window.__perfS7 = { shadows: shadows.stats, dynres: DYN, layout: currentLayout(), bounds: worldBounds() };
   return { shadows };
 }

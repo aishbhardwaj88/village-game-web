@@ -1423,6 +1423,8 @@ async function main() {
     resizeComposer(composer, window.innerWidth, window.innerHeight);
   }
   window.addEventListener('resize', onResize);
+  // Web edition adaptive resolution (src/dynamicRes.js) changed the pixel ratio: resize the buffers only, no shadow map rebuild
+  window.addEventListener('dopahar-res', () => { resizeRendererToDisplaySize(renderer, camera, touch); resizeComposer(composer, window.innerWidth, window.innerHeight); });
   onResize();
 
   /** Pause menu quality change (task 2) — applies instantly, no reload: pixel ratio

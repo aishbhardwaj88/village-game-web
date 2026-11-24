@@ -6,6 +6,7 @@
  * old fixed behaviour.
  */
 import { getQuality } from './edition.js'; // S7 (desktop)
+import { setDynamicResCap } from './dynamicRes.js';
 const STORAGE_KEY = 'dopahar_quality';
 
 export const QUALITY_LEVELS = ['high', 'medium', 'low'];
@@ -86,6 +87,7 @@ export function applyQuality(level, { renderer, sun, isTouch }) {
   const p = getPreset(level);
 
   const pixelRatioCap = isTouch ? p.pixelRatioTouch : p.pixelRatioDesktop;
+  if (!isTouch) setDynamicResCap(pixelRatioCap); // web edition: the adaptive resolution's ceiling follows the menu level (no-op unless adaptive)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
 
   const mapSize = isTouch ? p.shadowMapSizeTouch : p.shadowMapSize;
@@ -140,6 +142,8 @@ function withEditionCeiling(level, p) {
   let q;
   try { q = getQuality(); } catch (e) { return p; }
   if (!q || q.name === 'light') return p;
+  // web (24 Nov): the numbers are the web edition's own, not a raise: 1.5 pixel ratio, 2048 map over a 50 m half-width box
+  if (q.name === 'web') return { ...p, pixelRatioDesktop: q.pixelRatioMax, shadowMapSize: q.shadowMapSize, shadowFarDesktop: q.shadowFar, shadowExtentDesktop: q.shadowExtent };
   return {
     ...p,
     pixelRatioDesktop: Math.max(p.pixelRatioDesktop, q.pixelRatioMax),

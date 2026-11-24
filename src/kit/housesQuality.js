@@ -11,6 +11,8 @@ import { getQualityName } from '../edition.js';
 export const HOUSE_QUALITY = {
   light: { atlasCell: 512, anisotropy: 4, nearDist: 45, clutterDist: 30, farDist: 380, castShadow: true },
   full: { atlasCell: 512, anisotropy: 8, nearDist: 60, clutterDist: 45, farDist: 460, castShadow: true },
+  // web: far boxes stop at 420 m, where the fog (FogExp2 0.0052) has left 0.85% of a house; full keeps 460 m for comparison
+  web: { atlasCell: 512, anisotropy: 8, nearDist: 60, clutterDist: 45, farDist: 420, castShadow: true },
 };
 export function houseQuality() {
   let name = 'full';
