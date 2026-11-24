@@ -18,17 +18,43 @@ export const EN_CAP_RATIO_MIN = 0.58; // ... and only go down to this when the E
 export const hiFont = (px) => `${HI_WEIGHT} ${px}px ${HI_FAMILY}`;
 export const enFont = (px) => `${EN_WEIGHT} ${px}px ${EN_FAMILY}`;
 
+// capPerPx only depends on the font string and the probe character, both fixed per call site (hiFont/'क',
+// enFont/'H') - every board asks for the same two numbers, so cache them instead of re-measuring per board
+// (measured 24 Nov: this and the full layout below together cost 1.4s/529 calls across a real playthrough's
+// signboards, see layoutBilingual's own cache below for the bigger half of that).
+const _capCache = new Map();
 function capPerPx(ctx, font, ch) {
+  const key = font(100) + '|' + ch;
+  const hit = _capCache.get(key);
+  if (hit !== undefined) return hit;
   ctx.font = font(100);
   const a = ctx.measureText(ch).actualBoundingBoxAscent;
-  return (a > 0 ? a : 70) / 100;
+  const v = (a > 0 ? a : 70) / 100;
+  _capCache.set(key, v);
+  return v;
 }
 
 /**
  * Lays out the two lines inside the rect (x, y, w, h) and returns the sizes; draws nothing.
  * `maxHiPx` caps the Hindi size on boards that should not shout.
+ *
+ * Memoised by its own arguments (24 Nov): a real playthrough's signboards call this 529 times for only 301
+ * distinct (hi, en, w, h, options) combinations (shared designs, LOD tiers, repeated generic names) - the other
+ * 228 calls re-ran the same up-to-80-iteration font-fit search for an answer already computed. Caching is safe
+ * because the function is pure given these arguments: it never reads or writes anything on `ctx` but its own
+ * `.font`, and the font metrics it measures don't depend on which canvas asked.
  */
+const _layoutCache = new Map();
 export function layoutBilingual(ctx, hi, en, w, h, { maxHiPx = h, fillFraction = 0.9, gapFraction = 0.1 } = {}) {
+  const cacheKey = hi + '\u0001' + en + '\u0001' + w + '\u0001' + h + '\u0001' + maxHiPx + '\u0001' + fillFraction + '\u0001' + gapFraction;
+  const cached = _layoutCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+  const result = layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction);
+  _layoutCache.set(cacheKey, result);
+  return result;
+}
+
+function layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFraction) {
   const hiCap = capPerPx(ctx, hiFont, 'क');
   const enCap = capPerPx(ctx, enFont, 'H');
   let hiPx = Math.min(maxHiPx, h * 0.6);
