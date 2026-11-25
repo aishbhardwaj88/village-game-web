@@ -9,6 +9,30 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { MAP_SHIFT } from './mapPlan.js';
 import { drawBilingual } from './signPaint.js';
 import MAP from '../docs/layout/village-plan-positions-2026-11-01.json';
+import { isNewLayout, getRoads } from './layout/layout.js';
+import { nearestRoad } from './layout/layoutCore.js';
+
+// 25 Nov, her order (roads empty): ~22 gate posts and both highway boards stood 0 to 0.2 m inside ring_road / highway (their old-plan spots).
+// Each is nudged straight away from the nearest road until it clears the band and its drawn apron by ROAD_MARGIN; if that takes more than
+// MAX_NUDGE it is dropped (a constant, so reversible: set GATES_KEEP_OLD_SPOTS true to restore every old spot).
+const GATES_KEEP_OLD_SPOTS = false;
+const ROAD_MARGIN = 0.9; // m from the flat road band to the item's edge (0.3 m past the drawn edge wander and scuffed apron start)
+const MAX_NUDGE = 6;
+/** Returns { x, z } moved clear of the road (item radius r), or null when it cannot be moved legally. */
+export function clearOfRoad(x, z, r) {
+  if (GATES_KEEP_OLD_SPOTS || !isNewLayout()) return { x, z };
+  const roads = getRoads();
+  let px = x, pz = z;
+  for (let it = 0; it < 6; it++) {
+    const n = nearestRoad(roads, px, pz);
+    if (!n || n.edge >= r + ROAD_MARGIN) return Math.hypot(px - x, pz - z) <= MAX_NUDGE ? { x: px, z: pz } : null;
+    let dx = px - n.qx, dz = pz - n.qz, d = Math.hypot(dx, dz);
+    if (d < 1e-3) { dx = -n.uz; dz = n.ux; d = 1; }
+    const k = (r + ROAD_MARGIN - n.edge + 0.05) / d;
+    px += dx * k; pz += dz * k;
+  }
+  return null;
+}
 
 const INK = '#4a1c1c';
 const PAPER = '#efe4c8';
@@ -98,7 +122,9 @@ export async function createMapGates() {
   faceMat.name = 'map_gates_board';
   const faces = [];
 
-  for (const p of highwayEndBoards()) {
+  for (const p0 of highwayEndBoards()) {
+    const p = { ...p0, ...(clearOfRoad(p0.x, p0.z, BOARD_W / 2) || { dropped: true }) };
+    if (p.dropped) continue; // removed 25 Nov: stood on road, her order
     const m = new THREE.Matrix4().makeRotationY(p.ry).setPosition(p.x, 0, p.z);
     const leg = (dx) => { const g = new THREE.BoxGeometry(0.16, POST_H, 0.16); g.translate(dx, POST_H / 2, 0); add(g, m); };
     leg(-BOARD_W / 2 + 0.1); leg(BOARD_W / 2 - 0.1);
@@ -112,7 +138,9 @@ export async function createMapGates() {
   }
 
   // back-lane mouth posts: a short squared post with a chamfer-free cap, varied height
-  backLanePosts().forEach((p, i) => {
+  backLanePosts().forEach((p0, i) => {
+    const p = clearOfRoad(p0.x, p0.z, 0.12);
+    if (!p) return; // removed 25 Nov: stood on road, her order
     const h = 0.95 + ((i * 37) % 11) / 100;
     const g = new THREE.BoxGeometry(0.14, h, 0.14);
     g.translate(0, h / 2, 0);

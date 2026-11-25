@@ -56,7 +56,12 @@ const SETS = [
   { list: PH_OUTDOOR, dir: PH, rows: [33.5, 31.3] },
   { list: PH_INDOOR, dir: PH, rows: [29.4, 28.0, 26.9] },
 ];
+// removed 25 Nov: stood on road, her order. The review rows (x 600-612, z 26.9-39.4) lie across main_road (band x 599-607.5); the only free
+// verge east of it (x 607.7-621.5) is taken by the chaat stall, jalebi stall, kiosks and signs, so the rows cannot move legally (nearest
+// clear ground is beyond 6 m). Set FREE_PROPS_ON_ROAD_REMOVED false to restore the rows. The props can be re-sited by whoever places them in the village.
+const FREE_PROPS_ON_ROAD_REMOVED = true;
 export function registerFreeProps(groundAt) {
+  if (FREE_PROPS_ON_ROAD_REMOVED) return;
   const items = [];
   for (const set of SETS) for (const v of set.list) items.push({ url: `${set.dir}${v.file}.glb`, v, set });
   registerPropSite({

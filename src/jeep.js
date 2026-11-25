@@ -21,7 +21,10 @@ import { requestColliderRebuild } from './collision.js';
 export const JEEP_FILE = 'jeep_v2';
 
 // anchor id, local x / z in the place's frame (front = +z), yaw (rad; the jeep's front is its +z)
-export const JEEP_SPOTS = [
+// removed 25 Nov: stood on road, her order. The spot (world 563.4, 4.6) is 3.5 m inside cross_road and the nearest legal ground is ~10 m away
+// (556.3, 11.7), past the 6 m limit, so the jeep is taken out of the scene. Set JEEP_ON_ROAD_REMOVED false to put it back.
+export const JEEP_ON_ROAD_REMOVED = true;
+export const JEEP_SPOTS = JEEP_ON_ROAD_REMOVED ? [] : [
   { at: 'yard_panchayat', lx: -12.5, lz: 20.0, yaw: 1.57 },
 ];
 
@@ -57,6 +60,7 @@ export function createJeep(scene) {
   const group = new THREE.Group();
   group.name = 'jeep';
   scene.add(group);
+  if (!JEEP_SPOTS.length) { if (typeof window !== 'undefined') window.__jeep = { boxes: [], meshes: 0 }; return Promise.resolve(group); } // 25 Nov: removed from the road
   return loadModel().then((parts) => {
     const byMat = new Map(), boxes = [];
     JEEP_SPOTS.forEach((sp, i) => {

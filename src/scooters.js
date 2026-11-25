@@ -27,7 +27,7 @@ export const SCOOTER_FILES = ['scooter_covered_v2', 'scooter_covered_v2_b', 'sco
 // [anchor id, local x, local z (place frame, front = +z), yaw (rad; the vehicle's front is its +z), model, tint]
 export const SCOOTER_SPOTS = [
   { at: 'haveli', lx: -3.2, lz: 12.0, yaw: -0.3, m: 'scooter_covered_v2' },
-  { at: 'teastall', lx: 4.6, lz: 3.6, yaw: 1.35, m: 'scooter_motorcycle_v2' },
+  { at: 'teastall', lx: 2.22, lz: 6.81, yaw: 1.35, m: 'scooter_motorcycle_v2' }, // 25 Nov, her order (roads empty): was lx 4.6, lz 3.6 = world (587.7, 6.7), 1.4 m inside cross_road; now world (587.7, 2.7), 4 m north, clear of the band
   { at: 'house', lx: -5.2, lz: 4.4, yaw: 0.12, m: 'scooter_open_v2' },
   { at: 'store', lx: 4.4, lz: 4.2, yaw: -1.48, m: 'scooter_motorcycle_v2_b' },
   { at: 'halwai', lx: 1.1, lz: 5.1, yaw: 1.7, m: 'scooter_motorcycle_v2' },

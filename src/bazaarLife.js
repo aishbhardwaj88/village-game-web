@@ -49,10 +49,14 @@ const SHOPKEEPER_DEPTH = 3.0; // behind the counter collider (which sits ~0.6-1.
 const LH = ANCHORS.halwai; // hero-lane loops are offsets from the halwai anchor, so moving it carries them
 /** S7 (?layout=new): five short walks on the approved map's inner lanes (x 570 and x 624, south of the square), 0.8 m off the
  * lane centre so they pass the kiosks and carts lining it. */
-const NEW_LANE_LOOPS = [
+// removed 25 Nov: stood on road, her order. The five walks ran along inner_sw / inner_se lane centres (1 to 1.7 m inside the band) and both verges are
+// lined with kiosks and sign posts, so they cannot move legally. Set true to restore them.
+const NEW_LANE_LOOPS_ON_ROAD = false;
+const NEW_LANE_LOOPS_ALL = [
   [{ x: 570.6, z: 36 }, { x: 570.8, z: 46 }], [{ x: 624.8, z: 30 }, { x: 624.8, z: 38 }], [{ x: 571.0, z: 58 }, { x: 571.1, z: 66 }],
   [{ x: 623.2, z: 50 }, { x: 623.2, z: 58 }], [{ x: 569.6, z: 22 }, { x: 569.7, z: 30 }],
 ];
+const NEW_LANE_LOOPS = NEW_LANE_LOOPS_ON_ROAD ? NEW_LANE_LOOPS_ALL : [];
 const VILLAGER_LOOPS = [
   [bazaarXZ(BAZAAR_WEST_X + 8, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 18, BAZAAR_FRONT_Z - 3.5)],
   [bazaarXZ(BAZAAR_WEST_X + 20, BAZAAR_FRONT_Z - 3.5), bazaarXZ(BAZAAR_WEST_X + 32, BAZAAR_FRONT_Z - 3.5)],
