@@ -8,11 +8,10 @@ No code change this run (4th run in a row with this same settled result) - not r
 further per A6; next real trigger is either her answer in NEEDS_YOU or a new playtest note.
 
 ## This run
-- Pulled a concurrent worker's push mid-run (9190811, roaming-vehicle lag fix), fast-forward
-  clean, no conflict (made no edits of my own). CI green on 9190811 (run 1369).
-- Re-verified LOOKS LIST 1-7 against actual current code, not old notes alone - confirms prior
-  conclusions, one correction found (item 6 above). BACKLOG open items all [PAUSED-MAP]/
-  [GATED-HER]/need-real-browser - none unblocked.
+- 25 Nov ~23:xx scheduled run: CI green on c0873b7 (run 1370). missions-check 0 fail (399 pass, 3 warn). build:unchecked ok.
+- Temple/sabzi front: packed mapData already has temple front -z (frontYaw 3.12) and sabzi as drawn (AS_DRAWN in layoutSnap.js); the 152 deg turn is not in current data, nothing to fix.
+- Moved-place coords: anchors.js/mapPlan.js hold old base coords that placeMoves/layout override; not re-audited (A6).
+- Load size before Play (10.7 MB) cuts need her call (NEEDS_YOU, already open); no browser here to measure.
 
 ## Current state
 - Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/overlap,
