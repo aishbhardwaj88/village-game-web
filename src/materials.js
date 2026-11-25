@@ -3,6 +3,7 @@ import { ver } from './assetUrl.js';
 import { lampPoolUniform, lampPoolMix, POOL_N, POOL_RADIUS } from './lampPools.js';
 
 const textureLoader = new THREE.TextureLoader();
+import { shouldDefer, deferredTexture } from './deferredMaps.js';
 const rawTextureCache = new Map(); // url -> Texture, shared Source, one real network fetch each
 const materialCache = new Map(); // "name|rx|ry|tint" -> Material
 
@@ -140,7 +141,7 @@ export function loadRaw(url, srgb) {
   // "Texture marked for update but no image data found" warning; see docs/parked.md.
   let tex = rawTextureCache.get(url);
   if (!tex) {
-    tex = textureLoader.load(bust(url)); // cache key stays the clean url; only the actual request is busted
+    tex = shouldDefer(url, srgb) ? deferredTexture(bust(url)) : textureLoader.load(bust(url)); // cache key stays the clean url; only the actual request is busted. Normal/roughness/ao wait for Play's unlock (src/deferredMaps.js)
     if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
     rawTextureCache.set(url, tex);
   }
@@ -443,7 +444,8 @@ let grassRoughTex = null;
 function getGrassDetailTexture(kind) {
   const isNormal = kind === 'normal';
   if (isNormal ? !grassNormalTex : !grassRoughTex) {
-    const t = textureLoader.load(bust(`assets/textures/grass/grass_${kind}.webp`)); // linear data, not sRGB
+    const u = `assets/textures/grass/grass_${kind}.webp`;
+    const t = shouldDefer(u, false) ? deferredTexture(bust(u)) : textureLoader.load(bust(u)); // linear data, not sRGB; waits for Play's unlock (src/deferredMaps.js)
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.anisotropy = 4;
     if (isNormal) grassNormalTex = t; else grassRoughTex = t;

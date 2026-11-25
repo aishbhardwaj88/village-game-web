@@ -9,20 +9,20 @@ answers (5a1, taste is hers).
 ## Current state
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m (src/ui.js, main.js setReadyGate, zoneManager setGate). Zones beyond
   the ring no longer build behind the title, slot models beyond it wait for Play (assetSlots.holdFar; slotIsNear uses world position).
-  Before Play (load-time-test, models counted from .gz): 18.9 MB/372 req -> 14.6 MB/331 req. Left: 5.6 MB shared webp (parked, look).
+  GATE3 (26 Nov): normal/roughness/ao maps load after the Play unlock (src/deferredMaps.js; first 3D frame held until they
+  land, ?nodefer=1 = old). Before Play, honest count (fetch() bodies at dist size): 16.65 -> 13.50 MB (web 10.12 -> 6.97,
+  models 6.53). Left: house atlas n/r maps (housesMaterial loadBitmap ~2.6 MB) and the ring's models.
 - 25 Nov WALL REPEAT: plaster tile 0.5 -> 1.5 m, applyAntiTile() two-scale colour blend in materials.js for plaster*/mud*/
   concrete_e,f. Autocorr repeat score 0.95 -> 0.27 on a 10x3 m wall (sim). VARIETY: 16 house washes + ground noise done.
 - GATE (25 Nov): Play waits only on spawn-ring prop sites (propGate.js startGate); shops/land/map objects build after
   (lateBuild.js); streamHold() freezes with a loading notice if a near prop site stalls. Resumable downloader in
   loaders.js (stall 8s, 4 tries, Range-resume). SW cache-first (?nosw=1 bypasses); manualChunks vendor/data/app.
-- Measured (4G + 4x CPU, tools/load-time-test.mjs): Play ready ~11.3-14.2 s, 6.8 MB by then (5.7 MB = 68 shared-material
-  webp textures, 0.8 MB js). Main sync build is 2.2 s to 9.8 s of that (CPU-bound, ~1.9 s at x1). Target 4 MB / 3 s NOT met.
+- Measured pre-GATE3 (4G, 4x CPU): Play ~11-14 s; main sync build 2.2-9.8 s of it (CPU-bound). Target 4 MB / 3 s NOT met.
 - Item 2 (chauraha buildings): could NOT reproduce, NEEDS_YOU open. Item 8 console-error check needs a real browser.
 
 ## Next 5 items
-1. Real gate: build only the start area before Play (hero zone/bazaar/temples are still built eagerly in main()); needs
-   her laptop (?debug=1) to measure, headless crashes after Play here.
-2. Texture bytes before Play: 68 shared webp (grass/thatch/plaster_h normals 0.3-0.4 MB each); only defer with her OK (look).
+1. Defer the house atlas normal/roughness canvases (kit/housesMaterial.js buildHouseAtlas) like GATE3: ~2.6 MB.
+2. Ring models 6.5 MB (house_compound, gher_yard, tv_house, chaupal...) + shared props: split village builders by area.
 3. Zone streaming rule (pixel-rule appear distance): speed-lead half already built (zoneManager.js leadM, 26 Nov); the
    on-screen-size half (visibleRadius by real apparent size) isn't - broad refactor, real regression risk, scoped only.
 4. Memory hygiene: close decoded ImageBitmaps after GPU upload - needs a shared-texture check first (textures/materials
@@ -35,5 +35,6 @@ LAST_FULL_PASS=82c337c (browser chain unreliable here; regression-check times ou
 
 ## Known about this container
 - node_modules empty every fresh container; HEAD detached on a stale local main (fetch+checkout -B fixes it).
-- Chromium can't reach accounts.google.com - hangs/crashes browser-based checks; crashes after Play.
+- Chromium can't reach accounts.google.com - browser checks hang/crash; crashes after Play. load-time-test counts fetch()
+  bodies as 0 B (models, bitmap textures). world-validator 'nothing floats' FAIL hb_main_39/school_bell seen 26 Nov.
 - api.polyhaven.com / github.io blocked by the proxy.

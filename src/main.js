@@ -236,6 +236,7 @@ import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjec
 import { ver } from './assetUrl.js';
 import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
 import { getHouseMaterial } from './kit/housesMaterial.js';
+import { releaseDeferredMaps, deferredMapsDone, deferredMapsReady } from './deferredMaps.js'; // normal/roughness/ao maps after the Play unlock
 import { lateDone, isLateDone, yieldToMain, track, sliceGen } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
@@ -312,7 +313,7 @@ async function main() {
     if (now >= warmScanAt) {
       warmScanAt = now + 400; warmList = []; const seen = new Set();
       scene.traverse((o) => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : null; if (!ms) return;
-        for (const m of ms) { if (!m || seen.has(m)) continue; seen.add(m); for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t.version > 0 && !warmedTex.has(t)) warmList.push(t); } } });
+        for (const m of ms) { if (!m || seen.has(m)) continue; seen.add(m); for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t.version > 0 && t.image && !warmedTex.has(t)) warmList.push(t); } } });
     }
     const t0 = performance.now();
     // An <img> texture (THREE.TextureLoader) is decoded lazily on the main thread inside texImage2D. img.decode() does
@@ -364,7 +365,7 @@ async function main() {
     } catch (e) { console.error('gate', e); /* first render compiles instead */ }
     _lm.worldShellReady = performance.now(); await propGateDone(); reportStage('props'); /* props and vehicles around the spawn: downloaded, unpacked, uploaded, compiled (src/propGate.js) */
     if (zoneManager) zoneManager.clearGate();
-    farRelease();
+    farRelease(); releaseDeferredMaps(); // normal/roughness/ao maps download from here, while the title is up (src/deferredMaps.js)
     _lm.gateEnd = performance.now();
   });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
@@ -2249,7 +2250,7 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
-      if (isLateDone()) renderOK = true; else lateDone().then(() => { renderOK = true; _lm.lateHeldFrame = performance.now(); }); // never a half-built village on screen
+      if (isLateDone() && deferredMapsDone()) renderOK = true; else Promise.all([lateDone(), deferredMapsReady()]).then(() => { renderOK = true; _lm.lateHeldFrame = performance.now(); }); // never a half-built village on screen, nor one still missing its normal/roughness maps (src/deferredMaps.js)
       _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over
       minimap.setActive(true);

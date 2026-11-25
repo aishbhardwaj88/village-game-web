@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { applySurfaceVariation, surfaceFamilyFor, bust } from './materials.js';
+import { shouldDefer, deferredSource } from './deferredMaps.js';
 
 /**
  * Shared library textures for the OLDER Blender models (gaushala, temple, house_compound, abadi rows, chowk, shops...).
@@ -26,7 +27,7 @@ function sourceFor(set, kind) {
   const url = `assets/textures/${set}/${set}_${kind}.webp`;
   let p = images.get(url);
   if (!p) {
-    p = new THREE.TextureLoader().loadAsync(bust(url)).then((tex) => tex.source);
+    p = shouldDefer(url, false) && kind !== 'color' ? Promise.resolve(deferredSource(bust(url))) : new THREE.TextureLoader().loadAsync(bust(url)).then((tex) => tex.source); // normal/roughness wait for Play's unlock (src/deferredMaps.js)
     images.set(url, p);
   }
   return p;
