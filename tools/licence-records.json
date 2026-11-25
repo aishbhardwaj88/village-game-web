@@ -870,6 +870,23 @@
     },
     {
       "match": [
+        "public/sw.js",
+        "public/sw-kill.js"
+      ],
+      "category": "self-made",
+      "title": "Service worker and its kill switch",
+      "builder": [
+        "src/swRegister.js"
+      ],
+      "family": [
+        "service_worker"
+      ],
+      "madeFrom": [],
+      "licence": "own work",
+      "evidence": "Written in this repo for the 25 Nov caching plan (task B); no third-party code"
+    },
+    {
+      "match": [
         "public/assets/trees/impostor_*.webp"
       ],
       "category": "self-made",
