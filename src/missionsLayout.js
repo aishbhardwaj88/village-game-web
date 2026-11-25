@@ -90,7 +90,7 @@ function table() {
   // as it is under ?layout=old). New: on the open ground behind the house, next to the wheat sack pile (M3 loads the trolley
   // there; M7 drives out from there), the bullock cart beside it, the spare cycle at the gate.
   T.vehicles = () => ({
-    tractor: { x: 643.7, z: 31.0, yaw: 0 }, // trolley rests 4.6 m south of it (643.7, 35.6); clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
+    tractor: { x: 642.0, z: 32.0, yaw: 0 }, // trolley rests 4.6 m south of it (642.0, 36.6); moved from (643.7, 31.0) when the final map put a hardware shop under the trolley; clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
     cart: { ...nearCart(), yaw: Math.PI },
     bike: { ...house(3.2, 9.0), yaw: ANCHORS.house.ry + Math.PI / 2 },
   });
@@ -119,7 +119,7 @@ function table() {
   };
   // ---- chaat thela (side-job stall). Old: a second thela at (-62.8, 50.5), off the village. New: no second cart; the seller
   // stands beside the chaat place's own thela (behind it is shut in by a shop) and the buy point is in front of it (local +z = its front).
-  T.chaat_stall = () => ({ cart: null, sellerAt: localPt('chaat', -2.9, 0), sellerYaw: ANCHORS.chaat.ry, buyAt: localPt('chaat', 0, 2.6) }); // the seller at the side of his thela, facing the customers
+  T.chaat_stall = () => ({ cart: null, sellerAt: localPt('chaat', -3, -1.5), sellerYaw: ANCHORS.chaat.ry, buyAt: localPt('chaat', 0, 2.6) }); // the seller at the side of his thela, facing the customers
 
   // ---- kulfiwala: pushes his cart round the lanes by the house: ring road (house side) -> the kiosk lane (inner_se) and back.
   T.kulfi_route = () => {
@@ -131,7 +131,7 @@ function table() {
   };
   // ---- kanche and stapu "with the kids near the chowk": nearest open patch to the square (ring 1.2 m, kids at 1.7 m, chalk
   // grid 3.2 m east), off every road by 0.5 m.
-  T.kanche = () => ({ x: 583.4, z: 26.9 });
+  T.kanche = () => ({ x: 583.4, z: 35.9 }); // final map: the old patch is under the Sabzi rehris; this is the nearest open patch
   // ---- doodhwala: "his round starts by the halwai". The old spot (6.5 m in front of the counter) is inside a golgappa kiosk
   // on the approved map; he stands on the open ground nearest to it instead.
   T.doodh = () => ({ x: 619.9, z: 6.6 }); // 2.1 m from the old spot, beside the halwai's frontage

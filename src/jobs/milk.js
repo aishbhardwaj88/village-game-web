@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { spot } from '../missionsLayout.js'; // S7 (missions)
-import { getRoads } from '../layout/layout.js';
+import { getRoads, getObjects } from '../layout/layout.js';
 import { roadUnder } from '../layout/layoutCore.js';
 import { buildMilkCans } from './props.js';
 import { abadiDoorstep } from '../scenery.js';
@@ -36,7 +36,11 @@ function newMapStops(DOODH = doodhAt()) {
   const picked = [];
   // S7 (missions): a house whose door opens straight onto a lane or road (no doorstep to stand on) is not a stop
   const onLane = (h) => { const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1; const r = roadUnder(getRoads(), h.door.x + ox / l * 0.25, h.door.z + oz / l * 0.25, 0); return !!r && r.r.kind !== 'back' && r.r.kind !== 'track'; };
-  for (const h of near) { if (onLane(h)) continue; if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
+  // a door that opens into a house footprint of the map (houses packed close, or a map footprint bigger than the built house) is not a stop
+  const ringHas = (ring, x, z) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; i++, j = i - 1) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) ins = !ins; } return ins; };
+  const mapHouses = getObjects('new_house').filter((o) => o.rings && o.rings[0]);
+  const inOther = (h) => mapHouses.some((o) => ringHas(o.rings[0], h.door.x, h.door.z));
+  for (const h of near) { if (onLane(h) || inOther(h)) continue; if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
   if (picked.length < STOP_ROWS.length) return null;
   return picked.map((h, i) => {
     const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1, ux = ox / l, uz = oz / l;
