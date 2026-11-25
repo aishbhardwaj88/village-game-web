@@ -28,6 +28,33 @@ export function inputsHash() {
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
+// ---------------------------------------------------------------- road trims (her answer 25 Nov: 'Cut the lane short')
+// A documented list of road ends that are shortened from the approved map's polyline. Each entry cuts `metres` off the `end`
+// ('first' or 'last') of road `id`, along the road, leaving a FLAT end. tools/map-match-roads.mjs applies the same list to the map
+// before comparing, so the drawn road is checked against the trimmed map.
+// gali_n44 ran into the middle of the Temple pond (tank at about (655,-94.4); steps ring 12 x 12 m, outer south edge z about -100.4).
+// It now stops at the pond's OUTER edge: the whole flat end (4 m wide) is 0.6 m clear of the steps ring. The pond stays on its map spot.
+export const ROAD_TRIMS = [
+  { id: 'gali_n44', end: 'last', metres: 6.4, note: 'her answer 25 Nov: cut the lane short, stop at the Temple pond outer edge (about 0.6 m clear of the steps ring)' },
+];
+export function trimRoads(roads) {
+  return roads.map((r) => {
+    const t = ROAD_TRIMS.filter((q) => q.id === r.id);
+    if (!t.length) return r;
+    let pts = r.pts.map((p) => [...p]);
+    for (const q of t) {
+      if (q.end === 'first') pts.reverse();
+      let left = q.metres; // walk back from the end, dropping whole segments, then shorten the last one
+      const seg = () => Math.hypot(pts[pts.length - 1][0] - pts[pts.length - 2][0], pts[pts.length - 1][1] - pts[pts.length - 2][1]);
+      while (pts.length > 2 && left >= seg()) { left -= seg(); pts.pop(); }
+      const a = pts[pts.length - 2], b = pts[pts.length - 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      pts[pts.length - 1] = [r2(b[0] - (b[0] - a[0]) / L * left), r2(b[1] - (b[1] - a[1]) / L * left)];
+      if (q.end === 'first') pts.reverse();
+    }
+    return { ...r, pts };
+  });
+}
+
 /** The approved map with tree circles compacted, nothing derived yet (also used by tools/layout-tests.mjs --as-drawn). */
 export function compact(raw) {
   const objects = raw.objects.map((o) => {
@@ -131,7 +158,8 @@ function nudgeSmallProps(objects, places, roads) {
   return log;
 }
 
-export function pack(raw) {
+export function pack(raw0) {
+  const raw = { ...raw0, roads: trimRoads(raw0.roads) }; // ROAD_TRIMS first, so the snap and every audit see the trimmed lane
   // derive everything once here (fronts, oriented footprints, the road snap), so the game only reads the result
   const layout = buildLayout(compact(raw));
   const clips = clipGalis(layout);

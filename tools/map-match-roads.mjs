@@ -8,6 +8,9 @@ import { readFileSync } from 'node:fs';
 import './missions-node-env.mjs';
 globalThis.__DOPAHAR_LAYOUT = 'new';
 const spec = JSON.parse(readFileSync(new URL('../docs/layout/approved-map-2026-11-25.json', import.meta.url), 'utf8'));
+// her answer 25 Nov: gali_n44 is cut short (stops at the Temple pond's outer edge); the expected map is the approved map with tools/layout-pack.mjs ROAD_TRIMS applied
+const { trimRoads } = await import('./layout-pack.mjs');
+spec.roads = trimRoads(spec.roads);
 const { allRoadLines } = await import('../src/mapRoads.js');
 const { filletPolyline, buildNetwork, sampleSurface } = await import('../src/roadNetwork.js');
 const { CHAURAHA } = await import('../src/mapPlan.js');

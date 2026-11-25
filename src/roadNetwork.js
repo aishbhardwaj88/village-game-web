@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2, cloneTiledMaterial } from './materials.js';
 import { isNewLayout, getObjects } from './layout/layout.js';
+import APRON_CLIP from './layout/apronClip.json' with { type: 'json' };
 const NEW_LAYOUT = isNewLayout();
 
 /** Per-kind look: tint (multiplies the dirt texture), edge wander amplitude (m), edge band width (m), nali, ruts. */
@@ -33,6 +34,24 @@ export const ROAD_KINDS = {
   path: { tint: 0xb4a07a, amp: 0.2, band: 0.75, edge: 0xb09d7b, drain: false, ruts: false, bump: 0.01, potholes: false },
 };
 
+// APRON CLIP LIST (src/layout/apronClip.json, loaded once at build time, never reloaded): rotated rectangles {x,z,w,d,ry,note} in world
+// metres (ry as in the game: local +x axis = (cos ry, -sin ry), local +z = (sin ry, cos ry), the three.js rotation.y convention). Inside a
+// rectangle (+0.1 m margin) the dusty apron / scuffed-edge alpha is removed; the solid road band core (signed distance < -0.25 m) is never
+// touched. Cost: one test per road vertex at build, nothing per frame. The surface is a 0.8 m grid with interpolated vertex alpha, so the
+// clear zone is the rectangle + 0.1 m + one grid cell, easing back to the full apron over 0.5 m more (a vertex outside would otherwise
+// bleed alpha into the rectangle).
+const CLIPS = (Array.isArray(APRON_CLIP) ? APRON_CLIP : []).map((c) => ({ x: c.x, z: c.z, hx: c.w / 2, hz: c.d / 2, c: Math.cos(c.ry || 0), s: Math.sin(c.ry || 0) }));
+const CLIP_MARGIN = 0.1, CLIP_EASE = 0.5;
+function apronKeep(x, z) { // 0 = apron fully removed here, 1 = untouched
+  let k = 1;
+  for (const c of CLIPS) {
+    const dx = x - c.x, dz = z - c.z, lx = dx * c.c - dz * c.s, lz = dx * c.s + dz * c.c; // into the rectangle's own frame
+    const ex = Math.abs(lx) - c.hx, ez = Math.abs(lz) - c.hz;
+    const out = Math.hypot(Math.max(ex, 0), Math.max(ez, 0)) + Math.min(Math.max(ex, ez), 0) - CLIP_MARGIN - CELL; // < 0: remove
+    if (out < CLIP_EASE) { const u = Math.max(0, out / CLIP_EASE); k = Math.min(k, u * u * (3 - 2 * u)); }
+  }
+  return k;
+}
 const CELL = 0.8; // grid spacing, metres. Edge wander is >= 2.5 m wavelength, so 0.8 m resolves it.
 const JOIN_K = 3.0; // smooth-min radius: how round the inner corner of a junction is
 const END_EASE = 0.6; // m before a flat dead end over which the edge wander and the scuffed fade die away, so the end is a clean line at the map's end
@@ -312,6 +331,7 @@ function sample(net, x, z, out) {
   if (NEW_LAYOUT && underFootprint(x, z)) return null; // never road under a building
   let a = Math.pow(1 - t, 1.4);
   if (D < -0.25) a = 1;
+  else if (CLIPS.length) a *= 1 - (1 - apronKeep(x, z)) * Math.min(1, (D + 0.25) / 0.25); // apron clip: only the fade zone (D >= -0.25), never the core
   // Colour: interior tint with slow patches, wheel polish, nali; edge band goes scuffed/dusty then olive as grass thins.
   const patch = 0.93 + 0.09 * vnoise(x / 5.3 - 2, z / 5.3 + 7) + 0.05 * vnoise(x / 1.6, z / 1.6);
   let r = tr / wsum * patch, g = tg / wsum * patch, b = tb / wsum * patch;
