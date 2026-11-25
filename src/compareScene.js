@@ -11,14 +11,14 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5, daughter: -117.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 // 25 Nov: ground speed that makes each clip's planted foot stand still on the ground (no sliding), MEASURED from the clips (tools: foot bone
 // speed relative to the hips while the foot is within 4 cm of its lowest point, at the in-game model scale; both clips are in-place).
 // Same idea as walkRef in src/characterAnim.js. Review clips play at 1x, so speed = stride length / cycle time.
 const STRIDE = { aunty: { walk: 0.546, walk_plain: 0.546 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Studio light', 'studio']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
 const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 12], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
@@ -54,7 +54,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  const ORDER = [['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
+  const ORDER = [['daughter', "AUNTY'S DAUGHTER", 'tvdaughter', 1.33], ['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
   for (const [key, side, file, hh] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
@@ -73,7 +73,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
   const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
   let lineup = true; // 25 Nov: actors stand in the line-up until a move button; move buttons never touch the camera
-  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, 3.2 / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
+  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, 4.6 / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
   // Studio light (review only): neutral room environment + a soft fill light from the camera, like a model viewer
   let studio = null, studioOn = false, origEnv = null, origInt = 1;
   const toggleStudio = () => {
@@ -131,10 +131,10 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 1.5) * BOTH_GAP; // 3 in a row, left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
+        const side = (a.order - 2.5) * BOTH_GAP; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
-      } else if (walking && a.key !== 'didi' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
+      } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         const k = Math.max(0, Math.min(1, 1 - err / 1.2)); // walk speed ramps in as the body comes round (0 at 180 degrees, full under ~0 degrees)
@@ -171,7 +171,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     } else if (face) { // eye level on the head bone, looking straight at the face
       const h = headOf(face);
       if (h) {
-        h.getWorldPosition(tmpV); tmpV.y += 0.1; // head bone sits at the neck top; eyes are ~10 cm above
+        h.getWorldPosition(tmpV); tmpV.y += face.key === 'daughter' ? 0.075 : 0.1; // head bone sits at the neck top; eyes are ~10 cm above (7.5 cm on the 1.33 m child)
         const ang = face.yaw + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
