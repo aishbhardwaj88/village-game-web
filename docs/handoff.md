@@ -1722,3 +1722,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Opus: none. Haiku: none (one planned for the final live re-check). Fable: none.
 - Head of engineering (main chat): gated old-layout builders off under the new layout (25095ba: road-events cow, vendors, nostalgia, oddities incl. mazar, fixtures).
 - 25 Nov 15:5x scheduled run: Actions green on 54a491b; temple now faces north to the highway and sabzi follows her 'face the road' answer (8de1430, 54a491b); missions-check 398/0/3, build:unchecked + 4 instant checks pass. No code change.
+
+## 25 Nov, move-off-road round (her rules: nothing on any road, every building faces the road it fronts)
+- Agents (all Sonnet, default effort, none Haiku/Opus/Fable): audit 1, audit 2, shops/houses fix, roads/props fix, 7-places agent (stopped, replaced), houses mover, shops mover, places mover, audit 3 builder, 7-props agent, Mela/Pond/Field/Optician agent. Why: parallel disjoint files, her order to use more than 3 agents today.
+- Her answers: move off lanes; face the road; Mela smaller, Pond smaller, Field split, Optician narrower (3.8 m rect).
+- Logs: docs/layout/MOVE_LOG_{HOUSES,SHOPS,PLACES,FINAL4}_25NOV.md, NUDGE_LOG_25NOV.md. Audit: docs/layout/MATCH_AUDIT_3_25NOV.md (tmp/audit/run4.sh).
+- Open: audit facing check disagrees with movers on which road 50 buildings front (round chauraha); Optician clearance 0.08 m (rule 0.1); round road ends vs flat-cap rule for 4 shops at 711.6,-73.1.
