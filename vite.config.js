@@ -41,7 +41,7 @@ function bustPreloadsPlugin(hashes) {
       order: 'post',
       handler(html) {
         if (!Object.keys(hashes).length) return html;
-        return html.replace(/((?:href="|url\(['"]?)[^"')]*?\/)((?:assets|fonts)\/[^"')?]+)/g, (m, pre, path) => (hashes[path] ? `${m}?v=${hashes[path]}` : m));
+        return html.replace(/((?:href="|url\(['"]?)[^"')]*?\/)((?:assets|fonts)\/[^"')?]+)/g, (m, pre, path) => (hashes[path] ? `${m}${path.endsWith('.glb') ? '.gz' : ''}?v=${hashes[path]}` : m)); // models ship only as .glb.gz (tools/gz-models.mjs): a preload of the plain .glb was a 404 (25 Nov)
       },
     },
   };
