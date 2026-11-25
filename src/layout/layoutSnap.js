@@ -19,6 +19,7 @@ export const CROSSING = /bridge|culvert|gate|milestone|island|platform round|rou
 /** Every footprint of the layout as a quad: existing places (footprints.js) and every solid rectangle. */
 /** Places the art director ordered kept EXACTLY as drawn on the final map (25 Nov): never moved, never turned by the road snap. */
 export const AS_DRAWN = new Set(['temple', 'sabzi']);
+// 26 Nov (her order): EVERY named place (map existing:true or minor:false) sits exactly on its map x,z,front: footprintItems marks them fixed.
 
 export function footprintItems(layout) {
   const items = [];
@@ -28,7 +29,7 @@ export function footprintItems(layout) {
     const [x0, x1, z0, z1] = fp.box;
     items.push({ id, name: p.name, kind: 'place', place: p, box: fp.box, open: !!fp.open, row: !!fp.row,
       corners: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]].map(([lx, lz]) => { const q = localToWorld(p.x, p.z, p.ry, lx, lz); return [q.x, q.z]; }),
-      front: p.front, fixed: p.untouched || !!fp.open || AS_DRAWN.has(id), named: !fp.open });
+      front: p.front, fixed: p.untouched || !!fp.open || AS_DRAWN.has(id) || p.existing === true || p.minor === false, named: !fp.open });
   }
   for (const o of layout.objects) {
     if (!o.rect || o.prefix.startsWith('canal_new')) continue;
