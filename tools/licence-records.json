@@ -4463,6 +4463,20 @@
     },
     {
       "match": [
+        "public/assets/models/milkman.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Milkman (TV house review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-milkman.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, towel and kurta re-weighted off the arm bones, face keys and eyes edited (tools/face_keys.py, tools/eye_patch.py)"
+    },
+    {
+      "match": [
         "public/assets/models/tvuncle_sm.glb"
       ],
       "category": "tripo",

@@ -53,7 +53,7 @@ for o in meshes:
                 ns.z+=0.005*f; ns.x+=0.002*f*side
         lb=inv@nb; ls=inv@ns
         blinkL.data[i].co=lb; smile.data[i].co=ls
-sc.render.engine='BLENDER_EEVEE_NEXT'; sc.render.resolution_x=600; sc.render.resolution_y=600
+sc.render.engine='BLENDER_EEVEE'; sc.render.resolution_x=600; sc.render.resolution_y=600
 wd=bpy.data.worlds.new('w'); sc.world=wd; wd.use_nodes=True; wd.node_tree.nodes['Background'].inputs[0].default_value=(0.6,0.6,0.6,1); wd.node_tree.nodes['Background'].inputs[1].default_value=1.5
 cam=bpy.data.cameras.new('c'); cam.type='ORTHO'; cam.ortho_scale=sz
 co=bpy.data.objects.new('c',cam); sc.collection.objects.link(co); sc.camera=co

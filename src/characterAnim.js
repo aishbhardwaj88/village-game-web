@@ -34,6 +34,7 @@ const PROFILE = {
   tvuncle_sm: { review: true },
   tvuncle_aunty: { review: true }, // 25 Nov: Gossip Aunty (tvaunty.glb): idle, walk, call, laugh, greet + Look (gesture_lookaround)
   tvuncle_daughter: { review: true }, // 25 Nov: Aunty's Daughter (tvdaughter.glb): idle, walk, run, greet, cheer, jump
+  tvuncle_milkman: { review: true }, // 26 Nov: Milkman (milkman.glb): idle, walk, run, laugh, wave, jump
   tvuncle_didi: { review: true }, // Parlour Didi stands in the compare line-up for scale and face comparison (idle only: she has no walk/laugh review clips)
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)

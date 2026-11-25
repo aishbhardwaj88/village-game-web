@@ -35,7 +35,7 @@ mat0=me.materials[0]; nt=mat0.node_tree
 bsdf=[n for n in nt.nodes if n.type=='BSDF_PRINCIPLED'][0]; base_from=bsdf.inputs['Base Color'].links[0].from_socket
 outn=[n for n in nt.nodes if n.type=='OUTPUT_MATERIAL'][0]; old_surface=outn.inputs['Surface'].links[0].from_socket
 em=nt.nodes.new('ShaderNodeEmission'); nt.links.new(base_from, em.inputs['Color']); nt.links.new(em.outputs[0], outn.inputs['Surface'])
-sc.render.engine='BLENDER_EEVEE_NEXT'; sc.view_settings.view_transform='Standard'; sc.eevee.taa_render_samples=4
+sc.render.engine='BLENDER_EEVEE'; sc.view_settings.view_transform='Standard'; sc.eevee.taa_render_samples=4
 TW=768; HM=max(WT,WB); TH=int(round(TW*HM/WX)); TH+=TH%2
 sc.render.resolution_x=TW; sc.render.resolution_y=TH
 cam=bpy.data.cameras.new('c'); cam.type='ORTHO'
