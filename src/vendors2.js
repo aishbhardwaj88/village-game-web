@@ -80,7 +80,7 @@ function buildPaan(s, seed) {
   // back wall: a mirror in a wooden frame, three film posters
   s.box('wood', 0.8, 0.55, 0.03, 0.2, 1.65, cz - D / 2 + 0.07, 0x4a3022);
   s.box('metal', 0.72, 0.47, 0.01, 0.2, 1.65, cz - D / 2 + 0.09, 0xcfd6d6);
-  [[0xc23a2a, -0.55], [0xd8a02a, -0.55], [0x2a5a9a, 0.78]].forEach(([c, x], i) => {
+  [].forEach(([c, x], i) => { // 26 Nov: film posters removed (her order); list emptied, old: [[0xc23a2a, -0.55], [0xd8a02a, -0.55], [0x2a5a9a, 0.78]]
     s.box('wood', 0.3, 0.42, 0.01, x, i === 1 ? 1.2 : 1.7, cz - D / 2 + 0.07, jit(c, seed + i, 0.1));
     s.box('wood', 0.2, 0.12, 0.012, x, i === 1 ? 1.1 : 1.8, cz - D / 2 + 0.075, 0xe8dcb4);
   });

@@ -370,8 +370,8 @@ function buildCD(s, seed, signs, people) {
   // left wall: CD covers face out on a sloping board; right wall: two posters and a calendar
   s.box('wood', 0.04, 0.95, 1.5, -W / 2 + T + 0.04, 1.55, -0.1, 0x7a5a3a, 0, 0.08);
   s.goods(atlasBoxGeo(1.4, 0.7, 0.01, UV.cdgrid, UV.plastic), -W / 2 + T + 0.08, 1.55, -0.1, 0xffffff, Math.PI / 2, 0, 0);
-  s.goods(atlasBoxGeo(0.5, 0.7, 0.005, UV.poster[0], UV.board), W / 2 - T - 0.005, 1.75, -0.45, 0xf4ece0, -Math.PI / 2, 0.03);
-  s.goods(atlasBoxGeo(0.5, 0.7, 0.005, UV.poster[1], UV.board), W / 2 - T - 0.005, 1.7, 0.2, 0xece4d4, -Math.PI / 2, -0.02);
+  // 26 Nov: poster removed (her order)
+  // 26 Nov: poster removed (her order)
   s.goods(atlasBoxGeo(0.32, 0.42, 0.004, UV.cal, UV.board), -0.6, 2.25, back + 0.005, 0xffffff);
   // counter across the front with a glass-topped display of CDs
   s.box('wood', 2.2, 0.82, 0.5, -0.1, 0.18 + 0.41, D / 2 - 0.55, 0x6a5038);

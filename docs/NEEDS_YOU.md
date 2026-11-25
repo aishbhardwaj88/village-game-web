@@ -84,3 +84,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Seven buildings (ration shop, temple, jalebi shop, gaushala, TV house, Jain mandir, puncture yard) have a smaller lane closer behind them than the front road. Left as is, your call, nothing needed unless you want one moved. - status: open
 - The half-built house and the house pair exist only in the old layout and are not placed on the 25 Nov map. Place them or leave them out? - status: open
 - Not measured: fps. Over budget: game size 106 MB (cap 56 MB), play-ready 7.2 s. Not map related, parked until you say. - status: open
+- 26 Nov, her order: all wall posters removed (outside walls, CD shop, paan kiosk). New poster set will be pasted on empty walls when she sends it. Left in place on purpose: school classroom charts, painted wall writing and slogans, the peepal poster board, all shop signboards. Tell me if any of those should go too. - status: open

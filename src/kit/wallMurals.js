@@ -528,6 +528,8 @@ function pickDesign(seed) { return DESIGNS[Math.floor(hash(seed, 2) * DESIGNS.le
 export function buildWallMurals(boxes, opts = {}) { return runSync(buildWallMuralsGen(boxes, opts)); }
 /** Same, as a generator (slice points: one atlas design, then every 24 boxes of the placement walk) for src/kit/lateBuild.js sliceGen. */
 export function* buildWallMuralsGen(boxes, opts = {}) {
+  // 26 Nov (her order): ALL wall posters removed so her new poster set can be pasted. No atlas, no mesh. Old code below is kept for re-use.
+  if (!opts.forceOn) return { mesh: null, stats: { candidates: boxes.length, placed: 0, skippedShort: 0, skippedDoor: 0, roadFacingPlaced: 0, designs: 0, instances: [], slid: 0, onRoadLeft: 0 } };
   const offset = opts.offset ?? 0.03, minClear = opts.minClear ?? 0.6;
   const roads = opts.roads ?? null, roadFaceDist = opts.roadFaceDist ?? 7, roadBoost = opts.roadBoost ?? 3.5;
   const atlas = yield* buildAtlasGen();
