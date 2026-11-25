@@ -55,7 +55,22 @@ export function assignHouses(plan) {
       if (t >= 3 && !near.some((o) => o.design === design && o.wash === wash)) break;
     }
     const [cw, cd] = classOf(h.w, h.d);
-    out.push({ ...h, design, wash, mirror: hash(i * 23.3 + 4) < 0.5, seed: hash(i * 31.7 + 9), cw, cd, sx: h.w / cw, sz: h.d / cd, kachcha: DESIGN_INFO[design].kachcha });
+    // 25 Nov wall variety: the shader picks the plaster surface (1 of 5) and tile turn (1 of 4) from the seed, so re-roll the seed
+    // (deterministic, try 0 = the old seed) until no pakka neighbour within 9.5 m has the same surface, then the same turn
+    const isK = DESIGN_INFO[design].kachcha, fr = (x) => x - Math.floor(x);
+    const surf = (sd) => Math.floor(fr(sd * 17.31) * 5), turn = (sd) => Math.floor(fr(sd * 41.9) * 4);
+    const clear = (sd) => fr(fr(sd * 17.31) * 5) > 0.08 && fr(fr(sd * 17.31) * 5) < 0.92 && fr(fr(sd * 41.9) * 4) > 0.08 && fr(fr(sd * 41.9) * 4) < 0.92;
+    const nearP = isK ? [] : near.filter((o) => !o.kachcha);
+    let seed = hash(i * 31.7 + 9), bestSeed = seed, bestScore = 1e9;
+    for (let t = 0; t < 14 && !isK; t++) {
+      const sd = t ? hash(i * 31.7 + 9 + t * 0.713) : seed;
+      if (!clear(sd)) continue;
+      const score = nearP.filter((o) => surf(o.seed) === surf(sd)).length * 4 + nearP.filter((o) => turn(o.seed) === turn(sd)).length;
+      if (score < bestScore) { bestScore = score; bestSeed = sd; }
+      if (score === 0) break;
+    }
+    seed = bestSeed;
+    out.push({ ...h, design, wash, mirror: hash(i * 23.3 + 4) < 0.5, seed, cw, cd, sx: h.w / cw, sz: h.d / cd, kachcha: isK });
   });
   return out;
 }

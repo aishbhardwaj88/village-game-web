@@ -70,7 +70,7 @@ function perInstanceWallVariety(base) {
  * library brick / concrete (already loaded, so nothing new is requested before Play) and swap to their own maps once Play is ready
  * (src/afterReady.js), in an idle slot; a failed load leaves the plain brick / concrete.
  */
-const LATE = { brick_b: ['brick', 'brick_b'], concrete_f: ['concrete', 'concrete_f'] };
+const LATE = { brick_b: ['brick', 'brick_b'], concrete_f: ['concrete', 'concrete_f'], plaster_j: ['plaster', 'plaster_j'], plaster_m: ['plaster', 'plaster_m'], plaster_p: ['plaster', 'plaster_p'] };
 function lateVariant(name) {
   const [baseName, dir] = LATE[name];
   const m = perInstanceWallVariety(getTiledMaterial(baseName, { vertexColors: true }));

@@ -9,6 +9,7 @@ by design, no board.png persists here - expected (known screenshot limit), not n
 + checkout -B main, routine.
 
 ## Current state
+- 25 Nov WALL VARIETY (materials only): shops draw plaster as plaster/_j/_m/_p by shop id (BatchKit remap, +-6% tint jitter); house seeds re-rolled so pakka neighbours differ in plaster surface (181 -> 4 clashes of 421). No new texture requests before Play.
 - 25 Nov PRE-PLAY BYTES: plant models (flower_gazania 396 KB, shrub_01 246 KB) have no copy within 70 m of the spawn, so
   they now load after Play (realPlants.js setPlantGate, wired in main.js). Measured before Play 13.44 -> 12.81 MB. gurukul/bazaar/school were already after Play.
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m. GATE3/GATE4 defer normal/roughness/ao maps

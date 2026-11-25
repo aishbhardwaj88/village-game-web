@@ -109,10 +109,11 @@ export class BatchKit {
     if (!this.designs.has(key)) this.designs.set(key, build());
     return this.designs.get(key);
   }
-  add(key, { x, z, y = 0, ry = 0, s = 1, colors = null, visible = true }) {
+  /** remap: { designMat: libraryMat } draws that part of this instance with another approved library material (e.g. plaster -> plaster_j), same geometry. */
+  add(key, { x, z, y = 0, ry = 0, s = 1, colors = null, visible = true, remap = null }) {
     const d = this.designs.get(key);
     if (!d) throw new Error(`BatchKit ${this.name}: unknown design ${key}`);
-    this.instances.push({ key, x, y, z, ry, s, colors, visible, ids: null });
+    this.instances.push({ key, x, y, z, ry, s, colors, visible, remap, ids: null });
     return this.instances.length - 1;
   }
   finalize(materials, { castShadow = false } = {}) {
@@ -121,11 +122,13 @@ export class BatchKit {
     const perMat = new Map(); // mat -> { verts, idx, count, geos:Set }
     for (const inst of this.instances) {
       const d = this.designs.get(inst.key);
-      for (const mat in d) {
+      for (const dm in d) {
+        const mat = inst.remap?.[dm] ?? dm;
         if (!perMat.has(mat)) perMat.set(mat, { verts: 0, idx: 0, count: 0, keys: new Set() });
         const e = perMat.get(mat);
         e.count++;
-        if (!e.keys.has(inst.key)) { e.keys.add(inst.key); e.verts += d[mat].attributes.position.count; e.idx += d[mat].index.count; }
+        const gk = inst.key + '\u0001' + dm;
+        if (!e.keys.has(gk)) { e.keys.add(gk); e.verts += d[dm].attributes.position.count; e.idx += d[dm].index.count; }
       }
     }
     this.batches = new Map();
@@ -138,7 +141,7 @@ export class BatchKit {
       bm.receiveShadow = true;
       bm.userData.noAutoCollider = true; // colliders are explicit boxes (userData.colliderBoxes on the kit group's holder)
       const gids = new Map();
-      for (const key of e.keys) gids.set(key, bm.addGeometry(this.designs.get(key)[mat]));
+      for (const gk of e.keys) { const [key, dm] = gk.split('\u0001'); gids.set(gk, bm.addGeometry(this.designs.get(key)[dm])); }
       this.batches.set(mat, { bm, gids });
       group.add(bm);
     }
@@ -147,14 +150,15 @@ export class BatchKit {
       inst.ids = {};
       _p.set(inst.x, inst.y, inst.z); _q.setFromAxisAngle(_up, inst.ry); _s.setScalar(inst.s);
       _m.compose(_p, _q, _s);
-      for (const mat in d) {
+      for (const dm in d) {
+        const mat = inst.remap?.[dm] ?? dm;
         const b = this.batches.get(mat);
         if (!b) continue;
-        const id = b.bm.addInstance(b.gids.get(inst.key));
+        const id = b.bm.addInstance(b.gids.get(inst.key + '\u0001' + dm));
         b.bm.setMatrixAt(id, _m);
-        b.bm.setColorAt(id, _c.set(inst.colors?.[mat] ?? 0xffffff));
+        b.bm.setColorAt(id, _c.set(inst.colors?.[dm] ?? 0xffffff));
         if (!inst.visible) b.bm.setVisibleAt(id, false);
-        inst.ids[mat] = id;
+        inst.ids[dm] = id;
       }
     }
     return group;
@@ -163,7 +167,7 @@ export class BatchKit {
     const inst = this.instances[i];
     if (!inst || inst.visible === v) return;
     inst.visible = v;
-    for (const mat in inst.ids) this.batches.get(mat).bm.setVisibleAt(inst.ids[mat], v);
+    for (const dm in inst.ids) this.batches.get(inst.remap?.[dm] ?? dm).bm.setVisibleAt(inst.ids[dm], v);
   }
   /** Triangles this kit would draw with everything visible (for the notes). */
   stats() {

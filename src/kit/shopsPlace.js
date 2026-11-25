@@ -66,10 +66,15 @@ function* buildShopsGen(map, { camera = null } = {}) {
     const farKey = `far|${rect.width.toFixed(1)}|${rect.depth.toFixed(1)}|${H}|${storeys}`;
     const big = type === 'shopHouse' || type === 'shop';
     if (big) kit.design(farKey, () => farBlock({ W: rect.width, D: rect.depth, H, storeys }).geo);
-    const colors = { plaster: paint(WALLS[Math.floor(hash01(i, 3) * WALLS.length)]) };
-    const nearId = kit.add(near, { x: rect.x, z: rect.z, ry: rect.ry, colors });
-    const midId = kit.add(mid, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false });
-    const farId = big ? kit.add(farKey, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false }) : -1;
+    // 25 Nov wall variety: each shop gets its own wall tint (+-6% brightness on top of the palette pick) and one of 4 approved plaster
+    // surfaces (plaster, plaster_j, plaster_m, plaster_p: same library names the houses use), both fixed by the shop's own id
+    const jit = 0.94 + hash01(i, 15) * 0.12;
+    const colors = { plaster: new THREE.Color(paint(WALLS[Math.floor(hash01(i, 3) * WALLS.length)])).multiplyScalar(jit).getHex() };
+    const pvu = hash01(i, 16), pv = pvu < 0.34 ? null : pvu < 0.56 ? 'plaster_j' : pvu < 0.78 ? 'plaster_m' : 'plaster_p';
+    const remap = pv ? { plaster: pv } : null;
+    const nearId = kit.add(near, { x: rect.x, z: rect.z, ry: rect.ry, colors, remap });
+    const midId = kit.add(mid, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false, remap });
+    const farId = big ? kit.add(farKey, { x: rect.x, z: rect.z, ry: rect.ry, colors, visible: false, remap }) : -1;
     lod.push({ x: rect.x, z: rect.z, ids: [nearId, midId, farId], tier: 0 });
     // signboard: a real shape (own row height, see shopsSigns.js SHAPES), not one box repainted 14 ways (her 22 Nov
     // note: "some boards are thin, some thick, some have more height, some less, text left, right or centred").
@@ -183,7 +188,7 @@ function* buildShopsGen(map, { camera = null } = {}) {
   yield;
   const group = new THREE.Group();
   group.name = 's7_shops';
-  const mats = kitMaterials(['plaster', 'brick', 'brick_b', 'concrete', 'concrete_f', 'wood', 'rust']);
+  const mats = kitMaterials(['plaster', 'plaster_j', 'plaster_m', 'plaster_p', 'brick', 'brick_b', 'concrete', 'concrete_f', 'wood', 'rust']);
   const bodies = kit.finalize(mats);
   group.add(bodies);
 
