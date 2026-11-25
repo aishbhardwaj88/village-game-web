@@ -1,9 +1,6 @@
 # State - rewritten every run, max 40 lines
 Last updated: 25 Nov (hourly loop). Streaming/caching work below; LOOKS LIST items 1-8 done or parked (item 8's "zero console errors" needs a real browser, container limit).
-This run: re-verified LOOKS LIST/BACKLOG [ACTIVE], nothing further shippable without her input or a real browser (see
-Next 5). Found + filed one real gap: the 24 Nov Poly Haven free-props review row (100+ CC0 props, CREDITS.md props_ph)
-was built for her verdict but never flagged - NEEDS_YOU now has it (?at=606,33). Don't place from that row until she
-answers (5a1, taste is hers).
+This run (26 Nov): show cap, shader warm-up, slicing; memory hygiene parked (NEEDS_YOU).
 
 ## Current state
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m (src/ui.js, main.js setReadyGate, zoneManager setGate). Zones beyond
@@ -12,22 +9,24 @@ answers (5a1, taste is hers).
   land, ?nodefer=1 = old). Before Play, honest count (fetch() bodies at dist size): 16.65 -> 13.50 MB (web 10.12 -> 6.97,
   models 6.53). GATE4 (26 Nov): house atlas normal/roughness (base 0.77 MB + 8 variants 2.0 MB) now drawn after Play via deferredTask
   (deferredMaps.js, same first-frame hold); before Play ~10.7 MB. Left: the ring's models.
+- 26 Nov SHOW CAP 265 m (src/showCap.js): zones, houses far boxes, prop sites capped; fog floor 0.0055 (85% fogged at 265 m). Doorstep/detail
+  zones already build 100+ m before they draw (ALWAYS_EXTRA 70 + DETAIL_LEAD 30 + speed lead); the 42 m LODs are toggles of built instances.
+  Shader warm-up: src/shaderWarm.js (house atlas + shared library kinds) inside the gate. Wall murals atlas/placement now sliced (generator).
 - 25 Nov WALL REPEAT: plaster tile 0.5 -> 1.5 m, applyAntiTile() two-scale colour blend in materials.js for plaster*/mud*/
   concrete_e,f. Autocorr repeat score 0.95 -> 0.27 on a 10x3 m wall (sim). VARIETY: 16 house washes + ground noise done.
 - GATE (25 Nov): Play waits only on spawn-ring prop sites (propGate.js startGate); shops/land/map objects build after
   (lateBuild.js); streamHold() freezes with a loading notice if a near prop site stalls. Resumable downloader in
   loaders.js (stall 8s, 4 tries, Range-resume). SW cache-first (?nosw=1 bypasses); manualChunks vendor/data/app.
-- Pre-GATE3 (4G, 4x CPU): Play ~11-14 s, sync build 2.2-9.8 s. Target 4 MB / 3 s NOT met.
 - Item 2 (chauraha buildings): could NOT reproduce, NEEDS_YOU open. Item 8 console-error check needs a real browser.
 
 ## Next 5 items
-1. House atlas n/r deferred (GATE4, done): eyeball house walls in a real browser.
+1. House atlas n/r deferred (GATE4 done): eyeball house walls in a real browser.
 2. Ring models 6.5 MB (house_compound, gher_yard, tv_house, chaupal...) + shared props: split village builders by area.
 3. Zone streaming rule (pixel-rule appear distance): speed-lead half already built (zoneManager.js leadM, 26 Nov); the
    on-screen-size half (visibleRadius by real apparent size) isn't - broad refactor, real regression risk, scoped only.
-4. Memory hygiene: close decoded ImageBitmaps after GPU upload - needs a shared-texture check first (textures/materials
-   are shared across objects; closing blind could break a second user of the same bitmap - not done blind, per A6/A7).
-5. Doorstep plants at 42 m / zone detail radius pop-in, house atlas shader warm-up.
+4. Memory hygiene (parked, NEEDS_YOU): closing decoded ImageBitmaps is unsafe blind: frameQueue.js bitmapByUrl shares one bitmap across loads,
+   deferredMaps.js hands t.image to other textures, signAtlasHub/main.js warm-up re-read .image. Zone teardown already disposes geometry+materials.
+5. Slice more: land layers (landTrees/landFields/landProps/landCanal build) and mapObjects stages 3-4 are still single sync steps.
 
 ## Blockers
 - Range support of the live host unverified (proxy blocks github.io); downloader falls back to whole-file restart on 200.

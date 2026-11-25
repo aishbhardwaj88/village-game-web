@@ -8,7 +8,7 @@ import { kitMaterials } from './landMaterials.js';
 import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from './landLayout.js';
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
-import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
+import { buildWallMuralsGen } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 import { runSync, sliceGen } from './lateBuild.js';
 
 /**
@@ -200,7 +200,7 @@ function* buildShopsGen(map, { camera = null } = {}) {
   }
   // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per shop at most.
   yield;
-  const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes, { roads }); // S7 WIRING (integrator, wallposters): road-facing boost
+  const { mesh: muralMesh, stats: muralStats } = yield* buildWallMuralsGen(muralBoxes, { roads }); // S7 WIRING (integrator, wallposters): road-facing boost
   if (muralMesh) group.add(muralMesh);
   report.murals = muralStats;
   // colliders ride on the concrete batch (a mesh, so the collider walk reads them); it never derives its own

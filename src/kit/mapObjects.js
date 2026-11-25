@@ -184,7 +184,9 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
 
   // ---- 1. built designs, one batch over the library sets
   const kit = new ObjBatch('s7_mapobjects_kit');
+  let sliceT = performance.now(); // 26 Nov: stage 1 builds every design + collider in one long task; yield to the main thread every ~8 ms
   for (const d of plan.designs) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const { key, params } = designKey(d);
     kit.design(key, () => buildDesign(d.kind, params));
     const big = ['tubewell', 'tower', 'transformer', 'notice', 'trough', 'washplatform', 'creases', 'kabaddiLines', 'plotPillar'].includes(d.kind);

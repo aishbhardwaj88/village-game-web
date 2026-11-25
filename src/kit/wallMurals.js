@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { drawBilingual } from '../signPaint.js';
+import { runSync } from './lateBuild.js';
 
 /**
  * Painted posters and murals for bare exterior walls (S7 sprint, signage agent; expanded by the wallposters agent, 22
@@ -430,14 +431,17 @@ const ROWS = Math.ceil(DESIGNS.length / COLS);
 const W = CW * COLS, H = CH * ROWS; // runtime canvas only — never shipped as a file, so it doesn't count against public/ or the 1K texture budgets
 
 let atlasCache = null;
-function buildAtlas() {
+// 26 Nov: a generator (one poster design per step) so the shop build can slice it (src/kit/lateBuild.js sliceGen); buildAtlas() is the sync form.
+function buildAtlas() { return runSync(buildAtlasGen()); }
+function* buildAtlasGen() {
   if (atlasCache) return atlasCache;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const g = canvas.getContext('2d');
   g.fillStyle = '#8a7a66'; g.fillRect(0, 0, W, H);
   const rects = [];
-  DESIGNS.forEach((d, i) => {
+  for (let i = 0; i < DESIGNS.length; i++) {
+    const d = DESIGNS[i];
     const col = i % COLS, row = Math.floor(i / COLS), x = col * CW, y = row * CH;
     rects.push({ id: d.id, x0: x + 3, y0: y + 3, x1: x + CW - 3, y1: y + CH - 3 });
     g.fillStyle = d.bg; g.fillRect(x, y, CW, CH);
@@ -456,7 +460,8 @@ function buildAtlas() {
     const grd = g.createLinearGradient(0, y + CH - 30, 0, y + CH);
     grd.addColorStop(0, 'rgba(50,38,26,0)'); grd.addColorStop(1, 'rgba(50,38,26,0.18)');
     g.fillStyle = grd; g.fillRect(x, y + CH - 30, CW, 30);
-  });
+    yield; // slice point: one design per step
+  }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
@@ -502,10 +507,12 @@ function pickDesign(seed) { return DESIGNS[Math.floor(hash(seed, 2) * DESIGNS.le
  * Builds the merged mural mesh for a list of building boxes / wall segments. See the file header for the two
  * supported box shapes and the full opts contract.
  */
-export function buildWallMurals(boxes, opts = {}) {
+export function buildWallMurals(boxes, opts = {}) { return runSync(buildWallMuralsGen(boxes, opts)); }
+/** Same, as a generator (slice points: one atlas design, then every 24 boxes of the placement walk) for src/kit/lateBuild.js sliceGen. */
+export function* buildWallMuralsGen(boxes, opts = {}) {
   const offset = opts.offset ?? 0.03, minClear = opts.minClear ?? 0.6;
   const roads = opts.roads ?? null, roadFaceDist = opts.roadFaceDist ?? 7, roadBoost = opts.roadBoost ?? 3.5;
-  const atlas = buildAtlas();
+  const atlas = yield* buildAtlasGen();
   const pos = [], nor = [], uv = [], idx = [];
   const instances = []; // debug/report use: one row per placed mural { cx, cy, cz, nx, nz, width, height, design }
   let placed = 0, skippedShort = 0, skippedDoor = 0, roadFacingPlaced = 0;
@@ -527,7 +534,9 @@ export function buildWallMurals(boxes, opts = {}) {
     return true;
   };
 
+  let _walked = 0;
   for (const b of boxes) {
+    if (++_walked % 24 === 0) yield; // slice point: the placement walk is O(boxes^2) (the 'blocked' test)
     if (b.segment) {
       // a long straight compound/boundary wall: space several posters along it directly in world coords (real
       // roadside compound walls get layered with posters, the classic "so many walls go unused" surface).
