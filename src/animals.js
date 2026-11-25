@@ -353,6 +353,7 @@ export function buildDogGeometry() {
   return merged;
 }
 
+const animalHash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
 const COW_TINTS = [0xd9c9a0, 0xe8e0d0, 0xc4a876]; // tan/white — cow
 const BUFFALO_TINTS = [0x3a3a38, 0x2a2a28]; // dark grey/black — buffalo
 const DOG_TINTS = [0xb08858, 0x8a6a42, 0xc9b088];
@@ -491,9 +492,12 @@ export function createCattleHerd(placements) {
   mesh.receiveShadow = true;
   const color = new THREE.Color();
   const instances = placements.map((p, i) => {
-    const scale = p.buffalo ? { x: 1.12, y: 1.12, z: 1.22 } : { x: 1, y: 1, z: 1 };
+    // 25 Nov variety: size, tint pick and brightness come from the animal's own position (deterministic, no two neighbours alike)
+    const h1 = animalHash(p.x, p.z), h2 = animalHash(p.z + 3.1, p.x), h3 = animalHash(p.x * 0.7 + 1, p.z * 1.3 + 2);
+    const sz = 0.92 + 0.16 * h1; // body size +-8%, a little leaner or heavier
+    const scale = p.buffalo ? { x: 1.12 * sz, y: 1.12 * sz, z: 1.22 * sz * (0.96 + 0.08 * h2) } : { x: sz, y: sz, z: sz * (0.96 + 0.08 * h2) };
     const tints = p.buffalo ? BUFFALO_TINTS : COW_TINTS;
-    mesh.setColorAt(i, color.setHex(tints[i % tints.length]));
+    mesh.setColorAt(i, color.setHex(tints[Math.floor(h3 * tints.length) % tints.length]).multiplyScalar(0.88 + 0.24 * h2));
     return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, scale, t: i * 1.7 + (p.buffalo ? 3 : 0), rate: 0.35 + (i % 3) * 0.05 };
   });
   // Idle motion keeps all four hooves planted (G1: the old head-down pitch swung the whole rigid body about its centre,
@@ -542,14 +546,15 @@ export function createDogPack(placements) {
   mesh.receiveShadow = true;
   const color = new THREE.Color();
   const instances = placements.map((p, i) => {
-    mesh.setColorAt(i, color.setHex(DOG_TINTS[i % DOG_TINTS.length]));
-    return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, t: i * 2.1, rate: 0.5 + (i % 2) * 0.1 };
+    const h1 = animalHash(p.x, p.z), h2 = animalHash(p.z + 3.1, p.x);
+    mesh.setColorAt(i, color.setHex(DOG_TINTS[Math.floor(h2 * DOG_TINTS.length) % DOG_TINTS.length]).multiplyScalar(0.88 + 0.24 * h1));
+    return { x: p.x, y: p.y ?? 0, z: p.z, rotY: p.rotationY ?? 0, size: 0.9 + 0.2 * h1, t: i * 2.1, rate: 0.5 + (i % 2) * 0.1 };
   });
   function applyInstance(i, inst, sniff) {
     _herdEuler.set(0, inst.rotY + sniff * 0.12, 0);
     _herdQuat.setFromEuler(_herdEuler);
     _herdPos.set(inst.x, inst.y, inst.z);
-    _herdScale.set(1, 1, 1);
+    _herdScale.setScalar(inst.size);
     _herdMat.compose(_herdPos, _herdQuat, _herdScale);
     mesh.setMatrixAt(i, _herdMat);
   }

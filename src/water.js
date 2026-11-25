@@ -85,7 +85,7 @@ export function blobWaterGeometry(radius, seed, y, rings = 7, segs = 32) {
       const a = (i / segs) * Math.PI * 2;
       const edge = radius * (1 + 0.16 * Math.sin(a * 2 + seed) + 0.09 * Math.sin(a * 3 + seed * 2.3) + 0.05 * Math.sin(a * 5 + seed * 0.7));
       pos.push(Math.cos(a) * edge * f, y, -Math.sin(a) * edge * f); // z negated: matches farmSites blobShape (shape y -> world -z), so water and mud ring share one outline
-      dep.push(Math.pow(1 - f, 0.8)); // shelves off gently
+      dep.push(Math.pow(1 - f, 0.8 + 0.28 * Math.sin(a * 2 + seed * 1.7) + 0.14 * Math.sin(a * 3 + seed * 0.4))); // shelves off gently, steeper on one bank and shallower on another
     }
   }
   for (let i = 0; i < segs; i++) idx.push(0, 1 + i, 1 + ((i + 1) % segs)); // up-facing winding (z is mirrored, so winding is too)

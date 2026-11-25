@@ -39,6 +39,8 @@ const CROPS = {
 // patches leave a hole over it (shader discard) and no plants are placed inside, so the two never fight.
 const KHET = { minX: FIELD_CENTER.x - 63, maxX: FIELD_CENTER.x + 63, minZ: FIELD_CENTER.z - 48, maxZ: FIELD_CENTER.z + 48 };
 const inKhet = (x, z) => x > KHET.minX && x < KHET.maxX && z > KHET.minZ && z < KHET.maxZ;
+/** Multiply a hex colour's brightness by k (deterministic, no allocation outside build). */
+const shade = (hex, k) => new THREE.Color(hex).multiplyScalar(k).getHex();
 const GRASS = { color: 0x74853f, spacing: 0, cover: 1, soil: 0x8a7a58, plant: null };
 
 let fieldMat = null;
@@ -208,7 +210,15 @@ export async function build(map, { camera = null } = {}) {
     else if (key === 'new_orchard') { look = { ...GRASS, color: 0x6f7f3c }; rows = false; report.orchards++; }
     else if ((key === 'new_greenbelt' || key === 'new_kilngreen' || key === 'new_grazing' || key === 'new_Mango baagh') && o.kind === 'ground') { look = GRASS; rows = false; y = 0.018; report.green++; }
     if (!look) continue;
-    const angle = longAngle(ring);
+    // 25 Nov variety: every field gets its own deterministic look (seeded from its centre, so no flicker, same every reload):
+    // soil and crop colour shade, row spacing, cover, row angle and plant height all differ field to field, even within one crop.
+    let cx = 0, cz = 0; for (const p of ring) { cx += p[0]; cz += p[1]; } cx /= ring.length; cz /= ring.length;
+    const h1 = hash01(cx * 0.37, cz * 0.91), h2 = hash01(cz * 0.53 + 3, cx * 0.29), h3 = hash01(cx * 0.71 + 9, cz * 0.13), h4 = hash01(cx * 0.19 + 5, cz * 0.67 + 1);
+    const isField = key === 'new_field';
+    if (isField) look = { ...look, color: shade(look.color, 0.88 + 0.24 * h1), soil: shade(look.soil, 0.9 + 0.2 * h2), spacing: look.spacing * (0.9 + 0.22 * h3), cover: Math.min(0.95, Math.max(0.35, look.cover + (h4 - 0.5) * 0.16)) };
+    else look = { ...look, color: shade(look.color, 0.92 + 0.16 * h1), soil: shade(look.soil, 0.94 + 0.12 * h2) };
+    const angle = longAngle(ring) + (isField ? (h3 - 0.5) * 0.1 : 0);
+    const hf = 0.85 + 0.3 * h4, tf = 0.92 + 0.16 * h1; // per-field plant height and tuft shade
     geos.push(patchGeometry(ring, rows ? look : { ...look, spacing: 0 }, y, angle));
     if (key === 'new_field') geos.push(bundGeometry(ring, y));
     // real plants only in the band beside a road
@@ -226,7 +236,7 @@ export async function build(map, { camera = null } = {}) {
           const across = (-sa * jx + ca * jz) / (look.plant === 'cane' ? 1.1 : 0.75);
           if (look.plant !== 'sarson' && Math.abs(across - Math.round(across)) > 0.3) continue; // rows, with walkable furrows between (mustard closes over its rows)
           if (hash01(jx * 1.3, jz * 0.7) < 0.18) continue; // gaps: a hand-sown row is never full
-          spots[look.plant].push([jx, jz]);
+          spots[look.plant].push(look.plant === 'cane' ? [jx, jz] : [jx, jz, hf, tf]);
         }
       }
     }
@@ -243,7 +253,7 @@ export async function build(map, { camera = null } = {}) {
 
   // tufts: wheat (green), young fodder (lush green), paddy stubble (short, straw) in one InstancedMesh
   // mustard joins the tufts: leafy blades with yellow flower spikes (the field kit's mustard cards read as lollipop trees at eye height)
-  const tuftSpots = [...spots.wheat.map((s) => [...s, 'wheat']), ...spots.wheat_young.map((s) => [...s, 'young']), ...spots.stubble.map((s) => [...s, 'stubble']), ...spots.sarson.map((s) => [...s, 'mustard'])];
+  const tuftSpots = [...spots.wheat.map((s) => [s[0], s[1], 'wheat', s[2], s[3]]), ...spots.wheat_young.map((s) => [s[0], s[1], 'young', s[2], s[3]]), ...spots.stubble.map((s) => [s[0], s[1], 'stubble', s[2], s[3]]), ...spots.sarson.map((s) => [s[0], s[1], 'mustard', s[2], s[3]])];
   if (tuftSpots.length) {
     const { geometry, material } = cropTuftParts();
     const mesh = attachCropWind(new THREE.InstancedMesh(geometry, material, tuftSpots.length));
@@ -255,13 +265,14 @@ export async function build(map, { camera = null } = {}) {
     sliceT = performance.now(); // tuftSpots can run into the thousands (one per plant across every field): slice this pass too
     for (let i = 0; i < tuftSpots.length; i++) {
       if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
-      const [x, z, k] = tuftSpots[i];
+      const [x, z, k, hf, tf] = tuftSpots[i];
       const j = Math.sin(x * 12.9 + z * 7.1), sc = 0.6 + 0.65 * hash01(x * 2.7, z * 3.1);
       d.position.set(x, 0, z); d.rotation.set(0, j * 3, 0);
-      d.scale.set(sc * (k === 'mustard' ? 1.5 : 1), sc * (k === 'stubble' ? 0.25 : k === 'young' ? 0.6 : k === 'mustard' ? 1.35 : 0.7), sc * (k === 'mustard' ? 1.5 : 1));
+      d.scale.set(sc * (k === 'mustard' ? 1.5 : 1), hf * sc * (k === 'stubble' ? 0.25 : k === 'young' ? 0.6 : k === 'mustard' ? 1.35 : 0.7), sc * (k === 'mustard' ? 1.5 : 1));
       d.updateMatrix();
       mesh.setMatrixAt(i, d.matrix);
       if (k === 'stubble') c.setRGB(1.0, 0.88, 0.55); else if (k === 'mustard') c.setRGB(0.95 + 0.05 * j, 0.95, 0.42); else c.setRGB(0.48 + 0.06 * j, 0.72, 0.38); // dusty field greens, never lime
+      c.multiplyScalar(tf);
       mesh.setColorAt(i, c);
     }
     nearPack(mesh, tuftSpots.length);
