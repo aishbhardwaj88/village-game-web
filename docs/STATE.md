@@ -31,3 +31,4 @@ Open (hourly loop): tractor spec 2.60 m vs parts 2.19 m needs her call; player_c
   (fetch+checkout -B fixes it).
 - Headless chromium launches fine (confirmed this run) but a real page reliably crashes ("Target crashed")
   partway through a long page.evaluate - same screenshot.js/world-validator.js/regression-check.js issue.
+- 26 Nov RIDE BLOCKER: old-layout cycle repair shop (chaurahaEdges.js BUILDINGS, x 598.9-602.7, z -4.4..-1) stood on the new main road lane near z -5 and stopped the ride; removed by filter. Tea/tailor shops there still overlap map shops sqx_235/236 (off the lane, left).
