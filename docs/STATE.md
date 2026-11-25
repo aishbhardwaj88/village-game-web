@@ -18,11 +18,11 @@ answers (5a1, taste is hers).
 - GATE (25 Nov): Play waits only on spawn-ring prop sites (propGate.js startGate); shops/land/map objects build after
   (lateBuild.js); streamHold() freezes with a loading notice if a near prop site stalls. Resumable downloader in
   loaders.js (stall 8s, 4 tries, Range-resume). SW cache-first (?nosw=1 bypasses); manualChunks vendor/data/app.
-- Measured pre-GATE3 (4G, 4x CPU): Play ~11-14 s; main sync build 2.2-9.8 s of it (CPU-bound). Target 4 MB / 3 s NOT met.
+- Pre-GATE3 (4G, 4x CPU): Play ~11-14 s, sync build 2.2-9.8 s. Target 4 MB / 3 s NOT met.
 - Item 2 (chauraha buildings): could NOT reproduce, NEEDS_YOU open. Item 8 console-error check needs a real browser.
 
 ## Next 5 items
-1. (done GATE4) house atlas n/r deferred. Check in a real browser: house walls look same at first frame.
+1. House atlas n/r deferred (GATE4, done): eyeball house walls in a real browser.
 2. Ring models 6.5 MB (house_compound, gher_yard, tv_house, chaupal...) + shared props: split village builders by area.
 3. Zone streaming rule (pixel-rule appear distance): speed-lead half already built (zoneManager.js leadM, 26 Nov); the
    on-screen-size half (visibleRadius by real apparent size) isn't - broad refactor, real regression risk, scoped only.
