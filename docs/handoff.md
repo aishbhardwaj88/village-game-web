@@ -1785,3 +1785,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Synthetic test (tools/wallposter-layout-test.mjs, 578 boxes): 718 placed, 86% road-facing, deterministic, 0 rule violations. Short: cvSchoolAhead 2/5, muCyclePuncture 4/5, muHairCutting 4/5, muTeaSnacks 3/5 (few matching shops).
 - NOT verified: live look (browser pane was hidden, game stalled at 80%), real box counts, draw calls (+9), fps, load time.
 - Agents: atlas packer = Sonnet low (mechanical packing); layout module = Sonnet medium (rules + test); mesh builder and wiring = Sonnet medium (main.js and builder). None started agents, all stopped on report. No Opus, no Fable.
+
+# 25 Nov ~19:1x scheduled run: no code change, nothing unblocked
+- HEAD 80115da (wall-posters work, not touched here), CI green (run 1348). npm ci re-run (node_modules
+  was actually absent, not just detached HEAD - last run's check was a false pass).
+- layout-tests.mjs: 123 failures (front 27/on-road 70/overlap 26) vs 122 last run - flat. Last position
+  commit (cdd0d46) ~49 min before this run; ambiguous signal, left alone (5a-MAP + open map-lock
+  question override STATE's old "safe to pick up" note - noted as superseded in STATE.md).
+- LOOKS LIST 1-8 and BACKLOG [ACTIVE] items re-confirmed done/parked/blocked (A6, not re-audited
+  further): CC0 proxy 403, shader-warm needs real browser, no place being reworked. No new real task.
