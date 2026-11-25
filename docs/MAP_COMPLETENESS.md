@@ -5,14 +5,14 @@ Counts (map rows): places 436, objects 1627. BUILT ~417 places / ~1585 objects. 
 ## A. MISSING (a map item with no builder, or a builder that skips it)
 | Map item | World x,z | Evidence |
 |---|---|---|
-| Mela ground (place `mela`) | 782,-103 | src/main.js:2123 registers `mela_ground` only `if (!isNewLayout())`; "parked by owner 22 Nov". Weekly market ground (762,40) is a different item and is built (patch) |
-| Railway track bed, sleepers, 2 rails | 389-393,-330..350 | no `new_rail_bed` / `new_rail` reader anywhere in src (grep) |
-| Level-crossing planks x2 (highway, village road) | 389.4,-135.5 / -25 | `new_rail_crossing`: no reader |
-| Crossing barriers x8, signals x2 | 388-396,-136..-16 | `new_boom`, `new_signal`: no reader |
-| Railway platform | 394.4,-112 | `new_platform`: no reader |
-| Railway station building | 405.8,-92 | shopsPlace.js `isSingle` accepts it, but matchPlace finds no place named "Railway station" so it is skipped ("no place with a front") |
-| Platform shelter | 395.9,-93 | same skip |
-| Ticket window and waiting hall | 405.8,-79.5 | same skip |
+| ~~Mela ground (place `mela`)~~ BUILT 26 Nov | 782,-103 | src/main.js `mela_ground` zone now registered in the final map too (was `if (!isNewLayout())`), position and turn from the packed map. Open: its swing (world ~767,-115) overlaps the map's Tent and wedding lights (766,-113.2); not moved |
+| ~~Railway track bed, sleepers, 2 rails~~ BUILT 26 Nov | 389-393,-330..350 | src/kit/railway.js (4 zones, z -330..330) |
+| ~~Level-crossing planks x2~~ BUILT | 389.4,-135.5 / -25 | railway.js planks(); village-road planks sit 5 m off the road centre (-14.2) in the map itself |
+| ~~Crossing barriers x8, signals x2~~ BUILT | 388-396,-136..-16 | railway.js boom()/signal(); arms drawn raised (idle), only the post is solid so the roads stay open |
+| ~~Railway platform~~ BUILT | 394.4,-112 | railway.js, 0.22 m high (player has no step-up) |
+| ~~Railway station building~~ BUILT | 405.8,-92 | the audit missed it: it IS in the map as object `new_Railway station`; railway.js builds it, board "Amrai Khera Halt" |
+| ~~Platform shelter~~ BUILT | 395.9,-93 | object `new_Railway platform shelter`, railway.js |
+| ~~Ticket window and waiting hall~~ BUILT | 405.8,-79.5 | object `new_Ticket window and waiting hall`, railway.js |
 | (FIXED 26 Nov) 7 two-storey shops, Hardware and paint, 11 kiosks/carts that were skipped | Kirana 607.7,76.2; Jeweller 561.9,12.9; Readymade clothes 619.3,-17.7; Pooja 611.3,36.6; Kites and toys 594.5,40; Gift shop 594.5,35.1; Grocery 594.1,50.4; Hardware 645.7,27.8; 11 kiosks/carts | Now built on their drawn plot (src/kit/shopsPlace.js: unmatched sqx/kiosk/cart take their front from the plot edge facing the nearest road; markers were moved or sit on other shops, so the plot is the footprint). Shops 165 objects: built 143 -> 162, skipped 22 -> 3. The 3 left are the railway station, platform shelter and waiting hall (railway, not shops) |
 
 ## B. PARTIAL

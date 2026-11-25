@@ -37,6 +37,7 @@ export const PLACE_BOARDS = [
   { id: 'petrol', hi: 'पेट्रोल पंप', en: 'Petrol Pump', fg: MAROON },
   { id: 'kanta', hi: 'धर्म काँटा', en: 'Dharam Kanta', fg: NAVY },
   { id: 'busadda', hi: 'बस अड्डा', en: 'Bus Adda', fg: NAVY },
+  { id: 'station', hi: 'अमराई खेड़ा हॉल्ट', en: 'Amrai Khera Halt', fg: INK },
   { id: 'mela', hi: 'मेला मैदान', en: 'Mela Ground', fg: MAROON },
   { id: 'maidan', hi: 'खेल मैदान', en: 'Khel Maidan', fg: NAVY },
   { id: 'school_v2', hi: 'राजकीय प्राथमिक पाठशाला', en: 'Government Primary School', fg: NAVY },
