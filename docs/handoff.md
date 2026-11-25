@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop, 13:14 UTC) - no code change, final map re-verified clean, every lead blocked
+- layout-tests.mjs + road-clearance.mjs re-run vs the just-landed final map: 23 overlaps, 6 on-road
+  named buildings/barriers, 63 road-band touches (mostly by-design gates/islands/rest-stops) - all
+  position/layout, so per 5a-MAP logged not fixed; her "map locked?" ask (NEEDS_YOU L65) still open.
+- missions-check re-run clean: 396/0/5, same position-only warns as before (milk stops).
+- school_bell "float" re-checked by reading: not a bug, already sits on the built 0.12 m apron.
+- Nothing else real+unblocked (LOOKS LIST done/parked/browser-blocked; BACKLOG ACTIVE all blocked).
+  Agents: none.
+
 # 26 Nov (hourly loop) - no code change this run; docs-only (A5 exception), every lead genuinely blocked
 - Fresh container had no node_modules at all (not just "empty") - a shallow `ls` check mid-run falsely looked
   non-empty; ran `npm ci`, then re-verified build:unchecked + all 4 instant checks clean on this checkout.

@@ -1,5 +1,10 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov (vehicle models run). Trolley floor/wheel clip fixed by the hourly loop; build:unchecked ok, Tier 1 clean, missions-check 396/0/5.
+Last updated: 25 Nov 13:14 UTC (hourly loop, no code change). missions-check still 396/0/5 clean on
+the final map; layout-tests.mjs + road-clearance.mjs re-run vs the final map for the first time -
+23 overlaps + 6 on-road buildings/barriers + 63 road-band touches found, all position/layout so
+logged not fixed per 5a-MAP (see handoff.md top entry). Her "is the 25 Nov map locked for good?"
+question (NEEDS_YOU) is the key unblock: once she says yes, this overlap/road list becomes real,
+safe, in-scope work.
 This run (25 Nov vehicle models): drivable tractor, trolley, bicycle now use old_tractor/trailer_pack/bicycle.glb (src/vehicleModels.js). Code-built bodies stay as physics + fallback. Gate bytes before Play unchanged (7.6 MB cpu4, 0 vehicle requests); models stream after Play via propGate gateRadius 0.
 Open: tractor model is one mesh (no wheel spin, no front steer); bike wheel does not steer; cart still code-built (NEEDS_YOU). Ring load of the 3 sites after Play not measurable here (Chromium crashes after Play).
 All [ACTIVE] BACKLOG items still blocked as before (proxy 403, headless browser). Fresh container: `npm ci` + checkout -B main.
