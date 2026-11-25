@@ -16,7 +16,6 @@ by design, no board.png persists here - expected (known screenshot limit), not n
   regardless of their own smaller buildRadius (zoneManager.js setGate()). Already meshopt+WebP+quantized, no
   easy further shrink; shrinking the gate risks visible pop-in - real regression risk, not attempted blind.
 - 26 Nov SHOW CAP 265 m, shader warm-up inside the gate, wall murals sliced. 25 Nov WALL REPEAT+VARIETY and
-  GATE done: honest Play gate, resumable downloader, SW cache-first.
 - CLAUDE.md 5b sweep clean village-wide, Item 5 done. licence-audit: 490 files, 0 UNKNOWN, 2 pre-existing OWNER warnings.
 
 ## Next 5 items
