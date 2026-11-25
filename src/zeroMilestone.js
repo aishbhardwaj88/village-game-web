@@ -27,7 +27,7 @@ import { MAP_SHIFT } from './mapPlan.js';
 export const ZERO_MILESTONE_POS = { x: 2.9 + MAP_SHIFT.x, z: 19.9 + MAP_SHIFT.z, ry: (90 - 5) * Math.PI / 180 };
 
 const HI = 'अमराई खेड़ा';
-const EN = 'Amrai Kheda';
+const EN = 'Amrai Khera';
 
 // Lime wash: warm off-white, never pure white (the matte shader also caps albedo at 0.9).
 const LIME = new THREE.Color(0xd9d3c3);

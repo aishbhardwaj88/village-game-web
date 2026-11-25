@@ -3,11 +3,11 @@ import { drawBilingual, hiFont, enFont } from '../signPaint.js';
 
 /**
  * The painted faces of the map objects layer, ONE canvas, one material, one draw call:
- *   gate front  'अमराई खेड़ा में आपका स्वागत है' / 'Welcome to Amrai Kheda'   (faces the highway)
+ *   gate front  'अमराई खेड़ा में आपका स्वागत है' / 'Welcome to Amrai Khera'   (faces the highway)
  *   gate back   'धन्यवाद, फिर पधारें' / 'Thank you, visit again'
  *   notice      'ग्राम पंचायत सूचना पट्ट' / 'Gram Panchayat notice board' header + pinned papers
  * Signboard rule (25 Oct): Hindi bold on top and larger, English below, not bold, 60-70% of the Hindi cap height,
- * both in the same dark paint. The village name follows the flag island's name stone ('Amrai Kheda').
+ * both in the same dark paint. The village name follows the flag island's name stone ('Amrai Khera').
  */
 const W = 1024, H = 1024;
 export const SIGN_RECTS = { gateFront: [0, 0, 1024, 200], gateBack: [0, 210, 1024, 200], notice: [0, 420, 600, 404] };
@@ -22,7 +22,7 @@ export function makeSignTexture() {
     const g = cv.getContext('2d');
     g.clearRect(0, 0, W, H);
     // gate boards: sun-faded cream enamel paint on steel, maroon border, the letters in deep maroon
-    for (const [k, hi, en] of [['gateFront', 'अमराई खेड़ा में आपका स्वागत है', 'Welcome to Amrai Kheda'], ['gateBack', 'धन्यवाद, फिर पधारें', 'Thank you, visit again']]) {
+    for (const [k, hi, en] of [['gateFront', 'अमराई खेड़ा में आपका स्वागत है', 'Welcome to Amrai Khera'], ['gateBack', 'धन्यवाद, फिर पधारें', 'Thank you, visit again']]) {
       const [x, y, w, h] = SIGN_RECTS[k];
       g.fillStyle = '#ece2c6'; g.fillRect(x, y, w, h);
       grain(g, x, y, w, h, 1);

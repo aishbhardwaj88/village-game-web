@@ -52,7 +52,7 @@ function flagAndStoneCanvas() {
     g.strokeStyle = 'rgba(80,65,45,0.5)'; g.lineWidth = 4; g.strokeRect(sx + 14, 14, 484, 228);
     g.fillStyle = '#3a2a1c'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     g.font = hiFont(84); g.fillText('अमराई खेड़ा', sx + 256, 128);
-    g.font = enFont(46); g.fillText('Amrai Kheda', sx + 256, 200);
+    g.font = enFont(46); g.fillText('Amrai Khera', sx + 256, 200);
     tex.needsUpdate = true;
   };
   paint();
