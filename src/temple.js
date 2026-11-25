@@ -257,7 +257,7 @@ export function buildTemple(kit) {
  * people walk in from") — no tree over it (see docs/parked.md, same no-licensed-
  * tree-model reasoning as the chabutra above). */
 const FLOWER_STALL = { w: 2.5, d: 2, h: 2.2, tableH: 0.4 };
-export const FLOWER_STALL_POS = { x: 83.7 + MAP_SHIFT.x, z: -85.3 + MAP_SHIFT.z }; // map: Flower stall
+export const FLOWER_STALL_POS = { x: 83.7 + MAP_SHIFT.x + 0.25, z: -85.3 + MAP_SHIFT.z + 0.75 }; // 25 Nov roads-empty: 0.79 m off the lane 12 dust apron // map: Flower stall
 
 export function buildFlowerStall() {
   const group = new THREE.Group();
