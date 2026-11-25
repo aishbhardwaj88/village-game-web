@@ -84,7 +84,7 @@ export class ThirdPersonCamera {
   }
 
   update(dt = 1 / 60) {
-    const desiredDistance = Math.max(this.distance, CAMERA_MIN_DISTANCE);
+    const desiredDistance = Math.max(this.distance, this.minDistance === undefined ? CAMERA_MIN_DISTANCE : this.minDistance); // minDistance: review modes only (?compare=tvuncle lowers it)
 
     this._pivot.copy(this.target.position);
     this._pivot.y += this.height;

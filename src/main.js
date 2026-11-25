@@ -267,7 +267,7 @@ const CYCLE_CAM_LAG = 0.25; // s: camera yaw follows the heading with this time 
 /** Tightest turning radius (m) at a speed: 2.2 m at walking pace (so a U-turn fits a 6 m gali), 3 m at 7.5 m/s (a ~6 m circle across),
  * 4.5 m sprinting (~9 m across). The handlebar limit is atan(wheelbase / radius). */
 const cycleTurnRadius = (v) => { v = Math.abs(v); return v <= 1.5 ? 2.2 : v <= 7.5 ? 2.2 + (v - 1.5) * (0.8 / 6) : 3 + (v - 7.5) * 0.75; };
-let onCycle = !new URLSearchParams(window.location.search).get('play'); // the player starts on a cycle (3 Nov): C gets off / on. ?play=<character> reviews start on foot (18 Nov: the cycle's placeholder rider arms showed on the real models)
+let onCycle = !new URLSearchParams(window.location.search).get('play') && new URLSearchParams(window.location.search).get('compare') !== 'tvuncle'; // the player starts on a cycle (3 Nov): C gets off / on. ?play=<character> reviews start on foot (18 Nov: the cycle's placeholder rider arms showed on the real models)
 let cycleSpeed = 0, cycleHeading = 0, cyclePedalling = false, bellHintShown = false; // C4 riding feel: pedalling drives the cranks/bob, B rings the bell
 let cycleBar = 0, cycleYawRate = 0, cycleLookAt = -1e9, cycleLookedAtRest = true, cycleThudAt = -1e9, cycleWallHits = 0; // handlebar (rad, + = right), last yaw rate, last mouse/drag look (ms)
 const PLAYER_COLLISION_RADIUS = PLAYER_RADIUS + 0.1;
@@ -1326,8 +1326,9 @@ async function main() {
   }
   // S7 WIRING (characters): tiers for every rigged character (?charlod=0 turns them off); characters download only after Play, nearest first
   initCharacterLOD({ camera, assetSlots });
-  // ?compare=tvuncle: review-only side by side TV Uncle HD / Smart Mesh in front of the spawn (src/compareScene.js); never loads otherwise
-  if (new URLSearchParams(window.location.search).get('compare') === 'tvuncle') import('./compareScene.js').then((m) => m.setupCompare({ scene, assetSlots, spawn: OPENING_SPAWN, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)) }));
+  // ?compare=tvuncle: review-only side by side TV Uncle HD / Smart Mesh on the highway with a clip button bar (src/compareScene.js); player on foot; never loads otherwise
+  let compareUpdate = null;
+  if (new URLSearchParams(window.location.search).get('compare') === 'tvuncle') import('./compareScene.js').then((m) => { compareUpdate = m.setupCompare({ scene, camera, camRig, player, assetSlots, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)) }); });
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
   const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)), /* 21 Nov: stand ON the road and lane strips (they sit 3-4 cm above the ground plane; feet sank into them) */ getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
   for (const [name, npc, dims] of [
@@ -3210,6 +3211,7 @@ async function main() {
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
     if (gatherUpdate) gatherUpdate(started && paused ? 0 : dt);
+    if (compareUpdate) compareUpdate(started && paused ? 0 : dt);
     updateCharacterAnims(started && paused ? 0 : dt);
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
