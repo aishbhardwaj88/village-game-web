@@ -1688,3 +1688,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 
 ## 26 Nov roads agent
 - Roads now equal docs/layout/approved-map-2026-11-25.json: raw polylines + widths (gali 4.0, no clips/shifts) in mapData.json and tools/layout-pack.mjs; corner rounding capped at 0.4 m; ring arms cut on the map's own line; map footprints (+0.1 m) cut out of the road surface (roadNetwork.js underFootprint). tools/map-match-roads.mjs: 36 failing roads -> 0. Railway/canal match (bed x 392, canal 824). Map oddity: village-road level crossing planks centre z -19 sit 4.8 m off cross_road.
+
+## 25 Nov afternoon: village must match the final map (her priority one). Agents
+- Houses: Sonnet, medium. Placement and builder work (e02117f).
+- Roads, canal, railway: Sonnet, medium. Raw map roads restored, road cut under footprints (434720f, ded31c1).
+- Trees, fields, props: Sonnet, medium. Stopped early on her order (no new objects); pushed d45c230 first.
+- Doorstep props off roads: Sonnet, low. Khaat/planters footprint-filtered (e4548fd).
+- Named places: Sonnet, medium. Exact map x,z,front (4637112); fixing 6 missions-check FAIL it caused.
+- Shops and buildings: Sonnet, medium. Buildings only, no carts/signs/props. Running.
+- Opus: none. Haiku: none (one planned for the final live re-check). Fable: none.
+- Head of engineering (main chat): gated old-layout builders off under the new layout (25095ba: road-events cow, vendors, nostalgia, oddities incl. mazar, fixtures).
