@@ -178,6 +178,10 @@ for (const s of shops) {
 // ---------------------------------------------------------------- result
 const newHits = []; for (const s of shops) { const h = hitsProbe(s, s); if (h) newHits.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)} now overlaps ${h}`); }
 const rects = {}, rows = [];
+const SIZE_OVERRIDE = { // her answer 25 Nov (Optician, "make it narrower"): the free gap between the Inner loop band and gali_n41 is 4.22 m wide (x 567.47 to 571.69 over the shop's whole depth), so 4.0 m centred leaves 0.1 m each side
+  'Optician (2-storey)': { x: 569.58, w: 4.0 },
+};
+for (const s of shops) { const o = SIZE_OVERRIDE[s.name]; if (o) { s.x = o.x; s.w = o.w; } }
 for (const s of shops) {
   const f = [Math.sin(s.ry), Math.cos(s.ry)];
   rects[s.rk] = { cx: r3(s.x), cz: r3(s.z), w: r3(s.w), d: r3(s.d), ry: r3(s.ry), front: [r3(f[0]), r3(f[1])], frontMid: [r3(s.x + f[0] * s.d / 2), r3(s.z + f[1] * s.d / 2)] };
