@@ -11,7 +11,8 @@ answers (5a1, taste is hers).
   the ring no longer build behind the title, slot models beyond it wait for Play (assetSlots.holdFar; slotIsNear uses world position).
   GATE3 (26 Nov): normal/roughness/ao maps load after the Play unlock (src/deferredMaps.js; first 3D frame held until they
   land, ?nodefer=1 = old). Before Play, honest count (fetch() bodies at dist size): 16.65 -> 13.50 MB (web 10.12 -> 6.97,
-  models 6.53). Left: house atlas n/r maps (housesMaterial loadBitmap ~2.6 MB) and the ring's models.
+  models 6.53). GATE4 (26 Nov): house atlas normal/roughness (base 0.77 MB + 8 variants 2.0 MB) now drawn after Play via deferredTask
+  (deferredMaps.js, same first-frame hold); before Play ~10.7 MB. Left: the ring's models.
 - 25 Nov WALL REPEAT: plaster tile 0.5 -> 1.5 m, applyAntiTile() two-scale colour blend in materials.js for plaster*/mud*/
   concrete_e,f. Autocorr repeat score 0.95 -> 0.27 on a 10x3 m wall (sim). VARIETY: 16 house washes + ground noise done.
 - GATE (25 Nov): Play waits only on spawn-ring prop sites (propGate.js startGate); shops/land/map objects build after
@@ -21,7 +22,7 @@ answers (5a1, taste is hers).
 - Item 2 (chauraha buildings): could NOT reproduce, NEEDS_YOU open. Item 8 console-error check needs a real browser.
 
 ## Next 5 items
-1. Defer the house atlas normal/roughness canvases (kit/housesMaterial.js buildHouseAtlas) like GATE3: ~2.6 MB.
+1. (done GATE4) house atlas n/r deferred. Check in a real browser: house walls look same at first frame.
 2. Ring models 6.5 MB (house_compound, gher_yard, tv_house, chaupal...) + shared props: split village builders by area.
 3. Zone streaming rule (pixel-rule appear distance): speed-lead half already built (zoneManager.js leadM, 26 Nov); the
    on-screen-size half (visibleRadius by real apparent size) isn't - broad refactor, real regression risk, scoped only.

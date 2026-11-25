@@ -1,3 +1,4 @@
+import { deferredTask } from '../deferredMaps.js'; // normal/roughness atlas canvases are drawn after the Play unlock
 import * as THREE from 'three';
 import { houseQuality } from './housesQuality.js';
 import { ver } from '../assetUrl.js';
@@ -90,14 +91,12 @@ export function buildHouseAtlas(base = 'assets/textures/') {
     const kinds = ['color', 'normal', 'roughness'];
     const sets = [...new Set(SETS.map((s) => s[0]))];
     const bm = {};
-    await Promise.all(sets.flatMap((s) => kinds.map(async (k) => { bm[s + k] = await loadBitmap(`${base}${s}/${s}_${k}.webp`); })));
+    const loadKinds = (ks) => Promise.all(sets.flatMap((s) => ks.map(async (k) => { bm[s + k] = await loadBitmap(`${base}${s}/${s}_${k}.webp`); })));
+    await loadKinds(['color']); // only colour before Play; normal + roughness are fetched and drawn after it (deferredTask)
     const wash = noiseCanvas(256, 3.7, 4, 0.42, 0.18);
     const out = {};
     const plasterSq = {};
-    for (const k of kinds) {
-      const c = document.createElement('canvas');
-      c.width = CS * COLS; c.height = CS * ROWS;
-      const g = c.getContext('2d');
+    const draw = (k, g) => {
       SETS.forEach(([set, name], i) => {
         const col = i % COLS, row = Math.floor(i / COLS);
         let img = bm[set + k];
@@ -126,6 +125,13 @@ export function buildHouseAtlas(base = 'assets/textures/') {
           g.restore();
         }
       });
+    };
+    for (const k of kinds) {
+      const c = document.createElement('canvas');
+      c.width = CS * COLS; c.height = CS * ROWS;
+      const g = c.getContext('2d');
+      if (k === 'color') draw(k, g);
+      else { g.fillStyle = k === 'normal' ? 'rgb(128,128,255)' : 'rgb(230,230,230)'; g.fillRect(0, 0, c.width, c.height); } // flat until its real map is drawn in
       const t = new THREE.CanvasTexture(c);
       t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
       t.anisotropy = houseQuality().anisotropy;
@@ -134,6 +140,11 @@ export function buildHouseAtlas(base = 'assets/textures/') {
       if (k === 'color') t.colorSpace = THREE.SRGBColorSpace;
       out[k] = t; atlasParts[k] = { g, t };
     }
+    deferredTask(async () => {
+      await loadKinds(['normal', 'roughness']);
+      for (const k of ['normal', 'roughness']) { draw(k, atlasParts[k].g); atlasParts[k].t.needsUpdate = true; }
+      await loadHouseVariants('assets/textures_mix/', ['normal', 'roughness']);
+    });
     return { map: out.color, normalMap: out.normal, roughnessMap: out.roughness };
   })();
   return atlasPromise;
@@ -334,14 +345,13 @@ export function houseMaterialReady(base) {
   return buildHouseAtlas(base).then((a) => {
     m.map = a.map; m.normalMap = a.normalMap; m.roughnessMap = a.roughnessMap;
     m.needsUpdate = true;
-    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) track(loadHouseVariants()); // 26 Nov: part of the gate now (was 8 s after start: walls changed look in front of the player)
+    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) track(loadHouseVariants('assets/textures_mix/', ['color'])); // 26 Nov: part of the gate now (was 8 s after start: walls changed look in front of the player)
     return m;
   });
 }
 
 /** After the game has started: swap the real variant surfaces into cells 8..15 (24 small WebP files, about 2.4 MB). */
-export function loadHouseVariants(base = 'assets/textures_mix/') {
-  const kinds = ['color', 'normal', 'roughness'];
+export function loadHouseVariants(base = 'assets/textures_mix/', kinds = ['color', 'normal', 'roughness']) {
   return Promise.all(ALL_VARIANTS.flatMap((v) => kinds.map((k) => loadBitmap(`${base}${v}/${v}_${k}.webp`).then((img) => ({ v, k, img })))))
     .then((all) => new Promise((resolve) => {
       // Spread over frames: 4 tiles per frame, and each texture is re-uploaded once, when its last tile is drawn (was 24 draws in one hitch).

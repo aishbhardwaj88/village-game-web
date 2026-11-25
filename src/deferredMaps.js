@@ -31,6 +31,14 @@ export function deferredSource(busted) {
   return src;
 }
 
+const tasks = []; // async jobs (house atlas n/r canvases, src/kit/housesMaterial.js) that fetch + draw their own maps after the unlock
+/** Runs fn() now when deferral is off or already released (returns its promise); otherwise holds it for releaseDeferredMaps(). */
+export function deferredTask(fn) {
+  if (OFF || open) return Promise.resolve(fn());
+  tasks.push(fn);
+  return Promise.resolve();
+}
+
 function settle() { if (--pending === 0 && open) waiters.splice(0).forEach((f) => f()); }
 
 /** Called once when the Play button unlocks: starts every held download (shared materials are updated in place). */
@@ -38,11 +46,12 @@ export function releaseDeferredMaps() {
   if (open) return;
   open = true;
   if (typeof window !== 'undefined') (window.__loadMarks = window.__loadMarks || {}).deferredMaps = queue.length;
-  pending = queue.length + 1;
+  pending = queue.length + tasks.length + 1;
   const L = loader();
   for (const [url, fill] of queue.splice(0)) {
     L.load(url, (t) => { fill(t); settle(); }, undefined, () => settle()); // a failed file counts as done, like the other loaders
   }
+  for (const fn of tasks.splice(0)) Promise.resolve().then(fn).catch(() => {}).then(settle);
   settle();
 }
 
