@@ -234,7 +234,7 @@ import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 import { ver } from './assetUrl.js';
 import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
-import { lateDone, isLateDone } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
+import { lateDone, isLateDone, yieldToMain } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -294,6 +294,8 @@ async function main() {
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed
   const _lm = (window.__loadMarks = window.__loadMarks || {}); // load-time marks read by tools/load-time-test.mjs
   _lm.mainStart = performance.now();
+  THREE.DefaultLoadingManager.itemStart('boot-hold'); // boot-CPU pass: main() now yields to the main thread between builders; keep the loading queue open until its last line so Play cannot unlock mid-boot
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   let envReady = null; // D1: the HDRI is set BEFORE the warm-up compile; set after it, every material recompiled in a second long freeze
   // D1: shaders compile against the composer's render target (the variants the RenderPass actually draws), early and
   // again at the gate; textures upload a few per frame while the title is up, so the first frame after Play is cheap.
@@ -450,6 +452,7 @@ async function main() {
   // side (SCHOOL_ROOM_DOOR_X), so the west face is unambiguously outer. Async (see
   // createDonationBoard's own doc comment) — same .then()/.catch() pattern
   // src/bazaar.js's buildBazaarSignboards() already uses.
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createDonationBoard({ x: SCHOOL_ROOM.cx - SCHOOL_ROOM.w / 2 - 0.18, y: 2.2, z: SCHOOL_ROOM.cz }, -Math.PI / 2)
     .then((board) => heroZoneGroup.getObjectByName('school_compound').add(board)) // built square, rides the turned school group
     .catch((err) => console.error('Failed to build the donation board', err));
@@ -612,6 +615,7 @@ async function main() {
     generalStoreGoods(new THREE.Matrix4().makeRotationY(STORE_ROT).setPosition(STORE_POS.x, 0, STORE_POS.z)),
     teaStallGoods(new THREE.Matrix4().makeRotationY(TEA_SHOP_ROT).setPosition(TEA_SHOP_POS.x, 0, TEA_SHOP_POS.z)),
   ], 'general_store_stock'));
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   shopsGroup.add(halwaiGoods(new THREE.Matrix4().makeRotationY(HALWAI_YAW).setPosition(HALWAI_CENTER.x, 0, HALWAI_CENTER.z)));
   // Bugfix (world-validator check 2, 23 Nov): the general store's outside soda bottles were floating at y=0.3
   // with no crate drawn under them. Real CC0 crate model, see src/shopGoods.js's loadSodaCrate.
@@ -668,6 +672,7 @@ async function main() {
   // docs/STORY.md). Position: same "just outside the counter" distance kirana's own
   // point uses.
   let DARZI_POSITION = null;
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   BAZAAR_UNITS.forEach((unit, idx) => {
     const at = bazaarXZ(bazaarUnitCx(idx), BAZAAR_FRONT_Z - 1.5);
     const pos = new THREE.Vector3(at.x, 0, at.z);
@@ -684,30 +689,54 @@ async function main() {
   // src/bazaarLife.js.
   const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
   scene.add(bazaarLife.mesh);
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createChaurahaEdges(scene);
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createSmallShops(scene); // bookstall, CD/cassette shop, mithai shop by the chowk (src/smallShops.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createMilkCentre(scene); // milk collection centre: shed, cans, scale, queue, cyclist (src/milkCentre.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createMainRoadLife(scene); // ON 8 Nov: scenes visible from the road (docs/shots/mainroad-2026-11-08b); collision-test 11150 solids 1 failed (signboard x324 z-208, fails at HEAD too); the wood cell x610.2 z-37.5 did not reproduce in 2 runs
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createArmFrontage(scene); // src/armFrontage.js
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createMainRoadFrontage(scene); // src/mainRoadFrontage.js (after armFrontage: reads its placements)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createGullyLife(scene); // the two gullies off the chauraha (src/gullyLife.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createRoofMonkeys(scene); // 3 monkeys on kit-house roof tanks (src/roofMonkeys.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVendors(scene); // street vendors round the chowk (src/vendors.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createIceCreamCarts(scene); // ice-cream carts with a bell (src/iceCreamCarts.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createScooters(scene); // parked scooters + motorcycles, Blender models (src/scooters.js)
   import('./jeep.js').then((m) => m.createJeep(scene)); // the old open-top jeep by the panchayat (src/jeep.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFurniture3(scene); // bhootiya ghar round the pond peepal, panchayat notices, kiln chimney smoke (src/villageFurniture3.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFurniture4(scene); // roadside majar under the johad neem, paper kites snagged in trees and on the transformer wire (src/villageFurniture4.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFurniture(scene); // kites on wires, scarecrows, thresher, jhoola, chaff cutter (src/villageFurniture.js)
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createWallWriting(scene); // wall writing and small stories (src/wallWriting.js)
 
   // Item 2 (new request) — village mandir + flower stall, east of the hero zone and
@@ -744,6 +773,7 @@ async function main() {
   initStaticColliders(scene);
 
   const vehicles = spawnVehicles(scene);
+  await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   const _csEntries = [], _csPool = [], _csTrolley = { x: 0, z: 0, radiusX: 1.2, radiusZ: 1.8 }; // contact-shadow scratch, reused every frame
 
   // Item 3 (real playtest bug — the trolley spawned inside the general store
@@ -3516,6 +3546,7 @@ async function main() {
   }
   requestAnimationFrame(tick);
   _lm.mainSyncEnd = performance.now();
+  THREE.DefaultLoadingManager.itemEnd('boot-hold');
 
   // `?proof=1` exposes the same scripted-positioning hook as `?dev=1` but turns on NONE of
   // dev mode's visible extras (no fps counter, no staging boxes, no penetration logging) —
