@@ -1,3 +1,5 @@
+import { cropTuftParts, attachCropWind } from './cropCards.js';
+export { cropTuftParts };
 import { pt } from './anchors.js';
 import * as THREE from 'three';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
@@ -234,47 +236,6 @@ function addDensityLOD(mesh, total) {
   };
 }
 
-/** One crop tuft (six blades + four ear / flower spikes) and its material: shared by the khet rows and the s7 kit (?layout=new). */
-export function cropTuftParts() {
-  const pos = [];
-  const col = [];
-  const uv = [];
-  const base = new THREE.Color(0x4f5f1f);
-  const tipWheat = new THREE.Color(0xd2b84e);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + 0.3;
-    const h = 0.55 + 0.22 * ((i * 37) % 5) / 4;
-    const lean = 0.12 + 0.1 * ((i * 17) % 3) / 2;
-    const ca = Math.cos(a), sa = Math.sin(a);
-    const r0 = 0.03;
-    // blade: base edge (perpendicular to the lean direction) up to a tip offset outward
-    const px = -sa * 0.045, pz = ca * 0.045;
-    const bx = ca * r0, bz = sa * r0;
-    pos.push(bx - px, 0, bz - pz, bx + px, 0, bz + pz, bx + ca * lean, h, bz + sa * lean);
-    col.push(base.r, base.g, base.b, base.r, base.g, base.b, tipWheat.r, tipWheat.g, tipWheat.b);
-    uv.push(0, 0, 0.5, 0, 0.25, 1);
-  }
-  // Four flower / ear spikes per tuft, standing at the top (one triangle each). Cream-gold by default; the per-instance colour turns them
-  // saturated mustard yellow (sarson in flower), pale gold (ripe wheat ears) or leaf green (young wheat, sabzi tops).
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + 0.9;
-    const ca = Math.cos(a), sa = Math.sin(a);
-    const cx = ca * 0.07, cz = sa * 0.07, h0 = 0.62 + 0.08 * (i % 2);
-    const px = -sa * 0.05, pz = ca * 0.05;
-    pos.push(cx - px, h0, cz - pz, cx + px, h0, cz + pz, cx + ca * 0.02, h0 + 0.17, cz + sa * 0.02);
-    for (let k = 0; k < 3; k++) col.push(0.95, 0.8, 0.28);
-    uv.push(0, 0, 0.5, 0, 0.25, 1);
-  }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  geometry.computeVertexNormals();
-  const material = new THREE.MeshStandardMaterial({ vertexColors: true, map: bladeAtlas(), roughness: 1, side: THREE.DoubleSide });
-  material.name = 'crop';
-  return { geometry, material };
-}
-
 /** Crop rows as one InstancedMesh of real-looking tufts (ship mode, 2026-10-21: the old 0.18 x 0.55 m boxes on a 3 m grid read as
  * dark fence posts). Each tuft is six thin blades leaning outward, dark at the base and golden-green at the tip; planted in
  * furrows (1 m along the row, 1.5 m between rows) with every third row a greener vegetable (sabzi) row. ~5k instances, 6
@@ -288,7 +249,7 @@ function buildCropRows() {
   const rows = Math.floor((halfZ * 2) / between);
 
   const { geometry, material } = cropTuftParts();
-  const mesh = new THREE.InstancedMesh(geometry, material, cols * rows);
+  const mesh = attachCropWind(new THREE.InstancedMesh(geometry, material, cols * rows));
   mesh.castShadow = false;
   mesh.receiveShadow = true;
   mesh.name = 'crop_rows';

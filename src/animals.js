@@ -441,6 +441,33 @@ const COW_FOOTPRINT_RADIUS = 0.9;
 // same footprint as the real dog_pack instances instead of inventing its own radius.
 export const DOG_FOOTPRINT_RADIUS = 0.4;
 
+
+// Slow roaming (visual only; the static collider box stays at the animal's home, so the roam radius is kept small).
+// Each animal picks a point inside its radius, turns toward it and walks, then stands a while. Only runs while the mesh was
+// actually rendered in the last ~0.25 s and its camera is within ROAM_NEAR metres, so off-screen and far herds cost nothing.
+const ROAM_NEAR = 70;
+function makeRoamer(mesh, instances, { radius, speed, pauseMin, pauseMax }) {
+  const cam = new THREE.Vector3();
+  let seenAt = -1e9;
+  mesh.onBeforeRender = (r, sc, camera) => { seenAt = performance.now(); camera.getWorldPosition(cam); };
+  for (let i = 0; i < instances.length; i++) { const n = instances[i]; n.hx = n.x; n.hz = n.z; n.tx = n.x; n.tz = n.z; n.wait = 2 + ((i * 7) % 5); n.seed = i * 13.7 + 1; }
+  return function roam(dt) {
+    if (performance.now() - seenAt > 250) return false;
+    const dx0 = cam.x - instances[0].hx, dz0 = cam.z - instances[0].hz;
+    if (dx0 * dx0 + dz0 * dz0 > ROAM_NEAR * ROAM_NEAR) return false;
+    for (let i = 0; i < instances.length; i++) {
+      const n = instances[i];
+      if (n.wait > 0) { n.wait -= dt; if (n.wait <= 0) { n.seed = (n.seed * 16807 + 11) % 2147483647; const a = (n.seed % 6283) / 1000, d = Math.sqrt((n.seed % 997) / 997) * radius; n.tx = n.hx + Math.cos(a) * d; n.tz = n.hz + Math.sin(a) * d; } continue; }
+      const dx = n.tx - n.x, dz = n.tz - n.z, dist = Math.hypot(dx, dz);
+      if (dist < 0.08) { n.seed = (n.seed * 16807 + 5) % 2147483647; n.wait = pauseMin + (n.seed % 1000) / 1000 * (pauseMax - pauseMin); continue; }
+      let da = Math.atan2(dx, dz) - n.rotY; da = Math.atan2(Math.sin(da), Math.cos(da));
+      n.rotY += da * Math.min(1, dt * 2.5);
+      if (Math.abs(da) < 0.7) { const st = Math.min(dist, speed * dt); n.x += (dx / dist) * st; n.z += (dz / dist) * st; }
+    }
+    return true;
+  };
+}
+
 /** A stationary herd — real geometry, one InstancedMesh, real world positions (not
  * decorative-only placeholders), covering both cows and buffalo via per-instance
  * tint (see the module doc comment above). `placements` is a flat [{x,z,rotationY,
@@ -487,7 +514,9 @@ export function createCattleHerd(placements) {
   keepOnGround(mesh, (scene) => {
     instances.forEach((inst, i) => { applyInstance(i, inst, 0); mesh.instanceMatrix.needsUpdate = true; const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
   });
+  const roam = makeRoamer(mesh, instances, { radius: 1.6, speed: 0.3, pauseMin: 8, pauseMax: 20 });
   function update(dt) {
+    roam(dt);
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];
       inst.t += dt * inst.rate;
@@ -531,7 +560,9 @@ export function createDogPack(placements) {
   keepOnGround(mesh, (scene) => {
     instances.forEach((inst, i) => { applyInstance(i, inst, 0); const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
   });
+  const roam = makeRoamer(mesh, instances, { radius: 3, speed: 0.7, pauseMin: 4, pauseMax: 11 });
   function update(dt) {
+    roam(dt);
     for (let i = 0; i < instances.length; i++) {
       const inst = instances[i];
       inst.t += dt * inst.rate;

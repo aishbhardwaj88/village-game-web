@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LAND_QUALITY } from './landQuality.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { attachCropWind } from '../cropCards.js';
 import { cropTuftParts, buildCaneClumps, FIELD_CENTER, FIELD_SIZE } from '../field.js';
 import { labelKey, labelName, inRing, makeRoadIndex, hash01 } from './landLayout.js';
 import { loadRaw } from '../materials.js';
@@ -242,7 +243,7 @@ export async function build(map, { camera = null } = {}) {
   const tuftSpots = [...spots.wheat.map((s) => [...s, 'wheat']), ...spots.wheat_young.map((s) => [...s, 'young']), ...spots.stubble.map((s) => [...s, 'stubble']), ...spots.sarson.map((s) => [...s, 'mustard'])];
   if (tuftSpots.length) {
     const { geometry, material } = cropTuftParts();
-    const mesh = new THREE.InstancedMesh(geometry, material, tuftSpots.length);
+    const mesh = attachCropWind(new THREE.InstancedMesh(geometry, material, tuftSpots.length));
     mesh.name = 's7_field_tufts';
     mesh.receiveShadow = true;
     mesh.userData.groundLevel = true;
