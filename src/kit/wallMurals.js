@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { drawBilingual } from '../signPaint.js';
 import { runSync } from './lateBuild.js';
+import { ROAD_KINDS } from '../roadNetwork.js';
 
 /**
  * Painted posters and murals for bare exterior walls (S7 sprint, signage agent; expanded by the wallposters agent, 22
@@ -47,6 +48,23 @@ import { runSync } from './lateBuild.js';
  * scene group; it is ONE merged BufferGeometry + ONE material, so it costs exactly one draw call total, however many
  * buildings/segments use it.
  */
+
+// 25 Nov (roads must be empty): a poster may not hang over a road, its dusty apron or the wandering edge. Same model as
+// src/roadNetwork.js ROAD_KINDS + the apron alpha>=0.5 ring (tmp/roadempty2/test.mjs). roadDepth > 0 means "on the road".
+const APRON_M = { highway: 0.58, road: 0.42, lane: 0.31, back: 0.19, track: 0.46, path: 0.17 };
+function roadDepth(roads, x, z) {
+  if (!roads || !roads.segs) return -9;
+  let worst = -9;
+  for (const s of roads.segs) {
+    const k = ROAD_KINDS[s.kind] || ROAD_KINDS.lane;
+    const e = s.half + Math.max(k.amp * 1.4, APRON_M[s.kind] ?? 0.31);
+    if (x < Math.min(s.a[0], s.b[0]) - e || x > Math.max(s.a[0], s.b[0]) + e || z < Math.min(s.a[1], s.b[1]) - e || z > Math.max(s.a[1], s.b[1]) + e) continue;
+    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L2 = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - s.a[0]) * dx + (z - s.a[1]) * dz) / L2));
+    worst = Math.max(worst, e - Math.hypot(x - (s.a[0] + dx * t), z - (s.a[1] + dz * t)));
+  }
+  return worst;
+}
 
 const CW = 384, CH = 560; // portrait poster cell, distinct from the 512x120 shop signboard cells
 const COLS = 6; // grid is sized to DESIGNS.length below (ROWS computed), never shipped as a file — runtime canvas only
@@ -517,13 +535,30 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
   const instances = []; // debug/report use: one row per placed mural { cx, cy, cz, nx, nz, width, height, design }
   let placed = 0, skippedShort = 0, skippedDoor = 0, roadFacingPlaced = 0;
 
-  const addPoster = (seed, cx, cy, cz, tWx, tWz, nWx, nWz, maxLen) => {
+  let onRoadLeft = 0, slid = 0;
+  const addPoster = (seed, cx, cy, cz, tWx, tWz, nWx, nWz, maxLen, slide = null) => {
     const design = pickDesign(seed);
     const rect = atlas.rects.find((r) => r.id === design.id);
     const aspect = CH / CW;
     let width = 0.85 + hash(seed, 3) * 0.55; // 0.85 - 1.4 m wide
     width = Math.min(width, maxLen);
     if (width < 0.6) return false;
+    // roads empty (25 Nov): keep the poster off the road + apron. Try sliding it along its own wall (smallest move first),
+    // then a narrower poster; if the wall face itself stands on the road the poster stays where it was (reported).
+    if (roads && roads.segs && slide) {
+      const fits = (c, w) => [-0.5, -0.25, 0, 0.25, 0.5].every((t) => roadDepth(roads, cx + tWx * (c + w * t), cz + tWz * (c + w * t)) <= 0);
+      let best = null;
+      if (!fits(0, width)) {
+        for (let w2 = width; w2 >= 0.6 - 1e-6 && !best; w2 -= 0.15) {
+          for (let m = 0.2; m <= 6 && !best; m += 0.2) for (const sg of [1, -1]) {
+            const c = sg * m, u = slide.u0 + c;
+            if (Math.abs(u) + w2 / 2 > slide.lim) continue;
+            if (fits(c, w2)) { best = { c, w2 }; break; }
+          }
+        }
+        if (best) { cx += tWx * best.c; cz += tWz * best.c; width = best.w2; slid++; } else onRoadLeft++;
+      }
+    }
     const height = width * aspect;
     const uvRect = [rect.x0 / W, 1 - rect.y1 / H, rect.x1 / W, 1 - rect.y0 / H];
     // eye height: the poster's centre sits at ~1.5 m above the wall's own base (cy = that base), never lower than 0.65 m (clear of the plinth)
@@ -551,7 +586,7 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
         const segSeed = (b.seed ?? 0) * 97 + k * 13 + 1;
         const cx0 = x1 + dx * t + nx * offset, cz0 = z1 + dz * t + nz * offset;
         const maxLen = Math.max(0.6, Math.min(1.5, len / slots - 0.15));
-        if (addPoster(segSeed, cx0, segY, cz0, tx, tz, nx, nz, maxLen) && roadFacing) roadFacingPlaced++;
+        if (addPoster(segSeed, cx0, segY, cz0, tx, tz, nx, nz, maxLen, { u0: 0, lim: maxLen / 2 }) && roadFacing) roadFacingPlaced++;
       }
       continue;
     }
@@ -615,7 +650,7 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
       return [0.35, 0.8, 1.1].some((k) => { const dx = cx + nWx * k - o.x, dz = cz + nWz * k - o.z; return Math.abs(dx * oc - dz * os) <= o.w / 2 + 0.05 && Math.abs(dx * os + dz * oc) <= o.d / 2 + 0.05; });
     });
     if (blocked) { skippedShort++; continue; }
-    if (addPoster(seed, cx, baseY, cz, tWx, tWz, nWx, nWz, chosen.len - clearHalf * 2)) {
+    if (addPoster(seed, cx, baseY, cz, tWx, tWz, nWx, nWz, chosen.len - clearHalf * 2, { u0: jitter, lim: chosen.len / 2 - clearHalf })) {
       if (chosen.roadFacing) roadFacingPlaced++;
     } else skippedShort++;
   }
@@ -633,7 +668,7 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
     mesh.userData.noAutoCollider = true;
     mesh.receiveShadow = true;
   }
-  return { mesh, stats: { candidates: boxes.length, placed, skippedShort, skippedDoor, roadFacingPlaced, designs: DESIGNS.length, instances } };
+  return { mesh, stats: { candidates: boxes.length, placed, skippedShort, skippedDoor, roadFacingPlaced, designs: DESIGNS.length, instances, slid, onRoadLeft } };
 }
 
 export const MURAL_DESIGN_IDS = DESIGNS.map((d) => d.id);

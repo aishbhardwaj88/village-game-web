@@ -25,6 +25,7 @@ import { buildTrees } from '../trees.js';
 import { mergeGroupByMaterial } from '../mergeUtils.js';
 import { nearestClear } from './seat.js';
 import { LONG_WALK_SITES } from '../longWalks.js';
+import { roadEmptyPush } from '../mapRoads.js';
 
 // copied from src/main.js (the same yard walls, local to each yard's own origin)
 const GOODS_SOLIDS = [{ x: -4.5, z: 0, w: 0.3, d: 10.44 }, { x: 4.5, z: 0, w: 0.3, d: 10.44 }, { x: -3.095, z: 5.22, w: 3.11, d: 0.3 }, { x: 3.075, z: 5.22, w: 3.15, d: 0.3 }];
@@ -97,7 +98,15 @@ export function initLayoutWiring({ zoneManager, scene, player } = {}) {
       if (!p) { Z.delete(name); dropped++; continue; }
       if (p.untouched || !site) continue;
       site.x = p.x; site.z = p.z;
-      const z = Z.get(name); z.x = p.x; z.z = p.z;
+      if (prefix === 'ride_nook') {
+        // 25 Nov, her order (ROADS MUST BE EMPTY, move never delete): the nook's footprint (its models reach about 2.4 m round the site) must
+        // stand 0.6 m beyond the drawn road edge, so the dusty apron stays empty too. A site that does not clear it slides straight away from the road.
+        const c = Math.cos(site.ry), sn = Math.sin(site.ry), R = 2.4, pr = [[0, 0]];
+        for (const [lx, lz] of [[R, 0], [-R, 0], [0, R], [0, -R], [R * 0.7, R * 0.7], [-R * 0.7, R * 0.7], [R * 0.7, -R * 0.7], [-R * 0.7, -R * 0.7]]) pr.push([lx * c + lz * sn, -lx * sn + lz * c]);
+        const mv = roadEmptyPush(site.x, site.z, pr, 8, 0.6);
+        if (mv && mv.moved > 0) { done.push(`${name} slid ${mv.moved.toFixed(2)} m off the road apron`); site.x = mv.x; site.z = mv.z; }
+      }
+      const z = Z.get(name); z.x = site.x; z.z = site.z;
       moved++;
     }
     done.push(`${prefix}: ${moved} moved to the map, ${dropped} dropped (not on the map)`);

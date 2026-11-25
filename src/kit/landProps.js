@@ -11,6 +11,7 @@ import { addGobar } from '../gobar.js';
 import { addLaundryLine } from '../laundryLine.js';
 import { hiFont, enFont } from '../signPaint.js';
 import { yieldToMain } from './lateBuild.js';
+import { roadEmptyPush } from '../mapRoads.js';
 
 /**
  * Small things of the approved map (?layout=new):
@@ -132,6 +133,13 @@ export async function build(map) {
     const key = labelKey(o), name = labelName(o), ring = o.rings?.[0];
     if (!ring || o.kind !== 'solids') continue;
     let c = ringCentre(ring); const r = ringRadius(ring);
+    // 25 Nov, her order (ROADS MUST BE EMPTY, never delete): a well, hand pump, haystack or dung stack whose footprint touches a road or its
+    // dusty apron slides straight away from the road to the nearest legal spot (>= 0.6 m beyond the drawn edge, max 8 m). Islands, platforms and flags stay.
+    const hc = { x: c.x, z: c.z }; // the unmoved centre keeps seeding type, tint and turn, so a slid prop looks exactly as before
+    if (/^new_(well|Well|Old well|Hand pump|Haystack|straw|Dung cakes)$/.test(key)) {
+      const pr = Math.min(r, 1.8) + 0.4, mv = roadEmptyPush(c.x, c.z, [[0, 0], [pr, 0], [-pr, 0], [0, pr], [0, -pr]], 8, 0.6);
+      if (mv && mv.moved > 0) { (report.roadEmpty ||= []).push({ key, name, from: [+c.x.toFixed(2), +c.z.toFixed(2)], to: [+mv.x.toFixed(2), +mv.z.toFixed(2)], moved: +mv.moved.toFixed(2) }); c = { ...c, x: mv.x, z: mv.z }; }
+    }
     if (key === 'new_island') {
       if (name.startsWith('Raised platform')) {
         // island: brick-faced drum, cement coping, earth bed with grass (painted by the bed colour), kerb stones
@@ -181,25 +189,25 @@ export async function build(map) {
       heightPads.push({ x: c.x, z: c.z, r: r + 0.35, y: 0.62 });
       report.peepalPlatform = true;
     } else if ((key === 'new_Well' || key === 'new_well' || key === 'new_Old well') && /well/i.test(name)) {
-      well(P, c.x, c.z, Math.min(r, 1.6), c.x + c.z, key === 'new_Old well');
+      well(P, c.x, c.z, Math.min(r, 1.6), hc.x + hc.z, key === 'new_Old well');
       colliders.push(...orientedBoxes(c.x, c.z, 0, r * 1.7, r * 1.7));
       report.wells++;
     } else if (key === 'new_Hand pump') {
-      pumps.push({ type: ['mark2', 'old', 'mark2', 'cracked'][Math.floor(hash01(c.x, c.z) * 4)], x: c.x, y: 0, z: c.z, ry: hash01(c.z, c.x) * Math.PI * 2, s: 1 });
+      pumps.push({ type: ['mark2', 'old', 'mark2', 'cracked'][Math.floor(hash01(hc.x, hc.z) * 4)], x: c.x, y: 0, z: c.z, ry: hash01(hc.z, hc.x) * Math.PI * 2, s: 1 });
       colliders.push(...orientedBoxes(c.x, c.z, 0, 0.7, 0.7));
       report.pumps++;
     } else if (key === 'new_Washing line') {
       const rect = ringRect(ring);
       const dir = [-rect.front[1], rect.front[0]]; // along the long side
-      lines.push({ x: c.x, z: c.z, ry: Math.atan2(-dir[1], dir[0]), seed: Math.floor(hash01(c.x, c.z) * 97) });
+      lines.push({ x: c.x, z: c.z, ry: Math.atan2(-dir[1], dir[0]), seed: Math.floor(hash01(hc.x, hc.z) * 97) });
       report.washingLines++;
     } else if (key === 'new_Haystack' || (key === 'new_straw' && name !== 'Dung cake stack')) {
       const s = (r * 2) / 4.2;
-      hay.push({ type: name === 'Straw store' ? 'half' : hash01(c.x, c.z) < 0.5 ? 'cone' : 'heap', x: c.x, y: 0, z: c.z, ry: hash01(c.z, 1) * 6.28, s, tint: null });
+      hay.push({ type: name === 'Straw store' ? 'half' : hash01(hc.x, hc.z) < 0.5 ? 'cone' : 'heap', x: c.x, y: 0, z: c.z, ry: hash01(hc.z, 1) * 6.28, s, tint: null });
       colliders.push(...orientedBoxes(c.x, c.z, 0, r * 1.5, r * 1.5));
       report.haystacks++;
     } else if (key === 'new_Dung cakes' || (key === 'new_straw' && name === 'Dung cake stack')) {
-      gobar.push({ type: hash01(c.x, c.z) < 0.5 ? 'stack' : 'stack_b', x: c.x, y: 0, z: c.z, ry: hash01(c.z, 2) * 6.28, s: (r * 2) / 2.6 });
+      gobar.push({ type: hash01(hc.x, hc.z) < 0.5 ? 'stack' : 'stack_b', x: c.x, y: 0, z: c.z, ry: hash01(hc.z, 2) * 6.28, s: (r * 2) / 2.6 });
       colliders.push(...orientedBoxes(c.x, c.z, 0, r * 1.3, r * 1.3));
       report.dungStacks++;
     }
