@@ -12,6 +12,7 @@ import { getGLTFLoader } from '../loaders.js';
 import { swapShared } from '../stagingYard.js';
 import { floatGeometry } from '../pots.js';
 import { createCattleHerd } from '../animals.js';
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * MAP OBJECTS layer (S7 sprint, map objects agent; ?layout=new only, loaded as its own chunk by src/kit/mapObjectsInit.js).
@@ -175,6 +176,7 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
   // always the game's own map data (rects, centres, trimmed galis); shops-land's loader may hand back the raw export
   if (!map || !map.objects?.some((o) => o.rect)) map = getLayout();
   const plan = planMapObjects(map);
+  await yieldToMain(); // boot-CPU pass (25 Nov): one stage per turn, input and paint run between stages
   const group = new THREE.Group();
   group.name = 's7_mapobjects';
   const colliders = [], heightFns = [], layers = {};
@@ -239,7 +241,9 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
     group.add(m); layers.signs = m;
   }
 
+  await yieldToMain();
   const kitGroup = kit.finalize((mat) => landMaterial(mat));
+  await yieldToMain();
   group.add(kitGroup); layers.kit = kitGroup;
 
   // ---- 3. ground and water
@@ -250,6 +254,7 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
   heightFns.push(...gw.heightFns);
   report.ground = gw.report;
 
+  await yieldToMain();
   // ---- 4. the game's own clay pot and milestone models (tools/blender/build_pots.py, build_milestone.py), one batch
   const models = new ObjBatch('s7_mapobjects_models');
   let modelsGroup = null;

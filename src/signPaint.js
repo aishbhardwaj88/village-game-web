@@ -95,6 +95,10 @@ function layoutBilingualUncached(ctx, hi, en, w, h, maxHiPx, fillFraction, gapFr
       return { hiPx, enPx, hiAsc, hiDesc, enAsc: enM.actualBoundingBoxAscent, enDesc: enM.actualBoundingBoxDescent, gap, block, ratio: (enCap * enPx) / (hiCap * hiPx) };
     }
     hiPx *= 0.95;
+    // Boot-CPU pass (25 Nov): the Hindi line's width is linear in its size, so while it is more than 3% wider than the board
+    // every smaller step on the same 0.95 ladder is certain to fail the same test; walk those steps by arithmetic instead of
+    // measuring each (the accepted size is still the first rung of the ladder that fits, same rungs, same order).
+    if (hiW > w * 1.03) { const rungs = Math.floor(Math.log(hiW / (w * 1.03)) / Math.log(1 / 0.95)) - 1; for (let k = 0; k < rungs && hiPx * 0.95 >= 8; k++) hiPx *= 0.95; }
     ratio = EN_CAP_RATIO; // re-try the English from the top of the band at the new Hindi size
     if (hiPx < 8) break;
   }

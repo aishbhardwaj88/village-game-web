@@ -45,7 +45,7 @@ const browser = await chromium.launch({ args: process.env.GL === 'metal' ? ['--u
 const page = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 const cdp = await page.context().newCDPSession(page);
 await cdp.send('Network.enable');
-await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 100, downloadThroughput: (9e6 / 8), uploadThroughput: (750e3 / 8) });
+if (process.env.NET !== 'off') await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 100, downloadThroughput: (9e6 / 8), uploadThroughput: (750e3 / 8) });
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.CPU || 4) });
 if (process.env.PROFILE) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 2000 }); await cdp.send('Profiler.start'); }
 let bytes = 0;

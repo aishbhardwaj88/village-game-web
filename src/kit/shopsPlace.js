@@ -9,6 +9,7 @@ import { labelKey, labelName, ringRect, matchPlace, hash01, makeRoadIndex } from
 import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, signage)
+import { runSync, sliceGen } from './lateBuild.js';
 
 /**
  * Places every new shop of the approved map (?layout=new): the ~44 two-storey shop-houses (new_sqx), the ~37 kiosks and
@@ -39,7 +40,10 @@ export function tradeOf(name) {
   return 'general';
 }
 
-export function buildShops(map, { camera = null } = {}) {
+export function buildShops(map, opts = {}) { return runSync(buildShopsGen(map, opts)); }
+/** Same build, time-sliced (boot-CPU pass, 25 Nov): `ms` of work per turn, then back to the main thread. Identical output. */
+export function buildShopsAsync(map, opts = {}, ms = 4) { return sliceGen(buildShopsGen(map, opts), ms); }
+function* buildShopsGen(map, { camera = null } = {}) {
   const places = map.places;
   const roads = makeRoadIndex(map.roads);
   const kit = new BatchKit('s7_shops');
@@ -100,6 +104,7 @@ export function buildShops(map, { camera = null } = {}) {
 
   let i = 0;
   for (const o of map.objects) {
+    yield; // slice point: one map object per step
     if (o.kind !== 'solids' || !o.rings?.[0] || o.rings[0].length !== 4) continue;
     const key = labelKey(o), name = labelName(o);
     if (!key.startsWith('new_')) continue;
@@ -175,13 +180,16 @@ export function buildShops(map, { camera = null } = {}) {
     }
   }
 
+  yield;
   const group = new THREE.Group();
   group.name = 's7_shops';
   const mats = kitMaterials(['plaster', 'brick', 'brick_b', 'concrete', 'concrete_f', 'wood', 'rust']);
   const bodies = kit.finalize(mats);
   group.add(bodies);
 
+  yield;
   atlas.ready();
+  yield;
   let signs = null;
   if (boards.length) {
     signs = new THREE.Mesh(mergeGeometries(boards), atlas.material);
@@ -191,6 +199,7 @@ export function buildShops(map, { camera = null } = {}) {
     group.add(signs);
   }
   // S7 WIRING (integrator, signage): bare back/side walls get a painted mural/slogan poster, one per shop at most.
+  yield;
   const { mesh: muralMesh, stats: muralStats } = buildWallMurals(muralBoxes, { roads }); // S7 WIRING (integrator, wallposters): road-facing boost
   if (muralMesh) group.add(muralMesh);
   report.murals = muralStats;

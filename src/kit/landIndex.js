@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { loadLandMap } from './landLayout.js';
-import { buildShops } from './shopsPlace.js';
+import { buildShopsAsync } from './shopsPlace.js';
+import { yieldToMain } from './lateBuild.js';
 import { frameHook } from './landInstancing.js';
+
+/** Start the map JSON download early (the build itself waits for the Play gate). */
+export function prefetchLandMap() { return loadLandMap(); }
 
 /**
  * Shops-land entry point (?layout=new only). One call builds every layer this agent owns from the approved map and adds
@@ -23,13 +27,15 @@ export async function buildShopsLand(scene, { map = null, camera = null, only = 
   const want = (n) => !only || only.split(',').includes(n);
   const add = (name, obj) => { if (!obj) return; obj.name = obj.name || name; layers[name] = obj; group.add(obj); if (obj.userData.report) report[name] = obj.userData.report; };
 
-  if (want('shops')) add('shops', buildShops(map, { camera }));
+  if (want('shops')) add('shops', await buildShopsAsync(map, { camera }));
+  await yieldToMain();
   const heightFns = [];
   for (const [name, path] of [['trees', './landTrees.js'], ['fields', './landFields.js'], ['canal', './landCanal.js'], ['props', './landProps.js']]) {
     if (!want(name) || !MODULES[path]) continue;
     const mod = await MODULES[path]();
     const obj = await mod.build(map, { camera });
     add(name, obj);
+    await yieldToMain(); // boot-CPU pass: one layer per turn, input and paint run between them
     if (obj?.userData.heightAt) heightFns.push(obj.userData.heightAt);
   }
   // one per-frame hook drives every layer's distance packing that is not tied to its own BatchedMesh

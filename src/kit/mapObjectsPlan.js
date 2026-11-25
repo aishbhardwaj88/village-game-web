@@ -129,7 +129,18 @@ export function pullToRoadEdge(roads, cx, cz, x, z, minR) {
  * water and bank; map: drawn radius -> built radius along angle a; inv: built -> drawn).
  */
 export const POND_LIP = 0.6;
+const _pondCache = new WeakMap();
 export function pondSqueeze(roads, p) {
+  // plan and ground both squeeze the same ponds against the same roads: compute once (25 Nov boot-CPU pass)
+  let m = _pondCache.get(roads);
+  if (!m) { m = new Map(); _pondCache.set(roads, m); }
+  const sum = (ring) => (ring ? ring.reduce((t, q, i) => t + q[0] * (i + 1) + q[1] * (i + 2), 0) : 0);
+  const key = `${p.x}|${p.z}|${p.water.length}|${p.bank ? p.bank.length : -1}|${sum(p.water)}|${sum(p.bank)}`;
+  let r = m.get(key);
+  if (!r) { r = pondSqueezeRaw(roads, p); m.set(key, r); }
+  return r;
+}
+function pondSqueezeRaw(roads, p) {
   const mr = (ring) => ring.reduce((t, q) => t + Math.hypot(q[0] - p.x, q[1] - p.z), 0) / ring.length;
   const rw = mr(p.water), rb = p.bank ? mr(p.bank) : rw + 1.6;
   const reach = Math.max(rb, ...(p.bank || p.water).map((q) => Math.hypot(q[0] - p.x, q[1] - p.z))) + 0.3; // drawn rings are not perfect circles
@@ -139,7 +150,14 @@ export function pondSqueeze(roads, p) {
     if (cache.has(k)) return cache.get(k);
     const ua = Math.cos(k * Math.PI / 180), va = Math.sin(k * Math.PI / 180);
     let L = Infinity;
-    for (let r = rw * 0.4; r <= reach; r += 0.1) if (roadClearance(roads, p.x + ua * r, p.z + va * r) < 0.15) { L = r; break; }
+    // Boot-CPU pass (25 Nov): same ray-walk, same 0.1 m steps, same first hit, but road clearance is 1-Lipschitz (it can
+    // fall by at most the distance moved), so a reading of c >= 0.15 means the next floor((c-0.15)/0.1)-1 steps cannot hit
+    // and are walked with plain additions instead of a nearest-road search. The 0.9 factor keeps a safety margin.
+    for (let r = rw * 0.4; r <= reach; r += 0.1) {
+      const c = roadClearance(roads, p.x + ua * r, p.z + va * r);
+      if (c < 0.15) { L = r; break; }
+      for (let skip = Math.floor((c - 0.15) * 0.9 / 0.1) - 1; skip > 0 && r + 0.1 <= reach; skip--) r += 0.1;
+    }
     cache.set(k, L);
     return L;
   };

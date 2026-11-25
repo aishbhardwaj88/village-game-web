@@ -234,6 +234,7 @@ import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 import { ver } from './assetUrl.js';
 import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
+import { lateDone, isLateDone } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -408,9 +409,12 @@ async function main() {
   scene.add(sky);
   applyFog(scene, atmosphere);
   // S7 WIRING (shops-land): shops, trees, fields, canal, flag island, props of the approved map; ?layout=new only (no-op otherwise)
-  initShopsLand(scene, { camera }).then((land) => { if (land) { window.__s7land = land.group.userData.landHeightAt; requestColliderRebuild(); } });
+  // Boot-CPU pass (25 Nov): both builds run after the Play gate, in short slices behind the title (src/kit/lateBuild.js); the
+  // first 3D frame waits for them (see onStart), and their new shaders compile as soon as each lands, not on the first frame.
+  const compileLate = (g) => { try { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); renderer.compileAsync(g, camera, scene).catch(() => {}); renderer.setRenderTarget(_rt); } catch (e) { /* first frame compiles instead */ } };
+  initShopsLand(scene, { camera }).then((land) => { if (land) { window.__s7land = land.group.userData.landHeightAt; requestColliderRebuild(); compileLate(land.group); } });
   // S7 WIRING (mapobjects): tubewells, channels, ponds, tank, tower, gate, field and yard props of the approved map; ?layout=new only (docs/s7/mapobjects.md)
-  initMapObjects(scene, { camera }).then((mo) => { if (mo) { window.__s7mapobjHeight = mo.group.userData.heightAt; requestColliderRebuild(); } });
+  initMapObjects(scene, { camera }).then((mo) => { if (mo) { window.__s7mapobjHeight = mo.group.userData.heightAt; requestColliderRebuild(); compileLate(mo.group); } });
 
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.
@@ -2174,7 +2178,8 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
-      renderOK = true; _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
+      if (isLateDone()) renderOK = true; else lateDone().then(() => { renderOK = true; _lm.lateHeldFrame = performance.now(); }); // never a half-built village on screen
+      _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
