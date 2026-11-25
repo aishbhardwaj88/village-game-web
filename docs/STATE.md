@@ -1,53 +1,33 @@
 # State - rewritten every run, max 40 lines
 
-Last updated: 25 Nov (41). LOOKS LIST items 1-7 all done or correctly parked, and
-her NEEDS_YOU "Looks fixes ready" line is now sent (wasn't before this run). Item 8
-(PUSH LIST) checked: its measurable parts are done, the one open sub-item is
-container-blocked, not a real gap.
+Last updated: 25 Nov (gate agent). Streaming/caching work below; LOOKS LIST items 1-7 done or parked.
 
 ## Current state
-- 25 Nov VARIETY: houses (16 washes, per-house rotation/wear/material tint, housesMaterial.js) and ground (dryearth+lane mixed by area noise, materials.js) done, 0 KB added, same shader programs. Sheet docs/review/variety-sheet.png awaits her yes (frozen once approved). Not browser-verified (container crash).
-- Items 1, 3, 4, 5, 6: done (entries 24-38). Item 1 double-checked this run by
-  reading code, not just trusting the old note: src/kit/housesMaterial.js is the
-  live new-map house kit's own material (WALL_VARIANTS/EXTRA_VARIANTS, per-house
-  seed), confirmed wired to the real ?layout=new houses, not a dead/old path.
-- Item 2 (chauraha road buildings): could NOT reproduce - NEEDS_YOU, open.
-- Item 7: "textures fetched twice" fixed (entry 39); "map shipped twice" and
-  "shader warm-up" stay PAUSED-MAP / needs-real-browser (entry 39/40).
-- Item 8 (PUSH LIST): missions-check last clean 358/0/4 WARN (entry 38, all 8
-  missions + 10 side jobs + tractor/trolley/cart spawns); school_bell float and
-  distanceToCanalWater both fixed (entry 38). Only "zero console errors" (world-
-  validator/regression-check pass) stays unticked in FINISH_LINE.md - blocked by
-  the container's Chromium-hangs-on-accounts.google.com issue, logged repeatedly,
-  not a code gap. Don't re-attempt this blind; needs a real browser to clear.
-- BACKLOG [ACTIVE] items checked this run, nothing safely actionable: CC0 prop
-  sourcing (matka/charpai/cylinder/bicycle in housesClutter.js, already textured
-  via the shared CELL atlas, not flat colour) needs a Poly Haven lookup -
-  api.polyhaven.com gave connection-reset from this container this run, retry
-  next time network differs. M7 NPC is out of scope (no characters this run).
+- 25 Nov VARIETY: houses (16 washes, housesMaterial.js) and ground (dryearth+lane by area noise) done.
+- GATE (25 Nov, gate agent): Play already waits only for the spawn-ring prop sites (src/propGate.js startGate); shops/land/
+  map objects build after the gate (lateBuild.js). NEW: streamHold() freezes the world with the "Loading the next part of
+  the village" notice when a prop site within 45 m is not ready (8 s give-up per episode). Resumable model downloader in
+  src/loaders.js (stall 8 s, 4 tries, Range resume in 256 KB pieces, plain request first so SW/HTTP cache still work).
+  SW: page cache-first + background refresh (?nosw=1 bypasses); hash table is its own file assets/table-<hash>.js (window.
+  __ASSET_H__/__GZ_MODELS__); manualChunks vendor (three) / data (mapData.json) / app.
+- Measured (4G + 4x CPU, tools/load-time-test.mjs): Play ready ~11.3-14.2 s, 6.8 MB by then (5.7 MB = 68 shared-material
+  webp textures, 0.8 MB js). Main sync build is 2.2 s to 9.8 s of that (CPU-bound, ~1.9 s at x1). Target 4 MB / 3 s NOT met.
+- Item 2 (chauraha road buildings): could NOT reproduce - NEEDS_YOU, open. Item 8 console-error check needs a real browser.
 
 ## Next 5 items
-1. If she's reacted to the "Looks fixes ready" line, address any FIX notes first.
-2. Retry the Poly Haven API lookup for matka/charpai/cylinder/bicycle CC0 models
-   when network allows; only swap in a real scan if one is genuinely better than
-   the existing textured-atlas hand-built version, not reflexively.
-3. Item 8's console-error check: try again only once a real (non-headless-shell)
-   browser path works in this container, or she confirms it live herself.
-4. Shader-warm-up (texWarmed stuck at 2): same, needs a real browser.
-5. Architecture-as-one-unit / texture-pipeline verify: apply whenever a place is
-   next built or reworked, not a standalone task right now.
+1. Real gate: build only the start area before Play (hero zone/bazaar/temples are still built eagerly in main()); needs
+   her laptop (?debug=1) to measure, headless crashes after Play here.
+2. Texture bytes before Play: 68 shared webp (grass/thatch/plaster_h normals 0.3-0.4 MB each); only defer with her OK (look).
+3. Zone streaming rule (pixel-rule appear distance, request = appear + speed x load time) for zoneManager houses/zones.
+4. Memory hygiene: close decoded ImageBitmaps after GPU upload (needs a shared-texture check first), audio beds by nearness.
+5. Doorstep plants at 42 m / zone detail radius pop-in, house atlas shader warm-up.
 
 ## Blockers
-- Item 2 needs her eye or exact building names - logged, open.
-- No in-browser PLAY screenshot here (egress block); title screenshot +
-  Playwright/CDP network capture used instead when it's needed at all.
-LAST_FULL_PASS=82c337c (unchanged - browser chain unreliable past world-validator,
-not re-attempted this run, no browser-relevant code touched).
+- Range support of the live host could not be curl-checked (agent proxy blocks github.io); GitHub Pages normally answers
+  206. The downloader falls back to a whole-file restart if it gets 200.
+LAST_FULL_PASS=82c337c (browser chain unreliable here; regression-check times out, known).
 
 ## Known about this container
-- node_modules empty every fresh container; HEAD detached on a stale local
-  main (fetch+checkout -B fixes it).
-- Chromium can't reach accounts.google.com - hangs/crashes any browser-based
-  check (world-validator, regression-check, screenshot, greenery-audit).
-- New this run: api.polyhaven.com also gave a connection reset via curl -
-  same proxy/egress restriction, not just dl.polyhaven.org as noted before.
+- node_modules empty every fresh container; HEAD detached on a stale local main (fetch+checkout -B fixes it).
+- Chromium can't reach accounts.google.com - hangs/crashes browser-based checks; crashes after Play.
+- api.polyhaven.com and github.io blocked by the proxy.
