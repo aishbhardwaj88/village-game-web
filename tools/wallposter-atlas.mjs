@@ -1,3 +1,4 @@
+// Output files: page0.webp page1.webp page2.webp page3.webp page4.webp page5.webp page6.webp page7.webp page8.webp (in public/assets/posters/wall/)
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';

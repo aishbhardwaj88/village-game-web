@@ -3,7 +3,10 @@ import { nudgeOffRoad } from './kit/mapObjectsPlan.js'; import { getRoads } from
 import { onNewRoad } from './layout/roadClear.js';
 import { registerPilotVehicles } from './pilotVehicles.js';
 import { createRoamingTraffic } from './roamingTraffic.js'; // 26 Nov: autos, bikes, bicycles roam the roads
-import { registerVillageVehicles } from './villageVehicles.js'; // 26 Nov: parked vehicles around the village, colour variants, streamed after Play
+import { registerVillageVehicles } from './villageVehicles.js';
+import { registerFarmProps } from './placedPropsFarm.js';
+import { registerShopProps } from './placedPropsShops.js';
+import { registerChowkProps } from './placedPropsChowk.js'; // 26 Nov: parked vehicles around the village, colour variants, streamed after Play
 import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
@@ -2254,6 +2257,11 @@ async function main() {
   const REVIEW = /[?&]review=1/.test(location.search); // the test prop rows near x 600-612, z 27-58 are for review only, never loaded for players
   if (REVIEW && !DBG_OFF.has('vehicles')) registerPilotVehicles(propGround);
   if (!DBG_OFF.has('vehicles')) { try { registerVillageVehicles(scene, propGround); } catch (e) { console.warn('[village_vehicles]', e); } }
+if (!DBG_OFF.has('props3d')) {
+  try { registerFarmProps(scene, propGround); } catch (e) { console.warn('[placed_props_farm]', e); }
+  try { registerShopProps(scene, propGround); } catch (e) { console.warn('[placed_props_shops]', e); }
+  try { registerChowkProps(scene, propGround); } catch (e) { console.warn('[placed_props_chowk]', e); }
+}
   if (REVIEW && !DBG_OFF.has('props')) registerFreeProps(propGround);
   const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
   const gateSpawns = [{ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z }]; // the gate and the prefetch use the saved position too when a save has one

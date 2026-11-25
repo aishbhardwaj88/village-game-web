@@ -4474,6 +4474,75 @@
         "tools/finish-tvuncle.mjs"
       ],
       "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, gold kada and watch added in this repo (tools/finish-tvuncle.mjs)"
+    },
+    {
+      "match": [
+        "public/assets/vehicles_free/mini_truck.glb"
+      ],
+      "category": "credited",
+      "title": "Mini truck (model)",
+      "originalTitle": "Japanese Mini Truck",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/japanese-mini-truck-d5d938791b30473498507ade5ad92066",
+      "author": "chirag.swamy.1993",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Japanese Mini Truck",
+      "evidence": "25 Nov: licence read from the GLB metadata, confirmed CC BY 4.0; slimmed (meshopt, WebP) in this repo."
+    },
+    {
+      "match": [
+        "public/assets/vehicles_free/water_tanker.glb"
+      ],
+      "category": "credited",
+      "title": "Water tanker (model)",
+      "originalTitle": "Water Tower Water Tanker",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/water-tower-water-tanker-14-mb-69811beb5b2d4c31901b3c99e1fcf219",
+      "author": "Mehdi Shahsavan (ahmagh2e)",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Water Tower Water Tanker",
+      "evidence": "25 Nov: licence read from the GLB metadata, confirmed CC BY 4.0; slimmed (meshopt, WebP) in this repo."
+    },
+    {
+      "match": [
+        "public/assets/vehicles_free/thela_b.glb"
+      ],
+      "category": "credited",
+      "title": "Thela (model)",
+      "originalTitle": "Indian Thela 3d model",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/indian-thela-3d-model-f462804d62e74fe2bee1ec7da9ed6a91",
+      "author": "IndieDever YT (nitin0illigel)",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Indian Thela 3d model",
+      "evidence": "25 Nov: licence read from the GLB metadata, confirmed CC BY 4.0; slimmed (meshopt, WebP) in this repo."
+    },
+    {
+      "match": [
+        "public/assets/vehicles_free/willys_jeep.glb"
+      ],
+      "category": "credited",
+      "title": "Willys jeep (model)",
+      "originalTitle": "Willy Jeep",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/willy-jeep-b635f6d5a7a045cf9bae3cc71952cd23",
+      "author": "Ranger_08 (AnilkumarG)",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Willy Jeep",
+      "evidence": "25 Nov: licence read from the GLB metadata, confirmed CC BY 4.0; slimmed (meshopt, WebP) in this repo."
+    },
+    {
+      "match": [
+        "public/assets/posters/wall/*"
+      ],
+      "category": "self-made",
+      "title": "Wall poster atlas pages (the art director's finished posters and murals)",
+      "builder": [
+        "tools/wallposter-atlas.mjs"
+      ],
+      "family": [
+        "wall_poster_atlas"
+      ]
     }
   ],
   "worthKnowing": [
