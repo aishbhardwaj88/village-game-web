@@ -116,7 +116,7 @@ const PRESETS = {
     shadowMapSize: 2048,
     shadowExtent: 50,
     shadowFar: 200,
-    pixelRatioMax: 1.0, // default and floor; same pixel count as the old real behaviour
+    pixelRatioMax: 1.5, // 25 Nov: was 1.0. Measured live on a 2x screen (1320x1336 css): p50 frame 31.2 ms at 1.0 vs 32.4 ms at 1.5, p95 40.9 both; faces were blurry at 1.0
     pixelRatioUpMax: 1.5, // adaptive resolution may climb to this when frames are fast (src/dynamicRes.js)
     zoneAlwaysExtra: 110,
     zoneSightExtra: 300,
