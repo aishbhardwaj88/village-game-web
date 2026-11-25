@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { spot } from '../missionsLayout.js'; // S7 (missions)
-import { getRoads, getObjects } from '../layout/layout.js';
+import { getRoads, getObjects, getPlace } from '../layout/layout.js';
+import { EXISTING_FOOTPRINTS } from '../layout/footprints.js';
 import { roadUnder } from '../layout/layoutCore.js';
 import { buildMilkCans } from './props.js';
 import { abadiDoorstep } from '../scenery.js';
@@ -39,8 +40,11 @@ function newMapStops(DOODH = doodhAt()) {
   // a door that opens into a house footprint of the map (houses packed close, or a map footprint bigger than the built house) is not a stop
   const ringHas = (ring, x, z) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; i++, j = i - 1) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) ins = !ins; } return ins; };
   const mapHouses = getObjects('new_house').filter((o) => o.rings && o.rings[0]);
-  const inOther = (h) => mapHouses.some((o) => ringHas(o.rings[0], h.door.x, h.door.z));
-  for (const h of near) { if (onLane(h) || inOther(h)) continue; if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
+  const inRect = (o, x, z) => { const r = o.rect; if (!r) return false; const c = Math.cos(r.ry), s = Math.sin(r.ry), dx = x - r.cx, dz = z - r.cz, lx = dx * c - dz * s, lz = dx * s + dz * c; return Math.abs(lx) < r.w / 2 + 0.3 && Math.abs(lz) < r.d / 2 + 0.3; };
+  const inOther = (h) => mapHouses.some((o) => ringHas(o.rings[0], h.door.x, h.door.z) || inRect(o, h.door.x, h.door.z));
+  // 26 Nov: places now sit exactly on their map spot; a door inside a named place's footprint (TV house etc.) is not a stop
+  const inPlace = (h) => Object.entries(EXISTING_FOOTPRINTS).some(([id, fp]) => { const p = getPlace(id); if (!p || fp.open) return false; const [x0, x1, z0, z1] = fp.box, c = Math.cos(p.ry), s = Math.sin(p.ry), dx = h.door.x - p.x, dz = h.door.z - p.z, lx = dx * c - dz * s, lz = dx * s + dz * c; return lx > x0 - 1 && lx < x1 + 1 && lz > z0 - 1 && lz < z1 + 1; });
+  for (const h of near) { if (onLane(h) || inOther(h) || inPlace(h)) continue; if (picked.every((p) => Math.hypot(p.door.x - h.door.x, p.door.z - h.door.z) > 12)) picked.push(h); if (picked.length === STOP_ROWS.length) break; }
   if (picked.length < STOP_ROWS.length) return null;
   return picked.map((h, i) => {
     const ox = h.door.x - h.x, oz = h.door.z - h.z, l = Math.hypot(ox, oz) || 1, ux = ox / l, uz = oz / l;
