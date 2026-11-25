@@ -5,6 +5,7 @@ import { attachCropWind } from '../cropCards.js';
 import { cropTuftParts, buildCaneClumps, FIELD_CENTER, FIELD_SIZE } from '../field.js';
 import { labelKey, labelName, inRing, makeRoadIndex, hash01 } from './landLayout.js';
 import { loadRaw } from '../materials.js';
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * Fields, orchards floors and green strips of the approved map (?layout=new), as big painted ground patches:
@@ -196,7 +197,9 @@ export async function build(map, { camera = null } = {}) {
   const geos = [];
   const spots = { wheat: [], wheat_young: [], stubble: [], cane: [], sarson: [] };
   const report = { fields: 0, orchards: 0, green: 0, byCrop: {}, plants: {} };
+  let sliceT = performance.now(); // 26 Nov: every field/orchard/green patch (each with its own plant-row grid) in one task; yield every ~8 ms
   for (const o of map.objects) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const key = labelKey(o), name = labelName(o);
     const ring = o.rings?.[0];
     if (!ring || ring.length < 3) continue;
@@ -249,7 +252,10 @@ export async function build(map, { camera = null } = {}) {
     mesh.userData.groundLevel = true;
     mesh.userData.noAutoCollider = true;
     const d = new THREE.Object3D(), c = new THREE.Color();
-    tuftSpots.forEach(([x, z, k], i) => {
+    sliceT = performance.now(); // tuftSpots can run into the thousands (one per plant across every field): slice this pass too
+    for (let i = 0; i < tuftSpots.length; i++) {
+      if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
+      const [x, z, k] = tuftSpots[i];
       const j = Math.sin(x * 12.9 + z * 7.1), sc = 0.6 + 0.65 * hash01(x * 2.7, z * 3.1);
       d.position.set(x, 0, z); d.rotation.set(0, j * 3, 0);
       d.scale.set(sc * (k === 'mustard' ? 1.5 : 1), sc * (k === 'stubble' ? 0.25 : k === 'young' ? 0.6 : k === 'mustard' ? 1.35 : 0.7), sc * (k === 'mustard' ? 1.5 : 1));
@@ -257,7 +263,7 @@ export async function build(map, { camera = null } = {}) {
       mesh.setMatrixAt(i, d.matrix);
       if (k === 'stubble') c.setRGB(1.0, 0.88, 0.55); else if (k === 'mustard') c.setRGB(0.95 + 0.05 * j, 0.95, 0.42); else c.setRGB(0.48 + 0.06 * j, 0.72, 0.38); // dusty field greens, never lime
       mesh.setColorAt(i, c);
-    });
+    }
     nearPack(mesh, tuftSpots.length);
     group.add(mesh);
   }

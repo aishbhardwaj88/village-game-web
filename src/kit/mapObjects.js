@@ -271,23 +271,28 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
     }
     // the potter's stock: matkas and surahis at the game's own size (0.45-0.7 m), and about one spot in four a little
     // group of kulhads (tea cups) set out to dry
-    plan.pots.forEach((p, i) => {
+    let sliceT4 = performance.now(); // 26 Nov: pots + milestones in one task; yield to the main thread every ~8 ms
+    for (let i = 0; i < plan.pots.length; i++) {
+      if (performance.now() - sliceT4 > 8) { await yieldToMain(); sliceT4 = performance.now(); }
+      const p = plan.pots[i];
       const fired = hash01(i, 8) < 0.7; // most fired red, some still drying grey-brown
       const c = fired ? tint(p.id, 0.08) : new THREE.Color(0.86, 0.8, 0.74);
       if (hash01(p.x * 1.3, p.z * 2.9) < 0.25) {
         for (let k = 0; k < 5; k++) { const a = k * 1.26 + i, r = k ? 0.16 : 0; models.add('pot_kulhad_v2', mat4(p.x + Math.cos(a) * r, 0, p.z + Math.sin(a) * r, a, 0.9 + 0.2 * hash01(i, k)), c, PROP * 0.6, { key: 'pot_kulhad_v2|low', near: KULHAD_LOD_M }); }
-        return;
+        continue;
       }
       const f = potFiles[Math.floor(hash01(p.x * 3.1, p.z * 1.7) * (potFiles.length - 1))];
       const s = 0.8 + 0.2 * hash01(i, 7);
       models.add(f, mat4(p.x, 0, p.z, hash01(i, 9) * 6.28, s, s, s, s, (hash01(i, 3) - 0.5) * 0.06, (hash01(i, 4) - 0.5) * 0.06), c, PROP, { key: f + '|low', near: POT_LOD_M });
       colliders.push({ minX: p.x - 0.22, maxX: p.x + 0.22, minZ: p.z - 0.22, maxZ: p.z + 0.22 });
-    });
-    plan.milestones.forEach((m, i) => {
+    }
+    for (let i = 0; i < plan.milestones.length; i++) {
+      if (performance.now() - sliceT4 > 8) { await yieldToMain(); sliceT4 = performance.now(); }
+      const m = plan.milestones[i];
       const f = msFiles[i % msFiles.length];
       models.add(f, mat4(m.x, 0, m.z, m.ry + (hash01(i, 2) - 0.5) * 0.12, 1, 1 + (hash01(i, 5) - 0.5) * 0.1, 1 + (hash01(i, 6) - 0.5) * 0.12, 1, (hash01(i, 3) - 0.5) * 0.05, (hash01(i, 4) - 0.5) * 0.06), tint(m.id, 0.05), PROP * 1.5);
       colliders.push({ minX: m.x - 0.4, maxX: m.x + 0.4, minZ: m.z - 0.4, maxZ: m.z + 0.4 });
-    });
+    }
     modelsGroup = models.finalize((uuid) => matOf.get(uuid));
     group.add(modelsGroup); layers.models = modelsGroup;
   } catch (e) { console.warn('map objects: pot / milestone models did not load', e); }

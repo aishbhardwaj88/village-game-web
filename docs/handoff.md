@@ -1,6 +1,16 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov (42) - STATE next-item #5: sliced the last 3 single-sync boot-CPU builders
+- landTrees.js build(): the ~568-tree placement loop and the matrix-compose loop now yield to the main thread
+  every ~8 ms (same pattern as wall-murals/mapObjects stage 1, 25/26 Nov), instead of running as one long task.
+- landFields.js build(): the per-field plant-row grid loop (outer map.objects loop) and the tuftSpots loop
+  (can run into the thousands across every field) sliced the same way.
+- mapObjects.js stage 4 (pot/milestone models): forEach -> indexed for-loop, sliced every ~8 ms.
+- Verified Tier 1 (A7, these are builder-file changes, not movement/materials.js/loaders/main.js): build:unchecked
+  clean, licence-audit/check-dup-models/check-material-clone/place-visibility-check all PASS (pre-existing
+  character-budget and licence warnings only, untouched by this diff). STATE next-5 #5 now done.
+
 # 25 Nov (41) - LOOKS LIST 1-7 confirmed done, her NEEDS_YOU summary sent; item 8 checked, nothing left unblocked
 - Confirmed by code reading (no change needed): item 1's "5 plaster surfaces per house" lives in the live new-map
   house kit's own material (src/kit/housesMaterial.js WALL_VARIANTS/EXTRA_VARIANTS, picked per house by seed) -

@@ -5,6 +5,7 @@ import { treeParts, treeMaterials, CANOPIES } from '../trees.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
 import { labelKey, labelName, ringCentre, ringRadius, hash01, inRing, makeRoadIndex } from './landLayout.js';
 import SHADE_TREES from './landShadeTrees.json'; // S7 fixes: one neem / peepal per "under a tree" spot (planned by src/kit/landShadeTrees.js)
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * Every tree of the approved map (?layout=new), ~585: mango (orchards), guava / jamun (orchard + village), eucalyptus rows
@@ -168,7 +169,9 @@ export async function build(map, { camera = null } = {}) {
   const lod = [];
   const group = new THREE.Group();
   group.name = 's7_trees';
+  let sliceT = performance.now(); // 26 Nov: ~560 trees placed in one task; yield to the main thread every ~8 ms
   for (const t of trees) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const k = `${t.kind}|${t.seed}`, box = natural.get(k);
     const nat = box.getSize(new THREE.Vector3());
     const wide = Math.max(nat.x, nat.z);
@@ -192,7 +195,9 @@ export async function build(map, { camera = null } = {}) {
   const mats = treeMaterials();
   const bodies = origFinalize({ bark: mats.trunk, leaf: mats.leaves, imp: imp.mat });
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+  sliceT = performance.now(); // same instance count again (3 LOD tiers each): slice this pass too
   for (const inst of kit.instances) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     m.compose(new THREE.Vector3(inst.x, inst.y, inst.z), q.setFromAxisAngle(up, inst.ry), new THREE.Vector3(inst.s, inst.sy ?? inst.s, inst.s));
     for (const mat in inst.ids) kit.batches.get(mat).bm.setMatrixAt(inst.ids[mat], m);
   }
