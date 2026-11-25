@@ -233,6 +233,7 @@ import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 import { ver } from './assetUrl.js';
+import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -285,6 +286,7 @@ const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz
 const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
+  initServiceWorkerSupport(); // web production build only; ?nosw=1 is the kill switch (src/swRegister.js)
   THREE.DefaultLoadingManager.setURLModifier(ver); // content-hash ?v= on every asset url the loaders request (src/assetUrl.js)
   // S7 WIRING (desktop): which edition is running (web 'light' / desktop 'full'), published on window.__dopaharEdition (docs/s7/desktop.md)
   initEdition();
@@ -2176,6 +2178,7 @@ async function main() {
       startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
+      seedAndPrune(); // 3 s later: cache what this visit loaded, drop old builds (src/swRegister.js)
       if (!touch) input.requestPointerLock();
       // The ~1 s synchronous assembly runs one frame later so the first 3D frame is not queued behind it (tools: ?nodefer keeps it synchronous).
       if (new URLSearchParams(window.location.search).has('nodefer')) loadDeferredContent();

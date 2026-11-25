@@ -46,11 +46,35 @@ function bustPreloadsPlugin(hashes) {
   };
 }
 
+// Writes the build manifest (current chunk names + asset hashes) into dist/sw.js, so the service worker's 'prune' knows
+// what is current. Placeholder lives in public/sw.js.
+function swManifestPlugin(hashes) {
+  const chunks = [];
+  return {
+    name: 'sw-manifest',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_o, bundle) { for (const f of Object.keys(bundle)) if (/\.(js|css|json)$/.test(f)) chunks.push(f); },
+    closeBundle() {
+      // inline <style> url() is minified after transformIndexHtml runs, so stamp the font url in the written html here
+      for (const f of ['dist/index.html', 'dist/people.html']) {
+        const hp = resolve(__dirname, f);
+        if (!existsSync(hp)) continue;
+        writeFileSync(hp, readFileSync(hp, 'utf8').replace(/(url\(['"]?[^)'"]*?\/)(fonts\/[^)'"?]+)/g, (m, pre, path) => (hashes[path] ? `${m}?v=${hashes[path]}` : m)));
+      }
+      const p = resolve(__dirname, 'dist/sw.js');
+      if (!existsSync(p)) return;
+      const manifest = { chunks, assets: Object.entries(hashes).map(([k, v]) => `${k}?v=${v}`) };
+      writeFileSync(p, readFileSync(p, 'utf8').replace(/\/\*MANIFEST\*\/[\s\S]*?\/\*END\*\//, () => `/*MANIFEST*/${JSON.stringify(manifest)}/*END*/`));
+    },
+  };
+}
+
 export default defineConfig(({ command }) => {
   const hashes = command === 'build' ? computeAssetHashes() : {};
   return {
   base: '/village-game-web/',
-  plugins: [genModelManifestPlugin(), bustPreloadsPlugin(hashes)],
+  plugins: [genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
   define: {
     __ASSET_H__: JSON.stringify(hashes),
   },
