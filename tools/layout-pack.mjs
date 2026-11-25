@@ -48,6 +48,69 @@ export function compact(raw) {
   return { places: raw.places, roads: raw.roads, objects, canal: raw.canal };
 }
 
+
+// ---------------------------------------------------------------- small-prop road nudge (her rule 25 Nov: nothing stands on a road)
+// Each listed prop slides the SMALLEST distance (along the road normal, away from the road it touches) until its clearance circle (the
+// radius tools/road-clearance.mjs uses: ring half-diagonal capped at 3 m; pumps 1.2 m) clears every road band; signs use their real
+// rectangle instead. Never more than 2 m. Level-crossing planks / booms, the welcome arch, the culvert, the roundabout island and canal
+// bridges span a road by design and are NOT listed here.
+const NUDGE_IDS = ['new_milestone#4', 'new_milestone#9', 'new_Washing platform#1', 'new_Water trough#1', 'new_well#1', 'new_Hand pump#13',
+  'new_Washing line#1', 'new_Washing line#3', 'new_Washing line#6', 'new_Washing line#10', 'new_Washing line#12',
+  'new_sign#44', 'new_sign#65', 'new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103'];
+const FOOTPRINT_MODE = new Set(['new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103']);
+const NUDGE_MAX = 2;
+function roadHit(roads, x, z) { // nearest road: { edge: distance to its band edge (negative = inside), nx, nz: unit vector from the road centreline to the point }
+  let best = null;
+  for (const r of roads) {
+    const half = (r.width || 4) / 2;
+    for (let i = 0; i < r.pts.length - 1; i++) {
+      const a = r.pts[i], b = r.pts[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], L2 = dx * dx + dz * dz || 1;
+      const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L2));
+      const px = a[0] + dx * t, pz = a[1] + dz * t, d = Math.hypot(x - px, z - pz), edge = d - half;
+      if (!best || edge < best.edge) best = { edge, nx: d > 1e-3 ? (x - px) / d : -dz / Math.sqrt(L2), nz: d > 1e-3 ? (z - pz) / d : dx / Math.sqrt(L2), x: px, z: pz, id: r.id };
+    }
+  }
+  return best;
+}
+function nudgeSmallProps(objects, places, roads) {
+  const log = [];
+  for (const id of NUDGE_IDS) {
+    const o = objects.find((q) => q.id === id);
+    if (!o) continue;
+    const ring = o.rings[0], n = ring.length;
+    const mx = ring.reduce((a, p) => a + p[0], 0) / n, mz = ring.reduce((a, p) => a + p[1], 0) / n;
+    const foot = FOOTPRINT_MODE.has(id);
+    const rad = id.startsWith('new_Hand pump') ? 1.2 : Math.min(Math.max(...ring.map((p) => Math.hypot(p[0] - mx, p[1] - mz))), 3);
+    // clearance of the prop at offset (ox, oz): circle mode = centre-to-band-edge minus radius; footprint mode = worst sampled point of the ring edge
+    const clear = (ox, oz) => {
+      if (!foot) { const h = roadHit(roads, o.cx + ox, o.cz + oz); return { c: h.edge - rad, h }; }
+      let w = null;
+      for (let i = 0; i < n; i++) { const p = ring[i], q = ring[(i + 1) % n]; for (let k = 0; k <= 10; k++) { const h = roadHit(roads, p[0] + (q[0] - p[0]) * k / 10 + ox, p[1] + (q[1] - p[1]) * k / 10 + oz); if (!w || h.edge < w.h.edge) w = { c: h.edge, h }; } }
+      return w;
+    };
+    let ox = 0, oz = 0;
+    const before = clear(0, 0);
+    if (before.c >= 0.02) continue;
+    for (let it = 0; it < 8; it++) {
+      const k = clear(ox, oz);
+      if (k.c >= 0.02) break;
+      const step = 0.03 - k.c;
+      ox += k.h.nx * step; oz += k.h.nz * step;
+    }
+    const moved = Math.hypot(ox, oz), after = clear(ox, oz);
+    if (moved > NUDGE_MAX || after.c < 0.02) { log.push({ id, name: o.name, from: [o.cx, o.cz], to: null, moved: +moved.toFixed(2), road: before.h.id, note: 'NOT MOVED (needs more than 2 m or still touches)' }); continue; }
+    const from = [o.cx, o.cz];
+    const sh = (p) => [r2(p[0] + ox), r2(p[1] + oz)];
+    o.rings = o.rings.map((rg) => rg.map(sh));
+    o.cx = r2(o.cx + ox); o.cz = r2(o.cz + oz);
+    if (o.rect) { o.rect.cx = r2(o.rect.cx + ox); o.rect.cz = r2(o.rect.cz + oz); if (o.rect.frontMid) o.rect.frontMid = sh(o.rect.frontMid); }
+    const pl = o.place && places.find((q) => q.id === o.place);
+    if (pl) { pl.x = r2(pl.x + ox); pl.z = r2(pl.z + oz); }
+    log.push({ id, name: o.name, from, to: [o.cx, o.cz], moved: +moved.toFixed(2), road: before.h.id, clearBefore: +before.c.toFixed(2), mode: foot ? 'footprint' : `circle r=${rad.toFixed(2)}` });
+  }
+  return log;
+}
+
 export function pack(raw) {
   // derive everything once here (fronts, oriented footprints, the road snap), so the game only reads the result
   const layout = buildLayout(compact(raw));
@@ -64,6 +127,7 @@ export function pack(raw) {
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   for (const c of clipGalis(layout)) clips.push({ ...c, after: 'snap' });
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
+  const propNudges = nudgeSmallProps(layout.objects, layout.list, raw.roads);
   const round = (v) => (typeof v === 'number' ? +v.toFixed(4) : v);
   const cleanRect = (r) => r && { cx: r2(r.cx), cz: r2(r.cz), w: r2(r.w), d: r2(r.d), ry: round(r.ry), front: r.front.map(round), frontMid: r.frontMid.map(r2) };
   return {
@@ -76,6 +140,7 @@ export function pack(raw) {
     nudges,
     galiClips: clips,
     galiShifts,
+    propNudges,
   };
 }
 

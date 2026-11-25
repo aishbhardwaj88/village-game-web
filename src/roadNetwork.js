@@ -76,7 +76,7 @@ function potholeField(x, z) {
  * Rounds every interior corner of a polyline with a quadratic fillet. The cut-back is limited to 40% of each leg, so a
  * densely drawn line (the farm loop) is left as drawn and a long straight road gets a real curve at its bend.
  */
-const MAX_DEV = 0.4; // m, map-match tolerance is 0.5
+const MAX_DEV = 0.2; // m, audit limit is 0.3 (25 Nov); sampled bezier adds ~0.03
 export function filletPolyline(pts, closed, width) {
   const p = closed && pts.length > 2 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1] ? pts.slice(0, -1) : pts.slice();
   const n = p.length;
