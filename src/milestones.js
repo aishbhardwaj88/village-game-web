@@ -15,6 +15,7 @@ import { getRoads, isNewLayout } from './layout/layout.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 // Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
+// 26 Nov: old-layout spots only; the approved map's highway runs at z~-122 here, so under the new layout the km stones below replace them.
 const HIGHWAY_STONES = [
   { x: 196.6 + OLD_SHIFT.x, z: -18, ry: Math.PI, to: 'mandi', back: 'chowk' },
   { x: 196.6 + OLD_SHIFT.x, z: 82, ry: 0, to: 'mandi', back: 'chowk' },
@@ -75,7 +76,7 @@ function floatGeometry(src) {
 export function milestoneSites() {
   const hw = byId('highway');
   if (!hw) return [];
-  const hwSites = HIGHWAY_STONES.map((h, i) => ({ id: `milestone_hw${i}`, cell: SPACING.length + i, x: h.x, z: h.z, ry: h.ry, hw: h }));
+  const hwSites = isNewLayout() ? [] : HIGHWAY_STONES.map((h, i) => ({ id: `milestone_hw${i}`, cell: SPACING.length + i, x: h.x, z: h.z, ry: h.ry, hw: h }));
   return [...hwSites, ...highwayKmSites(SPACING.length + HIGHWAY_STONES.length), ...SPACING.map((d, i) => {
     const { x, z, ux, uz } = roadAt(d);
     // 25 Nov (roads empty, move never delete): 0.6 m beyond the drawn road edge (and its apron), pushed straight away from the nearest road, max 6 m

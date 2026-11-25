@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov ~21:1x UTC (scheduled run). LOOKS LIST 1-8 all done/parked, re-confirmed
+Last updated: 25 Nov ~22:xx UTC (scheduled run). Fixed: 2 old-layout highway milestones (796.6,-18/82) stood ~100 m off the new highway (z~-122); now skipped under new layout, km stones cover it. Temple/sabzi already AS_DRAWN (see 4dec916). Missions 0 fail, Tier 1 green. Load 10.7 MB cuts still her call.
 again this run (3rd run in a row with the same clean result) - not re-auditing further per A6.
 No code change this run.
 
