@@ -111,6 +111,7 @@ export function createQuestState() {
     kites: 0, // collected kites
     mangoVarieties: [], // ids of mango varieties tasted
     records: {}, // best scores (gilli-danda distance, trolley-gate time)
+    beats: {}, // main-story beat flags (src/storyBeats.js): schoolOut, weighed, gate, flagged, catches, waved (session only)
   };
 }
 

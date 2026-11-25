@@ -218,6 +218,7 @@ import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 import { createSideJobs } from './sideJobs.js';
+import { createStoryBeats } from './storyBeats.js'; // main-story beats (school-out, kanta, gate, bell, catch, neighbours)
 import { spot } from './missionsLayout.js'; // S7 WIRING (missions): approved-map spots for missions, jobs and NPCs (identity under ?layout=old)
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs, allRoadLines } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
@@ -2446,6 +2447,20 @@ async function main() {
 
   // Side jobs (docs/MISSIONS_PLAN.md section 3) — built lazily, once, when free roam first starts.
   let sideJobs = null;
+  let storyBeats = null; // built on the first frame of play (src/storyBeats.js), after every NPC and vehicle exists
+  function ensureStoryBeats() {
+    if (storyBeats) return;
+    storyBeats = createStoryBeats({
+      scene, quest, dialogue, audio, freeRoam,
+      getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
+      getMounted: () => mountedVehicle,
+      isOnCycle: () => onCycle && !mountedVehicle,
+      buildNpc: (role, pos, rot, name) => buildCharacterNpc(role, pos, rot, name),
+      refreshHud: updateObjective,
+      npcs: { postman: postmanNpc },
+      getTrolley: () => { const owner = vehicles.find((v) => v.trolley); return (owner && owner.trolley) || looseTrolley || null; },
+    });
+  }
   let modalFrozen = false;
   function setFrozen(frozen) {
     modalFrozen = frozen;
@@ -3118,7 +3133,7 @@ async function main() {
   window.addEventListener('keydown', (e) => {
     if (e.code !== 'KeyB' || !started || !onCycle || mountedVehicle || pauseMenu.isOpen() || dialogue.isOpen) return;
     e.stopImmediatePropagation();
-    if (!e.repeat) playerCycle.ringBell(audio);
+    if (!e.repeat) { playerCycle.ringBell(audio); storyBeats?.onBell(); }
   }, { capture: true });
   window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyC' && started && !e.repeat && !pauseMenu.isOpen() && !dialogue.isOpen) toggleCycle();
@@ -3170,7 +3185,7 @@ async function main() {
         else maaWalk(dt);
         halwaiStir(dt); // halwai's own idle animation (src/main.js) — not animate(), see buildCharacterNpc's doc comment
         childWalk(dt);
-        postmanWalk(dt);
+        if (!(storyBeats && storyBeats.postmanHeld())) postmanWalk(dt); // M4: a rung bell makes him stop and wait
         if (sisterFollowing) sisterFollow(dt);
       }
       MAA_POSITION.copy(maaNpc.position);
@@ -3474,6 +3489,8 @@ async function main() {
       { const _q = performance.now(); freeRoam.update(dt); pAdd('freeRoam', performance.now() - _q); }
       { const _q = performance.now(); minimap.update(dt); pAdd('minimap', performance.now() - _q); }
       { const _q = performance.now(); ambientLife.update(dt, listenerPos.x, listenerPos.z); pAdd('ambientLife', performance.now() - _q); }
+      ensureStoryBeats();
+      storyBeats.update(dt);
       if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;

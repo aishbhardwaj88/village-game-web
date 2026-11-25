@@ -37,7 +37,9 @@ const any = () => new Proxy(function () {}, {
   apply: () => any(),
   construct: () => any(),
 });
-globalThis.document = any();
+const doc = any();
+globalThis.document = new Proxy(doc, { get: (t, k) => (k === 'baseURI' ? 'http://localhost/' : doc[k]) }); // loaders.js assetUrl() needs a real base URL (added with the gzip loader)
+globalThis.fetch = () => Promise.reject(new Error('no network in node'));
 globalThis.window = globalThis;
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
 if (!globalThis.navigator) globalThis.navigator = { userAgent: 'node', maxTouchPoints: 0 };

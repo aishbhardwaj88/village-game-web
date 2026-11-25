@@ -1509,3 +1509,8 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - While here: verified 5 BACKLOG [ACTIVE] items were already shipped (street lamps, laundry/drying clothes, CC0 plants, collider coverage - reran the existing audit script, 0 gaps - and ration/post-office/atta-chakki/school interiors; temple is deliberately bare per the no-deity rule). Moved to docs/archive/backlog-done.md with the file/line evidence so a future run doesn't re-chase them.
 - Verified: npm run build:unchecked clean; licence-audit --check (0 UNKNOWN); check-dup-models PASS; check-material-clone PASS; place-visibility-check PASS (correct filename, not .mjs). Tier 1 only - no position/collision-relevant code touched.
 - 25 Nov: wheat/crop tufts rebuilt as 3 crossed alpha cards (src/cropCards.js, 6 tris, Grass001 colour+normal+roughness, wind sway); cows/dogs roam (animals.js makeRoamer). Tier1 pass; browser chain not run (container limit).
+
+## 25 Nov story beats run
+- New src/storyBeats.js (school-out, kanta slip, kirana-yard reverse, bell flag-down, mango catch, rooftop neighbours); wired in main.js outside boot (ensureStoryBeats in the loop, B key, postmanWalk hold). All beats optional, never fail a step.
+- Decisions: gate tolerance 3.5 m (+Rs5), catch window 2.5 s (+Rs2), bell range 16 m / hold 25 s, kids brake vehicles within 12 m of the school gate, kanta 50 kg per sack. Terraces are slab+stand-in placeholders at house-local offsets (may overlap real neighbours; map is being uprooted, not fixed).
+- missions-node-env.mjs fixed (document.baseURI, fetch) after the gzip loader broke it; missions-check now runs tools/story-beats-behaviour.mjs (37 pass, 0 fail).

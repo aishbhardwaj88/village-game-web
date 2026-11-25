@@ -196,6 +196,7 @@ async function collect(mode) {
   for (const l of loops) add({ id: `job route ${l.name}`, group: `job:${jobOf(l.name)}`, kind: 'route', mode: 'cycle', pts: l.pts });
   for (const [id, j] of Object.entries(jobs.JOBS)) add({ id: `notebook marker ${id}`, group: `job:${id}`, kind: 'marker', pts: [{ x: j.x, z: j.z }] });
   if (JP && JP.jobPoints) for (const e of JP.jobPoints()) add(e);
+  { const SB = await import('../src/storyBeats.js'); for (const e of SB.beatPoints()) add(e); } // main-story beats (kanta, kirana yard gate, school gate)
   // whole job grounds, not just their centres: the khet gate (walls 17.2 m along x, the yard 9.2 m north, a 14 m run-up south)
   // and the kanche ring + stapu grid (x -1.2..+4.2, z -1.2..+2.6 round its centre)
   { const G = (await import('../src/jobs/gate.js')).GATE || { x: 30, z: 40 }; // (older code did not export it) add({ id: 'job gate: walls, yard and run-up', group: 'job:gate', kind: 'vehicle', box: [8.9, 12.2], yaw: 0, pts: [{ x: G.x, z: G.z + 1.8 }] });
@@ -355,6 +356,12 @@ async function main() {
     }
     if (e.faith) res(e, 'faith', 'WARN', 'interaction at a faith building (ambient bell, no task, no reward): kept as it was');
   }
+
+  // ---- behaviour: main-story beats, pocket-money stalls (tools/story-beats-behaviour.mjs)
+  try {
+    const { beatBehaviour } = await import('./story-beats-behaviour.mjs');
+    await beatBehaviour((id, status, msg) => results.push({ id, group: 'beats', test: 'play', status, msg }));
+  } catch (e) { results.push({ id: 'beat behaviour tests', group: 'beats', test: 'play', status: 'FAIL', msg: `could not run: ${e.stack.split('\n').slice(0, 3).join(' | ')}` }); }
 
   // ---- report
   const by = { PASS: 0, FAIL: 0, WARN: 0 };

@@ -31,7 +31,7 @@
 - [x] Notebook map in the pause menu shows discovered places and side jobs — docs/shots/roam-proof-2026-10-23/notebook_map.png (places inked by really walking to them, gilli-danda side-job star, you-are-here cross; map now covers the whole village incl. highway/mandi)
 - [ ] All 10 side jobs in docs/MISSIONS_PLAN.md section 3 playable start to end with real input, each with its own NPC, dialogue and reward
 - [ ] Side jobs are discovered diegetically (postcards, peepal posters, sound), never shown as a quest list
-- [ ] Pocket money earned from side jobs can be spent at the banta shop, kulfiwala and chaat thela
+- [x] Pocket money earned from side jobs can be spent at the banta shop, kulfiwala and chaat thela — proof: `node tools/missions-check.mjs` group "beats" (0 fail), tests "pocket spend: banta shop / chaat thela / kulfiwala" (price taken from pocket, kind line when short, bilingual menus), run 25 Nov
 - [x] School donation board present, amount read from public/data/donations.json — docs/shots/normal-mode-donation-board-2026-10-20T20-13-00/donation_board_normal_mode.jpg (real normal-play screenshot, no ?dev=1, real walked-to position — supersedes the original dev-mode shot at docs/shots/donation-board-2026-10-20T19-31-15-107Z/, kept for reference only, not used as proof): "Every rupee goes to village schools" + Hindi beneath + "₹0 raised" all legible, src/props.js's createDonationBoard()
 - [ ] Zero tasks at any of the four faith buildings; no stealing; nothing dangerous
 ## Final gate
