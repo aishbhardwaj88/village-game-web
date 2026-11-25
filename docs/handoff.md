@@ -1620,3 +1620,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Re-checked every BACKLOG [ACTIVE] item: architecture/self-contained-unit and texture-pipeline UV checks have
   no newly-reworked place to apply to; M7 baagh keeper still needs the broken headless browser.
 - Nothing both real and safe to ship blind. Agents used: none (too small for one, efficiency-rules.md).
+
+# 25 Nov (hourly loop, 10:13 UTC) - no code change, checked a new angle, still nothing unblocked
+- Did not re-test the proxy/browser blockers again (already confirmed last run, A6 - no repeat audits).
+  Checked a fresh angle instead: build_*.py builder scripts' arch.py compliance (CLAUDE.md 5a) - 61/67 use
+  arch.py Kit/Box, 6 don't, but retrofitting old shipped builders isn't a live rework trigger (BACKLOG item
+  28 fires on new/reworked places only) and the game is audit-confirmed complete (BACKLOG.md line 64) -
+  optional polish, not safe/real work to ship blind this run.
+- Checked the [!] material-library-freeze top item: docs/shots/ is gitignored by design, so no board.png
+  persists in a fresh container - expected (screenshot tool already known broken here), not a new blocker.
+- Nothing both real and safe to ship blind. Agents used: none.
