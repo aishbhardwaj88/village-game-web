@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop, 15:15 UTC) - no code change this run, every lead still blocked
+- HEAD moved since the 14:12 run: another session pushed 6953aa3 (edition.js render scale 1.5) at 14:45.
+  Re-ran the 4 Tier 1 checks on it fresh (licence/check-dup-models/check-material-clone/place-visibility):
+  all PASS. CI green (run 45637514739). No regression from that change.
+- LOOKS LIST 1-7 and item 8 (missions/bell/canal) stay done/parked, same as the last 2 runs - not
+  re-verified further (A6). CC0 proxy re-check done here (403, unchanged) - note for next run: this was
+  already confirmed last run too, stop re-checking it every hour, only re-check if something else suggests
+  it changed.
+- BACKLOG [ACTIVE] (architecture/texture-pipeline standing rules, CC0 sourcing, M7 flavour NPC, shader
+  warm-up) all conditional on a reworked place or a real browser - nothing to apply them to this run.
+  Agents: none (nothing in scope justified one).
+
 # 25 Nov (hourly loop, 14:12 UTC) - no code change, repo unchanged since last run, every lead still blocked
 - Checked LOOKS LIST 1-7 against current handoff/NEEDS_YOU: all done or correctly parked already (no
   re-verify needed, repo identical to the run that confirmed them). Item 2 (chauraha buildings) stays
