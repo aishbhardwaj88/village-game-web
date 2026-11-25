@@ -56,13 +56,60 @@ async function gunzip(buf) {
   }
   const u = gunzipSync(new Uint8Array(buf)); return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength);
 }
+/** Resumable download (25 Nov). The normal path is ONE plain request, so the service worker / HTTP cache keep working. If it
+ * errors or stalls (no byte for STALL_MS), the bytes already received are kept and the rest is fetched with Range requests in
+ * PIECE-sized pieces (so a file over 300 KB resumes in 256 KB steps, never from zero); each piece retries with a short back-off.
+ * A host that ignores Range (answers 200) restarts that file once from zero. Finished resumed files are written to the
+ * service worker's asset cache, because a Range request never reaches it. */
+export const DL = { PIECE: 256 * 1024, STALL_MS: 8000, TRIES: 4, retried: 0, resumedBytes: 0 };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function readWithStall(res, chunks, ctl) { // appends body chunks as they arrive (kept even if the read later fails); aborts when nothing arrives for STALL_MS
+  const rd = res.body && res.body.getReader ? res.body.getReader() : null;
+  if (!rd) { chunks.push(new Uint8Array(await res.arrayBuffer())); return; }
+  for (;;) {
+    const t = setTimeout(() => ctl.abort(), DL.STALL_MS);
+    let r; try { r = await rd.read(); } finally { clearTimeout(t); }
+    if (r.done) return;
+    chunks.push(r.value);
+  }
+}
+const joinChunks = (chunks, total) => { const out = new Uint8Array(total); let o = 0; for (const c of chunks) { out.set(c, o); o += c.length; } return out; };
+const sumLen = (chunks) => chunks.reduce((n, c) => n + c.length, 0);
+async function fetchResumable(target, init) {
+  let chunks = [], total = 0, ranged = false, fails = 0;
+  for (;;) {
+    if (fails) { DL.retried++; await sleep(300 * fails); }
+    const ctl = new AbortController(), before = sumLen(chunks);
+    try {
+      const resume = before > 0;
+      const headers = resume ? { Range: `bytes=${before}-${(total ? Math.min(total, before + DL.PIECE) : before + DL.PIECE) - 1}` } : null;
+      const res = await fetch(target, Object.assign({}, init, { signal: ctl.signal }, headers ? { headers } : {}));
+      if (resume && res.status === 200) { chunks = []; total = 0; ranged = false; } // host ignored Range: the whole file again, from zero
+      else if (resume && res.status !== 206) throw new Error(`HTTP ${res.status} ${target}`);
+      if (!res.ok) { const e = new Error(`HTTP ${res.status} ${target}`); e.fatal = res.status >= 400 && res.status < 500; throw e; }
+      if (res.status === 206) {
+        ranged = true; DL.resumedBytes += Number(res.headers.get('content-length')) || 0;
+        const m = /\/(\d+)$/.exec(res.headers.get('content-range') || ''); if (m) total = Number(m[1]);
+      } else total = Number(res.headers.get('content-length')) || 0;
+      const was = sumLen(chunks);
+      await readWithStall(res, chunks, ctl);
+      const have = sumLen(chunks);
+      if (total && have < total) { if (have === was) throw new Error('empty piece'); fails = 0; continue; } // connection closed early or piece done: next piece
+      const out = joinChunks(chunks, have);
+      if (ranged && typeof caches !== 'undefined') { try { caches.open('dopahar-assets-v1').then((c) => c.put(target, new Response(out, { status: 200 }))).catch(() => {}); } catch (e) { /* no cache storage */ } }
+      return out.buffer;
+    } catch (e) {
+      ctl.abort();
+      if (e.fatal || ++fails >= DL.TRIES) throw e;
+      if (!ranged && sumLen(chunks) > 0) ranged = true; // bytes kept: the next request resumes with Range
+    }
+  }
+}
 /** Fetches a model's bytes ready to parse (unpacked when it travelled gzipped). Rejects on HTTP errors. */
 export async function fetchModel(url, init) {
   await gzReady;
   const target = modelFetchUrl(url);
-  const r = await fetch(target, init);
-  if (!r.ok) throw new Error(`HTTP ${r.status} ${target}`);
-  const buf = await r.arrayBuffer();
+  const buf = await fetchResumable(target, init);
   return target === url ? buf : gunzip(buf);
 }
 const held = (url) => { if (!holdKeep || exemptModelUrls.has(url)) return false; try { return !holdKeep(url); } catch (e) { return true; } };
