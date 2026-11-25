@@ -27,11 +27,13 @@ export const EXISTING_FOOTPRINTS = {
   banta: { box: [-1.9, 1.9, -0.9, 0.9] }, // fit box 3.8 x 1.8
   chaat: { box: [-2.35, 2.35, -1.5, 1.5] }, // fit box 4.7 x 3.0
   jalebi: { box: [-2.1, 2.1, -1.3, 1.3] }, // fit box 4.2 x 2.6
-  dairy: { box: [-9, 10.7, -6, 6] }, // dudh_dairy_v2.glb bounds
+  // 26 Nov: building-only boxes from the glb's own vertices (1 m grid, tmp/final/glbgrid.mjs): everything above the yard slab lies at local z -6..3; beyond that only a gate post (x 0..1.2, z 3..4) and a small prop (x 7..10.7, z 3..5). The old whole-yard box (z to 6) swallowed the Milk carts and their door.
+  dairy: { box: [-9, 10.7, -6, 3], boxes: [[-9, 10.7, -6, 3], [0, 1.2, 3, 4], [7, 10.7, 3, 5]] }, // dudh_dairy_v2.glb bounds, front yard slab left out
   khalihan: { box: [-15, 15, -12, 12], open: true },
   tubewell: { box: [-6, 6.1, -5.1, 5] }, // tubewell_v2.glb bounds
   gaushala: { box: [-13.8, 13.6, -10.8, 11.4] }, // gaushala.glb bounds
-  pond: { box: [-10.4, 10.4, -10.4, 10.4], open: true }, // src/dips.js: water R 6.7 (was 9.6, cut 25 Nov so the bank, mud ring and ghat clear Outer lane west, cross_road, gali_n23) with a wobbling outline, bank to u 1.25
+  // 26 Nov: the old square +-10.4 (made for R 9.6) was 2.5 m2 into house #447 at its corner. Now the shrunk pond's real outline (water R 6.7 x the wobbling edge x (bank 1.25 + mud ring + fade 0.23), local x -8.4..9.5, z -11.5..11.9) covered by 6 strips, each the polygon's bounds for 3.9 m of z (0.12 m clear of the Outer lane west band); the polygon itself is 2.1 m from house #447.
+  pond: { box: [-7.7, 6.2, -11.5, -7.6], boxes: [[-7.7, 6.2, -11.5, -7.6], [-7.8, 7.7, -7.6, -3.7], [-7.6, 9.3, -3.7, 0.2], [-8.4, 9.6, 0.2, 4.1], [-8.4, 8.9, 4.1, 8.0], [-6.9, 4.9, 8.0, 11.9]], open: true }, // src/dips.js: water R 6.7 (was 9.6, cut 25 Nov so the bank, mud ring and ghat clear Outer lane west, cross_road, gali_n23) with a wobbling outline, bank to u 1.25
   anganwadi: { box: [-5.3, 5.3, -4.85, 4.85] }, // docs/asset-slots.md fit box 10.6 x 9.7
   mela: { box: [-10, 19.4, -10, 13], open: true }, // src/farmSites.js createMelaGround: shamiana, stage, benches, swing, stalls. 25 Nov: trimmed from z -13..13.5 (local z- = gali_n0 side, z+ = highway side) so it clears both roads
   gurudwara: { box: [-5, 5, -3.6, 7.4] }, // createGurudwara: 9.2 x 7.2 hall + porch and steps to the front (fit box 11 deep)
@@ -43,7 +45,8 @@ export const EXISTING_FOOTPRINTS = {
   chemist: { box: [-2.4, 2.4, -2.9, 2.9] }, // fit box 4.8 x 5.8 (standalone again on the approved map)
   manihari: { box: [-2.6, 2.6, -0.9, 0.9] }, // fit box 5.2 x 1.8
   jain: { box: [-3.7, 3.7, -3.7, 4.8] }, // createJainMandir: 7.4 x 7.4 + front steps (fit box depth 9.6)
-  haveli: { box: [-16, 16, -10, 14.2] }, // src/farmSites.js createOldHaveli: 20 x 20 m ranges + the front yard walls to x +-16, z 14.15
+  // 26 Nov: building-only boxes from the built mesh (createOldHaveli): the 21 x 21 m slab and ranges (z -10.5..10.5), then the two 10 m low boundary walls at z 14 (x +-6..16) as thin strips. The old whole-site box (x +-16, z -10..14.2) put house #430 (26 m2) inside empty yard.
+  haveli: { box: [-10.5, 10.5, -10.5, 10.5], boxes: [[-10.5, 10.5, -10.5, 10.5], [-16, -6, 13.8, 14.2], [6, 16, 13.8, 14.2]] }, // src/farmSites.js createOldHaveli
   gurukul: { box: [-30.5, 30.5, -22.6, 23.1] }, // gurukul_v2.glb bounds (grounds included)
   maidan: { box: [-24, 24, -24, 24], open: true }, // the same ground as yard_khel
   mandi: { box: [-18.6, 18.6, -37, 37] }, // the built yard is 74 m long (src/anchors.js), her outline 58 m

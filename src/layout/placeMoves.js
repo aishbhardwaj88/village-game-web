@@ -26,8 +26,11 @@ export const PLACE_MOVES = [
   { src: 'banta', ids: ['banta'], dx: 0, dz: 0, ry: -90 * D, why: 'walls were 26 deg off cross_road; turned square to it' },
   { src: 'chaat', ids: ['chaat'], dx: 0, dz: 0, ry: -Math.PI, why: 'walls were 36 deg off main_road; turned square to it (also clears the pooja items shop by 0.66 m2)' },
   { src: 'jalebi', ids: ['jalebi'], dx: 0, dz: 0, ry: -90 * D, why: 'walls were 30 deg off cross_road; turned square to it' },
-  { src: 'sabzi', ids: ['sabzi'], dx: -1.5, dz: -2.5, ry: 132 * D, why: 'walls 40 deg off main_road and 11.5 m2 into the gift shop; turned 8 deg and slid 2.9 m north-west to front cross_road square (2.6 deg), overlap with the shop cut to 7.2 m2, clear of the kite job points' },
+  { src: 'sabzi', ids: ['sabzi'], dx: -2.9, dz: -3.9, ry: 132 * D, why: 'walls 40 deg off main_road and 11.5 m2 into the gift shop; turned 8 deg and slid 2.9 m north-west to front cross_road square (2.6 deg), overlap with the shop cut to 7.2 m2, clear of the kite job points; 26 Nov: 2 m more south-west (total 4.86 m from the map spot) so the gift shop clears it with a 1 m slide' },
   { src: 'yard_bus_adda', ids: ['yard_bus_adda'], dx: 0, dz: -2.5, why: 'shelter front looked at gali_n19 behind it, back nearer; 2.5 m north its front faces the highway square' },
+  // 26 Nov final overlaps (docs/layout/MOVE_LOG_FINAL_25NOV.md): building-on-building overlaps that a shop move alone could not clear
+  { src: 'house', ids: ['house'], dx: 3.4, dz: 0.6, why: "Pitaji's house (real mesh) stood 27 m2 into the Hardware and paint shop; 3.4 m east and 0.6 m north here + the shop 2.2 m west and 0.6 m south clears it and keeps the sack pile and the bullock cart spawn outside the shop (3.45 m from the map spot)" },
+  { src: 'yard_chaupal', ids: ['yard_chaupal'], dx: 0, dz: -1.5, why: 'chaupal yard overlapped the post office body (8.95 m2 of site boxes); 1.5 m north clears it, front still on ring_road' },
   // yard_bhatta: NO move and NO turn (25 Nov). Her own map rule: the brick kiln stays away from the petrol pump and is never attached to the road, greenery in front of it. The map's front (north, away from the highway) is that rule; the facing-the-road rule does not apply to it.
   // facing: road facing wins over the old model turn (front = local +z; open grounds put their long side to the road)
   { src: 'yard_volleyball', ids: ['yard_volleyball'], dx: 0, dz: 0, ry: -107.1 * D, why: 'square to main_road (front west, 11 deg off square before)' },

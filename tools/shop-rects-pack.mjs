@@ -232,6 +232,10 @@ const strictFail = (p, self) => {
   return null;
 };
 if (DBGPT) { const [nm, a, b] = DBGPT.split(','); const s = shops.find((q) => q.name === nm && (!a || true)); for (let dz = 0; dz <= 5; dz += 0.5) { const q = { ...s, x: s.x0, z: s.z0 + dz * (+b || 1) }; console.log('PT', nm, dz, footClear(q).toFixed(2), balanceExcess(q).toFixed(2), strictFail(q, s)); } }
+// 26 Nov final overlaps: Kites and toys steps 0.7 m along its row (away from the gift shop) so the gift shop can clear place sabzi without touching it; done BEFORE the FIX3 search so it sees the new spot.
+// Hardware and paint: 2.2 m west + 0.6 m south (with place house 3.4 m east + 0.6 m north, placeMoves.js) clears the house and keeps the bullock cart spawn (639.4,32.5) 2.4 m off its rect.
+const FORCE = { 'Kites and toys (2-storey)': [0, 0.7], 'Hardware and paint (2-storey)': [-2.2, -0.6] };
+for (const s of shops) { const f = FORCE[s.name]; if (f) { s.x = s.x0 + f[0]; s.z = s.z0 + f[1]; s.moved3 = true; } }
 const fixed3 = [], notFixed3 = [], DBG = process.argv.includes('--dbg');
 for (const s of shops) {
   if (!FIX3.some((k) => s.name === k || s.name + '@' + Math.round(s.x0) === k)) continue;
