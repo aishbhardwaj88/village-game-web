@@ -1743,3 +1743,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Verified: npm run build:unchecked, licence-audit --check, check-dup-models, check-material-clone,
   place-visibility-check all clean (Tier 1). No Tier 2 (no position/collision code of mine changed).
 - Agents used: none (small-task run, did not warrant spawning one per efficiency-rules.md).
+- 25 Nov 16:4x scheduled run: Actions green on c996779; list items (temple/sabzi, moved-place coords, pre-Play size, land-layer) already settled earlier today, no new unblocked item. missions-check 398/0/3, build:unchecked + 4 instant checks pass. No code change.
