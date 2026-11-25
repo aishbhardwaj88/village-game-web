@@ -1802,3 +1802,7 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Agents: slimmer Sonnet low; colour system Sonnet medium; placement Sonnet medium (resumed once); bake Sonnet medium. Fable: 1 brainstorm agent, medium, 26 s, because she ordered it explicitly in chat. No Opus.
 - 26 Nov later: bb35094 roaming traffic (src/roamingTraffic.js, pool of 8, created in onStart after Play, left-side lanes, brakes for player; checks 0 FAIL) and tractors moved to farms/outskirts (24 parked spots). Agents: roaming traffic Sonnet medium; tractor move Sonnet low. Not verified: visuals, facing, rider seat heights, braking, wheels do not spin (no wheel nodes), chauraha ring not driven.
 - 25 Nov 19:4x scheduled run: Actions green on 016660e; all list items already settled (temple/sabzi as drawn, moved-place coords, pre-Play 10.7 MB = her call in NEEDS_YOU, land-layer yields 8 ms). missions-check 399/0/3, build:unchecked ok. No code change.
+
+## 26 Nov agents (vehicles, posters, props)
+- Sonnet medium: vehicle measure (front and size table, src/vehicleSpec.json), poster doubling, unused 3D inventory, placed props farm, shops, chowk. Sonnet low: roaming density, parked spots. No Opus, no Fable. All stopped on return.
+- Live: vehicle facing and sizes (src/vehicleFit.js), posters about 2x, 253 props (src/placedProps*.js). Unverified by eye: pane hidden.
