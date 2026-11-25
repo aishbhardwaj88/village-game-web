@@ -1,6 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov ~20:1x UTC scheduled run: no code change, nothing unblocked
+- HEAD 7d84414 (agents-list handoff, not touched here), CI green (run 1358, deploy success). npm ci
+  clean, node_modules was missing on this fresh container (expected per known container note).
+- Tier 1 clean: build:unchecked + licence-audit + check-dup-models + check-material-clone +
+  place-visibility-check all pass; budget breaches shown are known/parked (characters, game MB, load s).
+- missions-check: 399 PASS, 0 FAIL, 3 WARN - item 8 (missions/bell/canal) stays confirmed done.
+- layout-tests.mjs: 123 failures (front 27/on-road 70/overlap 26), IDENTICAL to the prior run (not a
+  one-off) and no position commit landed since - the concurrent position-fix effort now looks stalled.
+  Still gated by 5a-MAP + her open "is the map locked?" question (NEEDS_YOU, asked twice already,
+  not asking again) - not touched, per BACKLOG's "note an overlap in handoff.md, never fix it".
+- LOOKS LIST 1-8 and all BACKLOG [ACTIVE] items reconfirmed done/parked/blocked (CC0 proxy 403,
+  shader-warm needs a real browser, no place mid-rework for the architecture/texture-pipeline items).
+
 # 25 Nov (hourly loop, 18:1x UTC) - no code change, concurrent session progressing, nothing unblocked
 - Fresh container: node_modules missing (`npm ci` run), HEAD was detached but equal to origin/main
   (b67dddc) - confirmed with `merge-base --is-ancestor` before re-attaching local `main`, no commits lost.
