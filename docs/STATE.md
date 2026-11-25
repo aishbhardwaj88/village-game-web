@@ -1,8 +1,6 @@
 # State - rewritten every run, max 40 lines
 Last updated: 25 Nov 11:50 UTC (13:45 deadline run). Actions green on a3714fe; missions-check 396/0/5; build:unchecked ok.
-This run: no game change. Temple/sabzi fronts already decided (a6c25a6, stay as drawn). Hard-coded old coords for mandi/khalihan/mela/tanki/bhatta
-are gone from src (only old-map dirtTracks remain, already skipped under ?layout=new). Land-layer builds already sliced (8 ms yields). Pre-Play size has no safe cut left.
-on the final map); backfilled a missing handoff.md entry for the prior run's 3 commits (wall variety, NEEDS_YOU,
+This run (25 Nov vehicles check): built sizes match LAYOUT.md except bike height (1.24 -> 1.10 m, fixed). Open: tractor 2.19 m tall vs spec 2.60 (spec contradicts its own parts), trolley wheels pass through floor, player_cycle_v2 wheel 0.71 m vs 0.60.
 pre-Play JS cut), already deployed green. All [ACTIVE] BACKLOG items still blocked the same way (proxy 403,
 headless browser) - not re-tested this run, per A6. Fresh container: `npm ci` + checkout -B main.
 

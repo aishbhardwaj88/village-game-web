@@ -1654,3 +1654,6 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - No game change. Checked: Actions green (a3714fe), missions-check 396 pass/0 fail, build:unchecked ok.
 - Temple/sabzi fronts: already settled in a6c25a6 (stay as drawn on the final map). Hard-coded old coords: none left in src except dirtTracks (old map, skipped under ?layout=new). Land-layer builds already yield every 8 ms. Pre-Play 10.7 MB: no cut that is not a look call.
 - Agents: none.
+
+## 25 Nov (vehicles vs LAYOUT.md)
+- Measured tractor/trolley/cart/bike from built geometry. Only bike height was off >10% (1.24 vs 1.10): headY/seatTopY lowered in src/vehicles.js, now 1.11. All else within 10% or a spec conflict (see STATE). Checks green. Agents: none.

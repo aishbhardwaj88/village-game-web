@@ -858,9 +858,9 @@ export function buildBikeGroup() {
   // doesn't vanish to a hairline at typical camera distance.
   const bbY = wheelR - 0.02; // bottom bracket (pedal centre) — just below axle height
   const bbZ = -0.15;
-  const headY = wheelR + 0.78; // head tube top, below the handlebar
+  const headY = wheelR + 0.65; // head tube top, below the handlebar (was 0.78: overall height 1.24 m vs LAYOUT.md 1.10 m, +12%)
   const headZ = frontAxleZ - 0.2;
-  const seatTopY = wheelR + 0.72;
+  const seatTopY = wheelR + 0.62; // was 0.72, lowered with headY so overall height meets LAYOUT.md's 1.10 m
   const seatTopZ = -0.6;
   const tubeThickness = 0.06;
 
