@@ -38,3 +38,4 @@ ask again).
 - Headless chromium crashes ("Target crashed") on any real page.evaluate - screenshot.js/
   world-validator.js/regression-check.js all hit this. Verify via code reading + Tier 1 (A7).
 - `node tools/layout-pack.mjs` (full repack) takes ~4.5 min, not "minutes-long" vaguely - budget for it.
+- 25 Nov 19:xx scheduled run: Actions green on 64e84a0; temple/sabzi, moved-place coords, pre-Play 10.7 MB, land-layer already settled (see handoff 1711); missions-check 402/0 FAIL/3 WARN, build:unchecked ok. No code change.
