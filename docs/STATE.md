@@ -1,6 +1,7 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov (hourly loop). Streaming/caching work below; LOOKS LIST items 1-8 done or parked (item 8's "zero console errors" needs a real browser, container limit).
-This run (26 Nov, #2): sliced landTrees/landFields/mapObjects-stage4 builders (STATE next-5 #5).
+Last updated: 25 Nov (hourly loop). Streaming/caching work below; LOOKS LIST items 1-8 done or parked (item 8's "zero console errors" needs a real browser, container limit).
+This run (25 Nov, hourly): sliced the last boot-CPU builders - landCanal.js, landProps.js, mapObjectsGround.js's
+buildGroundAndWater now yield every ~8 ms too, same pattern as landTrees/landFields/mapObjects-stage4. Next-5 item 5 done.
 
 ## Current state
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m (src/ui.js, main.js setReadyGate, zoneManager setGate). Zones beyond
@@ -26,8 +27,7 @@ This run (26 Nov, #2): sliced landTrees/landFields/mapObjects-stage4 builders (S
    on-screen-size half (visibleRadius by real apparent size) isn't - broad refactor, real regression risk, scoped only.
 4. Memory hygiene (parked, NEEDS_YOU): closing decoded ImageBitmaps is unsafe blind: frameQueue.js bitmapByUrl shares one bitmap across loads,
    deferredMaps.js hands t.image to other textures, signAtlasHub/main.js warm-up re-read .image. Zone teardown already disposes geometry+materials.
-5. DONE (26 Nov run 2): landTrees/landFields build() + mapObjects stage 4 now slice every ~8 ms. Still single-sync
-   and lower priority (tens not hundreds of objects): landCanal.js, landProps.js, mapObjects stage 3 (ground/water).
+5. DONE (25 Nov): every land/map-object boot-CPU builder now slices its per-object loop every ~8 ms.
 
 ## Blockers
 - Range support of the live host unverified (proxy blocks github.io); downloader falls back to whole-file restart on 200.

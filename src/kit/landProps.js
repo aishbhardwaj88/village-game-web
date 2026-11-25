@@ -10,6 +10,7 @@ import { addHaystacks } from '../haystacks.js';
 import { addGobar } from '../gobar.js';
 import { addLaundryLine } from '../laundryLine.js';
 import { hiFont, enFont } from '../signPaint.js';
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * Small things of the approved map (?layout=new):
@@ -124,7 +125,9 @@ export async function build(map) {
   const tex = flagAndStoneCanvas();
   const heightPads = [];
 
+  let sliceT = performance.now(); // 26 Nov: 1600+ map objects scanned in one task; yield to the main thread every ~8 ms
   for (const o of map.objects) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const key = labelKey(o), name = labelName(o), ring = o.rings?.[0];
     if (!ring || o.kind !== 'solids') continue;
     const c = ringCentre(ring), r = ringRadius(ring);

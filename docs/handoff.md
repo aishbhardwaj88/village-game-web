@@ -1556,3 +1556,14 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Landed the final map (approved-map-2026-11-25.json, repacked); missions-check 0 FAIL; walls tiled 1.5 m with anti-tiling; gate cut to 70 m; normal/roughness and house atlas maps deferred after Play (13.5 -> ~10.7 MB before Play); show cap 265 m, shader warm-up, long-task slicing; service worker added then page made network-first (stale page after a deploy stalled repeat visits at "Loading the village 75%", verified live: Play 6.2 s with SW).
 - Agents: missionsfix (Sonnet low, small data fix), gatecut (Sonnet medium, loading code), walls (Sonnet medium, texture scale), propsfix (Sonnet low, error check), gate3 (Opus medium, hard gate/load design), models (Sonnet low, gz models), atlas (Sonnet medium, deferred maps), stream (Sonnet medium, show cap/warm-up/slicing). All stopped on return, zero unpushed commits.
 - Not done: memory release of decoded images (unsafe blind, parked), sliced land-layer builds, load target 4-6 MB (parked for her).
+
+# 25 Nov (hourly loop) - finished slicing the boot-CPU land/map-object builders
+- STATE next-5 item 5's remainder: landCanal.js and landProps.js both scan the same 1627-object map.objects list
+  synchronously; mapObjectsGround.js's buildGroundAndWater (patches/channels/ponds + tubewell/trough water, made
+  async) does real per-item geometry (polygon triangulation, profile strips). All three now yield to the main
+  thread every ~8 ms, same mechanism as the already-sliced landTrees/landFields/mapObjects stages 1+4 (lateBuild.js
+  yieldToMain). Caller in mapObjects.js updated to await buildGroundAndWater.
+- Verified: build:unchecked clean (budget breaches are the pre-existing character/load-size ones, unrelated to this
+  diff); licence-audit --check 0 UNKNOWN; check-dup-models PASS; check-material-clone PASS; place-visibility-check
+  PASS; missions-check 396/0/5 (0 FAIL, same shape as baseline). Tier 1 (builder files), no position/collision touched.
+- Agents used: none (small, same-area change; Sonnet main loop handled it directly per efficiency-rules.md).

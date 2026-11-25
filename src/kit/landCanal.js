@@ -5,6 +5,7 @@ import { Parts } from './landInstancing.js';
 import { landMaterial } from './landMaterials.js';
 import { fieldMaterial, paint } from './landFields.js';
 import { labelKey, labelName, ringCentre } from './landLayout.js';
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * The nahar of the approved map (?layout=new): north-south on the east side, centre x 824, 6 m of water, 690 m long.
@@ -22,7 +23,9 @@ const CEMENT = 0xcfc9ba, OLD = 0xb5ae9e;
 
 export async function build(map) {
   const bridges = [], ghats = [];
+  let sliceT = performance.now(); // 26 Nov: same 1600+ map-object scan as landProps.js; yield every ~8 ms
   for (const o of map.objects) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const key = labelKey(o), name = labelName(o), r = o.rings?.[0];
     if (!r) continue;
     const zs = r.map((p) => p[1]), xs = r.map((p) => p[0]);

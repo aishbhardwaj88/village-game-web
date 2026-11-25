@@ -249,7 +249,7 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
   group.add(kitGroup); layers.kit = kitGroup;
 
   // ---- 3. ground and water
-  const gw = buildGroundAndWater(plan, map.roads);
+  const gw = await buildGroundAndWater(plan, map.roads);
   if (gw.ground) { group.add(gw.ground); layers.ground = gw.ground; }
   if (gw.water) { group.add(gw.water); layers.water = gw.water; }
   colliders.push(...gw.colliders);

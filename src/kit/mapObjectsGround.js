@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { fieldMaterial, paint } from './landFields.js';
 import { createWaterMaterial } from '../water.js';
 import { PATCH_LOOKS, roadClearance, toWorld, pondSqueeze } from './mapObjectsPlan.js';
+import { yieldToMain } from './lateBuild.js';
 
 /**
  * Ground and water of the map objects layer:
@@ -98,12 +99,14 @@ function waterRect(x, z, ry, w, d, y, nx = 6, nz = 6, edge = 0) {
 /**
  * plan -> { ground: Mesh, water: Mesh, heightFns: [(x,z)=>y], colliders: [box], report }
  */
-export function buildGroundAndWater(plan, roads) {
+export async function buildGroundAndWater(plan, roads) {
   const ground = [], water = [], heightFns = [], solid = [], report = { patches: 0, ponds: 0, channels: 0, groundTris: 0, waterTris: 0 };
   const look = (l) => ({ soil: l.soil, color: l.color, spacing: l.spacing || 0, cover: l.cover });
+  let sliceT = performance.now(); // 26 Nov: patches/channels/ponds/designs each scanned in one task; yield every ~8 ms
 
   // 1. painted patches (on top of the open ground, under the roads)
   for (const p of plan.patches) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const l = PATCH_LOOKS[p.kind === 'playcorner' ? 'play' : p.kind];
     if (!l || !p.ring) continue;
     const g = polyGeometry(p.ring, PATCH_Y);
@@ -114,6 +117,7 @@ export function buildGroundAndWater(plan, roads) {
 
   // 2. field channels: wet mud bed + earth bunds both sides, water ribbon between
   for (const c of plan.channels) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const L = Math.hypot(c.b[0] - c.a[0], c.b[1] - c.a[1]);
     if (L < 1) continue;
     const u = [(c.b[0] - c.a[0]) / L, (c.b[1] - c.a[1]) / L], side = [-u[1], u[0]];
@@ -141,6 +145,7 @@ export function buildGroundAndWater(plan, roads) {
 
   // 3. ponds: raised earthen bund round the water, wet mud bed under it, water just above the ground
   for (const p of plan.ponds) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     if (!p.water) continue;
     const rw = meanR(p.water, p.x, p.z), rb = p.bank ? meanR(p.bank, p.x, p.z) : rw + 1.6;
     const crest = rw + (rb - rw) * 0.42;
@@ -226,6 +231,7 @@ export function buildGroundAndWater(plan, roads) {
 
   // 5. tubewell hauz water and the falling water from the pipe; trough water
   for (const d of plan.designs) {
+    if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     if (d.kind === 'tubewell') {
       const [hx, hz] = toWorld(d.x, d.z, d.ry, 2.25, 0);
       water.push(waterRect(hx, hz, d.ry, 1.06, 0.96, 0.46, 2, 2, 0.6));
