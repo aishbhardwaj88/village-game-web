@@ -749,23 +749,23 @@ async function main() {
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createGullyLife(scene); // the two gullies off the chauraha (src/gullyLife.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js)
+  if (!isNewLayout()) createRoadEvents(scene); // cow in the road, goat herd, sleeping dogs, tied buffalo (src/roadEvents.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createRoofMonkeys(scene); // 3 monkeys on kit-house roof tanks (src/roofMonkeys.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createAnimalsExtra(scene); // wallowing pond buffaloes + dhobi, monkeys on the water tank (src/animalsExtra.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createVendors(scene); // street vendors round the chowk (src/vendors.js)
+  if (!isNewLayout()) createVendors(scene); // street vendors round the chowk (src/vendors.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js)
+  if (!isNewLayout()) createVendors2(scene); // paan kiosk, sugarcane juice cart, knife grinder (src/vendors2.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
+  if (!isNewLayout()) createNostalgia(scene); // nostalgic objects (src/nostalgia.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
+  if (!isNewLayout()) createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js)
+  if (!isNewLayout()) createVillageFixtures(scene); // section 11 leftover: new pukka house beside the crumbling kachcha one (src/villageFixtures.js) /* 25 Nov, her order: the final map is the only spec; this builder places old-layout objects at fixed old coordinates that the map does not have (see docs/layout/FINAL_MAP.md) */
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageFurniture2(scene); // transformer + pole line, parked bullock cart, painted school/anganwadi walls (src/villageFurniture2.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
