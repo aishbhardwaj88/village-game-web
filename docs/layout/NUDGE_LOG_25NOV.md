@@ -34,3 +34,32 @@ Source: docs/layout/approved-map-2026-11-25.json. Rule: nothing stands on a road
 - new_Kabaddi ground lines (713.7,114.7): painted ground marking, r 8.2 m circle touches 13_Outer lane, east by 1.7 m; not a standing object, not moved.
 - Shop and house footprints touching bands (new_sqx, kiosks, etc.): other agent (shopsPlace.js / housesPlan.js), not touched here.
 - Washing lines #1, #3, #10 now sit within about 1.5 m of a house rectangle (they were beside the houses already); needs a look if they read as overlapping.
+
+## Second pass, 25 Nov (strict audit: clear by at least 0.1 m of every road band)
+
+Strict audit (docs/layout/MATCH_AUDIT_3_25NOV.md, tmp/audit/run4.sh) found 7 props touching or within 0.1 m of a band: milestones #4 and #9, well #1, signs #76, #83, #95, #103. Two causes, both fixed:
+- tools/layout-pack.mjs measured the band with round caps and a 0.02 m target; the audit uses flat caps and 0.1 m. Now the same flat-cap band shape and a 0.13 m target (0.1 plus 0.03 margin). The well uses its real ring (footprint mode) instead of a circle.
+- src/kit/landLayout.js: the wells, hand pumps and washing lines read the raw map, which still held the drawn spot. loadLandMap now swaps in the packed (nudged) ring for every prop listed in propNudges.
+Smallest move along the road normal, max 2 m, none reached the limit. The 17 spots below replace the first table (the signs and milestones moved a little further to reach 0.1 m; mapSigns.js and mapObjectsPlan.js already read the packed map).
+
+| Prop | Map spot | New spot | Moved m | Road | Mode |
+|---|---|---|---|---|---|
+| new_milestone#4 | 450, 1.5 | 451.13, 1.46 | 1.13 | gali_n21 | circle r=0.36 |
+| new_milestone#9 | 458, -2 | 457.98, -1.84 | 0.16 | cross_road | circle r=0.36 |
+| new_well#1 | 558, -43 | 558.07, -43 | 0.07 | gali_n35 | footprint |
+| new_sign#76 | 709.28, -85.03 | 709.51, -85.02 | 0.23 | 13_Outer lane, east | footprint |
+| new_sign#83 | 765.95, -116.42 | 765.95, -116.19 | 0.23 | highway | footprint |
+| new_sign#95 | 709.1, -78.67 | 709.28, -78.67 | 0.18 | 13_Outer lane, east | footprint |
+| new_sign#103 | 708.92, -73.15 | 709.16, -73.14 | 0.23 | 13_Outer lane, east | footprint |
+| new_Washing platform#1 | 505.6, 30.27 | 504.82, 30.37 | 0.78 | 15_Outer lane, west | circle r=2.24 |
+| new_Water trough#1 | 467.77, -9.47 | 467.87, -9.93 | 0.46 | cross_road | circle r=1.68 |
+| new_Hand pump#13 | 552.37, -83 | 552.16, -83 | 0.21 | gali_n20 | circle r=1.20 |
+| new_Washing line#1 | 647.98, 60.3 | 648.22, 61.49 | 1.21 | ring_road | circle r=2.50 |
+| new_Washing line#3 | 530.08, -69.61 | 529.94, -68.51 | 1.10 | ring_road | circle r=2.50 |
+| new_Washing line#6 | 716.94, 14.6 | 716.94, 13.68 | 0.92 | cross_road | circle r=2.50 |
+| new_Washing line#10 | 546.98, -76.9 | 547.08, -77.71 | 0.82 | ring_road | circle r=2.50 |
+| new_Washing line#12 | 539.85, -0.61 | 539.88, -1.16 | 0.55 | cross_road | circle r=2.50 |
+| new_sign#44 | 561.85, 9.15 | 561.85, 10.3 | 1.15 | cross_road | circle r=1.66 |
+| new_sign#65 | 624.33, -33.52 | 624.47, -34.86 | 1.34 | inner_loop | circle r=1.78 |
+
+Result: tmp/audit/run4.sh props FAIL 0 (354 PASS, 26 exempt by design). tmp/audit/export4.mjs now reads the runtime ring (packed map) for props.

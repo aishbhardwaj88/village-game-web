@@ -57,17 +57,29 @@ export function compact(raw) {
 const NUDGE_IDS = ['new_milestone#4', 'new_milestone#9', 'new_Washing platform#1', 'new_Water trough#1', 'new_well#1', 'new_Hand pump#13',
   'new_Washing line#1', 'new_Washing line#3', 'new_Washing line#6', 'new_Washing line#10', 'new_Washing line#12',
   'new_sign#44', 'new_sign#65', 'new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103'];
-const FOOTPRINT_MODE = new Set(['new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103']);
+const FOOTPRINT_MODE = new Set(['new_well#1', 'new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103']);
 const NUDGE_MAX = 2;
-function roadHit(roads, x, z) { // nearest road: { edge: distance to its band edge (negative = inside), nx, nz: unit vector from the road centreline to the point }
+const NUDGE_TARGET = 0.13; // clear of every band by at least 0.1 m (her 25 Nov rule) plus 0.03 m of rounding margin
+function roadHit(roads, x, z) { // nearest road band, the SAME shape the audits use (polyline buffered width/2, flat caps, round joins): { edge: signed distance to the band edge (negative = inside), nx, nz: unit vector pointing out of the band, id }
   let best = null;
+  const take = (edge, nx, nz, id) => { if (!best || edge < best.edge) best = { edge, nx, nz, id }; };
   for (const r of roads) {
     const half = (r.width || 4) / 2;
     for (let i = 0; i < r.pts.length - 1; i++) {
-      const a = r.pts[i], b = r.pts[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], L2 = dx * dx + dz * dz || 1;
-      const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L2));
-      const px = a[0] + dx * t, pz = a[1] + dz * t, d = Math.hypot(x - px, z - pz), edge = d - half;
-      if (!best || edge < best.edge) best = { edge, nx: d > 1e-3 ? (x - px) / d : -dz / Math.sqrt(L2), nz: d > 1e-3 ? (z - pz) / d : dx / Math.sqrt(L2), x: px, z: pz, id: r.id };
+      const a = r.pts[i], b = r.pts[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz) || 1;
+      const ux = dx / L, uz = dz / L, px = x - a[0], pz = z - a[1];
+      const s = px * ux + pz * uz, t = -px * uz + pz * ux; // along the segment, across it (t > 0 on the (-uz, ux) side)
+      const ex = Math.max(-s, s - L), ez = Math.abs(t) - half; // box signed distance in the segment frame
+      let edge, ls, lt;
+      if (ex > 0 || ez > 0) { edge = Math.hypot(Math.max(ex, 0), Math.max(ez, 0)); ls = ex > 0 ? Math.sign(s - L / 2) * ex : 0; lt = ez > 0 ? Math.sign(t) * ez : 0; }
+      else if (ex > ez) { edge = ex; ls = Math.sign(s - L / 2) || 1; lt = 0; }
+      else { edge = ez; ls = 0; lt = Math.sign(t) || 1; }
+      const m = Math.hypot(ls, lt) || 1; ls /= m; lt /= m;
+      take(edge, ls * ux - lt * uz, ls * uz + lt * ux, r.id);
+    }
+    for (let i = 1; i < r.pts.length - 1; i++) { // round joins at interior vertices
+      const d = Math.hypot(x - r.pts[i][0], z - r.pts[i][1]);
+      if (d - half < 0.5) take(d - half, d > 1e-3 ? (x - r.pts[i][0]) / d : 1, d > 1e-3 ? (z - r.pts[i][1]) / d : 0, r.id);
     }
   }
   return best;
@@ -90,15 +102,15 @@ function nudgeSmallProps(objects, places, roads) {
     };
     let ox = 0, oz = 0;
     const before = clear(0, 0);
-    if (before.c >= 0.02) continue;
+    if (before.c >= NUDGE_TARGET) continue;
     for (let it = 0; it < 8; it++) {
       const k = clear(ox, oz);
-      if (k.c >= 0.02) break;
-      const step = 0.03 - k.c;
+      if (k.c >= NUDGE_TARGET) break;
+      const step = NUDGE_TARGET + 0.01 - k.c;
       ox += k.h.nx * step; oz += k.h.nz * step;
     }
     const moved = Math.hypot(ox, oz), after = clear(ox, oz);
-    if (moved > NUDGE_MAX || after.c < 0.02) { log.push({ id, name: o.name, from: [o.cx, o.cz], to: null, moved: +moved.toFixed(2), road: before.h.id, note: 'NOT MOVED (needs more than 2 m or still touches)' }); continue; }
+    if (moved > NUDGE_MAX || after.c < NUDGE_TARGET) { log.push({ id, name: o.name, from: [o.cx, o.cz], to: null, moved: +moved.toFixed(2), road: before.h.id, note: 'NOT MOVED (needs more than 2 m or still touches)' }); continue; }
     const from = [o.cx, o.cz];
     const sh = (p) => [r2(p[0] + ox), r2(p[1] + oz)];
     o.rings = o.rings.map((rg) => rg.map(sh));

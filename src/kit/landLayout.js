@@ -38,11 +38,15 @@ export function isNewLayoutParam() {
 let loading = null;
 /** Resolves to the raw approved map { places, roads, objects, canal }. */
 export function loadLandMap() {
-  if (!loading) loading = fetch(mapUrl).then((res) => res.json()).then((m) => {
+  if (!loading) loading = fetch(mapUrl).then((res) => res.json()).then(async (m) => {
     if (SLIM) { // objects the file marks null are the packed copy's own (same kind/label/colour/heights/rings), rebuilt exactly
       const packed = getLayout().objects;
       m.objects = m.objects.map((o, i) => o || { kind: packed[i].kind, label: packed[i].label, color: packed[i].color, y0: packed[i].y0, y1: packed[i].y1, y: packed[i].y, rings: packed[i].rings });
     }
+    // 25 Nov (her rule: nothing on a road): the small props the pack nudged off a road band stand at their nudged ring here too
+    // (the raw export still carries the drawn spot; objects the pack moved differ from the raw file, so they came from it unmoved)
+    const lay = getLayout(), ids = new Set(((await import('../layout/mapData.json')).default.propNudges || []).filter((n) => n.to).map((n) => n.id));
+    if (ids.size) lay.objects.forEach((q, i) => { if (ids.has(q.id) && m.objects[i]) m.objects[i] = { ...m.objects[i], rings: q.rings }; });
     return m;
   });
   return loading;
