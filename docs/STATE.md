@@ -8,16 +8,10 @@ Open (hourly loop): tractor spec 2.60 m vs parts 2.19 m needs her call; player_c
 - 26 Nov SIGNS: 115 map new_sign boards built (src/kit/mapSigns.js, one import line in main.js). 2 draw calls, 4140 tris, 230 post colliders, builds after Play. Hindi lines are my translations (art director may edit HI table).
 - 26 Nov SHOPS FIX: 19 skipped shops/kiosks/carts now built on their drawn plot (shopsPlace.js ring fallback; shops built 143 -> 162 of 165, 3 railway left). Tractor spawn x 642 -> 641. world-validator check 1 clear; check 2 floats (hb_main_39, school_bell) pre-existing.
 - 26 Nov RAILWAY + MELA: src/kit/railway.js (4 zones, dynamic import after Play; nearest zone edge 210 m from spawn). Mela zone enabled. Open: mela swing overlaps the map's Tent/wedding lights; full build/regression not run (container limit, A7).
-- 25 Nov hourly loop: trolley floor slab clipped through both wheels (TR.track puts wheels inboard of the bed;
-  old full-width floor slab passed through each wheel disc). Fixed with a wheel-well notch (centre strip + 4
-  outer pieces, outer width == TR.wheelW so the bed's outer edge/spec is unchanged); collision untouched.
-  src/vehicles.js only. Verified: build:unchecked + licence-audit/check-dup-models/check-material-clone/
-  place-visibility-check all clean. Real Tier 2 check (trolley-drive-test.js) crashed with this container's
-  known "Target crashed" signature after Play+2M sample points; verified by code reading instead (A7).
+- 25 Nov hourly loop: trolley floor clip fixed (wheel-well notch, src/vehicles.js); Tier 1 clean; Tier 2 crashed (container), checked by reading.
 - 25 Nov WALL VARIETY: shops draw plaster _j/_m/_p by shop id, +-6% tint jitter; house seeds re-rolled (181 ->
   4 clashes of 421). 25 Nov PRE-PLAY BYTES: plant models gated to load after Play (13.44 -> 12.81 MB).
-- 26 Nov HONEST GATE (70 m) + SHOW CAP 265 m + shader warm-up in-gate. Pre-Play ~10.7 MB (ring-model weight
-  inside the gate: see Next-5 item 2). 25 Nov PRE-PLAY JS: dynamic imports + KTX2 chunk split, gz 853->815 KB.
+- 26 Nov HONEST GATE: 70 m start area (now 40 m), maps deferred after Play; SHOW CAP 265 m; CLAUDE.md 5b sweep clean; pre-Play JS gz 815 KB (details: docs/archive/state-trimmed.md).
 
 ## Next 5 items
 1. House atlas n/r + water-tank fix need real-browser confirmation - her own machine can confirm any time.

@@ -756,10 +756,7 @@ async function main() {
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createNostalgia(scene); // nostalgic objects (src/nostalgia.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createIceCreamCarts(scene); // ice-cream carts with a bell (src/iceCreamCarts.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createScooters(scene); // parked scooters + motorcycles, Blender models (src/scooters.js)
-  import('./jeep.js').then((m) => m.createJeep(scene)); // the old open-top jeep by the panchayat (src/jeep.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createVillageOddities(scene); // section 11 oddities: half-built house, sand/bricks, scaffold, well, mazar, shamiana (src/villageOddities.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
@@ -857,8 +854,13 @@ async function main() {
   // — see docs/shots/opening/ for the before/after and the two runners-up.
   // House/lane/every building stayed exactly where they are; only the spawn point
   // and the camera's own initial yaw moved.
-  const OPENING_SPAWN = { x: 4 + OLD_SHIFT.x, z: 27 }; // on the 1 Nov map: the paved village square, by the peepal and the chowk
-  const OPENING_YAW = 2.9;
+  // 25 Nov (her order): a new game starts on the HIGHWAY, riding in on the cycle, facing the Welcome gate (place new_gate, pillars
+  // (599.9,-114.8)/(610.0,-111.2), centre (605.0,-113.0), its face turned 20 deg off north: n = (0.341,-0.940)). Spawn = gate centre + 9 m
+  // along n = (608.0,-121.5): the highway centre there is z -124.4 (11 m wide, road z -129.9..-118.9), so this is the village-side lane,
+  // 2.6 m inside the south edge. Yaw 2.793 = looks along -n (south-south-west) so the gate and main_road beyond fill the first frame.
+  // Layout-old keeps the old square spawn. Saved games keep their saved position; ?at= overrides below.
+  const OPENING_SPAWN = isNewLayout() ? { x: 608.0, z: -121.5 } : { x: 4 + OLD_SHIFT.x, z: 27 }; // old: the paved village square, by the peepal and the chowk
+  const OPENING_YAW = isNewLayout() ? 2.793 : 2.9;
   player.position.set(OPENING_SPAWN.x, 0, OPENING_SPAWN.z);
   { // review link: ?at=x,z starts the player at a given spot (24 Nov, her rule: every new model review link drops her right next to it)
     const at = new URLSearchParams(window.location.search).get('at');
@@ -870,6 +872,9 @@ async function main() {
   // Wheels sit on the ground, never in it (9 Nov playtest S3). G3 (10 Nov): also on the road / lane surfaces, which stand 1-8 cm
   // proud of the ground plane with bumps, read from the settle scheduler's cached grid (no raycast); a kerb is climbed, a plinth is not.
   playerCycle.setGroundProbe((x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y, 0.25)));
+
+  // 25 Nov (her order: first scene = the bicycle only; vehicles load after Play): ice-cream carts, parked scooters and the jeep were boot loads that the Play gate waited for (about 0.5 MB, none near the new highway spawn).
+  farGo.then(() => { createIceCreamCarts(scene); createScooters(scene); import('./jeep.js').then((m) => m.createJeep(scene)); }); // src/iceCreamCarts.js, src/scooters.js, src/jeep.js
 
   // Errand NPCs (item 1/3 brief) — positioned to match the interaction points
   // in src/interactions.js. Maa/halwai are now the real code-built characters
@@ -2130,6 +2135,10 @@ async function main() {
     yield;
     // The 1 Nov map's roads and lanes (src/mapRoads.js), 4 streamed quadrants, one merged draw call each.
     for (const c of ROAD_CHUNKS) zoneManager.register(c.id, { visibleRadius: 320, x: c.x, z: c.z, buildRadius: 300, teardownRadius: 360, build: () => createMapRoads(c.id) });
+    { // 25 Nov: the road quadrant under the spawn (and under a saved position) is part of the Play gate, so the highway surface is drawn in the first frame (the chunk centres are 130+ m away, outside the 40 m ring)
+      const sg = loadSavedGame(), at = [OPENING_SPAWN]; if (sg && sg.player && Number.isFinite(sg.player.x) && Number.isFinite(sg.player.z)) at.push(sg.player);
+      for (const c of ROAD_CHUNKS) if (at.some((p) => p.x >= c.rect.x0 && p.x < c.rect.x1 && p.z >= c.rect.z0 && p.z < c.rect.z1)) { const z = zoneManager.zones.get(c.id); if (z) z.forceBuild = true; }
+    }
     // Dirt tracks to the places the map left without a way in (src/dirtTracks.js), one merged draw call.
     zoneManager.register('dirt_tracks', { visibleRadius: 320, x: DIRT_TRACKS_ZONE.x, z: DIRT_TRACKS_ZONE.z, buildRadius: 300, teardownRadius: 360, build: () => createDirtTracks() });
     // Solar LEDs along the map's village lanes, per 36 m chunk so each streams only near the player (the lanes themselves are the strips above).

@@ -70,3 +70,5 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Mela ground: the swing lands about (767,-115), inside the map's Tent and wedding lights (766,-113.2). Both are solid. The map is final, so I did not move either. Say which to nudge, or leave it - status: open
 - Railway station, platform shelter and waiting hall are built, but the insides are empty boxes behind the windows. Furnish them later (bench, ticket counter, lamp)? - status: open
 - The two bullock cart models (Sketchfab 91 and 92 on your shortlist) still need downloading on your laptop: the game keeps the code-built bullock cart and bullocks until they are in public/assets/vehicles_free/. - status: open
+
+- Highway start: please look at the first frame once (gate and main road ahead, cycle with rider); I did not judge the framing. - status: open
