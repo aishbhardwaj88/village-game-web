@@ -1529,3 +1529,15 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   Play-time) are pre-existing, unrelated to this diff (no characters/boot code touched) - not re-investigated (A6).
 - Reread STATE.md item 3/4: speed-lead streaming and most audio-by-nearness were already built in earlier runs - STATE.md
   updated to say so precisely instead of repeating them as open.
+
+# 25 Nov (hourly loop) - no code change, one real gap found and filed
+- Re-verified LOOKS LIST (1-8, all done/parked) and every BACKLOG [ACTIVE] item: nothing left that's both real and safe to
+  ship blind this run - rest is [PAUSED-MAP], [GATED-HER], needs a real browser, or (item 4 ImageBitmap close, item 3
+  pixel-rule) flagged "not done blind" by an earlier run, for good reason (loaders.js/zoneManager.js are Tier 2, this
+  container's browser checks crash/hang, A7).
+- Found instead: the 24 Nov Poly Haven free-props review row (100+ catalogued CC0 props, CREDITS.md props_ph section,
+  src/freeProps.js PH_OUTDOOR/PH_INDOOR) was built for her look-verdict but no NEEDS_YOU line ever asked her to look at
+  it - filed now with a review link (?at=606,33, verified against freeProps.js PROPS_SITE by reading main.js's ?at
+  handler, not a live screenshot - browser checks unreliable here, A7). Nothing placed from it (5a1, her call only).
+- Verified: no code touched, so no build run (A5 exception - notes ride with no diff). Agents used: none (task was small
+  enough for the main loop itself, per efficiency-rules.md "don't spawn agents for small tasks").
