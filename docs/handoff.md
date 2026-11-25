@@ -1,6 +1,16 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop) - real-material fix on the village's tallest landmark (CLAUDE.md 5b rule 2)
+- src/props.js createWaterTankProp() (paani ki tanki + transformer, MAP.md's "tallest structure, visible
+  from most of the map") was 100% flat vertex-colour, no texture - an automatic fail under the realism
+  rule. Now shared-library materials by name (concrete/metal/wood via getTiledMaterial, CLAUDE.md 5a2),
+  vertex colour kept as a tint multiply (same hybrid rooftops.js/newShops.js use). 1 mesh -> 3 (one per
+  material family), a fixed one-time cost. Verified Tier 1, all PASS (build:unchecked, licence-audit,
+  check-dup-models, check-material-clone, place-visibility-check); container's browser check stayed
+  flaky (A7, reconfirmed, not chased further) so no clean in-container screenshot of the fix itself.
+- STATE's next-5 items 1-4 all need a real browser or are broad-refactor/risky; none safely actionable blind.
+
 # 26 Nov (42) - STATE next-item #5: sliced the last 3 single-sync boot-CPU builders
 - landTrees.js build(): the ~568-tree placement loop and the matrix-compose loop now yield to the main thread
   every ~8 ms (same pattern as wall-murals/mapObjects stage 1, 25/26 Nov), instead of running as one long task.

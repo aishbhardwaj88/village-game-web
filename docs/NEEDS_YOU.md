@@ -1,5 +1,7 @@
 # Needs you
 
+- Water tank (paani ki tanki, the tallest structure) now has real materials instead of flat colour (25 Nov):
+  nothing needed from you unless you want to look and say if it reads right - https://aishbhardwaj88.github.io/village-game-web/?at=-18,110 - status: open
 - 24-hour push lanes, UPDATE (24 Nov 23:15 IST): you already caught this and
   paused the MISSIONS/LOAD lanes yourself - MAIN now owns their PUSH LIST
   directly, no further lookup needed from you. - status: done
