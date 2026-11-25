@@ -1,6 +1,20 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (41) - LOOKS LIST 1-7 confirmed done, her NEEDS_YOU summary sent; item 8 checked, nothing left unblocked
+- Confirmed by code reading (no change needed): item 1's "5 plaster surfaces per house" lives in the live new-map
+  house kit's own material (src/kit/housesMaterial.js WALL_VARIANTS/EXTRA_VARIANTS, picked per house by seed) -
+  not the old retired abadi system, so it is genuinely wired to what ?layout=new actually ships.
+- Wrote docs/NEEDS_YOU.md's "Looks fixes ready" line (items 1-7, one ?at= review link each) - nothing had gone to
+  her yet even though all 7 were done or correctly parked per docs/STATE.md.
+- Item 8 (PUSH LIST): missions-check 358/0/4 WARN and the school_bell/canal-distance fixes (entry 38) stand,
+  nothing nearby touched this run so not rerun (A6). "Zero console errors" stays blocked on the same already-
+  logged container issue (Chromium hangs reaching accounts.google.com) - not re-chased (A7), needs a real browser.
+- Checked BACKLOG [ACTIVE] items for real work: CC0 prop sourcing (matka/charpai/cylinder/bicycle) needs a Poly
+  Haven lookup - api.polyhaven.com unreachable from this container this run (curl: connection reset), parked
+  rather than guessed at. M7 NPC out of scope (no characters this run); map/taste items stay paused/gated.
+- No code change - docs-only commit (A5 exception).
+
 # 24 Nov (39) - LOOKS item 7 (load speed): found+fixed "textures fetched twice" for real, "map shipped twice" tried+reverted
 - Root cause (CDP network capture, not guesswork): index.html's opening-view <link preload> tags were `as="image"`
   but the real loader (frameQueue.js) uses `fetch()`, a destination preload "image" never matches - genuine 2nd
