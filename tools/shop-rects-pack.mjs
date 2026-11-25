@@ -192,6 +192,62 @@ for (const s of shops) {
   if (done) { balanced.push(`${s.name} at ${x0.toFixed(2)},${z0.toFixed(2)}: slid ${Math.hypot(done.x - x0, done.z - z0).toFixed(2)} m toward its front so the front face is not farther from a band than the back face`); s.x = done.x; s.z = done.z; }
   else unmoved.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)}: back face nearer a road than the front by more than 0.5 m and no slide under ${MAXMOVE} m fixes it`);
 }
+// ---------------------------------------------------------------- 4. review rule 3 + walkability (25 Nov, round 3): no overlap with any building, no blocked door
+// FIX3 = the shops the reviewers found overlapping a place / house / shop, or standing in front of a door. Each is moved the smallest distance
+// (0.1 m grid, never more than 5 m from its map spot, turn unchanged) to a spot with: >= 0.1 m clear of every band, 0 overlap with any place
+// footprint, any runtime house (src/kit/housesPlanData.json rows) or any other shop (this shop's box is widened 0.1 m for the test, because the
+// measured meshes are a little larger than the FP table), front face still not farther from a band than the back face, its own door point free,
+// and no door point of any place, house or other shop within 0.5 m of it.
+const FIX3 = ['Hardware and paint (2-storey)', 'Gift shop (2-storey)', 'Kites and toys (2-storey)', 'Milk carts', 'Pooja items (2-storey)', 'Jaggery making unit', "Shopkeeper's home and godown",
+  'Dry fruits (2-storey)', 'Newspaper stand', 'Fruit kiosk', 'Fruit cart@618', 'Sugarcane juice cart'];
+const strictObs = [], doorPts = [], DBGPT = (process.argv.find((a) => a.startsWith('--pt=')) || '').slice(5);
+{
+  const { frontOffsetDeg } = await import('../src/layout/frontOffsets.js');
+  const { ANCHORS, } = await import('../src/anchors.js'), { EXISTING_FOOTPRINTS } = await import('../src/layout/footprints.js');
+  for (const [id, a] of Object.entries(ANCHORS)) { const f = EXISTING_FOOTPRINTS[id]; if (!f || f.open) continue; for (const bx of (f.boxes || [f.box])) { const r = { x: a.x, z: a.z, ry: a.ry || 0, box: bx }; strictObs.push({ n: 'place ' + id, p: poly(r) }); } }
+  for (const [id, a] of Object.entries(ANCHORS)) { // place door = 1.2 m beyond the front face of the footprint, centred (tmp/review/doors.mjs)
+    const f = EXISTING_FOOTPRINTS[id]; if (!f || f.open) continue; const fy = (a.ry || 0) - frontOffsetDeg(id) * Math.PI / 180, fv = [Math.sin(fy), Math.cos(fy)], lv = [fv[1], -fv[0]];
+    let fm = -1e9, l0 = 1e9, l1 = -1e9; for (const bx of (f.boxes || [f.box])) for (const [x, z] of poly({ x: a.x, z: a.z, ry: a.ry || 0, box: bx })) { fm = Math.max(fm, x * fv[0] + z * fv[1]); const t = x * lv[0] + z * lv[1]; l0 = Math.min(l0, t); l1 = Math.max(l1, t); }
+    doorPts.push({ n: 'door of place ' + id, x: (fm + 1.2) * fv[0] + (l0 + l1) / 2 * lv[0], z: (fm + 1.2) * fv[1] + (l0 + l1) / 2 * lv[1] });
+  }
+  try {
+    const plan = JSON.parse(fs.readFileSync(U('../src/kit/housesPlanData.json')));
+    for (const [i, x, z, ry, w, d] of plan.rows) { const c = Math.cos(ry), sn = Math.sin(ry), q = [[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2]].map(([a, b]) => [x + a * c + b * sn, z - a * sn + b * c]); strictObs.push({ n: 'house#' + i, p: q }); const fd = d / 2 + 1.2; doorPts.push({ n: 'door of house#' + i, x: x + Math.sin(ry) * fd, z: z + Math.cos(ry) * fd }); }
+  } catch (e) { console.error('housesPlanData not read:', e.message.split('\n')[0]); }
+}
+const inflate = (P, m) => m === 0 ? P : inflateN(P, m);
+const inflateN = (P, m) => { const cx = P.reduce((a, p) => a + p[0], 0) / 4, cz = P.reduce((a, p) => a + p[1], 0) / 4; return P.map(([x, z]) => { const dx = x - cx, dz = z - cz, L = Math.hypot(dx, dz) || 1; return [x + dx / L * m * 1.4142, z + dz / L * m * 1.4142]; }); };
+const distPtPoly = (x, z, P) => { let inside = false, m = 1e9; for (let i = 0, j = 3; i < 4; j = i++) { const [xi, zi] = P[i], [xj, zj] = P[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) inside = !inside; const ex = xi - xj, ez = zi - zj, L2 = ex * ex + ez * ez || 1, t = Math.max(0, Math.min(1, ((x - xj) * ex + (z - zj) * ez) / L2)); m = Math.min(m, Math.hypot(x - xj - t * ex, z - zj - t * ez)); } return inside ? 0 : m; };
+const shopDoor = (t) => { const f = [Math.sin(t.ry), Math.cos(t.ry)], dd = t.type === 'cart' ? 1.6 : t.type === 'kiosk' ? Math.min(Math.round(t.d * 10) / 10, 3.2) : Math.round(t.d * 10) / 10; return { x: t.x + f[0] * (dd / 2 + 1.2), z: t.z + f[1] * (dd / 2 + 1.2) }; }; // door of the plot rect (what doors.mjs tests)
+const rectPoly = (p) => poly({ ...p, box: [-Math.max(p.w, 2.4) / 2, Math.max(p.w, 2.4) / 2, -Math.max(p.d, 1.6) / 2, Math.max(p.d, 1.6) / 2].map((v, i) => p.type === 'cart' ? v : i < 2 ? (i ? p.w / 2 : -p.w / 2) : (i === 2 ? -p.d / 2 : p.d / 2)) }); // the plot rect doors.mjs tests (carts: the design's 2.4 x 1.6)
+const strictFail = (p, self) => {
+  const P = inflate(poly(p), 0.03), P0 = poly(p);
+  for (const ob of strictObs) if (pen(P, ob.p) > 0.001) return ob.n;
+  for (const t of shops) if (t !== self && pen(P0, poly(t)) > 0.02) return t.label;
+  const dp = shopDoor(p); const own = inflate(poly(p), 0); // own door point free of everything else (0.5 m)
+  for (const ob of strictObs) if (distPtPoly(dp.x, dp.z, ob.p) < 0.5) return 'its door blocked by ' + ob.n;
+  for (const t of shops) if (t !== self && distPtPoly(dp.x, dp.z, poly(t)) < 0.5) return 'its door blocked by ' + t.name;
+  const Pp = poly(p), Pr = rectPoly(p); for (const d of doorPts) if (distPtPoly(d.x, d.z, Pp) < 0.5) return 'blocks ' + d.n;
+  for (const t of shops) if (t !== self) { const dt = shopDoor(t); if (distPtPoly(dt.x, dt.z, Pr) < 0.5) return 'blocks the door of ' + t.name; }
+  return null;
+};
+if (DBGPT) { const [nm, a, b] = DBGPT.split(','); const s = shops.find((q) => q.name === nm && (!a || true)); for (let dz = 0; dz <= 5; dz += 0.5) { const q = { ...s, x: s.x0, z: s.z0 + dz * (+b || 1) }; console.log('PT', nm, dz, footClear(q).toFixed(2), balanceExcess(q).toFixed(2), strictFail(q, s)); } }
+const fixed3 = [], notFixed3 = [], DBG = process.argv.includes('--dbg');
+for (const s of shops) {
+  if (!FIX3.some((k) => s.name === k || s.name + '@' + Math.round(s.x0) === k)) continue;
+  const h0 = strictFail(s, s); if (!h0) continue; // already fine
+  let best = null; const probe = { ...s };
+  for (let dx = -MAXMOVE; dx <= MAXMOVE + 1e-9; dx += 0.1) for (let dz = -MAXMOVE; dz <= MAXMOVE + 1e-9; dz += 0.1) {
+    const cx = s.x0 + dx, cz = s.z0 + dz, mv = Math.hypot(dx, dz); if (mv > MAXMOVE) continue; if (best && mv >= best.mv - 1e-9) continue;
+    probe.x = cx; probe.z = cz; if (footClear(probe) < CLEAR + 0.01) continue; if (balanceExcess(probe) > -BAL_MARGIN) continue; if (strictFail(probe, s)) continue;
+    best = { x: cx, z: cz, mv };
+  }
+  if (best) { fixed3.push(`${s.name} at ${s.x.toFixed(2)},${s.z.toFixed(2)} -> ${best.x.toFixed(2)},${best.z.toFixed(2)} (${best.mv.toFixed(2)} m from its map spot; was: ${h0})`); s.x = best.x; s.z = best.z; s.moved3 = true; }
+  else if (DBG) { const rs = {}; for (let dx = -MAXMOVE; dx <= MAXMOVE + 1e-9; dx += 0.25) for (let dz = -MAXMOVE; dz <= MAXMOVE + 1e-9; dz += 0.25) { if (Math.hypot(dx, dz) > MAXMOVE) continue; probe.x = s.x0 + dx; probe.z = s.z0 + dz; const k = footClear(probe) < CLEAR + 0.01 ? 'band' : balanceExcess(probe) > -BAL_MARGIN ? 'balance' : strictFail(probe, s) || 'ok'; rs[k] = (rs[k] || 0) + 1; } console.log('DBG', s.name, JSON.stringify(rs)); notFixed3.push(`${s.name}: ${h0}`); }
+  else notFixed3.push(DBG ? 'DBG ' + JSON.stringify([0,1,2].map((k) => { const q = { ...s, x: s.x0 + (k - 1) * 0, z: s.z0 }; return [footClear(q), balanceExcess(q), strictFail(q, s)]; })) + ' ' : '' + `${s.name} at ${s.x.toFixed(2)},${s.z.toFixed(2)}: ${h0}; no clear spot within ${MAXMOVE} m`);
+}
+if (fixed3.length) console.log('FIXED (overlap / door, round 3):\n' + fixed3.join('\n'));
+if (notFixed3.length) console.log('NOT FIXED (round 3):\n' + notFixed3.join('\n'));
 // ---------------------------------------------------------------- result
 const newHits = []; for (const s of shops) { const h = hitsProbe(s, s); if (h) newHits.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)} now overlaps ${h}`); }
 const rects = {}, rows = [];
