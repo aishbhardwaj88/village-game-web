@@ -1774,3 +1774,8 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Props fixer (Spices far block, well, lamp): Sonnet, 17 min.
 - Final reviewers x4 (two rounds, independent scripts in tmp/review and tmp/review2): Sonnet. Round 2 at 1fada51: reviewer 1 NO ISSUES; reviewer 2 only flags Gossip Aunty (tvaunty.glb, compare scene only, pushed by another session in 70243f9/ec1982a, not placed in the village): needs her call.
 - Open for her: 7 buildings (ration, temple, jalebi, gaushala, tvhouse, jain, puncture yard) have a smaller lane closer behind than the front road; left as is (front faces a real road).
+
+## Road-empty round, 25 Nov: agents
+- Sonnet, medium effort, ~17 agents: fixers (1, A to J), three audits, two scans plus two re-scans, two independent reviewers. Why: parallel work on separate file groups, her order to go fast. No Opus, no Fable.
+- Last round: fixer J (cdd0d46) moved map haystack, chauraha island, map well, cane edge, gurudwara. Live look at 18:3x UTC: haystacks, chauraha, sweet shop, swing/stall clear of the road.
+- Open: two wall pictures (shaadi card, To Let) left off, question in NEEDS_YOU.md; 7 buildings with a smaller lane closer behind than the front road; budgets and fps unmeasured.
