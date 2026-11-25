@@ -226,6 +226,12 @@ export function getHouseMaterial() {
         // per-house tile scale (+-15%) and offset: neighbours never show the same tile phase
         vec2 hUv = vMapUv * (0.85 + 0.3 * fract(vSeed * 5.37)) + vec2(fract(vSeed * 7.13), fract(vSeed * 3.71)) * 4.0;
         float hCell = floor(vCell + 0.5);
+        // per-house rotation (25 Nov variety): plaster, cement and mud are isotropic, so each house turns its tile by 0/90/180/270 deg
+        if (hCell < 1.5 || hCell == 7.0) {
+          float rq_ = floor(fract(vSeed * 41.9) * 4.0);
+          vec2 ru_ = hUv - vec2(2.0);
+          hUv = (rq_ < 0.5 ? ru_ : rq_ < 1.5 ? vec2(-ru_.y, ru_.x) : rq_ < 2.5 ? -ru_ : vec2(ru_.y, -ru_.x)) + vec2(2.0);
+        }
         // plaster walls pick one of 5 surfaces by the house seed (cell 0 or the variant cells 8..11)
         float hAt = hCell < 0.5 ? floor(fract(vSeed * 17.31) * 5.0) : hCell;
         if (hCell < 0.5 && hAt > 0.5) hAt += 7.0;
@@ -246,20 +252,29 @@ export function getHouseMaterial() {
           // world-space mottling: no two walls read alike, no extra textures
           float n1 = hn_(wp_ * 0.55 + vSeed * 13.0) * 0.6 + hn_(wp_ * 2.1) * 0.4;
           diffuseColor.rgb *= 1.0 + (n1 - 0.5) * 0.32;
+          // per-house wear (0.4..1.6) scales stains and peeling; per-house material tint: cement from cool grey to warm buff, tin from
+          // silver to oxide, clay tile from pale orange to brown, mud from grey to ochre. Uniform-only, no new program.
+          float wear_ = 0.4 + 1.2 * fract(vSeed * 13.71);
+          float tn_ = fract(vSeed * 8.93);
+          if (hCell == 1.0) diffuseColor.rgb *= mix(vec3(0.9, 0.95, 1.04), vec3(1.08, 1.0, 0.86), tn_);
+          else if (hCell == 5.0) diffuseColor.rgb *= mix(vec3(0.92, 0.97, 1.02), vec3(1.12, 0.95, 0.82), tn_);
+          else if (hCell == 6.0) diffuseColor.rgb *= mix(vec3(1.12, 1.0, 0.82), vec3(0.84, 0.78, 0.74), tn_);
+          else if (hCell == 7.0) diffuseColor.rgb *= mix(vec3(0.94, 0.97, 1.0), vec3(1.1, 0.98, 0.8), tn_);
+          else if (hCell == 2.0 || hCell == 3.0) diffuseColor.rgb *= mix(vec3(1.1, 0.96, 0.84), vec3(0.9, 0.86, 0.84), tn_);
           bool wall_ = hCell < 0.5 || hCell == 7.0 || hCell == 2.0 || hCell == 3.0;
           if (hCell < 0.5) {
             // limewash: faded patches where it was last touched up, and damp/soot stains
             float pe_ = smoothstep(0.55, 0.8, hn_(wp_ * vec3(1.1, 1.4, 1.1) + vSeed * 31.0) * 0.7 + hn_(wp_ * 4.0 + 7.0) * 0.3);
-            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(1.06, 1.0, 0.9), 0.65 * pe_);
+            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))) * vec3(1.06, 1.0, 0.9), min(1.0, 0.65 * pe_ * wear_));
             float st_ = smoothstep(0.55, 0.85, hn_(wp_ * vec3(0.7, 0.4, 0.7) + 11.0 + vSeed * 5.0) * 0.75 + hn_(wp_ * 3.1) * 0.25);
-            diffuseColor.rgb *= 1.0 - 0.3 * st_ * vec3(1.0, 1.04, 1.1);
+            diffuseColor.rgb *= 1.0 - 0.3 * wear_ * st_ * vec3(1.0, 1.04, 1.1);
             // the bottom metre takes the splash and the hands: darker, browner
             diffuseColor.rgb *= 1.0 - 0.18 * (1.0 - smoothstep(0.3, 1.3, wp_.y));
           }
           // rain streaks running down from roof and chajja edges (vertical faces only)
           float vert_ = 1.0 - abs(normalize(cross(dFdx(vHW), dFdy(vHW))).y);
           float col_ = hn_(vec3((wp_.x + wp_.z) * 5.0, 0.0, vSeed * 3.0)) * hn_(vec3((wp_.x + wp_.z) * 1.3, wp_.y * 0.35, 5.0));
-          diffuseColor.rgb *= 1.0 - (wall_ ? 0.45 : 0.15) * col_ * col_ * vert_ * smoothstep(0.4, 2.2, wp_.y);
+          diffuseColor.rgb *= 1.0 - (wall_ ? 0.45 : 0.15) * wear_ * col_ * col_ * vert_ * smoothstep(0.4, 2.2, wp_.y);
           // splashed-up dust over the bottom, ragged edge
           float edge_ = 0.3 + 0.7 * hn_(vec3((wp_.x + wp_.z) * 1.7, 0.0, 9.0));
           float dust_ = (1.0 - smoothstep(edge_ * 0.5, edge_, wp_.y)) * (wall_ ? 0.5 : 0.3) * vert_;
@@ -308,7 +323,7 @@ export function getHouseMaterial() {
           normal = normalize( tbn * mapN );
         }`);
   };
-  material.customProgramCacheKey = () => 'houses_s7_atlas_v3';
+  material.customProgramCacheKey = () => 'houses_s7_atlas_v4';
   return material;
 }
 

@@ -20,6 +20,8 @@ import { buildWallMurals } from './wallMurals.js'; // S7 WIRING (integrator, sig
 /** Wall washes (multiplied into the limewash texture): off-white, pale yellow, pale blue, pink, faded green, cream, bare cement, peach. */
 export const WASHES = [
   [0.97, 0.95, 0.9], [0.99, 0.9, 0.68], [0.8, 0.88, 0.96], [0.98, 0.82, 0.8], [0.82, 0.91, 0.79], [0.97, 0.91, 0.8], [0.82, 0.81, 0.77], [0.99, 0.86, 0.73],
+  // 25 Nov variety: more paint and cement colours seen on real village walls (sun-faded, never neon)
+  [0.74, 0.86, 0.88], [0.9, 0.78, 0.55], [0.7, 0.8, 0.72], [0.9, 0.72, 0.62], [0.72, 0.74, 0.8], [0.62, 0.62, 0.6], [0.86, 0.8, 0.66], [0.78, 0.7, 0.62],
 ];
 const PAKKA_SHARES = { A: 0.22, B: 0.15, C: 0.14, D: 0.12, E: 0.13, F: 0.1 };
 /** Footprint classes (front width x depth) the geometry is built for; a house takes the nearest and is scaled by the small rest
