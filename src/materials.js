@@ -123,6 +123,8 @@ const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
 /** Content-hash suffix (?v=<sha1 of the file>, src/assetUrl.js ver()): a changed texture gets a new URL, an unchanged one keeps
  * its URL across deploys so the browser / service worker cache survives. Kept under the old name `bust` for its callers. */
 export const bust = ver;
+/** The shared tiled-material library built so far (read-only view, for the shader warm-up in src/shaderWarm.js). */
+export const sharedMaterials = () => Array.from(materialCache.values());
 
 // Exported so the few call sites that need a raw library texture but build their own
 // bespoke Material (landFields.js's painted-crop ground shader, landMaterials.js's

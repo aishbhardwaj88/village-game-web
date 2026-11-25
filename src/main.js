@@ -235,7 +235,7 @@ import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 import { ver } from './assetUrl.js';
 import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
-import { getHouseMaterial } from './kit/housesMaterial.js';
+import { houseShaderWarm, sharedMaterialWarm } from './shaderWarm.js';
 import { releaseDeferredMaps, deferredMapsDone, deferredMapsReady } from './deferredMaps.js'; // normal/roughness/ao maps after the Play unlock
 import { lateDone, isLateDone, yieldToMain, track, sliceGen } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
@@ -332,12 +332,7 @@ async function main() {
   // built, textures are uploaded, shaders compiled and the props around the spawn are ready. Farther zones keep streaming
   // ahead of the player after Play (src/zoneManager.js). A failed file is counted as done by the loaders, so it cannot hang.
   const GATE_RADIUS = 70;
-  const houseShaderWarm = () => { try {
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3)); g.setAttribute('normal', new THREE.BufferAttribute(Int8Array.from([0, 0, 127, 0, 0, 127, 0, 0, 127]), 3, true));
-    g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1], 2)); g.setAttribute('color', new THREE.BufferAttribute(Uint8Array.from([255, 255, 255, 255, 255, 255, 255, 255, 255]), 3, true)); g.setAttribute('aCellPaint', new THREE.BufferAttribute(Uint8Array.from([0, 0, 0, 0, 0, 0]), 2, false));
-    const m = new THREE.Mesh(g, getHouseMaterial()); m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; const grp = new THREE.Group(); grp.add(m);
-    const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(grp, camera, scene); renderer.setRenderTarget(_rt); return p.catch(() => {});
-  } catch (e) { return Promise.resolve(); } };
+  const warmCtx = { get renderer() { return renderer; }, get composer() { return composer; }, get camera() { return camera; }, get scene() { return scene; } }; // getters: composer is created later in main()
   let farRelease; const farGo = new Promise((r) => { farRelease = r; }); // far slot models start once the gate has opened
   let slotNear = Promise.resolve(); // set where the slots are resolved below
   const warmState = { left: Infinity, scanAt: 0 }; if (new URLSearchParams(window.location.search).has('nowarm')) { warmState.left = 0; warmState.scanAt = Infinity; }
@@ -357,7 +352,7 @@ async function main() {
         const t0 = performance.now(); warmState.left = Infinity;
         for (;;) { if (warmState.left === 0 && warmState.scanAt > t0) break; await afterMs(40); }
         reportStage('textures');
-        await houseShaderWarm(); // the atlas-shader houses may all be out of range (hidden) at the spawn: compile their program from a stand-in mesh
+        await Promise.all([houseShaderWarm(warmCtx), sharedMaterialWarm(warmCtx)]); // src/shaderWarm.js: programs no visible mesh needs yet (hidden atlas houses, shared library kinds)
         await preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); reportStage('shaders');
         // anything the compile or the builds started meanwhile must also finish: loop until a pass changes nothing
         if (isLateDone() && (!zoneManager || zoneManager.gateDone()) && downloadsIdleNow() && warmState.left === 0) break;
