@@ -117,6 +117,7 @@ function oldYaw(id) {
 
 /** A place's map turn in degrees (three.js rotation.y = -turn). Old layout: `oldDeg` unchanged. */
 export function layoutTurnDeg(id, oldDeg) {
+  if (MODE === 'new' && UNTOUCHED.has(id) && MOVE_SHIFTS[id] && MOVE_SHIFTS[id].ryAbs !== undefined) return -MOVE_SHIFTS[id].ryAbs / DEG; // 26 Nov: the school, turned square to its lane (placeMoves.js)
   if (MODE !== 'new' || !ANCH || !ANCH[id] || UNTOUCHED.has(id)) return oldDeg;
   return -ANCH[id].ry / DEG;
 }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { ANCHORS, localPt } from './anchors.js';
+import { layoutTurnDeg } from './layout/layout.js';
 import { texturedBox } from './materials.js';
 import { drawBilingual, hiFont, enFont, HI_FAMILY } from './signPaint.js';
 import { MAP_COMPOUND_WALLS } from './mapCompoundWalls.js';
@@ -335,7 +336,9 @@ export function createWallWriting(scene) {
   // ---- child-seat cycle leaning on the school's outer south wall beside the gate (school anchor, wall at local z -12, gate pillars at x +-2.7) ----
   {
     const S = ANCHORS.school;
-    const cx = S.x + 5.6, cz = S.z - 12 - 0.62;
+    const sYaw = -layoutTurnDeg('school', 11.2) * Math.PI / 180; // the school's REAL yaw (village.js turns the whole school by SCHOOL_TURN_DEG)
+    const cx = S.x + 5.6 * Math.cos(sYaw) + (-12 - 0.62) * Math.sin(sYaw), cz = S.z - 5.6 * Math.sin(sYaw) + (-12 - 0.62) * Math.cos(sYaw); // turned with the school
+    const h0 = hard.length;
     const tyre = [0.07, 0.07, 0.07], frame = [0.55, 0.12, 0.1], steel = [0.7, 0.72, 0.74], seat = [0.15, 0.35, 0.65];
     const R = 0.34;
     const torus = (x, y, z, r, tube, rgb) => {
@@ -365,7 +368,12 @@ export function createWallWriting(scene) {
     hard.push(boxG(0.05, 0.3, 0.22, rw.x - 0.03, 0.82, cz, 0, seat));
     hard.push(boxG(0.14, 0.03, 0.05, rw.x + 0.22, 0.45, cz + 0.17, 0, steel), boxG(0.14, 0.03, 0.05, rw.x + 0.22, 0.45, cz - 0.17, 0, steel));
     hard.push(boxG(0.03, 0.5, 0.03, cx - 0.2, 0.6, cz + 0.28, 0, steel)); // kickstand propped back
-    colliders.push({ minX: cx - 0.95, maxX: cx + 0.95, minZ: cz - 0.3, maxZ: cz + 0.3 });
+    { // turn the whole cycle about its centre by the school's turn (rotation.y = ry, wheels stay side-on to the wall)
+      const q = new THREE.Matrix4().makeTranslation(cx, 0, cz).multiply(new THREE.Matrix4().makeRotationY(sYaw)).multiply(new THREE.Matrix4().makeTranslation(-cx, 0, -cz));
+      for (let i = h0; i < hard.length; i++) hard[i].applyMatrix4(q);
+    }
+    const ct = Math.abs(Math.cos(sYaw)), st2 = Math.abs(Math.sin(sYaw));
+    colliders.push({ minX: cx - (0.95 * ct + 0.3 * st2), maxX: cx + (0.95 * ct + 0.3 * st2), minZ: cz - (0.95 * st2 + 0.3 * ct), maxZ: cz + (0.95 * st2 + 0.3 * ct) });
   }
 
   // ---- merge and add ----

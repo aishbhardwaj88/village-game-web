@@ -5,7 +5,13 @@
 import { ANCHORS, localPt } from './anchors.js';
 import { MAP_COMPOUND_WALLS } from './mapCompoundWalls.js';
 import { registerDiscovery, cycle, noiseBurst } from './discoveryLog.js';
-import { isNewLayout } from './layout/layout.js'; // S7 (missions)
+import { isNewLayout, layoutTurnDeg } from './layout/layout.js'; // S7 (missions)
+
+/** a point in the school's own metres turned by the school's REAL yaw (village.js turns the whole school by SCHOOL_TURN_DEG) */
+function schoolFramePt(lx, lz) {
+  const t = -layoutTurnDeg('school', 11.2) * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), a = ANCHORS.school;
+  return { x: a.x + lx * c + lz * s, z: a.z - lx * s + lz * c };
+}
 
 /** point `s` metres along the run of `wallName` that starts at map (ax, az); null if the wall moved */
 function onRun(wallName, ax, az, s) {
@@ -86,7 +92,7 @@ export function createWallStories() {
 
   // a cycle with a child seat at the school gate (wallWriting.js: school + (5.6, -12.62))
   if (ANCHORS.school) registerDiscovery({
-    id: 'child_seat_cycle', x: ANCHORS.school.x + 5.6, z: ANCHORS.school.z - 12.62 - 0.6, radius: 1.9,
+    id: 'child_seat_cycle', ...schoolFramePt(5.6, -12.62 - 0.6), radius: 1.9, // turned with the school (its real yaw: village.js SCHOOL_TURN_DEG)
     label: { hi: 'साइकिल देखें', en: 'Look at the cycle' },
     sound: (a) => { a.playBlip?.(2600, 0.25, 0.5, 'triangle'); setTimeout(() => a.playBlip?.(2600, 0.3, 0.4, 'triangle'), 180); },
     lines: cycle([
