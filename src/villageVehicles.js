@@ -15,6 +15,7 @@ import { colliderBoxFromTransform } from './collision.js';
 import { registerPropSite } from './propGate.js';
 import { addThelaSign } from './thelaSign.js';
 import { applyVehicleColour } from './vehicleVariants.js';
+import { frontFix, fitLen } from './vehicleFit.js';
 
 export const VILLAGE_VEHICLES = [
   { file: 'old_tractor', x: 614, z: -225.2, yaw: -3.108, hex: 0xb3261e, length: 3.5 }, // Our khet, wheat track edge
@@ -25,25 +26,38 @@ export const VILLAGE_VEHICLES = [
   { file: 'old_tractor', x: 826.6, z: 90, yaw: 0, hex: 0xc2561a, length: 3.5 }, // east canal bank road edge
   { file: 'old_tractor', x: 676.1, z: -311.9, yaw: -1.571, hex: 0xb3261e, length: 3.5 }, // Clay pit pond, farm loop edge
   { file: 'old_tractor', x: 289.3, z: 30.4, yaw: 0.099, hex: 0x1f3a6e, length: 3.5 }, // sugarcane edge, farm loop
-  { file: 'auto_rickshaw', x: 534.33, z: -113.5, yaw: 4.696, length: 2.65 }, // new_tempo road 2.57
-  { file: 'auto_rickshaw', x: 535.19, z: -109.45, yaw: 1.481, length: 2.65 }, // yard_bus_adda road 2.96
-  { file: 'tuk_tuk', x: 538.73, z: -109.38, yaw: 1.55, length: 2.65 }, // new_tempo road 1.19
-  { file: 'tuk_tuk', x: 519.56, z: -92.55, yaw: 4.63, length: 2.65 }, // yard_bus_adda road 0.86
+  { file: 'auto_rickshaw', x: 534.33, z: -113.5, yaw: 4.696, length: 2.6 }, // new_tempo road 2.57
+  { file: 'auto_rickshaw', x: 535.19, z: -109.45, yaw: 1.481, length: 2.6 }, // yard_bus_adda road 2.96
+  { file: 'tuk_tuk', x: 538.73, z: -109.38, yaw: 1.55, length: 2.7 }, // new_tempo road 1.19
+  { file: 'tuk_tuk', x: 519.56, z: -92.55, yaw: 4.63, length: 2.7 }, // yard_bus_adda road 0.86
   { file: 'bicycle', x: 589.32, z: 1.93, yaw: 0.662, hex: 0x2f4a6b, length: 1.75 }, // teastall road 3.35
   { file: 'bicycle', x: 553.34, z: 88.75, yaw: -1.446, hex: 0x3d5a40, length: 1.75 }, // school road 0.94
   { file: 'bicycle', x: 538.47, z: 37.65, yaw: 0.245, hex: 0x6b2a26, length: 1.75 }, // yard_chaupal road 3.29
-  { file: 'motorbike', x: 590.78, z: -96.98, yaw: 2.771, length: 2 }, // bazaar road 3.00
+  { file: 'motorbike', x: 590.78, z: -96.98, yaw: 2.771, length: 2.1 }, // bazaar road 3.00
   { file: 'moped', x: 556.22, z: 68.94, yaw: -1.418, hex: 0x8a2c2a, length: 1.8 }, // post road 1.07
   { file: 'thela_gadi', x: 592.68, z: -99.58, yaw: 2.89, length: 2.4 }, // bazaar road 1.76
   { file: 'thela_gadi', x: 588.95, z: -19.13, yaw: 4.762, length: 2.4 }, // new_sqx_233 road 1.85
   { file: 'thela_gadi', x: 610.97, z: -105.81, yaw: -0.416, length: 2.4 }, // chemist road 2.92
-  { file: 'mini_truck', x: 521.38, z: -135.25, yaw: 4.699, length: 3.4 }, // mandi road 2.71
+  { file: 'mini_truck', x: 521.38, z: -135.25, yaw: 4.699, length: 4.2 }, // mandi road 2.71
   { file: 'water_tanker', x: 432.94, z: -16.68, yaw: 4.649, length: 5 }, // dairy road 2.33
-  { file: 'thela_b', x: 588.95, z: -5.63, yaw: 4.79, length: 2.4 }, // new_sqx_236 road 2.79
-  { file: 'willys_jeep', x: 537.97, z: 27.93, yaw: 0.019, length: 3.7 }, // yard_panchayat road 3.34
+  { file: 'thela_b', x: 588.95, z: -5.63, yaw: 4.79, length: 2.2 }, // new_sqx_236 road 2.79
+  { file: 'willys_jeep', x: 537.97, z: 27.93, yaw: 0.019, length: 3.4 }, // yard_panchayat road 3.34
+  { file: 'willys_jeep', x: 563.99, z: 35.29, yaw: -0.065, length: 3.4 }, // at road 3.30
+  { file: 'moped', x: 608.42, z: 58.82, yaw: 1.832, hex: 0x3a5a48, length: 1.8 }, // at road 0.84
+  { file: 'moped', x: 577.48, z: -20.29, yaw: 1.709, hex: 0xb8b2a0, length: 1.8 }, // at road 3.45
+  { file: 'motorbike', x: 577.01, z: 49.47, yaw: -0.106, length: 2.1 }, // at road 3.65
+  { file: 'motorbike', x: 590.51, z: -57.59, yaw: 3.688, length: 2.1 }, // at road 0.66
+  { file: 'bicycle', x: 609.3, z: 6.94, yaw: 1.044, hex: 0x2b2b2e, length: 1.75 }, // at road 0.69
+  { file: 'bicycle', x: 577.65, z: 120.55, yaw: 2.753, hex: 0x3d5a40, length: 1.75 }, // at road 3.55
+  { file: 'bicycle', x: 528.65, z: 53.6, yaw: 0.129, hex: 0x2f4a6b, length: 1.75 }, // at road 0.79
+  { file: 'bicycle', x: 617.41, z: 35.68, yaw: 3.073, hex: 0x6b2a26, length: 1.75 }, // at road 4.06
+  { file: 'auto_rickshaw', x: 543.14, z: -106.81, yaw: 4.846, length: 2.6 }, // at road 3.54
+  { file: 'tuk_tuk', x: 589.43, z: -92.09, yaw: 2.764, length: 2.7 }, // at road 2.28
+  { file: 'thela_gadi', x: 603.72, z: -90.33, yaw: 1.335, length: 2.4 }, // at road 0.85
+  { file: 'thela_b', x: 577.93, z: -91.93, yaw: 4.717, length: 2.2 }, // at road 1.64
 ];
 
-const MODEL_AXIS_FIX = { bicycle: -Math.PI / 2, motorbike: -Math.PI / 2, thela_gadi: -Math.PI / 2, thela_b: -Math.PI / 2 }; // thela_b assumed x-long like thela_gadi (unchecked)
+const L = (v) => fitLen(v.file, v.length);
 const WIDTH = { old_tractor: 1.9, trailer_pack: 1.9, auto_rickshaw: 1.4, tuk_tuk: 1.4, bicycle: 0.6, motorbike: 0.8, moped: 0.7, thela_gadi: 1.3, thela_b: 1.3, mini_truck: 1.8, water_tanker: 2.2, willys_jeep: 1.7 };
 const CLUSTER_M = 60; // vehicles within this distance of a cluster's first member share one propGate site
 
@@ -79,23 +93,23 @@ function buildCluster(c, gltfs, group, groundAt) {
     m.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m);
     const size = box.getSize(new THREE.Vector3());
-    const k = v.length / Math.max(size.x, size.z);
+    const k = L(v) / Math.max(size.x, size.z);
     const ctr = box.getCenter(new THREE.Vector3());
     const holder = new THREE.Group();
     holder.name = `village_${v.file}`;
-    holder.userData.propSize = v.length;
+    holder.userData.propSize = L(v);
     m.scale.multiplyScalar(k);
     m.position.set(-ctr.x * k, -box.min.y * k, -ctr.z * k);
     holder.add(m);
     if (v.file === 'thela_gadi') addThelaSign(holder).catch((e) => console.warn('[thelaSign]', e));
     if (v.hex !== undefined) applyVehicleColour(holder, `${v.file}.glb`, v.hex);
-    const ry = v.yaw + (MODEL_AXIS_FIX[v.file] || 0);
+    const ry = v.yaw + frontFix(v.file);
     holder.position.set(v.x, groundAt ? groundAt(v.x, v.z) : 0, v.z);
     holder.rotation.y = ry;
     m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     holder.updateMatrixWorld(true);
     // collider: length x width along the heading (world yaw = heading, the box is built in the heading frame)
-    holder.userData.colliderBoxes = [colliderBoxFromTransform(WIDTH[v.file] || 1.4, v.length, new THREE.Matrix4().makeRotationY(v.yaw).setPosition(v.x, 0, v.z))];
+    holder.userData.colliderBoxes = [colliderBoxFromTransform(WIDTH[v.file] || 1.4, L(v), new THREE.Matrix4().makeRotationY(v.yaw).setPosition(v.x, 0, v.z))];
     group.add(holder);
   });
 }

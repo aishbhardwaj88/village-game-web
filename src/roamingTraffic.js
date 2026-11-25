@@ -19,19 +19,21 @@ import { VEHICLE_PAINT, applyVehicleColour } from './vehicleVariants.js';
 export const LANE_OFFSET = 1.2;
 export const ROAM_KINDS = new Set(['highway', 'road', 'lane']);
 export const MIN_ROAD_WIDTH = 3.5;
-const MAX_ACTIVE = 8, SPAWN_MIN = 45, SPAWN_MAX = 140, DESPAWN = 170, BRAKE_DIST = 6, STUCK_S = 12, SHADOW_NEAR = 40;
+const MAX_ACTIVE = 16, SPAWN_MIN = 18, SPAWN_MAX = 110, DESPAWN = 140, BRAKE_DIST = 6, STUCK_S = 12, SHADOW_NEAR = 40;
 const JOIN_TOL = 4; // m: a road whose end lies this close to our end is a joining road
 
 // file, length (m, as the parked ones in villageVehicles.js), width, which model axis is long (x: nose +x, needs -90 deg), speed range m/s, seat [y, z, scale]
 const KINDS = {
   bicycle:       { len: 1.75, axis: -Math.PI / 2, speed: [2, 3], seat: [0.23, -0.1, 0.9], cat: 'cycle' },
-  motorbike:     { len: 2.0, axis: -Math.PI / 2, speed: [4, 6], seat: [0.08, -0.1, 0.9], cat: 'bike' },
-  moped:         { len: 1.8, axis: 0, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
-  auto_rickshaw: { len: 2.65, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
-  tuk_tuk:       { len: 2.65, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
+  motorbike:     { len: 2.1, axis: -Math.PI / 2, speed: [4, 6], seat: [0.08, -0.1, 0.9], cat: 'bike' },
+  moped:         { len: 1.8, axis: Math.PI, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
+  auto_rickshaw: { len: 2.6, axis: Math.PI, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
+  tuk_tuk:       { len: 2.7, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
 };
 const CATS = { cycle: ['bicycle'], bike: ['motorbike', 'moped'], auto: ['auto_rickshaw', 'tuk_tuk'] };
-const MIX = [['cycle', 0.40], ['bike', 0.25], ['auto', 0.35]];
+const MIX = [['cycle', 0.35], ['bike', 0.30], ['auto', 0.35]];
+const BUSY = /^(main_road|ring_road|cross_road|highway|.*bazaar.*|.*chauraha.*)/i; // roads with the most traffic character: weighted 3x
+const FRONT_CLEAR = 25; // m: never spawn inside the player's forward view cone closer than this
 
 // ---------------------------------------------------------------- pure path maths (no browser)
 /** Drivable polylines: highway / road / lane kinds at least MIN_ROAD_WIDTH wide. [{ id, w, pts, cum, len }] */
@@ -82,12 +84,14 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
   const models = new Map(); // file -> { state: 'loading' | 'ready' | 'failed', tpl }
   const riderFree = []; let riderMade = 0, buildVillagerFn = null;
   const active = [];
+  const loaded = new Set(); let lastError = null, lastPP = null, fwd = null; // fwd: player's recent heading (x, z), the view direction proxy
+  if (typeof window !== 'undefined') window.__roaming = { active: () => active.length, loaded: () => [...loaded], get lastError() { return lastError; } };
   let spawnT = 0, clock = 0;
   let seed = 90210;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
 
   async function loadModel(file) {
-    models.set(file, { state: 'loading' });
+    const prev = models.get(file); models.set(file, { state: 'loading', tries: prev && prev.tries ? prev.tries : 0 });
     try {
       const { fetchModel, getGLTFLoader, assetUrl, exemptModelUrls } = await import('./loaders.js');
       if (!buildVillagerFn) buildVillagerFn = (await import('./characters.js')).buildVillager;
@@ -99,10 +103,17 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
       const fix = new THREE.Group(); // model axis fix, then centred and scaled, feet on y = 0
       m.scale.multiplyScalar(k); m.position.set(-ctr.x * k, -box.min.y * k, -ctr.z * k);
       fix.add(m); fix.rotation.y = KINDS[file].axis;
-      models.set(file, { state: 'ready', tpl: fix });
-    } catch (e) { console.warn('[roamingTraffic] model failed', file, e); models.set(file, { state: 'failed' }); }
+      models.set(file, { state: 'ready', tpl: fix }); loaded.add(file);
+    } catch (e) {
+      console.warn('[roamingTraffic] model failed', file, e); lastError = `${file}: ${e && e.message || e}`;
+      const tries = (models.get(file).tries || 0) + 1; models.set(file, { state: 'failed', tries });
+      if (tries < 2) setTimeout(() => { if (models.get(file).state === 'failed') loadModel(file); }, 10000); // retry once after 10 s
+    }
   }
   const ready = (f) => { const m = models.get(f); if (!m) { loadModel(f); return false; } return m.state === 'ready'; };
+  const usable = (f) => { const m = models.get(f); return !m || m.state !== 'failed'; };
+  // preload all five at Play start, one at a time, in the background (a failure never blocks the next)
+  (async () => { for (const f of Object.keys(KINDS)) { if (!models.has(f)) await loadModel(f); } })();
 
   function takeRider() {
     if (riderFree.length) return riderFree.pop();
@@ -117,15 +128,21 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
     let r = rnd(), cat = MIX[MIX.length - 1][0];
     for (const [c, p] of MIX) { if (r < p) { cat = c; break; } r -= p; }
     const files = CATS[cat].slice().sort(() => rnd() - 0.5);
-    for (const f of files) if (ready(f)) return f; // first use of a file starts its one request; skip this tick
+    for (const f of files) if (ready(f)) return f; // loading or failed kinds are skipped; the others still spawn
+    for (const c of Object.keys(CATS)) for (const f of CATS[c]) if (models.get(f) && models.get(f).state === 'ready') return f; // nothing of this category yet: any loaded kind
     return null;
   }
   function randomSpot(pp) {
-    for (let tries = 0; tries < 24; tries++) {
-      let r = rnd() * totalLen, path = paths[0];
-      for (const p of paths) { if (r < p.len) { path = p; break; } r -= p.len; }
-      const s = 4 + rnd() * Math.max(1, path.len - 8), dir = rnd() < 0.5 ? 1 : -1, q = laneAt(path, s, dir), d = Math.hypot(q.x - pp.x, q.z - pp.z);
+    const wts = paths.map((p) => (BUSY.test(String(p.id)) ? 3 : 1)), wsum = wts.reduce((x, y) => x + y, 0);
+    for (let tries = 0; tries < 40; tries++) {
+      let r = rnd() * wsum, pi = 0;
+      for (; pi < paths.length - 1; pi++) { if (r < wts[pi]) break; r -= wts[pi]; }
+      const path = paths[pi];
+      const s = 4 + rnd() * Math.max(1, path.len - 8), dir = rnd() < 0.5 ? 1 : -1, q = laneAt(path, s, dir), dx = q.x - pp.x, dz = q.z - pp.z, d = Math.hypot(dx, dz);
       if (d < SPAWN_MIN || d > SPAWN_MAX) continue;
+      if (fwd && d < FRONT_CLEAR && (dx * fwd.x + dz * fwd.z) / d > 0.5) continue; // not in view right in front of the camera
+      if (d > 80 && rnd() < 0.5) continue; // weight toward 25-80 m
+      if (d < 25 && rnd() < 0.6) continue;
       if (active.some((v) => Math.hypot(v.x - q.x, v.z - q.z) < 9)) continue;
       return { path, s, dir, q };
     }
@@ -171,8 +188,10 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
     dt = Math.min(dt, 0.1); clock += dt;
     const pl = getPlayer && getPlayer(); const pp = pl ? (pl.position || pl) : null;
     if (!pp) return;
+    if (lastPP) { const mx = pp.x - lastPP.x, mz = pp.z - lastPP.z, ml = Math.hypot(mx, mz); if (ml > 0.02) fwd = { x: mx / ml, z: mz / ml }; }
+    lastPP = { x: pp.x, z: pp.z };
     spawnT -= dt;
-    if (spawnT <= 0) { spawnT = 0.7; if (active.length < MAX_ACTIVE) spawn(pp); }
+    if (spawnT <= 0) { spawnT = active.length < MAX_ACTIVE ? 0.35 : 0.7; if (active.length < MAX_ACTIVE) spawn(pp); }
     for (let i = active.length - 1; i >= 0; i--) {
       const v = active[i], dp = Math.hypot(v.x - pp.x, v.z - pp.z);
       if (dp > DESPAWN || v.stopT > STUCK_S) { remove(i); continue; }

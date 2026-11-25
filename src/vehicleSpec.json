@@ -1,0 +1,134 @@
+{
+  "auto_rickshaw": {
+    "dims": [
+      1.281,
+      1.63,
+      2.466
+    ],
+    "longAxis": "z",
+    "front": "-z",
+    "confidence": "high",
+    "evidence": "Slanted windscreen and narrow single-wheel nose at -z; wide twin rear wheels/body at +z"
+  },
+  "bicycle": {
+    "dims": [
+      902.162,
+      509.887,
+      288.982
+    ],
+    "longAxis": "x",
+    "front": "+x",
+    "confidence": "high",
+    "evidence": "Handlebar/fork rises at x~-80..0 with front wheel centre x~0; saddle (rama_low_seater) and gear/chain ring at x~-400..-300, rear wheel x~-570. Units are mm-like (902 long), origin near front axle"
+  },
+  "mini_truck": {
+    "dims": [
+      11.244,
+      11.768,
+      22.414
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "high",
+    "evidence": "Tall cab with raked windscreen occupies z 2.5..11 (+z); flat load bed at -z. Cab-over mini truck"
+  },
+  "moped": {
+    "dims": [
+      1040.603,
+      1259.575,
+      1867.266
+    ],
+    "longAxis": "z",
+    "front": "-z",
+    "confidence": "high",
+    "evidence": "Handlebar (y~800, x +-500) sits above small front wheel at z~-500 with raked fork; engine/seat and bigger rear wheel at +z. Units mm-like, centre not at ground (minY -435)"
+  },
+  "motorbike": {
+    "dims": [
+      2.316,
+      1.18,
+      0.763
+    ],
+    "longAxis": "x",
+    "front": "+x",
+    "confidence": "high",
+    "evidence": "Raked fork + handlebar/headlamp cluster at x~0.7..1.0 above front wheel x=1.0; chain/sprocket disc and rear wheel at x~-0.55"
+  },
+  "old_tractor": {
+    "dims": [
+      10.78,
+      13.351,
+      20.882
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "high",
+    "evidence": "Small front wheels (r~2) near z~+7, huge rear wheels (r~4.5) at z~-5.5; exhaust stack at z~+3 ahead of centre"
+  },
+  "thela_b": {
+    "dims": [
+      6.728,
+      9.836,
+      12.83
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "low",
+    "evidence": "Four-legged stall with roof canopy, no handles or wheels; near-symmetric. Canopy overhangs marginally more at +z (6.6 vs 6.2). Front is a guess"
+  },
+  "thela_gadi": {
+    "dims": [
+      16.174,
+      14.851,
+      9.926
+    ],
+    "longAxis": "x",
+    "front": "+x",
+    "confidence": "low",
+    "evidence": "Tea-stall cart on four wheels (x -4.7/+4.9, z -3.7/+4.0); no handle geometry found, near-symmetric. Canopy poles overhang more at +x (8.5 vs -7.7). Front is a guess"
+  },
+  "trailer_pack": {
+    "dims": [
+      2.267,
+      1.634,
+      6.099
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "high",
+    "evidence": "Tandem axles at z -1.3/+1.3, body to z 2.0, then drawbar/hitch tongue extends to z 4.07; no extension at -z"
+  },
+  "tuk_tuk": {
+    "dims": [
+      1.238,
+      1.821,
+      2.885
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "high",
+    "evidence": "Single front wheel at x=0, z~+1.2 (top view); two rear wheels at x +-0.55, z~-1.0; windscreen glass at z~+1.0"
+  },
+  "water_tanker": {
+    "dims": [
+      17.186,
+      37.54,
+      18.019
+    ],
+    "longAxis": "z",
+    "front": "+z",
+    "confidence": "low",
+    "evidence": "Actually a rotationally symmetric elevated water tower (ring of legs, tank at y 19-25, roof to y 37); no real front. Ladder/box protrusion at +z only; long axis is meaningless (17.2 x 18.0)"
+  },
+  "willys_jeep": {
+    "dims": [
+      4.483,
+      4.401,
+      9.623
+    ],
+    "longAxis": "z",
+    "front": "-z",
+    "confidence": "high",
+    "evidence": "HeadLights and Side Headlights nodes at z -4.2..-3.5; long bonnet to windscreen (FrontGlass) at z -1; Seats and SpareTyre at +z (tailgate)"
+  }
+}
