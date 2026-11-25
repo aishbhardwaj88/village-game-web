@@ -2151,7 +2151,7 @@ async function main() {
   // streamed in a ring around the player after Play. ?off=props / ?off=vehicles still switch them off.
   const propPos = () => (mountedVehicle ? mountedVehicle.group.position : player.position);
   const propGround = (x, z) => groundHeightAt(x, z, 0);
-  setPropGateRenderer(renderer, (g) => { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(g, camera, scene); renderer.setRenderTarget(_rt); return p; });
+  setPropGateRenderer(renderer, (g) => { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(g, camera, scene); renderer.setRenderTarget(_rt); return p; }, camera);
   const REVIEW = /[?&]review=1/.test(location.search); // the test prop rows near x 600-612, z 27-58 are for review only, never loaded for players
   if (REVIEW && !DBG_OFF.has('vehicles')) registerPilotVehicles(propGround);
   if (REVIEW && !DBG_OFF.has('props')) registerFreeProps(propGround);

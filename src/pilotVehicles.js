@@ -24,7 +24,7 @@ const VEHICLES_SITE = { x: 606, z: 50, extent: 14 }; // src/propGate.js loads wi
 export function registerPilotVehicles(groundAt) {
   registerPropSite({
     name: 'pilot_vehicles', center: { x: VEHICLES_SITE.x, z: VEHICLES_SITE.z }, extent: VEHICLES_SITE.extent,
-    items: PILOT_VEHICLES.map((v) => ({ url: `assets/vehicles_free/${v.file}.glb` })),
+    items: PILOT_VEHICLES.map((v) => ({ url: `assets/vehicles_free/${v.file}.glb`, size: v.length })),
     makeGroup: () => new THREE.Group(), build: (gltfs, group) => buildPilotVehicles(gltfs, group, groundAt),
   });
 }
