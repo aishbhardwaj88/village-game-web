@@ -183,7 +183,7 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
   // Moves are listed on report.roadEmpty. Colliders and models below read the moved position.
   const roadEmpty = [];
   const keepOff = (list, kind, probesOf) => list.filter((o) => {
-    const r = roadEmptyPush(o.x, o.z, probesOf(o), 3);
+    const r = roadEmptyPush(o.x, o.z, probesOf(o), 8, 0.6); // margin 0.6: 0.3 beyond the drawn edge plus the highway's wider alpha-0.5 apron (+0.3), her 25 Nov order
     if (r && r.moved === 0) return true;
     if (r) { roadEmpty.push({ id: o.id, kind, from: [+o.x.toFixed(2), +o.z.toFixed(2)], to: [+r.x.toFixed(2), +r.z.toFixed(2)], moved: +r.moved.toFixed(2) }); o.x = r.x; o.z = r.z; return true; }
     roadEmpty.push({ id: o.id, kind, from: [+o.x.toFixed(2), +o.z.toFixed(2)], removed: true }); // removed 25 Nov: stood on road, her order

@@ -15,6 +15,7 @@ import { addTaps } from './taps.js';
 import { addHaystacks, hayPlacements } from './haystacks.js';
 import { addFieldProps } from './fieldProps.js';
 import { addGobar } from './gobar.js';
+import { roadEmptyPush } from './mapRoads.js';
 import { addLanterns } from './lanterns.js';
 import { createWaterMaterial, blobWaterGeometry } from './water.js';
 import { BLOB_DIPS, blobEdge, blobSolids, createDipBank, dipHeightRaw, registerDipPad } from './dips.js';
@@ -509,6 +510,10 @@ export function createDungCakeYard(position) {
     stacks.push([x, z, 1.8, 1.8]);
     placements.push({ type: k % 2 ? 'stack_b' : 'stack', x, z, ry: k * 1.7, s: 1.1 - 0.1 * (k % 2), tint: k % 2 ? 0xc8bfae : 0xd8cfc0 });
   }
+  // 25 Nov (H2, her order: roads empty, move not delete): under the approved map the yard lies across gali_n15 and cross_road. Each cake
+  // patch / stack is pushed straight off the road (max 8 m) by the shared helper, margin 0.6 (0.3 past the drawn edge + the apron).
+  for (const pl of placements) { const r = roadEmptyPush(position.x + pl.x, position.z + pl.z, [[0, 0]], 8, 0.9); if (r && r.moved > 0) { pl.x = r.x - position.x; pl.z = r.z - position.z; } }
+  stacks.forEach((st, i) => { const pl = placements[15 + i]; st[0] = pl.x; st[1] = pl.z; });
   const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
   carrier.name = 'dung_cake_yard';
   carrier.visible = false;

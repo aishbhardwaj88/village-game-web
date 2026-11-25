@@ -57,12 +57,12 @@ export async function initMapSigns(scene, mapData) {
     // removed 25 Nov: stood on road, her order (only when no slide clears; see ROAD_EMPTY_REMOVE)
     const r0 = s.o.rect, yaw0 = Math.atan2(r0.front[0], r0.front[1]), fx0 = Math.sin(yaw0), fz0 = Math.cos(yaw0), tx0 = fz0, tz0 = -fx0;
     const probes = [-1, -0.5, 0, 0.5, 1].map((k) => [r0.cx + tx0 * k * (w / 2 - 0.12), r0.cz + tz0 * k * (w / 2 - 0.12)]);
-    let slide = roadEmptySlide(probes, fx0, fz0, ROAD_EMPTY_MAX_SLIDE), side = 0;
+    let slide = roadEmptySlide(probes, fx0, fz0, ROAD_EMPTY_MAX_SLIDE, 0.6), side = 0;
     // 25 Nov (her order: move, never delete): the Crockery board (#114) sits between the cross road and the inner lane, so no slide along its own
     // front axis clears both. It is also slid sideways (along its board, away from the lane) by the smallest distance that clears, then back from the road.
     if (slide === null && s.o.id === 'new_sign#114') {
       for (let m = 0.05; m <= 3 && slide === null; m += 0.05) {
-        const sl = roadEmptySlide(probes.map(([px, pz]) => [px + tx0 * m, pz + tz0 * m]), fx0, fz0, ROAD_EMPTY_MAX_SLIDE);
+        const sl = roadEmptySlide(probes.map(([px, pz]) => [px + tx0 * m, pz + tz0 * m]), fx0, fz0, ROAD_EMPTY_MAX_SLIDE, 0.6);
         if (sl !== null) { slide = sl; side = m; }
       }
     }

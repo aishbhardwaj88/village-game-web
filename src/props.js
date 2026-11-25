@@ -297,7 +297,7 @@ function lampTinMaterial(base) {
 }
 
 export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc', clear = null } = {}) {
-  if (isNewLayout()) clear = drawnRoadClearance; // every caller, not only the map lane legs (replaces the strict mapBandClearance some pass)
+  if (isNewLayout()) clear = (x, z) => drawnRoadClearance(x, z) - 0.3; // -0.3: the highway's alpha-0.5 apron is 0.3 wider than its wander (H2, 25 Nov) // every caller, not only the map lane legs (replaces the strict mapBandClearance some pass)
   const group = new THREE.Group();
   group.name = 'street_lamps';
   const concreteMat = getTiledMaterial('concrete', { vertexColors: true });

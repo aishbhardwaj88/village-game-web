@@ -18,7 +18,7 @@ function roadEmptyPlacements(list, halfLen, halfWid, kind) {
     const hl = typeof halfLen === 'function' ? halfLen(p) : halfLen, hw = typeof halfWid === 'function' ? halfWid(p) : halfWid;
     const probes = [[0, 0]];
     for (const a of [-1, 0, 1]) for (const b of [-1, 1]) probes.push([fx * hl * a + sx * hw * b, fz * hl * a + sz * hw * b]);
-    const r = roadEmptyPush(p.x, p.z, probes, ROAD_EMPTY_MAX_MOVE);
+    const r = roadEmptyPush(p.x, p.z, probes, ROAD_EMPTY_MAX_MOVE, 0.6);
     if (r && r.moved === 0) { out.push(p); continue; }
     if (r) { ROAD_EMPTY_LOG.push({ kind, from: [+p.x.toFixed(2), +p.z.toFixed(2)], to: [+r.x.toFixed(2), +r.z.toFixed(2)], moved: +r.moved.toFixed(2) }); out.push({ ...p, x: r.x, z: r.z }); continue; }
     ROAD_EMPTY_LOG.push({ kind, from: [+p.x.toFixed(2), +p.z.toFixed(2)], removed: true }); // removed 25 Nov: stood on road, her order
