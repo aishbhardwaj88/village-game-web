@@ -198,6 +198,7 @@ export function createZoneManager(scene) {
       const dx = zone.x - playerX, dz = zone.z - playerZ;
       const d = Math.hypot(dx, dz);
       if (!zone.active) {
+        if (gate && !zone.forceBuild) continue; // 26 Nov: behind the title only the start area builds (and downloads its models); the rest streams after Play
         let want = zone.forceBuild || d <= zone.buildRadius + leadM * 0.5 || d <= zone.buildRadius + ALWAYS_EXTRA;
         if (!want && d <= zone.buildRadius + SIGHT_EXTRA + leadM) {
           if (camera) {

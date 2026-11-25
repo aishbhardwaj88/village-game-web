@@ -327,10 +327,10 @@ async function main() {
     warmState.left = warmList.length; warmState.scanAt = Math.max(warmState.scanAt, warmScanAt - 400 + 1); // gate: a scan that found nothing left
   };
   // 26 Nov, the honest gate. No timer unlocks Play. It opens only when, for the START AREA (GATE_RADIUS m round the spawn):
-  // every file is downloaded, the world is built (deferred assembly + shops/land/map objects), every zone in the ring is
+  // every file is downloaded, the world is built (deferred assembly + shops/land/map objects), every zone in the ring (70 m) is
   // built, textures are uploaded, shaders compiled and the props around the spawn are ready. Farther zones keep streaming
   // ahead of the player after Play (src/zoneManager.js). A failed file is counted as done by the loaders, so it cannot hang.
-  const GATE_RADIUS = 160;
+  const GATE_RADIUS = 70;
   const houseShaderWarm = () => { try {
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3)); g.setAttribute('normal', new THREE.BufferAttribute(Int8Array.from([0, 0, 127, 0, 0, 127, 0, 0, 127]), 3, true));
     g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1], 2)); g.setAttribute('color', new THREE.BufferAttribute(Uint8Array.from([255, 255, 255, 255, 255, 255, 255, 255, 255]), 3, true)); g.setAttribute('aCellPaint', new THREE.BufferAttribute(Uint8Array.from([0, 0, 0, 0, 0, 0]), 2, false));
@@ -1159,6 +1159,7 @@ async function main() {
   // reasoning as loadEnvironment above — a slow/missing model never blocks startup.
   // See src/assetSlots.js and docs/asset-slots.md.
   const assetSlots = createAssetSlotRegistry();
+  assetSlots.holdFar({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: GATE_RADIUS, open: farGo }); // zone builds must not pull far models before Play either
   {
     const tractor = vehicles.find((v) => v.preset.kind === 'tractor');
     const cart = vehicles.find((v) => v.preset.kind === 'cart');
@@ -1472,7 +1473,7 @@ async function main() {
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
   slotFiles = new Set(Array.from(assetSlots.slots.values()).map((s) => s.file || s.name));
   _lm.slotsStart = performance.now();
-  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: GATE_RADIUS, farAfter: farGo }); // 40 -> 160 m (26 Nov): family house, school and bazaar row are in before Play
+  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: GATE_RADIUS, farAfter: farGo }); // start area only (70 m): what is visible at the spawn plus the first seconds of travel; the rest streams after Play
   slotNear = slotLoads.near;
   window.__slotNearDbg = () => Array.from(assetSlots.slots.values()).map((s) => [s.file || s.name, Math.round(Math.min(...s.placements.map((p) => (p.container.isScene !== true ? -1 : Math.hypot(p.position.x - OPENING_SPAWN.x, p.position.z - OPENING_SPAWN.z)))))]); // D1 debug: [file, nearest m, -1 = not in scene root]
   slotLoads.near.then(() => {
@@ -1846,6 +1847,7 @@ async function main() {
     // vehicle-blocking collision) — a real moving herd is a bigger feature than
     // this pass's "recognisable, present in the world" bar.
     const zoneManager = createZoneManager(scene); // local until every zone is registered; published at the end (setZoneManager)
+    zoneManager.setGate([{ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z }], GATE_RADIUS); // start area only before Play (the ready gate re-asserts it, with a saved position too)
     // Every streamed place has a drop-in model slot: public/assets/models/<zone name>.glb replaces its placeholder (src/siteSlots.js).
     zoneManager.hooks.onBuild = (name, group) => wireSiteSlot(assetSlots, name, group);
     // Big far landmarks are drawn from much further out (they stand in open ground, well past the hero-zone cameras); small detail zones keep their own radius (src/zoneManager.js).

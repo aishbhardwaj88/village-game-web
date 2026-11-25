@@ -251,18 +251,25 @@ export function createAssetSlotRegistry() {
     return Promise.allSettled(Array.from(slots.values()).map(resolveSlot));
   }
 
+  let farGate = null; // { x, z, radius, open: Promise }: slots beyond radius wait for `open` before they download (set by holdFar, early in main())
+  const slotIsNear = (slot, x, z, radius) => slot.placements.some((p) => {
+    // a slot inside a zone group is judged by its WORLD position too (it used to count as near, so the whole village's models downloaded before Play)
+    if (p.container.isScene === true) return Math.hypot(p.position.x - x, p.position.z - z) <= radius;
+    p.container.updateWorldMatrix(true, false);
+    const w = p.container.localToWorld(p.position.clone());
+    return Math.hypot(w.x - x, w.z - z) <= radius;
+  });
+  /** 26 Nov: from now on any slot farther than `radius` from (x,z) waits for `open` before downloading, also when a zone build resolves it (resolveOne). */
+  function holdFar({ x, z, radius, open }) { farGate = { x, z, radius, open }; }
   /**
    * Same as resolveAll(), but also reports when the slots standing within `radius` m of `near` (the opening view)
-   * are done: `{ near, all }`. Slots on a moving container count as near (vehicles are always at the spawn).
+   * are done: `{ near, all }`. Slots on a container are judged by their world position.
    * The title screen's Play button waits on `near` only, so a phone does not download the far half of the
    * village before the first frame; the far models resolve in the background (they are out of sight and
    * outside the zone draw range at the opening spawn).
    */
   function resolveAllNearFirst({ x, z, radius, farAfter = null }) {
-    const isNear = (slot) => slot.placements.some((p) => {
-      if (p.container.isScene !== true) return true;
-      return Math.hypot(p.position.x - x, p.position.z - z) <= radius;
-    });
+    const isNear = (slot) => slotIsNear(slot, x, z, radius);
     const all = Array.from(slots.values());
     const nearP = Promise.allSettled(all.filter(isNear).map(resolveSlot));
     // 26 Nov: the far models start when `farAfter` resolves (the title's Play button is up), so the honest gate counts only the start area
@@ -342,8 +349,10 @@ export function createAssetSlotRegistry() {
   /** Resolves ONE slot now (zone-streamed sites register when their zone is built, long after resolveAll() ran). */
   async function resolveOne(name) {
     const slot = slots.get(name);
-    return slot ? resolveSlot(slot) : { name, replaced: false };
+    if (!slot) return { name, replaced: false };
+    if (farGate && !slot.resolvePromise && !slotIsNear(slot, farGate.x, farGate.z, farGate.radius)) await farGate.open;
+    return resolveSlot(slot);
   }
 
-  return { register, resolveAll, resolveAllNearFirst, resolveOne, slots, mergeSlotModels };
+  return { register, resolveAll, resolveAllNearFirst, holdFar, resolveOne, slots, mergeSlotModels };
 }
