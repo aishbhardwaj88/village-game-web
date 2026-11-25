@@ -19,7 +19,7 @@ import { colliderBoxFromTransform } from './collision.js';
  * (src/anchors.js) so it rides along if the map moves.
  */
 
-const TILE = { metal: 1.0, wood: 1.0, tarpaulin: 1.0, concrete: 1.0, jute: 0.5, brick: 1.2, plaster: 0.5, ground: 2.0 };
+const TILE = { metal: 1.0, wood: 1.0, tarpaulin: 1.0, concrete: 1.0, jute: 0.5, brick: 1.2, plaster: 1.5, ground: 2.0 };
 export const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 // anchor id, local x, local z (place frame, front = +z), object yaw. Scouted against every collider + visible mesh + the roads.

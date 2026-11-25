@@ -15,7 +15,7 @@ import { colliderBoxFromTransform } from './collision.js';
  * Each item stands at an offset from a place's anchor (src/anchors.js) so it rides along if the map moves.
  */
 
-const TILE = { metal: 1.0, wood: 1.0, tarpaulin: 1.0, concrete: 1.0, jute: 0.5, brick: 1.2, plaster: 0.5, ground: 2.0 };
+const TILE = { metal: 1.0, wood: 1.0, tarpaulin: 1.0, concrete: 1.0, jute: 0.5, brick: 1.2, plaster: 1.5, ground: 2.0 };
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
 function metreUV(geo, tile) {

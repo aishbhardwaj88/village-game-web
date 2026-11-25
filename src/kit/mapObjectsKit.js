@@ -8,7 +8,7 @@ import { Parts } from './landInstancing.js';
  * y 0, front on +z, metres. Each builder fills a Parts (src/kit/landInstancing.js) and returns nothing; the batch turns
  * it into one geometry per material.
  */
-export const TILES = { brick: 1.2, plaster: 0.5, concrete: 1.0, wood: 1.0, metal: 1.0, rust: 1.0, terracotta: 0.6, jute: 0.5, tarpaulin: 1.0 };
+export const TILES = { brick: 1.2, plaster: 1.5, concrete: 1.0, wood: 1.0, metal: 1.0, rust: 1.0, terracotta: 0.6, jute: 0.5, tarpaulin: 1.0 };
 export const MATS = Object.keys(TILES);
 
 const UP = new THREE.Vector3(0, 1, 0);

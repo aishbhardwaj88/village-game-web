@@ -173,7 +173,7 @@ function addWeathering(m, set) {
  * any other set returns null so the caller keeps its getTiledMaterial. Same material object as the staged/kit walls, so these rows
  * join the existing place batch instead of adding a draw call.
  */
-const OLD_HOUSE = { plaster: [0.5, 'hb_main'], brick: [1.2, 'hb_brick'], concrete: [0.5, 'hb_cmain'] };
+const OLD_HOUSE = { plaster: [1.5, 'hb_main'], brick: [1.2, 'hb_brick'], concrete: [1.5, 'hb_cmain'] };
 export function oldHouseMaterial(set) {
   const e = OLD_HOUSE[set];
   return e ? sharedSetMaterial(set, e[0], { name: e[1] }) : null;

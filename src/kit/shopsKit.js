@@ -23,7 +23,7 @@ import { stockInterior, stockStall } from './shopsStock.js';
 
 // brick_b (ambientCG Bricks105, finer yellow-pink brick) and concrete_f (Concrete046, pale stained cast concrete) are per-shop
 // alternatives for exposed side/back brick and the plinth course; they load after Play (landMaterials.js), same tile shift per shop.
-export const TILES = { brick: 1.2, brick_b: 0.7, plaster: 0.5, concrete: 1.0, concrete_f: 1.0, wood: 1.0, rust: 1.0 };
+export const TILES = { brick: 1.2, brick_b: 0.7, plaster: 1.5, concrete: 1.0, concrete_f: 1.0, wood: 1.0, rust: 1.0 };
 
 // colours baked into vertices (multiplied with the texture; plaster paint comes from the instance colour instead)
 const CEMENT = 0xd7d2c4; // neutral concrete (look-standard law)

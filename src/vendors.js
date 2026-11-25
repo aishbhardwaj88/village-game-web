@@ -37,7 +37,7 @@ const VENDORS = [
   { kind: 'kabadi', dx: 41.7, dz: 10.99, ry: -0.088 }, // lane east of the square
 ];
 const SIGN = { hi: 'दर्ज़ी', en: 'Tailor', bg: '#e6dcc4', fg: '#1f2a4a', border: '#2a3a66' };
-const TILE = { plaster: 0.5, wood: 1.0, metal: 1.0, jute: 0.5, tarpaulin: 1.0 };
+const TILE = { plaster: 1.5, wood: 1.0, metal: 1.0, jute: 0.5, tarpaulin: 1.0 };
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const jit = (c, i, amt = 0.08) => new THREE.Color(c).multiplyScalar(1 + (rnd(i) - 0.5) * 2 * amt).getHex();
 

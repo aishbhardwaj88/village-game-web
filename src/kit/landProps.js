@@ -114,7 +114,7 @@ function well(P, x, z, r, seed, tall = false) {
 }
 
 export async function build(map) {
-  const P = new Parts({ brick: 1.2, plaster: 0.5, concrete: 1.0, wood: 1.0, rust: 1.0 });
+  const P = new Parts({ brick: 1.2, plaster: 1.5, concrete: 1.0, wood: 1.0, rust: 1.0 });
   const group = new THREE.Group();
   group.name = 's7_props';
   const colliders = [];

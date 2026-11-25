@@ -212,6 +212,7 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
   // surfaceFamilyFor() the relink path uses closes the gap and can't change tin/lane's own behaviour
   // (verified: surfaceFamilyFor('tin') === 'tin', surfaceFamilyFor('lane') === 'earth', the exact
   // families the old hardcoded branches already used).
+  if (ANTITILE_SETS.has(resolvedName)) applyAntiTile(mat);
   if (MATTE_SETS.has(name)) applyMatteVariation(mat);
   else {
     const fam = surfaceFamilyFor(name);
@@ -288,6 +289,44 @@ const DP_FAMILY = {
   tin: { color: DP_MOTTLE, rough: 'roughnessFactor = clamp(roughnessFactor + (dpR - 0.5) * 0.16, 0.45, 1.0);' },
   earth: { color: DP_MOTTLE, rough: 'roughnessFactor = clamp(max(roughnessFactor, 0.85) + (dpR - 0.5) * 0.1, 0.85, 1.0);' },
 };
+
+/**
+ * 25 Nov anti-tiling (her note: blotchy textures on big walls read as a visible repeated grid). Colour map is sampled twice, the
+ * second time at ~0.4x scale and rotated 37 degrees, and the two are blended by low-frequency value noise (in UV space, never
+ * periodic), so no blob lines up with its neighbour tile. One extra sample, no extra texture request, shared per material.
+ * Applied BEFORE applySurfaceVariation so removeSurfaceVariation() (wall grime) restores a hook that still has it.
+ */
+const ANTITILE_SETS = new Set(['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g', 'plaster_h', 'plaster_i',
+  'plaster_j', 'plaster_m', 'plaster_p', 'mud_b', 'mud_c', 'concrete_e', 'concrete_f']);
+export function applyAntiTile(material) {
+  if (!material || material.isShaderMaterial || !material.map || material.userData.dpAnti) return;
+  material.userData.dpAnti = true;
+  const own = Object.prototype.hasOwnProperty.call(material, 'onBeforeCompile');
+  const prev = own ? material.onBeforeCompile : null;
+  const prevKey = own ? material.customProgramCacheKey() : '';
+  material.onBeforeCompile = (shader, renderer) => {
+    if (prev) prev(shader, renderer);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        float atHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+        float atNoise(vec2 p) {
+          vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(atHash(i), atHash(i + vec2(1, 0)), f.x), mix(atHash(i + vec2(0, 1)), atHash(i + vec2(1, 1)), f.x), f.y);
+        }`)
+      .replace('#include <map_fragment>', `
+        #ifdef USE_MAP
+        {
+          vec4 atA = texture2D(map, vMapUv);
+          vec2 atUv = mat2(0.8, 0.6, -0.6, 0.8) * vMapUv * 0.41 + vec2(0.37, 0.19);
+          vec4 atB = texture2D(map, atUv);
+          float atW = smoothstep(0.25, 0.75, atNoise(vMapUv * 0.31 + 4.7) * 0.7 + atNoise(vMapUv * 0.97) * 0.3);
+          diffuseColor *= mix(atA, atB, atW);
+        }
+        #endif`);
+  };
+  material.customProgramCacheKey = () => `dpAnti${prevKey ? '|' + prevKey : ''}`;
+  material.needsUpdate = true;
+}
 const dpPrevHooks = new WeakMap();   // material -> { hook, key } it had before applySurfaceVariation
 
 /** Library set name -> variation family (null = leave alone). */

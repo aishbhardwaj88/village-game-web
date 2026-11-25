@@ -40,7 +40,7 @@ const SIGNS = {
   cd: { hi: 'सीडी और कैसेट', en: 'CD and Cassette Shop', bg: '#e8e0cc', fg: '#5a1a18', border: '#6e2420' },
   mithai: { hi: 'मिठाई की दुकान', en: 'Sweet Shop', bg: '#f0dfb8', fg: '#6e1a12', border: '#8a2a18' },
 };
-const TILE = { brick: 1.2, tin: 0.8, plaster: 0.5, wood: 1.0, metal: 1.0, concrete: 1.0, tarpaulin: 1.0, jute: 0.5 };
+const TILE = { brick: 1.2, tin: 0.8, plaster: 1.5, wood: 1.0, metal: 1.0, concrete: 1.0, tarpaulin: 1.0, jute: 0.5 };
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const jit = (c, i, amt = 0.08) => { const k = 1 + (rnd(i) - 0.5) * 2 * amt; const col = new THREE.Color(c); return col.multiplyScalar(k).getHex(); };
 
