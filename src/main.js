@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { registerPilotVehicles } from './pilotVehicles.js';
-import { setPropGateRenderer, startPrefetch, startStreaming } from './propGate.js';
+import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
-import { showPropReveal } from './propReveal.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
@@ -321,7 +320,7 @@ async function main() {
   // (the 9 s safety timeout in ui.js on a slow link) used to add up to 4 s + 3 s on top, which is where 16 s readings came from.
   // An unfinished compile is not a broken frame, only a slower first one after Play.
   const gateLeft = (cap) => Math.max(300, Math.min(cap, 9500 - performance.now()));
-  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, gateLeft(4000)))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, gateLeft(3000)))]); } catch (e) { /* first render compiles instead */ } _lm.gateEnd = performance.now(); });
+  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, gateLeft(4000)))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, gateLeft(3000)))]); } catch (e) { /* first render compiles instead */ } _lm.worldShellReady = performance.now(); await propGateDone(); /* props and vehicles around the spawn: downloaded, unpacked, uploaded, compiled (src/propGate.js); no timeout */ _lm.gateEnd = performance.now(); });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
   // D1: every model except the asset-slot buildings waits until the opening-view slots are in (released below at
   // slotLoads.near), so the near buildings are not queued behind ~2 MB of far props on 4G. `?nohold` to compare.
@@ -2151,14 +2150,20 @@ async function main() {
   const propPos = () => (mountedVehicle ? mountedVehicle.group.position : player.position);
   const propGround = (x, z) => groundHeightAt(x, z, 0);
   setPropGateRenderer(renderer, (g) => { const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(g, camera, scene); renderer.setRenderTarget(_rt); return p; });
-  if (!DBG_OFF.has('vehicles')) registerPilotVehicles(propGround);
-  if (!DBG_OFF.has('props')) registerFreeProps(propGround);
-  { // never before the title has painted: two frames, then idle time
-    const go = () => startPrefetch({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z });
-    requestAnimationFrame(() => requestAnimationFrame(() => (window.requestIdleCallback ? window.requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 1000))));
+  const REVIEW = /[?&]review=1/.test(location.search); // the test prop rows near x 600-612, z 27-58 are for review only, never loaded for players
+  if (REVIEW && !DBG_OFF.has('vehicles')) registerPilotVehicles(propGround);
+  if (REVIEW && !DBG_OFF.has('props')) registerFreeProps(propGround);
+  const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
+  const gateSpawns = [{ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z }]; // the gate and the prefetch use the saved position too when a save has one
+  if (savedGame && savedGame.player && Number.isFinite(savedGame.player.x) && Number.isFinite(savedGame.player.z)) gateSpawns.push({ x: savedGame.player.x, z: savedGame.player.z });
+  startGate(scene, propPos, gateSpawns, requestColliderRebuild); // loads the spawn-ring props now, the Play button waits for them
+  { // the rest is prefetched (one file at a time) once the title gets its 'ready' class, and keeps going after Play
+    const ov = document.getElementById('start-overlay');
+    const go = () => startPrefetch(gateSpawns);
+    if (!ov || ov.classList.contains('ready')) go();
+    else { const mo = new MutationObserver(() => { if (ov.classList.contains('ready')) { mo.disconnect(); go(); } }); mo.observe(ov, { attributes: true, attributeFilter: ['class'] }); }
   }
   let started = false;
-  const savedGame = loadSavedGame(); // item 7 — read once, before the title screen decides Play-vs-Continue
   setupStartOverlay({
     isTouch: touch,
     hasSave: !!savedGame,
@@ -2166,7 +2171,7 @@ async function main() {
     onStart: (isContinue) => {
       started = true;
       renderOK = true; _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
-      { const ps = startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); if (ps.hasWork) showPropReveal(ps).then((ms) => { _lm.propReveal = Math.round(ms); console.info(`[props] revealed after ${Math.round(ms)} ms`); }); }
+      startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over
       minimap.setActive(true);
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       if (!touch) input.requestPointerLock();

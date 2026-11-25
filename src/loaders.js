@@ -26,7 +26,12 @@ export const modelLoads = { count: 0 };
 let holdKeep = null; const heldLoads = [];
 export function holdModelLoads(exempt) { holdKeep = exempt; }
 export function releaseModelLoads() { if (!holdKeep) return; holdKeep = null; (window.__loadMarks = window.__loadMarks || {}).modelsReleased = performance.now(); heldLoads.splice(0).forEach((f) => f()); }
-const held = (url) => { if (!holdKeep) return false; try { return !holdKeep(url); } catch (e) { return true; } };
+/** ONE place that turns a project-relative asset path into the URL every fetch and every GLTF load uses (prefetch, props, vehicles).
+ * Same string everywhere = one HTTP cache entry, so a later content-hash / cache-bust change here cannot download a file twice. */
+export const assetUrl = (path) => new URL(path, document.baseURI).href;
+/** Prop and vehicle URLs (src/propGate.js) are never held back by holdModelLoads: they gate the Play button themselves. */
+export const exemptModelUrls = new Set();
+const held = (url) => { if (!holdKeep || exemptModelUrls.has(url)) return false; try { return !holdKeep(url); } catch (e) { return true; } };
 
 export function getGLTFLoader() {
   if (!sharedLoader) {
