@@ -57,10 +57,14 @@ export function compact(raw) {
 const NUDGE_IDS = ['new_milestone#4', 'new_milestone#9', 'new_Washing platform#1', 'new_Water trough#1', 'new_well#1', 'new_Hand pump#13',
   'new_Washing line#1', 'new_Washing line#3', 'new_Washing line#6', 'new_Washing line#10', 'new_Washing line#12',
   'new_sign#44', 'new_sign#65', 'new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103'];
-const FOOTPRINT_MODE = new Set(['new_well#1', 'new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103']);
+const FOOTPRINT_MODE = new Set(['new_sign#76', 'new_sign#83', 'new_sign#95', 'new_sign#103']);
+// 25 Nov road review: the well beside the gali_n35 dead end is also held clear of the dead end's ROUND cap (circle r 1.6, the reading
+// tools/road-clearance.mjs uses), which needs about 2 m; its limit is 5 m
+const ROUND_CAP = new Set(['new_well#1']);
+const NUDGE_LIMIT = { 'new_well#1': 5 };
 const NUDGE_MAX = 2;
 const NUDGE_TARGET = 0.13; // clear of every band by at least 0.1 m (her 25 Nov rule) plus 0.03 m of rounding margin
-function roadHit(roads, x, z) { // nearest road band, the SAME shape the audits use (polyline buffered width/2, flat caps, round joins): { edge: signed distance to the band edge (negative = inside), nx, nz: unit vector pointing out of the band, id }
+function roadHit(roads, x, z, roundCaps = false) { // nearest road band, the SAME shape the audits use (polyline buffered width/2, flat caps, round joins): { edge: signed distance to the band edge (negative = inside), nx, nz: unit vector pointing out of the band, id }
   let best = null;
   const take = (edge, nx, nz, id) => { if (!best || edge < best.edge) best = { edge, nx, nz, id }; };
   for (const r of roads) {
@@ -71,6 +75,10 @@ function roadHit(roads, x, z) { // nearest road band, the SAME shape the audits 
       const s = px * ux + pz * uz, t = -px * uz + pz * ux; // along the segment, across it (t > 0 on the (-uz, ux) side)
       const ex = Math.max(-s, s - L), ez = Math.abs(t) - half; // box signed distance in the segment frame
       let edge, ls, lt;
+      if (roundCaps && ex > 0) { // strict reading (tools/road-clearance.mjs): a dead-end's cap is round, so the band reaches half a width past the last vertex
+        const E = s > L ? b : a, vx = x - E[0], vz = z - E[1], dd = Math.hypot(vx, vz) || 1;
+        take(dd - half, vx / dd, vz / dd, r.id); continue;
+      }
       if (ex > 0 || ez > 0) { edge = Math.hypot(Math.max(ex, 0), Math.max(ez, 0)); ls = ex > 0 ? Math.sign(s - L / 2) * ex : 0; lt = ez > 0 ? Math.sign(t) * ez : 0; }
       else if (ex > ez) { edge = ex; ls = Math.sign(s - L / 2) || 1; lt = 0; }
       else { edge = ez; ls = 0; lt = Math.sign(t) || 1; }
@@ -95,7 +103,7 @@ function nudgeSmallProps(objects, places, roads) {
     const rad = id.startsWith('new_Hand pump') ? 1.2 : Math.min(Math.max(...ring.map((p) => Math.hypot(p[0] - mx, p[1] - mz))), 3);
     // clearance of the prop at offset (ox, oz): circle mode = centre-to-band-edge minus radius; footprint mode = worst sampled point of the ring edge
     const clear = (ox, oz) => {
-      if (!foot) { const h = roadHit(roads, o.cx + ox, o.cz + oz); return { c: h.edge - rad, h }; }
+      if (!foot) { const h = roadHit(roads, o.cx + ox, o.cz + oz, ROUND_CAP.has(id)); return { c: h.edge - rad, h }; }
       let w = null;
       for (let i = 0; i < n; i++) { const p = ring[i], q = ring[(i + 1) % n]; for (let k = 0; k <= 10; k++) { const h = roadHit(roads, p[0] + (q[0] - p[0]) * k / 10 + ox, p[1] + (q[1] - p[1]) * k / 10 + oz); if (!w || h.edge < w.h.edge) w = { c: h.edge, h }; } }
       return w;
@@ -110,13 +118,13 @@ function nudgeSmallProps(objects, places, roads) {
       ox += k.h.nx * step; oz += k.h.nz * step;
     }
     const moved = Math.hypot(ox, oz), after = clear(ox, oz);
-    if (moved > NUDGE_MAX || after.c < NUDGE_TARGET) { log.push({ id, name: o.name, from: [o.cx, o.cz], to: null, moved: +moved.toFixed(2), road: before.h.id, note: 'NOT MOVED (needs more than 2 m or still touches)' }); continue; }
+    if (moved > (NUDGE_LIMIT[id] || NUDGE_MAX) || after.c < NUDGE_TARGET) { log.push({ id, name: o.name, from: [o.cx, o.cz], to: null, moved: +moved.toFixed(2), road: before.h.id, note: 'NOT MOVED (needs more than 2 m or still touches)' }); continue; }
     const from = [o.cx, o.cz];
     const sh = (p) => [r2(p[0] + ox), r2(p[1] + oz)];
     o.rings = o.rings.map((rg) => rg.map(sh));
     o.cx = r2(o.cx + ox); o.cz = r2(o.cz + oz);
     if (o.rect) { o.rect.cx = r2(o.rect.cx + ox); o.rect.cz = r2(o.rect.cz + oz); if (o.rect.frontMid) o.rect.frontMid = sh(o.rect.frontMid); }
-    const pl = o.place && places.find((q) => q.id === o.place);
+    const pl = o.place ? places.find((q) => q.id === o.place) : ROUND_CAP.has(id) ? places.find((q) => q.name === o.name && Math.hypot(q.x - from[0], q.z - from[1]) < 0.5) : null; // the well's own place record (new_433) rides with it
     if (pl) { pl.x = r2(pl.x + ox); pl.z = r2(pl.z + oz); }
     log.push({ id, name: o.name, from, to: [o.cx, o.cz], moved: +moved.toFixed(2), road: before.h.id, clearBefore: +before.c.toFixed(2), mode: foot ? 'footprint' : `circle r=${rad.toFixed(2)}` });
   }

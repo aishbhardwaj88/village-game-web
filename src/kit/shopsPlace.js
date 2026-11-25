@@ -47,6 +47,25 @@ const shopRectOf = (o) => SHOP_RECTS.rects[`${o.label}@${o.rings[0][0][0]},${o.r
 export function buildShops(map, opts = {}) { return runSync(buildShopsGen(map, opts)); }
 /** Same build, time-sliced (boot-CPU pass, 25 Nov): `ms` of work per turn, then back to the main thread. Identical output. */
 export function buildShopsAsync(map, opts = {}, ms = 4) { return sliceGen(buildShopsGen(map, opts), ms); }
+// x/z bounding box [x0, z0, x1, z1] of a design's geometry (a { materialId: BufferGeometry } map)
+function nearBounds(geo) {
+  const b = [1e9, 1e9, -1e9, -1e9];
+  for (const k in geo) { const g = geo[k]; g.computeBoundingBox(); const m = g.boundingBox; b[0] = Math.min(b[0], m.min.x); b[1] = Math.min(b[1], m.min.z); b[2] = Math.max(b[2], m.max.x); b[3] = Math.max(b[3], m.max.z); }
+  return b;
+}
+// squeeze a far block's x/z into the near mesh's extent (only ever shrinks, never grows)
+function clampFar(geo, nb) {
+  const f = nearBounds(geo);
+  const x0 = Math.max(f[0], nb[0]), x1 = Math.min(f[2], nb[2]), z0 = Math.max(f[1], nb[1]), z1 = Math.min(f[3], nb[3]);
+  const ax = (x1 - x0) / (f[2] - f[0]), az = (z1 - z0) / (f[3] - f[1]);
+  for (const k in geo) {
+    const p = geo[k].attributes.position;
+    for (let i = 0; i < p.count; i++) { p.setX(i, x0 + (p.getX(i) - f[0]) * ax); p.setZ(i, z0 + (p.getZ(i) - f[1]) * az); }
+    p.needsUpdate = true; geo[k].computeBoundingBox(); geo[k].computeBoundingSphere();
+  }
+  return geo;
+}
+
 function* buildShopsGen(map, { camera = null } = {}) {
   const places = map.places;
   const roads = makeRoadIndex(map.roads);
@@ -68,9 +87,12 @@ function* buildShopsGen(map, { camera = null } = {}) {
       kit.design(mid, () => build(true).geo);
     }
     const H = opts.H || 3.6, storeys = type === 'shopHouse' ? 2 : 1;
-    const farKey = `far|${rect.width.toFixed(1)}|${rect.depth.toFixed(1)}|${H}|${storeys}`;
     const big = type === 'shopHouse' || type === 'shop';
-    if (big) kit.design(farKey, () => farBlock({ W: rect.width, D: rect.depth, H, storeys }).geo);
+    // 25 Nov (road review): the far block is clamped to the REAL built extent of the near mesh (x/z bbox of its geometry), never the
+    // nominal w x d, so no shop's far block is bigger than its near mesh (the 2-storey Spices far block stuck out 0.55 m over the road)
+    const nb = nearBounds(kit.designs.get(near));
+    const farKey = `far|${rect.width.toFixed(1)}|${rect.depth.toFixed(1)}|${H}|${storeys}|${nb.map((v) => v.toFixed(2)).join('|')}`;
+    if (big) kit.design(farKey, () => clampFar(farBlock({ W: rect.width, D: rect.depth, H, storeys }).geo, nb));
     // 25 Nov wall variety: each shop gets its own wall tint (+-6% brightness on top of the palette pick) and one of 4 approved plaster
     // surfaces (plaster, plaster_j, plaster_m, plaster_p: same library names the houses use), both fixed by the shop's own id
     const jit = 0.94 + hash01(i, 15) * 0.12;

@@ -161,6 +161,19 @@ export function* createMapRoads(chunkId) {
 /** Bounding radius of a chunk (for the zone manager). */
 export const ROAD_CHUNK_RADIUS = 260;
 
+/** Metres from (x, z) to the nearest road band of the approved map (round caps, the strict reading road-clearance.mjs uses). Negative = inside a band. */
+let _bandSegs = null;
+export function mapBandClearance(x, z) {
+  if (!_bandSegs) { _bandSegs = []; for (const r of getRoads()) for (let i = 0; i + 1 < r.pts.length; i++) _bandSegs.push({ a: r.pts[i], b: r.pts[i + 1], half: (r.width || 4) / 2 }); }
+  let best = 1e9;
+  for (const s of _bandSegs) {
+    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L2 = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - s.a[0]) * dx + (z - s.a[1]) * dz) / L2));
+    best = Math.min(best, Math.hypot(x - (s.a[0] + dx * t), z - (s.a[1] + dz * t)) - s.half);
+  }
+  return best;
+}
+
 /** Street-lamp legs along the map's village lanes: polylines cut into straight chunks of at most 36 m, each { id, a, b, w, len }. Back lanes, farm tracks and front paths get none. */
 export function mapLampLegs() {
   const legs = [];

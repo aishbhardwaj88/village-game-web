@@ -287,7 +287,7 @@ function lampTinMaterial(base) {
   return m;
 }
 
-export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } = {}) {
+export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc', clear = null } = {}) {
   const group = new THREE.Group();
   group.name = 'street_lamps';
   const concreteMat = getTiledMaterial('concrete', { vertexColors: true });
@@ -347,8 +347,17 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc' } =
       const r = (k) => hash(n * 7.31 + k);
       n++;
       const off = width / 2 + 0.7 + r(1) * 0.2;
-      const x = from.x + ux * t + nx * off * side;
-      const z = from.z + uz * t + nz * off * side;
+      // 25 Nov road review: `clear(x, z)` (metres from the nearest road band, mapRoads.js mapBandClearance) slides a lamp that would stand
+      // inside another road's band (a gali meeting the lane) along its own lane, smallest slide first, max 5 m, so spacing is kept
+      let tt = t;
+      if (clear && clear(from.x + ux * t + nx * off * side, from.z + uz * t + nz * off * side) < 0.35) {
+        for (let sh = 0.5; sh <= 5.001; sh += 0.5) {
+          const pick = [sh, -sh].find((d) => clear(from.x + ux * (t + d) + nx * off * side, from.z + uz * (t + d) + nz * off * side) >= 0.35);
+          if (pick !== undefined) { tt = t + pick; break; }
+        }
+      }
+      const x = from.x + ux * tt + nx * off * side;
+      const z = from.z + uz * tt + nz * off * side;
       const rotY = Math.atan2(-nx * side, -nz * side);
       const lean = new THREE.Euler((r(2) - 0.5) * 0.05, rotY, (r(3) - 0.5) * 0.05, 'YXZ');
       const sc = type === 'solar' ? 0.96 + r(5) * 0.1 : 0.96 + r(5) * 0.1;

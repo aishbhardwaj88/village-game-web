@@ -222,7 +222,7 @@ import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
 // storyBeats.js and sideJobs.js are dynamic imports (modLate below): first needed after Play, so they stay out of the pre-Play download
 import { spot } from './missionsLayout.js'; // S7 WIRING (missions): approved-map spots for missions, jobs and NPCs (identity under ?layout=old)
-import { ROAD_CHUNKS, createMapRoads, mapLampLegs, allRoadLines } from './mapRoads.js';
+import { ROAD_CHUNKS, createMapRoads, mapLampLegs, mapBandClearance, allRoadLines } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
 import { createAmbientLife } from './ambient.js';
 import { createVillageSounds } from './villageSounds.js';
@@ -2162,7 +2162,7 @@ async function main() {
         z: (leg.a.z + leg.b.z) / 2,
         buildRadius: 8 + leg.len / 2,
         teardownRadius: 9 + leg.len / 2,
-        build: () => createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w }], { type: 'solar', everyMetres: 26 }),
+        build: () => createStreetLamps([{ from: leg.a, to: leg.b, width: leg.w }], { type: 'solar', everyMetres: 26, clear: isNewLayout() ? mapBandClearance : null }),
       });
     }
     // 'khel_maidan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
