@@ -7,7 +7,7 @@
  * curve); village lanes carry their nali as a groove in the surface. The "To the city" boards and back-lane posts are src/mapGates.js.
  */
 import * as THREE from 'three';
-import { buildNetwork, networkMesh, stonesMesh } from './roadNetwork.js';
+import { buildNetwork, networkMesh, stonesMesh, ROAD_KINDS } from './roadNetwork.js';
 import { MAP_SHIFT, CHAURAHA, bendMapRoad } from './mapPlan.js';
 import { dirtTrackLines } from './dirtTracks.js';
 import { pt } from './anchors.js';
@@ -172,6 +172,55 @@ export function mapBandClearance(x, z) {
     best = Math.min(best, Math.hypot(x - (s.a[0] + dx * t), z - (s.a[1] + dz * t)) - s.half);
   }
   return best;
+}
+
+/**
+ * 25 Nov (her order: ROADS MUST BE EMPTY). Metres from (x, z) to the DRAWN edge of the nearest map road: the band (width / 2) plus the
+ * edge wander the surface draws past it (roadNetwork.js ROAD_KINDS amp x 1.4). Negative = on the road. Round caps (the stricter reading).
+ * The scuffed apron past the wander (0.8 to 1.8 m of fading dirt) is ground colour, not road, and is not counted.
+ */
+export const ROAD_EMPTY_MARGIN = 0.3; // an object must stand at least this far beyond the drawn edge
+let _drawnSegs = null;
+export function drawnRoadClearance(x, z) {
+  if (!isNewLayout()) return 99; // the retired old layout keeps its own roads
+  if (!_drawnSegs) { _drawnSegs = []; for (const r of getRoads()) { const k = ROAD_KINDS[r.kind] || ROAD_KINDS.lane; for (let i = 0; i + 1 < r.pts.length; i++) _drawnSegs.push({ a: r.pts[i], b: r.pts[i + 1], e: (r.width || 4) / 2 + k.amp * 1.4 }); } }
+  let best = 1e9;
+  for (const s of _drawnSegs) {
+    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L2 = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - s.a[0]) * dx + (z - s.a[1]) * dz) / L2));
+    best = Math.min(best, Math.hypot(x - (s.a[0] + dx * t), z - (s.a[1] + dz * t)) - s.e);
+  }
+  return best;
+}
+/**
+ * Smallest slide s (metres, |s| <= maxMove) along the unit direction (dx, dz) that puts every probe point (an array of [x, z]) at least
+ * ROAD_EMPTY_MARGIN beyond the drawn road edge. 0 when already clear, null when no slide within maxMove works. Positive and negative
+ * slides are both tried; the smaller one wins (the negative one first on a tie).
+ */
+export function roadEmptySlide(probes, dx, dz, maxMove = 3, margin = ROAD_EMPTY_MARGIN) {
+  const ok = (s) => probes.every(([x, z]) => drawnRoadClearance(x + dx * s, z + dz * s) >= margin);
+  if (ok(0)) return 0;
+  for (let m = 0.05; m <= maxMove + 1e-9; m += 0.05) for (const sg of [-1, 1]) if (ok(sg * m)) return sg * m;
+  return null;
+}
+
+/**
+ * Push (x, z) straight away from the nearest road until every probe (offsets [dx, dz] from (x, z), world axes) stands at least
+ * ROAD_EMPTY_MARGIN beyond the drawn edge. Returns { x, z, moved } (moved = 0 when already clear) or null when more than maxMove is needed.
+ */
+export function roadEmptyPush(x, z, probes = [[0, 0]], maxMove = 3, margin = ROAD_EMPTY_MARGIN) {
+  let ox = x, oz = z;
+  for (let it = 0; it < 10; it++) {
+    let worst = 1e9, wp = null;
+    for (const [px, pz] of probes) { const c = drawnRoadClearance(ox + px, oz + pz); if (c < worst) { worst = c; wp = [ox + px, oz + pz]; } }
+    if (worst >= margin) return { x: ox, z: oz, moved: Math.hypot(ox - x, oz - z) };
+    const h = 0.15, gx = drawnRoadClearance(wp[0] + h, wp[1]) - drawnRoadClearance(wp[0] - h, wp[1]), gz = drawnRoadClearance(wp[0], wp[1] + h) - drawnRoadClearance(wp[0], wp[1] - h), gl = Math.hypot(gx, gz);
+    if (gl < 1e-6) return null;
+    const step = margin - worst + 0.03;
+    ox += (gx / gl) * step; oz += (gz / gl) * step;
+    if (Math.hypot(ox - x, oz - z) > maxMove) return null;
+  }
+  return null;
 }
 
 /** Street-lamp legs along the map's village lanes: polylines cut into straight chunks of at most 36 m, each { id, a, b, w, len }. Back lanes, farm tracks and front paths get none. */

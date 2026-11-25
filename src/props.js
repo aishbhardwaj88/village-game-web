@@ -7,6 +7,15 @@ import { getTiledMaterial } from './materials.js';
 import { getGLTFLoader } from './loaders.js';
 import { registerLampSites } from './lampPools.js';
 import { batchPlaceModelWhenRooted } from './placeBatch.js';
+import { drawnRoadClearance } from './mapRoads.js';
+import { isNewLayout } from './layout/layout.js';
+
+// 25 Nov, her order (ROADS MUST BE EMPTY). A street lamp pole stands at least LAMP_ROAD_CLEAR beyond the DRAWN edge of every map road
+// (band + edge wander, mapRoads.js drawnRoadClearance; 0.3 m for the pole's body + its 0.17 m radius). A lamp that would not is slid along
+// its lane (max LAMP_MAX_SLIDE, so spacing stays near even) and/or sideways onto the verge (max LAMP_MAX_SIDE), smallest total move
+// first. One that no move clears is removed (set LAMP_ROAD_REMOVE false to put it back). Moves are listed in LAMP_ROAD_LOG.
+const LAMP_ROAD_CLEAR = 0.5, LAMP_MAX_SLIDE = 6, LAMP_MAX_SIDE = 2.5, LAMP_ROAD_REMOVE = true;
+export const LAMP_ROAD_LOG = [];
 
 // The bell hangs on the school's own north verandah (BELL_POSITION = schoolV(-6, 4), between
 // the Blender model's main-block pillars at local x -8/-4, z 4 — tools/blender/build_school.py's
@@ -288,6 +297,7 @@ function lampTinMaterial(base) {
 }
 
 export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc', clear = null } = {}) {
+  if (isNewLayout()) clear = drawnRoadClearance; // every caller, not only the map lane legs (replaces the strict mapBandClearance some pass)
   const group = new THREE.Group();
   group.name = 'street_lamps';
   const concreteMat = getTiledMaterial('concrete', { vertexColors: true });
@@ -346,14 +356,20 @@ export function createStreetLamps(segments, { everyMetres = 22, type = 'rcc', cl
       const side = n % 2 === 0 ? 1 : -1;
       const r = (k) => hash(n * 7.31 + k);
       n++;
-      const off = width / 2 + 0.7 + r(1) * 0.2;
-      // 25 Nov road review: `clear(x, z)` (metres from the nearest road band, mapRoads.js mapBandClearance) slides a lamp that would stand
-      // inside another road's band (a gali meeting the lane) along its own lane, smallest slide first, max 5 m, so spacing is kept
-      let tt = t;
-      if (clear && clear(from.x + ux * t + nx * off * side, from.z + uz * t + nz * off * side) < 0.35) {
-        for (let sh = 0.5; sh <= 5.001; sh += 0.5) {
-          const pick = [sh, -sh].find((d) => clear(from.x + ux * (t + d) + nx * off * side, from.z + uz * (t + d) + nz * off * side) >= 0.35);
-          if (pick !== undefined) { tt = t + pick; break; }
+      const off0 = width / 2 + 0.95 + r(1) * 0.2; // 25 Nov: was 0.7 + r*0.2, +0.25 so the pole clears the lane's drawn (wandering) edge
+      let tt = t, off = off0;
+      if (clear && clear(from.x + ux * t + nx * off0 * side, from.z + uz * t + nz * off0 * side) < LAMP_ROAD_CLEAR) {
+        // smallest move first, over (slide along the lane, extra sideways) cells
+        let best = null;
+        for (let sh = -LAMP_MAX_SLIDE; sh <= LAMP_MAX_SLIDE + 1e-9; sh += 0.5) for (let ex = 0; ex <= LAMP_MAX_SIDE + 1e-9; ex += 0.25) {
+          const cost = Math.hypot(sh, ex);
+          if (best && cost >= best.cost) continue;
+          if (clear(from.x + ux * (t + sh) + nx * (off0 + ex) * side, from.z + uz * (t + sh) + nz * (off0 + ex) * side) >= LAMP_ROAD_CLEAR) best = { cost, sh, ex };
+        }
+        if (best) { tt = t + best.sh; off = off0 + best.ex; LAMP_ROAD_LOG.push({ from: [+(from.x + ux * t + nx * off0 * side).toFixed(2), +(from.z + uz * t + nz * off0 * side).toFixed(2)], to: [+(from.x + ux * tt + nx * off * side).toFixed(2), +(from.z + uz * tt + nz * off * side).toFixed(2)], slide: best.sh, side: best.ex }); }
+        else {
+          LAMP_ROAD_LOG.push({ from: [+(from.x + ux * t + nx * off0 * side).toFixed(2), +(from.z + uz * t + nz * off0 * side).toFixed(2)], removed: true });
+          if (LAMP_ROAD_REMOVE) continue; // removed 25 Nov: stood on road, her order
         }
       }
       const x = from.x + ux * tt + nx * off * side;

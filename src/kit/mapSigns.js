@@ -3,6 +3,13 @@ import { drawBilingual } from '../signPaint.js';
 import { getTiledMaterial } from '../materials.js';
 import { whenGateOpen } from './lateBuild.js';
 import { isNewLayout } from '../layout/layout.js';
+import { roadEmptySlide } from '../mapRoads.js';
+
+/** 25 Nov, her order (ROADS MUST BE EMPTY): a sign whose posts or board come within 0.3 m of the drawn road edge slides back along its own
+ *  front axis (away from the road) by the smallest distance that clears it, up to ROAD_EMPTY_MAX_SLIDE. Where no slide clears, it is removed
+ *  (set ROAD_EMPTY_REMOVE false to build it where the map has it). Every slide is on window.__s7mapsigns.roadEmpty. */
+const ROAD_EMPTY_MAX_SLIDE = 3;
+const ROAD_EMPTY_REMOVE = true;
 
 /**
  * The 115 `new_sign` signboards of the approved map (26 Nov). Each is a painted board on two posts at its map footprint
@@ -42,12 +49,19 @@ export async function initMapSigns(scene, mapData) {
   const data = mapData || (await import('../layout/mapData.json')).default;
   const signs = data.objects.filter((o) => o.prefix === 'new_sign' && o.rect).map((o) => ({ en: o.name.replace(/^Signboard:\s*/, ''), o }));
   const skipped = [];
-  const items = [];
+  const items = [], roadEmpty = [];
   for (const s of signs) {
     const hi = HI[s.en];
     if (!hi) { skipped.push(s.en); continue; }
     const w = s.o.rect.w, bh = Math.min(1.25, Math.max(0.8, w / 3.6));
-    items.push({ ...s, hi, en: EN_FIX[s.en] || s.en, w, bh, cw: Math.round(CELL_H * w / bh), r: s.o.rect });
+    // removed 25 Nov: stood on road, her order (only when no slide clears; see ROAD_EMPTY_REMOVE)
+    const r0 = s.o.rect, yaw0 = Math.atan2(r0.front[0], r0.front[1]), fx0 = Math.sin(yaw0), fz0 = Math.cos(yaw0), tx0 = fz0, tz0 = -fx0;
+    const probes = [-1, -0.5, 0, 0.5, 1].map((k) => [r0.cx + tx0 * k * (w / 2 - 0.12), r0.cz + tz0 * k * (w / 2 - 0.12)]);
+    const slide = roadEmptySlide(probes, fx0, fz0, ROAD_EMPTY_MAX_SLIDE);
+    if (slide === null) { roadEmpty.push({ id: s.o.id, en: s.en, x: +r0.cx.toFixed(2), z: +r0.cz.toFixed(2), removed: true }); if (ROAD_EMPTY_REMOVE) continue; }
+    const r = slide ? { ...r0, cx: r0.cx + fx0 * slide, cz: r0.cz + fz0 * slide } : r0;
+    if (slide) roadEmpty.push({ id: s.o.id, en: s.en, from: [+r0.cx.toFixed(2), +r0.cz.toFixed(2)], to: [+r.cx.toFixed(2), +r.cz.toFixed(2)], slide: +slide.toFixed(2) });
+    items.push({ ...s, hi, en: EN_FIX[s.en] || s.en, w, bh, cw: Math.round(CELL_H * w / bh), r });
   }
   // shelf-pack the cells into one atlas
   const AW = 4096; let x = 0, y = 0;
@@ -113,7 +127,7 @@ export async function initMapSigns(scene, mapData) {
   posts.userData.colliderBoxes = colliders;
   group.add(boards, posts);
   scene.add(group);
-  const report = { built: items.length, skipped, drawCalls: 2, triangles: tris, atlas: [AW, AH], colliders: colliders.length };
+  const report = { built: items.length, skipped, drawCalls: 2, triangles: tris, atlas: [AW, AH], colliders: colliders.length, roadEmpty };
   window.__s7mapsigns = report;
   return { group, report };
 }

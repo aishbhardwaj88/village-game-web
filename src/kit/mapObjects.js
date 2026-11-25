@@ -12,6 +12,8 @@ import { getGLTFLoader } from '../loaders.js';
 import { swapShared } from '../stagingYard.js';
 import { floatGeometry } from '../pots.js';
 import { createCattleHerd } from '../animals.js';
+import { roadEmptyPush } from '../mapRoads.js';
+const ROAD_EMPTY_REMOVE = true; // 25 Nov (her order): an object that cannot be moved clear of a road is removed; false puts it back
 import { yieldToMain } from './lateBuild.js';
 
 /**
@@ -176,11 +178,24 @@ export async function buildMapObjects(scene, { map = null, camera = null } = {})
   // always the game's own map data (rects, centres, trimmed galis); shops-land's loader may hand back the raw export
   if (!map || !map.objects?.some((o) => o.rect)) map = getLayout();
   const plan = planMapObjects(map);
+  // 25 Nov, her order (ROADS MUST BE EMPTY): a design or milestone that stands within 0.3 m of a road's DRAWN edge (band + edge wander) is
+  // pushed straight away from the road by the smallest distance (max 3 m); one that cannot be moved legally is removed (ROAD_EMPTY_REMOVE).
+  // Moves are listed on report.roadEmpty. Colliders and models below read the moved position.
+  const roadEmpty = [];
+  const keepOff = (list, kind, probesOf) => list.filter((o) => {
+    const r = roadEmptyPush(o.x, o.z, probesOf(o), 3);
+    if (r && r.moved === 0) return true;
+    if (r) { roadEmpty.push({ id: o.id, kind, from: [+o.x.toFixed(2), +o.z.toFixed(2)], to: [+r.x.toFixed(2), +r.z.toFixed(2)], moved: +r.moved.toFixed(2) }); o.x = r.x; o.z = r.z; return true; }
+    roadEmpty.push({ id: o.id, kind, from: [+o.x.toFixed(2), +o.z.toFixed(2)], removed: true }); // removed 25 Nov: stood on road, her order
+    return !ROAD_EMPTY_REMOVE;
+  });
+  plan.designs = keepOff(plan.designs, 'design', (d) => { const c = Math.cos(d.ry || 0), sn = Math.sin(d.ry || 0), hw = Math.min(d.w || 1, 6) / 2, hd = Math.min(d.d || 1, 6) / 2, pr = [[0, 0]]; for (const [a, b] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) pr.push([a * hw * c + b * hd * sn, -a * hw * sn + b * hd * c]); return pr; });
+  plan.milestones = keepOff(plan.milestones, 'milestone', () => [[0, 0], [0.4, 0], [-0.4, 0], [0, 0.4], [0, -0.4]]);
   await yieldToMain(); // boot-CPU pass (25 Nov): one stage per turn, input and paint run between stages
   const group = new THREE.Group();
   group.name = 's7_mapobjects';
   const colliders = [], heightFns = [], layers = {};
-  const report = { counts: plan.counts, skipped: plan.skipped };
+  const report = { counts: plan.counts, skipped: plan.skipped, roadEmpty };
 
   // ---- 1. built designs, one batch over the library sets
   const kit = new ObjBatch('s7_mapobjects_kit');

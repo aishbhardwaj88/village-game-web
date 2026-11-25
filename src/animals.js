@@ -3,6 +3,29 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { getGLTFLoader } from './loaders.js';
 import { urlExists } from './assetSlots.js';
 import { keepOnGround, markFigure, settleDy } from './standOn.js';
+import { drawnRoadClearance, roadEmptyPush, ROAD_EMPTY_MARGIN } from './mapRoads.js';
+
+// 25 Nov, her order (ROADS MUST BE EMPTY): no animal stands or roams on a road. Every placement is pushed straight away from the nearest road
+// until its body (the collider box corners) is 0.3 m beyond the drawn edge, and the slow roam never picks a spot closer than that.
+// An animal that cannot be pushed clear within ROAD_EMPTY_MAX_MOVE is removed (set ROAD_EMPTY_REMOVE false to put them back).
+const ROAD_EMPTY_MAX_MOVE = 4;
+const ROAD_EMPTY_REMOVE = true;
+export const ROAD_EMPTY_LOG = [];
+function roadEmptyPlacements(list, halfLen, halfWid, kind) {
+  const out = [];
+  for (const p of list) {
+    const ry = p.rotationY ?? 0, fx = Math.sin(ry), fz = Math.cos(ry), sx = fz, sz = -fx;
+    const hl = typeof halfLen === 'function' ? halfLen(p) : halfLen, hw = typeof halfWid === 'function' ? halfWid(p) : halfWid;
+    const probes = [[0, 0]];
+    for (const a of [-1, 0, 1]) for (const b of [-1, 1]) probes.push([fx * hl * a + sx * hw * b, fz * hl * a + sz * hw * b]);
+    const r = roadEmptyPush(p.x, p.z, probes, ROAD_EMPTY_MAX_MOVE);
+    if (r && r.moved === 0) { out.push(p); continue; }
+    if (r) { ROAD_EMPTY_LOG.push({ kind, from: [+p.x.toFixed(2), +p.z.toFixed(2)], to: [+r.x.toFixed(2), +r.z.toFixed(2)], moved: +r.moved.toFixed(2) }); out.push({ ...p, x: r.x, z: r.z }); continue; }
+    ROAD_EMPTY_LOG.push({ kind, from: [+p.x.toFixed(2), +p.z.toFixed(2)], removed: true }); // removed 25 Nov: stood on road, her order
+    if (!ROAD_EMPTY_REMOVE) out.push(p);
+  }
+  return out;
+}
 
 // docs/FINISH_LINE.md Animals line: "the M6 monkey as a recognisable monkey" — it was
 // a scaled-down generic humanoid capsule (src/npc.js's createNPC, tinted brown), not a
@@ -448,7 +471,8 @@ export const DOG_FOOTPRINT_RADIUS = 0.4;
 // Each animal picks a point inside its radius, turns toward it and walks, then stands a while. Only runs while the mesh was
 // actually rendered in the last ~0.25 s and its camera is within ROAM_NEAR metres, so off-screen and far herds cost nothing.
 const ROAM_NEAR = 70;
-function makeRoamer(mesh, instances, { radius, speed, pauseMin, pauseMax }) {
+function makeRoamer(mesh, instances, { radius, speed, pauseMin, pauseMax, bodyR = 1 }) {
+  if (!instances.length) return () => false; // every animal of this herd may have been removed off a road (25 Nov)
   const cam = new THREE.Vector3();
   let seenAt = -1e9;
   mesh.onBeforeRender = (r, sc, camera) => { seenAt = performance.now(); camera.getWorldPosition(cam); };
@@ -459,7 +483,7 @@ function makeRoamer(mesh, instances, { radius, speed, pauseMin, pauseMax }) {
     if (dx0 * dx0 + dz0 * dz0 > ROAM_NEAR * ROAM_NEAR) return false;
     for (let i = 0; i < instances.length; i++) {
       const n = instances[i];
-      if (n.wait > 0) { n.wait -= dt; if (n.wait <= 0) { n.seed = (n.seed * 16807 + 11) % 2147483647; const a = (n.seed % 6283) / 1000, d = Math.sqrt((n.seed % 997) / 997) * radius; n.tx = n.hx + Math.cos(a) * d; n.tz = n.hz + Math.sin(a) * d; } continue; }
+      if (n.wait > 0) { n.wait -= dt; if (n.wait <= 0) { n.seed = (n.seed * 16807 + 11) % 2147483647; const a = (n.seed % 6283) / 1000, d = Math.sqrt((n.seed % 997) / 997) * radius; n.tx = n.hx + Math.cos(a) * d; n.tz = n.hz + Math.sin(a) * d; if (drawnRoadClearance(n.tx, n.tz) < ROAD_EMPTY_MARGIN + bodyR || drawnRoadClearance((n.tx + n.x) / 2, (n.tz + n.z) / 2) < ROAD_EMPTY_MARGIN + bodyR) { n.tx = n.hx; n.tz = n.hz; } /* 25 Nov: never roam onto a road */ } continue; }
       const dx = n.tx - n.x, dz = n.tz - n.z, dist = Math.hypot(dx, dz);
       if (dist < 0.08) { n.seed = (n.seed * 16807 + 5) % 2147483647; n.wait = pauseMin + (n.seed % 1000) / 1000 * (pauseMax - pauseMin); continue; }
       let da = Math.atan2(dx, dz) - n.rotY; da = Math.atan2(Math.sin(da), Math.cos(da));
@@ -481,6 +505,7 @@ function makeRoamer(mesh, instances, { radius, speed, pauseMin, pauseMax }) {
  * rotation, since an InstancedMesh can't animate one sub-part independently) so the
  * herd doesn't read as a frozen diorama (Wave 4 item 4: "slow grazing... motion"). */
 export function createCattleHerd(placements) {
+  placements = roadEmptyPlacements(placements, (p) => (p.buffalo ? 1.05 : 0.95), (p) => (p.buffalo ? 0.5 : 0.42), 'cattle');
   const geometry = buildBovineGeometry();
   const hide = hideTextures();
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.2, roughnessMap: hide.bump });
@@ -519,7 +544,7 @@ export function createCattleHerd(placements) {
   keepOnGround(mesh, (scene) => {
     instances.forEach((inst, i) => { applyInstance(i, inst, 0); mesh.instanceMatrix.needsUpdate = true; const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
   });
-  const roam = makeRoamer(mesh, instances, { radius: 1.6, speed: 0.3, pauseMin: 8, pauseMax: 20 });
+  const roam = makeRoamer(mesh, instances, { radius: 1.6, speed: 0.3, pauseMin: 8, pauseMax: 20, bodyR: 1.1 });
   function update(dt) {
     roam(dt);
     for (let i = 0; i < instances.length; i++) {
@@ -535,6 +560,7 @@ export function createCattleHerd(placements) {
 /** A pack of stationary street dogs, same InstancedMesh pattern, with the same
  * slow idle sway as the cattle herd above. Returns `{ mesh, update(dt) }`. */
 export function createDogPack(placements) {
+  placements = roadEmptyPlacements(placements, 0.42, 0.2, 'dog');
   const geometry = buildDogGeometry();
   const hide = hideTextures();
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, map: hide.map, bumpMap: hide.bump, bumpScale: 1.0, roughnessMap: hide.bump });
@@ -566,7 +592,7 @@ export function createDogPack(placements) {
   keepOnGround(mesh, (scene) => {
     instances.forEach((inst, i) => { applyInstance(i, inst, 0); const dy = settleDy(scene, mesh, i); if (Math.abs(dy) < 1.2) inst.y += dy; applyInstance(i, inst, 0); });
   });
-  const roam = makeRoamer(mesh, instances, { radius: 3, speed: 0.7, pauseMin: 4, pauseMax: 11 });
+  const roam = makeRoamer(mesh, instances, { radius: 3, speed: 0.7, pauseMin: 4, pauseMax: 11, bodyR: 0.45 });
   function update(dt) {
     roam(dt);
     for (let i = 0; i < instances.length; i++) {
