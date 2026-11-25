@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(ROOT, 'public');
-const SKIP_DIRS = new Set(['textures_candidates']); // never loaded by the game
+const SKIP_DIRS = new Set(); // textures_candidates is hashed too: src/materials.js SETS lane_v2 / plaster_v2 load it (?matv2=1)
 const SKIP_FILES = new Set(['manifest.json']); // regenerated, fetched without ?v=
 
 function walk(dir, out) {

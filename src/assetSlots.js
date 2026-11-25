@@ -100,7 +100,7 @@ async function urlExistsByHead(url) {
 }
 
 /** `file` — the slot's basename, no extension (e.g. "tractor", not "tractor.glb"). */
-async function urlExists(url, file) {
+export async function urlExists(url, file) {
   const manifest = await loadManifest();
   if (manifest) return manifest.has(file); // the normal path: answered from the one manifest fetch, no per-slot request at all
   return urlExistsByHead(url); // manifest missing or unreadable (a dev checkout that hasn't run the generator, or a fetch error) — fall back to the old per-file check rather than silently skip every slot

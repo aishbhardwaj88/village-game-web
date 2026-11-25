@@ -1,5 +1,4 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { gunzipSync } from 'three/examples/jsm/libs/fflate.module.js';
 import { sharedTexturePlugin } from './sharedTextures.js';
@@ -12,9 +11,15 @@ let sharedLoader = null;
  * ask which GPU formats it takes (BC7 / ASTC / ETC2, else RGBA8 as a fallback, so every browser works). */
 let ktx2 = null;
 export function setLoaderRenderer(renderer) {
-  if (!ktx2) ktx2 = new KTX2Loader().setTranscoderPath(`${import.meta.env.BASE_URL}basis/`).setWorkerLimit(2);
-  ktx2.detectSupport(renderer);
-  if (sharedLoader) sharedLoader.setKTX2Loader(ktx2);
+  // No .ktx2 / KHR_texture_basisu asset ships today (checked 25 Nov), so KTX2Loader is a separate chunk fetched 10 s after boot,
+  // never on the boot path. A model that needs it before then would fail to parse; add the first KTX2 asset only together
+  // with an eager import here.
+  const start = () => import('three/examples/jsm/loaders/KTX2Loader.js').then(({ KTX2Loader }) => {
+    if (!ktx2) ktx2 = new KTX2Loader().setTranscoderPath(`${import.meta.env.BASE_URL}basis/`).setWorkerLimit(2);
+    ktx2.detectSupport(renderer);
+    if (sharedLoader) sharedLoader.setKTX2Loader(ktx2);
+  }).catch(() => {});
+  setTimeout(start, 10000);
 }
 
 /** Bumped every time a .glb finishes loading. Models are swapped into the scene by the caller's own callback after this

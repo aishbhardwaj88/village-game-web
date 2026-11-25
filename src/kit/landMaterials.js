@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { afterReady } from '../afterReady.js';
 import { getTiledMaterial, cloneTiledMaterial, applySurfaceVariation, loadRaw } from '../materials.js';
 
 /**
@@ -66,20 +67,18 @@ function perInstanceWallVariety(base) {
 
 /**
  * brick_b / concrete_f: per-shop alternatives (ambientCG Bricks105, Concrete046, public/assets/textures_mix/). They start as the
- * library brick / concrete (already loaded, so nothing new is requested before Play) and swap to their own maps ~8 s after
- * the page is up, in an idle slot; a failed load leaves the plain brick / concrete.
+ * library brick / concrete (already loaded, so nothing new is requested before Play) and swap to their own maps once Play is ready
+ * (src/afterReady.js), in an idle slot; a failed load leaves the plain brick / concrete.
  */
 const LATE = { brick_b: ['brick', 'brick_b'], concrete_f: ['concrete', 'concrete_f'] };
 function lateVariant(name) {
   const [baseName, dir] = LATE[name];
   const m = perInstanceWallVariety(getTiledMaterial(baseName, { vertexColors: true }));
   m.name = name + '_wallvar';
-  if (typeof window !== 'undefined') {
-    setTimeout(() => (window.requestIdleCallback || setTimeout)(() => {
-      const t = (k, srgb) => { const x = loadRaw(`assets/textures_mix/${dir}/${dir}_${k}.webp`, srgb).clone(); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; return x; };
-      try { m.map = t('color', true); m.normalMap = t('normal', false); m.roughnessMap = t('roughness', false); m.needsUpdate = true; } catch (e) { /* stays plain */ }
-    }, window.requestIdleCallback ? { timeout: 1000 } : 1), 8000);
-  }
+  afterReady(() => {
+    const t = (k, srgb) => { const x = loadRaw(`assets/textures_mix/${dir}/${dir}_${k}.webp`, srgb).clone(); x.wrapS = x.wrapT = THREE.RepeatWrapping; x.anisotropy = 4; return x; };
+    try { m.map = t('color', true); m.normalMap = t('normal', false); m.roughnessMap = t('roughness', false); m.needsUpdate = true; } catch (e) { /* stays plain */ }
+  });
   return m;
 }
 

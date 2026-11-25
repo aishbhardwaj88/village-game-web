@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
+import { urlExists } from './assetSlots.js';
 import { keepOnGround, markFigure, settleDy } from './standOn.js';
 
 // docs/FINISH_LINE.md Animals line: "the M6 monkey as a recognisable monkey" — it was
@@ -386,8 +387,8 @@ function loadAnimalModel(kind) {
   const url = `assets/models/${kind}.glb`;
   animalModelCache[kind] = (async () => {
     try {
-      const head = await fetch(url, { method: 'HEAD' });
-      if (!head.ok || (head.headers.get('content-type') || '').includes('text/html')) return null;
+      // answered from the build-time model manifest (one shared fetch), so a missing cow.glb / dog.glb costs no 404 request
+      if (!(await urlExists(url, kind))) return null;
       const gltf = await getGLTFLoader().loadAsync(url);
       gltf.scene.updateMatrixWorld(true);
       const geoms = [];

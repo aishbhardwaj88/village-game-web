@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { houseQuality } from './housesQuality.js';
+import { ver } from '../assetUrl.js';
+import { afterReady } from '../afterReady.js';
 
 /**
  * ONE material for every new-map house (S7 sprint, houses agent), so all houses, far boxes and front clutter draw in one batch.
@@ -38,7 +40,7 @@ const SETS = [
 ];
 
 function loadBitmap(url) {
-  return fetch(url).then((r) => { if (!r.ok) throw new Error(url + ' ' + r.status); return r.blob(); }).then((b) => createImageBitmap(b));
+  return fetch(ver(url)).then((r) => { if (!r.ok) throw new Error(url + ' ' + r.status); return r.blob(); }).then((b) => createImageBitmap(b));
 }
 
 /** Smooth value noise mask (0..1) as a canvas, for the whitewash patches and mud mottling. */
@@ -316,7 +318,7 @@ export function houseMaterialReady(base) {
   return buildHouseAtlas(base).then((a) => {
     m.map = a.map; m.normalMap = a.normalMap; m.roughnessMap = a.roughnessMap;
     m.needsUpdate = true;
-    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) setTimeout(() => (window.requestIdleCallback || setTimeout)(() => loadHouseVariants(), window.requestIdleCallback ? { timeout: 1000 } : 1), 8000);
+    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) afterReady(() => loadHouseVariants());
     return m;
   });
 }
