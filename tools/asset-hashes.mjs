@@ -54,10 +54,18 @@ export function computeAssetHashes() {
     const buf = readFileSync(f);
     const h = createHash('sha1').update(buf);
     if (f.endsWith('.glb') && hasSkin(buf)) h.update(salt);
-    map[relative(PUBLIC, f).split(sep).join('/')] = h.digest('hex').slice(0, 8);
+    const key = relative(PUBLIC, f).split(sep).join('/');
+    const hex = h.digest('hex').slice(0, 8);
+    map[key] = hex;
+    // tools/gz-models.mjs turns every non-skinned .glb into <name>.glb.gz in dist/ (same bytes, gzipped), so the .gz url
+    // carries the hash of its source model: same content = same url. Skinned models (characters) stay plain.
+    if (f.endsWith('.glb') && !hasSkin(buf)) map[key + '.gz'] = hex;
   }
   return map;
 }
+
+/** Sorted list of the models that ship gzipped ("assets/x.glb"), derived from a hash map; embedded in the build as __GZ_MODELS__. */
+export const gzModelList = (map) => Object.keys(map).filter((k) => k.endsWith('.glb.gz')).map((k) => k.slice(0, -3)).sort();
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const m = computeAssetHashes();

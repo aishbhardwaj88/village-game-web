@@ -3,6 +3,7 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { gunzipSync } from 'three/examples/jsm/libs/fflate.module.js';
 import { sharedTexturePlugin } from './sharedTextures.js';
+import { ver } from './assetUrl.js';
 
 let sharedLoader = null;
 
@@ -34,13 +35,15 @@ export const assetUrl = (path) => new URL(path, document.baseURI).href;
 export const exemptModelUrls = new Set();
 
 /** Step 3 (gzip models): after the build, tools/gz-models.mjs turns every non-character .glb in dist/ into .glb.gz (GitHub Pages
- * does not compress .glb) and lists them in assets/gz-models.json. Everything that loads a model goes through this block:
+ * does not compress .glb) and the build embeds the list. Everything that loads a model goes through this block:
  * listed files are fetched as .gz and unpacked here (DecompressionStream, fflate if the browser lacks it); anything not listed
  * (characters, dev server, desktop build) loads as the plain file exactly as before. */
 const gzKey = (url) => { try { const u = new URL(url, document.baseURI); return u.pathname.slice(new URL('./', document.baseURI).pathname.length); } catch (e) { return url; } };
-let gzSet = new Set();
-export const gzReady = fetch(assetUrl('assets/gz-models.json')).then((r) => (r.ok ? r.json() : [])).then((l) => { gzSet = new Set(Array.isArray(l) ? l : []); }, () => {});
-export const modelFetchUrl = (url) => { const u = new URL(url, document.baseURI); return gzSet.has(gzKey(url)) ? `${u.origin}${u.pathname}.gz${u.search}` : url; };
+// the list is embedded by the build (vite define __GZ_MODELS__, from tools/asset-hashes.mjs): no extra fetch before the first model.
+const gzSet = new Set(typeof __GZ_MODELS__ !== 'undefined' ? __GZ_MODELS__ : []);
+export const gzReady = Promise.resolve();
+// the .gz url carries ?v=<hash> (ver) so public/sw.js caches it cache-first, like every other hashed asset
+export const modelFetchUrl = (url) => { const u = new URL(url, document.baseURI); return gzSet.has(gzKey(url)) ? ver(`${u.origin}${u.pathname}.gz${u.search}`) : url; };
 async function gunzip(buf) {
   const h = new Uint8Array(buf, 0, 2); if (h[0] !== 0x1f || h[1] !== 0x8b) return buf; // a server that already unpacked it in transit
   if (typeof DecompressionStream === 'function') {

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { computeAssetHashes } from './tools/asset-hashes.mjs';
+import { computeAssetHashes, gzModelList } from './tools/asset-hashes.mjs';
 import { genModelManifest, MODELS_DIR } from './tools/gen-model-manifest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -109,6 +109,7 @@ export default defineConfig(({ command }) => {
   plugins: [landMapPlugin(command), genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
   define: {
     __ASSET_H__: JSON.stringify(hashes),
+    __GZ_MODELS__: JSON.stringify(gzModelList(hashes)), // models that tools/gz-models.mjs ships as .glb.gz: no extra manifest fetch
   },
   build: {
     target: 'es2020',

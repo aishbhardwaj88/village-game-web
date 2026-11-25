@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { computeAssetHashes, gzModelList } from './asset-hashes.mjs';
 
 const dist = process.argv[2] || 'dist';
 const out = [];
@@ -30,4 +31,7 @@ function one(f) {
 }
 walk(dist);
 fs.writeFileSync(path.join(dist, 'assets', 'gz-models.json'), JSON.stringify(out.sort()));
+// the browser gets its gzipped-model list and the ?v= hashes from the build (vite define, tools/asset-hashes.mjs): they must match what was packed here
+const expect = gzModelList(computeAssetHashes()).join('\n'), got = out.join('\n');
+if (expect !== got) { console.error('gz-models: packed list differs from tools/asset-hashes.mjs list (a model changed skin status after the build?)'); process.exit(1); }
 console.log(`gz-models: ${out.length} models, ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
