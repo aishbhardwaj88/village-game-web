@@ -3,7 +3,8 @@ import { ver } from './assetUrl.js';
 import { lampPoolUniform, lampPoolMix, POOL_N, POOL_RADIUS } from './lampPools.js';
 
 const textureLoader = new THREE.TextureLoader();
-import { shouldDefer, deferredTexture } from './deferredMaps.js';
+import { shouldDefer, deferredTexture, deferredTask } from './deferredMaps.js';
+import { LAYERS, ZONES, ZONE_MAP, ZONE_MAX } from './groundZones.js';
 const rawTextureCache = new Map(); // url -> Texture, shared Source, one real network fetch each
 const materialCache = new Map(); // "name|rx|ry|tint" -> Material
 
@@ -80,6 +81,23 @@ const SETS = {
   plaster_p: { base: 'assets/textures_mix/plaster_p/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster007
   concrete_e: { base: 'assets/textures_mix/concrete_e/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Concrete034
   road_asphalt: { base: 'assets/textures_mix/road_asphalt/', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: ambientCG Road007 asphalt, baked lines removed, colour gained to the concrete_e mean (highway surface, src/roadNetwork.js)
+  // 26 Nov (ORDER-26NOV ground zones): 16 Poly Haven CC0 sets, 1K WebP + a 512 px <name>_height.webp (blend steering only, not in maps). Not in MIX_GROUPS, so nothing loads before Play; the zone ground (applyGroundNoiseDetail zones:true) packs them into texture arrays, getTiledMaterial(name) uses them one by one.
+  dirt_floor: { base: 'assets/textures_mix/dirt_floor/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven dirt_floor (ground)
+  forest_ground_05: { base: 'assets/textures_mix/forest_ground_05/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven forest_ground_05 (ground)
+  brown_mud_02: { base: 'assets/textures_mix/brown_mud_02/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven brown_mud_02 (ground)
+  aerial_mud_1: { base: 'assets/textures_mix/aerial_mud_1/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven aerial_mud_1 (ground)
+  mud_cracked_dry_03: { base: 'assets/textures_mix/mud_cracked_dry_03/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven mud_cracked_dry_03 (ground)
+  ganges_river_pebbles: { base: 'assets/textures_mix/ganges_river_pebbles/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven ganges_river_pebbles (ground)
+  gravelly_sand: { base: 'assets/textures_mix/gravelly_sand/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven gravelly_sand (ground)
+  grass_path_3: { base: 'assets/textures_mix/grass_path_3/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven grass_path_3 (ground)
+  red_dirt_mud_01: { base: 'assets/textures_mix/red_dirt_mud_01/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven red_dirt_mud_01 (ground)
+  grass_ground: { base: 'assets/textures_mix/grass_ground/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven grass_ground (ground)
+  concrete_tiles_02: { base: 'assets/textures_mix/concrete_tiles_02/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven concrete_tiles_02 (flooring)
+  concrete_pavers: { base: 'assets/textures_mix/concrete_pavers/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven concrete_pavers (flooring)
+  patterned_brick_floor_02: { base: 'assets/textures_mix/patterned_brick_floor_02/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven patterned_brick_floor_02 (flooring)
+  short_bricks_floor: { base: 'assets/textures_mix/short_bricks_floor/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven short_bricks_floor (flooring)
+  brick_pavement_03: { base: 'assets/textures_mix/brick_pavement_03/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven brick_pavement_03 (flooring)
+  patterned_concrete_pavers: { base: 'assets/textures_mix/patterned_concrete_pavers/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven patterned_concrete_pavers (flooring)
 };
 
 // Real villages don't paint every wall and roof from one tin/one lane/one plaster -
@@ -483,6 +501,160 @@ function getGroundExtra() {
   return groundExtra;
 }
 
+
+// ORDER-26NOV (ground zones): ONE zone-blend ground, reached through applyGroundNoiseDetail(material, { zones: true }), not a second ground system.
+// A low-res zone map (src/groundZones.js, public/assets/textures_mix/ground_zones/zonemap.png) says which of 16 texture sets shows where; the 16 sets
+// (10 ground + 6 flooring, public/assets/textures_mix/<name>/) are packed into three texture arrays, so the whole ground samples with 4 texture units:
+// zone map + colour array + normal array + roughness(R)/height(G) array. Built only after Play unlocks (deferredTask), so nothing loads before it.
+// Default OFF (ZONES_DEFAULT) until it has been seen in a browser: ?zones=1 turns it on, ?zones=0 off, ?debug=zones shows the flat zone colours.
+const ZONES_DEFAULT = false;
+const ZQ = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams('');
+export const ZONES_DEBUG = ZQ.get('debug') === 'zones';
+export const groundZonesWanted = () => ZONES_DEBUG || (ZQ.has('zones') ? ZQ.get('zones') !== '0' : ZONES_DEFAULT);
+const ZONE_TOUCH = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+const ZONE_RES = Math.max(128, Math.min(1024, Number(ZQ.get('zres')) || (ZONE_TOUCH ? 256 : 512))); // texels per layer side in the arrays: 512 desktop (~67 MB GPU with mips), 256 touch (~17 MB); ?zres= overrides
+let zoneU = null;
+function getZoneUniforms() {
+  if (zoneU) return zoneU;
+  const zt = ZONES.map((z) => new THREE.Vector4(z.a, z.aux, z.aux < 0 ? 0 : z.amt, z.floor));
+  const dbg = ZONES.map((z) => { const c = new THREE.Color(z.dbg); return new THREE.Vector3(c.r, c.g, c.b); });
+  while (zt.length < ZONE_MAX) { zt.push(new THREE.Vector4(0, -1, 0, 0)); dbg.push(new THREE.Vector3(1, 0, 1)); }
+  zoneU = {
+    on: { value: 0 }, debug: { value: ZONES_DEBUG ? 1 : 0 },
+    rect: { value: new THREE.Vector4(ZONE_MAP.x0, ZONE_MAP.z0, ZONE_MAP.cell, ZONE_MAP.size) },
+    map: { value: null }, col: { value: null }, nor: { value: null }, rh: { value: null },
+    z: { value: zt }, dbgCol: { value: dbg }, scale: { value: LAYERS.map((l) => 1 / l.m) },
+  };
+  const go = () => loadZoneTextures(zoneU).catch((e) => console.warn('ground zones: textures failed, flat ground stays', e));
+  if (ZONES_DEBUG) go(); else deferredTask(go);
+  return zoneU;
+}
+const zoneBitmap = async (url, size) => createImageBitmap(await (await fetch(bust(url))).blob(), { resizeWidth: size, resizeHeight: size, resizeQuality: 'high', colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+async function loadZoneTextures(U) {
+  // zone map: raw bytes, nearest, no mips, read with texelFetch (the shader does its own bilinear on the distance channel)
+  const mb = await createImageBitmap(await (await fetch(bust(ZONE_MAP.url))).blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+  const mt = new THREE.Texture(mb);
+  mt.flipY = false; mt.generateMipmaps = false; mt.minFilter = mt.magFilter = THREE.NearestFilter; mt.format = THREE.RGBAFormat; mt.needsUpdate = true;
+  U.map.value = mt;
+  if (ZONES_DEBUG) return;
+  const S = ZONE_RES, n = LAYERS.length, px = S * S * 4;
+  const col = new Uint8Array(px * n), nor = new Uint8Array(px * n), rh = new Uint8Array(px * n);
+  const cv = new OffscreenCanvas(S, S), cx = cv.getContext('2d', { willReadFrequently: true });
+  const read = async (url) => { const b = await zoneBitmap(url, S); cx.clearRect(0, 0, S, S); cx.drawImage(b, 0, 0, S, S); b.close(); return cx.getImageData(0, 0, S, S).data; };
+  for (let i = 0; i < n; i++) { // one layer at a time keeps decode memory flat
+    const base = `assets/textures_mix/${LAYERS[i].name}/${LAYERS[i].name}_`;
+    col.set(await read(base + 'color.webp'), i * px);
+    nor.set(await read(base + 'normal.webp'), i * px);
+    const r = await read(base + 'roughness.webp'), h = await read(base + 'height.webp'); // height is 512 px, upscaled to S; it only steers blending
+    const o = i * px;
+    for (let k = 0; k < px; k += 4) { rh[o + k] = r[k]; rh[o + k + 1] = h[k]; rh[o + k + 2] = 0; rh[o + k + 3] = 255; }
+  }
+  const arr = (data, srgb) => {
+    const t = new THREE.DataArrayTexture(data, S, S, n);
+    t.format = THREE.RGBAFormat; t.type = THREE.UnsignedByteType; t.generateMipmaps = true;
+    t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.needsUpdate = true; return t;
+  };
+  U.col.value = arr(col, true); U.nor.value = arr(nor, false); U.rh.value = arr(rh, false);
+  U.on.value = 1; // everything arrived: the zone ground takes over from the plain ground texture
+}
+
+
+// ---- GLSL for the zone ground (only compiled into the ground program when zones: true). Names end in _z to stay clear of three's own.
+const ZONE_GLSL_COMMON = `
+        uniform float uZoneOn;
+        uniform float uZoneDebug;
+        uniform vec4 uZoneRect;          // x0, z0 (world m), metres per texel, texels per side
+        uniform sampler2D uZoneMap;      // R zone id, G neighbour id, B distance to border in 1/16 m
+        uniform sampler2DArray uZCol;    // sRGB colour, one layer per texture set
+        uniform sampler2DArray uZNor;    // OpenGL normals
+        uniform sampler2DArray uZRH;     // R roughness, G height (height only steers the blends)
+        uniform vec4 uZ[${ZONE_MAX}];            // per zone: layer, aux layer, aux coverage, 1 = flooring
+        uniform vec3 uZDbg[${ZONE_MAX}];         // flat debug colours
+        uniform float uZScale[${LAYERS.length}]; // 1 / metres per tile
+        float gZOn_g = 0.0;
+        float gZR_g = 1.0;
+        vec3 gZN_g = vec3(0.0);
+        vec3 gZDbg_g = vec3(0.0);
+        struct ZSurf_z { vec3 c; vec3 n; float r; float h; };
+        const mat2 ZROT_z = mat2(0.8, -0.6, 0.6, 0.8);
+        // one texture set, anti-tiled: two scales (the second turned 37 degrees and 0.41x the frequency), blended by a slow noise
+        ZSurf_z zLayer_z(int L, vec2 xz) {
+          float fl = float(L);
+          float s = uZScale[L];
+          vec2 u1 = xz * s;
+          vec2 u2 = ZROT_z * xz * (s * 0.41) + vec2(0.37, 0.71) * (fl + 1.0);
+          float k = clamp(0.5 + (groundValueNoise(xz * 0.09 + fl * 5.1) - 0.5) * 1.1, 0.2, 0.8);
+          vec3 c1 = texture(uZCol, vec3(u1, fl)).rgb, c2 = texture(uZCol, vec3(u2, fl)).rgb;
+          vec4 r1 = texture(uZRH, vec3(u1, fl)), r2 = texture(uZRH, vec3(u2, fl));
+          vec3 n1 = texture(uZNor, vec3(u1, fl)).xyz * 2.0 - 1.0, n2 = texture(uZNor, vec3(u2, fl)).xyz * 2.0 - 1.0;
+          n2.xy = n2.xy * ZROT_z; // the second sample's texture axes are turned, so its normal is turned back
+          ZSurf_z o;
+          o.c = mix(c1, c2, k); o.r = mix(r1.r, r2.r, k); o.h = mix(r1.g, r2.g, k); o.n = vec3(mix(n1.xy, n2.xy, k), 0.0);
+          return o;
+        }
+        ZSurf_z zMix_z(ZSurf_z a, ZSurf_z b, float t) { ZSurf_z o; o.c = mix(a.c, b.c, t); o.n = mix(a.n, b.n, t); o.r = mix(a.r, b.r, t); o.h = mix(a.h, b.h, t); return o; }
+        // height-aware blend: w = share of B by area; the higher of the two surfaces wins the edge (mud fills the low joints, dust sits on the bricks)
+        float zHB_z(float hA, float hB, float w) {
+          float a = hA + (1.0 - w), b = hB + w;
+          float m = max(a, b) - 0.22;
+          float wa = max(a - m, 0.0), wb = max(b - m, 0.0);
+          return wb / max(wa + wb, 0.0001);
+        }
+        // a zone's own surface: its layer, with the aux layer (dust, algae rim, ruts) patched over it by noise and height
+        ZSurf_z zSurf_z(int z, vec2 xz) {
+          vec4 P = uZ[z];
+          ZSurf_z s = zLayer_z(int(P.x + 0.5), xz);
+          if (P.z > 0.001) {
+            float m = groundValueNoise(xz * 0.28 + P.y * 3.3) * 0.65 + groundValueNoise(xz * 1.1 + 9.0) * 0.35;
+            float w = smoothstep(1.0 - P.z - 0.14, 1.0 - P.z + 0.14, m);
+            if (w > 0.003) { ZSurf_z b = zLayer_z(int(P.y + 0.5), xz); s = zMix_z(s, b, zHB_z(s.h, b.h, w)); }
+          }
+          return s;
+        }
+`;
+const ZONE_GLSL_MAP = `
+          if (uZoneOn > 0.5 || uZoneDebug > 0.5) {
+            vec2 xz_z = vWorldPos_g.xz;
+            // domain warp: the 1 m texel steps of the zone map are bent by ~1.3 m of noise, so borders read as hand-worn lines, not pixels
+            vec2 zp_z = (xz_z + (vec2(groundValueNoise(xz_z * 0.55 + 4.0), groundValueNoise(xz_z * 0.55 + 31.0)) - 0.5) * 2.6 - uZoneRect.xy) / uZoneRect.z;
+            int zn_z = int(uZoneRect.w);
+            int zi_z = 0, zj_z = 0;
+            float D_z = 16.0;
+            if (zp_z.x >= 0.0 && zp_z.y >= 0.0 && zp_z.x < uZoneRect.w && zp_z.y < uZoneRect.w) {
+              vec3 t0_z = texelFetch(uZoneMap, ivec2(floor(zp_z)), 0).rgb * 255.0;
+              zi_z = int(t0_z.r + 0.5); zj_z = int(t0_z.g + 0.5);
+              vec2 q_z = zp_z - 0.5; ivec2 q0_z = ivec2(floor(q_z)); vec2 f_z = fract(q_z);
+              ivec2 lo_z = ivec2(0), hi_z = ivec2(zn_z - 1);
+              float d00_z = texelFetch(uZoneMap, clamp(q0_z, lo_z, hi_z), 0).b, d10_z = texelFetch(uZoneMap, clamp(q0_z + ivec2(1, 0), lo_z, hi_z), 0).b;
+              float d01_z = texelFetch(uZoneMap, clamp(q0_z + ivec2(0, 1), lo_z, hi_z), 0).b, d11_z = texelFetch(uZoneMap, clamp(q0_z + ivec2(1, 1), lo_z, hi_z), 0).b;
+              D_z = mix(mix(d00_z, d10_z, f_z.x), mix(d01_z, d11_z, f_z.x), f_z.y) * 255.0 / 16.0 * uZoneRect.z; // metres to the zone border
+            }
+            zi_z = min(zi_z, ${ZONE_MAX - 1}); zj_z = min(zj_z, ${ZONE_MAX - 1});
+            if (uZoneDebug > 0.5) {
+              gZDbg_g = uZDbg[zi_z];
+              if (D_z < 0.5) gZDbg_g *= 0.55; // a dark hairline on every zone border
+            } else {
+              ZSurf_z S_z = zSurf_z(zi_z, xz_z);
+              if (zj_z != zi_z) {
+                // edge: soft where earth meets earth; where flooring meets earth the earth creeps over the flooring edge in a ragged, noise-masked fringe
+                bool fP_z = uZ[zi_z].w > 0.5, fQ_z = uZ[zj_z].w > 0.5;
+                float reach_z = (fP_z || fQ_z) ? 2.6 : 1.8;
+                float edge_z = clamp(1.0 - D_z / reach_z, 0.0, 1.0);
+                float nz_z = groundValueNoise(xz_z * 2.3) * 0.65 + groundValueNoise(xz_z * 7.1 + 3.0) * 0.35;
+                float wq_z;
+                if (fP_z && !fQ_z) wq_z = clamp(edge_z * 1.15 + (nz_z - 0.5) * 1.2, 0.0, 1.0) * 0.92;
+                else if (!fP_z && fQ_z) wq_z = clamp(edge_z - 0.5 + (nz_z - 0.5) * 0.7, 0.0, 1.0) * 0.5;
+                else wq_z = clamp(0.5 * edge_z + (nz_z - 0.5) * edge_z, 0.0, 0.5);
+                if (wq_z > 0.003) { ZSurf_z Q_z = zSurf_z(zj_z, xz_z); S_z = zMix_z(S_z, Q_z, zHB_z(S_z.h, Q_z.h, wq_z)); }
+              }
+              diffuseColor.rgb = S_z.c * mix(vec3(1.0), patchTint, 0.7);
+              gZR_g = S_z.r; gZN_g = vec3(S_z.n.x, 0.0, -S_z.n.y); gZOn_g = 1.0;
+            }
+          }
+`;
+
 export function applyGroundNoiseDetail(
   material,
   {
@@ -509,12 +681,15 @@ export function applyGroundNoiseDetail(
     // Tilled-field furrows: {spacing, originZ, depth} — darker troughs between crop rows (rows run along X, one
     // every `spacing` m from `originZ`), soil clods breaking up the ridge. Same shader pass, no texture, no draw call.
     furrows = null,
+    // ORDER-26NOV: true = the zone-blend ground (see getZoneUniforms above) replaces the dryearth/lane area mix and the grass patch tint.
+    zones = false,
   } = {}
 ) {
   const grass = grassTint ? new THREE.Color(grassTint) : null;
   const grassMap = grass ? getGrassCoverTexture() : null;
   const spot0 = dampSpots[0] || null;
   const spot1 = dampSpots[1] || null;
+  const ZU = zones ? getZoneUniforms() : null;
 
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uNoiseScale = { value: 1 / noiseCellMetres };
@@ -534,7 +709,11 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
     shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
     shader.uniforms.uPatchContrast = { value: patchContrast };
-    { const ge = getGroundExtra(); shader.uniforms.uExtraMix = ge.mix; shader.uniforms.uExAC = { value: ge.maps.a.c }; shader.uniforms.uExAN = { value: ge.maps.a.n };
+    if (ZU) {
+      shader.uniforms.uZoneOn = ZU.on; shader.uniforms.uZoneDebug = ZU.debug; shader.uniforms.uZoneRect = ZU.rect; shader.uniforms.uZoneMap = ZU.map;
+      shader.uniforms.uZCol = ZU.col; shader.uniforms.uZNor = ZU.nor; shader.uniforms.uZRH = ZU.rh;
+      shader.uniforms.uZ = ZU.z; shader.uniforms.uZDbg = ZU.dbgCol; shader.uniforms.uZScale = ZU.scale;
+    } else { const ge = getGroundExtra(); shader.uniforms.uExtraMix = ge.mix; shader.uniforms.uExAC = { value: ge.maps.a.c }; shader.uniforms.uExAN = { value: ge.maps.a.n };
       shader.uniforms.uExBC = { value: ge.maps.b.c }; shader.uniforms.uExBN = { value: ge.maps.b.n }; }
     shader.uniforms.uLampPool = lampPoolUniform;
     shader.uniforms.uLampPoolMix = lampPoolMix;
@@ -567,11 +746,7 @@ export function applyGroundNoiseDetail(
         uniform float uDampRadius1;
         uniform vec3 uDampTint1;
         uniform float uPatchContrast;
-        uniform float uExtraMix;
-        uniform sampler2D uExAC;
-        uniform sampler2D uExAN;
-        uniform sampler2D uExBC;
-        uniform sampler2D uExBN;
+        ${zones ? '' : 'uniform float uExtraMix;\nuniform sampler2D uExAC;\nuniform sampler2D uExAN;\nuniform sampler2D uExBC;\nuniform sampler2D uExBN;'}
         float gExA_g = 0.0;
         float gExB_g = 0.0;
         vec2 gExUvA_g = vec2(0.0);
@@ -590,7 +765,8 @@ export function applyGroundNoiseDetail(
           float d = groundHash(i + vec2(1.0, 1.0));
           vec2 u = f * f * (3.0 - 2.0 * f);
           return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-        }`
+        }
+        ${zones ? ZONE_GLSL_COMMON : ''}`
       )
       .replace(
         '#include <map_fragment>',
@@ -613,7 +789,8 @@ export function applyGroundNoiseDetail(
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * detailColor * 1.5, detailMix * 0.5);
           }
 
-          if (uExtraMix > 0.5) {
+          ${zones ? ZONE_GLSL_MAP : ''}
+          ${zones ? '' : `if (uExtraMix > 0.5) {
             // Area variety: dry earth and trodden dirt mixed over the base ground by two big, soft noise fields (45 m and 70 m
             // cells, ragged edges from a finer octave). Each patch has its own tint and tile scale, so no one look repeats.
             vec2 wxz_ = vWorldPos_g.xz;
@@ -631,9 +808,9 @@ export function applyGroundNoiseDetail(
             vec3 cB_ = texture2D(uExBC, gExUvB_g).rgb * tB_ * 1.1;
             diffuseColor.rgb = mix(diffuseColor.rgb, cA_ * (0.75 + 0.5 * lum_), gExA_g);
             diffuseColor.rgb = mix(diffuseColor.rgb, cB_ * (0.75 + 0.5 * lum_), gExB_g);
-          }
+          }`}
 
-          if (uGrassEnabled > 0.5) {
+          if (uGrassEnabled > 0.5 && gZOn_g < 0.5) {
             // Two octaves — a coarse one to cluster patches (never an even scatter,
             // item 3b's own rule applied here to the ground tint too), a finer one
             // so each patch's own edge reads as ragged, not a smooth disc.
@@ -673,6 +850,7 @@ export function applyGroundNoiseDetail(
       .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
+        ${zones ? 'if (uZoneDebug > 0.5) { totalEmissiveRadiance = gZDbg_g; diffuseColor.rgb = vec3(0.0); }' : ''}
         if (uLampPoolMix > 0.001) {
           float pool = 0.0;
           for (int i = 0; i < ${POOL_N}; i++) {
@@ -684,6 +862,7 @@ export function applyGroundNoiseDetail(
       .replace(
         '#include <roughnessmap_fragment>',
         `#include <roughnessmap_fragment>
+        ${zones ? 'if (gZOn_g > 0.5) roughnessFactor = clamp(gZR_g, 0.3, 1.0);' : ''}
         if (gGrassMask_g > 0.001) {
           // Real photoscan roughness (aerial_grass_rock): grass patches are rougher and less uniform than packed earth.
           float gr = texture2D(uGrassRough, vWorldPos_g.xz * 0.37).g * 0.6 + texture2D(uGrassRough, vWorldPos_g.xz * 0.113 + 0.5).g * 0.4;
@@ -693,11 +872,11 @@ export function applyGroundNoiseDetail(
       .replace(
         '#include <normal_fragment_maps>',
         `#include <normal_fragment_maps>
-        if (gExA_g + gExB_g > 0.001) {
+        ${zones ? 'if (gZOn_g > 0.5) normal = normalize(nonPerturbedNormal + mat3(viewMatrix) * gZN_g * 0.85);' : `if (gExA_g + gExB_g > 0.001) {
           vec3 na_ = texture2D(uExAN, gExUvA_g).xyz * 2.0 - 1.0, nb_ = texture2D(uExBN, gExUvB_g).xyz * 2.0 - 1.0;
           vec3 ew_ = vec3(na_.x * gExA_g + nb_.x * gExB_g, 0.0, -(na_.y * gExA_g + nb_.y * gExB_g));
           normal = normalize(normal + mat3(viewMatrix) * ew_ * 0.6);
-        }
+        }`}
         if (gGrassMask_g > 0.001) {
           // Flat ground, so the scan's tangent-space normal tilts the world-up normal directly (GL convention).
           vec3 gn = texture2D(uGrassNormal, vWorldPos_g.xz * 0.37).xyz * 2.0 - 1.0;
@@ -723,7 +902,7 @@ export function applyGroundNoiseDetail(
   // aoMap/vertexColors present or not, etc.) is still caught by three's OWN automatic
   // part of the program cache key, which this custom key is only ever appended to —
   // this fix only removes the needless extra fragmentation on top of that.
-  material.customProgramCacheKey = () => 'ground-noise-detail-v7';
+  material.customProgramCacheKey = zones ? () => 'ground-zones-v1' : () => 'ground-noise-detail-v7';
   return material;
 }
 

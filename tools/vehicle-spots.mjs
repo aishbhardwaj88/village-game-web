@@ -61,7 +61,7 @@ export function test(file, x, z, h) {
 
 const src = fs.readFileSync(new URL('../src/villageVehicles.js', import.meta.url), 'utf8');
 const ANCHORS = []; // filled below for --suggest
-export { roadInfo, nearestBuilding, distPoly, approved, mapData };
+export { roadInfo, nearestBuilding, distPoly, approved, mapData, polys };
 if (process.argv[1] && process.argv[1].endsWith('vehicle-spots.mjs')) { if (process.argv.includes('--suggest')) await suggest(); else check(); }
 
 function check() {

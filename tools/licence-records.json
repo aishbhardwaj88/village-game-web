@@ -4570,6 +4570,551 @@
       "licence": "CC0",
       "creditsKey": "Road007",
       "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; baked lane lines removed; AO/Displacement ignored."
+    },
+    {
+      "match": [
+        "public/assets/props_new/scarecrow.glb"
+      ],
+      "category": "credited",
+      "title": "Scarecrow (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/scarecrow-dd66376c24f246f28b10a67f047b8d6a",
+      "author": "Baardus",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Scarecrow",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/fence_section.glb",
+        "public/assets/props_new/fence_gate.glb"
+      ],
+      "category": "credited",
+      "title": "Fence pack - (low poly, game ready) (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/fence-pack-low-poly-game-ready-f2ed9f555ff64eae95b408409cbff602",
+      "author": "TampaJoey",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Fence pack - (low poly, game ready)",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/flower_pot.glb"
+      ],
+      "category": "credited",
+      "title": "Flower pot (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/flower-pot-ea1e03b01f8d45039d900e379f1f87d0",
+      "author": "Ryoce",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Flower pot",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/money_plant_pot.glb"
+      ],
+      "category": "credited",
+      "title": "[FREE] Pothos Potted Plant - Money Plant (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/free-pothos-potted-plant-money-plant-e9832f38484f4f85b3f9081b51fa3799",
+      "author": "AllQuad",
+      "licence": "CC BY 4.0",
+      "creditsKey": "[FREE] Pothos Potted Plant - Money Plant",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/jasmine_climber.glb"
+      ],
+      "category": "credited",
+      "title": "Jasmine (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/jasmine-7ccfc2b34bcb45a2b46cef3d3ba15f5d",
+      "author": "SCADL & Co",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Jasmine",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/pot_plant_a.glb",
+        "public/assets/props_new/pot_plant_b.glb",
+        "public/assets/props_new/planter_long.glb",
+        "public/assets/props_new/pot_plant_c.glb",
+        "public/assets/props_new/pot_plant_d.glb"
+      ],
+      "category": "credited",
+      "title": "Optimized Potted Plants (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/optimized-potted-plants-967b4bf23fac4098993776fcfc2d3318",
+      "author": "Nicholas-3D",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Optimized Potted Plants",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/plant_in_pot.glb"
+      ],
+      "category": "credited",
+      "title": "Plant in pot (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/plant-in-pot-00c35e3215f74e4f9e33b6b7a14a87cf",
+      "author": "OverLord",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Plant in pot",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/potted_plant_1.glb"
+      ],
+      "category": "credited",
+      "title": "potted_plant-1 (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/potted-plant-1-9c6eccd1a8eb434981317bf3e66ec2bb",
+      "author": "attben",
+      "licence": "CC BY 4.0",
+      "creditsKey": "potted_plant-1",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/potted_plant_2.glb"
+      ],
+      "category": "credited",
+      "title": "Potted Plant (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/potted-plant-83986836419445edb3e507b9eb0c786b",
+      "author": "laanita",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Potted Plant",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/potted_plant_med.glb"
+      ],
+      "category": "credited",
+      "title": "Potted Plant, Mediterranean med leaf, low poly (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/potted-plant-mediterranean-med-leaf-low-poly-bc7f26baef2a45d18dbd9a5d6d2ec565",
+      "author": "dudecon",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Potted Plant, Mediterranean med leaf, low poly",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/snail_vine_climber.glb"
+      ],
+      "category": "credited",
+      "title": "Snail Vine - Free Download (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/snail-vine-free-download-45065439429f4dab97c53a68bd0e62f8",
+      "author": "Laurie Annis",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Snail Vine - Free Download",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/banana_plant.glb"
+      ],
+      "category": "credited",
+      "title": "Banana Plant (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/banana-plant-85695b82c7ba4b3497a663616cc3bf25",
+      "author": "evolveduk",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Banana Plant",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/banana_tree.glb"
+      ],
+      "category": "credited",
+      "title": "Banana Tree (Low Poly) (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/banana-tree-low-poly-97a50ee6d93d4d8cb2c455a64a6d17c2",
+      "author": "EmiyaSyahriel",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Banana Tree (Low Poly)",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/cabbage.glb"
+      ],
+      "category": "credited",
+      "title": "Cabbage (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/cabbage-654306fc3ae344c7b9e7a9a40faca45b",
+      "author": "Meerschaum Digital",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Cabbage",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/corn_a.glb"
+      ],
+      "category": "credited",
+      "title": "Corn! Corn! Corn! (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/corn-corn-corn-10187bc37c9e42ef8770b28452ee7cd3",
+      "author": "Tiia Tuulia",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Corn! Corn! Corn!",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/corn_b.glb"
+      ],
+      "category": "credited",
+      "title": "Maize Corn Plant (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/maize-corn-plant-5fd3b104d8104519b061469c365d4974",
+      "author": "gilles.schaeck",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Maize Corn Plant",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/eggplant.glb"
+      ],
+      "category": "credited",
+      "title": "Eggplant (Game Ready / 2K PBR) (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/eggplant-game-ready-2k-pbr-334a3ab0383f49d1bd34575a36ddf4d6",
+      "author": "Meerschaum Digital",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Eggplant (Game Ready / 2K PBR)",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/mango_tree.glb"
+      ],
+      "category": "credited",
+      "title": "Mango Tree (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/mango-tree-4b186052228d43d8b3fbb63213677de8",
+      "author": "stealth86",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Mango Tree",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/mango_fruit.glb"
+      ],
+      "category": "credited",
+      "title": "Mango (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/mango-e5fd174d7a2e4ac894e3e69a4550d1e2",
+      "author": "Meerschaum Digital",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Mango",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/radish_leaf.glb"
+      ],
+      "category": "credited",
+      "title": "Radish Leaf 01 (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/radish-leaf-01-761f7878c9ad4d90a7000776425dc01a",
+      "author": "Digital screen official",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Radish Leaf 01",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/tomato_plant.glb"
+      ],
+      "category": "credited",
+      "title": "Tomato Plant (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/tomato-plant-e0b559690e384fc0a9f3a05913f609c4",
+      "author": "zvanstone",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Tomato Plant",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/watermelon_bush.glb"
+      ],
+      "category": "credited",
+      "title": "Watermelon Bush (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/watermelon-bush-806bf365ccf24fe498dced58695cad99",
+      "author": "FixIK*",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Watermelon Bush",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/wheat_row.glb"
+      ],
+      "category": "credited",
+      "title": "Wheat — FREE (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/wheat-free-ddff74ac0661414a9478bd4d7581c854",
+      "author": "Yaroslav Karas",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Wheat — FREE",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/props_new/wheat_clump.glb"
+      ],
+      "category": "credited",
+      "title": "Yard Wheat Clump (model, props_new batch 26 Nov)",
+      "source": "Sketchfab",
+      "url": "https://sketchfab.com/3d-models/yard-wheat-clump-b8bdffd307a64833b2acc986a87f3977",
+      "author": "ebmclachlan",
+      "licence": "CC BY 4.0",
+      "creditsKey": "Yard Wheat Clump",
+      "evidence": "Licence CC-BY-4.0 read from the GLB asset metadata (author and source URL also there); slimmed, rescaled, textures WebP and meshopt in this repo by tools/slim-new-props.mjs. Not yet visually brand-checked."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/dirt_floor/*"
+      ],
+      "category": "credited",
+      "title": "dirt_floor (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/dirt_floor",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "dirt_floor",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/forest_ground_05/*"
+      ],
+      "category": "credited",
+      "title": "forest_ground_05 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/forest_ground_05",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "forest_ground_05",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/brown_mud_02/*"
+      ],
+      "category": "credited",
+      "title": "brown_mud_02 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brown_mud_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brown_mud_02",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/aerial_mud_1/*"
+      ],
+      "category": "credited",
+      "title": "aerial_mud_1 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/aerial_mud_1",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "aerial_mud_1",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/mud_cracked_dry_03/*"
+      ],
+      "category": "credited",
+      "title": "mud_cracked_dry_03 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/mud_cracked_dry_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "mud_cracked_dry_03",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/ganges_river_pebbles/*"
+      ],
+      "category": "credited",
+      "title": "ganges_river_pebbles (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/ganges_river_pebbles",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "ganges_river_pebbles",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/gravelly_sand/*"
+      ],
+      "category": "credited",
+      "title": "gravelly_sand (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/gravelly_sand",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "gravelly_sand",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/grass_path_3/*"
+      ],
+      "category": "credited",
+      "title": "grass_path_3 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/grass_path_3",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "grass_path_3",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/red_dirt_mud_01/*"
+      ],
+      "category": "credited",
+      "title": "red_dirt_mud_01 (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/red_dirt_mud_01",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "red_dirt_mud_01",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/grass_ground/*"
+      ],
+      "category": "credited",
+      "title": "grass_ground (ground zones, ground, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/grass_ground",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "grass_ground",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/concrete_tiles_02/*"
+      ],
+      "category": "credited",
+      "title": "concrete_tiles_02 (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/concrete_tiles_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "concrete_tiles_02",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/concrete_pavers/*"
+      ],
+      "category": "credited",
+      "title": "concrete_pavers (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/concrete_pavers",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "concrete_pavers",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/patterned_brick_floor_02/*"
+      ],
+      "category": "credited",
+      "title": "patterned_brick_floor_02 (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/patterned_brick_floor_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "patterned_brick_floor_02",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/short_bricks_floor/*"
+      ],
+      "category": "credited",
+      "title": "short_bricks_floor (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/short_bricks_floor",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "short_bricks_floor",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/brick_pavement_03/*"
+      ],
+      "category": "credited",
+      "title": "brick_pavement_03 (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brick_pavement_03",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brick_pavement_03",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/patterned_concrete_pavers/*"
+      ],
+      "category": "credited",
+      "title": "patterned_concrete_pavers (ground zones, flooring, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/patterned_concrete_pavers",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "patterned_concrete_pavers",
+      "evidence": "Poly Haven 1K set (diffuse, OpenGL normal, roughness, displacement); first three converted to 1024 px WebP, displacement to a 512 px height WebP (blend steering only). Licence CC0 per the order of 26 Nov; no .blend/ info folder shipped with the staged files, so the name is taken from the order."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/ground_zones/*"
+      ],
+      "category": "self-made",
+      "title": "Ground zone map (which ground texture shows where)",
+      "builder": [
+        "tools/zone-map-bake.mjs"
+      ],
+      "family": [
+        "ground_zones"
+      ],
+      "madeFrom": [
+        "src/layout/mapData.json",
+        "src/anchors.js"
+      ],
+      "licence": "own work",
+      "creditsKey": "ground_zones",
+      "evidence": "tools/zone-map-bake.mjs bakes the first-draft rules of src/groundZones.js from the approved map data to a 1024 px PNG; she repaints it."
     }
   ],
   "worthKnowing": [

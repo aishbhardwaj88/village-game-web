@@ -1,7 +1,7 @@
 import { FOG_MIN_DENSITY } from './showCap.js';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
-import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
+import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail, groundZonesWanted } from './materials.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { getQuality } from './edition.js'; // S7 (desktop)
 
@@ -37,6 +37,7 @@ export function createGround({ grassTint = null, grassCoverage = undefined, damp
   // imported here, so this stays a generic renderer-setup module.
   const detailOpts = { grassTint, dampSpots, patchContrast: getActiveAtmosphere().groundContrastMultiplier };
   if (grassCoverage !== undefined) detailOpts.grassCoverage = grassCoverage;
+  detailOpts.zones = groundZonesWanted(); // ORDER-26NOV zone-blend ground: off by default, ?zones=1 on, ?debug=zones flat colours (src/groundZones.js)
   applyGroundNoiseDetail(material, detailOpts);
 
   const ground = new THREE.Mesh(geometry, material);

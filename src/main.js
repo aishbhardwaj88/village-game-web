@@ -6,6 +6,7 @@ import { createRoamingTraffic } from './roamingTraffic.js'; // 26 Nov: autos, bi
 import { registerVillageVehicles } from './villageVehicles.js';
 import { registerFarmProps } from './placedPropsFarm.js';
 import { registerShopProps } from './placedPropsShops.js';
+import { registerNewProps } from './placedPropsNew.js'; // 26 Nov: props_new (scarecrows, pots, fences, climbers, bananas, mangoes, vegetable beds)
 import { registerChowkProps } from './placedPropsChowk.js'; // 26 Nov: parked vehicles around the village, colour variants, streamed after Play
 import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
@@ -2259,6 +2260,7 @@ async function main() {
   if (!DBG_OFF.has('vehicles')) { try { registerVillageVehicles(scene, propGround); } catch (e) { console.warn('[village_vehicles]', e); } }
 if (!DBG_OFF.has('props3d')) {
   try { registerFarmProps(scene, propGround); } catch (e) { console.warn('[placed_props_farm]', e); }
+  try { registerNewProps(scene, propGround); } catch (e) { console.warn('[placed_props_new]', e); }
   try { registerShopProps(scene, propGround); } catch (e) { console.warn('[placed_props_shops]', e); }
   try { registerChowkProps(scene, propGround); } catch (e) { console.warn('[placed_props_chowk]', e); }
 }

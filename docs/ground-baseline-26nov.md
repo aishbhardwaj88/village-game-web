@@ -1,0 +1,11 @@
+# Ground baseline, 26 Nov (before the zone blend, measured from code and tools/highway-check.mjs)
+- Ground plane: 1 mesh (src/scene.js createGround, 1824 x 1824 m, 2 triangles, 1 draw call), one tiled 'ground' material, 5 m tile.
+- Its textures: ground colour, normal, roughness, ao (1K WebP, 0.70 MB) + grass detail (3 maps, 0.92 MB) + dryearth and lane area mix (6 maps, 0.45 MB, shared with houses and lanes) = about 2.1 MB, 13 maps.
+- Its shader: one program (onBeforeCompile in src/materials.js applyGroundNoiseDetail, key ground-noise-detail-v7): large noise tint, near detail, dryearth/lane patches by noise, grass patch tint, damp spots, lamp pools. About 11 texture units plus shadow and environment.
+- No per-area ground logic: which surface shows where is noise only, not position (no zones, no flooring on the ground itself).
+- Roads are separate meshes (src/roadNetwork.js via src/mapRoads.js): 4 quadrant chunks, 8 draw calls, 238,156 triangles (highway-check), one road material plus road_asphalt for the highway. Dirt tracks (src/dirtTracks.js) are merged into that network, their own zone group is empty.
+- Field ground (src/field.js) is its own plane using the same applyGroundNoiseDetail with furrows; src/surfaces.js is a physics lookup only, not drawn.
+- public/assets: +8.9 MB from this work (other agents added files in parallel, so total on disk moved 153 to 165 MB); check-budget already reported 124.5 MB shipped vs a 90 MB limit, a breach that was there before this work.
+- Requests before Play: zero ground-zone files; all zone files load through deferredTask after Play.
+- Draw calls and triangles after the zone blend: unchanged (same plane, same material, no new mesh).
+- Added by the zone blend: 16 texture sets x 4 files (8.85 MB) + zonemap.png (0.09 MB); on the GPU 3 texture arrays, about 67 MB at 512 per layer (desktop), about 17 MB at 256 (touch).

@@ -1827,3 +1827,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 ## 26 Nov agents (vehicles, posters, props)
 - Sonnet medium: vehicle measure (front and size table, src/vehicleSpec.json), poster doubling, unused 3D inventory, placed props farm, shops, chowk. Sonnet low: roaming density, parked spots. No Opus, no Fable. All stopped on return.
 - Live: vehicle facing and sizes (src/vehicleFit.js), posters about 2x, 253 props (src/placedProps*.js). Unverified by eye: pane hidden.
+
+## 26 Nov agents (ORDER-26NOV)
+- Sonnet medium: 16 texture sets to webp, zone-map ground blend (?zones=1), groundZones.js, bake tool.
+- Sonnet low: measured, slimmed and sized 29 models (3 foreign barns skipped), size table, credits.
+- Sonnet low: placed new props (88 singles, 12 beds) in src/placedPropsNew.js.
+- No Opus, no Fable. Zone ground stays opt-in (?zones=1) until she approves the look.
