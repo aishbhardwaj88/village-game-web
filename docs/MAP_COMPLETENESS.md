@@ -1,6 +1,6 @@
 # Map completeness, 26 Nov (spec = approved final map only: docs/layout/approved-map-2026-11-25.json)
 Method: read code + data, nothing run in a browser. Shop matching re-implemented from src/kit/shopsPlace.js + landLayout.js matchPlace (raw map, 6 m rule) and run in Python, not in the game. Taste not judged.
-Counts (map rows): places 436, objects 1627. BUILT ~417 places / ~1585 objects. PARTIAL 115 signs. MISSING 19 places + 42 objects. PLACEHOLDER 0 found (no box or capsule stand-in for a map item).
+Counts (map rows): places 436, objects 1627. BUILT ~417 places / ~1585 objects. BUILT 115 signs (26 Nov, src/kit/mapSigns.js). MISSING 19 places + 42 objects. PLACEHOLDER 0 found (no box or capsule stand-in for a map item).
 
 ## A. MISSING (a map item with no builder, or a builder that skips it)
 | Map item | World x,z | Evidence |
@@ -18,7 +18,7 @@ Counts (map rows): places 436, objects 1627. BUILT ~417 places / ~1585 objects. 
 ## B. PARTIAL
 | Item | Evidence |
 |---|---|
-| 115 `new_sign` signboard objects | no reader of `new_sign`; boards are generated per shop by one atlas (src/kit/shopsSigns.js, shopsPlace.js), so a shop gets a board but the 115 map positions are not used |
+| ~~115 `new_sign` signboard objects~~ BUILT | 115 map positions | src/kit/mapSigns.js: 115 built, 0 skipped; boards on 2 posts at map footprint, facing rect.front; merged: 2 draw calls, 4140 tris, 1 atlas 4096x2048; builds ~2.5 s after boot, outside the Play gate; 230 post colliders |
 | Canal (new_canal, x 824, banks 831.5) | water, banks, bridges built by src/kit/landCanal.js and src/canal.js (NEW_X 824). Good. But see EXTRA below: old bank strips still at x 772 |
 | Generic civic blocks: Village bank 564,42; Library 565,51; Doctor's clinic 588,75; Animal hospital 492.5,-9; Gas cylinder godown 564,-115; Farmers' co-op 669,-112; Wedding and community hall 751,-109; Tent and wedding lights 766,-113; Carpenter 715,-84; Blacksmith 701,-113 | built, but only as the generic `shop` kit block (shopsPlace.js tradeOf 'office'/'workshop') sized from the map ring, with a board; no purpose-specific build. Exist and are in place |
 

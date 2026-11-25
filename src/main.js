@@ -452,6 +452,7 @@ async function main() {
   initShopsLand(scene, { camera }).then((land) => { if (land) { window.__s7land = land.group.userData.landHeightAt; requestColliderRebuild(); compileLate(land.group); } });
   // S7 WIRING (mapobjects): tubewells, channels, ponds, tank, tower, gate, field and yard props of the approved map; ?layout=new only (docs/s7/mapobjects.md)
   initMapObjects(scene, { camera }).then((mo) => { if (mo) { window.__s7mapobjHeight = mo.group.userData.heightAt; requestColliderRebuild(); compileLate(mo.group); } });
+  import("./kit/mapSigns.js").then((m) => m.initMapSigns(scene)).then((r) => { if (r) { requestColliderRebuild(); compileLate(r.group); } }).catch((e) => console.warn("map signs did not build", e)); // map new_sign boards, after Play
 
   // Day-end sequence (item 13, stretch) — warms/lowers the sun as the errand
   // progresses; updated once per frame further down, once `quest` exists.
