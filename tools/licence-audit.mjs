@@ -291,7 +291,7 @@ if (DIST) {
   const pubSet = new Set(publicFiles.map((f) => f.replace(/^public\//, '')));
   for (const f of walk(distDir)) {
     const r = path.relative(distDir, f).split(path.sep).join('/');
-    if (pubSet.has(r)) continue;
+    if (pubSet.has(r) || pubSet.has(r.replace(/\.glb\.gz$/, '.glb')) || r === 'assets/gz-models.json') continue; // .glb.gz = gzipped copy of a public/ model (tools/gz-models.mjs)
     if (/\.(js|css|html|map)$/.test(r)) distRows.push({ file: r, what: 'our code bundle (includes the npm packages listed above)' });
     else {
       distRows.push({ file: r, what: 'NOT from public/ and not code: check it' });

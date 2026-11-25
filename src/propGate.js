@@ -14,7 +14,7 @@
  * GPU work (texture upload) is time-boxed to 12 ms per frame on the title, 3 ms while playing. Nothing fades or scales in.
  */
 import * as THREE from 'three';
-import { getGLTFLoader, assetUrl, exemptModelUrls, modelLoads } from './loaders.js';
+import { getGLTFLoader, assetUrl, exemptModelUrls, modelLoads, fetchModel, modelFetchUrl, gzReady } from './loaders.js';
 
 export const SHOW_PER_M = 450, SHOW_MAX = 380; // m of show radius per metre of prop size, and its cap
 export const SPRINT = 8.9, MIN_LOAD = 45, UNLOAD_EXTRA = 60; // m/s, m, m
@@ -73,12 +73,13 @@ export function startPrefetch(spawns) {
   stats.prefetchTotal = urls.length;
   let next = 0;
   (async () => { // one at a time; ring loads jump the queue (we wait while any site is loading)
+    await gzReady;
     while (next < urls.length) {
       if (ringBusy()) { await new Promise((res) => setTimeout(res, 150)); continue; }
       const url = urls[next++];
       if (failedUrls.has(url)) continue;
       try {
-        const r = await fetch(url, { priority: 'low' });
+        const r = await fetch(modelFetchUrl(url), { priority: 'low' });
         const buf = await r.arrayBuffer(); // drained into the HTTP cache, never parsed
         sizes.set(url, buf.byteLength); cached.add(url);
       } catch (e) { /* the real load will retry and report it */ }
@@ -166,9 +167,7 @@ function pumpDownloads() {
     dlActive++; const par = dlActive; const t0 = performance.now();
     (async () => {
       try {
-        const r = await fetch(j.url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const buf = await r.arrayBuffer();
+        const buf = await fetchModel(j.url); // gzipped on the wire when the build packed it (tools/gz-models.mjs), unpacked here
         noteSpeed(buf.byteLength, performance.now() - t0, par); sizes.set(j.url, buf.byteLength); cached.add(j.url);
         j.res(buf);
       } catch (e) { j.res(undefined); } finally { dlActive--; pumpDownloads(); }

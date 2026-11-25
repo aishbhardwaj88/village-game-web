@@ -1,6 +1,7 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { gunzipSync } from 'three/examples/jsm/libs/fflate.module.js';
 import { sharedTexturePlugin } from './sharedTextures.js';
 
 let sharedLoader = null;
@@ -31,6 +32,31 @@ export function releaseModelLoads() { if (!holdKeep) return; holdKeep = null; (w
 export const assetUrl = (path) => new URL(path, document.baseURI).href;
 /** Prop and vehicle URLs (src/propGate.js) are never held back by holdModelLoads: they gate the Play button themselves. */
 export const exemptModelUrls = new Set();
+
+/** Step 3 (gzip models): after the build, tools/gz-models.mjs turns every non-character .glb in dist/ into .glb.gz (GitHub Pages
+ * does not compress .glb) and lists them in assets/gz-models.json. Everything that loads a model goes through this block:
+ * listed files are fetched as .gz and unpacked here (DecompressionStream, fflate if the browser lacks it); anything not listed
+ * (characters, dev server, desktop build) loads as the plain file exactly as before. */
+const gzKey = (url) => { try { const u = new URL(url, document.baseURI); return u.pathname.slice(new URL('./', document.baseURI).pathname.length); } catch (e) { return url; } };
+let gzSet = new Set();
+export const gzReady = fetch(assetUrl('assets/gz-models.json')).then((r) => (r.ok ? r.json() : [])).then((l) => { gzSet = new Set(Array.isArray(l) ? l : []); }, () => {});
+export const modelFetchUrl = (url) => { const u = new URL(url, document.baseURI); return gzSet.has(gzKey(url)) ? `${u.origin}${u.pathname}.gz${u.search}` : url; };
+async function gunzip(buf) {
+  const h = new Uint8Array(buf, 0, 2); if (h[0] !== 0x1f || h[1] !== 0x8b) return buf; // a server that already unpacked it in transit
+  if (typeof DecompressionStream === 'function') {
+    try { return await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); } catch (e) { /* fall through to fflate */ }
+  }
+  const u = gunzipSync(new Uint8Array(buf)); return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength);
+}
+/** Fetches a model's bytes ready to parse (unpacked when it travelled gzipped). Rejects on HTTP errors. */
+export async function fetchModel(url, init) {
+  await gzReady;
+  const target = modelFetchUrl(url);
+  const r = await fetch(target, init);
+  if (!r.ok) throw new Error(`HTTP ${r.status} ${target}`);
+  const buf = await r.arrayBuffer();
+  return target === url ? buf : gunzip(buf);
+}
 const held = (url) => { if (!holdKeep || exemptModelUrls.has(url)) return false; try { return !holdKeep(url); } catch (e) { return true; } };
 
 export function getGLTFLoader() {
@@ -41,8 +67,18 @@ export function getGLTFLoader() {
     sharedLoader.register(sharedTexturePlugin); // older models ship without their library textures (tools/strip-textures.mjs --relink)
     const loadAsync = sharedLoader.loadAsync.bind(sharedLoader);
     const load = sharedLoader.load.bind(sharedLoader);
-    sharedLoader.load = (url, onLoad, ...rest) => {
-      const go = () => load(url, (g) => { try { if (onLoad) onLoad(g); } finally { modelLoads.count++; } }, ...rest);
+    sharedLoader.load = (url, onLoad, onProgress, onError) => {
+      const done = (g) => { try { if (onLoad) onLoad(g); } finally { modelLoads.count++; } };
+      const go = () => {
+        gzReady.then(() => {
+          if (modelFetchUrl(url) === url) { load(url, done, onProgress, onError); return; }
+          // gzipped model: same loading-manager bookkeeping as GLTFLoader.load, so the title's progress and ready signal still count it
+          const m = sharedLoader.manager; m.itemStart(url);
+          const abs = new URL(url, document.baseURI).href;
+          fetchModel(url).then((buf) => sharedLoader.parse(buf, abs.slice(0, abs.lastIndexOf('/') + 1), (g) => { done(g); m.itemEnd(url); }, (e) => { if (onError) onError(e); m.itemError(url); m.itemEnd(url); }))
+            .catch((e) => { if (onError) onError(e); else console.error(e); m.itemError(url); m.itemEnd(url); });
+        });
+      };
       if (held(url)) heldLoads.push(go); else go();
     };
     // three's loadAsync calls this.load, so it is held by the same wrapper above

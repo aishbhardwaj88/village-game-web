@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node tools/gen-model-manifest.mjs && node tools/licence-audit.mjs --check && node tools/check-dup-models.js && node tools/check-material-clone.mjs && node tools/place-visibility-check.js && vite build && node tools/char-diet.mjs && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
-    "build:unchecked": "node tools/gen-model-manifest.mjs && vite build && node tools/char-diet.mjs && node tools/check-budget.js",
+    "build": "node tools/gen-model-manifest.mjs && node tools/licence-audit.mjs --check && node tools/check-dup-models.js && node tools/check-material-clone.mjs && node tools/place-visibility-check.js && vite build && node tools/char-diet.mjs && node tools/gz-models.mjs && node tools/world-validator.js && node tools/slot-swap-test.js && node tools/site-slot-test.js && node tools/collision-test.js",
+    "build:unchecked": "node tools/gen-model-manifest.mjs && vite build && node tools/char-diet.mjs && node tools/gz-models.mjs && node tools/check-budget.js",
     "gen-manifest": "node tools/gen-model-manifest.mjs",
     "preview": "vite preview",
     "check-budget": "node tools/check-budget.js",
