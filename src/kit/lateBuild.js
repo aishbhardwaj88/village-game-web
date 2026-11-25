@@ -3,7 +3,7 @@
  * screen is up (nothing renders under it: renderOK stays false until Play is pressed). Nothing is ever switched on in
  * front of a camera: the first 3D frame waits for lateDone() if the player presses Play before the slices have finished.
  *
- *   whenGateOpen()      resolves a beat after the Play button appears (window.__readyAt), or after a safety deadline
+ *   whenGateOpen()      resolves right after boot (the Play button waits for the builds, not the other way round)
  *   yieldToMain()       hand the thread back (MessageChannel, no 4 ms timer clamp) so input and paint run between slices
  *   sliceGen(gen, ms)   drive a generator for at most `ms` per turn, yielding to the main thread between turns
  *   track(p) / lateDone() / isLateDone()   every late build registers here; main.js holds the first 3D frame on it
@@ -11,17 +11,10 @@
 const T0 = () => (typeof performance !== 'undefined' ? performance.now() : 0);
 
 let gateP = null;
-export function whenGateOpen({ beatMs = 300, deadlineMs = 14000 } = {}) {
+/** 26 Nov: the honest gate. Late builds no longer wait for the Play button (the button now waits for THEM): they start a beat after boot. */
+export function whenGateOpen({ beatMs = 0 } = {}) {
   if (gateP) return gateP;
-  gateP = new Promise((resolve) => {
-    const start = T0();
-    const poll = () => {
-      const r = typeof window !== 'undefined' ? window.__readyAt : 0;
-      if (r || T0() - start > deadlineMs) { setTimeout(() => { (window.__loadMarks = window.__loadMarks || {}).lateStart = performance.now(); resolve(); }, beatMs); return; }
-      setTimeout(poll, 60);
-    };
-    poll();
-  });
+  gateP = new Promise((resolve) => setTimeout(() => { (window.__loadMarks = window.__loadMarks || {}).lateStart = performance.now(); resolve(); }, beatMs));
   return gateP;
 }
 

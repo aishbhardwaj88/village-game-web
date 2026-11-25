@@ -47,53 +47,84 @@ export function setupFpsCounter() {
   };
 }
 
-const LOADING_SAFETY_TIMEOUT_MS = 9000; // never get stuck if some asset never resolves
+// 26 Nov, the honest gate. No timer: Play unlocks only when the start area is really ready (see setReadyGate in src/main.js).
+// The bar is honest for the START AREA only: bytes of every file requested through THREE.DefaultLoadingManager (sizes come from
+// asset-sizes.json, written at build time next to index.html) plus five build stages. It never moves backwards.
+const STAGES = ['slots', 'world', 'ring', 'textures', 'shaders', 'props'];
+const stageDone = new Set();
+const sizes = { map: null };
+let known = 0, done = 0, pending = 0, shown = 0;
+const idleWaiters = [];
+const sizeOf = (url) => {
+  if (!sizes.map) return 0;
+  const i = url.indexOf('assets/'); if (i < 0) return 0;
+  const k = url.slice(i).split('?')[0];
+  return sizes.map[k] || sizes.map[k.replace(/\.gz$/, '')] || 0;
+};
+let paint = () => {};
+export function reportStage(name) { stageDone.add(name); paint(); }
+export const downloadsIdleNow = () => pending === 0;
+/** Resolves once nothing is downloading (checked twice, 60 ms apart, so a load that chains another is not missed). */
+export function downloadsIdle() {
+  return new Promise((resolve) => {
+    const check = () => { if (pending === 0) setTimeout(() => (pending === 0 ? resolve() : idleWaiters.push(check)), 60); else idleWaiters.push(check); };
+    check();
+  });
+}
+const fmtMB = (b) => (b / 1048576).toFixed(1);
 
-/**
- * Drives the loading screen's progress bar from THREE.DefaultLoadingManager, which
- * every loader in this project uses implicitly (none of them are constructed with an
- * explicit manager). Must be called BEFORE any texture/model/HDRI load is kicked off
- * — main.js calls this first, before building any scene content — otherwise items
- * that finish loading before this attaches would never be counted and onLoad could
- * fire before we're listening, or never fire again after.
- */
-let markReadyHook = () => {};
 let readyGate = null;
 export function setReadyGate(fn) { readyGate = fn; }
-/** Called by main.js once the models around the opening spawn are loaded: unlocks Play without waiting for the far half of the village. */
-export function markOpeningViewLoaded() { markReadyHook(); }
 
 export function setupLoadingScreen() {
   const overlay = document.getElementById('start-overlay');
   const progressFill = document.getElementById('progress-fill');
+  const pctEl = document.getElementById('progress-pct');
+  const mbEl = document.getElementById('progress-mb');
+  const hiEl = document.getElementById('progress-hi');
 
-  let ready = false;
+  paint = () => {
+    const bytesFrac = known > 0 ? Math.min(1, done / known) : 0;
+    const stageFrac = stageDone.size / STAGES.length;
+    const f = Math.min(ready ? 1 : 0.99, 0.7 * bytesFrac + 0.3 * stageFrac);
+    shown = Math.max(shown, f);
+    const pct = Math.floor(shown * 100);
+    progressFill.style.width = `${shown * 100}%`;
+    if (pctEl) pctEl.textContent = `Loading the village ${pct}%`;
+    if (hiEl) hiEl.textContent = `गाँव लोड हो रहा है ${pct}%`;
+    if (mbEl) mbEl.textContent = known > 0 ? `${fmtMB(done)} of ${fmtMB(known)} MB` : '';
+  };
+
+  let ready = false, gateRunning = false;
   const markReady = () => {
-    if (ready) return;
-    ready = true;
+    if (gateRunning || ready) return;
+    gateRunning = true;
     (window.__loadMarks = window.__loadMarks || {}).markReady = performance.now();
-    // Optional warm-up (shader compile) so Play only unlocks once the main thread is free again.
     const gate = readyGate;
     if (gate) { Promise.resolve().then(gate).catch(() => {}).then(finish); } else finish();
   };
   const finish = () => {
+    ready = true;
+    STAGES.forEach((n) => stageDone.add(n)); paint();
     progressFill.style.width = '100%';
     overlay.classList.add('ready');
-    // Feet settling and the lazy builds keyed to it (armFrontage, mainRoadFrontage, gullyLife... via standOn.lazyDue) are
-    // released on the Play press (launch below), not here: run here they froze the title screen for 20-150 s right after
-    // the button appeared (D1, tools/load-time-test.mjs), so a press did nothing until they finished.
+    // Feet settling and the lazy builds keyed to it are released on the Play press (launch below), not here.
     window.__readyAt = performance.now();
     requestAnimationFrame(() => { (window.__loadMarks = window.__loadMarks || {}).readyFrame = performance.now(); }); // first frame that can show the button
   };
 
-  markReadyHook = markReady;
-  THREE.DefaultLoadingManager.onProgress = (url, loaded, total) => {
-    progressFill.style.width = `${total > 0 ? (loaded / total) * 100 : 100}%`;
-  };
-  THREE.DefaultLoadingManager.onLoad = markReady;
-  THREE.DefaultLoadingManager.onError = (url) => console.error('Asset failed to load:', url);
+  // Sizes: tiny json, best effort (the bar falls back to stages only without it).
+  fetch(new URL('asset-sizes.json', document.baseURI)).then((r) => (r.ok ? r.json() : null)).then((j) => { if (j) { sizes.map = j; paint(); } }).catch(() => {});
 
-  setTimeout(markReady, LOADING_SAFETY_TIMEOUT_MS);
+  const M = THREE.DefaultLoadingManager;
+  const itemStart = M.itemStart.bind(M), itemEnd = M.itemEnd.bind(M);
+  const sz = new Map(); const open = new Map(); window.__gateOpen = () => ({ pending, urls: [...open.keys()].slice(0, 8) });
+  M.itemStart = (url) => { pending++; open.set(url, (open.get(url) || 0) + 1); const b = sizeOf(url); if (b) { known += b; sz.set(url, (sz.get(url) || 0) + b); } paint(); itemStart(url); };
+  M.itemEnd = (url) => { if (!open.has(url)) { itemEnd(url); return; } /* started before this wrapper (boot-hold, early loads): not counted */ pending--; { const c = (open.get(url) || 1) - 1; if (c) open.set(url, c); else open.delete(url); } const b = sz.get(url) || 0; if (b) { done += b; sz.delete(url); } paint(); itemEnd(url); if (pending === 0) idleWaiters.splice(0).forEach((f) => f()); };
+  // markReady fires when the first burst of downloads (and main()'s boot hold) is over; the gate then waits for the rest.
+  M.onLoad = markReady;
+  M.onError = (url) => console.error('Asset failed to load:', url);
+  paint();
 }
 
 /**

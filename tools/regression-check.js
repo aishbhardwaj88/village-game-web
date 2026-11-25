@@ -119,7 +119,7 @@ async function main() {
     });
 
     await page.goto(`${BASE_URL}?dev=1&layout=${LAYOUT}`, { waitUntil: 'load' });
-    await page.waitForSelector('#start-overlay.ready', { timeout: 15000 }).catch(() => {});
+    await page.waitForSelector('#start-overlay.ready', { timeout: 180000 }) // 26 Nov: Play now unlocks only when the start area is truly ready (honest gate), no 9 s timer.catch(() => {});
     // noWaitAfter: this click only flips DOM state (src/ui.js's launch()), no real
     // navigation — but on this box's Playwright/Chromium build, page.click()'s default
     // post-click "wait for scheduled navigations" never resolves after this exact

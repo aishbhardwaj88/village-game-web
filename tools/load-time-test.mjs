@@ -20,14 +20,14 @@ import http from 'node:http';
 import zlib from 'node:zlib';
 import fs from 'node:fs';
 import path from 'node:path';
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.gz': 'application/octet-stream', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
 const GZ = new Set(['.html', '.js', '.css', '.json', '.svg']);
 const DIST = path.join(ROOT, process.env.DIST || 'dist'); // DIST=dist-x to test a side build
 const srv = http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]).replace('/village-game-web', '') || '/';
   if (p.endsWith('/')) p += 'index.html';
-  const f = path.join(DIST, p);
-  if (!f.startsWith(DIST) || !fs.existsSync(f)) { res.statusCode = 404; return res.end(); }
+  let f = path.join(DIST, p);
+  if (!f.startsWith(DIST) || !fs.existsSync(f)) { res.statusCode = 404; return res.end(); } // .glb.gz is a plain file here (served as bytes, unpacked in the page, like the host)
   const ext = path.extname(f);
   let buf = fs.readFileSync(f);
   const h = { 'content-type': MIME[ext] || 'application/octet-stream' };

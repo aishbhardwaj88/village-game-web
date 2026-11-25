@@ -51,7 +51,7 @@ export function setupDebug(renderer, scene) {
         for (let k = 1; k < ft.length; k += 2) { sum += ft[k]; if (ft[k] > worst) worst = ft[k]; }
         const avg = n ? sum / n : 0;
         const mem = performance.memory ? `\nheap ${(performance.memory.usedJSHeapSize / 1048576).toFixed(0)} MB` : '';
-        el.textContent = `fps ${avg ? (1000 / avg).toFixed(0) : '-'} avg | worst ${worst.toFixed(0)} ms (5 s)\ncalls ${calls}  tris ${(tris / 1000).toFixed(0)}k\ngeos ${geos}  tex ${texs}\nshadow casters ${casters}${mem}\n${propDebugText()}${OFF.size ? '\noff: ' + [...OFF].join(',') : ''}`;
+        el.textContent = `fps ${avg ? (1000 / avg).toFixed(0) : '-'} avg | worst ${worst.toFixed(0)} ms (5 s)\ncalls ${calls}  tris ${(tris / 1000).toFixed(0)}k\ngeos ${geos}  tex ${texs}\nshadow casters ${casters}${mem}\n${propDebugText()}\nzone late pop-ins: ${(window.__zonePop && window.__zonePop.latePop) || 0}  holds ${(window.__loadMarks && window.__loadMarks.zoneHolds) || 0}  shader programs ${renderer.info.programs ? renderer.info.programs.length : '-'}${OFF.size ? '\noff: ' + [...OFF].join(',') : ''}`;
       }
     },
   };

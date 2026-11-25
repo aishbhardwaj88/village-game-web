@@ -226,9 +226,14 @@
         margin: 1.3rem 0 0;
         display: none;
       }
-      #start-overlay.ready #progress-track {
+      #start-overlay.ready #progress-track,
+      #start-overlay.ready #progress-text {
         display: none;
       }
+      #progress-text { margin-top: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+      #progress-pct { font-size: 1rem; font-weight: 600; }
+      #progress-mb { font-size: 0.85rem; opacity: 0.75; }
+      #progress-hi { font-size: 0.78rem; opacity: 0.7; }
       #play-btn,
       #start-overlay.ready #play-btn {
         display: inline-flex;
@@ -1399,6 +1404,7 @@
         <p id="subtitle-en">An afternoon in Amrai Khera</p>
         <p id="subtitle-hi">अमराई खेड़ा में एक दोपहर</p>
         <div id="progress-track"><div id="progress-fill"></div></div>
+        <div id="progress-text"><span id="progress-pct">Loading the village 0%</span><span id="progress-mb"></span><span id="progress-hi">गाँव लोड हो रहा है 0%</span></div>
         <button id="continue-btn" type="button">
           <span class="play-en">Continue</span>
           <span class="play-hi">जारी रखें</span>

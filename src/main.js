@@ -8,7 +8,7 @@ import { createScene, createGround, createSun, loadEnvironment, applyFog } from 
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
-import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, setReadyGate, isDevMode, setStreamHoldNotice } from './ui.js';
+import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, setReadyGate, reportStage, downloadsIdle, downloadsIdleNow, isDevMode, setStreamHoldNotice } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, halwaiXZ, HALWAI_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
@@ -235,7 +235,8 @@ import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
 import { ver } from './assetUrl.js';
 import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
-import { lateDone, isLateDone, yieldToMain } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
+import { getHouseMaterial } from './kit/housesMaterial.js';
+import { lateDone, isLateDone, yieldToMain, track, sliceGen } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -323,19 +324,55 @@ async function main() {
     let up = 0; // always at least one upload per call, then more while inside the budget
     while (warmList.length && (up === 0 || performance.now() - t0 < budgetMs)) { const t = warmList.pop(); if (warmedTex.has(t)) continue; if (!decoded(t)) { later.push(t); continue; } warmedTex.add(t); up++; try { renderer.initTexture(t); } catch (e) { /* first render uploads it instead */ } _lm.texWarmed = (_lm.texWarmed || 0) + 1; }
     if (later.length) warmList.unshift(...later);
+    warmState.left = warmList.length; warmState.scanAt = Math.max(warmState.scanAt, warmScanAt - 400 + 1); // gate: a scan that found nothing left
   };
-  // The gate's waits are capped by one deadline (~9.5 s after navigation, never less than 0.3 s each): a late markReady
-  // (the 9 s safety timeout in ui.js on a slow link) used to add up to 4 s + 3 s on top, which is where 16 s readings came from.
-  // An unfinished compile is not a broken frame, only a slower first one after Play.
-  const gateLeft = (cap) => Math.max(300, Math.min(cap, 9500 - performance.now()));
-  setReadyGate(async () => { _lm.gateStart = performance.now(); try { await Promise.race([envReady, new Promise(r => setTimeout(r, gateLeft(4000)))]); _lm.envAwaited = performance.now(); const p = preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); await Promise.race([p, new Promise(r => setTimeout(r, gateLeft(3000)))]); } catch (e) { /* first render compiles instead */ } _lm.worldShellReady = performance.now(); await propGateDone(); /* props and vehicles around the spawn: downloaded, unpacked, uploaded, compiled (src/propGate.js); no timeout */ _lm.gateEnd = performance.now(); });
+  // 26 Nov, the honest gate. No timer unlocks Play. It opens only when, for the START AREA (GATE_RADIUS m round the spawn):
+  // every file is downloaded, the world is built (deferred assembly + shops/land/map objects), every zone in the ring is
+  // built, textures are uploaded, shaders compiled and the props around the spawn are ready. Farther zones keep streaming
+  // ahead of the player after Play (src/zoneManager.js). A failed file is counted as done by the loaders, so it cannot hang.
+  const GATE_RADIUS = 160;
+  const houseShaderWarm = () => { try {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3)); g.setAttribute('normal', new THREE.BufferAttribute(Int8Array.from([0, 0, 127, 0, 0, 127, 0, 0, 127]), 3, true));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1], 2)); g.setAttribute('color', new THREE.BufferAttribute(Uint8Array.from([255, 255, 255, 255, 255, 255, 255, 255, 255]), 3, true)); g.setAttribute('aCellPaint', new THREE.BufferAttribute(Uint8Array.from([0, 0, 0, 0, 0, 0]), 2, false));
+    const m = new THREE.Mesh(g, getHouseMaterial()); m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; const grp = new THREE.Group(); grp.add(m);
+    const _rt = renderer.getRenderTarget(); renderer.setRenderTarget(composer.inputBuffer); const p = renderer.compileAsync(grp, camera, scene); renderer.setRenderTarget(_rt); return p.catch(() => {});
+  } catch (e) { return Promise.resolve(); } };
+  let farRelease; const farGo = new Promise((r) => { farRelease = r; }); // far slot models start once the gate has opened
+  let slotNear = Promise.resolve(); // set where the slots are resolved below
+  const warmState = { left: Infinity, scanAt: 0 }; if (new URLSearchParams(window.location.search).has('nowarm')) { warmState.left = 0; warmState.scanAt = Infinity; }
+  const afterMs = (ms) => new Promise((r) => setTimeout(r, ms));
+  setReadyGate(async () => {
+    _lm.gateStart = performance.now();
+    try {
+      await slotNear; reportStage('slots');
+      await lateDone(); reportStage('world'); _lm.worldBuilt = performance.now();
+      if (envReady) await envReady.catch(() => {}); _lm.envAwaited = performance.now();
+      for (let pass = 0; pass < 40; pass++) {
+        if (zoneManager) zoneManager.setGate(gateSpawns, GATE_RADIUS);
+        await lateDone();
+        for (;;) { if (!zoneManager || zoneManager.gateDone()) break; await afterMs(40); }
+        await downloadsIdle();
+        _lm.ringBuilt = performance.now(); reportStage('ring');
+        const t0 = performance.now(); warmState.left = Infinity;
+        for (;;) { if (warmState.left === 0 && warmState.scanAt > t0) break; await afterMs(40); }
+        reportStage('textures');
+        await houseShaderWarm(); // the atlas-shader houses may all be out of range (hidden) at the spawn: compile their program from a stand-in mesh
+        await preCompile(); _lm.programsWarm = renderer.info.programs.length; _lm.compileSync = performance.now(); reportStage('shaders');
+        // anything the compile or the builds started meanwhile must also finish: loop until a pass changes nothing
+        if (isLateDone() && (!zoneManager || zoneManager.gateDone()) && downloadsIdleNow() && warmState.left === 0) break;
+      }
+    } catch (e) { console.error('gate', e); /* first render compiles instead */ }
+    _lm.worldShellReady = performance.now(); await propGateDone(); reportStage('props'); /* props and vehicles around the spawn: downloaded, unpacked, uploaded, compiled (src/propGate.js) */
+    if (zoneManager) zoneManager.clearGate();
+    farRelease();
+    _lm.gateEnd = performance.now();
+  });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
   // D1: every model except the asset-slot buildings waits until the opening-view slots are in (released below at
   // slotLoads.near), so the near buildings are not queued behind ~2 MB of far props on 4G. `?nohold` to compare.
   let slotFiles = null;
   if (!new URLSearchParams(window.location.search).has('nohold')) {
     holdModelLoads((url) => { if (!slotFiles) return false; const f = url.split('/').pop().replace(/\.glb$/, ''); return slotFiles.has(f); });
-    setTimeout(releaseModelLoads, 9000); // same safety net as the title's timeout
   }
 
   // Phone perf pass (queue item 5) — needed up front since it gates renderer pixel
@@ -1435,12 +1472,12 @@ async function main() {
   // streaming behind the title screen and the first minute of play (tools/load-time-test.mjs holds the number).
   slotFiles = new Set(Array.from(assetSlots.slots.values()).map((s) => s.file || s.name));
   _lm.slotsStart = performance.now();
-  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: 40 });
+  const slotLoads = assetSlots.resolveAllNearFirst({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: GATE_RADIUS, farAfter: farGo }); // 40 -> 160 m (26 Nov): family house, school and bazaar row are in before Play
+  slotNear = slotLoads.near;
   window.__slotNearDbg = () => Array.from(assetSlots.slots.values()).map((s) => [s.file || s.name, Math.round(Math.min(...s.placements.map((p) => (p.container.isScene !== true ? -1 : Math.hypot(p.position.x - OPENING_SPAWN.x, p.position.z - OPENING_SPAWN.z)))))]); // D1 debug: [file, nearest m, -1 = not in scene root]
   slotLoads.near.then(() => {
     _lm.nearLoaded = performance.now();
     releaseModelLoads();
-    markOpeningViewLoaded(); // the HDRI now loads from boot (envReady above) so the warm-up compiles with it
   });
   slotLoads.all.then((results) => {
     if (isDevMode()) console.log('[assetSlots] resolved:', results.map((r) => r.value || r.reason));
@@ -1505,8 +1542,9 @@ async function main() {
   function loadDeferredContent() {
     if (deferredContentLoaded) return;
     deferredContentLoaded = true;
+    // 26 Nov: runs at boot, behind the title, in ~10 ms turns (every `yield` is a slice point); the Play gate waits for it (track).
     if (new URLSearchParams(window.location.search).has('nodefer')) runFrameWorkNow(deferredSteps());
-    else scheduleFrameWork(deferredSteps(), 'deferredContent');
+    else track(sliceGen(deferredSteps(), 10));
   }
   function* deferredSteps() {
     _lm.deferredStart = performance.now();
@@ -1693,8 +1731,8 @@ async function main() {
       if (nh && nh.ready) nh.ready.then(() => {
         // propCells() always names a cell 'props_<gridkey>', so two separate calls (plants/furniture) would collide
         // and silently overwrite one another in zoneManager's name map - prefix each distinctly.
-        for (const cell of propCells(newHousePlantSites())) zoneManager.register(`newhouse_plant_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell, PLANT_MODELS) });
-        for (const cell of propCells(newHouseFurnitureSites())) zoneManager.register(`newhouse_furn_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
+        for (const cell of propCells(newHousePlantSites())) zoneManager.register(`newhouse_plant_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 60, teardownRadius: 75, build: () => createPropCell(cell, PLANT_MODELS) });
+        for (const cell of propCells(newHouseFurnitureSites())) zoneManager.register(`newhouse_furn_${cell.id}`, { detail: true, x: cell.x, z: cell.z, buildRadius: 60, teardownRadius: 75, build: () => createPropCell(cell) });
       }).catch(() => {});
     }
     yield;
@@ -1962,7 +2000,7 @@ async function main() {
     zoneManager.register('sabzi_rehris', { ...pt('sabzi'), buildRadius: 38, teardownRadius: 50, build: () => turnSiteGroup(createSabziRehris(pt('sabzi')), ANCHORS.sabzi.ry) });
     zoneManager.register('jain_mandir', { visibleRadius: LANDMARK_VIS, ...pt('jain'), buildRadius: 45, teardownRadius: 58, build: () => createJainMandir(pt('jain')) });
     // Real CC0 doorstep props (stools, buckets, baskets, pots...) at the abadi rows, streamed per 36 m cell (src/villageProps.js).
-    for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 42, teardownRadius: 55, build: () => createPropCell(cell) });
+    for (const cell of propCells(abadiPropSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 60, teardownRadius: 75, build: () => createPropCell(cell) });
     // Rooftop clutter (tanks, antennas, dishes, solar panels, brick stacks) on the abadi roofs, streamed per 36 m cell (src/rooftops.js).
     for (const cell of roofCells(abadiRoofSites())) zoneManager.register(cell.id, { detail: true, x: cell.x, z: cell.z, buildRadius: 30, teardownRadius: 40, build: () => createRoofCell(cell) });
     // A-2c milestone stones on the east approach (src/milestones.js; positions and distances derived from PLACES).
@@ -2216,9 +2254,6 @@ async function main() {
       audio.start(); // must happen inside this gesture handler to unlock on iOS/Safari
       seedAndPrune(); // 3 s later: cache what this visit loaded, drop old builds (src/swRegister.js)
       if (!touch) input.requestPointerLock();
-      // The ~1 s synchronous assembly runs one frame later so the first 3D frame is not queued behind it (tools: ?nodefer keeps it synchronous).
-      if (new URLSearchParams(window.location.search).has('nodefer')) loadDeferredContent();
-      else requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(loadDeferredContent, 0)));
 
       if (isContinue) {
         // Continue (item 7) — resumes quest progress, skips the new-player tutorial.
@@ -3150,6 +3185,7 @@ async function main() {
     }
   });
 
+  let zoneHold = false, zoneHoldAt = 0, zoneHoldCool = 0; // zone stream hold (26 Nov): shares the prop hold's notice
   function tick(now) {
     requestAnimationFrame(tick);
     const _pt0 = performance.now();
@@ -3159,7 +3195,8 @@ async function main() {
     updateCharacterAnims(started && paused ? 0 : dt);
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
-    const _held = started && streamHold(); // the player outran the prop stream: freeze like pause, with a notice, instead of showing holes (src/propGate.js)
+    if (!started && zoneManager) { zoneManager.update(gateSpawns[0].x, gateSpawns[0].z, 0, null); syncPlaceBatches(); } // 26 Nov: zones around the spawn build behind the title (the gate waits for them)
+    const _held = started && (streamHold() || zoneHold); // the player outran the prop stream or the zone stream: freeze like pause, with a notice, instead of showing holes
     setStreamHoldNotice(_held);
     if (started && (paused || _held)) {
       // Drain any input that landed while paused so it doesn't fire the instant the
@@ -3481,6 +3518,12 @@ async function main() {
       }
       const _qp = performance.now();
       { const _q = performance.now(); if (zoneManager) zoneManager.update(listenerPos.x, listenerPos.z, dt, camera); pAdd('zoneManager', performance.now() - _q); }
+      // 26 Nov: the player outran the zone stream (a zone inside its own radius is not built yet): hold briefly, never show a hole. Max 6 s a time.
+      if (zoneManager && started) {
+        const _h = zoneManager.holes(listenerPos.x, listenerPos.z);
+        if (_h > 0 && !zoneHold && _pt0 > zoneHoldCool) { zoneHold = true; zoneHoldAt = _pt0; _lm.zoneHolds = (_lm.zoneHolds || 0) + 1; }
+        else if (zoneHold && (_h === 0 || _pt0 - zoneHoldAt > 6000)) { zoneHold = false; zoneHoldCool = _pt0 + 2000; }
+      }
       syncPlaceBoards();
       { const _q = performance.now(); syncPlaceBatches(); pAdd('syncPlaceBatches', performance.now() - _q); }
       if (fieldSarson) fieldSarson.visible = Math.hypot(listenerPos.x - FIELD_CENTER.x, listenerPos.z - FIELD_CENTER.z) < 95;
@@ -3523,7 +3566,7 @@ async function main() {
     // time on loading (and uploading textures a few per frame). The first render happens on the Play press (D1).
     // Paused from markReady until the Play button has been on screen for a moment: an upload in that window delayed the
     // button's own paint by ~0.5 s (D1). Uploads resume behind the visible button while the player reads the title.
-    const _gateQuiet = _lm.markReady && !(window.__readyAt && _pt1 > window.__readyAt + 300);
+    const _gateQuiet = !!window.__readyAt && _pt1 < window.__readyAt + 300; // 26 Nov: the gate itself waits for uploads, so they run all through loading; only the beat after the button appears is quiet
     // One upload per frame, and only while frames are flowing (the last frame interval under 60 ms): a burst of uploads
     // queues mip generation in the GPU process and the page stops presenting frames, Play button included.
     const _flowing = _pt0 - _lastTickAt < 60; _lastTickAt = _pt0;
@@ -3565,6 +3608,7 @@ async function main() {
   }
   requestAnimationFrame(tick);
   _lm.mainSyncEnd = performance.now();
+  loadDeferredContent(); // 26 Nov: the world assembles behind the title, inside the gate (was one frame after Play)
   THREE.DefaultLoadingManager.itemEnd('boot-hold');
 
   // `?proof=1` exposes the same scripted-positioning hook as `?dev=1` but turns on NONE of

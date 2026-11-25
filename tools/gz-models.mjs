@@ -14,6 +14,7 @@ import { computeAssetHashes, gzModelList } from './asset-hashes.mjs';
 
 const dist = process.argv[2] || 'dist';
 const out = [];
+const sizeFix = {}; // 26 Nov: dist/asset-sizes.json (the loading bar's byte totals) carries the .gz size for models
 let before = 0, after = 0;
 const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (f.endsWith('.glb')) one(f); } };
 function isSkinned(buf) {
@@ -27,10 +28,11 @@ function one(f) {
   const gz = zlib.gzipSync(buf, { level: 9 });
   fs.writeFileSync(`${f}.gz`, gz); fs.unlinkSync(f);
   out.push(path.relative(dist, f).split(path.sep).join('/'));
-  before += buf.length; after += gz.length;
+  before += buf.length; after += gz.length; sizeFix[path.relative(dist, f).split(path.sep).join('/')] = gz.length;
 }
 walk(dist);
 fs.writeFileSync(path.join(dist, 'assets', 'gz-models.json'), JSON.stringify(out.sort()));
+try { const sp = path.join(dist, 'asset-sizes.json'); const m = JSON.parse(fs.readFileSync(sp, 'utf8')); for (const k of Object.keys(sizeFix)) m[k] = sizeFix[k]; fs.writeFileSync(sp, JSON.stringify(m)); } catch { /* no sizes file: the bar falls back to stages */ }
 // the browser gets its gzipped-model list and the ?v= hashes from the build (vite define, tools/asset-hashes.mjs): they must match what was packed here
 const expect = gzModelList(computeAssetHashes()).join('\n'), got = out.join('\n');
 if (expect !== got) { console.error('gz-models: packed list differs from tools/asset-hashes.mjs list (a model changed skin status after the build?)'); process.exit(1); }

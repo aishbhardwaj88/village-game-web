@@ -3,6 +3,7 @@
 Last updated: 25 Nov (gate agent). Streaming/caching work below; LOOKS LIST items 1-7 done or parked.
 
 ## Current state
+- 26 Nov HONEST GATE: Play unlocks only when the start area (160 m ring) is downloaded, built, uploaded, compiled (src/ui.js, main.js setReadyGate, zoneManager setGate). No timers. World builds at boot behind the title. Far zones stream ahead of the player; hold + notice if outrun. Debug panel (?debug=1) shows zone late pop-ins and shader programs. regression-check now waits for the real ready state.
 - 25 Nov VARIETY: houses (16 washes, housesMaterial.js) and ground (dryearth+lane by area noise) done.
 - GATE (25 Nov, gate agent): Play already waits only for the spawn-ring prop sites (src/propGate.js startGate); shops/land/
   map objects build after the gate (lateBuild.js). NEW: streamHold() freezes the world with the "Loading the next part of

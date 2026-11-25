@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { houseQuality } from './housesQuality.js';
 import { ver } from '../assetUrl.js';
 import { afterReady } from '../afterReady.js';
+import { track } from './lateBuild.js';
 
 /**
  * ONE material for every new-map house (S7 sprint, houses agent), so all houses, far boxes and front clutter draw in one batch.
@@ -333,7 +334,7 @@ export function houseMaterialReady(base) {
   return buildHouseAtlas(base).then((a) => {
     m.map = a.map; m.normalMap = a.normalMap; m.roughnessMap = a.roughnessMap;
     m.needsUpdate = true;
-    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) afterReady(() => loadHouseVariants());
+    if (typeof window !== 'undefined' && !/[?&]off=[^&]*walls/.test(location.search)) track(loadHouseVariants()); // 26 Nov: part of the gate now (was 8 s after start: walls changed look in front of the player)
     return m;
   });
 }

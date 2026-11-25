@@ -33,6 +33,9 @@ const TEARDOWN_EXTRA = 200;
 // walls, lamps: small things that are a few pixels at that range) keep their original radius. Built-but-hidden zones cost nothing per frame, so the reveal is a flip
 // at fog distance, never a visible assembly or a frame hitch.
 const VIS_EXTRA = _Q.zoneVisExtra ?? 80;
+// 26 Nov: a `detail` zone used to be built at the very radius it was drawn from, so it assembled in front of the player. It is now
+// built DETAIL_LEAD m before it is drawn (and torn down that much later); drawing keeps the radius the caller asked for.
+const DETAIL_LEAD = 30;
 // Build budget per frame: frameBudget() (src/frameQueue.js, ~4 ms, up to 8 ms on a slow frame), nearest zone first, always at
 // least one zone a frame. The old 45 ms warm-up budget chained several 40-190 ms builds into one frame right after Play
 // (load-play, 9 Nov: 0.5-1.8 s tasks); the surroundings now assemble one zone a frame, which is still well ahead of sight.
@@ -99,7 +102,8 @@ export function createZoneManager(scene) {
   function register(name, { x, z, buildRadius, teardownRadius = buildRadius * 1.5, build, detail = false, visibleRadius }) {
     const wb = worldBounds();
     if (x < wb.ground.minX || x > wb.ground.maxX || z < wb.ground.minZ || z > wb.ground.maxZ) console.warn(`zoneManager: zone ${name} at (${Math.round(x)}, ${Math.round(z)}) is off the ground for layout=${currentLayout()}`);
-    zones.set(name, { name, detail, visibleRadius: visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA), x, z, buildRadius, teardownRadius, build, group: null, active: false, onFrame: null });
+    const lead = detail && visibleRadius == null ? DETAIL_LEAD : 0;
+    zones.set(name, { name, detail, visibleRadius: visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA), x, z, buildRadius: buildRadius + lead, teardownRadius: teardownRadius + lead, ownRadius: buildRadius, build, group: null, active: false, onFrame: null, forceBuild: false });
   }
 
   function disposeObject(obj) {
@@ -132,13 +136,29 @@ export function createZoneManager(scene) {
   let lastX = null, lastZ = null, travelX = 0, travelZ = 0, age = 0;
   let colPending = false, colNextAt = 0, colStep = null;
   let unbuilt = 0; // wanted zones left for later frames by the build budget
+  // 26 Nov: start-area gate (setGate), speed-based lead, holes (a zone inside its own radius that is not built yet) and the late pop-in counter.
+  let gate = null, spd = 0, avgBuildMs = 10, playing = false;
+  const pop = { latePop: 0, lastName: '' };
+  if (typeof window !== 'undefined') window.__zonePop = pop;
+  /** Every zone within `radius` of any of the points is built before the Play button unlocks (boosted budget until clearGate). */
+  function setGate(pts, radius) {
+    gate = { pts, radius };
+    for (const z of zones.values()) if (!z.active && pts.some((p) => Math.hypot(z.x - p.x, z.z - p.z) <= radius)) z.forceBuild = true;
+  }
+  function gateDone() { if (!gate) return true; for (const z of zones.values()) if (z.forceBuild && (!z.active || z.job)) return false; return !queueBusy() && !placeBatchPending() && !colPending && !colStep && rebuildAt < 0 && lateRebuildAt < 0; } // not settled(): that counts far downloads, which keep streaming after Play
+  function gateStatus() { let left = 0, job = 0, first = ''; for (const z of zones.values()) if (z.forceBuild) { if (!z.active) { left++; if (!first) first = z.name; } if (z.job) job++; } return { left, job, first, queue: queueBusy(), batch: placeBatchPending(), colPending, colStep: !!colStep, rebuildAt, lateRebuildAt }; }
+  if (typeof window !== 'undefined') window.__gateStatus = gateStatus;
+  function clearGate() { gate = null; playing = true; for (const z of zones.values()) z.forceBuild = false; }
+  /** Zones that should already exist (inside their own build radius) and do not: the player outran the stream. */
+  function holes(px, pz) { let n = 0; for (const z of zones.values()) if (!z.active && !z.detail && Math.hypot(z.x - px, z.z - pz) <= (z.ownRadius ?? z.buildRadius)) n++; return n; }
   let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
 
   /** Call once per frame with the player's x/z and (optionally) the camera. */
   const buildStats = { worstMs: 0, worstName: '', over16: [], count: 0 };
   if (typeof window !== 'undefined') window.__zoneBuildStats = buildStats;
   function finishBuild(zone, built, playerX, playerZ, ms) {
-    buildStats.count++;
+    buildStats.count++; avgBuildMs = avgBuildMs * 0.8 + Math.min(200, ms) * 0.2;
+    if (playing && Math.hypot(zone.x - playerX, zone.z - playerZ) <= zone.visibleRadius && frustum.intersectsSphere(sphere.set(new THREE.Vector3(zone.x, 2, zone.z), Math.max(zone.buildRadius * 0.3, 8)))) { pop.latePop++; pop.lastName = zone.name; }
     if (ms > buildStats.worstMs) { buildStats.worstMs = ms; buildStats.worstName = zone.name; }
     if (ms > 16) buildStats.over16.push([zone.name, Math.round(ms)]);
     const isPlain = built.isObject3D;
@@ -156,6 +176,7 @@ export function createZoneManager(scene) {
     if (lastX !== null && dt > 0) {
       const vx = (playerX - lastX) / dt, vz = (playerZ - lastZ) / dt;
       const sp = Math.hypot(vx, vz);
+      spd = spd * 0.9 + Math.min(sp, 20) * 0.1;
       if (sp > 0.3) { // smoothed heading, kept when standing still
         travelX = travelX * 0.9 + (vx / sp) * 0.1;
         travelZ = travelZ * 0.9 + (vz / sp) * 0.1;
@@ -168,6 +189,8 @@ export function createZoneManager(scene) {
       frustum.setFromProjectionMatrix(projView);
     }
     const heading = Math.hypot(travelX, travelZ);
+    // request distance = appear distance + speed x (time to build the queue): the faster the player and the longer the queue, the earlier
+    const leadM = Math.min(220, spd * (4 + unbuilt * avgBuildMs / 1000));
 
     const wanted = [];
     let changed = false;
@@ -175,8 +198,8 @@ export function createZoneManager(scene) {
       const dx = zone.x - playerX, dz = zone.z - playerZ;
       const d = Math.hypot(dx, dz);
       if (!zone.active) {
-        let want = d <= zone.buildRadius || d <= zone.buildRadius + ALWAYS_EXTRA;
-        if (!want && d <= zone.buildRadius + SIGHT_EXTRA) {
+        let want = zone.forceBuild || d <= zone.buildRadius + leadM * 0.5 || d <= zone.buildRadius + ALWAYS_EXTRA;
+        if (!want && d <= zone.buildRadius + SIGHT_EXTRA + leadM) {
           if (camera) {
             sphere.center.set(zone.x, 2, zone.z);
             sphere.radius = Math.max(zone.buildRadius * 0.6, 18) + 25; // margin: a turn of the head must not reveal an unbuilt zone
@@ -188,7 +211,7 @@ export function createZoneManager(scene) {
           // Build order: what the player is standing in or beside first, then whatever lies ahead of the heading, then the rest
           // (plain nearest-first built things behind the player before the road in front of the cycle).
           const ahead = heading > 0.3 ? (dx * travelX + dz * travelZ) / (d || 1) : 0;
-          wanted.push([d <= zone.buildRadius + 30 ? d - 1000 : d - 150 * Math.max(0, ahead), zone]);
+          wanted.push([zone.forceBuild || d <= zone.buildRadius + 30 ? d - 1000 : d - 150 * Math.max(0, ahead), zone]);
         }
       } else if (d > Math.max(zone.teardownRadius, zone.buildRadius + SIGHT_EXTRA + 30, TEARDOWN_EXTRA)) {
         scene.remove(zone.group);
@@ -208,7 +231,7 @@ export function createZoneManager(scene) {
     unbuilt = wanted.length;
     if (wanted.length) {
       wanted.sort((a, b) => a[0] - b[0]);
-      const budget = frameBudget();
+      const budget = gate ? 20 : frameBudget(); // behind the title the whole frame is ours
       const t0 = performance.now();
       for (const [, zone] of wanted) {
         unbuilt--;
@@ -255,5 +278,5 @@ export function createZoneManager(scene) {
   }
   function settled() { const s = status(); return !s.unbuilt && !s.loads && !s.queue && !s.batch && !s.colliders; }
 
-  return { register, update, zones, hooks, status, settled };
+  return { register, update, zones, hooks, status, settled, setGate, gateDone, clearGate, holes };
 }

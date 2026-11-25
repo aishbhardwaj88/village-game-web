@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { computeAssetHashes, gzModelList } from './tools/asset-hashes.mjs';
 import { genModelManifest, MODELS_DIR } from './tools/gen-model-manifest.mjs';
@@ -43,6 +43,20 @@ function bustPreloadsPlugin(hashes) {
         if (!Object.keys(hashes).length) return html;
         return html.replace(/((?:href="|url\(['"]?)[^"')]*?\/)((?:assets|fonts)\/[^"')?]+)/g, (m, pre, path) => (hashes[path] ? `${m}?v=${hashes[path]}` : m));
       },
+    },
+  };
+}
+
+// 26 Nov: dist/asset-sizes.json {path: bytes} for every hashed asset. The loading screen sums the sizes of what it requests to
+// show "X of Y MB" and a byte-honest bar (src/ui.js); tools/gz-models.mjs swaps in the .gz size for models.
+function assetSizesPlugin(hashes) {
+  return {
+    name: 'asset-sizes',
+    apply: 'build',
+    closeBundle() {
+      const out = {};
+      for (const k of Object.keys(hashes)) { try { out[k] = statSync(resolve(__dirname, 'public', k)).size; } catch { /* skip */ } }
+      writeFileSync(resolve(__dirname, 'dist/asset-sizes.json'), JSON.stringify(out));
     },
   };
 }
@@ -118,7 +132,7 @@ export default defineConfig(({ command }) => {
   const hashes = command === 'build' ? computeAssetHashes() : {};
   return {
   base: '/village-game-web/',
-  plugins: [landMapPlugin(command), genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
+  plugins: [landMapPlugin(command), genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes), assetSizesPlugin(hashes)],
   build: {
     target: 'es2020',
     rollupOptions: {

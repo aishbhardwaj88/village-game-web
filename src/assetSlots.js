@@ -258,14 +258,15 @@ export function createAssetSlotRegistry() {
    * village before the first frame; the far models resolve in the background (they are out of sight and
    * outside the zone draw range at the opening spawn).
    */
-  function resolveAllNearFirst({ x, z, radius }) {
+  function resolveAllNearFirst({ x, z, radius, farAfter = null }) {
     const isNear = (slot) => slot.placements.some((p) => {
       if (p.container.isScene !== true) return true;
       return Math.hypot(p.position.x - x, p.position.z - z) <= radius;
     });
     const all = Array.from(slots.values());
     const nearP = Promise.allSettled(all.filter(isNear).map(resolveSlot));
-    const farP = nearP.then(() => Promise.allSettled(all.filter((s) => !isNear(s)).map(resolveSlot)));
+    // 26 Nov: the far models start when `farAfter` resolves (the title's Play button is up), so the honest gate counts only the start area
+    const farP = Promise.all([nearP, farAfter]).then(() => Promise.allSettled(all.filter((s) => !isNear(s)).map(resolveSlot)));
     return { near: nearP, all: Promise.all([nearP, farP]).then(([a, b]) => [...a, ...b]) };
   }
 
