@@ -1,6 +1,23 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      /* Stale-page guard (25 Nov): GitHub Pages lets a browser keep index.html for ~10 min. After a deploy that old page asks for
+         /assets/ files with the old hashes (404) and the game sits at 0% forever. A failed /assets/ script or stylesheet reloads
+         the page once (a reload revalidates index.html), at most once per minute. Capture phase: resource errors do not bubble. */
+      window.addEventListener('error', function (e) {
+        var t = e.target;
+        if (!t || (t.tagName !== 'SCRIPT' && t.tagName !== 'LINK')) return;
+        var u = t.src || t.href || '';
+        if (u.indexOf('/assets/') < 0) return;
+        try {
+          var last = +sessionStorage.getItem('dopahar_stale_reload') || 0;
+          if (Date.now() - last < 60000) return;
+          sessionStorage.setItem('dopahar_stale_reload', String(Date.now()));
+        } catch (err) { return; }
+        location.reload();
+      }, true);
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Dopahar</title>
