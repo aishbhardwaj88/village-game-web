@@ -70,7 +70,7 @@ export function pack(raw) {
     source: 'docs/layout/approved-map-2026-11-25.json, derived by tools/layout-pack.mjs (fronts, footprints, road snap)',
     inputsHash: inputsHash(),
     places: layout.list.map((p) => ({ ...p, frontYaw: round(p.frontYaw), ry: round(p.ry) })),
-    roads: layout.roads.map(({ bbox, ...r }) => r),
+    roads: raw.roads.map((r) => ({ ...r })), // the map's roads exactly (24-26 Nov: no gali trims, no shifts; nothing may sit on a road, so the buildings move, never the road)
     objects: layout.objects.map((o) => ({ ...o, rect: cleanRect(o.rect), cx: r2(o.cx), cz: r2(o.cz), ...(o.r !== undefined ? { r: r2(o.r) } : {}) })),
     canal: raw.canal,
     nudges,

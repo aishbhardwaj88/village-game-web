@@ -76,6 +76,7 @@ function potholeField(x, z) {
  * Rounds every interior corner of a polyline with a quadratic fillet. The cut-back is limited to 40% of each leg, so a
  * densely drawn line (the farm loop) is left as drawn and a long straight road gets a real curve at its bend.
  */
+const MAX_DEV = 0.4; // m, map-match tolerance is 0.5
 export function filletPolyline(pts, closed, width) {
   const p = closed && pts.length > 2 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1] ? pts.slice(0, -1) : pts.slice();
   const n = p.length;
@@ -88,7 +89,10 @@ export function filletPolyline(pts, closed, width) {
     const a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n];
     const l0 = Math.hypot(b[0] - a[0], b[1] - a[1]), l1 = Math.hypot(c[0] - b[0], c[1] - b[1]);
     if (l0 < 1e-6 || l1 < 1e-6) continue;
-    const cut = Math.min(0.4 * l0, 0.4 * l1, maxCut);
+    let cut = Math.min(0.4 * l0, 0.4 * l1, maxCut);
+    // the drawn road must stay on the map's polyline: the rounding may pull the corner in by at most MAX_DEV (bezier midpoint is |ua+uc| * cut / 4 off the corner)
+    const sx = (a[0] - b[0]) / l0 + (c[0] - b[0]) / l1, sz = (a[1] - b[1]) / l0 + (c[1] - b[1]) / l1, sl = Math.hypot(sx, sz);
+    if (sl > 1e-6) cut = Math.min(cut, (MAX_DEV * 4) / sl);
     const p0 = [b[0] + (a[0] - b[0]) * (cut / l0), b[1] + (a[1] - b[1]) * (cut / l0)];
     const p2 = [b[0] + (c[0] - b[0]) * (cut / l1), b[1] + (c[1] - b[1]) * (cut / l1)];
     const steps = cut > 2 ? 6 : 2;

@@ -95,10 +95,17 @@ function ringArms(lines) {
       if (t > 0 && t < 1 && Math.hypot(ax + t * dx - cx, az + t * dz - cz) < 0.5) k = i;
     }
     if (k < 0) { out.push(l); continue; }
-    const a = l.pts[k - 1], b = l.pts[k], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    const ux = (b[0] - a[0]) / len, uz = (b[1] - a[1]) / len;
-    out.push({ ...l, tint: ARM_TINT, pts: [...l.pts.slice(0, k), [cx - ux * ringR, cz - uz * ringR]] });
-    out.push({ ...l, tint: ARM_TINT, id: `${l.id}_${l.id === 'main_road' ? 's' : 'e'}`, pts: [[cx + ux * ringR, cz + uz * ringR], ...l.pts.slice(k)] });
+    // each half stops where the MAP's own polyline crosses the ring centreline circle, so it stays on the map's road
+    const cross = (p, q) => { // point on p->q at distance ringR from the centre (p outside, q inside)
+      const dx = q[0] - p[0], dz = q[1] - p[1], fx = p[0] - cx, fz = p[1] - cz;
+      const A = dx * dx + dz * dz, B = 2 * (fx * dx + fz * dz), C = fx * fx + fz * fz - ringR * ringR;
+      const t = (-B - Math.sqrt(Math.max(0, B * B - 4 * A * C))) / (2 * A);
+      return [p[0] + dx * t, p[1] + dz * t];
+    };
+    const out1 = (pts) => { const r = []; for (let i = 0; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - cx, pts[i][1] - cz); if (d > ringR) r.push(pts[i]); else { if (r.length) r.push(cross(pts[i - 1], pts[i])); return r; } } return r; };
+    const first = out1(l.pts.slice(0, k + 1)), second = out1(l.pts.slice(k - 1).reverse()).reverse();
+    out.push({ ...l, tint: ARM_TINT, pts: first });
+    out.push({ ...l, tint: ARM_TINT, id: `${l.id}_${l.id === 'main_road' ? 's' : 'e'}`, pts: second });
   }
   const ring = [];
   for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2; ring.push([cx + Math.cos(a) * ringR, cz + Math.sin(a) * ringR]); }
