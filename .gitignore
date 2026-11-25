@@ -31,3 +31,6 @@ dist-*/
 tools/_tmp*
 tools/_d2_*
 tools/_vfix_*
+
+# Her local downloads of free 3D models: never push
+3d models_downloaded from internet/
