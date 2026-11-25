@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { nudgeOffRoad } from './kit/mapObjectsPlan.js'; import { getRoads } from './layout/layout.js';
 import { onNewRoad } from './layout/roadClear.js';
 import { registerPilotVehicles } from './pilotVehicles.js';
+import { createRoamingTraffic } from './roamingTraffic.js'; // 26 Nov: autos, bikes, bicycles roam the roads
 import { registerVillageVehicles } from './villageVehicles.js'; // 26 Nov: parked vehicles around the village, colour variants, streamed after Play
 import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
@@ -733,6 +734,7 @@ async function main() {
   // NPC life in the bazaar (this task's item 2) — one shared InstancedMesh, see
   // src/bazaarLife.js.
   const bazaarLife = createBazaarLife({ getExtraBoxes: () => otherVehicleBoxes(null) });
+  let roaming = null; // created in onStart (after Play): no vehicle file is requested before the Play gate
   scene.add(bazaarLife.mesh);
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
@@ -2271,6 +2273,7 @@ async function main() {
     onStart: (isContinue) => {
       started = true;
       try { startWallPosters(scene).catch((e) => console.warn('[wall_posters]', e)); } catch (e) { console.warn('[wall_posters]', e); }
+      try { roaming = createRoamingTraffic(scene, { getPlayer: () => player.position, groundAt: (x, z) => groundHeightAt(x, z, 0) }); } catch (e) { console.warn('[roaming_traffic]', e); }
       if (isLateDone() && deferredMapsDone()) renderOK = true; else Promise.all([lateDone(), deferredMapsReady()]).then(() => { renderOK = true; _lm.lateHeldFrame = performance.now(); }); // never a half-built village on screen, nor one still missing its normal/roughness maps (src/deferredMaps.js)
       _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over
@@ -3257,6 +3260,7 @@ async function main() {
       pAdd('npcLifeHead', performance.now() - _pt0);
       const _qm = performance.now();
       { const _q = performance.now(); bazaarLife.update(dt); pAdd('bazaarLife', performance.now() - _q); }
+      if (roaming) { try { roaming.update(dt); } catch (e) { roaming = null; console.warn('[roaming_traffic]', e); } }
 
       // Idle-breathing/walk-cycle rock (src/characters.js) for the three
       // characters that actually move or stand around (halwai's own

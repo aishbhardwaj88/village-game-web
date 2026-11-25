@@ -61,7 +61,8 @@ export function test(file, x, z, h) {
 
 const src = fs.readFileSync(new URL('../src/villageVehicles.js', import.meta.url), 'utf8');
 const ANCHORS = []; // filled below for --suggest
-if (process.argv.includes('--suggest')) await suggest(); else check();
+export { roadInfo, nearestBuilding, distPoly, approved, mapData };
+if (process.argv[1] && process.argv[1].endsWith('vehicle-spots.mjs')) { if (process.argv.includes('--suggest')) await suggest(); else check(); }
 
 function check() {
   const m = src.match(/VILLAGE_VEHICLES = (\[[\s\S]*?\n\]);/);

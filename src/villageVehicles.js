@@ -1,4 +1,7 @@
 /**
+ * RULE (26 Nov, her order): tractors (old_tractor + trailer_pack) stand in the FARMS / OUTSKIRTS only (field edges and farm tracks, >= 20 m from any
+ * house or shop, >= 60 m apart, >= 3 m clear of crop strips), never in the village core. Roaming traffic (src/roamingTraffic.js) owns the roads, so
+ * parked small vehicles stay few: autos 2 + tuk tuks 2 (Tempo / bus adda only), bicycles 3, motorbike 1, moped 1.
  * Village parked vehicles (25 Nov 2026, her order: roads must be EMPTY, parked vehicles stand BESIDE the road facing along it).
  * Spots come from `node tools/vehicle-spots.mjs --suggest` and are verified by `node tools/vehicle-spots.mjs` (every footprint corner
  * at least 0.6 m beyond the drawn road edge + dusty apron, clear of houses / shops / place footprints, 0 FAIL).
@@ -14,33 +17,23 @@ import { addThelaSign } from './thelaSign.js';
 import { applyVehicleColour } from './vehicleVariants.js';
 
 export const VILLAGE_VEHICLES = [
-  { file: 'old_tractor', x: 516.3, z: -134.87, yaw: 1.509, hex: 0xb3261e, length: 3.5 }, // mandi road 2.13
-  { file: 'trailer_pack', x: 512.61, z: -135.1, yaw: 1.509, length: 3.4 }, // behind tractor road 2.31
-  { file: 'old_tractor', x: 438.14, z: -16.44, yaw: 1.342, hex: 0x1f3a6e, length: 3.5 }, // dairy road 2.89
-  { file: 'old_tractor', x: 612.5, z: -168.32, yaw: 6.229, hex: 0x2d5a34, length: 3.5 }, // at road 0.65
-  { file: 'trailer_pack', x: 612.7, z: -172.01, yaw: 6.229, length: 3.4 }, // behind tractor road 0.74
-  { file: 'old_tractor', x: 466.5, z: -37.58, yaw: 0.032, hex: 0xc2561a, length: 3.5 }, // gaushala road 0.71
-  { file: 'old_tractor', x: 579.48, z: 189.06, yaw: 3.12, hex: 0xb3261e, length: 3.5 }, // at road 1.00
-  { file: 'old_tractor', x: 544.96, z: -135.78, yaw: 4.689, hex: 0x1f3a6e, length: 3.5 }, // khalihan road 3.50
+  { file: 'old_tractor', x: 614, z: -225.2, yaw: -3.108, hex: 0xb3261e, length: 3.5 }, // Our khet, wheat track edge
+  { file: 'trailer_pack', x: 614.12, z: -221.5, yaw: -3.108, length: 3.4 }, // behind tractor
+  { file: 'old_tractor', x: 564.7, z: 207.7, yaw: -0.072, hex: 0x1f3a6e, length: 3.5 }, // Field gate, main road edge
+  { file: 'old_tractor', x: 280, z: -95.3, yaw: -0.106, hex: 0x2d5a34, length: 3.5 }, // west haystack, farm loop edge
+  { file: 'trailer_pack', x: 280.39, z: -98.98, yaw: -0.106, length: 3.4 }, // behind tractor
+  { file: 'old_tractor', x: 826.6, z: 90, yaw: 0, hex: 0xc2561a, length: 3.5 }, // east canal bank road edge
+  { file: 'old_tractor', x: 676.1, z: -311.9, yaw: -1.571, hex: 0xb3261e, length: 3.5 }, // Clay pit pond, farm loop edge
+  { file: 'old_tractor', x: 289.3, z: 30.4, yaw: 0.099, hex: 0x1f3a6e, length: 3.5 }, // sugarcane edge, farm loop
   { file: 'auto_rickshaw', x: 534.33, z: -113.5, yaw: 4.696, length: 2.65 }, // new_tempo road 2.57
-  { file: 'auto_rickshaw', x: 536.27, z: -116.2, yaw: 4.657, length: 2.65 }, // new_tempo road 1.24
   { file: 'auto_rickshaw', x: 535.19, z: -109.45, yaw: 1.481, length: 2.65 }, // yard_bus_adda road 2.96
-  { file: 'auto_rickshaw', x: 528.53, z: -132.99, yaw: 1.621, length: 2.65 }, // at road 0.67
   { file: 'tuk_tuk', x: 538.73, z: -109.38, yaw: 1.55, length: 2.65 }, // new_tempo road 1.19
   { file: 'tuk_tuk', x: 519.56, z: -92.55, yaw: 4.63, length: 2.65 }, // yard_bus_adda road 0.86
-  { file: 'tuk_tuk', x: 549.48, z: -132.9, yaw: 4.658, length: 2.65 }, // at road 0.90
   { file: 'bicycle', x: 589.32, z: 1.93, yaw: 0.662, hex: 0x2f4a6b, length: 1.75 }, // teastall road 3.35
   { file: 'bicycle', x: 553.34, z: 88.75, yaw: -1.446, hex: 0x3d5a40, length: 1.75 }, // school road 0.94
   { file: 'bicycle', x: 538.47, z: 37.65, yaw: 0.245, hex: 0x6b2a26, length: 1.75 }, // yard_chaupal road 3.29
-  { file: 'bicycle', x: 610.66, z: 7.72, yaw: 0.966, hex: 0x2b2b2e, length: 1.75 }, // halwai road 0.69
-  { file: 'bicycle', x: 613.79, z: -114.57, yaw: -0.334, hex: 0x2f4a6b, length: 1.75 }, // store road 2.70
-  { file: 'bicycle', x: 582.76, z: 93.71, yaw: 1.703, hex: 0x3d5a40, length: 1.75 }, // anganwadi road 4.09
-  { file: 'bicycle', x: 576.83, z: 51, yaw: 0.028, hex: 0x6b2a26, length: 1.75 }, // new_sqx_243 road 3.65
-  { file: 'motorbike', x: 537.33, z: 23.09, yaw: 0.042, length: 2 }, // yard_panchayat road 3.85
-  { file: 'motorbike', x: 581.73, z: 60.82, yaw: -1.338, length: 2 }, // health road 4.03
   { file: 'motorbike', x: 590.78, z: -96.98, yaw: 2.771, length: 2 }, // bazaar road 3.00
   { file: 'moped', x: 556.22, z: 68.94, yaw: -1.418, hex: 0x8a2c2a, length: 1.8 }, // post road 1.07
-  { file: 'moped', x: 637.09, z: 28.19, yaw: 1.696, hex: 0x2e4a66, length: 1.8 }, // new_sqx_255 road 3.88
   { file: 'thela_gadi', x: 592.68, z: -99.58, yaw: 2.89, length: 2.4 }, // bazaar road 1.76
   { file: 'thela_gadi', x: 588.95, z: -19.13, yaw: 4.762, length: 2.4 }, // new_sqx_233 road 1.85
   { file: 'thela_gadi', x: 610.97, z: -105.81, yaw: -0.416, length: 2.4 }, // chemist road 2.92
