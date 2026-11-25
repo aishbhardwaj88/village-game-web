@@ -1667,3 +1667,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   clean. Tier 2 real test (trolley-drive-test.js) crashed with the already-documented container "Target
   crashed" signature after getting through Play+2M sample points; verified by code reading instead (A7).
 - Agents used: none.
+- 25 Nov 13:xx scheduled run: Actions green on d51f97a; temple/sabzi settled (a6c25a6), moved-place coords re-snapped by layout-wiring, pre-Play 10.7 MB has no non-look cut. missions-check 396/0/5, build:unchecked ok. No code change.
