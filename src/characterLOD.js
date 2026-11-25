@@ -46,7 +46,7 @@ export const CHARACTER_FILES = new Set(['maa', 'dadi', 'pitaji', 'sarpanch', 'da
 /** Characters are PARKED (art director, until she unparks them): no character model downloads after Play, the capsule
  * stand-ins stay. Flip to true when she unparks them. Test and review pages (?chars=1, ?gather, ?lineup, ?face, ?play=) still load them. */
 export const CHARACTERS_UNPARKED = false;
-const unparked = () => CHARACTERS_UNPARKED || (typeof window !== 'undefined' && ['chars', 'gather', 'lineup', 'face', 'play'].some((k) => new URLSearchParams(window.location.search).has(k)));
+const unparked = () => CHARACTERS_UNPARKED || (typeof window !== 'undefined' && ['chars', 'gather', 'lineup', 'face', 'play', 'compare'].some((k) => new URLSearchParams(window.location.search).has(k)));
 const FULL = 0, MID = 1, PAUSED = 2, HIDDEN = 3;
 const NAMES = ['full', 'mid', 'paused', 'hidden'];
 

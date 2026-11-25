@@ -30,7 +30,12 @@ const PROFILE = {
   brother: { walkRef: 0.66, kid: true, runRef: 1.07 },
   sister: { walkRef: 0.99, kid: true, runRef: 1.55 },
   player: { walkRef: 0.66, kid: true, runRef: 1.07, maxRate: 2.2 },
+  // 25 Nov: TV Uncle review pair (?compare=tvuncle): plays all 6 clips in a fixed loop instead of idle/walk/random gestures
+  tvuncle_hd: { cycle: true },
+  tvuncle_sm: { cycle: true },
 };
+// review cycle order and seconds each clip plays (looping clips play the time given, one-shots play their length, capped)
+const CYCLE = [['idle', 4], ['walk', 5], ['gesture_swagger', 0], ['gesture_laugh', 0], ['gesture_call', 8], ['gesture_greet', 0]];
 /** comfortable ground speed (m/s) for each character's walking routines (<= 1.3x natural) */
 export const WALK_SPEED = { maa: 0.85, pitaji: 1.25, dada: 0.55, dadi: 0.4, sarpanch: 0.72, postman: 1.8, brother: 0.85, sister: 1.25 };
 // kids switch from walk to run once walking would play faster than ~1.25x (feet would start to slide)
@@ -77,6 +82,13 @@ export function attachCharacterAnim(root, clips, follow, slotName) {
     if (!head && /(^|rig|:)head$/i.test(o.name)) head = o;
   });
   if (prof.keepStoop) { neck = null; head = null; } // elders and the darzi are meant to stoop
+  if (prof.cycle) {
+    const steps = CYCLE.map(([n, secs]) => { const c = clips.find((k) => k.name === n); return c ? { act: mixer.clipAction(c), secs: secs || Math.min(8, c.duration), loop: n === 'idle' || n === 'walk' } : null; }).filter(Boolean);
+    for (const st of steps) st.act.setLoop(st.loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
+    steps.forEach((st) => { st.act.clampWhenFinished = true; });
+    animators.push({ root, neck, head, mixer, follow, face: [], cycle: { steps, i: -1, t: 0 } });
+    return;
+  }
   animators.push({ root, neck, head, mixer, idle, walk, run, gestures, follow, prev: new THREE.Vector3(), first: true, speed: 0, w: 0,
     walkRef: prof.walkRef || 1.4, maxRate: prof.maxRate || 1.3, runRef: prof.runRef || 1.5, r: 0, g: null, gw: 0, gLast: -1, gIn: GESTURE_EVERY[0] * 0.5 + Math.random() * GESTURE_EVERY[1],
     face, blinkIn: 1 + Math.random() * 4, blinkT: -1, doubleBlink: false, smile: 0, smileWant: 0, smileIn: 2 + Math.random() * 5 });
@@ -146,6 +158,21 @@ export function updateCharacterAnims(dt) {
   for (const a of animators) {
     const lod = a.root && a.root.userData && a.root.userData.charLOD; // S7 characters: distance tiers
     if (lod && lod.tier >= 2) { a.first = true; continue; }
+    if (a.cycle) { // review cycle: step through the clips in order, crossfading
+      const cy = a.cycle;
+      cy.t -= dt;
+      if (cy.t <= 0) {
+        const prev = cy.steps[cy.i];
+        cy.i = (cy.i + 1) % cy.steps.length;
+        const st = cy.steps[cy.i];
+        st.act.reset().play();
+        if (prev && prev !== st) st.act.crossFadeFrom(prev.act, 0.4, false);
+        cy.t = st.secs;
+      }
+      a.mixer.update(dt);
+      if (a.neck && a.head && (!lod || lod.stepped)) straightenNeck(a);
+      continue;
+    }
     a.follow.getWorldPosition(tmp);
     const raw = a.first ? 0 : Math.hypot(tmp.x - a.prev.x, tmp.z - a.prev.z) / dt;
     a.first = false;

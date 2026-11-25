@@ -4431,6 +4431,34 @@
       "licence": "Apache-2.0",
       "creditsKey": "Basis Universal transcoder",
       "evidence": "byte-identical to node_modules/three/examples/jsm/libs/basis; Basis Universal is Apache-2.0"
+    },
+    {
+      "match": [
+        "public/assets/models/tvuncle_hd.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: TV Uncle (HD review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-tvuncle.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, gold kada and watch added in this repo (tools/finish-tvuncle.mjs)"
+    },
+    {
+      "match": [
+        "public/assets/models/tvuncle_sm.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: TV Uncle (Smart Mesh review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-tvuncle.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, gold kada and watch added in this repo (tools/finish-tvuncle.mjs)"
     }
   ],
   "worthKnowing": [

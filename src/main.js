@@ -1326,6 +1326,8 @@ async function main() {
   }
   // S7 WIRING (characters): tiers for every rigged character (?charlod=0 turns them off); characters download only after Play, nearest first
   initCharacterLOD({ camera, assetSlots });
+  // ?compare=tvuncle: review-only side by side TV Uncle HD / Smart Mesh in front of the spawn (src/compareScene.js); never loads otherwise
+  if (new URLSearchParams(window.location.search).get('compare') === 'tvuncle') import('./compareScene.js').then((m) => m.setupCompare({ scene, assetSlots, spawn: OPENING_SPAWN, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)) }));
   // ?gather=1: the realistic cast together at the square (src/gatherScene.js)
   const gatherUpdate = new URLSearchParams(window.location.search).get('gather') ? setupGather({ scene, assetSlots, groundAt: (x, z, y) => Math.max(groundHeightAt(x, z, y), moverSurfaceAt(scene, x, z, y || 0, 0.25)), /* 21 Nov: stand ON the road and lane strips (they sit 3-4 cm above the ground plane; feet sank into them) */ getCenter: () => { const m = scene.getObjectByName('zero_milestone'); return m ? m.getWorldPosition(new THREE.Vector3()) : player.position.clone(); } }) : null;
   for (const [name, npc, dims] of [
