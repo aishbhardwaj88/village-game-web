@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop, 14:12 UTC) - no code change, repo unchanged since last run, every lead still blocked
+- Checked LOOKS LIST 1-7 against current handoff/NEEDS_YOU: all done or correctly parked already (no
+  re-verify needed, repo identical to the run that confirmed them). Item 2 (chauraha buildings) stays
+  open, waiting on her building names - layout-tests.mjs already shows 0 on-road failures in THE SQUARE.
+  Item 8 (missions/bell/canal) also already confirmed done (entry 38/"1559").
+- Re-checked CC0 proxy directly (curl): api.polyhaven.com and ambientcg.com both still 403 - BACKLOG
+  [ACTIVE] prop sourcing stays blocked, not a code task.
+- Reviewed BACKLOG [ACTIVE]: architecture/texture-pipeline items are standing rules tied to "next place
+  reworked" - none in flight right now, nothing to apply them to. No new, safe, unblocked, in-scope item
+  found. Agents: none (task this small doesn't justify one, per efficiency-rules.md).
+
 # 25 Nov (hourly loop, 13:14 UTC) - no code change, final map re-verified clean, every lead blocked
 - layout-tests.mjs + road-clearance.mjs re-run vs the just-landed final map: 23 overlaps, 6 on-road
   named buildings/barriers, 63 road-band touches (mostly by-design gates/islands/rest-stops) - all

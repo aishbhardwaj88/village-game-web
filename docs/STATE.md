@@ -1,14 +1,12 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov 13:14 UTC (hourly loop, no code change). missions-check still 396/0/5 clean on
-the final map; layout-tests.mjs + road-clearance.mjs re-run vs the final map for the first time -
-23 overlaps + 6 on-road buildings/barriers + 63 road-band touches found, all position/layout so
-logged not fixed per 5a-MAP (see handoff.md top entry). Her "is the 25 Nov map locked for good?"
-question (NEEDS_YOU) is the key unblock: once she says yes, this overlap/road list becomes real,
-safe, in-scope work.
-This run (25 Nov vehicle models): drivable tractor, trolley, bicycle now use old_tractor/trailer_pack/bicycle.glb (src/vehicleModels.js). Code-built bodies stay as physics + fallback. Gate bytes before Play unchanged (7.6 MB cpu4, 0 vehicle requests); models stream after Play via propGate gateRadius 0.
-Open: tractor model is one mesh (no wheel spin, no front steer); bike wheel does not steer; cart still code-built (NEEDS_YOU). Ring load of the 3 sites after Play not measurable here (Chromium crashes after Play).
-All [ACTIVE] BACKLOG items still blocked as before (proxy 403, headless browser). Fresh container: `npm ci` + checkout -B main.
-Open (hourly loop): tractor spec 2.60 m vs parts 2.19 m needs her call; player_cycle_v2 wheel 0.71 m is correct (28 inch).
+Last updated: 25 Nov 14:12 UTC (hourly loop, no code change, repo unchanged since prior run at 6301a7d).
+Re-checked for unblocked work: LOOKS LIST 1-7 confirmed done/parked earlier today; item 2 (chauraha
+road buildings) stays open in NEEDS_YOU pending her building names. BACKLOG [ACTIVE] items all still
+blocked (CC0 proxy re-confirmed 403 on polyhaven+ambientcg this run; browser-based checks unreliable
+here, A7). Her "is the 25 Nov map locked for good?" question (NEEDS_YOU) is still the key unblock -
+once yes, the 23 overlaps/6 on-road/63 road-band-touch list from the prior run becomes real work.
+Open: tractor model is one mesh (no wheel spin/steer); bike wheel does not steer; cart still code-built.
+Fresh container this run: `npm ci` + fetch/checkout -B main (HEAD was detached, as usual, A per below).
 ## Current state
 - 26 Nov SIGNS: 115 map new_sign boards built (src/kit/mapSigns.js, one import line in main.js). 2 draw calls, 4140 tris, 230 post colliders, builds after Play. Hindi lines are my translations (art director may edit HI table).
 - 26 Nov SHOPS FIX: 19 skipped shops/kiosks/carts now built on their drawn plot (shopsPlace.js ring fallback; shops built 143 -> 162 of 165, 3 railway left). Tractor spawn x 642 -> 641. world-validator check 1 clear; check 2 floats (hb_main_39, school_bell) pre-existing.
