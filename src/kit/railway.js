@@ -160,7 +160,7 @@ function buildChunk(za, zb) {
       west: [{ c: zm, w: 1.3, h: 2.4, sill: 0.3, kind: 'door' }, ...[-6.5, -3.8, 3.8, 6.5].map((d) => ({ c: zm + d, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }))],
     });
     sol.push({ minX: x0 - 0.1, maxX: x1 + 0.1, minZ: z0 - 0.1, maxZ: z1 + 0.1 });
-    for (const s of objs('new_sign').filter((q) => /railway station/i.test(q.name))) boards.push({ id: 'station', x: x1 + 0.06, y: 3.3, z: s.cz, ry: Math.PI / 2, w: 5.4 });
+    // 25 Nov, her answer: one station name only, the 'Amrai Khera railway station' post board from the map (src/kit/mapSigns.js); the 'Halt' wall board is removed
   }
   for (const o of objs('new_Ticket window and waiting hall')) if (inZ(o)) {
     const [x0, x1] = [o.rings[0][0][0], o.rings[0][1][0]].sort((a, b) => a - b), [z0, z1] = [o.rings[0][0][1], o.rings[0][2][1]].sort((a, b) => a - b), zm = (z0 + z1) / 2;
