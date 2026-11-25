@@ -87,7 +87,7 @@ const samples = (corners, step = 0.5) => {
 // From 9 points along the front edge, walk straight out along the front (0.25 m steps, up to 30 m) until a road's carriageway
 // starts. gap = the shortest such walk; the road hit there must run parallel to the front edge. Untouched places are reported
 // (kept exactly as today on the owner's instruction), never failed.
-const ACCEPTED = { yard_bhatta: 'kiln set back behind its green strip, as drawn' };
+const ACCEPTED = { yard_bhatta: 'kiln set back behind its green strip, as drawn', temple: 'kept exactly as drawn (her order, 25 Nov)', sabzi: 'kept exactly as drawn (her order, 25 Nov)' };
 const accepted = [];
 const frontRows = [];
 for (const b of sel) {
