@@ -45,8 +45,10 @@ export function reviewPlay(name) {
 function applyReview(a) {
   const next = a.review.actions[reviewClip];
   if (!next || a.review.cur === next) return;
-  next.reset().play();
-  if (a.review.cur) next.crossFadeFrom(a.review.cur, 0.4, false);
+  // 25 Nov: clipAction(clip) returns the SAME action the idle/walk/gesture setup above already parked at weight 0
+  // (gestures at LoopOnce + clamp); reset() keeps that weight, so every faded-in clip stayed at 0 x 1 = frozen. Reset all three.
+  next.reset(); next.setEffectiveWeight(1); next.setEffectiveTimeScale(1); next.clampWhenFinished = false; next.setLoop(THREE.LoopRepeat, Infinity); next.play();
+  if (a.review.cur) next.crossFadeFrom(a.review.cur, 0.25, false);
   a.review.cur = next;
 }
 /** comfortable ground speed (m/s) for each character's walking routines (<= 1.3x natural) */

@@ -62,6 +62,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     assetSlots.resolveOne(`gather_tvuncle_${key}`).catch(() => {});
     actors.push({ g, lbl, key, order: ORDER.findIndex((o) => o[0] === key), lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
+  window.__compare = { get uncles() { return actors.map((a) => a.g); } }; // read-only debug handle (compare mode only): uncle.getObjectByName(...).userData.charLOD.mixer
   let clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
   const keys = new Set();
   const origUpdate = camRig.update.bind(camRig);
