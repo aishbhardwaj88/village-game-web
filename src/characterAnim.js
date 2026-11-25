@@ -33,9 +33,13 @@ const PROFILE = {
   // 25 Nov: TV Uncle review pair (?compare=tvuncle): clip chosen by buttons (reviewPlay) instead of idle/walk/random gestures
   tvuncle_hd: { review: true },
   tvuncle_sm: { review: true },
+  tvuncle_hdraw: { review: true }, // the untouched Tripo exports (clip names like idle.001 are normalised below)
+  tvuncle_smraw: { review: true },
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)
 let reviewClip = 'idle';
+const REVIEW_NAMES = [[/^idle/i, 'idle'], [/^walk/i, 'walk'], [/^swagger/i, 'gesture_swagger'], [/^laugh/i, 'gesture_laugh'], [/^make_a_call/i, 'gesture_call'], [/^greet/i, 'gesture_greet']];
+const reviewName = (n) => { const h = REVIEW_NAMES.find(([re]) => re.test(n)); return h ? h[1] : n; };
 export function reviewPlay(name) {
   reviewClip = name;
   for (const a of animators) if (a.review) applyReview(a);
@@ -95,7 +99,7 @@ export function attachCharacterAnim(root, clips, follow, slotName) {
   if (prof.keepStoop) { neck = null; head = null; } // elders and the darzi are meant to stoop
   if (prof.review) {
     const actions = {};
-    for (const c of clips) { const act = mixer.clipAction(c); act.setLoop(THREE.LoopRepeat, Infinity); actions[c.name] = act; }
+    for (const c of clips) { const act = mixer.clipAction(c); act.setLoop(THREE.LoopRepeat, Infinity); actions[reviewName(c.name)] = act; }
     const a = { root, neck, head, mixer, follow, face: [], review: { actions, cur: null } };
     animators.push(a); applyReview(a);
     return;

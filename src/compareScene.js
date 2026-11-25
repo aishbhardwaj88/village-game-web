@@ -6,14 +6,15 @@
  * HD / SMART MESH labels hide when the camera is within 2 m. Face HD / Face Smart Mesh buttons: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
  */
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { hd: -123.5, sm: -125.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { hdraw: -121.5, hd: -123.5, sm: -125.5, smraw: -127.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 const SPEED = 0.9, TURN_RATE = 3.5;
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Both', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['All', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm'], ['Face HD RAW', 'face_hdraw'], ['Face SM RAW', 'face_smraw'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 3.4, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 5.2, BOTH_GAP = 1.5, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -26,20 +27,20 @@ function label(text) {
 
 function bar(onPick) {
   const ui = document.createElement('div');
-  ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;font:600 16px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
+  ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:96vw;font:600 16px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
   const buttons = [];
-  const mark = (id) => buttons.forEach(([b, i]) => { b.style.background = i === id ? '#f5c542' : '#fff'; });
+  const mark = (id) => buttons.forEach(([b, i]) => { if (i !== 'studio') b.style.background = i === id ? '#f5c542' : '#fff'; });
   for (const [text, id] of CLIPS) {
     const b = document.createElement('button'); b.textContent = text;
     b.style.cssText = 'font:600 16px system-ui;padding:8px 14px;border-radius:8px;border:0;cursor:pointer';
-    for (const ev of ['pointerdown', 'mousedown', 'click']) b.addEventListener(ev, (e) => { e.stopPropagation(); if (ev === 'click') { onPick(id); mark(id); } });
+    for (const ev of ['pointerdown', 'mousedown', 'click']) b.addEventListener(ev, (e) => { e.stopPropagation(); if (ev === 'click') { const r = onPick(id); if (id === 'studio') b.style.background = r ? '#7ad7f0' : '#fff'; else mark(id); } });
     buttons.push([b, id]); ui.appendChild(b);
   }
   document.body.appendChild(ui); mark('idle');
   return mark;
 }
 
-export function setupCompare({ scene, camera, camRig, player, assetSlots, groundAt }) {
+export function setupCompare({ scene, camera, camRig, player, renderer, assetSlots, groundAt }) {
   // player on foot, body hidden, camera free to come in to 1 m, looking at the pair
   player.position.set(VIEWER.x, groundAt(VIEWER.x, VIEWER.z, 0), VIEWER.z);
   player.visible = false;
@@ -47,14 +48,15 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  for (const [key, side] of [['hd', 'HD'], ['sm', 'SMART MESH']]) {
+  const ORDER = [['hdraw', 'HD RAW', 'tvuncle_hd_raw'], ['hd', 'HD', 'tvuncle_hd'], ['sm', 'SMART MESH', 'tvuncle_sm'], ['smraw', 'SM RAW', 'tvuncle_sm_raw']]; // left to right in the line-up
+  for (const [key, side, file] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
     const lbl = label(side); lbl.visible = false; scene.add(lbl);
     scene.add(g);
-    assetSlots.register(`gather_tvuncle_${key}`, { file: `tvuncle_${key}`, dimensions: { w: 2.4, h: 1.72, d: 2.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
+    assetSlots.register(`gather_tvuncle_${key}`, { file, dimensions: { w: 2.4, h: 1.72, d: 2.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
     assetSlots.resolveOne(`gather_tvuncle_${key}`).catch(() => {});
-    actors.push({ g, lbl, key, lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
+    actors.push({ g, lbl, key, order: ORDER.findIndex((o) => o[0] === key), lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
   let clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
   const keys = new Set();
@@ -63,10 +65,26 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
   const U = Math.hypot(VIEWER.x - CENTRE.x, VIEWER.z - CENTRE.z), ux = (VIEWER.x - CENTRE.x) / U, uz = (VIEWER.z - CENTRE.z) / U; // from the pair toward the viewer
   const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
   const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
+  // Studio light (review only): neutral room environment + a soft fill light from the camera, like a model viewer
+  let studio = null, studioOn = false, origEnv = null, origInt = 1;
+  const toggleStudio = () => {
+    if (!studio) {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const fill = new THREE.DirectionalLight(0xffffff, 1.0); fill.visible = false;
+      scene.add(fill, fill.target);
+      studio = { env: pmrem.fromScene(new RoomEnvironment(), 0.04).texture, fill, d: new THREE.Vector3() };
+    }
+    studioOn = !studioOn;
+    if (studioOn) { origEnv = scene.environment; origInt = scene.environmentIntensity; scene.environment = studio.env; scene.environmentIntensity = 1; }
+    else { scene.environment = origEnv; scene.environmentIntensity = origInt; }
+    studio.fill.visible = studioOn;
+    return studioOn;
+  };
   let mark = () => {};
   mark = bar((id) => {
-    if (id === 'face_hd' || id === 'face_sm') {
-      clip = 'idle'; reviewPlay('idle'); // both stand still
+    if (id === 'studio') return toggleStudio();
+    if (id.startsWith('face_')) {
+      clip = 'idle'; reviewPlay('idle'); // everybody stands still
       face = actors.find((a) => `face_${a.key}` === id); orbit = 0; dist = FACE_START;
       camRig.update = () => {}; // we place the camera ourselves while in face view
       mark(id);
@@ -102,7 +120,7 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = a.key === 'hd' ? -1 : 1;
+        const side = (a.order - 1.5) * BOTH_GAP; // 4 in a row, left to right, 1.5 m apart
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
       } else if (walking) {
@@ -129,9 +147,9 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
       a.lbl.scale.set(dl * 0.12, dl * 0.03, 1); // fixed small size on screen, whatever the distance
     }
     if (two) {
-      const [h1, h2] = actors.map(headOf);
-      if (h1 && h2) {
-        h1.getWorldPosition(tmpV); h2.getWorldPosition(tmp2); tmpV.add(tmp2).multiplyScalar(0.5); tmpV.y += 0.1; // eye level, between the two faces
+      const hs = actors.map(headOf);
+      if (hs.every(Boolean)) {
+        tmpV.set(0, 0, 0); for (const h of hs) { h.getWorldPosition(tmp2); tmpV.add(tmp2); } tmpV.multiplyScalar(1 / hs.length); tmpV.y += 0.1; // eye level, between the two faces
         const ang = Math.atan2(ux, uz) + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
@@ -144,6 +162,10 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
       }
+    }
+    if (studioOn) { // soft fill from the camera's side, aimed where the camera looks
+      studio.fill.position.copy(camera.position).add(tmp2.set(0, 0.3, 0));
+      camera.getWorldDirection(studio.d); studio.fill.target.position.copy(camera.position).addScaledVector(studio.d, 3);
     }
   };
 }
