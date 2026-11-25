@@ -1,24 +1,24 @@
 /**
- * 25 Nov: ?compare=tvuncle review scene. TV Uncle HD and Smart Mesh on the highway beside the Welcome gate, 2 m apart in
+ * 25 Nov: ?compare=tvuncle review scene. TV Uncle on the highway beside the Welcome gate, 2 m apart in
  * parallel lanes, both in idle until a button on the bottom bar picks a clip (played on BOTH at once, looping).
  * Walk and Swagger really walk a 4 m path back and forth (speed per clip = its measured stance-foot speed, 0.90-0.93 m/s, so the feet do not slide; ~0.4 s eased turns at the ends).
  * The player starts on foot ~5 m away, slightly to the side; the player body is hidden and the camera may come in to 1 m.
  * 25 Nov: Parlour Didi (public/assets/models/parlour_didi.glb, loaded only here) stands 2 m left of HD in the two-shot, idle only, with a Face Didi button.
  * 25 Nov: Gossip Aunty (tvaunty.glb, loaded only here) stands 2 m left of Didi: idle / walk (in place) / call / laugh / greet / Look, Face Aunty button; the All two-shot frames all four.
- * HD / SMART MESH labels hide when the camera is within 2 m. Face HD / Face Smart Mesh buttons: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
+ * Labels hide when the camera is within 2 m. Face Uncle button: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
  */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { hd: -123.5, sm: -125.5, didi: -121.5, aunty: -119.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 // 25 Nov: ground speed that makes each clip's planted foot stand still on the ground (no sliding), MEASURED from the clips (tools: foot bone
 // speed relative to the hips while the foot is within 4 cm of its lowest point, at the in-game model scale; both clips are in-place).
 // Same idea as walkRef in src/characterAnim.js. Review clips play at 1x, so speed = stride length / cycle time.
-const STRIDE = { hd: { walk: 0.90, gesture_swagger: 0.915 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
+const STRIDE = { aunty: { walk: 0.546, walk_plain: 0.546 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm'], ['Studio light', 'studio']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
 const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 12], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
@@ -54,7 +54,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  const ORDER = [['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['hd', 'HD', 'tvuncle_hd', 1.72], ['sm', 'SMART MESH', 'tvuncle_sm', 1.72]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
+  const ORDER = [['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
   for (const [key, side, file, hh] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
@@ -116,7 +116,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   };
   return function update(dt) {
     if (!(dt > 0)) return;
-    const walking = clip === 'walk' || clip === 'gesture_swagger';
+    const walking = clip === 'walk' || clip === 'walk_plain' || clip === 'gesture_swagger';
     if (face) {
       const k = (n) => keys.has(n);
       const range = face === 'both' ? BOTH_RANGE : FACE_DIST;
@@ -128,14 +128,14 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 2.5) * BOTH_GAP; // 4 in a row, left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
+        const side = (a.order - 1.5) * BOTH_GAP; // 3 in a row, left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
-      } else if (walking && a.key !== 'didi' && a.key !== 'aunty') {
+      } else if (walking && a.key !== 'didi' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         const k = Math.max(0, Math.min(1, 1 - err / 1.2)); // walk speed ramps in as the body comes round (0 at 180 degrees, full under ~0 degrees)
-        const go = k * k * (3 - 2 * k) * (STRIDE[a.key][clip] || 0.9);
+        const go = k * k * (3 - 2 * k) * ((STRIDE[a.key] || {})[clip] || 0.9);
         if (go > 0) {
           a.x += a.dir * go * dt;
           if (a.x >= LANE_X[1]) { a.x = LANE_X[1]; a.dir = -1; } else if (a.x <= LANE_X[0]) { a.x = LANE_X[0]; a.dir = 1; }
