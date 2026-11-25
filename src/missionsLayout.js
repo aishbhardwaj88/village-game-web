@@ -83,8 +83,10 @@ function table() {
     const b = crossing('ring_road', 'main_road', 602, 66) || onRoad('ring_road', 602, 66);
     const c = crossing('main_road', '14_Outer lane, south', 597, 84) || onRoad('main_road', 597, 84);
     const [s18, s14, s10] = old.slice(-3); // schoolPt(0, -18 / -14 / -10): the yard gate line, unchanged (school untouched)
-    const there = [gate, a, corner, b, c, s18, s14, s10];
-    return [...there, s14, s18, c, b, corner, a];
+    // 25 Nov: the school slid 3 m off the Outer lane (placeMoves.js), so the straight line from the main road to its gate line would cut the Anganwadi's corner; she walks the lane's own centreline first
+    const w = onRoad('14_Outer lane, south', 568, 89);
+    const there = [gate, a, corner, b, c, w, s18, s14, s10];
+    return [...there, s14, s18, w, c, b, corner, a];
   };
   // ---- vehicles (src/vehicles.js spawnVehicles). Old: x -48..-36, 600 m west of the village since the 1 Nov map shift (left
   // as it is under ?layout=old). New: on the open ground behind the house, next to the wheat sack pile (M3 loads the trolley

@@ -27,6 +27,7 @@ import MAP_DATA from './mapData.json' with { type: 'json' };
 import SHOP_RECTS from './shopRects.json' with { type: 'json' };
 import { DEG, wrapPi, roadBBox } from './layoutCore.js';
 import { FRONT_OFFSETS } from './frontOffsets.js';
+import { MOVE_SHIFTS } from './placeMoves.js';
 
 /** The integrator flips this to 'new' once every district is moved. */
 export const DEFAULT_LAYOUT = 'new';
@@ -126,11 +127,17 @@ export function layoutYaw(id, oldYawRad) {
 }
 /** Turn (rad) place `id` makes from the old layout to the new one (0 under the old layout). */
 export function placeTurn(id) {
+  if (MODE === 'new' && UNTOUCHED.has(id) && MOVE_SHIFTS[id]) return MOVE_SHIFTS[id].turn || 0; // 25 Nov: an untouched ground turned to face its road
   if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id] || UNTOUCHED.has(id)) return 0;
   return wrapPi(ANCH[id].ry - oldYaw(id));
 }
 /** A world point that belongs to place `id`, carried with the place (rotated about it and moved). Identity under the old layout. */
 export function movedWith(id, x, z) {
+  // 25 Nov: an untouched place that was only slid off a road (placeMoves.js) carries its literal points by the same slide
+  if (MODE === 'new' && UNTOUCHED.has(id) && MOVE_SHIFTS[id] && ANCH && ANCH[id]) {
+    const m = MOVE_SHIFTS[id], n = ANCH[id], c = Math.cos(m.turn), s = Math.sin(m.turn), ox = n.x - m.dx, oz = n.z - m.dz;
+    return { x: n.x + (x - ox) * c + (z - oz) * s, z: n.z - (x - ox) * s + (z - oz) * c };
+  }
   if (MODE !== 'new' || !ANCH || !ANCH[id] || !OLD[id] || UNTOUCHED.has(id)) return { x, z };
   const o = OLD[id], n = ANCH[id], t = placeTurn(id), c = Math.cos(t), s = Math.sin(t);
   const dx = x - o.x, dz = z - o.z;

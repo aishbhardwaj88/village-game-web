@@ -10,7 +10,8 @@
  */
 import { STAGED_PLACES, stagingPos } from './stagedPlaces.js';
 import { MAP_PLAN, MAP_SHIFT } from './mapPlan.js';
-import { applyLayoutToAnchors } from './layout/layout.js';
+import { applyLayoutToAnchors, getLayout, isNewLayout } from './layout/layout.js';
+import { applyPlaceMoves } from './layout/placeMoves.js';
 
 /** The old village's own layout (places the 1 Nov map does not position) rides east by the same 600 m as the map, so the whole world is one contiguous area. */
 export const OLD_SHIFT = MAP_SHIFT;
@@ -71,6 +72,9 @@ export const ANCHORS = applyLayoutToAnchors({
     return [p.id, m ? { x: m.x + MAP_SHIFT.x, z: m.z + MAP_SHIFT.z, ry: -m.turn * Math.PI / 180 } : { ...stagingPos(n), ry: 0 }];
   })),
 });
+
+// 25 Nov (her rule): nothing on a road band, every place faces its road; src/layout/placeMoves.js (log: docs/layout/MOVE_LOG_PLACES_25NOV.md)
+if (isNewLayout()) applyPlaceMoves(ANCHORS, getLayout().places);
 
 /** A fresh { x, z } for a place (callers may keep or mutate it). */
 export function pt(id) {
