@@ -10,6 +10,7 @@ import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMuralsGen } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 import { runSync, sliceGen } from './lateBuild.js';
+import SHOP_RECTS from '../layout/shopRects.json' with { type: 'json' }; // 25 Nov (her rule): every shop faces the road it fronts and stands 0 overlap off every band, made by tools/shop-rects-pack.mjs
 
 /**
  * Places every new shop of the approved map (?layout=new): the ~44 two-storey shop-houses (new_sqx), the ~37 kiosks and
@@ -40,6 +41,9 @@ export function tradeOf(name) {
   return 'general';
 }
 
+/** The final rect of one shop object: { cx, cz, w, d, ry, front } from src/layout/shopRects.json (same key layout.js uses), or null. */
+const shopRectOf = (o) => SHOP_RECTS.rects[`${o.label}@${o.rings[0][0][0]},${o.rings[0][0][1]}`] || null;
+
 export function buildShops(map, opts = {}) { return runSync(buildShopsGen(map, opts)); }
 /** Same build, time-sliced (boot-CPU pass, 25 Nov): `ms` of work per turn, then back to the main thread. Identical output. */
 export function buildShopsAsync(map, opts = {}, ms = 4) { return sliceGen(buildShopsGen(map, opts), ms); }
@@ -56,19 +60,7 @@ function* buildShopsGen(map, { camera = null } = {}) {
   const designSigns = new Map();
 
   const put = (type, key, build, rect, opts, i) => {
-    if (type === 'kiosk' || type === 'cart' || type === 'shed') { // 26 Nov: no object on a road, but the map position wins by up to 1 m
-      const rad = (rr) => { const c = Math.cos(rr.ry), sn = Math.sin(rr.ry); let w = 99; for (const [lx, lz] of [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, 0]]) w = Math.min(w, roads.clearance(rr.x + lx * rr.width / 2 * c + lz * rr.depth / 2 * sn, rr.z - lx * rr.width / 2 * sn + lz * rr.depth / 2 * c)); return w; };
-      // the exact rectangle on the map position is kept when it dips under 1 m into a band (the road surface is already cut there); deeper than that,
-      // the stand slides off the band by the least it takes (small steps along the way out), never by the old bounding-circle margin
-      if (rad(rect) < -1.0) {
-        let best = null, bd = 1e9;
-        for (let ang = 0; ang < 360; ang += 15) for (let step = 0.1; step <= 6 && step < bd; step += 0.1) {
-          const t = { ...rect, x: rect.x + Math.sin(ang * Math.PI / 180) * step, z: rect.z + Math.cos(ang * Math.PI / 180) * step };
-          if (rad(t) >= 0) { best = t; bd = step; break; }
-        }
-        if (best) { (report.nudged ||= []).push(`${opts.signName || key} ${Math.hypot(best.x - rect.x, best.z - rect.z).toFixed(2)} m`); rect = best; }
-      }
-    }
+    (report.rects ||= []).push({ name: opts.signName || key, type, x: rect.x, z: rect.z, ry: rect.ry, w: rect.width, d: rect.depth }); // the rect each design is placed on (tools/map-match-shops.mjs --game reads this)
     const near = key, mid = key + '|lite';
     if (!kit.designs.has(near)) {
       const d = build(false);
@@ -130,7 +122,7 @@ function* buildShopsGen(map, { camera = null } = {}) {
       // S7 fixes: the shopkeeper's home and godown (7 x 4.4 m, two storeys): no named place, so it stands on the layout's
       // corrected footprint (o.rect, front towards its gali). Godown shutter down below with the family's door beside it,
       // home above. No board (a godown carries none; question for her in docs/s7/fixes.md).
-      const r = o.rect;
+      const r = shopRectOf(o) || o.rect;
       let rect = r ? { x: r.cx, z: r.cz, width: r.w, depth: r.d, front: r.front, ry: r.ry, skewDeg: 0 } : null;
       if (!rect) { // raw export (preview pages): the drawn plot, fronted on whichever side is nearest a road or gali
         let best = null;
@@ -173,7 +165,8 @@ function* buildShopsGen(map, { camera = null } = {}) {
     }
     if (!place) { report.skipped.push(`${o.label}: no place with a front`); continue; }
     // The layout agent's corrected footprint (squared to its road, off roads and galis) wins over the drawn ring (S7 WIRING, 21 Nov).
-    const rect = o.rect ? { x: o.rect.cx, z: o.rect.cz, width: o.rect.w, depth: o.rect.d, front: o.rect.front, ry: o.rect.ry, skewDeg: 0 } : ringRect(o.rings[0], place.front);
+    const sr = shopRectOf(o) || o.rect; // the road-facing, off-the-bands rect (shopRects.json) wins over the drawn ring
+    const rect = sr ? { x: sr.cx, z: sr.cz, width: sr.w, depth: sr.d, front: sr.front, ry: sr.ry, skewDeg: 0 } : ringRect(o.rings[0], place.front);
     const W = Math.round(rect.width * 10) / 10, D = Math.round(rect.depth * 10) / 10, v = i % 3;
     i++;
     if (isSqx) {
