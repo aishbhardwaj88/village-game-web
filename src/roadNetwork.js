@@ -19,7 +19,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getTiledMaterial, ensureUv2, cloneTiledMaterial } from './materials.js';
-import { isNewLayout } from './layout/layout.js';
+import { isNewLayout, getObjects } from './layout/layout.js';
 const NEW_LAYOUT = isNewLayout();
 
 /** Per-kind look: tint (multiplies the dirt texture), edge wander amplitude (m), edge band width (m), nali, ruts. */
@@ -143,6 +143,41 @@ export function buildNetwork(rawLines) {
   return { lines, segs, bbox, buckets, B };
 }
 
+
+// ---------------------------------------------------------------- footprint mask (her rule: nothing on a road, objects never move)
+// Every map solid's footprint (ring polygon or circle) plus FOOT_PAD is cut out of the road surface, so a road is never drawn
+// (or classed as road) under a building or prop standing at its exact map spot. Culverts, bridges and boards belong over roads.
+const FOOT_PAD = 0.1, FOOT_B = 8;
+let FOOT = null;
+function footprints() {
+  if (FOOT) return FOOT;
+  FOOT = new Map();
+  if (!NEW_LAYOUT) return FOOT;
+  const add = (f) => { for (let bx = Math.floor(f.x0 / FOOT_B); bx <= Math.floor(f.x1 / FOOT_B); bx++) for (let bz = Math.floor(f.z0 / FOOT_B); bz <= Math.floor(f.z1 / FOOT_B); bz++) { const k = bx * 100003 + bz; (FOOT.get(k) || FOOT.set(k, []).get(k)).push(f); } };
+  for (const o of getObjects('solids')) {
+    if (/culvert|bridge|^new_sign|ghat/i.test(o.prefix + ' ' + o.name)) continue;
+    if (o.rings && o.rings.length) for (const ring of o.rings) { const xs = ring.map((q) => q[0]), zs = ring.map((q) => q[1]); add({ ring, x0: Math.min(...xs) - FOOT_PAD, x1: Math.max(...xs) + FOOT_PAD, z0: Math.min(...zs) - FOOT_PAD, z1: Math.max(...zs) + FOOT_PAD }); }
+    else if (o.r) add({ cx: o.cx, cz: o.cz, r: o.r + FOOT_PAD, x0: o.cx - o.r - FOOT_PAD, x1: o.cx + o.r + FOOT_PAD, z0: o.cz - o.r - FOOT_PAD, z1: o.cz + o.r + FOOT_PAD });
+  }
+  return FOOT;
+}
+const segD2 = (x, z, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = dx * dx + dz * dz || 1; const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L)); const qx = a[0] + t * dx - x, qz = a[1] + t * dz - z; return qx * qx + qz * qz; };
+/** True when (x, z) is inside a map footprint grown by FOOT_PAD. */
+export function underFootprint(x, z) {
+  const arr = footprints().get(Math.floor(x / FOOT_B) * 100003 + Math.floor(z / FOOT_B));
+  if (!arr) return false;
+  for (const f of arr) {
+    if (x < f.x0 || x > f.x1 || z < f.z0 || z > f.z1) continue;
+    if (f.ring) {
+      const r = f.ring; let ins = false;
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++) if ((r[i][1] > z) !== (r[j][1] > z) && x < (r[j][0] - r[i][0]) * (z - r[i][1]) / (r[j][1] - r[i][1]) + r[i][0]) ins = !ins;
+      if (ins) return true;
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++) if (segD2(x, z, r[j], r[i]) < FOOT_PAD * FOOT_PAD) return true;
+    } else if ((x - f.cx) ** 2 + (z - f.cz) ** 2 < f.r * f.r) return true;
+  }
+  return false;
+}
+
 const bestD = new Float64Array(4096), bestLat = new Float64Array(4096), bestAlong = new Float64Array(4096);
 const touched = [];
 const touchedMark = new Uint8Array(4096);
@@ -205,6 +240,7 @@ function sample(net, x, z, out) {
   const n2 = vnoise(x / 1.7 + 3.1, z / 1.7 - 8.4); // grass tufts biting into the band
   const t = Math.min(1, Math.max(0, (D + 0.2 + 0.25 * band * n2) / (band + 0.2)));
   if (t >= 1) return null;
+  if (NEW_LAYOUT && underFootprint(x, z)) return null; // never road under a building
   let a = Math.pow(1 - t, 1.4);
   if (D < -0.25) a = 1;
   // Colour: interior tint with slow patches, wheel polish, nali; edge band goes scuffed/dusty then olive as grass thins.

@@ -1685,3 +1685,6 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Sonnet low: none. Haiku: none. Fable: none.
 - Real load on her machine (built-in pane, cold, hidden pane so timing is a floor): gateEnd 8.5 s. Frame rate NOT measured (pane hidden). Tris 1.78M, calls 242 at the gate view (was 1.49M/204 before today's shops, signs, railway).
 - 26 Nov HOUSES EXACT: all 455 map houses built on their drawn rectangle, map front, no turn/trim/nudge/drop (planHouses exact mode, housesPlanData regenerated 492->455). tools/map-match-houses.mjs: 0 off position/size/rotation, 1 facing (house 400, 27 deg).
+
+## 26 Nov roads agent
+- Roads now equal docs/layout/approved-map-2026-11-25.json: raw polylines + widths (gali 4.0, no clips/shifts) in mapData.json and tools/layout-pack.mjs; corner rounding capped at 0.4 m; ring arms cut on the map's own line; map footprints (+0.1 m) cut out of the road surface (roadNetwork.js underFootprint). tools/map-match-roads.mjs: 36 failing roads -> 0. Railway/canal match (bed x 392, canal 824). Map oddity: village-road level crossing planks centre z -19 sit 4.8 m off cross_road.
