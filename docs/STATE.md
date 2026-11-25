@@ -1,17 +1,17 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov 17:1x UTC (scheduled run). HEAD ec1982a (concurrent chat session's
-position/facing work (16:4x-16:53) then character work (Aunty) - neither touched by this run).
+Last updated: 25 Nov 18:1x UTC (scheduled run). HEAD b67dddc (concurrent chat session's "Roads empty"
+series A-H1 + dog/goat-herd wall-collision fix, through 18:0x - not touched by this run).
 No code change this run - nothing unblocked, see below. LOOKS LIST 1-8 stay done/parked, still true.
 Item 2 (chauraha road buildings) still waiting on her building names (NEEDS_YOU, asked twice, do not
 ask again).
 
 ## This run
-- 25 Nov 18:xx scheduled run: Actions green at 33b8274; temple+sabzi already AS_DRAWN (packed front -z = approved map, only 1 deg placeMoves turn); no literals at old coords of mandi/khalihan/mela/tanki/bhatta (grep); missions-check 0 fail; build:unchecked ok; load size + 'unsliced' have no unblocked non-look cut. No code change.
-- layout-tests.mjs: 125 failures (front 25, on-road 71, overlap 29), down from 129 (25/72/32) -
-  concurrent position session still progressing, not stalled. Left alone per STATE's own plan.
-- All [ACTIVE] BACKLOG items checked: place-touching rules (none touched this run), CC0 proxy
-  still 403 (not re-checked), item 7 shader-warm traced by code reading (texWarmed/modelsReleased/
-  loaders.js) - needs real browser to go further, didn't guess-fix blind.
+- Fresh container: npm ci run, HEAD was detached-but-equal to origin/main (confirmed via
+  merge-base before re-attaching local main - no commits lost). CI green at b67dddc.
+- layout-tests.mjs: 122 failures, down from 125 then 129 - concurrent position session still
+  progressing, not stalled. Left alone per STATE's own plan + 5a-MAP.
+- LOOKS LIST 1-8 and all [ACTIVE] BACKLOG items re-confirmed done/parked/blocked (not re-audited
+  beyond that, A6): CC0 proxy still 403, shader-warm needs real browser, no place being reworked.
 - check-budget: same known breaches as before, already in NEEDS_YOU. No TODO/FIXME in src/.
 
 ## Current state

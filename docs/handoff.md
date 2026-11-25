@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop, 18:1x UTC) - no code change, concurrent session progressing, nothing unblocked
+- Fresh container: node_modules missing (`npm ci` run), HEAD was detached but equal to origin/main
+  (b67dddc) - confirmed with `merge-base --is-ancestor` before re-attaching local `main`, no commits lost.
+- Re-ran `node tools/layout-tests.mjs`: 122 failures (down from 125, 129 before) - the concurrent
+  position/facing session (commits through b67dddc, "Roads empty" series + dog/goat wall-collision
+  fixes) is still making real progress, not stalled; left alone per 5a-MAP and prior runs' own plan.
+- LOOKS LIST 1-8 and all BACKLOG [ACTIVE] items re-confirmed done/parked/blocked via NEEDS_YOU.md/
+  STATE.md, not re-audited further (A6): CC0 proxy still blocked, shader-warm needs real browser, no
+  place currently being reworked to apply architecture/texture-pipeline rules to.
+- CI green at b67dddc (run 45671175225, conclusion success). Agents used: none (nothing in scope justified one).
+
 # 25 Nov (hourly loop, 17:1x UTC) - no code change this run, nothing unblocked
 - Re-ran `node tools/layout-tests.mjs`: 125 failures (front 25, on-road 71, overlap 29),
   down from 129 (25/72/32) last run - the concurrent position/facing session (HEAD
