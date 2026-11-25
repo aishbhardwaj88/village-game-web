@@ -229,7 +229,7 @@ export function planMapObjects(map) {
   const roads = map.roads || [];
   const out = { designs: [], patches: [], ponds: [], tanks: [], channels: [], gate: null, animals: [], pots: [], milestones: [], skipped: [], counts: {} };
   const count = (k) => { out.counts[k] = (out.counts[k] || 0) + 1; };
-  const NUDGE = new Set(['transformer', 'notice', 'trough', 'machan', 'scarecrow', 'washplatform', 'barber', 'bench', 'charpai']);
+  const NUDGE = new Set(); // 26 Nov, art director: props stand at their exact map spot, nothing is slid off a road
   const put = (kind, o, x, z, ry, extra = {}) => {
     if (NUDGE.has(kind)) { const rr = Math.hypot(extra.w || 1.5, extra.d || 1) / 2; const nn = nudgeOffRoad(roads, x, z, rr); if (nn.moved > 0) { x = nn.x; z = nn.z; out.nudged = (out.nudged || []).concat({ id: o.id, kind, moved: +nn.moved.toFixed(2) }); } }
     out.designs.push({ kind, id: o.id, label: o.label, x, z, ry, ...extra }); count(kind);
@@ -278,7 +278,7 @@ export function planMapObjects(map) {
       // S7 fixes: a stone drawn on the carriageway steps sideways onto the verge (0.35 m clear of the edge)
       for (let it = 0; it < 4; it++) {
         const n0 = nearestRoad(roads, mx, mz), cl = n0 ? n0.d - n0.half : 99;
-        if (cl >= 0.35) break;
+        break; // exact map spot (no verge step); was: if (cl >= 0.35) break;
         let nx = mx - n0.p[0], nz = mz - n0.p[1], L = Math.hypot(nx, nz);
         if (L < 1e-3) { nx = -n0.dir[1]; nz = n0.dir[0]; L = 1; }
         const step = 0.35 - cl + 0.01;
@@ -291,7 +291,7 @@ export function planMapObjects(map) {
       out.milestones.push({ id: o.id, x: mx, z: mz, ry: Math.atan2(-u[0], -u[1]), road: nr && nr.id, clearance: nr ? +(nr.d - nr.half).toFixed(2) : null, moved: +moved.toFixed(2) });
       count('milestone');
     } else if (k === 'new_pots') {
-      const pn = nudgeOffRoad(roads, o.cx, o.cz, (o.r || 0.35) + 0.1);
+      const pn = { x: o.cx, z: o.cz };
       out.pots.push({ id: o.id, x: pn.x, z: pn.z, r: o.r || 0.35 });
       count('pot');
     } else if ((k === 'new_Buffalo' || k === 'new_cattle') && o.cx != null) {

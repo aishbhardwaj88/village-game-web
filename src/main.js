@@ -1600,7 +1600,7 @@ async function main() {
         { kind: 'neem', ...schoolPt(-4.5, -6.2), y: 0.26, scale: 0.7, rotationY: 1.9, seed: 23 },
         { kind: 'neem', ...houseAt(-10.5, -6.5), rotationY: 2.6, seed: 13 },
         // the school yard's big shade tree with the tyre swing + stuck kite (tools/blender/build_school.py hangs them at this spot)
-        { kind: 'neem', ...schoolPt(+6.2, -1.0), scale: 1.35, rotationY: 0.3, seed: 31 },
+        { kind: 'neem', keep: true, ...schoolPt(+6.2, -1.0), scale: 1.35, rotationY: 0.3, seed: 31 },
         // a row of tall eucalyptus behind the school building (reference: slim pale-barked trees along the back wall)
         ...[-14, -9.5, -5, 4.5, 9, 13.5].map((dx, i) => ({ kind: 'eucalyptus', ...schoolPt(dx, 14.5 + (i % 2) * 1.2), rotationY: i, seed: 40 + i })),
         { kind: 'neem', ...schoolPt(-10, +16), rotationY: 2.3, seed: 12 }, // behind the main block (these two used to stand INSIDE the wings, poking through the roofs)

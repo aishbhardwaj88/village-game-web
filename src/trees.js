@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ver } from './assetUrl.js';
 import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { isNewLayout, getLayout } from './layout/layout.js';
+import SHADE_TREES from './kit/landShadeTrees.json';
 
 /**
  * Village trees (neem, peepal, babool, mango, eucalyptus) - procedural, no model download.
@@ -442,12 +444,32 @@ const BUILDERS = { neem: buildNeemTree, peepal: buildPeepalTree, babool: buildBa
 
 /** Places trees - `placements`: [{ kind, x, z, y?, scale?, rotationY?, seed }]. Shared singleton
  * materials, so main.js's three calls still merge into the same two draw calls. */
+// 26 Nov, her order: the approved map is the ONLY spec for trees. Under the final map, any hand-placed tree from the old
+// layout (hero-site neems, outskirt clusters, baagh mangos, yard greenery, field-corner babools) that has no map tree within
+// MAP_TREE_TOL m is not built. Exempt: planter trees (they carry a y lift, part of a place model) and placements with keep:true.
+const MAP_TREE_TOL = 5;
+let MAP_TREE_GRID = null;
+function mapTreeNear(x, z) {
+  if (!MAP_TREE_GRID) {
+    MAP_TREE_GRID = new Map();
+    const add = (tx, tz) => { const k = Math.floor(tx / 10) + ',' + Math.floor(tz / 10); (MAP_TREE_GRID.get(k) || MAP_TREE_GRID.set(k, []).get(k)).push([tx, tz]); };
+    for (const o of getLayout().objects) if (o.kind === 'trees' && Number.isFinite(o.cx)) add(o.cx, o.cz);
+    for (const t of SHADE_TREES) add(t.x, t.z);
+  }
+  const gx = Math.floor(x / 10), gz = Math.floor(z / 10);
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const [tx, tz] of MAP_TREE_GRID.get((gx + i) + ',' + (gz + j)) || []) if (Math.hypot(tx - x, tz - z) <= MAP_TREE_TOL) return true;
+  return false;
+}
+/** true if this hand-placed tree is NOT on the approved map (and so must not be built under the final layout) */
+export function isExtraTree(p) { return isNewLayout() && !p.keep && p.y == null && !mapTreeNear(p.x, p.z); }
+
 export function buildTrees(placements) {
   const group = new THREE.Group();
   group.name = 'trees';
   for (const p of placements) {
     const builder = BUILDERS[p.kind];
     if (!builder) continue;
+    if (isExtraTree(p)) continue; // not on the approved map
     const tree = builder(p.seed ?? 0);
     tree.position.set(p.x, p.y ?? 0, p.z);
     tree.rotation.y = p.rotationY || 0;

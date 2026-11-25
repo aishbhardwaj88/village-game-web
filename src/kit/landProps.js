@@ -11,7 +11,6 @@ import { addGobar } from '../gobar.js';
 import { addLaundryLine } from '../laundryLine.js';
 import { hiFont, enFont } from '../signPaint.js';
 import { yieldToMain } from './lateBuild.js';
-import { nudgeOffRoad } from './mapObjectsPlan.js';
 
 /**
  * Small things of the approved map (?layout=new):
@@ -121,7 +120,7 @@ export async function build(map) {
   group.name = 's7_props';
   const colliders = [];
   const report = { flagIsland: false, peepalPlatform: false, wells: 0, pumps: 0, washingLines: 0, haystacks: 0, dungStacks: 0 };
-  const nud = (x, z, r) => nudgeOffRoad(map.roads || [], x, z, r); // 26 Nov: no object on a road
+  // 26 Nov, art director: props stand at their EXACT map spot (the final map has nothing on a road); no nudging
   const pumps = [], hay = [], gobar = [], lines = [];
   const flagGeos = [];
   const tex = flagAndStoneCanvas();
@@ -133,9 +132,6 @@ export async function build(map) {
     const key = labelKey(o), name = labelName(o), ring = o.rings?.[0];
     if (!ring || o.kind !== 'solids') continue;
     let c = ringCentre(ring); const r = ringRadius(ring);
-    if (key === 'new_Hand pump') c = { ...c, ...nud(c.x, c.z, 1.2) }; // pump plinth radius about 1.2 m
-    else if (key === 'new_Haystack' || key === 'new_straw' || key === 'new_Dung cakes') c = { ...c, ...nud(c.x, c.z, Math.min(r, 3)) };
-    else if (key === 'new_Washing line') c = { ...c, ...nud(c.x, c.z, 1.5) };
     if (key === 'new_island') {
       if (name.startsWith('Raised platform')) {
         // island: brick-faced drum, cement coping, earth bed with grass (painted by the bed colour), kerb stones

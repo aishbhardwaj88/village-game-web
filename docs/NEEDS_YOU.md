@@ -73,3 +73,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 
 - Highway start: please look at the first frame once (gate and main road ahead, cycle with rider); I did not judge the framing. - status: open
 - Houses: after building every house on its exact map rectangle, 52 houses still reach 0.05-1.3 m into a road band (worst: house 76 at 686,73, 1.3 m; list via node src/kit/housesCheck.js, onRoad). The map's own rectangle is kept, please say which to move. - status: open
+- 26 Nov props vs roads: after matching the map's own roads exactly, 2 map items still sit inside a 4 m 'back' lane band. Milestone at (450.0, 1.5) is 0.63 m inside lane gali_n21, and Well at (558.0, -43.0) is 0.31 m inside lane gali_n35. Both are built at their exact map spot (no sliding). Tell me if the lane or the item should move in the map. - status: open
