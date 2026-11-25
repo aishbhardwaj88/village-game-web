@@ -286,10 +286,10 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
     // but a real array, whichever map source supplied (or failed to supply) roads.
     const roadIdx = makeRoadIndex(Array.isArray(map.roads) ? map.roads : []); // S7 WIRING (integrator, wallposters)
     // a pair drawn overlapping on the map: the later one is left out (reported)
-    const drop = new Set();
+    const drop = new Set(), overlapped = [];
     for (let i = 0; i < plan.length; i++) for (let j = i + 1; j < plan.length; j++) {
       if (drop.has(i) || Math.abs(plan[i].x - plan[j].x) > 12 || Math.abs(plan[i].z - plan[j].z) > 12) continue;
-      if (ringsOverlap(plan[i].corners, plan[j].corners, 0.1)) drop.add(j);
+      if (ringsOverlap(plan[i].corners, plan[j].corners, 0.1)) overlapped.push([i, j]); // map count wins: reported, never dropped (her order 25 Nov)
     }
     const entries = assignHouses(plan).filter((e) => !drop.has(e.i));
     let worstStep = 0;
@@ -308,7 +308,7 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
       NEW_HOUSES.push({ x: e.x, z: e.z, ry: e.ry, w: e.w, d: e.d, design: e.design, door: { x: e.x + dx * c + dz * s, z: e.z - dx * s + dz * c }, fz: (e.info.zf ?? e.cd / 2) * (e.sz || 1), dx0: e.info.door.x0 * (e.sx || 1), dx1: e.info.door.x1 * (e.sx || 1), stepD: (e.info.otlaDepth || 0) * (e.sz || 1), noStrip: !!e.info.noStrip });
       for (const [tx, ty, tz] of e.info.tanks) NEW_HOUSE_TANK_TOPS.push({ x: e.x + tx * c + tz * s, z: e.z - tx * s + tz * c, y: e.y + ty, rad: 0.5, yaw: e.ry });
     }
-    Object.assign(report, built.stats, { dropped: [...drop], worstGroundStep: +worstStep.toFixed(3), designs: entries.reduce((m, e) => ((m[e.design] = (m[e.design] || 0) + 1), m), {}) });
+    Object.assign(report, built.stats, { dropped: [...drop], mapOverlaps: overlapped.length, worstGroundStep: +worstStep.toFixed(3), designs: entries.reduce((m, e) => ((m[e.design] = (m[e.design] || 0) + 1), m), {}) });
     built.update(lastX, lastZ, true);
     onBuilt(built);
     return built;

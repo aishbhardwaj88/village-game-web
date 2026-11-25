@@ -19,8 +19,20 @@ let mapSource = 'src/layout/mapData.json';
 let map;
 try { map = JSON.parse(readFileSync(LAYOUT_DATA)); } catch { map = JSON.parse(readFileSync(APPROVED)); mapSource = 'docs/layout/approved-map-2026-11-25.json'; }
 console.log('map:', mapSource);
-const { houses, roads, solids } = houseMapFrom(map);
-const plan = planHouses(houses, roads, solids);
+// Houses sit EXACTLY on the approved map's drawn rectangles (centre, size, facing): plan from the raw approved file, no turning, trimming or nudging.
+const approved = JSON.parse(readFileSync(APPROVED));
+const { roads, solids } = houseMapFrom(map);
+const { houses } = houseMapFrom(approved);
+// the map's own front per house (layout derivation, same footprint: nearest centre within 8 m)
+const packedRects = map.objects.filter((o) => o.label.startsWith('new_house') && o.rect).map((o) => o.rect);
+for (const h of houses) {
+  const cx = h.ring.reduce((t, p) => t + p[0], 0) / 4, cz = h.ring.reduce((t, p) => t + p[1], 0) / 4;
+  let best = null, bd = 8;
+  for (const r of packedRects) { const d = Math.hypot(r.cx - cx, r.cz - cz); if (d < bd) { bd = d; best = r; } }
+  if (best) h.frontHint = best.front;
+}
+const plan = planHouses(houses, roads, solids, { exact: true });
+mapSource = 'docs/layout/approved-map-2026-11-25.json (exact)';
 
 const convex = (r) => r.length >= 3;
 

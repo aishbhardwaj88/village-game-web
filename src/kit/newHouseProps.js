@@ -58,7 +58,9 @@ export function newHouseFurnitureSites() {
     if (r(0) > 0.4) return;
     const half = Math.max(0.6, h.w / 2 - 0.5);
     const lx = (r(1) - 0.5) * 2 * half;
-    out.push({ ...frontPoint(h, lx, h.d / 2 + 0.95), yaw: h.ry + (r(2) - 0.5) * 0.4, pick: i * 17 + 9000 });
+    const p = frontPoint(h, lx, h.d / 2 + 0.95);
+    if (NEW_HOUSE_ROADS.idx && NEW_HOUSE_ROADS.idx.clearance(p.x, p.z) < 1.0) return; // road rule: no object on or within 1 m of a road band
+    out.push({ ...p, yaw: h.ry + (r(2) - 0.5) * 0.4, pick: i * 17 + 9000 });
   });
   return out;
 }

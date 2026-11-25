@@ -144,7 +144,7 @@ const MAX_ALIGN_DEG = 40; // a footprint turned more than this off its road is l
  * Returns [{ i, x, z, ry, w, d, mud, front: [fx, fz], road: id, roadGap, turned, trimmed, corners }] in the input order.
  * corners = the FINAL rectangle the house is built on (after turning parallel to its road and trimming off any road overlap).
  */
-export function planHouses(houses, roads, solids = []) {
+export function planHouses(houses, roads, solids = [], { exact = false } = {}) {
   const rings = houses.map((h) => h.ring);
   const RI = roadIndex(roads);
   const HI = houseIndex(rings);
@@ -196,13 +196,21 @@ export function planHouses(houses, roads, solids = []) {
     for (const c of q.cands) { if (c.dist > q.cands[0].dist + 12) continue; const v = votes.get(dirKey(c.n)) || 0; if (v > bestV) { bestV = v; bestC = c; } }
     if (bestV > 0) pick[i] = bestC;
   });
+  // exact mode: the map's own front (src/layout/layoutCore.js: the side nearest a road) decides the facing, when the caller passes it
+  if (exact) pre.forEach((q, i) => {
+    const hint = q.h.frontHint;
+    if (!hint) return;
+    let bs = null, bdot = -2;
+    for (const sd of q.sides) { const dot = sd.n[0] * hint[0] + sd.n[1] * hint[1]; if (dot > bdot) { bdot = dot; bs = sd; } }
+    if (bs && bdot > 0.7) pick[i] = { ...bs, dist: bs.dist };
+  });
   const finalize = (q, i, best) => {
     let w = best.L, d = q.sides[(best.k + 1) % 4].L;
     let ry = Math.atan2(best.n[0], best.n[1]);
     let x = q.cx, z = q.cz, turned = 0, trimmed = 0, err = 0;
     const rdir = best.seg ? Math.atan2(best.seg.b[1] - best.seg.a[1], best.seg.b[0] - best.seg.a[0]) : null;
     // 3. edges parallel to the road: turn the house about its centre onto the road's own direction
-    if (rdir != null) {
+    if (rdir != null && !exact) {
       let n2 = [Math.sin(rdir), -Math.cos(rdir)];
       if (n2[0] * best.n[0] + n2[1] * best.n[1] < 0) n2 = [-n2[0], -n2[1]];
       const ry2 = Math.atan2(n2[0], n2[1]);
@@ -220,7 +228,7 @@ export function planHouses(houses, roads, solids = []) {
       }
     }
     // 4. trim off any road overlap: pull a side in by its overlap (+5 cm), keeping the rest of the footprint where it is
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < (exact ? 0 : 3); pass++) { // exact: the map rectangle is kept as drawn (her order 25 Nov)
       const cs = rectCorners(x, z, ry, w, d);
       let moved = false;
       for (let k = 0; k < 4; k++) {
@@ -274,7 +282,7 @@ export function planHouses(houses, roads, solids = []) {
     return best;
   };
   const circleHitsRect = (sx, sz, radius, corners) => distToRect(sx, sz, corners) < radius;
-  if (solids.length) for (const r of out) {
+  if (solids.length && !exact) for (const r of out) {
     const circles = [];
     for (const s of solids) {
       if (!s.ring || s.ring.length < 3) continue;

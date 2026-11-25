@@ -72,3 +72,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - The two bullock cart models (Sketchfab 91 and 92 on your shortlist) still need downloading on your laptop: the game keeps the code-built bullock cart and bullocks until they are in public/assets/vehicles_free/. - status: open
 
 - Highway start: please look at the first frame once (gate and main road ahead, cycle with rider); I did not judge the framing. - status: open
+- Houses: after building every house on its exact map rectangle, 52 houses still reach 0.05-1.3 m into a road band (worst: house 76 at 686,73, 1.3 m; list via node src/kit/housesCheck.js, onRoad). The map's own rectangle is kept, please say which to move. - status: open
