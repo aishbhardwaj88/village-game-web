@@ -9,7 +9,7 @@ import './missions-node-env.mjs';
 globalThis.__DOPAHAR_LAYOUT = 'new';
 const spec = JSON.parse(readFileSync(new URL('../docs/layout/approved-map-2026-11-25.json', import.meta.url), 'utf8'));
 const { allRoadLines } = await import('../src/mapRoads.js');
-const { filletPolyline } = await import('../src/roadNetwork.js');
+const { filletPolyline, buildNetwork, sampleSurface } = await import('../src/roadNetwork.js');
 const { CHAURAHA } = await import('../src/mapPlan.js');
 const TOL = 0.5;
 
@@ -40,6 +40,22 @@ for (const r of spec.roads) {
   if (flags.length) bad++;
   rows.push(`${flags.length ? 'FAIL' : 'ok  '}  ${r.id.padEnd(30)} ${r.kind.padEnd(7)} w${String(r.width).padEnd(4)} dev ${dev.toFixed(2)} cover ${cover.toFixed(2)} ${flags.join('; ')}`);
 }
+// dead ends: the map's band has FLAT caps, so the drawn surface of a line (alone, so a neighbour cannot fill in) must stop at the end of
+// the map's polyline: no alpha >= 0.5 more than 0.1 m beyond the end plane (it used to be a round cap, hw beyond: 0.75 to 0.85 m into shops)
+let ends = 0, worstEnd = -Infinity;
+for (const l of game) {
+  if (l.closed || l.id === 'chauraha_ring') continue;
+  const own = buildNetwork([l]), hw = l.w / 2;
+  for (const P of [l.pts[0], l.pts[l.pts.length - 1]]) {
+    const Q = P === l.pts[0] ? l.pts[1] : l.pts[l.pts.length - 2];
+    let ux = P[0] - Q[0], uz = P[1] - Q[1]; const L = Math.hypot(ux, uz); ux /= L; uz /= L;
+    let reach = -Infinity;
+    for (let a = -0.5; a <= hw + 2; a += 0.05) for (let lat = -hw * 0.9; lat <= hw * 0.9 + 1e-9; lat += 0.3) { const r = sampleSurface(own, P[0] + ux * a - uz * lat, P[1] + uz * a + ux * lat); if (r && r.a >= 0.5) reach = Math.max(reach, a); }
+    ends++; worstEnd = Math.max(worstEnd, reach);
+    if (reach > 0.1) { rows.push(`FAIL  ${l.id} end at ${P.map((v) => v.toFixed(1))}: drawn road reaches ${reach.toFixed(2)} m past the map's flat end`); bad++; }
+  }
+}
+rows.push(`dead ends: ${ends} line ends checked, the drawn surface (alpha >= 0.5) reaches at most ${worstEnd.toFixed(2)} m past the map's flat end (limit 0.1 m)`);
 const extras = [...gameBy.keys()].filter((id) => !specIds.has(id) && id !== 'chauraha_ring');
 for (const id of extras) { rows.push(`EXTRA    ${id} (drawn by the game, not in the map)`); bad++; }
 console.log(rows.join('\n'));

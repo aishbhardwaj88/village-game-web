@@ -2,7 +2,7 @@
  * The 1 Nov map's roads (docs/layout/village-plan-positions-2026-11-01.json `roads` and `lanes_and_tracks`), laid at the same
  * +MAP_SHIFT as the places (src/mapPlan.js), plus the kachcha tracks to the places the map left without a way in
  * (src/dirtTracks.js). Positions only: the surface is src/roadNetwork.js, which turns every centreline into ONE continuous
- * field (rounded bends and ends, merged junctions, wandering edge, a scuffed-earth band into the grass) and cuts it into
+ * field (rounded bends, flat dead ends exactly at the map's end, merged junctions, wandering edge, a scuffed-earth band into the grass) and cuts it into
  * 4 streamed quadrants, one draw call each. Roads are ground-level, not solid. No kerbs (straight slabs cannot follow a
  * curve); village lanes carry their nali as a groove in the surface. The "To the city" boards and back-lane posts are src/mapGates.js.
  */

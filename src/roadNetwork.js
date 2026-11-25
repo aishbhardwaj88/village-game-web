@@ -4,7 +4,8 @@
  * Every road, lane, track and path is a centreline polyline with a width and a kind. Instead of laying one flat strip per
  * polyline leg (which gave straight-cut ends, notches at every bend and rectangles overlapping at every crossing), the
  * whole network is one signed-distance field, sampled on a world-aligned grid and turned into one mesh per zone chunk:
- *  - each line's distance is measured to its fillet-rounded centreline, so bends are curves and every end is a round cap;
+ *  - each line's distance is measured to its fillet-rounded centreline, so bends are curves; a dead end of an open line is a FLAT
+ *    cap that stops exactly where the map's polyline ends (her final map and the audits use flat caps); joins and bends stay round;
  *  - lines are joined with a smooth minimum, so a junction is one merged piece of road with rounded inner corners;
  *  - the edge is pushed in and out by world-space noise, so it wanders and is never a ruler line;
  *  - past the edge the surface fades out over a band of scuffed earth and thinning grass (vertex alpha over the ground),
@@ -34,6 +35,8 @@ export const ROAD_KINDS = {
 
 const CELL = 0.8; // grid spacing, metres. Edge wander is >= 2.5 m wavelength, so 0.8 m resolves it.
 const JOIN_K = 3.0; // smooth-min radius: how round the inner corner of a junction is
+const END_EASE = 0.6; // m before a flat dead end over which the edge wander and the scuffed fade die away, so the end is a clean line at the map's end
+const END_BAND = 0.1; // share of the normal fade band kept at a flat dead end (the fade must not reach past the map's own band)
 const GRASS = new THREE.Color(0x7a7c4e); // thinning-grass tint at the outer edge of the band (multiplies the dirt texture)
 
 // ---------------------------------------------------------------- noise (no dependency)
@@ -106,6 +109,32 @@ export function filletPolyline(pts, closed, width) {
 }
 
 /**
+ * The flat end planes [[x, z, ux, uz]...] (the endpoint and the outward unit direction) that cut segment i (1-based, pts[i-1] -> pts[i])
+ * of an OPEN line, or null. It applies to the dead end's own leg and to the next legs of the fillet run that stay within
+ * 2 x half-width of the end and within 30 degrees of the end leg's heading (so a round join near the end cannot poke past the end).
+ */
+function endPlane(l, i) {
+  if (l.closed) return null;
+  const p = l.pts, n = p.length, found = [];
+  for (const atStart of [true, false]) {
+    const e = atStart ? p[0] : p[n - 1], k = atStart ? 1 : n - 2;
+    const fx = p[k][0] - e[0], fz = p[k][1] - e[1], fl = Math.hypot(fx, fz) || 1; // heading of the end leg, pointing into the road
+    const seg = atStart ? i : n - i; // 1 = the end leg
+    if (seg < 1) continue;
+    let ok = true, run = 0;
+    for (let j = 1; j <= seg && ok; j++) {
+      const a = atStart ? p[j - 1] : p[n - j], b = atStart ? p[j] : p[n - j - 1];
+      const dx = b[0] - a[0], dz = b[1] - a[1], dl = Math.hypot(dx, dz) || 1;
+      if ((dx * fx + dz * fz) / (dl * fl) < 0.87) ok = false; // turned more than 30 degrees: a real bend, keep its round join
+      if (j > 1 && run > 2 * l.hw) ok = false; // this leg starts beyond 2 x half-width from the end
+      run += dl;
+    }
+    if (ok) found.push([e[0], e[1], -fx / fl, -fz / fl]);
+  }
+  return found.length ? found : null;
+}
+
+/**
  * Builds the network from lines [{ id, w, kind, pts: [[x, z]...] (world metres), closed?, drainSide? }].
  * Returns { lines, segs, bbox }; meshes are cut from it per rectangle with networkMesh().
  */
@@ -122,7 +151,7 @@ export function buildNetwork(rawLines) {
       const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i];
       const dx = bx - ax, dz = bz - az, len2 = dx * dx + dz * dz;
       if (len2 < 1e-8) continue;
-      segs.push({ ax, az, dx, dz, inv: 1 / len2, len: Math.sqrt(len2), line: l.idx, reach });
+      segs.push({ ax, az, dx, dz, inv: 1 / len2, len: Math.sqrt(len2), line: l.idx, reach, pl: endPlane(l, i) });
       bbox.x0 = Math.min(bbox.x0, ax - reach, bx - reach); bbox.x1 = Math.max(bbox.x1, ax + reach, bx + reach);
       bbox.z0 = Math.min(bbox.z0, az - reach, bz - reach); bbox.z1 = Math.max(bbox.z1, az + reach, bz + reach);
     }
@@ -142,6 +171,8 @@ export function buildNetwork(rawLines) {
   }
   return { lines, segs, bbox, buckets, B };
 }
+
+const FREE_GAP = 1.0; // m: a flat end is landed on its plane only where no other road's band lies closer than this (nearer, the junction's smooth-union fill is the rounding that junction needs)
 
 
 // ---------------------------------------------------------------- footprint mask (her rule: nothing on a road, objects never move)
@@ -178,7 +209,34 @@ export function underFootprint(x, z) {
   return false;
 }
 
-const bestD = new Float64Array(4096), bestLat = new Float64Array(4096), bestAlong = new Float64Array(4096);
+/**
+ * Signed distance from (x, z) to the segment's band edge, negative inside: round caps and round joins, EXCEPT at a dead end of
+ * an open line. There the band is cut flat by the end plane (g.pl: the endpoint and the outward unit direction of the line's first
+ * or last leg), so the road stops exactly where the map's polyline ends, like the flat-capped band the map and the audits use.
+ * `ret.over` is how far the point lies beyond (+) or short of (-) that plane along the road, or -Infinity for a segment away from
+ * a dead end; `ret.lat` the signed lateral offset (+ left of travel); `ret.t` the clamped position along the segment, 0..1.
+ */
+const ret = { di: 0, over: -Infinity, lat: 0, t: 0, pl: null };
+function segDi(g, x, z, hw) {
+  const px = x - g.ax, pz = z - g.az;
+  const traw = (px * g.dx + pz * g.dz) * g.inv;
+  const tc = traw < 0 ? 0 : traw > 1 ? 1 : traw;
+  const qx = px - tc * g.dx, qz = pz - tc * g.dz;
+  ret.lat = (g.dx * pz - g.dz * px) / g.len; ret.t = tc; ret.over = -Infinity; ret.pl = null;
+  let di = Math.sqrt(qx * qx + qz * qz) - hw;
+  const pl = g.pl;
+  if (pl) for (let k = 0; k < pl.length; k++) {
+    const over = (x - pl[k][0]) * pl[k][2] + (z - pl[k][1]) * pl[k][3];
+    if (over > di && over > 0) di = over; // the plane only cuts what lies beyond it; inside, the band is as it was (alpha stays full right up to the end)
+    if (over > ret.over) { ret.over = over; ret.pl = pl[k]; }
+  }
+  ret.di = di;
+  return ret;
+}
+
+const bestD = new Float64Array(4096), bestLat = new Float64Array(4096), bestAlong = new Float64Array(4096), bestOver = new Float64Array(4096), bestPl = new Array(4096).fill(null);
+/** Set by every sample() call: when the nearest line has a flat dead end here and no other road is within FREE_GAP, the end plane and how far (m) the point lies beyond it, else endPl is null. Used by networkMesh to land the surface exactly on the plane. */
+let endPl = null, endOver = 0;
 const touched = [];
 const touchedMark = new Uint8Array(4096);
 
@@ -186,37 +244,42 @@ const touchedMark = new Uint8Array(4096);
  * Samples the field at (x, z): { a (alpha 0..1), y, r, g, b } or null when no road is near.
  */
 function sample(net, x, z, out) {
+  endPl = null;
   const arr = net.buckets.get(Math.floor(x / net.B) * 100003 + Math.floor(z / net.B));
   if (!arr) return null;
   touched.length = 0;
   for (const s of arr) {
     const g = net.segs[s];
-    const px = x - g.ax, pz = z - g.az;
-    let t = (px * g.dx + pz * g.dz) * g.inv;
-    t = t < 0 ? 0 : t > 1 ? 1 : t;
-    const qx = px - t * g.dx, qz = pz - t * g.dz;
-    const d = Math.sqrt(qx * qx + qz * qz);
     const li = g.line;
+    const r = segDi(g, x, z, net.lines[li].hw);
     if (!touchedMark[li]) { touchedMark[li] = 1; touched.push(li); bestD[li] = Infinity; }
-    if (d < bestD[li]) {
-      bestD[li] = d;
-      bestLat[li] = (g.dx * pz - g.dz * px) / g.len; // signed: + on the left of travel
-      bestAlong[li] = t;
+    if (r.di < bestD[li]) {
+      bestD[li] = r.di; // signed distance to this line's own band edge (flat dead ends, round bends)
+      bestLat[li] = r.lat; // signed: + on the left of travel
+      bestAlong[li] = r.t;
+      bestOver[li] = r.over;
+      bestPl[li] = r.pl;
     }
   }
   // Per-line signed distance to its own edge, then a smooth union.
   let dmin = Infinity, D = Infinity, minLine = -1;
   for (const li of touched) {
-    const di = bestD[li] - net.lines[li].hw;
+    const di = bestD[li];
     if (di < dmin) { dmin = di; minLine = li; }
     if (D === Infinity) D = di;
     else { const h = Math.max(JOIN_K - Math.abs(D - di), 0) / JOIN_K; D = Math.min(D, di) - h * h * JOIN_K * 0.25; }
+  }
+  endPl = null;
+  if (bestOver[minLine] > 0) { // beyond a flat dead end of the nearest line: land it on the plane unless another road's band is within FREE_GAP (a junction)
+    let free = true;
+    for (const li of touched) if (li !== minLine && bestD[li] < FREE_GAP) { free = false; break; }
+    if (free) { endPl = bestPl[minLine]; endOver = bestOver[minLine]; }
   }
   // Soft weights blend the look of lines meeting at a junction.
   let wsum = 0, lift = 0, amp = 0, band = 0, bump = 0, tr = 0, tg = 0, tb = 0, er = 0, eg = 0, eb = 0, drain = 0, rut = 0, pot = 0;
   for (const li of touched) {
     const l = net.lines[li];
-    const di = bestD[li] - l.hw;
+    const di = bestD[li];
     touchedMark[li] = 0;
     const w = Math.exp(-(di - dmin) / 0.7);
     wsum += w; lift += w * l.lift; amp += w * l.k.amp; band += w * l.k.band; bump += w * l.k.bump; pot += w * (l.k.potholes ? 1 : 0);
@@ -235,8 +298,14 @@ function sample(net, x, z, out) {
     }
   }
   lift /= wsum; amp /= wsum; band /= wsum; bump /= wsum; drain /= wsum; rut /= wsum; pot /= wsum;
+  // a flat dead end (the line the point belongs to ends here): the wander and the scuffed fade die away over END_EASE before the
+  // end plane, so the road stops on the map's end line instead of fraying past it
+  let ease = 0;
+  const ov = bestOver[minLine];
+  if (ov > -END_EASE) { ease = ov >= 0 ? 1 : 1 + ov / END_EASE; ease = ease * ease * (3 - 2 * ease); }
   const n = fbm(x, z, 1);
-  D -= amp * n * 1.4; // the edge wanders in and out
+  D -= amp * n * 1.4 * (1 - ease); // the edge wanders in and out
+  band *= 1 - (1 - END_BAND) * ease;
   const n2 = vnoise(x / 1.7 + 3.1, z / 1.7 - 8.4); // grass tufts biting into the band
   const t = Math.min(1, Math.max(0, (D + 0.2 + 0.25 * band * n2) / (band + 0.2)));
   if (t >= 1) return null;
@@ -264,6 +333,9 @@ function sample(net, x, z, out) {
   if (NEW_LAYOUT && out.y < 0.02) out.y = 0.02;
   return out;
 }
+
+/** The surface field at (x, z) for audits: { a: alpha 0..1, ... } or null when no road is there. */
+export function sampleSurface(net, x, z) { const o = {}; return sample(net, x, z, o) ? o : null; }
 
 let MAT = null;
 /** The shared 'lane' material, cloned once so its edge band can fade into the ground (vertex alpha). */
@@ -293,14 +365,24 @@ export function networkMesh(net, rect, name) {
   const nx = gx1 - gx0 + 1, nz = gz1 - gz0 + 1;
   const alpha = new Float32Array(nx * nz).fill(-1);
   const data = new Float32Array(nx * nz * 4);
+  const proj = new Uint8Array(nx * nz), gxy = new Float32Array(nx * nz * 2); // vertices moved onto a flat end plane, and where they went
   const s = {};
   for (let j = 0; j < nz; j++) {
     const z = (gz0 + j) * CELL;
     for (let i = 0; i < nx; i++) {
       const x = (gx0 + i) * CELL;
-      const r = sample(net, x, z, s);
-      if (!r) continue;
+      let r = sample(net, x, z, s);
       const k = j * nx + i;
+      if (endPl && endOver < 4) {
+        // beyond a flat dead end: the grid is world-aligned, so a cell would blend road into nothing across the end plane and
+        // draw road up to 0.8 m past it. Move the vertex ONTO the plane and give it the road as it is just inside (the end is then a
+        // crisp line exactly at the map's end). Every vertex out to 4 m is moved, so nothing beyond the plane can be drawn.
+        const pl = endPl, over = endOver;
+        proj[k] = 1; gxy[k * 2] = x - over * pl[2]; gxy[k * 2 + 1] = z - over * pl[3];
+        r = over <= 1.7 ? sample(net, x - (over + 0.3) * pl[2], z - (over + 0.3) * pl[3], s) : null;
+        endPl = null;
+      }
+      if (!r) continue;
       alpha[k] = r.a;
       data[k * 4] = r.r; data[k * 4 + 1] = r.g; data[k * 4 + 2] = r.b; data[k * 4 + 3] = r.y;
     }
@@ -310,7 +392,7 @@ export function networkMesh(net, rect, name) {
   const vert = (k) => {
     if (remap[k] >= 0) return remap[k];
     const i = k % nx, j = (k / nx) | 0;
-    const x = (gx0 + i) * CELL, z = (gz0 + j) * CELL;
+    const x = proj[k] ? gxy[k * 2] : (gx0 + i) * CELL, z = proj[k] ? gxy[k * 2 + 1] : (gz0 + j) * CELL;
     const has = alpha[k] >= 0;
     pos.push(x, has ? data[k * 4 + 3] : 0.01, z);
     col.push(has ? data[k * 4] : 0.5, has ? data[k * 4 + 1] : 0.5, has ? data[k * 4 + 2] : 0.4, has ? alpha[k] : 0);
@@ -325,6 +407,7 @@ export function networkMesh(net, rect, name) {
       if (A(k00) + A(k10) + A(k01) + A(k11) < 0.004) continue;
       const x = (gx0 + i) * CELL, z = (gz0 + j) * CELL;
       if (x < rect.x0 || x >= rect.x1 || z < rect.z0 || z >= rect.z1) continue;
+      if (proj[k00] && proj[k10] && proj[k01] && proj[k11]) continue; // all four lie on the end plane: no area
       const v00 = vert(k00), v10 = vert(k10), v01 = vert(k01), v11 = vert(k11);
       // split along the diagonal whose ends agree best, so the fade has no saw-tooth
       if (Math.abs(A(k00) - A(k11)) <= Math.abs(A(k10) - A(k01))) idx.push(v00, v01, v11, v00, v11, v10);
@@ -425,17 +508,14 @@ export function stonesMesh(net, rect, name) {
   return mesh;
 }
 
-/** World-space signed distance to the network's nearest road edge (negative on the road), for audits. */
+/** World-space signed distance to the network's nearest road edge (negative on the road; flat dead ends, like the surface), for audits. */
 export function edgeDistance(net, x, z) {
   const arr = net.buckets.get(Math.floor(x / net.B) * 100003 + Math.floor(z / net.B));
   if (!arr) return Infinity;
   let best = Infinity;
   for (const s of arr) {
     const g = net.segs[s];
-    const px = x - g.ax, pz = z - g.az;
-    let t = (px * g.dx + pz * g.dz) * g.inv;
-    t = t < 0 ? 0 : t > 1 ? 1 : t;
-    best = Math.min(best, Math.hypot(px - t * g.dx, pz - t * g.dz) - net.lines[g.line].hw);
+    best = Math.min(best, segDi(g, x, z, net.lines[g.line].hw).di);
   }
   return best;
 }
