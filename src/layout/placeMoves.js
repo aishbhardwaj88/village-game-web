@@ -8,6 +8,7 @@
  */
 const D = Math.PI / 180;
 export const PLACE_MOVES = [
+  { src: 'yard_tubewell', ids: ['yard_tubewell', 'tubewell'], dx: 1.0, dz: 0, why: 'west corner on lane 13 apron (25 Nov, road-empty round, H4 log)' },
   // school: village.js turns the whole school by SCHOOL_TURN_DEG (the 1 Nov plan's +11.2, which is rotation.y -11.2 deg). The approved Outer lane south runs at -11.2 deg
   // (the other way), so the school stood 22.4 deg off square. ry = the new rotation.y (+11.2 deg, walls square to the lane), ryFrom = what the game really gave it before (-11.2); layoutTurnDeg() returns it (viaTurnDeg), so schoolPt() and every point of the school turn with it. A prop keyed to the school's anchor must use the school's REAL yaw, -layoutTurnDeg('school', 11.2) (wallWriting.js cycle).
   { src: 'school', ids: ['school'], dx: 0.6, dz: 3.0, ry: 11.2 * D, ryFrom: -11.2 * D, viaTurnDeg: true, why: 'gate side stood 1.05 m into the Outer lane south; turned square to the lane (22.4 deg)' },

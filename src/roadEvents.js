@@ -264,7 +264,11 @@ export function createRoadEvents(scene) {
     // 1. the cow in the middle of the main road
     const cf = roadFrame(COW_SITE.road, COW_SITE.seg, COW_SITE.t);
     if (cf) {
-      const site = { x: cf.x + cf.nx * COW_SITE.lat, z: cf.z + cf.nz * COW_SITE.lat, yaw: cf.yaw + COW_SITE.turn };
+      // 25 Nov, her order (nothing on a road, no deleting): the cow lies BESIDE the main road, on the first clear verge
+      // (road half-width 4 m + dusty apron ~2.4 m + the cow), either side, instead of in the middle of it.
+      let lat = COW_SITE.lat;
+      for (const L of [8, -8, 9.5, -9.5, 11, -11, 13, -13]) { if (clearAt(cf.x + cf.nx * L, cf.z + cf.nz * L, 2.0)) { lat = L; break; } }
+      const site = { x: cf.x + cf.nx * lat, z: cf.z + cf.nz * lat, yaw: cf.yaw + COW_SITE.turn };
       bov.push({ x: site.x, y: 0, z: site.z, yaw: site.yaw, s: [1, 1, 1], tint: 0xd6ccb4, sit: true, ph: 0.4 }); // lying-down geometry, belly and folded legs on the road (G1)
       box(2.05, 0.95, site, 0, 0.1, 0, true);
       dungPats(b, site, [[0.15, -1.45, 1.1], [-0.3, -1.9, 0.8], [0.5, -2.6, 1.0]], 11);
