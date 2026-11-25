@@ -57,10 +57,18 @@ export async function initMapSigns(scene, mapData) {
     // removed 25 Nov: stood on road, her order (only when no slide clears; see ROAD_EMPTY_REMOVE)
     const r0 = s.o.rect, yaw0 = Math.atan2(r0.front[0], r0.front[1]), fx0 = Math.sin(yaw0), fz0 = Math.cos(yaw0), tx0 = fz0, tz0 = -fx0;
     const probes = [-1, -0.5, 0, 0.5, 1].map((k) => [r0.cx + tx0 * k * (w / 2 - 0.12), r0.cz + tz0 * k * (w / 2 - 0.12)]);
-    const slide = roadEmptySlide(probes, fx0, fz0, ROAD_EMPTY_MAX_SLIDE);
+    let slide = roadEmptySlide(probes, fx0, fz0, ROAD_EMPTY_MAX_SLIDE), side = 0;
+    // 25 Nov (her order: move, never delete): the Crockery board (#114) sits between the cross road and the inner lane, so no slide along its own
+    // front axis clears both. It is also slid sideways (along its board, away from the lane) by the smallest distance that clears, then back from the road.
+    if (slide === null && s.o.id === 'new_sign#114') {
+      for (let m = 0.05; m <= 3 && slide === null; m += 0.05) {
+        const sl = roadEmptySlide(probes.map(([px, pz]) => [px + tx0 * m, pz + tz0 * m]), fx0, fz0, ROAD_EMPTY_MAX_SLIDE);
+        if (sl !== null) { slide = sl; side = m; }
+      }
+    }
     if (slide === null) { roadEmpty.push({ id: s.o.id, en: s.en, x: +r0.cx.toFixed(2), z: +r0.cz.toFixed(2), removed: true }); if (ROAD_EMPTY_REMOVE) continue; }
-    const r = slide ? { ...r0, cx: r0.cx + fx0 * slide, cz: r0.cz + fz0 * slide } : r0;
-    if (slide) roadEmpty.push({ id: s.o.id, en: s.en, from: [+r0.cx.toFixed(2), +r0.cz.toFixed(2)], to: [+r.cx.toFixed(2), +r.cz.toFixed(2)], slide: +slide.toFixed(2) });
+    const r = (slide || side) ? { ...r0, cx: r0.cx + fx0 * slide + tx0 * side, cz: r0.cz + fz0 * slide + tz0 * side } : r0;
+    if (slide || side) roadEmpty.push({ id: s.o.id, en: s.en, from: [+r0.cx.toFixed(2), +r0.cz.toFixed(2)], to: [+r.cx.toFixed(2), +r.cz.toFixed(2)], slide: +slide.toFixed(2), side: +side.toFixed(2) });
     items.push({ ...s, hi, en: EN_FIX[s.en] || s.en, w, bh, cw: Math.round(CELL_H * w / bh), r });
   }
   // shelf-pack the cells into one atlas

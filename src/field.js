@@ -28,9 +28,9 @@ export const TRACK_CORNERS = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW];
 
 // 25 Nov (her order, nothing stands on a road): the map's 26_Wheat field track (docs/layout/approved-map-2026-11-25.json, width 4) runs
 // north-south through the middle of this khet, so the khet is split into two halves with the track between them. Ground and every
-// crop stop TRACK_CLEAR from the track centre line (half width 2 + 0.15, clear of the band by at least 0.1 m even where it leans 3 deg).
+// crop stop TRACK_CLEAR from the track centre line (half width 2 + drawn wander 0.63 + 0.3 m margin, see TRACK_CLEAR below).
 const FIELD_TRACK_PTS = [[608.3, -170.6], [608.4, -173.6], [608.6, -176.6], [608.8, -179.6], [609, -182.7], [609.2, -185.7], [609.4, -188.7], [609.5, -191.7], [609.6, -194.8], [609.6, -197.8], [609.6, -200.8], [609.5, -203.8], [609.5, -206.8], [609.5, -209.9], [609.5, -212.9], [609.4, -215.9], [609.3, -218.9], [609.2, -222], [609.1, -225], [609, -228], [613.08, -301.5]];
-export const TRACK_CLEAR = 2.15;
+export const TRACK_CLEAR = 2.97; // 25 Nov: was 2.15; drawn edge = half 2 + wander 0.45*1.4 = 2.63, + 0.3 m margin = 2.93, +0.04 for the lean
 /** x of the wheat field track's centre line at world z (the points run north to south, z falling). */
 export function wheatTrackX(z) {
   const P = FIELD_TRACK_PTS;
