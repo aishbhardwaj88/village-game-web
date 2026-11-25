@@ -421,6 +421,24 @@ function getGrassCoverTexture() {
   return grassCoverTex;
 }
 
+// 25 Nov (variety): two extra ground surfaces from the library (dryearth, lane = trodden dirt) are mixed in by area, weighted
+// by two low-frequency noise fields, with tint and scale varied per area. Same files the houses and lanes already load (loadRaw
+// shares the fetch): 0 KB added. uExtraMix stays 0 until the maps have arrived, so nothing shows blank.
+const groundExtra = { mix: { value: 0 }, maps: null };
+function getGroundExtra() {
+  if (groundExtra.maps) return groundExtra;
+  const L = (n, k, srgb) => { const t = loadRaw(`assets/textures/${n}/${n}_${k}.webp`, srgb).clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t; };
+  const a = { c: L('dryearth', 'color', true), n: L('dryearth', 'normal', false) };
+  const b = { c: L('lane', 'color', true), n: L('lane', 'normal', false) };
+  groundExtra.maps = { a, b };
+  let pending = 4;
+  for (const t of [a.c, a.n, b.c, b.n]) {
+    const done = () => { if (--pending === 0) groundExtra.mix.value = 1; };
+    if (t.image && t.image.width) done(); else { const prev = t.onUpdate; t.onUpdate = () => { if (prev) prev(); t.onUpdate = null; done(); }; }
+  }
+  return groundExtra;
+}
+
 export function applyGroundNoiseDetail(
   material,
   {
@@ -472,6 +490,8 @@ export function applyGroundNoiseDetail(
     shader.uniforms.uDampRadius1 = { value: spot1 ? spot1.radius : 0 };
     shader.uniforms.uDampTint1 = { value: spot1 ? new THREE.Color(spot1.tint).toArray() : [1, 1, 1] };
     shader.uniforms.uPatchContrast = { value: patchContrast };
+    { const ge = getGroundExtra(); shader.uniforms.uExtraMix = ge.mix; shader.uniforms.uExAC = { value: ge.maps.a.c }; shader.uniforms.uExAN = { value: ge.maps.a.n };
+      shader.uniforms.uExBC = { value: ge.maps.b.c }; shader.uniforms.uExBN = { value: ge.maps.b.n }; }
     shader.uniforms.uLampPool = lampPoolUniform;
     shader.uniforms.uLampPoolMix = lampPoolMix;
     shader.uniforms.uFurrow = { value: new THREE.Vector3(furrows ? furrows.spacing : 0, furrows ? furrows.originZ : 0, furrows ? furrows.depth : 0) };
@@ -503,6 +523,15 @@ export function applyGroundNoiseDetail(
         uniform float uDampRadius1;
         uniform vec3 uDampTint1;
         uniform float uPatchContrast;
+        uniform float uExtraMix;
+        uniform sampler2D uExAC;
+        uniform sampler2D uExAN;
+        uniform sampler2D uExBC;
+        uniform sampler2D uExBN;
+        float gExA_g = 0.0;
+        float gExB_g = 0.0;
+        vec2 gExUvA_g = vec2(0.0);
+        vec2 gExUvB_g = vec2(0.0);
         uniform vec3 uFurrow;
         uniform vec3 uLampPool[12];
         uniform float uLampPoolMix;
@@ -538,6 +567,26 @@ export function applyGroundNoiseDetail(
           if (detailMix > 0.001) {
             vec3 detailColor = texture2D(map, vMapUv * uDetailScale).rgb;
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * detailColor * 1.5, detailMix * 0.5);
+          }
+
+          if (uExtraMix > 0.5) {
+            // Area variety: dry earth and trodden dirt mixed over the base ground by two big, soft noise fields (45 m and 70 m
+            // cells, ragged edges from a finer octave). Each patch has its own tint and tile scale, so no one look repeats.
+            vec2 wxz_ = vWorldPos_g.xz;
+            float nA_ = groundValueNoise(wxz_ / 46.0 + 3.1) * 0.75 + groundValueNoise(wxz_ / 9.0) * 0.25;
+            float nB_ = groundValueNoise(wxz_ / 71.0 + 19.7) * 0.75 + groundValueNoise(wxz_ / 11.0 + 5.0) * 0.25;
+            gExA_g = smoothstep(0.5, 0.72, nA_) * 0.85;
+            gExB_g = smoothstep(0.52, 0.74, nB_) * 0.8 * (1.0 - gExA_g);
+            float sA_ = 0.16 + 0.1 * groundValueNoise(wxz_ / 130.0 + 7.0);
+            float sB_ = 0.13 + 0.08 * groundValueNoise(wxz_ / 110.0 + 2.0);
+            gExUvA_g = wxz_ * sA_; gExUvB_g = wxz_ * sB_;
+            vec3 tA_ = vec3(0.92, 0.84, 0.74) * (0.9 + 0.3 * groundValueNoise(wxz_ / 37.0 + 11.0));
+            vec3 tB_ = vec3(0.86, 0.8, 0.72) * (0.85 + 0.35 * groundValueNoise(wxz_ / 53.0 + 23.0));
+            float lum_ = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+            vec3 cA_ = texture2D(uExAC, gExUvA_g).rgb * tA_ * 1.15;
+            vec3 cB_ = texture2D(uExBC, gExUvB_g).rgb * tB_ * 1.1;
+            diffuseColor.rgb = mix(diffuseColor.rgb, cA_ * (0.75 + 0.5 * lum_), gExA_g);
+            diffuseColor.rgb = mix(diffuseColor.rgb, cB_ * (0.75 + 0.5 * lum_), gExB_g);
           }
 
           if (uGrassEnabled > 0.5) {
@@ -600,6 +649,11 @@ export function applyGroundNoiseDetail(
       .replace(
         '#include <normal_fragment_maps>',
         `#include <normal_fragment_maps>
+        if (gExA_g + gExB_g > 0.001) {
+          vec3 na_ = texture2D(uExAN, gExUvA_g).xyz * 2.0 - 1.0, nb_ = texture2D(uExBN, gExUvB_g).xyz * 2.0 - 1.0;
+          vec3 ew_ = vec3(na_.x * gExA_g + nb_.x * gExB_g, 0.0, -(na_.y * gExA_g + nb_.y * gExB_g));
+          normal = normalize(normal + mat3(viewMatrix) * ew_ * 0.6);
+        }
         if (gGrassMask_g > 0.001) {
           // Flat ground, so the scan's tangent-space normal tilts the world-up normal directly (GL convention).
           vec3 gn = texture2D(uGrassNormal, vWorldPos_g.xz * 0.37).xyz * 2.0 - 1.0;
@@ -625,7 +679,7 @@ export function applyGroundNoiseDetail(
   // aoMap/vertexColors present or not, etc.) is still caught by three's OWN automatic
   // part of the program cache key, which this custom key is only ever appended to —
   // this fix only removes the needless extra fragmentation on top of that.
-  material.customProgramCacheKey = () => 'ground-noise-detail-v6';
+  material.customProgramCacheKey = () => 'ground-noise-detail-v7';
   return material;
 }
 
