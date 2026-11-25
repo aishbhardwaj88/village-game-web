@@ -110,6 +110,9 @@ export const roadClearance = (roads, x, z) => { const n = nearestRoad(roads, x, 
 // ---------------------------------------------------------------------------------------------- S7 fixes: road edges
 // Map objects drawn a metre or two into a gali or the highway are trimmed back to the road edge; the road never moves.
 const ROAD_GAP = 0.05;
+// 25 Nov (her order: ROADS MUST BE EMPTY): painted patches stay 0.3 m beyond the DRAWN edge (band + wander amp x 1.4 from roadNetwork.js ROAD_KINDS), not just the band
+const WANDER = { highway: 0.2, road: 0.32, lane: 0.3, back: 0.2, track: 0.45, path: 0.2 };
+const drawnClr = (roads, x, z) => { const n = nearestRoad(roads, x, z); return n ? n.d - n.half - (WANDER[n.kind] ?? 0.3) * 1.4 - 0.3 : 99; };
 /** Step every side of a rectangular patch that reaches into a road back to the road edge. Returns metres trimmed. */
 export function trimRectToRoads(p, roads) {
   let { x, z, ry, w, d } = p, trimmed = 0;
@@ -119,10 +122,10 @@ export function trimRectToRoads(p, roads) {
       let worst = 99;
       for (let i = 0; i <= 16; i++) {
         const t = -0.5 + i / 16, lx = ax === 'x' ? sg * w / 2 : t * w, lz = ax === 'z' ? sg * d / 2 : t * d;
-        worst = Math.min(worst, roadClearance(roads, ...toWorld(x, z, ry, lx, lz)));
+        worst = Math.min(worst, drawnClr(roads, ...toWorld(x, z, ry, lx, lz)));
       }
       if (worst >= -0.01) continue;
-      const cut = -worst + ROAD_GAP;
+      const cut = -worst + ROAD_GAP; // worst is already 0.3 m beyond the drawn edge
       if ((ax === 'x' ? w : d) - cut < 1.5) continue; // never trim a patch to nothing
       if (ax === 'x') { w -= cut; [x, z] = toWorld(x, z, ry, -sg * cut / 2, 0); } else { d -= cut; [x, z] = toWorld(x, z, ry, 0, -sg * cut / 2); }
       trimmed += cut; changed = true;

@@ -18,12 +18,12 @@ import { Obj, Batch, rnd, local, spotMatrix } from './villageOddities.js';
 
 // anchor id, local x, local z (place frame), object yaw. Scouted for 17 x 7 m clear of every collider, visible mesh and road.
 export const FIXTURE_SPOTS = {
-  newOldPair: { at: 'banta', lx: -17.4, lz: 0.2, yaw: -1.4835 },
+  newOldPair: { at: 'banta', lx: -49.56, lz: -31.38, yaw: 1.0067, s: 1 }, // 25 Nov roads empty (G): moved to world 623.0,-45.0, front toward inner_loop (11 m), was 623,-2 on inner_loop
 };
 
 // removed 25 Nov: stood on road, her order. The new+old house pair (about 13 x 5.5 m) stands 1.2 m inside the drawn edge of inner_loop and no shift of up to 6 m clears it
 // (best -0.57 m, tmp/roadempty/fix_try.mjs). Set to false to bring it back once the map gives it an empty plot.
-export const REMOVED_ON_ROAD = { newOldPair: true };
+export const REMOVED_ON_ROAD = { newOldPair: false }; // 25 Nov (G): back, at its new empty spot above
 
 const MUD = 0xc2a47c, MUD2 = 0xb09270, PLASTER = 0xd7c9a8, PAINT = 0x7fa0a8, CONC = 0xa4a096, BRICK = 0xb06f4a;
 const WOODD = 0x6a4c30, GREEN = 0x4f6a52;

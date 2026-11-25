@@ -2218,7 +2218,7 @@ async function main() {
           { x: FIELD_CENTER.x + (-17), z: FIELD_CENTER.z + 42, rotationY: -0.6 },
           { x: FIELD_CENTER.x + (-8), z: FIELD_CENTER.z + 39.5, rotationY: 1.2, buffalo: true },
           { x: FIELD_CENTER.x + (0), z: FIELD_CENTER.z + 41.5, rotationY: -1.0 },
-          { x: FIELD_CENTER.x + (8), z: FIELD_CENTER.z + 40, rotationY: 0.5, buffalo: true },
+          { x: FIELD_CENTER.x + (10.5), z: FIELD_CENTER.z + 40, rotationY: 0.5, buffalo: true }, // 25 Nov roads empty (G): was +8 (2.9 m from the wheat track centre line), now 5.3 m, inside the east half of the field
           { x: FIELD_CENTER.x + (16), z: FIELD_CENTER.z + 42, rotationY: -0.2 },
         ]);
         const dogs = createDogPack([

@@ -24,7 +24,7 @@ export const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; 
 
 // anchor id, local x, local z (place frame, front = +z), object yaw. Scouted against every collider + visible mesh + the roads.
 export const ODDITY_SPOTS = {
-  halfbuilt: { at: 'banta', lx: -31.2, lz: 15.5, yaw: -1.284 },
+  halfbuilt: { at: 'banta', lx: -48.05, lz: 20.53, yaw: -2.0242, s: 0.9 }, // 25 Nov roads empty (G): brought back beside gali_n40, front facing it; world 577.0,-20.9 (was 601.0,-17.9 on main_road); tmp/restore2/solve.mjs
   sandpile: { at: 'post', lx: 24.6, lz: -4.7, yaw: 0.005 },
   scaffold: { at: 'haveli', lx: 5.11, lz: 24.29, yaw: 0.037 },
   well: { at: 'halwai', lx: -5.95, lz: -18.68, yaw: -0.09 },
@@ -33,8 +33,8 @@ export const ODDITY_SPOTS = {
 };
 
 // 25 Nov, her order ROADS MUST BE EMPTY: scaffold (2.5 m) and well (2.25 m, clear of the drawn road, not the full scuffed apron) moved off the drawn road (band + scuffed apron + wander + 0.3 m) by editing their lx/lz above (was scaffold 4.9, 21.8; well -7.4, -20.4); tmp/roadempty/solve.mjs
-// removed 25 Nov: stood on road (main_road, 2-4 m deep) and no legal spot within 6 m; set to [] to bring it back
-export const ODDITY_REMOVED_25NOV = ['halfbuilt'];
+// 25 Nov (G): the half-built house is back, moved to an empty spot beside gali_n40 (the earlier removal list is now empty)
+export const ODDITY_REMOVED_25NOV = [];
 
 export function spotMatrix(sp) {
   const a = ANCHORS[sp.at];
@@ -43,7 +43,9 @@ export function spotMatrix(sp) {
   if (kind && ODDITY_REMOVED_25NOV.includes(kind)) return null;
   const ry = a.ry || 0, s = Math.sin(ry), c = Math.cos(ry);
   const x = a.x + sp.lx * c + sp.lz * s, z = a.z - sp.lx * s + sp.lz * c;
-  return new THREE.Matrix4().makeRotationY(ry + (sp.yaw || 0)).setPosition(x, 0, z);
+  const m = new THREE.Matrix4().makeRotationY(ry + (sp.yaw || 0));
+  if (sp.s) m.scale(new THREE.Vector3(sp.s, sp.s, sp.s)); // optional uniform scale (25 Nov, restored items)
+  return m.setPosition(x, 0, z);
 }
 
 function metreUV(geo, tile) {
