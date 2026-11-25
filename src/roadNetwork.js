@@ -26,7 +26,7 @@ const NEW_LAYOUT = isNewLayout();
 
 /** Per-kind look: tint (multiplies the dirt texture), edge wander amplitude (m), edge band width (m), nali, ruts. */
 export const ROAD_KINDS = {
-  highway: { tint: 0x86837d, amp: 0.2, band: 1.8, edge: 0xa08f72, drain: false, ruts: false, bump: 0.006, potholes: true },
+  highway: { tint: 0x86837d, amp: 0.08, band: 1.2, edge: 0x8f8b80, drain: false, ruts: false, bump: 0.003, potholes: false }, // 25 Nov: crisp tarmac edge (amp 0.2 -> 0.08, band 1.8 -> 1.2, gravel edge); drawn-edge clearance only gets more conservative
   road: { tint: 0x9d9384, amp: 0.32, band: 1.4, edge: 0xa69579, drain: false, ruts: false, bump: 0.01, potholes: true },
   lane: { tint: 0xb19c76, amp: 0.3, band: 1.1, edge: 0xb09c78, drain: true, ruts: false, bump: 0.012, potholes: true },
   back: { tint: 0xb09a74, amp: 0.2, band: 0.8, edge: 0xab9775, drain: false, ruts: false, bump: 0.01, potholes: true },
@@ -52,6 +52,8 @@ function apronKeep(x, z) { // 0 = apron fully removed here, 1 = untouched
   }
   return k;
 }
+/** Highway spec (MAP.md gives only the 11 m total; this repo has no MAP.md): 7 m two-lane carriageway + 2 x 2 m paved shoulders = 11 m. */
+export const CARRIAGE_HW = 3.5; // half the painted carriageway, m
 const CELL = 0.8; // grid spacing, metres. Edge wander is >= 2.5 m wavelength, so 0.8 m resolves it.
 const JOIN_K = 3.0; // smooth-min radius: how round the inner corner of a junction is
 const END_EASE = 0.6; // m before a flat dead end over which the edge wander and the scuffed fade die away, so the end is a clean line at the map's end
@@ -295,12 +297,13 @@ function sample(net, x, z, out) {
     if (free) { endPl = bestPl[minLine]; endOver = bestOver[minLine]; }
   }
   // Soft weights blend the look of lines meeting at a junction.
-  let wsum = 0, lift = 0, amp = 0, band = 0, bump = 0, tr = 0, tg = 0, tb = 0, er = 0, eg = 0, eb = 0, drain = 0, rut = 0, pot = 0;
+  let wsum = 0, lift = 0, amp = 0, band = 0, bump = 0, tr = 0, tg = 0, tb = 0, er = 0, eg = 0, eb = 0, drain = 0, rut = 0, pot = 0, hwW = 0, hwBest = -1, hwLat = 0;
   for (const li of touched) {
     const l = net.lines[li];
     const di = bestD[li];
     touchedMark[li] = 0;
     const w = Math.exp(-(di - dmin) / 0.7);
+    if (l.kind === 'highway') { hwW += w; if (w > hwBest) { hwBest = w; hwLat = bestLat[li]; } }
     wsum += w; lift += w * l.lift; amp += w * l.k.amp; band += w * l.k.band; bump += w * l.k.bump; pot += w * (l.k.potholes ? 1 : 0);
     tr += w * l.tint.r; tg += w * l.tint.g; tb += w * l.tint.b;
     er += w * l.edgeTint.r; eg += w * l.edgeTint.g; eb += w * l.edgeTint.b;
@@ -345,9 +348,28 @@ function sample(net, x, z, out) {
   // potholes: broken, dust-rimmed and often damp at the bottom, never out at the grassy edge
   const pit = pot > 0.02 ? pot * inside * potholeField(x, z) : 0;
   if (pit > 0.02) { const k = 1 - 0.55 * pit; r *= k; g *= k * 0.985; b *= k * 1.04; }
+  // HIGHWAY (25 Nov): dark tarmac carriageway, paler paved shoulders, gravel strip beyond, a slight crown. Blended in by the highway's
+  // share of the junction weights, so a village road meeting it keeps its own dirt. Vertex colour multiplies the shared asphalt
+  // material (concrete_e normal+roughness), so the base grey here is dark.
+  const hwF = hwW / wsum;
+  let camber = 0;
+  out.hw = hwF; out.lat = hwLat;
+  if (hwF > 0.001) {
+    const al = Math.abs(hwLat);
+    const shoulder = Math.min(1, Math.max(0, (al - CARRIAGE_HW + 0.12) / 0.3)); // 0 carriageway, 1 paved shoulder
+    const lane = Math.abs(((al % 3.5) - 1.75)); // 0 at a lane centre, 1.75 at a lane edge
+    const polish = Math.exp(-(((lane - 0.82) / 0.3) ** 2)); // two wheel tracks per lane
+    let base = 0.30 + 0.13 * shoulder - 0.035 * polish * (1 - shoulder);
+    base *= 0.93 + 0.09 * vnoise(x / 3.7 + 5, z / 3.7 - 2) + 0.06 * vnoise(x / 1.1, z / 1.1);
+    let ar = base, ag = base, ab = base * 1.03;
+    const gm = Math.min(1, Math.max(0, (D + 0.35) / 0.55)); // the gravel / dust strip beyond the paved shoulder
+    ar += (er / wsum * 0.62 - ar) * gm; ag += (eg / wsum * 0.62 - ag) * gm; ab += (eb / wsum * 0.62 - ab) * gm;
+    r += (ar - r) * hwF; g += (ag - g) * hwF; b += (ab - b) * hwF;
+    camber = hwF * 0.045 * Math.max(0, 1 - (al / (CARRIAGE_HW + 2)) ** 2) * (1 - gm);
+  }
   out.a = a;
   out.r = r; out.g = g; out.b = b;
-  out.y = 0.032 + lift + bump * vnoise(x / 2.3 + 11, z / 2.3) - 0.022 * t - 0.045 * drain * inside - (rut > 0 ? 0.012 * rut * inside : 0) - 0.065 * pit;
+  out.y = camber + 0.032 + lift + bump * vnoise(x / 2.3 + 11, z / 2.3) - 0.022 * t - 0.045 * drain * inside - (rut > 0 ? 0.012 * rut * inside : 0) - 0.065 * pit;
   // S7 (?layout=new): the painted fields lie at y 0.016 (shops-land); the road surface, its edge band and its nali groove never
   // dip under 0.02, so a road always draws over a field it touches. ?layout=old unchanged.
   if (NEW_LAYOUT && out.y < 0.02) out.y = 0.02;
@@ -385,6 +407,7 @@ export function networkMesh(net, rect, name) {
   const nx = gx1 - gx0 + 1, nz = gz1 - gz0 + 1;
   const alpha = new Float32Array(nx * nz).fill(-1);
   const data = new Float32Array(nx * nz * 4);
+  const hwv = new Float32Array(nx * nz); // the highway's share of each vertex (0 = village road, 1 = highway)
   const proj = new Uint8Array(nx * nz), gxy = new Float32Array(nx * nz * 2); // vertices moved onto a flat end plane, and where they went
   const s = {};
   for (let j = 0; j < nz; j++) {
@@ -404,11 +427,11 @@ export function networkMesh(net, rect, name) {
       }
       if (!r) continue;
       alpha[k] = r.a;
-      data[k * 4] = r.r; data[k * 4 + 1] = r.g; data[k * 4 + 2] = r.b; data[k * 4 + 3] = r.y;
+      data[k * 4] = r.r; data[k * 4 + 1] = r.g; data[k * 4 + 2] = r.b; data[k * 4 + 3] = r.y; hwv[k] = r.hw || 0;
     }
   }
   const remap = new Int32Array(nx * nz).fill(-1);
-  const pos = [], col = [], uv = [], idx = [];
+  const pos = [], col = [], uv = [], uvA = [], idx = [], idxA = [];
   const vert = (k) => {
     if (remap[k] >= 0) return remap[k];
     const i = k % nx, j = (k / nx) | 0;
@@ -417,6 +440,7 @@ export function networkMesh(net, rect, name) {
     pos.push(x, has ? data[k * 4 + 3] : 0.01, z);
     col.push(has ? data[k * 4] : 0.5, has ? data[k * 4 + 1] : 0.5, has ? data[k * 4 + 2] : 0.4, has ? alpha[k] : 0);
     uv.push(x / 3.3, z / 3.3);
+    uvA.push(x / ASPHALT_TILE, z / ASPHALT_TILE);
     remap[k] = pos.length / 3 - 1;
     return remap[k];
   };
@@ -430,8 +454,125 @@ export function networkMesh(net, rect, name) {
       if (proj[k00] && proj[k10] && proj[k01] && proj[k11]) continue; // all four lie on the end plane: no area
       const v00 = vert(k00), v10 = vert(k10), v01 = vert(k01), v11 = vert(k11);
       // split along the diagonal whose ends agree best, so the fade has no saw-tooth
-      if (Math.abs(A(k00) - A(k11)) <= Math.abs(A(k10) - A(k01))) idx.push(v00, v01, v11, v00, v11, v10);
-      else idx.push(v00, v01, v10, v10, v01, v11);
+      const L = (hwv[k00] + hwv[k10] + hwv[k01] + hwv[k11]) >= 2 ? idxA : idx; // quads that are mostly highway take the asphalt material
+      if (Math.abs(A(k00) - A(k11)) <= Math.abs(A(k10) - A(k01))) L.push(v00, v01, v11, v00, v11, v10);
+      else L.push(v00, v01, v10, v10, v01, v11);
+    }
+  }
+  if (!idx.length && !idxA.length) return null;
+  const posA = new THREE.Float32BufferAttribute(pos, 3), colA = new THREE.Float32BufferAttribute(col, 4);
+  const mk = (list, uvs, material, nm) => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', posA);
+    geo.setAttribute('color', colA);
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setIndex(pos.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(list, 1) : new THREE.Uint16BufferAttribute(list, 1));
+    geo.computeVertexNormals();
+    ensureUv2(geo);
+    geo.computeBoundingSphere();
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.name = nm;
+    mesh.receiveShadow = true;
+    mesh.castShadow = false;
+    mesh.renderOrder = -1; // under every other see-through thing at ground level
+    return mesh;
+  };
+  const dirt = idx.length ? mk(idx, uv, roadMaterial(), name) : null;
+  if (!idxA.length) return dirt;
+  const asph = mk(idxA, uvA, asphaltMaterial(), `${name}_asphalt`);
+  if (!dirt) return asph;
+  const g = new THREE.Group(); // one group, two ground draws: village earth + highway tarmac
+  g.name = name;
+  g.add(dirt, asph);
+  return g;
+}
+
+const ASPHALT_TILE = 2.4; // m of road per texture tile: fine aggregate grain at driving height
+let AMAT = null, PMAT = null;
+/** Highway tarmac: the shared 'concrete_e' set (CC0 ambientCG Concrete034, normal + roughness) dark-tinted by vertex colour. No asphalt scan is in the repo and the build has no network, see docs/NEEDS_YOU.md. */
+export function asphaltMaterial() {
+  if (AMAT) return AMAT;
+  AMAT = cloneTiledMaterial(getTiledMaterial('concrete_e', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
+  AMAT.name = 'asphalt';
+  AMAT.transparent = true;
+  AMAT.polygonOffset = true; AMAT.polygonOffsetFactor = -1; AMAT.polygonOffsetUnits = -2;
+  return AMAT;
+}
+/** Painted lines: the same asphalt maps (worn paint keeps the grain), vertex colour > 1 lifts the grey texture to white, drawn one step above the tarmac. */
+function paintMaterial() {
+  if (PMAT) return PMAT;
+  PMAT = cloneTiledMaterial(asphaltMaterial());
+  PMAT.name = 'asphalt_paint';
+  PMAT.polygonOffsetFactor = -3; PMAT.polygonOffsetUnits = -6;
+  PMAT.roughness = 0.85;
+  return PMAT;
+}
+
+// ---------------------------------------------------------------- highway markings (decal ribbons, ONE merged mesh per chunk)
+export const MARK = { edgeLat: CARRIAGE_HW - 0.2, edgeW: 0.15, dashW: 0.15, dashLen: 3, dashGap: 6, lift: 0.014 };
+/** Plan of the markings of one highway line as ribbons [{ pts: [[x, z]...], w }]; pure geometry, no GPU. Edge lines are solid, the centre line broken, all gapped at junctions. */
+export function highwayMarkPlan(net, l, rect) {
+  const out = [];
+  const near = (x, z) => { // inside another road's band (a junction mouth): no paint across it
+    const arr = net.buckets.get(Math.floor(x / net.B) * 100003 + Math.floor(z / net.B));
+    if (!arr) return false;
+    for (const sI of arr) { const g = net.segs[sI]; const o = net.lines[g.line]; if (o.kind === 'highway') continue; if (segDi(g, x, z, o.hw).di < 0.6) return true; }
+    return false;
+  };
+  const pts = l.pts;
+  // walk the centreline by arclength at ~1 m, so the ribbons follow every fillet
+  const pos = []; // [s, x, z, ux, uz]
+  let s = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, az] = pts[i - 1], [bx, bz] = pts[i], len = Math.hypot(bx - ax, bz - az);
+    if (len < 1e-6) continue;
+    const n = Math.max(1, Math.ceil(len / 1.0));
+    for (let k = i === 1 ? 0 : 1; k <= n; k++) { const t = k / n; pos.push([s + len * t, ax + (bx - ax) * t, az + (bz - az) * t, (bx - ax) / len, (bz - az) / len]); }
+    s += len;
+  }
+  const inRect = (x, z) => x >= rect.x0 - 2 && x < rect.x1 + 2 && z >= rect.z0 - 2 && z < rect.z1 + 2;
+  const at = (p, lat) => [p[1] - p[4] * lat, p[2] + p[3] * lat];
+  const strand = (lat, w, dashed) => {
+    let cur = null;
+    const flush = () => { if (cur && cur.pts.length >= 2) out.push(cur); cur = null; };
+    for (const p of pos) {
+      const [x, z] = at(p, lat);
+      const phase = p[0] % (MARK.dashLen + MARK.dashGap);
+      const on = (!dashed || phase <= MARK.dashLen) && inRect(x, z) && !near(x, z) && !near(...at(p, lat + 1));
+      if (!on) { flush(); continue; }
+      if (!cur) cur = { pts: [], w, s0: p[0] };
+      cur.pts.push([x, z]);
+    }
+    flush();
+  };
+  strand(MARK.edgeLat, MARK.edgeW, false);
+  strand(-MARK.edgeLat, MARK.edgeW, false);
+  strand(0, MARK.dashW, true);
+  return out;
+}
+
+/** One merged mesh of the highway's painted lines inside rect, or null. A single draw call; ribbons sit MARK.lift above the sampled surface. */
+export function highwayMarksMesh(net, rect, name) {
+  const pos = [], col = [], uv = [], idx = [];
+  const s = {};
+  let wear = 0;
+  for (const l of net.lines) {
+    if (l.kind !== 'highway') continue;
+    for (const rb of highwayMarkPlan(net, l, rect)) {
+      wear++;
+      const base = pos.length / 3, n = rb.pts.length, c = 1.12 + 0.12 * hash2(wear * 7 + 1, wear * 13 + 2); // paint brightness x grey grain, 1.12-1.24
+      for (let i = 0; i < n; i++) {
+        const a = rb.pts[Math.max(0, i - 1)], b = rb.pts[Math.min(n - 1, i + 1)];
+        const dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz) || 1, nx = -dz / L, nz = dx / L, hw = rb.w / 2;
+        const [x, z] = rb.pts[i];
+        const r = sample(net, x, z, s);
+        const y = (r ? r.y : 0.04) + MARK.lift;
+        pos.push(x + nx * hw, y, z + nz * hw, x - nx * hw, y, z - nz * hw);
+        const a2 = 0.9 - 0.1 * vnoise(x / 2.2, z / 2.2); // worn paint
+        col.push(c, c, c * 0.97, a2, c, c, c * 0.97, a2);
+        uv.push(x / ASPHALT_TILE, z / ASPHALT_TILE, x / ASPHALT_TILE, z / ASPHALT_TILE);
+        if (i) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k - 1, k, k + 1); }
+      }
     }
   }
   if (!idx.length) return null;
@@ -441,13 +582,14 @@ export function networkMesh(net, rect, name) {
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   geo.setIndex(pos.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(idx, 1) : new THREE.Uint16BufferAttribute(idx, 1));
   geo.computeVertexNormals();
+  for (let i = 0; i < geo.attributes.normal.count; i++) if (geo.attributes.normal.getY(i) < 0) geo.attributes.normal.setY(i, -geo.attributes.normal.getY(i));
   ensureUv2(geo);
   geo.computeBoundingSphere();
-  const mesh = new THREE.Mesh(geo, roadMaterial());
+  const mesh = new THREE.Mesh(geo, paintMaterial());
   mesh.name = name;
   mesh.receiveShadow = true;
   mesh.castShadow = false;
-  mesh.renderOrder = -1; // under every other see-through thing at ground level
+  mesh.renderOrder = -1;
   return mesh;
 }
 

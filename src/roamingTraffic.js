@@ -15,6 +15,8 @@
 import * as THREE from 'three';
 import { getRoads } from './layout/layout.js';
 import { VEHICLE_PAINT, applyVehicleColour } from './vehicleVariants.js';
+import { footOffsetY } from './vehicleFit.js';
+import { createVehicleShadowSet, vehicleSurfaceY } from './vehicleContactShadow.js';
 
 export const LANE_OFFSET = 1.2;
 export const ROAM_KINDS = new Set(['highway', 'road', 'lane']);
@@ -24,11 +26,11 @@ const JOIN_TOL = 4; // m: a road whose end lies this close to our end is a joini
 
 // file, length (m, as the parked ones in villageVehicles.js), width, which model axis is long (x: nose +x, needs -90 deg), speed range m/s, seat [y, z, scale]
 const KINDS = {
-  bicycle:       { len: 1.7, axis: -Math.PI / 2, speed: [2, 3], seat: [0.23, -0.1, 0.9], cat: 'cycle' },
-  motorbike:     { len: 2.1, axis: -Math.PI / 2, speed: [4, 6], seat: [0.08, -0.1, 0.9], cat: 'bike' },
-  moped:         { len: 2.0, axis: Math.PI, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
-  auto_rickshaw: { len: 2.6, axis: Math.PI, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
-  tuk_tuk:       { len: 2.7, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
+  bicycle:       { len: 1.7, wid: 0.6, axis: -Math.PI / 2, speed: [2, 3], seat: [0.23, -0.1, 0.9], cat: 'cycle' },
+  motorbike:     { len: 2.1, wid: 0.8, axis: -Math.PI / 2, speed: [4, 6], seat: [0.08, -0.1, 0.9], cat: 'bike' },
+  moped:         { len: 2.0, wid: 0.7, axis: Math.PI, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
+  auto_rickshaw: { len: 2.6, wid: 1.4, axis: Math.PI, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
+  tuk_tuk:       { len: 2.7, wid: 1.4, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
 };
 const CATS = { cycle: ['bicycle'], bike: ['motorbike', 'moped'], auto: ['auto_rickshaw', 'tuk_tuk'] };
 const MIX = [['cycle', 0.35], ['bike', 0.30], ['auto', 0.35]];
@@ -84,6 +86,8 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
   const models = new Map(); // file -> { state: 'loading' | 'ready' | 'failed', tpl }
   const riderFree = []; let riderMade = 0, buildVillagerFn = null;
   const active = [];
+  const shadowSet = createVehicleShadowSet(MAX_ACTIVE + 4, 'roaming_vehicle_shadows'); root.add(shadowSet.mesh); // one draw call for every roaming vehicle's blob
+  const shadowSlots = Array.from({ length: MAX_ACTIVE + 4 }, (_, i) => i); // free instance slots
   const loaded = new Set(); let lastError = null, lastPP = null, fwd = null; // fwd: player's recent heading (x, z), the view direction proxy
   if (typeof window !== 'undefined') window.__roaming = { active: () => active.length, loaded: () => [...loaded], get lastError() { return lastError; } };
   let spawnT = 0, clock = 0;
@@ -101,7 +105,7 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
       const box = new THREE.Box3().setFromObject(m), size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
       const k = KINDS[file].len / Math.max(size.x, size.z);
       const fix = new THREE.Group(); // model axis fix, then centred and scaled, feet on y = 0
-      m.scale.multiplyScalar(k); m.position.set(-ctr.x * k, -box.min.y * k, -ctr.z * k);
+      m.scale.multiplyScalar(k); m.position.set(-ctr.x * k, footOffsetY(file, box.min.y, size.y, k), -ctr.z * k); // tyre contact on y 0, not Box3.min.y
       fix.add(m); fix.rotation.y = KINDS[file].axis;
       models.set(file, { state: 'ready', tpl: fix }); loaded.add(file);
     } catch (e) {
@@ -151,6 +155,7 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
   function spawn(pp) {
     if (!paths.length) return;
     const file = pickFile(); if (!file) return;
+    if (!shadowSlots.length) return;
     const spot = randomSpot(pp); if (!spot) return;
     const K = KINDS[file], rider = takeRider(); if (!rider) return;
     const model = models.get(file).tpl.clone(true); // shares geometry and materials
@@ -162,13 +167,14 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
     root.add(holder);
     const q = spot.q;
     const v = { file, K, holder, sway, model, rider, path: spot.path, s: spot.s, dir: spot.dir, x: q.x, z: q.z, yaw: q.yaw, ex: 0, ez: 0, speed: 0,
-      cruise: K.speed[0] + rnd() * (K.speed[1] - K.speed[0]), stopT: 0, phase: rnd() * 6.28, shadows: true };
+      slot: shadowSlots.pop(), cruise: K.speed[0] + rnd() * (K.speed[1] - K.speed[0]), stopT: 0, phase: rnd() * 6.28, shadows: true };
     setShadows(v, false);
-    holder.position.set(v.x, groundAt ? groundAt(v.x, v.z) : 0, v.z); holder.rotation.y = v.yaw;
+    const sy = vehicleSurfaceY(groundAt, v.x, v.z);
+    holder.position.set(v.x, sy, v.z); holder.rotation.y = v.yaw; shadowSet.place(v.slot, v.x, sy, v.z, v.yaw, K.len, K.wid);
     active.push(v);
   }
   function remove(i) {
-    const v = active[i]; root.remove(v.holder); v.sway.remove(v.rider); riderFree.push(v.rider); active.splice(i, 1);
+    const v = active[i]; shadowSet.hide(v.slot); shadowSlots.push(v.slot); root.remove(v.holder); v.sway.remove(v.rider); riderFree.push(v.rider); active.splice(i, 1);
   }
   // end of the polyline: take a joining road at random, else turn round (the lane flips with the direction)
   function nextRoad(v) {
@@ -214,10 +220,10 @@ export function createRoamingTraffic(scene, { getPlayer, groundAt }) {
       v.ex *= k; v.ez *= k;
       v.x = q.x + v.ex; v.z = q.z + v.ez;
       v.yaw += wrap(q.yaw - v.yaw) * Math.min(1, dt * 6);
-      const g = groundAt ? groundAt(v.x, v.z) : 0;
-      v.holder.position.set(v.x, g, v.z); v.holder.rotation.y = v.yaw;
+      const g = vehicleSurfaceY(groundAt, v.x, v.z); // terrain or the drawn road surface, whichever is higher (the road lies 2 to 7 cm above groundAt)
+      v.holder.position.set(v.x, g, v.z); v.holder.rotation.y = v.yaw; shadowSet.place(v.slot, v.x, g, v.z, v.yaw, v.K.len, v.K.wid);
       const moving = Math.min(1, v.speed / 3), lean = v.K.cat === 'cycle' ? 0.03 : 0.012;
-      v.sway.rotation.z = Math.sin(clock * 2.6 + v.phase) * lean * moving - wrap(q.yaw - v.yaw) * 0.25 * moving * (v.K.cat === 'auto' ? 0.4 : 1);
+      v.sway.rotation.z = Math.sin(clock * 2.6 + v.phase) * lean * moving - wrap(q.yaw - v.yaw) * 0.25 * moving * (v.K.cat === 'auto' ? 0.15 : 1);
       v.sway.rotation.x = Math.sin(clock * 5.1 + v.phase) * 0.008 * moving;
       setShadows(v, dp < SHADOW_NEAR - (v.shadows ? 0 : 3));
     }

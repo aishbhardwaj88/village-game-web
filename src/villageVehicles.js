@@ -15,7 +15,8 @@ import { colliderBoxFromTransform } from './collision.js';
 import { registerPropSite } from './propGate.js';
 import { addThelaSign } from './thelaSign.js';
 import { applyVehicleColour } from './vehicleVariants.js';
-import { frontFix, fitLen } from './vehicleFit.js';
+import { frontFix, fitLen, footOffsetY } from './vehicleFit.js';
+import { createVehicleShadowSet, vehicleSurfaceY } from './vehicleContactShadow.js';
 
 export const VILLAGE_VEHICLES = [
   { file: 'old_tractor', x: 614, z: -225.2, yaw: -3.108, hex: 0xb3261e, length: 3.5 }, // Our khet, wheat track edge
@@ -85,7 +86,9 @@ export function registerVillageVehicles(scene, groundAt) {
 }
 
 function buildCluster(c, gltfs, group, groundAt) {
-  c.list.forEach((v) => {
+  const shadows = createVehicleShadowSet(c.list.length, 'village_vehicle_shadows'); // 1 draw call for the whole cluster
+  group.add(shadows.mesh);
+  c.list.forEach((v, vi) => {
     const g = gltfs[c.files.indexOf(v.file)];
     if (!g) return;
     const m = g.scene.clone(true); // one shared request per file, one copy per vehicle
@@ -99,12 +102,14 @@ function buildCluster(c, gltfs, group, groundAt) {
     holder.name = `village_${v.file}`;
     holder.userData.propSize = L(v);
     m.scale.multiplyScalar(k);
-    m.position.set(-ctr.x * k, -box.min.y * k, -ctr.z * k);
+    m.position.set(-ctr.x * k, footOffsetY(v.file, box.min.y, size.y, k), -ctr.z * k); // tyre contact on y 0, not Box3.min.y (stray bits under the wheels)
     holder.add(m);
     if (v.file === 'thela_gadi') addThelaSign(holder).catch((e) => console.warn('[thelaSign]', e));
     if (v.hex !== undefined) applyVehicleColour(holder, `${v.file}.glb`, v.hex);
     const ry = v.yaw + frontFix(v.file);
-    holder.position.set(v.x, groundAt ? groundAt(v.x, v.z) : 0, v.z);
+    const sy = vehicleSurfaceY(groundAt, v.x, v.z); // terrain or the drawn road surface, whichever is higher
+    holder.position.set(v.x, sy, v.z);
+    shadows.place(vi, v.x, sy, v.z, v.yaw, L(v), WIDTH[v.file] || 1.4);
     holder.rotation.y = ry;
     m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     holder.updateMatrixWorld(true);

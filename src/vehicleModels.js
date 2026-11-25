@@ -10,6 +10,8 @@
  */
 import * as THREE from 'three';
 import { registerPropSite } from './propGate.js';
+import { footOffsetY } from './vehicleFit.js';
+import { createVehicleShadowSet } from './vehicleContactShadow.js';
 
 const BASE = 'assets/vehicles_free/';
 // bed of the trailer in the file: z -2.03..2.04 (4.08 m), drawbar eye at z 4.07, wheels on two axles (z about -1.2 and +1.2)
@@ -64,7 +66,7 @@ function spinPart(part, sign) {
  * Scales and orients the glTF in the vehicle's own frame. Returns { holder, wheels } (wheels: spinning parts, if the wheel mesh
  * was found). `centre`: 'box' centres the bounding box on x/z, 'origin' keeps the file's own origin (the trailer's bed centre).
  */
-function prepare(gltf, { axis, length, scale, yaw, centre, wheelName, wheelAxis, spinSign }) {
+function prepare(gltf, { file, axis, length, scale, yaw, centre, wheelName, wheelAxis, spinSign }) {
   const holder = new THREE.Group();
   const body = new THREE.Group();
   const model = gltf.scene;
@@ -77,7 +79,7 @@ function prepare(gltf, { axis, length, scale, yaw, centre, wheelName, wheelAxis,
   body.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(body, true);
   const c = box.getCenter(new THREE.Vector3());
-  body.position.set(centre === 'origin' ? 0 : -c.x, -box.min.y, centre === 'origin' ? 0 : -c.z);
+  body.position.set(centre === 'origin' ? 0 : -c.x, footOffsetY(file, box.min.y, box.max.y - box.min.y, 1), centre === 'origin' ? 0 : -c.z); // tyre contact on y 0 (box is already scaled, k = 1)
   holder.add(body);
   holder.updateMatrixWorld(true);
   model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
@@ -103,7 +105,7 @@ function register({ name, file, size, center, spec, attach }) {
     name, center, extent: 3, gateRadius: 0, once: true, dead: true, // dead: the code-built vehicle shows meanwhile, no hole to hold the game for
     items: [{ url: `${BASE}${file}.glb`, size }],
     makeGroup: () => new THREE.Group(),
-    build: (gltfs, group) => { if (!gltfs[0] || built) return; built = prepare(gltfs[0], spec); built.holder.userData.propSize = size; group.add(built.holder); },
+    build: (gltfs, group) => { if (!gltfs[0] || built) return; built = prepare(gltfs[0], { ...spec, file }); built.holder.userData.propSize = size; group.add(built.holder); },
     onReady: () => {
       if (!built || built.holder.userData.attached) return;
       built.holder.userData.attached = true;
@@ -116,6 +118,11 @@ function register({ name, file, size, center, spec, attach }) {
 }
 
 /** Called from spawnVehicles(): registers the three model sites. `tractor`, `trolley`, `bike` are the Vehicle/Trolley objects. */
+/** Rotated soft contact shadow parented to the vehicle's ground-aligned group (the group tilts with the road, so it stays flat on it). */
+function addGroundShadow(group, len, wid) {
+  const set = createVehicleShadowSet(1, 'vehicle_contact_shadow'); set.place(0, 0, 0, 0, 0, len, wid); group.add(set.mesh);
+}
+
 export function registerVehicleModels({ tractor, trolley, bike }) {
   register({
     name: 'veh_tractor', file: 'old_tractor', size: 3.5, center: { x: tractor.group.position.x, z: tractor.group.position.z },
@@ -123,6 +130,7 @@ export function registerVehicleModels({ tractor, trolley, bike }) {
     attach: ({ holder }) => {
       hideAll([...tractor.bodyPivot.children, ...tractor.rearWheels, ...tractor.frontWheels]);
       tractor.bodyPivot.add(holder);
+      addGroundShadow(tractor.group, 3.5, 1.9);
     },
   });
   register({
@@ -131,6 +139,7 @@ export function registerVehicleModels({ tractor, trolley, bike }) {
     attach: ({ holder, wheels }) => {
       hideAll(trolley.group.children);
       trolley.group.add(holder);
+      addGroundShadow(trolley.group, 3.5, 1.94);
       for (const w of wheels) w.userData.spinScale = (1.1 / 2) / w.userData.radius; // updateWheel is given the code-built wheel radius
       if (wheels.length) trolley.wheels.splice(0, trolley.wheels.length, ...wheels);
     },
@@ -141,6 +150,7 @@ export function registerVehicleModels({ tractor, trolley, bike }) {
     attach: ({ holder, wheels }) => {
       hideAll([...bike.bodyPivot.children, bike.frontWheel, bike.rearWheel]);
       bike.bodyPivot.add(holder);
+      addGroundShadow(bike.group, 1.7, 0.6);
       for (const w of wheels) w.userData.spinScale = 0.3 / w.userData.radius;
       if (wheels.length === 2) {
         // after the -90 deg turn the file's front (+X) is +Z: the wheel further along +Z is the front one

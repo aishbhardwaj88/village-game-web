@@ -11,6 +11,7 @@ import { PLACES } from './freeRoam.js';
 import { roadAt } from './eastRoad.js';
 import { OLD_SHIFT } from './anchors.js';
 import { roadEmptyPush } from './mapRoads.js';
+import { getRoads, isNewLayout } from './layout/layout.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 // Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
@@ -18,6 +19,26 @@ const HIGHWAY_STONES = [
   { x: 196.6 + OLD_SHIFT.x, z: -18, ry: Math.PI, to: 'mandi', back: 'chowk' },
   { x: 196.6 + OLD_SHIFT.x, z: 82, ry: 0, to: 'mandi', back: 'chowk' },
 ];
+/** 25 Nov: kilometre stones along the approved map's highway (road 'highway', 11 m wide), one every 150 m, alternating verges, 1.6 m beyond the paved shoulder, facing the carriageway. Same shared model + material as every other stone. */
+function highwayKmSites(firstCell) {
+  if (!isNewLayout()) return [];
+  const hw = getRoads().find((r) => r.kind === 'highway');
+  if (!hw) return [];
+  const out = [];
+  let acc = 0, next = 120, n = 0;
+  for (let i = 1; i < hw.pts.length; i++) {
+    const [ax, az] = hw.pts[i - 1], [bx, bz] = hw.pts[i], len = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / len, uz = (bz - az) / len;
+    while (next <= acc + len && n < 6) {
+      const t = next - acc, side = n % 2 ? 1 : -1, off = (hw.width || 11) / 2 + 1.6;
+      const x = ax + ux * t - uz * off * side, z = az + uz * t + ux * off * side;
+      const e = roadEmptyPush(x, z, [[0, 0], [0.45, 0], [-0.45, 0], [0, 0.45], [0, -0.45]], 3, 0.6) || { x, z };
+      out.push({ id: `milestone_km${n}`, cell: firstCell + n, x: e.x, z: e.z, ry: Math.atan2(uz * side, -ux * side) });
+      next += 150; n++;
+    }
+    acc += len;
+  }
+  return out;
+}
 const SIDE = 3.4; // stands this far to the right of the walker, clear of the carriageway
 
 const byId = (id) => PLACES.find((p) => p.id === id);
@@ -55,7 +76,7 @@ export function milestoneSites() {
   const hw = byId('highway');
   if (!hw) return [];
   const hwSites = HIGHWAY_STONES.map((h, i) => ({ id: `milestone_hw${i}`, cell: SPACING.length + i, x: h.x, z: h.z, ry: h.ry, hw: h }));
-  return [...hwSites, ...SPACING.map((d, i) => {
+  return [...hwSites, ...highwayKmSites(SPACING.length + HIGHWAY_STONES.length), ...SPACING.map((d, i) => {
     const { x, z, ux, uz } = roadAt(d);
     // 25 Nov (roads empty, move never delete): 0.6 m beyond the drawn road edge (and its apron), pushed straight away from the nearest road, max 6 m
     const e = roadEmptyPush(x - uz * SIDE, z + ux * SIDE, [[0, 0], [0.45, 0], [-0.45, 0], [0, 0.45], [0, -0.45]], 6, 0.6) || { x: x - uz * SIDE, z: z + ux * SIDE };

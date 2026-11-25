@@ -86,3 +86,4 @@ item as a single line (do not wrap it across lines), ending in `- status: open` 
 - Not measured: fps. Over budget: game size 106 MB (cap 56 MB), play-ready 7.2 s. Not map related, parked until you say. - status: open
 - 26 Nov, her order: all wall posters removed (outside walls, CD shop, paan kiosk). New poster set will be pasted on empty walls when she sends it. Left in place on purpose: school classroom charts, painted wall writing and slogans, the peepal poster board, all shop signboards. Tell me if any of those should go too. - status: open
 - 26 Nov: wall posters are live but I could not look at them in the game (built-in browser pane hidden, game stalls at 80%). Open the Claude desktop app and press Cmd+Shift+B so the pane shows, then I can screenshot and send 2 review links. - status: open
+- Highway asphalt: please share a real asphalt scan (CC0) if you want a truer look; I tinted an existing dark concrete set for now - status: open
