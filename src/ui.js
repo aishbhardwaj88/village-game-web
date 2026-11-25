@@ -95,6 +95,33 @@ export function setupLoadingScreen() {
     if (mbEl) mbEl.textContent = known > 0 ? `${fmtMB(done)} of ${fmtMB(known)} MB` : '';
   };
 
+  // Stuck-load watchdog (25 Nov, her machine sat 10 min at 89%): when nothing moves for 20 s it says what it is waiting for under the bar
+  // and saves that to localStorage 'dopahar_stuck'; at 45 s with no progress it reloads the page once (a reload fixes stale or hung requests).
+  {
+    let sig = '', since = performance.now();
+    const waitingFor = () => {
+      const miss = STAGES.filter((n) => !stageDone.has(n));
+      let urls = []; try { urls = (window.__gateOpen && window.__gateOpen().urls) || []; } catch (e) { /* ignore */ }
+      return { stages: miss, urls: urls.map((u) => String(u).split('/').slice(-2).join('/').split('?')[0]), pending, marks: Object.keys(window.__loadMarks || {}).slice(-1)[0] || '' };
+    };
+    const watch = setInterval(() => {
+      if (document.getElementById('start-overlay') && document.getElementById('start-overlay').classList.contains('ready')) { clearInterval(watch); return; }
+      const w = waitingFor();
+      const now = `${done}|${pending}|${stageDone.size}|${Object.keys(window.__loadMarks || {}).length}`;
+      if (now !== sig) { sig = now; since = performance.now(); return; }
+      const idle = performance.now() - since;
+      if (idle > 20000) {
+        if (mbEl) mbEl.textContent = 'Still working on: ' + (w.urls[0] || w.stages.join(', ') || w.marks);
+        try { localStorage.setItem('dopahar_stuck', JSON.stringify({ t: new Date().toISOString(), idleMs: Math.round(idle), ...w, ua: navigator.userAgent.slice(0, 80) })); } catch (e) { /* ignore */ }
+        console.warn('[load] stuck', w);
+      }
+      if (idle > 45000) {
+        let again = false; try { again = !!sessionStorage.getItem('dopahar_stuck_reload'); sessionStorage.setItem('dopahar_stuck_reload', '1'); } catch (e) { again = true; }
+        if (!again) location.reload();
+      }
+    }, 1000);
+  }
+
   let ready = false, gateRunning = false;
   const markReady = () => {
     if (gateRunning || ready) return;
