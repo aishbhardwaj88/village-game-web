@@ -6,6 +6,7 @@ her NEEDS_YOU "Looks fixes ready" line is now sent (wasn't before this run). Ite
 container-blocked, not a real gap.
 
 ## Current state
+- 25 Nov VARIETY: houses (16 washes, per-house rotation/wear/material tint, housesMaterial.js) and ground (dryearth+lane mixed by area noise, materials.js) done, 0 KB added, same shader programs. Sheet docs/review/variety-sheet.png awaits her yes (frozen once approved). Not browser-verified (container crash).
 - Items 1, 3, 4, 5, 6: done (entries 24-38). Item 1 double-checked this run by
   reading code, not just trusting the old note: src/kit/housesMaterial.js is the
   live new-map house kit's own material (WALL_VARIANTS/EXTRA_VARIANTS, per-house
