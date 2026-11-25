@@ -11,9 +11,9 @@ import { reviewPlay } from './characterAnim.js';
 const LANE_X = [606, 610], LANE_Z = { hd: -123.5, sm: -125.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 const SPEED = 0.9, TURN_RATE = 3.5;
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Both', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 2.5, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -50,32 +50,40 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
   for (const [key, side] of [['hd', 'HD'], ['sm', 'SMART MESH']]) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
-    const lbl = label(side); g.add(lbl);
+    const lbl = label(side); lbl.visible = false; scene.add(lbl);
     scene.add(g);
     assetSlots.register(`gather_tvuncle_${key}`, { file: `tvuncle_${key}`, dimensions: { w: 2.4, h: 1.72, d: 2.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
     assetSlots.resolveOne(`gather_tvuncle_${key}`).catch(() => {});
     actors.push({ g, lbl, key, lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
-  let clip = 'idle', face = null, orbit = 0, dist = FACE_START;
+  let clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
   const keys = new Set();
   const origUpdate = camRig.update.bind(camRig);
-  const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; camRig.update(); };
-  const mark = bar((id) => {
+  camRig.update = () => {}; // the two-shot / face views place the camera themselves
+  const U = Math.hypot(VIEWER.x - CENTRE.x, VIEWER.z - CENTRE.z), ux = (VIEWER.x - CENTRE.x) / U, uz = (VIEWER.z - CENTRE.z) / U; // from the pair toward the viewer
+  const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
+  const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
+  let mark = () => {};
+  mark = bar((id) => {
     if (id === 'face_hd' || id === 'face_sm') {
       clip = 'idle'; reviewPlay('idle'); // both stand still
       face = actors.find((a) => `face_${a.key}` === id); orbit = 0; dist = FACE_START;
       camRig.update = () => {}; // we place the camera ourselves while in face view
       mark(id);
+    } else if (id === 'both') {
+      clip = 'idle'; reviewPlay('idle'); face = 'both'; orbit = 0; dist = BOTH_DIST; camRig.update = () => {}; mark(id);
     } else { leaveFace(); clip = id; reviewPlay(id); mark(id); }
   });
+  mark('both');
   const faceKey = (e) => ['a', 'd', 'w', 's', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key.length === 1 ? e.key.toLowerCase() : e.key);
   window.addEventListener('keydown', (e) => {
     if (!face) return;
+    if (face === 'both') { if (e.key === 'Escape' || faceKey(e)) { leaveFace(); mark(clip); } return; } // Escape or a walking key leaves the two-shot; the game still gets the key
     if (e.key === 'Escape') { leaveFace(); mark(clip); e.stopImmediatePropagation(); return; }
     if (faceKey(e)) { keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); e.preventDefault(); }
   }, true);
-  window.addEventListener('keyup', (e) => { if (face && faceKey(e)) { keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); } }, true);
-  const tmpV = new THREE.Vector3();
+  window.addEventListener('keyup', (e) => { if (face && face !== 'both' && faceKey(e)) { keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); } }, true);
+  const tmpV = new THREE.Vector3(), tmp2 = new THREE.Vector3();
   const turn = (a, want, dt) => {
     const d = Math.atan2(Math.sin(want - a.yaw), Math.cos(want - a.yaw));
     a.yaw += Math.sign(d) * Math.min(Math.abs(d), TURN_RATE * dt);
@@ -84,14 +92,20 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
   return function update(dt) {
     if (!(dt > 0)) return;
     const walking = clip === 'walk' || clip === 'gesture_swagger';
-    if (face) {
+    if (face && face !== 'both') {
       const k = (n) => keys.has(n);
       orbit += ((k('d') || k('ArrowRight') ? 1 : 0) - (k('a') || k('ArrowLeft') ? 1 : 0)) * ORBIT_RATE * dt;
       dist = Math.min(FACE_DIST[1], Math.max(FACE_DIST[0], dist + ((k('s') || k('ArrowDown') ? 1 : 0) - (k('w') || k('ArrowUp') ? 1 : 0)) * ZOOM_RATE * dt));
     }
+    const headOf = (a) => { if (!a.head) a.g.traverse((b) => { if (!a.head && b.isBone && /(^|rig|:)head$/i.test(b.name)) a.head = b; }); return a.head; };
+    const two = face === 'both';
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
-      if (walking) {
+      if (two) { // side by side, 2 m apart, facing the camera
+        const side = a.key === 'hd' ? -1 : 1;
+        a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
+        turn(a, Math.atan2(ux, uz), dt);
+      } else if (walking) {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         if (err < 0.3) {
@@ -103,16 +117,29 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
       }
       a.g.position.set(a.x, groundAt(a.x, a.lane, 0), a.lane);
       a.g.rotation.y = a.yaw;
-      a.lbl.getWorldPosition(tmpV);
+      const h = headOf(a);
+      if (!h) { a.lbl.visible = false; continue; }
+      a.g.updateMatrixWorld(true);
+      h.getWorldPosition(tmpV); tmpV.y += 0.3; // label sits just above the head
+      a.lbl.position.copy(tmpV);
       const dl = camera.position.distanceTo(tmpV);
       const dBody = Math.hypot(camera.position.x - a.x, camera.position.z - a.lane);
-      a.lbl.visible = !face && dBody > 3; // hidden within 3 m of the Uncle and in face view
-      a.lbl.scale.set(dl * 0.16, dl * 0.04, 1); // fixed small size on screen, whatever the distance
+      a.lbl.visible = !face || (two && dBody > 1.2); // hidden within 3 m of the Uncle in normal view, and in the close-ups
+      if (!face && dBody <= 3) a.lbl.visible = false;
+      a.lbl.scale.set(dl * 0.12, dl * 0.03, 1); // fixed small size on screen, whatever the distance
     }
-    if (face) { // eye level on the head bone, looking straight at the face
-      if (!face.head) face.g.traverse((b) => { if (!face.head && b.isBone && /(^|rig|:)head$/i.test(b.name)) face.head = b; });
-      if (face.head) {
-        face.head.getWorldPosition(tmpV); tmpV.y += 0.1; // head bone sits at the neck top; eyes are ~10 cm above
+    if (two) {
+      const [h1, h2] = actors.map(headOf);
+      if (h1 && h2) {
+        h1.getWorldPosition(tmpV); h2.getWorldPosition(tmp2); tmpV.add(tmp2).multiplyScalar(0.5); tmpV.y += 0.1; // eye level, between the two faces
+        const ang = Math.atan2(ux, uz) + orbit;
+        camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
+        camera.lookAt(tmpV);
+      }
+    } else if (face) { // eye level on the head bone, looking straight at the face
+      const h = headOf(face);
+      if (h) {
+        h.getWorldPosition(tmpV); tmpV.y += 0.1; // head bone sits at the neck top; eyes are ~10 cm above
         const ang = face.yaw + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
