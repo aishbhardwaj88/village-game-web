@@ -30,6 +30,12 @@ function loadParts(file, height) {
   return cache.get(file);
 }
 
+// Gate deferral: a plant file none of whose copies lies within the start-area radius of a gate point is not needed for the first
+// frame (copies draw only within their own radius of the player), so its model waits for `open` (Play unlocked). Anything with a
+// copy inside the gate radius still loads before Play, so no holes.
+let plantGate = null;
+export function setPlantGate(points, radius, open) { plantGate = { points, radius, open }; }
+
 const sets = new Set(); // every live distance-limited plant set
 let focusX = 1e9, focusZ = 1e9;
 /** Call every frame with the player/vehicle position: plant sets re-sort so only copies within their radius are drawn. */
@@ -48,7 +54,9 @@ export function setPlantFocus(x, z) {
  */
 export function addPlantInstances(group, file, height, items, { tint = 0.18, seed = 1, castShadow = false, radius = 45 } = {}) {
   if (!items.length) return group;
-  loadParts(file, height).then((parts) => {
+  const gate = plantGate;
+  const needNow = !gate || cache.has(file) || items.some((it) => gate.points.some((p) => Math.hypot(it.x - p.x, it.z - p.z) <= gate.radius));
+  (needNow ? loadParts(file, height) : gate.open.then(() => loadParts(file, height))).then((parts) => {
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
     let s = seed * 9301 + 49297;
     const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };

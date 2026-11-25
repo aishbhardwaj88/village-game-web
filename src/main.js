@@ -200,7 +200,7 @@ import { createDaylineController, dayProgressForQuestStep } from './dayline.js';
 import { buildTeaStall, buildGeneralStore, buildGeneralStoreGoods, buildShopRoofs, buildShopWalls, buildShopCounters, TEA as TEA_DIMS, STORE as STORE_DIMS } from './shops.js';
 import { placeBoardsMesh, placeBoardsBatch, syncPlaceBoards } from './placeBoards.js';
 import { placeBatchRoot, syncPlaceBatches } from './placeBatch.js';
-import { setPlantFocus } from './realPlants.js';
+import { setPlantFocus, setPlantGate } from './realPlants.js';
 import { generalStoreGoods, halwaiGoods, teaStallGoods, mergeGoodsMeshes, loadSodaCrate } from './shopGoods.js';
 import { buildSignboards } from './signboards.js';
 import { createSteam } from './steam.js';
@@ -1155,6 +1155,7 @@ async function main() {
   // reasoning as loadEnvironment above — a slow/missing model never blocks startup.
   // See src/assetSlots.js and docs/asset-slots.md.
   const assetSlots = createAssetSlotRegistry();
+  { const sg = loadSavedGame(), pts = [{ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z }]; if (sg && sg.player && Number.isFinite(sg.player.x) && Number.isFinite(sg.player.z)) pts.push({ x: sg.player.x, z: sg.player.z }); setPlantGate(pts, GATE_RADIUS, farGo); } // plant models with no copy inside the start area load after Play (src/realPlants.js)
   assetSlots.holdFar({ x: OPENING_SPAWN.x, z: OPENING_SPAWN.z, radius: GATE_RADIUS, open: farGo }); // zone builds must not pull far models before Play either
   {
     const tractor = vehicles.find((v) => v.preset.kind === 'tractor');
