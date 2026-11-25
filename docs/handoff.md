@@ -1,6 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov (hourly loop, 17:1x UTC) - no code change this run, nothing unblocked
+- Re-ran `node tools/layout-tests.mjs`: 125 failures (front 25, on-road 71, overlap 29),
+  down from 129 (25/72/32) last run - the concurrent position/facing session (HEAD
+  commits 16:4x-16:53) is still making progress, not stalled; left it alone per STATE's
+  own plan and CLAUDE.md 5a-MAP.
+- LOOKS LIST 1-8 confirmed still done/parked via NEEDS_YOU.md/STATE.md (not re-audited
+  beyond that, A6). All [ACTIVE] BACKLOG items are either "apply when touching a place"
+  (no place being touched this run), CC0-proxy-blocked (confirmed 403 25 Nov, not
+  re-checked), or need real-browser verification this container can't do (item 7
+  shader-warm, A7). check-budget: same known breaches as before (11.35MB(old)/13.01MB(new)
+  pre-Play vs 8MB cap, 7.1-7.2s vs 4s), already tracked in NEEDS_YOU, not re-chased.
+- Agents used: none (no task needed one).
+
 # 25 Nov (hourly loop, 15:15 UTC) - no code change this run, every lead still blocked
 - HEAD moved since the 14:12 run: another session pushed 6953aa3 (edition.js render scale 1.5) at 14:45.
   Re-ran the 4 Tier 1 checks on it fresh (licence/check-dup-models/check-material-clone/place-visibility):

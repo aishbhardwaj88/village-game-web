@@ -1,31 +1,17 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov 16:2x UTC (scheduled run). HEAD 52c6cb3 (another session's live position-fix
-work landed mid-run, twice, while this run was checking - see below). Tier 1 clean, missions-check
-not re-run (no code change of mine survived rebase).
-LOOKS LIST 1-7 + item 8 stay done/parked, still true. Item 2 (chauraha road buildings) still waiting
-on her building names (NEEDS_YOU, asked twice, do not ask again).
-CORRECTION to last run's container note: the chaurahaEdges.js tea/tailor-vs-sqx_235/236 "overlap" is
-NOT a live bug - that whole BUILDINGS list is `.filter(!isNewLayout())` and isNewLayout() defaults
-true, so it never renders under the live default map. Dead code, no action needed. Drop this from
-future "known about this container" notes.
+Last updated: 25 Nov 17:1x UTC (scheduled run). HEAD ec1982a (concurrent chat session's
+position/facing work (16:4x-16:53) then character work (Aunty) - neither touched by this run).
+No code change this run - nothing unblocked, see below. LOOKS LIST 1-8 stay done/parked, still true.
+Item 2 (chauraha road buildings) still waiting on her building names (NEEDS_YOU, asked twice, do not
+ask again).
 
 ## This run
-- Found `node tools/layout-pack.mjs --check` failing (mapData.json out of sync with its own
-  inputsHash - layout-pack.mjs had changed in the prior commit but mapData.json was hand-patched,
-  not regenerated). Ran the full repack (4.5 min, data-only, verified same overlap/road-snap counts
-  before/after - no semantic change) and committed; a concurrent session had already pushed the
-  identical fix, so mine was dropped as a no-op by rebase. Confirmed via diff: harmless.
-- A separate chat session is actively driving houses/shops/places/roads/props position work right
-  now (7c4ff01, 52c6cb3 landed during this run, same topic as 193d822 before it) - this is the
-  named-places "move off lane / face road" effort from her 25 Nov answer. Did not duplicate it.
-- `node tools/layout-tests.mjs` current count: 129 failures (front-faces-road 25, on-road 72,
-  overlap 32), all in that same in-flight effort's territory (named places, new_sqx shops, new_house,
-  washing-line props). Leave this to the chat session already working it; re-measure, don't refix,
-  next run if it's still moving.
-- CI oddity (not chased further, A6): GitHub Actions `list_workflow_runs` still shows run 1301
-  (193d822) as latest; no run appears for 7c4ff01 or 52c6cb3 even though `get_commit` confirms both
-  are on origin/main. total_count stuck at 1302 across two checks. Possible missed push-trigger for
-  that committer/token - note once, don't keep polling it.
+- layout-tests.mjs: 125 failures (front 25, on-road 71, overlap 29), down from 129 (25/72/32) -
+  concurrent position session still progressing, not stalled. Left alone per STATE's own plan.
+- All [ACTIVE] BACKLOG items checked: place-touching rules (none touched this run), CC0 proxy
+  still 403 (not re-checked), item 7 shader-warm traced by code reading (texWarmed/modelsReleased/
+  loaders.js) - needs real browser to go further, didn't guess-fix blind.
+- check-budget: same known breaches as before, already in NEEDS_YOU. No TODO/FIXME in src/.
 
 ## Current state
 - Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/overlap) is
