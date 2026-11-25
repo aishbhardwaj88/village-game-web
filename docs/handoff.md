@@ -1833,3 +1833,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Sonnet low: measured, slimmed and sized 29 models (3 foreign barns skipped), size table, credits.
 - Sonnet low: placed new props (88 singles, 12 beds) in src/placedPropsNew.js.
 - No Opus, no Fable. Zone ground stays opt-in (?zones=1) until she approves the look.
+- Scheduled run 25 Nov ~22:1x (LOOKS LIST focus): re-checked all 7 items against live code
+  (not a re-audit of already-logged conclusions, targeted code reads only). 1 (wall variety),
+  3 (haystacks matte), 4/5 (pots/street furniture) confirmed still live and correct. 6 (cycle):
+  found main.js now at 25/32 km/h, differs from the 24 Nov ask's 20/27 - but a 25 Nov comment
+  (src/main.js:260-261) records she tried 20/27 live and called it "far too slow", so 25/32 is
+  her own newer verdict, not a regression; left untouched. 2 (chauraha buildings) and most of 7
+  (map-shipped-twice, shader warm-up) stay open in NEEDS_YOU/BACKLOG, genuinely blocked (her
+  building names; PAUSED-MAP map-lock question; container has no working browser). No unblocked
+  BACKLOG item found (all open items are [PAUSED-MAP], [GATED-HER], or need a real browser/CC0
+  proxy this container lacks). No code change. CI green on 9190811 (run 1369, another worker's).

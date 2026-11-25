@@ -1,17 +1,18 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov ~22:xx UTC (scheduled run). Fixed: 2 old-layout highway milestones (796.6,-18/82) stood ~100 m off the new highway (z~-122); now skipped under new layout, km stones cover it. Temple/sabzi already AS_DRAWN (see 4dec916). Missions 0 fail, Tier 1 green. Load 10.7 MB cuts still her call.
-again this run (3rd run in a row with the same clean result) - not re-auditing further per A6.
-No code change this run.
+Last updated: 25 Nov ~22:1x UTC (scheduled LOOKS LIST run). LOOKS LIST items 1/3/4/5 confirmed
+done in live code. Item 6 (cycle) confirmed NOT a regression: 25/32 km/h is her own 25 Nov
+in-game verdict overriding the 24 Nov 20/27 ask (see src/main.js:260-261 comment) - do not
+"fix" it back to 20/27. Item 2 (chauraha buildings) and the rest of item 7 stay open, genuinely
+blocked (her building names; map-lock question; no working browser in this container).
+No code change this run (4th run in a row with this same settled result) - not re-auditing
+further per A6; next real trigger is either her answer in NEEDS_YOU or a new playtest note.
 
 ## This run
-- Repo-state false alarm: stale cached origin/main made HEAD look divergent (shallow clone,
-  merge-base failed). Fresh `git fetch` showed origin/main already at HEAD's tip (1873264) -
-  no real divergence. `checkout -B main origin/main` clean, no data lost.
-- CI green on 1873264 (run 1363).
-- LOOKS LIST 1-8 and BACKLOG [ACTIVE] items: nothing changed since 4dec916's note - no new
-  playtest input, no new NEEDS_YOU answer, no place being built/reworked for the ACTIVE items
-  to apply to. Did not re-run layout-tests/missions-check (identical input, no new trigger -
-  A6/efficiency-rules "no repeat audits").
+- Pulled a concurrent worker's push mid-run (9190811, roaming-vehicle lag fix), fast-forward
+  clean, no conflict (made no edits of my own). CI green on 9190811 (run 1369).
+- Re-verified LOOKS LIST 1-7 against actual current code, not old notes alone - confirms prior
+  conclusions, one correction found (item 6 above). BACKLOG open items all [PAUSED-MAP]/
+  [GATED-HER]/need-real-browser - none unblocked.
 
 ## Current state
 - Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/overlap,
