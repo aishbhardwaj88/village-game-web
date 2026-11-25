@@ -9,6 +9,7 @@
  */
 import * as THREE from 'three';
 import { MAP_SHIFT } from './mapPlan.js';
+import { isNewLayout } from './layout/layout.js';
 
 const TRACK_TINT = 0xa88a5e; // the map's own farm-track tint (src/mapRoads.js TINT.track)
 const PATH_TINT = 0xb9a37c; // the map's front-path tint
@@ -34,8 +35,10 @@ export const DIRT_TRACKS = [
 ];
 
 /** The tracks as world-metre polylines ([[x, z]...]), for audits and the minimap. */
+// 25 Nov: under the approved map these places moved 10-230 m (mandi, mela, petrol pump, gaushala), so their old-position tracks lead nowhere. They are skipped; the map's own roads reach the new spots.
+const MOVED_TRACKS = new Set(['track_gaushala', 'track_mandi', 'track_petrol', 'track_mela']);
 export function dirtTrackLines() {
-  return DIRT_TRACKS.map((t) => ({ ...t, pts: t.pts.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]) }));
+  return DIRT_TRACKS.filter((t) => !(isNewLayout() && MOVED_TRACKS.has(t.id))).map((t) => ({ ...t, pts: t.pts.map(([x, z]) => [x + MAP_SHIFT.x, z + MAP_SHIFT.z]) }));
 }
 
 /**

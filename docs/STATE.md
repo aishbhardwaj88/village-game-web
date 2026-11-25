@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov ~20:1x UTC (scheduled run). HEAD 7d84414, CI green (run 1358). No code change;
+Last updated: 25 Nov ~21:0x UTC (scheduled run). Temple/sabzi: already kept exactly as the map draws them (AS_DRAWN, front -z, ry -91 deg); no 152 deg turn exists, nothing to fix. Dirt tracks for moved places (mandi, mela, petrol, gaushala) skipped under the new layout (src/dirtTracks.js). Load size 10.7 MB: cuts are her call (NEEDS_YOU), untouched.
 nothing unblocked this run. LOOKS LIST 1-8 stay done/parked, still true.
 Item 2 (chauraha road buildings) still waiting on her building names (NEEDS_YOU, asked twice, do not
 ask again).
