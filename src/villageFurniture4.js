@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isNewLayout } from './layout/layout.js';
 import { ANCHORS } from './anchors.js';
 import { Obj, Batch, spotMatrix, local, rnd } from './villageOddities.js';
 import { FURNITURE2_SPOTS } from './villageFurniture2.js';
@@ -282,7 +283,7 @@ function buildMajarCloth(o, m) {
 // ---------------------------------------------------------------------------------------------------------------- create
 /** The transformer line's first span, outer conductor: a point on it, recomputed exactly as src/villageFurniture2.js builds it. */
 function transformerWirePoint() {
-  const sp = FURNITURE2_SPOTS.transformer, W0 = sp && ANCHORS[sp.at] && spotMatrix(sp);
+  const sp = isNewLayout() ? null : FURNITURE2_SPOTS.transformer, W0 = sp && ANCHORS[sp.at] && spotMatrix(sp);
   if (!W0) return null;
   const sc = 0.97 + rnd(211) * 0.08, W = W0.clone().multiply(new THREE.Matrix4().makeScale(sc, sc, sc)); // villageFurniture2's per-object scale (seed 211)
   const top = (i, px, pz) => { const hgt = 8.2 + rnd(i + 3) * 0.6, lean = (rnd(i + 8) - 0.5) * 0.06; return [px + lean * hgt - 0.8, hgt - 0.2 + 0.12, pz]; };

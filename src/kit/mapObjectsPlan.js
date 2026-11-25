@@ -86,6 +86,25 @@ export function nearestRoad(roads, x, z) {
   return best;
 }
 /** distance from (x, z) to the nearest road EDGE (negative = on the road) */
+/**
+ * 26 Nov: HER RULE, NO OBJECT ON A ROAD. Shared helper: if a footprint of radius r at (x, z) touches any road band (highway, road,
+ * lane, back, track), slide it perpendicular to the road centreline, on the side it is already on, until it clears the edge by r + margin.
+ * Returns { x, z, moved } (moved = metres). Map buildings are never passed through here.
+ */
+export function nudgeOffRoad(roads, x, z, r = 0.5, margin = 0.6) {
+  let moved = 0;
+  for (let it = 0; it < 6; it++) {
+    const n0 = nearestRoad(roads, x, z);
+    if (!n0) break;
+    const cl = n0.d - n0.half;
+    if (cl >= r + 0.02) break;
+    let nx = x - n0.p[0], nz = z - n0.p[1], L = Math.hypot(nx, nz);
+    if (L < 1e-3) { nx = -n0.dir[1]; nz = n0.dir[0]; L = 1; }
+    const step = r + margin - cl;
+    x += (nx / L) * step; z += (nz / L) * step; moved += step;
+  }
+  return { x, z, moved };
+}
 export const roadClearance = (roads, x, z) => { const n = nearestRoad(roads, x, z); return n ? n.d - n.half : 99; };
 
 // ---------------------------------------------------------------------------------------------- S7 fixes: road edges
@@ -210,7 +229,11 @@ export function planMapObjects(map) {
   const roads = map.roads || [];
   const out = { designs: [], patches: [], ponds: [], tanks: [], channels: [], gate: null, animals: [], pots: [], milestones: [], skipped: [], counts: {} };
   const count = (k) => { out.counts[k] = (out.counts[k] || 0) + 1; };
-  const put = (kind, o, x, z, ry, extra = {}) => { out.designs.push({ kind, id: o.id, label: o.label, x, z, ry, ...extra }); count(kind); };
+  const NUDGE = new Set(['transformer', 'notice', 'trough', 'machan', 'scarecrow', 'washplatform', 'barber', 'bench', 'charpai']);
+  const put = (kind, o, x, z, ry, extra = {}) => {
+    if (NUDGE.has(kind)) { const rr = Math.hypot(extra.w || 1.5, extra.d || 1) / 2; const nn = nudgeOffRoad(roads, x, z, rr); if (nn.moved > 0) { x = nn.x; z = nn.z; out.nudged = (out.nudged || []).concat({ id: o.id, kind, moved: +nn.moved.toFixed(2) }); } }
+    out.designs.push({ kind, id: o.id, label: o.label, x, z, ry, ...extra }); count(kind);
+  };
   const objs = map.objects || [];
   const channelObjs = objs.filter((o) => key(o) === 'new_channel' && o.rect);
   const usedChannel = new Set();
@@ -268,7 +291,8 @@ export function planMapObjects(map) {
       out.milestones.push({ id: o.id, x: mx, z: mz, ry: Math.atan2(-u[0], -u[1]), road: nr && nr.id, clearance: nr ? +(nr.d - nr.half).toFixed(2) : null, moved: +moved.toFixed(2) });
       count('milestone');
     } else if (k === 'new_pots') {
-      out.pots.push({ id: o.id, x: o.cx, z: o.cz, r: o.r || 0.35 });
+      const pn = nudgeOffRoad(roads, o.cx, o.cz, (o.r || 0.35) + 0.1);
+      out.pots.push({ id: o.id, x: pn.x, z: pn.z, r: o.r || 0.35 });
       count('pot');
     } else if ((k === 'new_Buffalo' || k === 'new_cattle') && o.cx != null) {
       out.animals.push({ id: o.id, x: o.cx, z: o.cz, ry: hash01(o.cx, o.cz) * Math.PI * 2, buffalo: true });

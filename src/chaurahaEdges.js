@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { onNewRoad } from './layout/roadClear.js';
 import { signPageMaterial } from './signAtlasHub.js';
 import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleInstances } from './standOn.js';
@@ -56,7 +57,7 @@ const BUILDINGS = [
   // south row, facing north (ry = pi)
   { t: 'house', x: 591.2, z: 41.6, ry: Math.PI + 0.04, w: 5.4, d: 4.6 },
   { t: 'shop', kind: 'kirana', x: 596.6, z: 41.2, ry: Math.PI - 0.03, w: 3.6, d: 3.4 },
-].filter((b) => !(b.x + b.w / 2 > 598.9 && b.x - b.w / 2 < 606.9 && b.z > -60 && b.z < 30)); // 26 Nov: drop old-layout buildings on the new main road lane (cycle shop x 598.9-602.7, z -4.4..-1 blocked the ride near z -5)
+].filter((b) => !onNewRoad(b.x, b.z, Math.hypot(b.w, b.d) / 2)).filter((b) => !(b.x + b.w / 2 > 598.9 && b.x - b.w / 2 < 606.9 && b.z > -60 && b.z < 30)); // 26 Nov: drop old-layout buildings on the new main road lane (cycle shop x 598.9-602.7, z -4.4..-1 blocked the ride near z -5)
 
 const WALL_TINTS = [0xe9dcc0, 0xd8dfcf, 0xd4dce0, 0xe4cfb0, 0xe2c9c0, 0xdcd2b8];
 const AWNING_TINTS = [[0xb8503a, 0xe8dcc0], [0x3a6a8a, 0xe8dcc0], [0xc8962a, 0x8a3a2a], [0x4a7a4a, 0xe0d4b0]];

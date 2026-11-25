@@ -21,6 +21,7 @@
  * the shared per-material batches (src/placeBatch.js); the capsule people are one small InstancedMesh per site. Solid parts carry
  * explicit collider boxes; src/autoColliders.js fills the rest from the visible mesh.
  */
+import { onNewRoad } from './layout/roadClear.js';
 import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { markFigure, keepOnGround, settleInstances } from './standOn.js';
 import * as THREE from 'three';
@@ -426,6 +427,7 @@ export function buildRideNook(site, name) {
 export function registerRideNooks(zoneManager) {
   RIDE_NOOK_SITES.forEach((site, i) => {
     if (!KINDS.includes(site.kind)) return;
+    if (onNewRoad(site.x, site.z, 3.5)) return; // 26 Nov: no object on a road (old-layout site on a new road band)
     const name = `ride_nook_${i}_${site.kind}`;
     zoneManager.register(name, { x: site.x, z: site.z, buildRadius: 60, teardownRadius: 80, detail: true, visibleRadius: 75, build: () => buildRideNook(site, name) });
   });

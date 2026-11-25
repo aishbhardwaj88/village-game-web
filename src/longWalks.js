@@ -14,6 +14,7 @@
  * 2-4 draw calls per site, a few sites in view at once. Solid parts carry explicit collider boxes; the rest (gate leaves,
  * haystack skirts) is filled by src/autoColliders.js from the visible mesh.
  */
+import { onNewRoad } from './layout/roadClear.js';
 import * as THREE from 'three';
 import { addFieldProps } from './fieldProps.js';
 import { addHaystacks } from './haystacks.js';
@@ -160,6 +161,7 @@ export function buildLongWalkSite(site, name) {
 /** One zone per site. Called once from src/main.js with the zone manager. */
 export function registerLongWalks(zoneManager) {
   LONG_WALK_SITES.forEach((site, i) => {
+    if (onNewRoad(site.x, site.z, 3.5)) return; // 26 Nov: no object on a road (old-layout site on a new road band)
     const name = `long_walk_${i}_${site.kind}`;
     zoneManager.register(name, { x: site.x, z: site.z, buildRadius: 60, teardownRadius: 80, detail: true, visibleRadius: 75, build: () => buildLongWalkSite(site, name) });
   });

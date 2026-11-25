@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { onNewRoad } from './layout/roadClear.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { ANCHORS, localPt } from './anchors.js';
 import { requestColliderRebuild } from './collision.js';
@@ -341,6 +342,7 @@ export function createLifeScenes2(scene) {
     for (const [name, anchor, lx, lz, ry, fn] of scenes) {
       const site = findSite(anchor, lx, lz, ry + (ANCHORS[anchor].ry || 0)) || findSite('chaupal', lx, lz, ry);
       if (!site) { console.warn('life scenes 2: no clear ground for', name); continue; }
+      if (onNewRoad(site.x, site.z, 4)) { console.warn('life scenes 2: site on a road, skipped', name); continue; } // 26 Nov: no object on a road
       fn(site, group); placed[name] = site;
     }
     const rg = buildRangoli(group);

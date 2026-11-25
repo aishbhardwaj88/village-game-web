@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isNewLayout } from './layout/layout.js'; import { onNewRoad } from './layout/roadClear.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { ANCHORS } from './anchors.js';
 import { getTiledMaterial } from './materials.js';
@@ -252,6 +253,8 @@ export function createVillageFurniture2(scene) {
   for (const [kind, build] of Object.entries(BUILDERS)) {
     const sp = FURNITURE2_SPOTS[kind], world = sp && spotMatrix(sp);
     if (!world) continue;
+    if (isNewLayout() && kind === 'transformer') continue; // 26 Nov: the map has its own transformer (map objects); this old-layout one stood on a road
+    { const wp = new THREE.Vector3().setFromMatrixPosition(world); if (onNewRoad(wp.x, wp.z, kind.endsWith('wall') ? 2.6 : 2)) continue; } // 26 Nov: no object on a road
     const sc = kind.endsWith('wall') ? 1 : 0.97 + rnd(seed) * 0.08;
     const w = world.clone().multiply(new THREE.Matrix4().makeScale(sc, sc, sc));
     const o = new Obj(by, w, seed);

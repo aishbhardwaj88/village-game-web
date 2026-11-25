@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { onNewRoad } from './layout/roadClear.js';
 import { registerPilotVehicles } from './pilotVehicles.js';
 import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
@@ -1971,6 +1972,7 @@ async function main() {
       ['house_plots_4', 20.275, -10.5, 5.194, [{ x: -3.784, z: -5.018, w: 3.088, d: 0.3 }, { x: 2.384, z: -5.018, w: 5.888, d: 0.3 }, { x: 0, z: 5.018, w: 10.656, d: 0.3 }, { x: -5.498, z: 0, w: 0.3, d: 9.696 }, { x: 5.498, z: 0, w: 0.3, d: 9.696 }, { x: -5.498, z: -5.018, w: 0.4, d: 0.4 }, { x: -5.498, z: 5.018, w: 0.4, d: 0.4 }, { x: 5.498, z: -5.018, w: 0.4, d: 0.4 }, { x: 5.498, z: 5.018, w: 0.4, d: 0.4 }, { x: -2.24, z: -5.018, w: 0.44, d: 0.44 }, { x: -0.56, z: -5.018, w: 0.44, d: 0.44 }]],
     ]) {
       const at = { x: x + 600, z };
+      if (onNewRoad(at.x, at.z, 5.5)) continue; // 26 Nov: no object on a road
       zoneManager.register(n, { ...at, buildRadius: 45, teardownRadius: 60, build: () => turnSiteGroup(createYardSite(n, n + '.glb', at, solids), -deg * Math.PI / 180) });
     }
     // the map's roadside-place compound walls (1 Nov plan, compound_walls): low walls with the map's gate gaps, colliders per 2 m.
@@ -2084,14 +2086,16 @@ async function main() {
     zoneManager.register('highway', { visibleRadius: LANDMARK_VIS, ...pt('highway'), buildRadius: 95, teardownRadius: 110, build: () => createHighwayCluster(pt('highway')) });
     // MAP.md: jalebi + samosa stall (bazaar lane), mela ground (SW), gurukul and khel maidan (SE). No coordinates given; open ground picked.
     // A1g: ONE carrom scene in the common area at the chowk (east of the tea stall, in front of the bazaar), not in any lane or vehicle route.
-    zoneManager.register('carrom_scene', { detail: true, x: -46 + OLD_SHIFT.x, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46 + OLD_SHIFT.x, z: 5.5 }, 'carrom_scene', 0.3) });
+    if (!onNewRoad(-46 + OLD_SHIFT.x, 5.5, 3)) zoneManager.register('carrom_scene', { detail: true, x: -46 + OLD_SHIFT.x, z: 5.5, buildRadius: 22, teardownRadius: 30, build: () => createCarromScene({ x: -46 + OLD_SHIFT.x, z: 5.5 }, 'carrom_scene', 0.3) });
     // Laundry corners also stand at the lane edge, on the non-drain side, so the lane stays clear for carts and cattle.
     for (const [id, x0, z, ry] of [['lane_laundry_e1', 3, 78.55, 0.04], ['lane_laundry_w1', -86.55, 74, Math.PI / 2 + 0.06], ['lane_laundry_s1', -58, 142.55, -0.05], ['lane_laundry_e2', -3.5, 104, Math.PI / 2 + 0.05], ['lane_laundry_w2', -72, 18.5, 0.04]]) {
       const x = x0 + OLD_SHIFT.x; // the old lanes ride east with the old village
+      if (onNewRoad(x, z, 3)) continue; // 26 Nov: no object on a road
       zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneLaundry({ x, z }, id, ry) });
     }
     // Water corners stand at the lane edge on the side away from the open drain (kerb + 0.6 m), spout facing the lane.
     for (const [id, x, z, ry] of [['lane_water_e1', 16, 78.6, Math.PI + 0.05], ['lane_water_w1', -86.6, 90, Math.PI / 2 + 0.08], ['lane_water_s1', -44, 142.6, Math.PI - 0.06], ['lane_water_e2', -3.6, 122, -Math.PI / 2 + 0.07], ['lane_water_w2', -65.5, 18.6, 0.05]]) {
+      if (onNewRoad(x, z, 3)) continue; // 26 Nov: no object on a road
       zoneManager.register(id, { detail: true, x, z, buildRadius: 32, teardownRadius: 44, build: () => createLaneWaterCorner({ x, z }, id, ry) });
     }
     // Cattle resting in the abadi lanes (MAP.md street life), one InstancedMesh each, streamed with the lane games.
