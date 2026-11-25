@@ -6,6 +6,7 @@ pre-Play JS cut), already deployed green. All [ACTIVE] BACKLOG items still block
 headless browser) - not re-tested this run, per A6. Fresh container: `npm ci` + checkout -B main.
 
 ## Current state
+- 25 Nov POP-INS (zoneManager.js, unmeasured: Chromium crashes after Play here): counter counts a zone finishing its build after Play while inside its draw radius and in view. Cause = zones the 70 m gate held build at 4 ms/frame. Fix: first 10 s after Play budget 12 ms, zones inside draw radius sorted first, nearest first. Draw calls untouched (no look-free trim found in time).
 - 25 Nov WALL VARIETY (materials only): shops draw plaster as plaster/_j/_m/_p by shop id (BatchKit remap, +-6% tint jitter); house seeds re-rolled so pakka neighbours differ in plaster surface (181 -> 4 clashes of 421). No new texture requests before Play.
 - 25 Nov PRE-PLAY BYTES: plant models (flower_gazania 396 KB, shrub_01 246 KB) have no copy within 70 m of the spawn, so
   they now load after Play (realPlants.js setPlantGate, wired in main.js). Measured before Play 13.44 -> 12.81 MB. gurukul/bazaar/school were already after Play.
