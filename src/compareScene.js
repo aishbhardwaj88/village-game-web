@@ -3,22 +3,23 @@
  * parallel lanes, both in idle until a button on the bottom bar picks a clip (played on BOTH at once, looping).
  * Walk and Swagger really walk a 4 m path back and forth (speed per clip = its measured stance-foot speed, 0.90-0.93 m/s, so the feet do not slide; ~0.4 s eased turns at the ends).
  * The player starts on foot ~5 m away, slightly to the side; the player body is hidden and the camera may come in to 1 m.
+ * 25 Nov: Parlour Didi (public/assets/models/parlour_didi.glb, loaded only here) stands 2 m left of HD in the two-shot, idle only, with a Face Didi button.
  * HD / SMART MESH labels hide when the camera is within 2 m. Face HD / Face Smart Mesh buttons: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
  */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { hd: -123.5, sm: -125.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { hd: -123.5, sm: -125.5, didi: -121.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 // 25 Nov: ground speed that makes each clip's planted foot stand still on the ground (no sliding), MEASURED from the clips (tools: foot bone
 // speed relative to the hips while the foot is within 4 cm of its lowest point, at the in-game model scale; both clips are in-place).
 // Same idea as walkRef in src/characterAnim.js. Review clips play at 1x, so speed = stride length / cycle time.
 const STRIDE = { hd: { walk: 0.90, gesture_swagger: 0.915 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['All', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm'], ['Studio light', 'studio']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['All', 'both'], ['Face Didi', 'face_didi'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 2.8, BOTH_GAP = 2, BOTH_RANGE = [0.6, 8], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 4.8, BOTH_GAP = 2, BOTH_RANGE = [0.6, 12], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -52,13 +53,13 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  const ORDER = [['hd', 'HD', 'tvuncle_hd'], ['sm', 'SMART MESH', 'tvuncle_sm']]; // left to right in the line-up
-  for (const [key, side, file] of ORDER) {
+  const ORDER = [['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['hd', 'HD', 'tvuncle_hd', 1.72], ['sm', 'SMART MESH', 'tvuncle_sm', 1.72]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
+  for (const [key, side, file, hh] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
     const lbl = label(side); lbl.visible = false; scene.add(lbl);
     scene.add(g);
-    assetSlots.register(`gather_tvuncle_${key}`, { file, dimensions: { w: 2.4, h: 1.72, d: 2.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
+    assetSlots.register(`gather_tvuncle_${key}`, { file, dimensions: { w: 2.4, h: hh, d: 2.4 }, placements: [{ container: g, position: new THREE.Vector3(0, 0, 0), rotationY: 0 }] });
     assetSlots.resolveOne(`gather_tvuncle_${key}`).catch(() => {});
     actors.push({ g, lbl, key, order: ORDER.findIndex((o) => o[0] === key), lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
@@ -126,10 +127,10 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 0.5) * BOTH_GAP; // 2 in a row, left to right, 2 m apart
+        const side = (a.order - 1.5) * BOTH_GAP; // 3 in a row, left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
-      } else if (walking) {
+      } else if (walking && a.key !== 'didi') {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         const k = Math.max(0, Math.min(1, 1 - err / 1.2)); // walk speed ramps in as the body comes round (0 at 180 degrees, full under ~0 degrees)

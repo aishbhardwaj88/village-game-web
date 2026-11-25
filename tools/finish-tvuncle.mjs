@@ -16,7 +16,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { statSync } from 'node:fs';
 
-const [inArg, outArg] = process.argv.slice(2);
+const [inArg, outArg, texArg] = process.argv.slice(2); // optional 3rd arg: texture max px (default 2048; 4096 keeps the face sharp)
 if (!inArg || !outArg) { console.error('usage: node tools/finish-tvuncle.mjs <raw.glb> <out.glb>'); process.exit(1); }
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 await MeshoptDecoder.ready; await MeshoptEncoder.ready;
@@ -138,5 +138,5 @@ const TUBE = 0.0085; // model units (the model is ~0.98 high; x1.7 in game, so ~
 const tmp = resolve(ROOT, 'tmp', 'tvuncle_stage1.glb');
 await io.write(tmp, doc);
 // 4. the repo's own shrink tool: 2048 px WebP, meshopt, triangle budget far above the model (so none are removed)
-execFileSync('node', [resolve(ROOT, 'tools/shrink.js'), tmp, resolve(outArg), '1000000', '0.01', '2048'], { stdio: 'inherit' });
+execFileSync('node', [resolve(ROOT, 'tools/shrink.js'), tmp, resolve(outArg), '1000000', '0.01', texArg || '2048'], { stdio: 'inherit' });
 console.log(`${outArg}: ${(statSync(resolve(outArg)).size / 1e6).toFixed(2)} MB`);

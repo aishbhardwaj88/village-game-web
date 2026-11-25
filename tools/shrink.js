@@ -54,6 +54,7 @@ async function main() {
     textureCompress({
       encoder: sharp,
       targetFormat: 'webp',
+      ...(process.env.TEX_Q ? { quality: +process.env.TEX_Q } : {}),
       resize: [TEXTURE_MAX_DIM, TEXTURE_MAX_DIM],
     }),
     prune(),

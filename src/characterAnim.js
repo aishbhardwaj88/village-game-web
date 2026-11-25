@@ -33,6 +33,7 @@ const PROFILE = {
   // 25 Nov: TV Uncle review pair (?compare=tvuncle): clip chosen by buttons (reviewPlay) instead of idle/walk/random gestures
   tvuncle_hd: { review: true },
   tvuncle_sm: { review: true },
+  tvuncle_didi: { review: true }, // Parlour Didi stands in the compare line-up for scale and face comparison (idle only: she has no walk/laugh review clips)
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)
 let reviewClip = 'idle';
