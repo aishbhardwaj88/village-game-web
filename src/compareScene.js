@@ -13,7 +13,7 @@ const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 const SPEED = 0.9, TURN_RATE = 3.5;
 const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Both', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 2.5, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 3.4, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
