@@ -1779,3 +1779,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Sonnet, medium effort, ~17 agents: fixers (1, A to J), three audits, two scans plus two re-scans, two independent reviewers. Why: parallel work on separate file groups, her order to go fast. No Opus, no Fable.
 - Last round: fixer J (cdd0d46) moved map haystack, chauraha island, map well, cane edge, gurudwara. Live look at 18:3x UTC: haystacks, chauraha, sweet shop, swing/stall clear of the road.
 - Open: two wall pictures (shaadi card, To Let) left off, question in NEEDS_YOU.md; 7 buildings with a smaller lane closer behind than the front road; budgets and fps unmeasured.
+
+## 26 Nov: wall posters pasted (chat session)
+- Pushed f12d868, deploy green. 57 cutouts (no sWantedThief) in 9 WebP pages (1245 KB), src/kit/wallPosterAtlas.json; layout src/kit/wallPosterLayout.js (seeded, clustered, context rules); mesh and Play-time load in src/kit/wallMurals.js startWallPosters.
+- Synthetic test (tools/wallposter-layout-test.mjs, 578 boxes): 718 placed, 86% road-facing, deterministic, 0 rule violations. Short: cvSchoolAhead 2/5, muCyclePuncture 4/5, muHairCutting 4/5, muTeaSnacks 3/5 (few matching shops).
+- NOT verified: live look (browser pane was hidden, game stalled at 80%), real box counts, draw calls (+9), fps, load time.
+- Agents: atlas packer = Sonnet low (mechanical packing); layout module = Sonnet medium (rules + test); mesh builder and wiring = Sonnet medium (main.js and builder). None started agents, all stopped on report. No Opus, no Fable.
