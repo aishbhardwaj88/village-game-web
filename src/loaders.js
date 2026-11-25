@@ -19,7 +19,8 @@ export function setLoaderRenderer(renderer) {
     ktx2.detectSupport(renderer);
     if (sharedLoader) sharedLoader.setKTX2Loader(ktx2);
   }).catch(() => {});
-  setTimeout(start, 10000);
+  // Starts only once the Play gate has opened (window.__loadMarks.gateEnd, src/main.js), at least 10 s in: the chunk is not needed to unlock Play.
+  const wait = setInterval(() => { if (window.__loadMarks && window.__loadMarks.gateEnd && performance.now() > 10000) { clearInterval(wait); start(); } }, 500);
 }
 
 /** Bumped every time a .glb finishes loading. Models are swapped into the scene by the caller's own callback after this

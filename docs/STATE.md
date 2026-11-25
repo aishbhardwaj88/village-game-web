@@ -1,12 +1,6 @@
 # State - rewritten every run, max 40 lines
 Last updated: 25 Nov 10:13 UTC (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching continues below.
-This run (25 Nov, hourly): no code change. Did NOT re-test the proxy/browser blockers again (confirmed last
-run already, A6 - no repeat audits). Checked a fresh angle instead: build_*.py builder scripts' arch.py use
-(CLAUDE.md 5a) - 61/67 use arch.py Kit/Box, 6 don't, but retrofitting old shipped builders isn't a live
-rework trigger (item 28 fires on new/reworked places only) and the game is audit-confirmed complete (BACKLOG
-line 64) - optional polish, not real/safe work blind. Checked [!] material-board: docs/shots/ is gitignored
-by design, no board.png persists here - expected (known screenshot limit), not new. Fresh container: `npm ci`
-+ checkout -B main, routine.
+This run (25 Nov, hourly): no game change; builder-script arch.py audit and material-board check were optional/known (see BACKLOG line 64, docs/shots gitignored). Fresh container: `npm ci` + checkout -B main.
 
 ## Current state
 - 25 Nov WALL VARIETY (materials only): shops draw plaster as plaster/_j/_m/_p by shop id (BatchKit remap, +-6% tint jitter); house seeds re-rolled so pakka neighbours differ in plaster surface (181 -> 4 clashes of 421). No new texture requests before Play.
@@ -18,6 +12,8 @@ by design, no board.png persists here - expected (known screenshot limit), not n
   easy further shrink; shrinking the gate risks visible pop-in - real regression risk, not attempted blind.
 - 26 Nov SHOW CAP 265 m, shader warm-up inside the gate, wall murals sliced. 25 Nov WALL REPEAT+VARIETY and
 - CLAUDE.md 5b sweep clean village-wide, Item 5 done. licence-audit: 490 files, 0 UNKNOWN, 2 pre-existing OWNER warnings.
+
+- 25 Nov PRE-PLAY JS: storyBeats+sideJobs now dynamic imports (start at gate end), zstddec/ktx-parse moved from vendor to the KTX2 chunk, KTX2 starts after gateEnd. JS before Play gz 853 -> 815 KB, raw ~3.03 -> 2.92 MB. data chunk (mapData 656 KB raw/115 gz) stays: layout needs it to build the world.
 
 ## Next 5 items
 1. House atlas n/r + water-tank fix need real-browser confirmation - her own machine can confirm any time.

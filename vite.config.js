@@ -147,7 +147,7 @@ export default defineConfig(({ command }) => {
         // Code split by how often it changes: vendor (three.js, changes only on an upgrade), data (the packed map, changes
         // only when the map does), app (everything else). A game-code deploy then re-downloads only the app chunks.
         manualChunks(id) {
-          if (/[\\/]node_modules[\\/]three[\\/]/.test(id) && !/KTX2Loader|[\\/]basis[\\/]/.test(id)) return 'vendor';
+          if (/[\\/]node_modules[\\/]three[\\/]/.test(id) && !/KTX2Loader|zstddec|ktx-parse|[\\/]basis[\\/]/.test(id)) return 'vendor';
           if (/[\\/]src[\\/]layout[\\/]mapData\.json$/.test(id)) return 'data';
         },
       },

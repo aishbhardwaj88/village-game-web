@@ -217,8 +217,7 @@ import { setupCredits } from './credits.js';
 import { setupControlsHelp } from './controlsHelp.js';
 import { createFreeRoam, LANES as MAP_LANES, PLACES } from './freeRoam.js';
 import { createMinimap } from './minimap.js';
-import { createSideJobs } from './sideJobs.js';
-import { createStoryBeats } from './storyBeats.js'; // main-story beats (school-out, kanta, gate, bell, catch, neighbours)
+// storyBeats.js and sideJobs.js are dynamic imports (modLate below): first needed after Play, so they stay out of the pre-Play download
 import { spot } from './missionsLayout.js'; // S7 WIRING (missions): approved-map spots for missions, jobs and NPCs (identity under ?layout=old)
 import { ROAD_CHUNKS, createMapRoads, mapLampLegs, allRoadLines } from './mapRoads.js';
 import { createDirtTracks, DIRT_TRACKS_ZONE } from './dirtTracks.js';
@@ -331,6 +330,8 @@ async function main() {
   // every file is downloaded, the world is built (deferred assembly + shops/land/map objects), every zone in the ring (70 m) is
   // built, textures are uploaded, shaders compiled and the props around the spawn are ready. Farther zones keep streaming
   // ahead of the player after Play (src/zoneManager.js). A failed file is counted as done by the loaders, so it cannot hang.
+  let createSideJobs = null, createStoryBeats = null; // set when the two late chunks have arrived (loaded as soon as the Play gate opens)
+  const lateMods = () => Promise.all([import('./sideJobs.js'), import('./storyBeats.js')]).then(([a, b]) => { createSideJobs = a.createSideJobs; createStoryBeats = b.createStoryBeats; });
   const GATE_RADIUS = 70;
   const warmCtx = { get renderer() { return renderer; }, get composer() { return composer; }, get camera() { return camera; }, get scene() { return scene; } }; // getters: composer is created later in main()
   let farRelease; const farGo = new Promise((r) => { farRelease = r; }); // far slot models start once the gate has opened
@@ -360,7 +361,7 @@ async function main() {
     } catch (e) { console.error('gate', e); /* first render compiles instead */ }
     _lm.worldShellReady = performance.now(); await propGateDone(); reportStage('props'); /* props and vehicles around the spawn: downloaded, unpacked, uploaded, compiled (src/propGate.js) */
     if (zoneManager) zoneManager.clearGate();
-    farRelease(); releaseDeferredMaps(); // normal/roughness/ao maps download from here, while the title is up (src/deferredMaps.js)
+    lateMods().catch(() => {}); farRelease(); releaseDeferredMaps(); // normal/roughness/ao maps download from here, while the title is up (src/deferredMaps.js)
     _lm.gateEnd = performance.now();
   });
   setupLoadingScreen(); // before any texture/model/HDRI load below — see ui.js
@@ -2483,7 +2484,7 @@ async function main() {
   let sideJobs = null;
   let storyBeats = null; // built on the first frame of play (src/storyBeats.js), after every NPC and vehicle exists
   function ensureStoryBeats() {
-    if (storyBeats) return;
+    if (storyBeats || !createStoryBeats) return;
     storyBeats = createStoryBeats({
       scene, quest, dialogue, audio, freeRoam,
       getPlayerPos: () => (mountedVehicle ? mountedVehicle.group.position : player.position),
@@ -2507,6 +2508,7 @@ async function main() {
   }
   function ensureSideJobs() {
     if (sideJobs) return;
+    if (!createSideJobs) { lateMods().then(ensureSideJobs); return; }
     sideJobs = createSideJobs({
       scene,
       quest,
@@ -3534,7 +3536,7 @@ async function main() {
       { const _q = performance.now(); minimap.update(dt); pAdd('minimap', performance.now() - _q); }
       { const _q = performance.now(); ambientLife.update(dt, listenerPos.x, listenerPos.z); pAdd('ambientLife', performance.now() - _q); }
       ensureStoryBeats();
-      storyBeats.update(dt);
+      if (storyBeats) storyBeats.update(dt);
       if (sideJobs) sideJobs.update(dt);
       // steam is one extra draw call: only shown/updated near the stall (also keeps the hero-zone budget at its ceiling-safe level)
       teaSteam.points.visible = Math.abs(listenerPos.x - TEA_SHOP_POS.x) < 28 && Math.abs(listenerPos.z - TEA_SHOP_POS.z) < 28;
