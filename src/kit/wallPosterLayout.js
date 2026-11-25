@@ -168,9 +168,9 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
     }
   }
   function mkAnchor(wl, r0, r1) { return { wl, r0, r1, cursor: r0 + R(0, 0.15), items: [], last: null, painted: false, roadFacing: wl.roadFacing }; }
-  // hidden walls get ~15% of clusters
+  // hidden walls get ~35% of clusters (doubled 26 Nov)
   const roadA = anchors.filter((a) => a.roadFacing), hidA = anchors.filter((a) => !a.roadFacing);
-  const keepHid = Math.min(hidA.length, Math.round((roadA.length * 0.15) / 0.85));
+  const keepHid = Math.min(hidA.length, Math.round((roadA.length * 0.35) / 0.65));
   for (let i = hidA.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [hidA[i], hidA[j]] = [hidA[j], hidA[i]]; }
   anchors = roadA.concat(hidA.slice(0, keepHid));
   anchors.sort((a, b) => walls.indexOf(a.wl) - walls.indexOf(b.wl) || a.r0 - b.r0);
@@ -184,17 +184,21 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
     const painted = c.treatment === 'painted';
     const neon = !!c.neon || /^sNeon|^nv/.test(id);
     const film = /movie|film/.test(lc(c.kind)) || /^sFilm|^ppFilm/.test(id);
-    info[id] = { c, painted, neon, film, quota: painted ? 5 : Math.round(R(15, 25)) };
+    info[id] = { c, painted, neon, film, quota: painted ? 8 : Math.round(R(14, 22)) };
   }
   // keep only as many clusters as demand needs (about 2.8 posters each) so clusters really are 2-4 strong;
   // shop/school walls with special ads stay in the pool
   {
-    const D0 = ids.reduce((a, id) => a + info[id].quota, 0), want = Math.ceil(D0 / 2.8);
+    const D0 = ids.reduce((a, id) => a + info[id].quota, 0), want = Math.ceil(D0 / 2.6);
     if (anchors.length > want) {
       const special = (a) => a.wl.school40 || a.wl.bazaar || a.wl.animal || (a.wl.isShop && Object.values(SHOP_ADS).some((re) => re.test(a.wl.shopName)));
       const sp = anchors.filter(special), rest = anchors.filter((a) => !special(a));
       for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
-      anchors = sp.concat(rest.slice(0, Math.max(0, want - sp.length)));
+      const firstOf = new Set(), seenW = new Set();
+      for (const a of anchors) if (!seenW.has(a.wl)) { seenW.add(a.wl); firstOf.add(a); } // every wall keeps one anchor
+      const keep = new Set(sp); firstOf.forEach((a) => keep.add(a));
+      for (const a of rest.filter((x) => !keep.has(x))) if (keep.size < want) keep.add(a);
+      anchors = anchors.filter((a) => keep.has(a));
       anchors.sort((a, b) => walls.indexOf(a.wl) - walls.indexOf(b.wl) || a.r0 - b.r0);
     }
     stats.anchorsUsed = anchors.length;
@@ -203,6 +207,7 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
     const f = info[id];
     if (wl.ids.has(id)) return false;
     if (f.painted && (wl.hasPainted || wl.maxIv < 2.2 || wl.usable < 2.2)) return false;
+    if (f.painted && count[id] >= 5 && wl.maxIv < 6) return false; // 6th-8th copies only on large blank walls
     if (CIVIC_IDS.has(id)) return wl.civic;
     if (id === 'cvSchoolAhead') return wl.school40;
     if (f.neon || f.film) return wl.bazaar;
@@ -212,6 +217,7 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
     if (id === 'muShopSale') return wl.isShop;
     return true;
   }
+  const count = {};
   const cand = {};
   for (const id of ids) cand[id] = anchors.filter((a) => eligible(id, a.wl));
   // even scale-down when demand exceeds capacity (est. 2.6 posters per cluster)
@@ -255,7 +261,7 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
 
   // ---- fill: round-robin, narrowest ids first ----
   const order = ids.slice().sort((p, q) => cand[p].length - cand[q].length);
-  const count = {}, paintedAt = {}; ids.forEach((id) => { count[id] = 0; paintedAt[id] = []; });
+  const paintedAt = {}; ids.forEach((id) => { count[id] = 0; paintedAt[id] = []; });
   const dead = new Set();
   let progress = true;
   while (progress) {
@@ -282,6 +288,14 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
     }
   }
 
+  // ---- pass 2: any wall still bare gets a poster (least-used eligible id first) ----
+  for (const a of anchors) {
+    if (a.items.length || a.wl.ids.size) continue;
+    if (!a.wl.roadFacing && rng() < 0.4) continue; // ~40% of the hidden back walls stay bare
+    const pool = ids.filter((id) => !info[id].painted && count[id] < info[id].target * 5 && eligible(id, a.wl)).sort((p, q) => count[p] / info[p].target - count[q] / info[q].target);
+    for (const id of pool.slice(0, 6)) if (tryAdd(a, id)) { count[id]++; break; }
+  }
+
   // ---- emit ----
   const placements = [];
   let clusters = 0, roadClusters = 0;
@@ -301,6 +315,7 @@ export function layoutWallPosters(boxes, cells, ctx = {}) {
   }
   const per = {}; ids.forEach((id) => (per[id] = 0)); placements.forEach((p) => per[p.id]++);
   stats.perId = per; stats.targets = Object.fromEntries(ids.map((id) => [id, info[id].target]));
+  stats.wallsWithPosters = new Set(placements.map((p) => p.cx.toFixed(2) + '|' + p.cz.toFixed(2) + '|' + p.nx.toFixed(2) + p.nz.toFixed(2))).size && walls.filter((w) => w.ids.size).length;
   stats.placed = placements.length; stats.clusters = clusters; stats.roadClusters = roadClusters;
   stats.roadFacingPlaced = placements.filter((p) => p.roadFacing).length;
   stats.avgPerCluster = clusters ? +(placements.length / clusters).toFixed(2) : 0;

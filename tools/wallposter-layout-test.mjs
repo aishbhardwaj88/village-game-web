@@ -71,5 +71,6 @@ let bad = 0; const seen = new Set();
 for (const p of a.placements) {
   const k = p.id + '|' + p.cx.toFixed(1) + p.cz.toFixed(1); if (p.layer < 0 || p.layer > 3 || p.id === 'sWantedThief') bad++; seen.add(k);
 }
+console.log(`walls with 0 posters: ${st.walls - st.wallsWithPosters} of ${st.walls}; est tris ${a.placements.reduce((t,p)=>t+8+2+(p.rain?2:0),0)}`);
 console.log('invariant violations:', bad);
 console.log(`runtime ${ms.toFixed(0)} ms; deterministic: ${same}`);
