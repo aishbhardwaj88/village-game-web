@@ -1649,3 +1649,8 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (wall-variety commit above only changed material *selection*, not geometry/UVs via arch.py); CC0 prop
   sourcing still proxy-blocked; M7 baagh keeper and item-7 shader-warm-up still need the broken browser.
 - Nothing both real and safe to ship blind. Agents used: none.
+
+## 25 Nov 11:50 UTC (13:45 deadline run)
+- No game change. Checked: Actions green (a3714fe), missions-check 396 pass/0 fail, build:unchecked ok.
+- Temple/sabzi fronts: already settled in a6c25a6 (stay as drawn on the final map). Hard-coded old coords: none left in src except dirtTracks (old map, skipped under ?layout=new). Land-layer builds already yield every 8 ms. Pre-Play 10.7 MB: no cut that is not a look call.
+- Agents: none.
