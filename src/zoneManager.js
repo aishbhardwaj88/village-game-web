@@ -138,7 +138,7 @@ export function createZoneManager(scene) {
   let colPending = false, colNextAt = 0, colStep = null;
   let unbuilt = 0; // wanted zones left for later frames by the build budget
   // 26 Nov: start-area gate (setGate), speed-based lead, holes (a zone inside its own radius that is not built yet) and the late pop-in counter.
-  let gate = null, spd = 0, avgBuildMs = 10, playing = false, playAt = 0;
+  let gate = null, spd = 0, avgBuildMs = 10, playing = false;
   const pop = { latePop: 0, lastName: '' };
   if (typeof window !== 'undefined') window.__zonePop = pop;
   /** Every zone within `radius` of any of the points is built before the Play button unlocks (boosted budget until clearGate). */
@@ -149,7 +149,7 @@ export function createZoneManager(scene) {
   function gateDone() { if (!gate) return true; for (const z of zones.values()) if (z.forceBuild && (!z.active || z.job)) return false; return !queueBusy() && !placeBatchPending() && !colPending && !colStep && rebuildAt < 0 && lateRebuildAt < 0; } // not settled(): that counts far downloads, which keep streaming after Play
   function gateStatus() { let left = 0, job = 0, first = ''; for (const z of zones.values()) if (z.forceBuild) { if (!z.active) { left++; if (!first) first = z.name; } if (z.job) job++; } return { left, job, first, queue: queueBusy(), batch: placeBatchPending(), colPending, colStep: !!colStep, rebuildAt, lateRebuildAt }; }
   if (typeof window !== 'undefined') window.__gateStatus = gateStatus;
-  function clearGate() { gate = null; playing = true; playAt = performance.now(); for (const z of zones.values()) z.forceBuild = false; }
+  function clearGate() { gate = null; playing = true; for (const z of zones.values()) z.forceBuild = false; }
   /** Zones that should already exist (inside their own build radius) and do not: the player outran the stream. */
   function holes(px, pz) { let n = 0; for (const z of zones.values()) if (!z.active && !z.detail && Math.hypot(z.x - px, z.z - pz) <= (z.ownRadius ?? z.buildRadius)) n++; return n; }
   let seenLoads = 0, rebuildAt = -1, lateRebuildAt = -1; // a .glb finished loading: rebuild colliders once its callback has put it in the scene
@@ -213,8 +213,7 @@ export function createZoneManager(scene) {
           // Build order: what the player is standing in or beside first, then whatever lies ahead of the heading, then the rest
           // (plain nearest-first built things behind the player before the road in front of the cycle).
           const ahead = heading > 0.3 ? (dx * travelX + dz * travelZ) / (d || 1) : 0;
-          // 26 Nov: in the first seconds after Play, anything already inside its draw radius goes first, nearest first (the gate held it back on purpose)
-          wanted.push([zone.forceBuild || d <= zone.buildRadius + 30 ? d - 1000 : (playAt && d <= zone.visibleRadius ? d - 2000 : d - 150 * Math.max(0, ahead)), zone]);
+          wanted.push([zone.forceBuild || d <= zone.buildRadius + 30 ? d - 1000 : d - 150 * Math.max(0, ahead), zone]);
         }
       } else if (d > Math.max(zone.teardownRadius, zone.buildRadius + SIGHT_EXTRA + 30, TEARDOWN_EXTRA)) {
         scene.remove(zone.group);
@@ -234,7 +233,7 @@ export function createZoneManager(scene) {
     unbuilt = wanted.length;
     if (wanted.length) {
       wanted.sort((a, b) => a[0] - b[0]);
-      const budget = gate ? 20 : (playAt && performance.now() - playAt < 10000 ? 12 : frameBudget()); // first 10 s after Play: 12 ms so the zones the gate held finish before the player walks into them // behind the title the whole frame is ours
+      const budget = gate ? 20 : frameBudget(); // behind the title the whole frame is ours
       const t0 = performance.now();
       for (const [, zone] of wanted) {
         unbuilt--;
