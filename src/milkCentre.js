@@ -70,7 +70,11 @@ const person = (lx, lz, h, tint, i) => {
   lib('wood', g, lx, h / 2, lz, tint, rnd(i) * 3);
 };
 
+/** removed 25 Nov: stood on road (main_road), her order. Old-layout fixed site (597.31, 49.31); the map's own 'Milk collection point' shop replaces it. Set false to restore. */
+export const MILK_CENTRE_REMOVED_25NOV = true;
+
 export function createMilkCentre(scene) {
+  if (MILK_CENTRE_REMOVED_25NOV) return { group: new THREE.Group() }; // removed 25 Nov: stood on road, her order
   by.clear();
   const colliders = [];
   const W = 3.2, D = 2.4;

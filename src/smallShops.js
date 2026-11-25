@@ -475,8 +475,13 @@ function sweets(s, kind, tx, ty, tz, seed, tint) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+/** removed 25 Nov: stood on road, her order ("if there is anything on the road, remove it"). The bookstall, CD shop and mithai kiosk are not in the
+ *  approved map and were placed by fixed offsets from ANCHORS.chowk (old layout). Set to false to bring them back (docs/layout/MOVE_LOG_ROADEMPTY_25NOV.md). */
+export const SMALL_SHOPS_REMOVED_25NOV = true;
+
 export function createSmallShops(scene) {
   const group = new THREE.Group(); group.name = 'small_shops';
+  if (SMALL_SHOPS_REMOVED_25NOV) return { group }; // removed 25 Nov: stood on road, her order (nothing is added to the scene, so no collider, sign or shopkeeper capsule exists)
   const c = ANCHORS.chowk; if (!c) return { group };
   const batch = new Batch();
   const signs = [], people = [], colliders = [];

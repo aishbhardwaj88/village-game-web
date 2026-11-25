@@ -286,8 +286,8 @@ export function createWallWriting(scene) {
   onWall('Petrol pump', -42.2, -154.1, 6.0, 'slogan2', 0.76, 1);
   onWall('Tubewell and pump room', 128.3, 38.5, 2.0, 'cricket', 0.76, 1);
   onWall('Creche and preschool (anganwadi)', -23.6, 103.6, 2.0, 'kids', 0.72, 1);
-  onWall('Sweet shop (halwai)', 40.3, 19.4, 1.75, 'card', 0.78, 1);
-  onWall('General store', 24.1, 49, 1.75, 'tolet', 0.74, 1);
+  // removed 25 Nov: stood on road (cross_road, 3 m inside the band), her order: onWall('Sweet shop (halwai)', 40.3, 19.4, 1.75, 'card', 0.78, 1);
+  // removed 25 Nov: stood on road (inner_se, 1.7 m inside the band), her order: onWall('General store', 24.1, 49, 1.75, 'tolet', 0.74, 1);
 
   // ---- newspaper on the open-air barber's tool box (src/lifeScenes.js: scene at chaupal local (-6.4, 6.8), yaw 2.4, box at (0.95, 0.85), top y 0.30) ----
   {

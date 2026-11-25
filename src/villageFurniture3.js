@@ -372,6 +372,9 @@ function placeShown(scene, name, cache) {
   return true;
 }
 
+/** removed 25 Nov: stood on road, her order. Set false to restore the bhootiya ghar ruin. */
+export const RUIN_REMOVED_25NOV = true;
+
 export function createVillageFurniture3(scene) {
   const group = new THREE.Group(); group.name = 'village_furniture3';
   const report = [];
@@ -387,7 +390,7 @@ export function createVillageFurniture3(scene) {
   decalMat.name = 'wall_writing'; // wall-hung decals (ruin scrawl, notices): elevated fixtures like src/wallWriting.js's; unnamed they merged into a 'merged_N' bucket the ground-contact check read as floating at 1.08 m
 
   // 1. bhootiya ghar
-  const rw = ANCHORS.pond && spotMatrix(FURNITURE3_SPOTS.ruin);
+  const rw = !RUIN_REMOVED_25NOV && ANCHORS.pond && spotMatrix(FURNITURE3_SPOTS.ruin); // removed 25 Nov: stood on road (15_Outer lane, west, 2 m deep), her order
   if (rw) {
     const batch = new Batch();
     const o = new Obj(batch, rw, 83, { dirt: 0.35, dust: 0.15 });

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { isNewLayout } from './layout/layout.js';
 import { ANCHORS } from './anchors.js';
+import { mapBandClearance } from './mapRoads.js';
 import { Obj, Batch, spotMatrix, local, rnd } from './villageOddities.js';
 import { FURNITURE2_SPOTS } from './villageFurniture2.js';
 
@@ -319,6 +320,7 @@ export function createVillageFurniture4(scene) {
     if (!a) continue;
     const tx = a.x + tree.tx, tz = a.z + tree.tz;
     for (const k of tree.kites) {
+      if (mapBandClearance(tx + Math.cos(k.ang) * k.r, tz + Math.sin(k.ang) * k.r) < 1.0) continue; // removed 25 Nov: hung over a road, her order
       const seed = 200 + n * 17;
       const px = tx + Math.cos(k.ang) * k.r, pz = tz + Math.sin(k.ang) * k.r;
       // face outward from the trunk so it reads from the lane, tipped and rolled the way it fell into the leaves

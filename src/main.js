@@ -171,7 +171,7 @@ import { createBazaarLife } from './bazaarLife.js';
 import { createLifeScenes } from './lifeScenes.js';
 import { createLifeScenes2 } from './lifeScenes2.js';
 import { createChaurahaEdges } from './chaurahaEdges.js'; // houses, open shops and corner groups ringing the chauraha (docs/SPATIAL_SENSE.md section 1)
-import { createSmallShops } from './smallShops.js';
+import { createSmallShops } from './smallShops.js'; // removed 25 Nov: stood on road, her order (flag SMALL_SHOPS_REMOVED_25NOV inside smallShops.js)
 import { createMilkCentre } from './milkCentre.js';
 import { createRoadEvents, GOAT_FOOTPRINT_RADIUS, HERDER_FOOTPRINT_RADIUS } from './roadEvents.js';
 import { createMainRoadFrontage } from './mainRoadFrontage.js'; // second pass: fills the gaps armFrontage left on the main road N + S arms

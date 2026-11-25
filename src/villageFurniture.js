@@ -85,6 +85,8 @@ class Obj {
 }
 
 const BAMBOO = 0xb09a54, BAMBOO2 = 0x9a8a4a, IRONC = 0x55504a, WOODD = 0x7a5a3a;
+/** removed 25 Nov: stood on road, her order (jhoola at 495.8, 3.3 stood on cross_road). Empty this list to restore. */
+export const ON_ROAD_REMOVED_25NOV = ['jhoola'];
 export const FURNITURE_SPOTS = {
   kites: { at: 'chowk', lx: 14, lz: 20, yaw: 0.3 },
   scarecrowA: { at: 'field', lx: -12, lz: -4, yaw: 0.5 },
@@ -179,6 +181,7 @@ export function createVillageFurniture(scene) {
   const batch = new Batch(), colliders = [], report = [];
   let seed = 83;
   for (const [kind, build] of Object.entries(BUILDERS)) {
+    if (ON_ROAD_REMOVED_25NOV.includes(kind)) continue; // removed 25 Nov: stood on road, her order
     const sp = FURNITURE_SPOTS[kind], world = sp && spotMatrix(sp);
     if (!world) continue;
     const sc = 0.97 + rnd(seed) * 0.08;
