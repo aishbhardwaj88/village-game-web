@@ -1721,3 +1721,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Shops and buildings: Sonnet, medium. Buildings only, no carts/signs/props. Running.
 - Opus: none. Haiku: none (one planned for the final live re-check). Fable: none.
 - Head of engineering (main chat): gated old-layout builders off under the new layout (25095ba: road-events cow, vendors, nostalgia, oddities incl. mazar, fixtures).
+- 25 Nov 15:5x scheduled run: Actions green on 54a491b; temple now faces north to the highway and sabzi follows her 'face the road' answer (8de1430, 54a491b); missions-check 398/0/3, build:unchecked + 4 instant checks pass. No code change.

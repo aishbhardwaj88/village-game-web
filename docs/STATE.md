@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov 15:15 UTC (hourly loop). HEAD 6953aa3 (another session's edition.js render-scale
+Last updated: 25 Nov 15:55 UTC (scheduled run). HEAD 54a491b, CI green, missions-check 0 fail, Tier 1 clean. No code change.
 tweak at 14:45, Tier 1 re-checked clean, CI green run 45637514739). No code change this run.
 LOOKS LIST 1-7 + item 8 (missions/bell/canal) stay done/parked - confirmed clean across 3+ runs now,
 stop re-verifying these every hour (A6) unless a future diff touches them. Item 2 (chauraha road
