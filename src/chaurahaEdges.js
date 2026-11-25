@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isNewLayout } from './layout/layout.js';
 import { onNewRoad } from './layout/roadClear.js';
 import { signPageMaterial } from './signAtlasHub.js';
 import { batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
@@ -57,7 +58,7 @@ const BUILDINGS = [
   // south row, facing north (ry = pi)
   { t: 'house', x: 591.2, z: 41.6, ry: Math.PI + 0.04, w: 5.4, d: 4.6 },
   { t: 'shop', kind: 'kirana', x: 596.6, z: 41.2, ry: Math.PI - 0.03, w: 3.6, d: 3.4 },
-].filter((b) => !onNewRoad(b.x, b.z, Math.hypot(b.w, b.d) / 2)).filter((b) => !(b.x + b.w / 2 > 598.9 && b.x - b.w / 2 < 606.9 && b.z > -60 && b.z < 30)); // 26 Nov: drop old-layout buildings on the new main road lane (cycle shop x 598.9-602.7, z -4.4..-1 blocked the ride near z -5)
+].filter((b) => !isNewLayout()).filter((b) => !onNewRoad(b.x, b.z, Math.hypot(b.w, b.d) / 2)).filter((b) => !(b.x + b.w / 2 > 598.9 && b.x - b.w / 2 < 606.9 && b.z > -60 && b.z < 30)); // 26 Nov: drop old-layout buildings on the new main road lane (cycle shop x 598.9-602.7, z -4.4..-1 blocked the ride near z -5)
 
 const WALL_TINTS = [0xe9dcc0, 0xd8dfcf, 0xd4dce0, 0xe4cfb0, 0xe2c9c0, 0xdcd2b8];
 const AWNING_TINTS = [[0xb8503a, 0xe8dcc0], [0x3a6a8a, 0xe8dcc0], [0xc8962a, 0x8a3a2a], [0x4a7a4a, 0xe0d4b0]];
@@ -322,7 +323,7 @@ export function createChaurahaEdges(scene) {
     }
     // life at the door: a pot stack, a matka on a stand, a sack, firewood, or a cot standing on end
     const nProps = 2 + Math.floor(rand() * 2);
-    const props = ['pots', 'sack', 'wood', 'matka', 'cot'];
+    const props = ['pots', 'sack', 'wood', 'matka']; // 26 Nov: 'cot' (a khaat on its side against the wall) removed on her order: a khaat always lies flat
     const used = new Set();
     for (let i = 0; i < nProps; i++) {
       let k; do { k = pick(props); } while (used.has(k)); used.add(k);
@@ -379,10 +380,12 @@ export function createChaurahaEdges(scene) {
   let si = 0;
   for (const b of BUILDINGS) { if (b.t === 'house') house(b); else { shop(b, si++); } }
   // corner groups, all outside the 12 m circle and off the road lanes
+  if (!isNewLayout()) { // 26 Nov: old corner groups at old coordinates stood on the new roads (charpai 604.6,-1.2 is on main_road); the map has its own
   charpai(590.4, 29.8, Math.PI / 2 + 0.1, 2, [0xc4bca8, 0x8a9aa8]); // west row, SW corner
   carrom(621.4, 17.3, 0.3); // east row
   charpai(604.6, -1.2, 0.15, 3); // north row, tea-side
   bench(591.8, 35.8, Math.PI + 0.1); // south row, three old men
+  }
 
   // ------------------------------------------------------------------ merge: one mesh per material
   const root = new THREE.Group();

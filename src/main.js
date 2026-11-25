@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { nudgeOffRoad } from './kit/mapObjectsPlan.js'; import { getRoads } from './layout/layout.js';
 import { onNewRoad } from './layout/roadClear.js';
 import { registerPilotVehicles } from './pilotVehicles.js';
 import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
@@ -512,7 +513,10 @@ async function main() {
   // waypoint, src/bazaar.js), east of it, facing the lane.
   const shopsGroup = new THREE.Group();
   shopsGroup.name = 'shops';
-  const TEA_SHOP_POS = pt('teastall');
+  const TEA_SHOP_POS = (() => { // 26 Nov: no building on a road. The map's tea stall corner touched cross_road and chauraha_ring; slide the whole stall (all its parts read this one position) clear
+    const p0 = pt('teastall'); if (!isNewLayout()) return p0;
+    const nn = nudgeOffRoad(getRoads(), p0.x, p0.z, 3.3); return nn.moved > 0 ? Object.assign(Object.create(Object.getPrototypeOf(p0)), p0, { x: nn.x, z: nn.z }) : p0;
+  })();
   const TEA_SHOP_ROT = Math.PI + ANCHORS.teastall.ry; // 7 Nov road-front audit: was +PI/2 (facing east at the chaat cart); the map's front path runs north to the cross road, so the counter faces north
   const STORE_POS = pt('store');
   const STORE_ROT = Math.PI + ANCHORS.store.ry; // 7 Nov road-front audit: was -PI/2 (facing west); the map's front path runs north to the lane east of the square, so the counter faces north

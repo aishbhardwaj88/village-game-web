@@ -10,6 +10,7 @@ import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMuralsGen } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 import { runSync, sliceGen } from './lateBuild.js';
+import { nudgeOffRoad } from './mapObjectsPlan.js'; import { getRoads } from '../layout/layout.js';
 
 /**
  * Places every new shop of the approved map (?layout=new): the ~44 two-storey shop-houses (new_sqx), the ~37 kiosks and
@@ -56,6 +57,10 @@ function* buildShopsGen(map, { camera = null } = {}) {
   const designSigns = new Map();
 
   const put = (type, key, build, rect, opts, i) => {
+    if (type === 'kiosk' || type === 'cart' || type === 'shed') { // 26 Nov: no object on a road. Small stands slide off a band (shops and houses are never moved)
+      const nn = nudgeOffRoad(getRoads(), rect.x, rect.z, Math.hypot(rect.width, rect.depth) / 2);
+      if (nn.moved > 0) { rect = { ...rect, x: nn.x, z: nn.z }; (report.nudged ||= []).push(`${opts.signName || key} ${nn.moved.toFixed(2)} m`); }
+    }
     const near = key, mid = key + '|lite';
     if (!kit.designs.has(near)) {
       const d = build(false);
