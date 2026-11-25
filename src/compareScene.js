@@ -104,7 +104,10 @@ export function setupCompare({ scene, camera, camRig, player, assetSlots, ground
       a.g.position.set(a.x, groundAt(a.x, a.lane, 0), a.lane);
       a.g.rotation.y = a.yaw;
       a.lbl.getWorldPosition(tmpV);
-      a.lbl.visible = !face && camera.position.distanceTo(tmpV) > 2; // out of the way of the face when the camera is close, and in face view
+      const dl = camera.position.distanceTo(tmpV);
+      const dBody = Math.hypot(camera.position.x - a.x, camera.position.z - a.lane);
+      a.lbl.visible = !face && dBody > 3; // hidden within 3 m of the Uncle and in face view
+      a.lbl.scale.set(dl * 0.16, dl * 0.04, 1); // fixed small size on screen, whatever the distance
     }
     if (face) { // eye level on the head bone, looking straight at the face
       if (!face.head) face.g.traverse((b) => { if (!face.head && b.isBone && /(^|rig|:)head$/i.test(b.name)) face.head = b; });
