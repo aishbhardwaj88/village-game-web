@@ -465,7 +465,8 @@ export function createMapHaystacks(position) {
   // 25 Nov, her order (roads empty): under the approved map this group sits at (510.5, -6.1) and the third stack (local z 5.5, world 508.2, -0.6)
   // stood 2.6 m inside cross_road. Moved 4.5 m to local z 1.0 (world 508.2, -5.1), 1.1 m clear of the band. Set HAY3_LZ_OLD true to restore.
   const HAY3_LZ_OLD = false;
-  const hay = [[-2.3, -5.5, 1.9, 1, 0xb4a276], [4.7, 0, 1.8, 2, 0xc0ad80], [-2.3, HAY3_LZ_OLD ? 5.5 : 1.0, 1.95, 0, 0xa59468]];
+  // 25 Nov (J): that spot still left its full 5.8 m body 0.3 m over the west outer lane apron; now local (-8, -1.5) = world (502.5, -7.6), 1.3 m clear.
+  const hay = [[-2.3, -5.5, 1.9, 1, 0xb4a276], [4.7, 0, 1.8, 2, 0xc0ad80], HAY3_LZ_OLD ? [-2.3, 5.5, 1.95, 0, 0xa59468] : [-8, -1.5, 1.95, 0, 0xa59468]];
   const carrier = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
   carrier.name = 'map_haystacks';
   carrier.visible = false;

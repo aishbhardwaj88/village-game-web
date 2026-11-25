@@ -231,7 +231,7 @@ export async function build(map, { camera = null } = {}) {
           // snap onto the field's own rows: rotate into row space, keep the grid
           const jx = x + (hash01(x, z) - 0.5) * step * 0.5, jz = z + (hash01(z, x) - 0.5) * step * 0.5;
           const cl = roads.clearance(jx, jz);
-          if (cl < 1.5 || cl > 14) continue;
+          if (cl < (look.plant === 'cane' ? 2.0 : 1.5) || cl > 14) continue; // 25 Nov (J) roads empty: cane clumps are ~1 m wide, 2.0 keeps them 0.6 m off the lane dust
           if (!inRing(ring, jx, jz) || inKhet(jx, jz)) continue;
           const across = (-sa * jx + ca * jz) / (look.plant === 'cane' ? 1.1 : 0.75);
           if (look.plant !== 'sarson' && Math.abs(across - Math.round(across)) > 0.3) continue; // rows, with walkable furrows between (mustard closes over its rows)

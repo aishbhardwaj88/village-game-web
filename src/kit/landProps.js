@@ -132,7 +132,7 @@ export async function build(map) {
     if (performance.now() - sliceT > 8) { await yieldToMain(); sliceT = performance.now(); }
     const key = labelKey(o), name = labelName(o), ring = o.rings?.[0];
     if (!ring || o.kind !== 'solids') continue;
-    let c = ringCentre(ring); const r = ringRadius(ring);
+    let c = ringCentre(ring); let r = ringRadius(ring);
     // 25 Nov, her order (ROADS MUST BE EMPTY, never delete): a well, hand pump, haystack or dung stack whose footprint touches a road or its
     // dusty apron slides straight away from the road to the nearest legal spot (>= 0.6 m beyond the drawn edge, max 8 m). Islands, platforms and flags stay.
     const hc = { x: c.x, z: c.z }; // the unmoved centre keeps seeding type, tint and turn, so a slid prop looks exactly as before
@@ -142,6 +142,8 @@ export async function build(map) {
     }
     if (key === 'new_island') {
       if (name.startsWith('Raised platform')) {
+        // 25 Nov (J), roads empty: the map's 5.6 m island reaches inside the ring's visible dusty apron (ring inner edge 6.0 m, apron 0.42, margin 0.6); trim to 4.9 m
+        r = Math.min(r, 4.9);
         // island: brick-faced drum, cement coping, earth bed with grass (painted by the bed colour), kerb stones
         P.cyl('brick', c.x, 0, c.z, r, r, 0.55, { seg: 40, cap: false, color: 0xe6d8c8 });
         for (let i = 0; i < 40; i++) {

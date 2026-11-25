@@ -1955,7 +1955,7 @@ async function main() {
     registerRideNooks(zoneManager); // everyday scenes on every bare road/lane stretch (src/rideNooks.js, docs/ride-nooks-2026-11-07.md)
     registerLongWalks(zoneManager); // wells, shrines, gates, haystacks, buffalo, pumps along every walk over 20 s (src/longWalks.js)
     const FP = (n, x, z, items, r = 40) => zoneManager.register(n, { x: x + 600, z, buildRadius: r, teardownRadius: r + 15, build: () => createFieldPropSite(n, { x: x + 600, z }, items.map((i) => ({ ...i, x: i.x + 600 }))) });
-    FP('map_well', -205.5, -20.6, [{ part: 'well', x: -205.5, z: -20.6, solid: [4.2, 4.2] }]); // the map's village well (1 Nov plan)
+    FP('map_well', -205.5, -22.1, [{ part: 'well', x: -205.5, z: -22.1, solid: [4.2, 4.2] }]); // the map's village well (1 Nov plan); 25 Nov (J) roads empty: slid 1.5 m north (z -20.6 -> -22.1), was 0.54 m on cross_road
     FP('map_field_gate', -27, 188.5, [{ part: 'field_gate', x: -33.3, z: 188.5, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: -20.4, z: 188.5, ry: Math.PI, solid: [0.9, 0.9] }]);
     FP('map_field_gate_wheat', 9, -152.2, [{ part: 'field_gate', x: 3.6, z: -152.2, solid: [0.9, 0.9] }, { part: 'field_gate_b', x: 14.4, z: -152.2, ry: Math.PI, solid: [0.9, 0.9] }]);
     // map_field_shrine removed: she does not want standalone shrines (7 Nov)

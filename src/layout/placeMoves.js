@@ -15,7 +15,7 @@ export const PLACE_MOVES = [
   // temple: 26 Nov (review rules 2): front is the compound's gate wall; it faces the highway, so the compound slides 1.5 m more north to bring its gate wall within 15 m of the highway band (4.97 m from the map spot in all)
   { src: 'temple', ids: ['temple'], dx: -3.2, dz: -3.8, ry: -92 * D, why: 'compound stood 1.5 m into the Outer lane north; then 1.5 m more north so its gate wall is within 15 m of the highway it faces' },
   { src: 'dairy', ids: ['dairy', 'yard_dairy'], dx: 0, dz: 3.0, why: 'back of the yard stood 1.39 m into gali_n15; 1.5 m more south so the shop front faces the cross road, not the lane behind it' },
-  { src: 'gurudwara', ids: ['gurudwara'], dx: -0.4, dz: -1.6, why: 'porch corner stood 1.52 m into the south-west edge lane' },
+  { src: 'gurudwara', ids: ['gurudwara'], dx: -0.4, dz: -2.3, why: 'porch corner stood 1.52 m into the south-west edge lane; 25 Nov roads-empty (J): 0.7 m more north, a step stood 0.11 m inside the lane dust' },
   { src: 'yard_petrol', ids: ['yard_petrol'], dx: 0, dz: 2.9, why: 'forecourt stood 2.78 m into the highway' },
   { src: 'tvhouse', ids: ['tvhouse', 'yard_tvhouse'], dx: 0, dz: 2.2, why: 'yard stood 0.97 m into gali_n38' },
   { src: 'yard_paani_tanki', ids: ['yard_paani_tanki'], dx: 0, dz: -0.2, why: 'corner touched gali_n32 by 0.01 m' },
