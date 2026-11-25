@@ -18,7 +18,7 @@ export const PLACE_MOVES = [
   { src: 'yard_petrol', ids: ['yard_petrol'], dx: 0, dz: 2.9, why: 'forecourt stood 2.78 m into the highway' },
   { src: 'tvhouse', ids: ['tvhouse', 'yard_tvhouse'], dx: 0, dz: 2.2, why: 'yard stood 0.97 m into gali_n38' },
   { src: 'yard_paani_tanki', ids: ['yard_paani_tanki'], dx: 0, dz: -0.2, why: 'corner touched gali_n32 by 0.01 m' },
-  { src: 'anganwadi', ids: ['anganwadi'], dx: 0, dz: 0.15, why: 'stood 0.05 m from the Outer lane south band (her rule: clear by 0.1 m)' },
+  { src: 'anganwadi', ids: ['anganwadi'], dx: 0, dz: 2.65, why: 'stood 0.05 m from the Outer lane south band (her rule: clear by 0.1 m); 25 Nov roads-empty: slide, swings and yard wall stood 2.3 m into the lane dust, 2.5 m more south clears the dust apron by 0.3 m (2.65 m from the map spot)' },
   // 26 Nov review rules (docs/layout/MOVE_LOG_PLACES2_25NOV.md): walls square to the road the front looks at, front nearer that road than the back
   { src: 'halwai', ids: ['halwai'], dx: 0, dz: 0, ry: 90 * D, why: 'walls were 36 deg off main_road; turned square to it' },
   { src: 'store', ids: ['store'], dx: -0.5, dz: 0, why: 'front stood nearer the highway (19 deg skew) than main_road; 0.5 m west puts its front on main_road, to which it is square' },
@@ -27,11 +27,14 @@ export const PLACE_MOVES = [
   { src: 'chaat', ids: ['chaat'], dx: 0, dz: 0, ry: -Math.PI, why: 'walls were 36 deg off main_road; turned square to it (also clears the pooja items shop by 0.66 m2)' },
   { src: 'jalebi', ids: ['jalebi'], dx: 0, dz: 0, ry: -90 * D, why: 'walls were 30 deg off cross_road; turned square to it' },
   { src: 'sabzi', ids: ['sabzi'], dx: -2.9, dz: -3.9, ry: 132 * D, why: 'walls 40 deg off main_road and 11.5 m2 into the gift shop; turned 8 deg and slid 2.9 m north-west to front cross_road square (2.6 deg), overlap with the shop cut to 7.2 m2, clear of the kite job points; 26 Nov: 2 m more south-west (total 4.86 m from the map spot) so the gift shop clears it with a 1 m slide' },
-  { src: 'yard_bus_adda', ids: ['yard_bus_adda'], dx: 0, dz: -2.5, why: 'shelter front looked at gali_n19 behind it, back nearer; 2.5 m north its front faces the highway square' },
+  { src: 'yard_bus_adda', ids: ['yard_bus_adda'], dx: 0, dz: -1.5, why: 'shelter front looked at gali_n19 behind it, back nearer; 2.5 m north its front faces the highway square; 25 Nov roads-empty: 1.0 m back south so the roof edge clears the highway dust apron by 0.3 m (1.5 m from the map spot)' },
   // 26 Nov final overlaps (docs/layout/MOVE_LOG_FINAL_25NOV.md): building-on-building overlaps that a shop move alone could not clear
   { src: 'house', ids: ['house'], dx: 3.4, dz: 0.6, why: "Pitaji's house (real mesh) stood 27 m2 into the Hardware and paint shop; 3.4 m east and 0.6 m north here + the shop 2.2 m west and 0.6 m south clears it and keeps the sack pile and the bullock cart spawn outside the shop (3.45 m from the map spot)" },
   { src: 'yard_chaupal', ids: ['yard_chaupal'], dx: 0, dz: -1.5, why: 'chaupal yard overlapped the post office body (8.95 m2 of site boxes); 1.5 m north clears it, front still on ring_road' },
   // yard_bhatta: NO move and NO turn (25 Nov). Her own map rule: the brick kiln stays away from the petrol pump and is never attached to the road, greenery in front of it. The map's front (north, away from the highway) is that rule; the facing-the-road rule does not apply to it.
+  // 25 Nov ROADS EMPTY (docs/layout/MOVE_LOG_ROADEMPTY_H1_25NOV.md): nothing on a road band or its dust apron
+  { src: 'yard_matboard', ids: ['yard_matboard'], dx: 0, dz: 2.8, why: 'board stood 2 m into the cross road dust; 2.8 m south clears the apron by 0.3 m (reference yard, not on the map)' },
+  { src: 'yard_houses', ids: ['yard_houses'], dx: 22, dz: 0, why: 'the kit row stood across the farm loop (kit_c, kit_d on the band itself); 22 m east puts every house 0.3 m+ clear of the loop dust (reference row, not a village place, no map spot)' },
   // facing: road facing wins over the old model turn (front = local +z; open grounds put their long side to the road)
   { src: 'yard_volleyball', ids: ['yard_volleyball'], dx: 0, dz: 0, ry: -107.1 * D, why: 'square to main_road (front west, 11 deg off square before)' },
   { src: 'maidan', ids: ['maidan', 'yard_khel'], srcs: ['maidan', 'yard_khel'], dx: 0, dz: 0, ry: -107.1 * D, why: 'front toward main_road, walls square to it' },
