@@ -733,7 +733,7 @@ async function main() {
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createLifeScenes(scene); // carrom, radio charpai, open-air barber in the chaupal corners (src/lifeScenes.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
-  createChaurahaEdges(scene);
+  if (!isNewLayout()) createChaurahaEdges(scene); // 25 Nov (her order, no object on a road): the old chauraha edge shops/houses/people are leftovers; the final map has its own shops and houses there
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
   createLifeScenes2(scene); // net charpai, rangoli, kids' games, pump queue, TV doorway (src/lifeScenes2.js)
   await yieldToMain(); // boot-CPU slice point (25 Nov): hand the thread back so no single task runs long
