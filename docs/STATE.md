@@ -8,6 +8,7 @@ once yes, the 23 overlaps/6 on-road/63 road-band-touch list from the prior run b
 Open: tractor model is one mesh (no wheel spin/steer); bike wheel does not steer; cart still code-built.
 Fresh container this run: `npm ci` + fetch/checkout -B main (HEAD was detached, as usual, A per below).
 ## Current state
+- 25 Nov 14:45 head-of-eng run: Actions green at a4a911b. Temple already faces -z (front [0.017,-1], AS_DRAWN, ry -91 deg + model offset 90) and sabzi front = map front; no change. missions-check 398 pass/0 fail. Pre-Play transfer measured 3.79 MB (load-time-test, local, 4x CPU throttle; Play-ready time 39 s is the container). Moved-place anchors are overridden by layout.js. 'Unsliced land-layer builds' not defined in any doc, left.
 - 26 Nov SIGNS: 115 map new_sign boards built (src/kit/mapSigns.js, one import line in main.js). 2 draw calls, 4140 tris, 230 post colliders, builds after Play. Hindi lines are my translations (art director may edit HI table).
 - 26 Nov SHOPS FIX: 19 skipped shops/kiosks/carts now built on their drawn plot (shopsPlace.js ring fallback; shops built 143 -> 162 of 165, 3 railway left). Tractor spawn x 642 -> 641. world-validator check 1 clear; check 2 floats (hb_main_39, school_bell) pre-existing.
 - 26 Nov RAILWAY + MELA: src/kit/railway.js (4 zones, dynamic import after Play; nearest zone edge 210 m from spawn). Mela zone enabled. Open: mela swing overlaps the map's Tent/wedding lights; full build/regression not run (container limit, A7).
