@@ -10,20 +10,18 @@ import { CELL } from './housesMaterial.js';
 const W = { cell: CELL.wood, col: [0.85, 0.76, 0.64] };
 
 export const CLUTTER = {
-  /** Charpai stood on its side against the wall (by day): wooden frame and legs, woven cotton tape (nawar) lattice. */
+  /** Charpai lying FLAT on its four legs (1.9 x 1.0 x 0.45 m, long axis along x, centred at the origin on the ground):
+   *  wooden frame, four turned legs, woven cotton tape (nawar) bed. Never stood on its side. */
   charpai(g) {
-    const L = 1.9, B = 0.95, t = 0.06;
-    // stood up: long axis along x, the bed plane vertical (y up to B), legs toward +z
-    const lw = { ...W, col: [0.72, 0.6, 0.48] };
-    g.box(-L / 2, L / 2, 0.05, 0.05 + t, -0.03, 0.03, lw);
-    g.box(-L / 2, L / 2, B - t, B, -0.03, 0.03, lw);
-    g.box(-L / 2, -L / 2 + t, 0.05, B, -0.03, 0.03, lw);
-    g.box(L / 2 - t, L / 2, 0.05, B, -0.03, 0.03, lw);
-    // legs stick out toward +z: build as bars
-    for (const x of [-L / 2 + 0.03, L / 2 - 0.03]) for (const y of [0.08, B - 0.03]) g.bar([x, y, 0.03], [x, y, 0.38], 0.06, lw);
+    const L = 1.9, B = 1.0, H = 0.45, t = 0.07, lw = { ...W, col: [0.72, 0.6, 0.48] };
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.box(sx * (L / 2 - 0.06) - 0.04, sx * (L / 2 - 0.06) + 0.04, 0, H - 0.05, sz * (B / 2 - 0.06) - 0.04, sz * (B / 2 - 0.06) + 0.04, lw);
+    g.box(-L / 2, L / 2, H - 0.07, H, -B / 2, -B / 2 + t, lw);
+    g.box(-L / 2, L / 2, H - 0.07, H, B / 2 - t, B / 2, lw);
+    g.box(-L / 2, -L / 2 + t, H - 0.07, H, -B / 2, B / 2, lw);
+    g.box(L / 2 - t, L / 2, H - 0.07, H, -B / 2, B / 2, lw);
     const tape = { cell: CELL.plaster, col: [0.7, 0.66, 0.58] }; // cotton nawar, greyed with use
-    for (let x = -L / 2 + 0.12; x < L / 2 - 0.08; x += 0.075) g.box(x - 0.014, x + 0.014, 0.1, B - 0.05, -0.012, 0.004 + (Math.round(x * 14) % 2) * 0.006, tape);
-    for (let y = 0.14; y < B - 0.06; y += 0.075) g.box(-L / 2 + 0.07, L / 2 - 0.07, y - 0.014, y + 0.014, -0.006, 0.01 - (Math.round(y * 14) % 2) * 0.006, tape);
+    for (let x = -L / 2 + t; x < L / 2 - t - 0.03; x += 0.075) g.box(x, x + 0.03, H - 0.035, H - 0.02, -B / 2 + t, B / 2 - t, tape);
+    for (let z = -B / 2 + t; z < B / 2 - t - 0.03; z += 0.075) g.box(-L / 2 + t, L / 2 - t, H - 0.02, H - 0.005, z, z + 0.03, tape);
   },
   /** LPG cylinder: painted steel (sun-faded red), collar and foot ring. */
   cylinder(g) {

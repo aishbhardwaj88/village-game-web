@@ -79,7 +79,7 @@ export function assignHouses(plan) {
 export function clutterFor(e, info) {
   if (info.noStrip || info.otlaY == null) return [];
   const w = e.cw, items = [];
-  const dx0 = info.door.x0 - 0.35, dx1 = info.door.x1 + 0.35;
+  const dx0 = info.door.x0 - 0.7, dx1 = info.door.x1 + 0.7; // 0.35 m of that is the planters' flank beside the door
   const spans = [[-w / 2 + 0.35, dx0], [dx1, w / 2 - 0.35]].filter(([a, b]) => b - a > 0.5).sort((p, q) => (q[1] - q[0]) - (p[1] - p[0]));
   const r = (k) => hash(e.i * 7.7 + k * 3.3);
   const zw = info.zf + 0.04;
@@ -95,8 +95,9 @@ export function clutterFor(e, info) {
     const len = sp[1] - sp[0];
     if (kind === 'charpai') {
       if (len < 2.0) continue;
+      // a khaat always lies flat on LEVEL GROUND in front of the otla (never on the step, never against the wall)
       const x = sp[0] + 1.0;
-      items.push({ kind, x, y, z: zw + 0.02, yaw: 0 }); sp[0] += 2.05;
+      items.push({ kind, x, y: 0, z: info.zf + (info.otlaDepth || 0) + 0.45 + 0.5, yaw: 0 }); sp[0] += 2.05;
     } else if (kind === 'bicycle') { // on the ground in front of the otla, along the house
       if (!info.otlaDepth || len < 1.8) continue;
       const x = (sp[0] + sp[1]) / 2;
@@ -144,6 +145,18 @@ export function buildHouseBatch(entries, { withFar = true, withClutter = true, n
     if (withFar) { const f = farKey(e); if (!geos.has(f)) geos.set(f, buildFar(e.design, e.cw, e.cd, false).toGeometry()); }
     e.info = infos.get(k);
     e.clutter = withClutter ? clutterFor(e, e.info) : [];
+    if (roads && roads.clearance) { // road rule: no khaat within 1.2 m of a road edge (its 1.9 x 1.0 m footprint is sampled)
+      const cs = Math.cos(e.ry), sn = Math.sin(e.ry);
+      e.clutter = e.clutter.filter((c) => {
+        if (c.kind !== 'charpai') return true;
+        for (const [ox, oz] of [[0, 0], [-0.95, -0.5], [0.95, -0.5], [-0.95, 0.5], [0.95, 0.5]]) {
+          const lx = (c.x + ox * Math.cos(c.yaw) + oz * Math.sin(c.yaw)) * (e.sx || 1), lz = (c.z - ox * Math.sin(c.yaw) + oz * Math.cos(c.yaw)) * (e.sz || 1);
+          const wx = e.x + lx * cs + lz * sn, wz = e.z - lx * sn + lz * cs;
+          if (roads.clearance(wx, wz) < 1.2) return false;
+        }
+        return true;
+      });
+    }
     for (const c of e.clutter) { const ck = 'c|' + c.kind; if (!geos.has(ck)) geos.set(ck, buildClutter(c.kind).toGeometry()); }
   }
   const instances = entries.length * (withFar ? 2 : 1) + entries.reduce((s, e) => s + e.clutter.length, 0);
@@ -252,6 +265,7 @@ export async function loadPlannedHouses() {
 
 /** World data other systems may want once the new houses are built (roof tanks for the monkeys, doorsteps for jobs). */
 export const NEW_HOUSES = [];
+export const NEW_HOUSE_ROADS = { idx: null }; // the road index the houses were planned with (planters keep 1 m off every road band)
 export const NEW_HOUSE_TANK_TOPS = [];
 
 /**
@@ -284,13 +298,14 @@ export function createNewMapHouses(scene, { loadMap, groundAt = () => 0, onBuilt
       e.y = Math.max(...ys);
       worstStep = Math.max(worstStep, e.y - Math.min(...ys));
     }
+    NEW_HOUSE_ROADS.idx = roadIdx;
     const cache = await prebuildGeometries(entries);
     built = buildHouseBatch(entries, { cache, roads: roadIdx });
     holder.add(built.group);
     for (const e of entries) {
       const c = Math.cos(e.ry), s = Math.sin(e.ry);
       const dx = (e.info.door.x0 + e.info.door.x1) / 2, dz = e.cd / 2 + 0.6;
-      NEW_HOUSES.push({ x: e.x, z: e.z, ry: e.ry, w: e.w, d: e.d, design: e.design, door: { x: e.x + dx * c + dz * s, z: e.z - dx * s + dz * c } });
+      NEW_HOUSES.push({ x: e.x, z: e.z, ry: e.ry, w: e.w, d: e.d, design: e.design, door: { x: e.x + dx * c + dz * s, z: e.z - dx * s + dz * c }, fz: (e.info.zf ?? e.cd / 2) * (e.sz || 1), dx0: e.info.door.x0 * (e.sx || 1), dx1: e.info.door.x1 * (e.sx || 1), stepD: (e.info.otlaDepth || 0) * (e.sz || 1), noStrip: !!e.info.noStrip });
       for (const [tx, ty, tz] of e.info.tanks) NEW_HOUSE_TANK_TOPS.push({ x: e.x + tx * c + tz * s, z: e.z - tx * s + tz * c, y: e.y + ty, rad: 0.5, yaw: e.ry });
     }
     Object.assign(report, built.stats, { dropped: [...drop], worstGroundStep: +worstStep.toFixed(3), designs: entries.reduce((m, e) => ((m[e.design] = (m[e.design] || 0) + 1), m), {}) });

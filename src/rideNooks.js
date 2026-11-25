@@ -341,7 +341,7 @@ export function buildRideNook(site, name) {
     const g = [-1.9 * flip, 0.3];
     loads.push(addGobar(local, [{ type: rnd(v, 10) < 0.5 ? 'stack' : 'stack_b', x: g[0], z: g[1], ry: rnd(v, 11) * 6.28, s: 0.7 + 0.2 * rnd(v, 12), tint: pick(DUNG, v, 13) }], `${name}_gobar`));
     // leaned on the big stack's road side: a cycle, or a charpai stood on its long edge
-    if (rnd(v, 14) < 0.5) cycle(P, p0[0] + 0.2 * flip, p0[1] + 1.55 * big + 0.15, jit(15, 0.2) + (flip > 0 ? 0 : Math.PI), v, 16, -0.22);
+    if (true) cycle(P, p0[0] + 0.2 * flip, p0[1] + 1.55 * big + 0.15, jit(15, 0.2) + (flip > 0 ? 0 : Math.PI), v, 16, -0.22);
     else {
       const b = M(p0[0] - 0.2 * flip, 0, p0[1] + 1.5 * big + 0.2, 0, jit(17, 0.15)).multiply(M(0, 0.48, 0, -1.25, 0, 0)).multiply(M(0, -0.21, 0));
       const tmp = new Parts();

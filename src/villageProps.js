@@ -12,9 +12,9 @@ import { STATIC_COLLIDERS, circleHitsAnyBox } from './collision.js';
 // file, real-world height (m), weight in the pick table
 const MODELS = [
   ['wooden_stool_01', 0.42, 3], ['painted_wooden_stool', 0.4, 2], ['wooden_bucket_01', 0.3, 3], ['wooden_bucket_02', 0.28, 2],
-  ['wicker_basket_01', 0.34, 2], ['wicker_basket_02', 0.3, 2], ['potted_plant_02', 0.6, 4], ['brass_pot_01', 0.3, 2],
-  ['potted_plant_04', 0.3, 2], ['metal_jug', 0.28, 2], ['wooden_crate_01', 0.38, 2], ['wooden_crate_02', 0.34, 2],
-  ['old_tyre', 0.22, 1], ['potted_plant_02', 0.7, 2], ['plastic_monobloc_chair_01', 0.82, 2], ['painted_wooden_bench', 0.5, 1],
+  ['wicker_basket_01', 0.34, 2], ['wicker_basket_02', 0.3, 2], ['potted_plant_02', 0.9, 4], ['brass_pot_01', 0.3, 2],
+  ['potted_plant_04', 0.85, 2], ['metal_jug', 0.28, 2], ['wooden_crate_01', 0.38, 2], ['wooden_crate_02', 0.34, 2],
+  ['old_tyre', 0.22, 1], ['potted_plant_02', 1.0, 2], ['plastic_monobloc_chair_01', 0.82, 2], ['painted_wooden_bench', 0.5, 1],
   // 24 Nov playtest note (item 5, "street life ... tables, chairs ... existing props ... placed too rarely"): already-shrunk,
   // already-credited (docs/CREDITS.md) CC0 props not yet wired into the doorstep scatter - small_wooden_table_01 was flagged
   // there as "Not found in the game code (maybe unused)"; round_wooden_table_01/painted_wooden_chair_01 are already used in
@@ -30,7 +30,8 @@ const TABLE = MODELS.flatMap((m, i) => Array(m[2]).fill(i));
 // Dedicated pool for item 4 ("houses need flower pots, plants and climbers ... use the existing props potted_plant_*,
 // planter_pot_clay"): a doorstep/parapet site list that should read as plants, not furniture, uses this instead of MODELS.
 export const PLANT_MODELS = [
-  ['potted_plant_01', 0.45, 3], ['potted_plant_02', 0.6, 3], ['potted_plant_04', 0.3, 2], ['planter_pot_clay', 0.35, 2],
+  // village house planter: pot 0.45-0.6 m, plant + pot 0.8-1.1 m in all (was 0.3-0.6 m, read as a cup)
+  ['potted_plant_01', 0.9, 3], ['potted_plant_02', 1.0, 3], ['potted_plant_04', 0.85, 2], ['planter_pot_clay', 0.55, 2],
 ];
 const CELL = 36; // metres
 const RADIUS = 0.3;
