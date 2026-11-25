@@ -332,7 +332,7 @@ async function main() {
   // ahead of the player after Play (src/zoneManager.js). A failed file is counted as done by the loaders, so it cannot hang.
   let createSideJobs = null, createStoryBeats = null; // set when the two late chunks have arrived (loaded as soon as the Play gate opens)
   const lateMods = () => Promise.all([import('./sideJobs.js'), import('./storyBeats.js')]).then(([a, b]) => { createSideJobs = a.createSideJobs; createStoryBeats = b.createStoryBeats; });
-  const GATE_RADIUS = 70;
+  const GATE_RADIUS = 40;
   const warmCtx = { get renderer() { return renderer; }, get composer() { return composer; }, get camera() { return camera; }, get scene() { return scene; } }; // getters: composer is created later in main()
   let farRelease; const farGo = new Promise((r) => { farRelease = r; }); // far slot models start once the gate has opened
   let slotNear = Promise.resolve(); // set where the slots are resolved below
