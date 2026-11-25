@@ -515,7 +515,7 @@ async function main() {
   shopsGroup.name = 'shops';
   const TEA_SHOP_POS = (() => { // 26 Nov: no building on a road. The map's tea stall corner touched cross_road and chauraha_ring; slide the whole stall (all its parts read this one position) clear
     const p0 = pt('teastall'); if (!isNewLayout()) return p0;
-    const nn = nudgeOffRoad(getRoads(), p0.x, p0.z, 3.3); return nn.moved > 0 ? Object.assign(Object.create(Object.getPrototypeOf(p0)), p0, { x: nn.x, z: nn.z }) : p0;
+    return Object.assign(Object.create(Object.getPrototypeOf(p0)), p0, { x: 587.5, z: -0.1 }); /* 25 Nov, her order: the map's spot (593.5,6.9) sits on the cross road / chauraha ring edge; nearest spot clear of every road band, the ring and every other map footprint (1 m margin) found by search, 9 m west, counter still faces the cross road */
   })();
   const TEA_SHOP_ROT = Math.PI + ANCHORS.teastall.ry; // 7 Nov road-front audit: was +PI/2 (facing east at the chaat cart); the map's front path runs north to the cross road, so the counter faces north
   const STORE_POS = pt('store');
