@@ -3643,6 +3643,7 @@ if (!DBG_OFF.has('props3d')) {
     // ever reads) so it stops growing without changing what any real reader sees.
     if (_pt2 - _pt0 > 300) { const _lf = (window.__longFrames = window.__longFrames || []); if (_lf.length < 500) _lf.push([Math.round(_pt0), Math.round(_pt1 - _pt0), Math.round(_pt2 - _pt1)]); }
     pAdd('logic', _pt1 - _pt0); pAdd('render', _pt2 - _pt1); perfProbe.frames++;
+    if (!window.__dopaharScene) { window.__dopaharScene = scene; window.__dopaharRenderer = renderer; window.__dopaharCamera = camera; }
     fps.update(now);
     dbg.frame(now);
   }

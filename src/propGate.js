@@ -6,7 +6,7 @@
  *     texture-uploaded (12 ms/frame) and shader-compiled (capped 1.5 s) before the Play button unlocks. No timeout; a file
  *     that fails twice is skipped for the session. The rest is prefetched into the HTTP cache, one file at a time, from
  *     the moment the title is 'ready' and also after Play.
- *  2. SHOW RULE: a prop shows within min(size x 450, 265) m (0.25 m prop 112 m, 0.5 m 225 m, 0.6 m+ 265 m cap).
+ *  2. SHOW RULE: a prop shows within min(size x 160, 265) m (0.25 m prop 40 m, 0.5 m 80 m, 1 m 160 m; over 1 m up to the 265 m cap). 26 Nov: was x450, cut because 256 draw calls at first frame.
  *  3. RING (playing): a site LOADS when the player is within its load radius = show radius + 8.9 m/s x lead seconds,
  *     lead = max(5, 1 + uncached bytes / measured speed + 0.02 x textures), min 45 m; it is freed beyond load radius + 60 m.
  *     One global queue (4 downloads, 2 unpacks at a time) sorted by time until visible, re-sorted every 250 ms, direction of
@@ -17,7 +17,7 @@ import * as THREE from 'three';
 import { SHOW_CAP } from './showCap.js';
 import { getGLTFLoader, assetUrl, exemptModelUrls, modelLoads, fetchModel, modelFetchUrl, gzReady } from './loaders.js';
 
-export const SHOW_PER_M = 450, SHOW_MAX = SHOW_CAP; // m of show radius per metre of prop size, and its cap
+export const SHOW_PER_M = 160, SHOW_MAX = SHOW_CAP; // m of show radius per metre of prop size, and its cap
 export const SPRINT = 8.9, MIN_LOAD = 45, UNLOAD_EXTRA = 60; // m/s, m, m
 const HIDE_MARGIN = 8, DL_MAX = 4, PARSE_MAX = 2, TICK_MS = 250, COMPILE_CAP_MS = 1500;
 export const GPU_MS_TITLE = 12, GPU_MS_PLAY = 3; // per-frame GPU upload budget: title covers the screen / while playing

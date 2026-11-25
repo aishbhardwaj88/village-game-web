@@ -21,7 +21,7 @@ import { createVehicleShadowSet, vehicleSurfaceY } from './vehicleContactShadow.
 export const LANE_OFFSET = 1.2;
 export const ROAM_KINDS = new Set(['highway', 'road', 'lane']);
 export const MIN_ROAD_WIDTH = 3.5;
-const MAX_ACTIVE = 16, SPAWN_MIN = 18, SPAWN_MAX = 110, DESPAWN = 140, BRAKE_DIST = 6, STUCK_S = 12, SHADOW_NEAR = 40;
+const MAX_ACTIVE = 8, SPAWN_MIN = 18, SPAWN_MAX = 70, DESPAWN = 90, BRAKE_DIST = 6, STUCK_S = 12, SHADOW_NEAR = 0;
 const JOIN_TOL = 4; // m: a road whose end lies this close to our end is a joining road
 
 // file, length (m, as the parked ones in villageVehicles.js), width, which model axis is long (x: nose +x, needs -90 deg), speed range m/s, seat [y, z, scale]
