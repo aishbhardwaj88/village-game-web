@@ -30,10 +30,13 @@ import { HI_FAMILY } from './signPaint.js';
  */
 
 // ---- where (offsets from the chowk anchor, world axes) ----
-const SHOPS = [
-  { kind: 'mithai', dx: -0.79, dz: 21.5, ry: 1.401 }, // west side of the main road, well south of the square (was dz 10.63, inside the 12 m chauraha circle)
-  { kind: 'cd', dx: -12.75, dz: -2.67, ry: 3.044 }, // north side of the cross road, just west of the square
-  { kind: 'book', dx: -17.22, dz: -2.88, ry: 3.044 }, // its neighbour, 4.5 m further west
+// 25 Nov RESTORE (her order): ABSOLUTE world sites found by tmp/restore/find.mjs (empty plot, front 1.4-3 m off the road it faces, squared to it),
+// each with a uniform scale `sc` (0.6-1.2, her OK to resize). Old chowk-offset sites stood on the road: mithai dx -0.79 dz 21.5, cd dx -12.75 dz -2.67, book dx -17.22 dz -2.88.
+// SITE_TBD entries are filled in by the finder; see docs/layout/MOVE_LOG_RESTORE_25NOV.md.
+export const SHOPS = [
+  { kind: 'mithai', x: 536.64, z: 13.97, ry: -1.449, sc: 1 },
+  { kind: 'cd', x: 638.5, z: 28.36, ry: 3.142, sc: 0.9 },
+  { kind: 'book', x: 528.09, z: -48.91, ry: 0, sc: 1 },
 ];
 const SIGNS = {
   book: { hi: 'अख़बार और किताबें', en: 'Newspapers and Books', bg: '#e9dcc0', fg: '#1f2a4a', border: '#2a3a66' },
@@ -222,10 +225,12 @@ function planarUV(geo, axis, tile) {
 class Shop {
   constructor(site, batch) { this.site = site; this.b = batch; }
   place(geo, lx, ly, lz, yaw = 0, roll = 0, pitch = 0) {
+    const k = this.site.sc || 1; // 25 Nov: whole shop scaled about its own origin to fit its empty plot
     if (pitch) geo.rotateX(pitch);
     if (roll) geo.rotateZ(roll);
     if (yaw) geo.rotateY(yaw);
-    geo.translate(lx, ly, lz); geo.rotateY(this.site.ry); geo.translate(this.site.x, 0, this.site.z);
+    if (k !== 1) geo.scale(k, k, k);
+    geo.translate(lx * k, ly * k, lz * k); geo.rotateY(this.site.ry); geo.translate(this.site.x, 0, this.site.z);
     return geo;
   }
   /** library-textured box at arch.py tiling */
@@ -477,22 +482,21 @@ function sweets(s, kind, tx, ty, tz, seed, tint) {
 // ---------------------------------------------------------------------------------------------------------------
 /** removed 25 Nov: stood on road, her order ("if there is anything on the road, remove it"). The bookstall, CD shop and mithai kiosk are not in the
  *  approved map and were placed by fixed offsets from ANCHORS.chowk (old layout). Set to false to bring them back (docs/layout/MOVE_LOG_ROADEMPTY_25NOV.md). */
-export const SMALL_SHOPS_REMOVED_25NOV = true;
+export const SMALL_SHOPS_REMOVED_25NOV = false; // RESTORED 25 Nov (her order): back, at new empty-plot sites, scaled
 
 export function createSmallShops(scene) {
   const group = new THREE.Group(); group.name = 'small_shops';
   if (SMALL_SHOPS_REMOVED_25NOV) return { group }; // removed 25 Nov: stood on road, her order (nothing is added to the scene, so no collider, sign or shopkeeper capsule exists)
-  const c = ANCHORS.chowk; if (!c) return { group };
   const batch = new Batch();
   const signs = [], people = [], colliders = [];
   SHOPS.forEach((sp, i) => {
-    const site = { x: c.x + sp.dx, z: c.z + sp.dz, ry: sp.ry, kind: sp.kind };
+    const site = { x: sp.x, z: sp.z, ry: sp.ry, sc: sp.sc, kind: sp.kind };
     const s = new Shop(site, batch);
     const seed = 17 + i * 13;
     const world = new THREE.Matrix4().makeRotationY(site.ry).setPosition(site.x, 0, site.z);
-    if (sp.kind === 'book') { buildBook(s, seed, signs, people); colliders.push(colliderBoxFromTransform(2.95, 1.95, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(0, 0, 0.1)))); }
-    if (sp.kind === 'cd') { buildCD(s, seed, signs, people); colliders.push(colliderBoxFromTransform(3.1, 2.7, world)); }
-    if (sp.kind === 'mithai') { buildMithai(s, seed, signs, people); colliders.push(colliderBoxFromTransform(3.7, 3.1, world)); }
+    if (sp.kind === 'book') { buildBook(s, seed, signs, people); colliders.push(colliderBoxFromTransform(2.95 * site.sc, 1.95 * site.sc, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(0, 0, 0.1 * site.sc)))); }
+    if (sp.kind === 'cd') { buildCD(s, seed, signs, people); colliders.push(colliderBoxFromTransform(3.1 * site.sc, 2.7 * site.sc, world)); }
+    if (sp.kind === 'mithai') { buildMithai(s, seed, signs, people); colliders.push(colliderBoxFromTransform(3.7 * site.sc, 3.1 * site.sc, world)); }
   });
   const meshes = batch.flush(group);
   (meshes.plaster || Object.values(meshes)[0]).userData.colliderBoxes = colliders;
@@ -500,10 +504,10 @@ export function createSmallShops(scene) {
   // signboards: one atlas (Hindi bold line 1, English line 2, same dark paint), boards on wooden battens
   const atlas = createWideSignAtlas([SIGNS.book, SIGNS.cd, SIGNS.mithai]);
     const boards = signs.map((sg) => {
-    const h = sg.w / 4.41;
-    const g = new THREE.BoxGeometry(sg.w, h, 0.03);
+    const k = sg.site.sc || 1, h = sg.w / 4.41;
+    const g = new THREE.BoxGeometry(sg.w * k, h * k, 0.03 * k);
     mapFrontFaceToRow(g, sg.row, atlas.rows);
-    g.translate(sg.lx, sg.ly, sg.lz); g.rotateY(sg.site.ry); g.translate(sg.site.x, 0, sg.site.z);
+    g.translate(sg.lx * k, sg.ly * k, sg.lz * k); g.rotateY(sg.site.ry); g.translate(sg.site.x, 0, sg.site.z);
     return g;
   });
   const signGeo = mergeGeometries(boards);
@@ -516,9 +520,9 @@ export function createSmallShops(scene) {
   pm.name = 'small_shops_people'; pm.castShadow = true;
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), col = new THREE.Color();
   people.forEach((pp, i) => {
-    const k = pp.h / 1.7, sy = pp.sit ? k * 0.62 : k;
+    const ks = pp.site.sc || 1, k = pp.h / 1.7 * ks, sy = pp.sit ? k * 0.62 : k;
     const sn = Math.sin(pp.site.ry), cs = Math.cos(pp.site.ry);
-    p.set(pp.site.x + pp.lx * cs + pp.lz * sn, (pp.sit ? 0.42 : 0.18) + 0.85 * sy, pp.site.z - pp.lx * sn + pp.lz * cs);
+    p.set(pp.site.x + (pp.lx * cs + pp.lz * sn) * ks, ((pp.sit ? 0.42 : 0.18) * ks) + 0.85 * sy, pp.site.z + (-pp.lx * sn + pp.lz * cs) * ks);
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), pp.site.ry + pp.yaw); sc.set(k, sy, k);
     pm.setMatrixAt(i, m.compose(p, q, sc)); pm.setColorAt(i, col.setHex(pp.tint));
   });
@@ -526,6 +530,6 @@ export function createSmallShops(scene) {
 
   scene.add(group);
   let tris = 0; group.traverse((o) => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); });
-  if (typeof window !== 'undefined') window.__smallShops = { shops: SHOPS.map((sp) => ({ kind: sp.kind, x: +(c.x + sp.dx).toFixed(2), z: +(c.z + sp.dz).toFixed(2) })), tris: Math.round(tris), drawCalls: group.children.length };
+  if (typeof window !== 'undefined') window.__smallShops = { shops: SHOPS.map((sp) => ({ kind: sp.kind, x: +sp.x.toFixed(2), z: +sp.z.toFixed(2), sc: sp.sc })), tris: Math.round(tris), drawCalls: group.children.length };
   return { group };
 }

@@ -23,9 +23,10 @@ export const JEEP_FILE = 'jeep_v2';
 // anchor id, local x / z in the place's frame (front = +z), yaw (rad; the jeep's front is its +z)
 // removed 25 Nov: stood on road, her order. The spot (world 563.4, 4.6) is 3.5 m inside cross_road and the nearest legal ground is ~10 m away
 // (556.3, 11.7), past the 6 m limit, so the jeep is taken out of the scene. Set JEEP_ON_ROAD_REMOVED false to put it back.
-export const JEEP_ON_ROAD_REMOVED = true;
+export const JEEP_ON_ROAD_REMOVED = false; // RESTORED 25 Nov (her order: move, never delete): parked at an absolute empty-roadside site, along the road edge
+// absolute world site (x, z, yaw = world yaw, jeep length along its local z); the old spot rode the panchayat anchor (world 563.4, 4.6) and stood on cross_road. Filled by tmp/restore/find.mjs.
 export const JEEP_SPOTS = JEEP_ON_ROAD_REMOVED ? [] : [
-  { at: 'yard_panchayat', lx: -12.5, lz: 20.0, yaw: 1.57 },
+  { at: 'world', x: 690.08, z: -26.22, yaw: -0.095, sc: 1 },
 ];
 
 const rnd = (i) => { const s = Math.sin(i * 57.3 + 4.1) * 43758.5453; return s - Math.floor(s); };
@@ -46,6 +47,7 @@ function loadModel() {
 }
 
 function spotMatrix(sp, i) {
+  if (sp.at === 'world') return new THREE.Matrix4().compose(new THREE.Vector3(sp.x, 0, sp.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), sp.yaw), new THREE.Vector3(sp.sc || 1, sp.sc || 1, sp.sc || 1));
   const a = ANCHORS[sp.at];
   if (!a) return null;
   const ry = a.ry || 0, s = Math.sin(ry), c = Math.cos(ry);

@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { ANCHORS, localPt } from './anchors.js';
 import { registerInteraction } from './interactions.js';
-import { FURNITURE_SPOTS } from './villageFurniture.js';
+import { FURNITURE_SPOTS, JHOOLA_SITE_25NOV } from './villageFurniture.js';
 
 const V = (p) => new THREE.Vector3(p.x, 0, p.z);
 
@@ -13,7 +13,7 @@ export function createInteractionsVillage(scene, ctx) {
 
   // ---- jhoola: the view sways gently for a few seconds, with a rope creak ----
   const sp = FURNITURE_SPOTS.jhoola;
-  if (sp && ANCHORS[sp.at]) {
+  if (sp) { // 25 Nov RESTORE: jhoola stands at JHOOLA_SITE_25NOV (src/villageFurniture.js)
     let t0 = -1, raf = 0;
     const cvs = () => document.querySelector('canvas');
     const sway = (now) => {
@@ -25,7 +25,7 @@ export function createInteractionsVillage(scene, ctx) {
       raf = requestAnimationFrame(sway);
     };
     registerInteraction({
-      id: 'jhoola_swing', position: V(localPt(sp.at, sp.lx, sp.lz)), radius: 2.8, priority: 0.5,
+      id: 'jhoola_swing', position: V(JHOOLA_SITE_25NOV), radius: 2.8, priority: 0.5,
       label: { hi: 'झूला झूलें', en: 'Sit on the jhoola' },
       available: () => !raf,
       onInteract: () => {

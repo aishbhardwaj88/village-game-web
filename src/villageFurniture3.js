@@ -373,7 +373,9 @@ function placeShown(scene, name, cache) {
 }
 
 /** removed 25 Nov: stood on road, her order. Set false to restore the bhootiya ghar ruin. */
-export const RUIN_REMOVED_25NOV = true;
+export const RUIN_REMOVED_25NOV = false; // RESTORED 25 Nov (her order)
+/** 25 Nov RESTORE: absolute site, scale sc. The ruin's FRONT (door, scrawl) is its local -x side; ry is chosen so that side faces the road. Old pond-anchor spot (505.4, -1.0) stood on 15_Outer lane + cross_road. Filled by tmp/restore/find.mjs. */
+export const RUIN_SITE_25NOV = { x: 477.06, z: 24.46, ry: 0.035, sc: 1 };
 
 export function createVillageFurniture3(scene) {
   const group = new THREE.Group(); group.name = 'village_furniture3';
@@ -390,7 +392,7 @@ export function createVillageFurniture3(scene) {
   decalMat.name = 'wall_writing'; // wall-hung decals (ruin scrawl, notices): elevated fixtures like src/wallWriting.js's; unnamed they merged into a 'merged_N' bucket the ground-contact check read as floating at 1.08 m
 
   // 1. bhootiya ghar
-  const rw = !RUIN_REMOVED_25NOV && ANCHORS.pond && spotMatrix(FURNITURE3_SPOTS.ruin); // removed 25 Nov: stood on road (15_Outer lane, west, 2 m deep), her order
+  const rw = !RUIN_REMOVED_25NOV && new THREE.Matrix4().compose(new THREE.Vector3(RUIN_SITE_25NOV.x, 0, RUIN_SITE_25NOV.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), RUIN_SITE_25NOV.ry), new THREE.Vector3(RUIN_SITE_25NOV.sc, RUIN_SITE_25NOV.sc, RUIN_SITE_25NOV.sc)); // RESTORED 25 Nov at its own empty-plot site (scaled)
   if (rw) {
     const batch = new Batch();
     const o = new Obj(batch, rw, 83, { dirt: 0.35, dust: 0.15 });

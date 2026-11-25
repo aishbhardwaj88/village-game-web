@@ -5,7 +5,7 @@
 // The mazar was removed on her order (7 Nov) and gets nothing here.
 import * as THREE from 'three';
 import { ODDITY_SPOTS, spotMatrix } from './villageOddities.js';
-import { FURNITURE3_SPOTS } from './villageFurniture3.js';
+import { FURNITURE3_SPOTS, RUIN_SITE_25NOV } from './villageFurniture3.js';
 import { registerDiscovery, cycle, noiseBurst, note, creak, dhol } from './discoveryLog.js';
 
 const _v = new THREE.Vector3();
@@ -86,7 +86,7 @@ export function createOddityDiscoveries() {
   });
 
   // the bhootiya ghar, the ruined house with the peepal growing through it (6 x 4.8 m)
-  p = ptIn(FURNITURE3_SPOTS.ruin);
+  p = { x: RUIN_SITE_25NOV.x, z: RUIN_SITE_25NOV.z }; // 25 Nov RESTORE: the ruin stands at its own empty-plot site (src/villageFurniture3.js)
   if (p) registerDiscovery({
     id: 'bhootiya_ghar', ...p, radius: 4.4,
     label: { hi: 'भूतिया घर में झाँकें', en: 'Peer into the bhootiya ghar' },

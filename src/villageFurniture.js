@@ -86,7 +86,9 @@ class Obj {
 
 const BAMBOO = 0xb09a54, BAMBOO2 = 0x9a8a4a, IRONC = 0x55504a, WOODD = 0x7a5a3a;
 /** removed 25 Nov: stood on road, her order (jhoola at 495.8, 3.3 stood on cross_road). Empty this list to restore. */
-export const ON_ROAD_REMOVED_25NOV = ['jhoola'];
+export const ON_ROAD_REMOVED_25NOV = []; // RESTORED 25 Nov (her order): jhoola is back at JHOOLA_SITE_25NOV below
+/** 25 Nov RESTORE: absolute site (empty plot beside a road, swing beam parallel to it), scale sc. Old pond-anchor spot (495.8, 3.3) stood on cross_road. Filled by tmp/restore/find.mjs. */
+export const JHOOLA_SITE_25NOV = { x: 607.23, z: -53.28, ry: -1.113, sc: 1 };
 export const FURNITURE_SPOTS = {
   kites: { at: 'chowk', lx: 14, lz: 20, yaw: 0.3 },
   scarecrowA: { at: 'field', lx: -12, lz: -4, yaw: 0.5 },
@@ -182,14 +184,14 @@ export function createVillageFurniture(scene) {
   let seed = 83;
   for (const [kind, build] of Object.entries(BUILDERS)) {
     if (ON_ROAD_REMOVED_25NOV.includes(kind)) continue; // removed 25 Nov: stood on road, her order
-    const sp = FURNITURE_SPOTS[kind], world = sp && spotMatrix(sp);
+    const sp = FURNITURE_SPOTS[kind], world = kind === 'jhoola' ? new THREE.Matrix4().makeRotationY(JHOOLA_SITE_25NOV.ry).setPosition(JHOOLA_SITE_25NOV.x, 0, JHOOLA_SITE_25NOV.z) : sp && spotMatrix(sp);
     if (!world) continue;
-    const sc = 0.97 + rnd(seed) * 0.08;
+    const sc = kind === 'jhoola' ? JHOOLA_SITE_25NOV.sc : 0.97 + rnd(seed) * 0.08;
     const w = world.clone().multiply(new THREE.Matrix4().makeScale(sc, sc, sc));
     const o = new Obj(batch, w, seed, { dirt: 0.3, dust: 0.12 });
     const fp = build(o);
     const at = (e) => w.clone().multiply(new THREE.Matrix4().makeTranslation(e.cx ?? e.x ?? 0, 0, e.cz ?? e.z ?? 0));
-    colliders.push(colliderBoxFromTransform(fp.w * sc, fp.d * sc, at(fp)));
+    colliders.push(colliderBoxFromTransform(fp.w * (kind === 'jhoola' ? 1 : sc), fp.d * (kind === 'jhoola' ? 1 : sc), at(fp)));
     for (const e of fp.extra || []) colliders.push(colliderBoxFromTransform(e.w, e.d, at(e)));
     const p = new THREE.Vector3().setFromMatrixPosition(world);
     report.push({ kind, x: +p.x.toFixed(2), z: +p.z.toFixed(2), tris: Math.round(o.tris) });

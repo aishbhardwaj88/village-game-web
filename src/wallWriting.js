@@ -5,6 +5,7 @@ import { layoutTurnDeg } from './layout/layout.js';
 import { texturedBox } from './materials.js';
 import { drawBilingual, hiFont, enFont, HI_FAMILY } from './signPaint.js';
 import { MAP_COMPOUND_WALLS } from './mapCompoundWalls.js';
+import { drawnRoadClearance } from './mapRoads.js';
 
 /**
  * Wall writing and small stories (docs/VILLAGE_VOCABULARY.md section 12). Nine pieces, one shared canvas atlas:
@@ -286,8 +287,19 @@ export function createWallWriting(scene) {
   onWall('Petrol pump', -42.2, -154.1, 6.0, 'slogan2', 0.76, 1);
   onWall('Tubewell and pump room', 128.3, 38.5, 2.0, 'cricket', 0.76, 1);
   onWall('Creche and preschool (anganwadi)', -23.6, 103.6, 2.0, 'kids', 0.72, 1);
-  // removed 25 Nov: stood on road (cross_road, 3 m inside the band), her order: onWall('Sweet shop (halwai)', 40.3, 19.4, 1.75, 'card', 0.78, 1);
-  // removed 25 Nov: stood on road (inner_se, 1.7 m inside the band), her order: onWall('General store', 24.1, 49, 1.75, 'tolet', 0.74, 1);
+  // RESTORED 25 Nov (her order: move, never delete): the two decals stood on a road at their old spot along the wall run; each now slides along the SAME
+  // wall run to the nearest point where both faces are 0.4 m+ beyond the drawn road (onWallOffRoad); if the whole run is on road it stays off (nothing to hang on).
+  const onWallOffRoad = (wall, ax, az, s0, cell, y, scale) => {
+    const r = findRun(wall, ax, az);
+    for (let d = 0; d <= r.len; d += 0.25) for (const s of d ? [s0 - d, s0 + d] : [s0]) {
+      if (s < 0.6 || s > r.len - 0.6) continue;
+      const cx = r.a.x + r.dx * s, cz = r.a.z + r.dz * s;
+      if ([-0.6, 0, 0.6].every((u) => [1, -1].every((side) => drawnRoadClearance(cx + r.dx * u - r.dz * side * 0.4, cz + r.dz * u + r.dx * side * 0.4) >= 0.4))) { onWall(wall, ax, az, s, cell, y, scale); return s; }
+    }
+    return null;
+  };
+  onWallOffRoad('Sweet shop (halwai)', 40.3, 19.4, 1.75, 'card', 0.78, 1);
+  onWallOffRoad('General store', 24.1, 49, 1.75, 'tolet', 0.74, 1);
 
   // ---- newspaper on the open-air barber's tool box (src/lifeScenes.js: scene at chaupal local (-6.4, 6.8), yaw 2.4, box at (0.95, 0.85), top y 0.30) ----
   {

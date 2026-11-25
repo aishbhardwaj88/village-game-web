@@ -16,7 +16,9 @@ import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
  * calls = 1 wood mesh (shed, counter, bench, villagers as tinted placeholder bodies, characters are parked) + 1 metal
  * mesh (cans, scale, jug, bicycle) + 1 signboard mesh.
  */
-const SITE = { x: 597.31, z: 49.31, ry: 1.401 }; // local +z faces the main road
+// 25 Nov RESTORE (her order): absolute site on an empty plot facing a road, scaled `sc` to fit (finder: tmp/restore/find.mjs, log docs/layout/MOVE_LOG_RESTORE_25NOV.md).
+// Old chowk-era site (597.31, 49.31) stood on main_road.
+export const SITE = { x: 577.51, z: 51.74, ry: -1.555, sc: 1 }; // local +z faces the road
 const SIGN = { hi: 'दूध संग्रह केंद्र', en: 'Milk Collection Centre', bg: '#e6ddc4', fg: '#14305a', border: '#1f4a7a' };
 const TILE = { wood: 1.0, metal: 1.0 };
 const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -43,7 +45,8 @@ function place(geo, lx, ly, lz, yaw = 0, roll = 0, pitch = 0) {
   if (pitch) geo.rotateX(pitch);
   if (roll) geo.rotateZ(roll);
   if (yaw) geo.rotateY(yaw);
-  geo.translate(lx, ly, lz); geo.rotateY(SITE.ry); geo.translate(SITE.x, 0, SITE.z);
+  if (SITE.sc !== 1) geo.scale(SITE.sc, SITE.sc, SITE.sc);
+  geo.translate(lx * SITE.sc, ly * SITE.sc, lz * SITE.sc); geo.rotateY(SITE.ry); geo.translate(SITE.x, 0, SITE.z);
   return geo;
 }
 const box = (set, w, h, d, lx, ly, lz, tint, yaw = 0, roll = 0, pitch = 0) =>
@@ -71,7 +74,7 @@ const person = (lx, lz, h, tint, i) => {
 };
 
 /** removed 25 Nov: stood on road (main_road), her order. Old-layout fixed site (597.31, 49.31); the map's own 'Milk collection point' shop replaces it. Set false to restore. */
-export const MILK_CENTRE_REMOVED_25NOV = true;
+export const MILK_CENTRE_REMOVED_25NOV = false; // RESTORED 25 Nov (her order)
 
 export function createMilkCentre(scene) {
   if (MILK_CENTRE_REMOVED_25NOV) return { group: new THREE.Group() }; // removed 25 Nov: stood on road, her order
@@ -140,13 +143,13 @@ export function createMilkCentre(scene) {
     group.add(m); meshes[key] = m;
   }
   const world = new THREE.Matrix4().makeRotationY(SITE.ry).setPosition(SITE.x, 0, SITE.z);
-  meshes.wood.userData.colliderBoxes = colliders.map(([x, z, w, d]) => colliderBoxFromTransform(w, d, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(x, 0, z))));
+  meshes.wood.userData.colliderBoxes = colliders.map(([x, z, w, d]) => colliderBoxFromTransform(w * SITE.sc, d * SITE.sc, new THREE.Matrix4().multiplyMatrices(world, new THREE.Matrix4().makeTranslation(x * SITE.sc, 0, z * SITE.sc))));
 
   // signboard on the fascia: Hindi bold line 1, English line 2 (shared atlas helper)
   const atlas = createWideSignAtlas([SIGN]);
-  const sw = 2.9, sg = new THREE.BoxGeometry(sw, sw / 4.41, 0.04);
+  const sw = 2.9, sg = new THREE.BoxGeometry(sw * SITE.sc, sw / 4.41 * SITE.sc, 0.04 * SITE.sc);
   mapFrontFaceToRow(sg, 0, atlas.rows);
-  sg.translate(0, 2.0, D / 2 + 0.55); sg.rotateX(0.07); sg.rotateY(SITE.ry); sg.translate(SITE.x, 0, SITE.z);
+  sg.translate(0, 2.0 * SITE.sc, (D / 2 + 0.55) * SITE.sc); sg.rotateX(0.07); sg.rotateY(SITE.ry); sg.translate(SITE.x, 0, SITE.z);
   const signMesh = new THREE.Mesh(sg, signPageMaterial(atlas, sg));
   signMesh.name = 'milk_centre_sign'; signMesh.castShadow = true;
   group.add(signMesh);
