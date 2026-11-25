@@ -1,5 +1,4 @@
 # State - rewritten every run, max 40 lines
-
 Last updated: 25 Nov (hourly loop). Streaming/caching work below; LOOKS LIST items 1-8 done or parked (item 8's "zero console errors" needs a real browser, container limit).
 This run: re-verified LOOKS LIST/BACKLOG [ACTIVE], nothing further shippable without her input or a real browser (see
 Next 5). Found + filed one real gap: the 24 Nov Poly Haven free-props review row (100+ CC0 props, CREDITS.md props_ph)
