@@ -1541,3 +1541,8 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   handler, not a live screenshot - browser checks unreliable here, A7). Nothing placed from it (5a1, her call only).
 - Verified: no code touched, so no build run (A5 exception - notes ride with no diff). Agents used: none (task was small
   enough for the main loop itself, per efficiency-rules.md "don't spawn agents for small tasks").
+
+# 25 Nov (night run, final map) - agents used
+- Landed the final map (approved-map-2026-11-25.json, repacked); missions-check 0 FAIL; walls tiled 1.5 m with anti-tiling; gate cut to 70 m; normal/roughness and house atlas maps deferred after Play (13.5 -> ~10.7 MB before Play); show cap 265 m, shader warm-up, long-task slicing; service worker added then page made network-first (stale page after a deploy stalled repeat visits at "Loading the village 75%", verified live: Play 6.2 s with SW).
+- Agents: missionsfix (Sonnet low, small data fix), gatecut (Sonnet medium, loading code), walls (Sonnet medium, texture scale), propsfix (Sonnet low, error check), gate3 (Opus medium, hard gate/load design), models (Sonnet low, gz models), atlas (Sonnet medium, deferred maps), stream (Sonnet medium, show cap/warm-up/slicing). All stopped on return, zero unpushed commits.
+- Not done: memory release of decoded images (unsafe blind, parked), sliced land-layer builds, load target 4-6 MB (parked for her).
