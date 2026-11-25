@@ -1,8 +1,8 @@
 /* Dopahar service worker (25 Nov caching plan, task B). Repeat visits read files from the device, not the network.
  *  - any url with ?v=<hash> (src/assetUrl.js): cache-first in dopahar-assets-v1 (cache name never changes; a new hash is a new url)
  *  - hashed JS / CSS / JSON chunks: cache-first in dopahar-code-v1
- *  - the page (index.html): cache-first, refreshed behind the scenes (stale-while-revalidate): a repeat visit paints from the
- *    device and the next one gets the new build. First visit, and a page the cache does not have, still go to the network.
+ *  - the page (index.html): NETWORK-first (2.5 s patience), cached copy only offline or slow: a stale page after a deploy asks for
+ *    files the host no longer has and stalls the load (25 Nov). Assets stay cache-first, so repeat visits still move ~0 MB.
  *    A stale page whose chunk 404s after a deploy reloads once (src/swRegister.js, vite:preloadError).
  *  - skipped: non-GET, cross-origin, Range requests
  *  - message 'prune': drops entries whose ?v= is no longer current and chunks of older builds
@@ -26,21 +26,29 @@ async function cacheFirst(req, cacheName) {
 }
 
 const pageKey = (req) => { const u = new URL(req.url); u.search = ''; u.hash = ''; return u.href; }; // one cached page for every ?query variant
+// Network first for the page (a tiny HTML file), 2.5 s patience, then the cached copy (offline / slow network). The page names the
+// hashed files of ITS build: a stale cached page after a deploy asks for files the host no longer has (404) and the load stalls,
+// so the page is never served stale while the network answers. Every hashed asset stays cache-first, so a repeat visit still
+// moves almost no bytes. Fixed 25 Nov (found on the laptop: repeat visit stuck at "Loading the village 75%" right after a deploy).
 async function pageFirst(e, req) {
   const cache = await caches.open(CODE);
   const key = pageKey(req);
-  const refresh = async () => {
-    const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
+  const fresh = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(async (res) => {
     if (res && res.status === 200 && res.type === 'basic') { try { await cache.put(key, res.clone()); } catch (err) { /* quota */ } }
     return res;
-  };
+  });
   const hit = await cache.match(key);
-  if (hit) { e.waitUntil(refresh().catch(() => {})); return hit; }
-  try { return await refresh(); } catch (err) {
-    const alt = await cache.match(new URL('./', self.location.href).href, { ignoreSearch: true });
-    if (alt) return alt;
-    throw err;
+  if (!hit) {
+    try { return await fresh; } catch (err) {
+      const alt = await cache.match(new URL('./', self.location.href).href, { ignoreSearch: true });
+      if (alt) return alt;
+      throw err;
+    }
   }
+  const res = await Promise.race([fresh.catch(() => null), new Promise((r) => setTimeout(() => r(null), 2500))]);
+  if (res && res.ok) return res;
+  e.waitUntil(fresh.catch(() => {}));
+  return hit;
 }
 
 self.addEventListener('fetch', (e) => {
