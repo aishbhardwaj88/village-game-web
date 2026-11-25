@@ -4459,34 +4459,6 @@
         "tools/finish-tvuncle.mjs"
       ],
       "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, gold kada and watch added in this repo (tools/finish-tvuncle.mjs)"
-    },
-    {
-      "match": [
-        "public/assets/models/tvuncle_hd_raw.glb"
-      ],
-      "category": "tripo",
-      "title": "Character: TV Uncle HD (untouched Tripo export, review only)",
-      "source": "Tripo AI (made from Gemini reference pictures)",
-      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-      "plan": "UNKNOWN",
-      "builder": [
-        "tools/finish-tvuncle.mjs"
-      ],
-      "evidence": "Tripo export, unmodified (review comparison only: remove after the compare)"
-    },
-    {
-      "match": [
-        "public/assets/models/tvuncle_sm_raw.glb"
-      ],
-      "category": "tripo",
-      "title": "Character: TV Uncle Smart Mesh (untouched Tripo export, review only)",
-      "source": "Tripo AI (made from Gemini reference pictures)",
-      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
-      "plan": "UNKNOWN",
-      "builder": [
-        "tools/finish-tvuncle.mjs"
-      ],
-      "evidence": "Tripo export, unmodified (review comparison only: remove after the compare)"
     }
   ],
   "worthKnowing": [

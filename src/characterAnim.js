@@ -33,8 +33,6 @@ const PROFILE = {
   // 25 Nov: TV Uncle review pair (?compare=tvuncle): clip chosen by buttons (reviewPlay) instead of idle/walk/random gestures
   tvuncle_hd: { review: true },
   tvuncle_sm: { review: true },
-  tvuncle_hdraw: { review: true }, // the untouched Tripo exports (clip names like idle.001 are normalised below)
-  tvuncle_smraw: { review: true },
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)
 let reviewClip = 'idle';

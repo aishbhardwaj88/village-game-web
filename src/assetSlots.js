@@ -4,6 +4,7 @@ import { applyWallBaseGrime } from './materials.js';
 import { batchPlaceModel } from './placeBatch.js';
 import { useOldHouseMasonry } from './stagingYard.js';
 import { attachCharacterAnim } from './characterAnim.js';
+import { applyCharLight } from './characterLight.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -212,6 +213,7 @@ export function createAssetSlotRegistry() {
         }
         if (Array.isArray(o.material)) o.material.forEach(enforceMatteMaterial);
         else enforceMatteMaterial(o.material);
+        if (rigged) { if (Array.isArray(o.material)) o.material.forEach(applyCharLight); else applyCharLight(o.material); } // characters only: their own studio environment (src/characterLight.js)
         if (slot.exact) {
           // masonry at the library repeat wears the shared old-house wall material (src/stagingYard.js), the rest keeps the base grime
           if (useOldHouseMasonry(o)) return;

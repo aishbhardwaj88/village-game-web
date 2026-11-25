@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { followSceneEnv } from './characterLight.js';
 
 /**
  * Night state (J0, 27 Oct). A single 0..1 `mix` blended over whatever the day line left
@@ -69,6 +70,7 @@ export function createNightController({ sun, sky, scene, hemi, bounceFill, audio
       hemi.intensity = THREE.MathUtils.lerp(base.hemiIntensity, NIGHT.hemiIntensity, m);
       bounceFill.intensity = THREE.MathUtils.lerp(base.bounceIntensity, NIGHT.bounceIntensity, m);
       scene.environmentIntensity = THREE.MathUtils.lerp(base.envIntensity, NIGHT.envIntensity, m);
+      followSceneEnv(scene.environmentIntensity); // characters' own studio light dims with the village
 
       for (const g of glows) g.material.emissiveIntensity = THREE.MathUtils.lerp(g.day, g.night, m);
       audio?.setNight?.(m);

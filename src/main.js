@@ -6,6 +6,7 @@ import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGate
 import { registerFreeProps } from './freeProps.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
+import { setCharLightRenderer } from './characterLight.js';
 import { createScene, createGround, createSun, loadEnvironment, applyFog } from './scene.js';
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
@@ -383,6 +384,7 @@ async function main() {
 
   const canvas = document.getElementById('scene');
   const renderer = createRenderer(canvas, touch);
+  setCharLightRenderer(renderer); // characters' own studio environment (src/characterLight.js)
   setLoaderRenderer(renderer); // KTX2 texture support, the transcoder itself loads lazily after Play
 
   const scene = createScene();
