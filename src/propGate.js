@@ -240,6 +240,18 @@ const inView = (h) => { // is the prop (as a sphere) inside the camera's view ri
   return frustum.intersectsSphere(_sph);
 };
 let last = null, heading = null;
+// ---------- hold: the player outran the stream. Freeze the world (like pause) with a notice instead of showing holes ----------
+export const HOLD_M = 45, HOLD_GIVE_UP_MS = 8000; // a not-ready site this close would be a visible hole; one episode holds 8 s at most
+let holding = false, holdSince = 0, holdGaveUp = false;
+export const streamHold = () => holding;
+function updateHold(p) {
+  const blocked = SITES.some((s) => s.state !== 'ready' && !s.dead && edgeDist(s, p) < Math.min(HOLD_M, s.showMax));
+  const now = performance.now();
+  if (!blocked) { holding = false; holdGaveUp = false; return; }
+  if (holdGaveUp) return;
+  if (!holding) { holding = true; holdSince = now; stats.holds = (stats.holds || 0) + 1; }
+  else if (now - holdSince > HOLD_GIVE_UP_MS) { holding = false; holdGaveUp = true; }
+}
 function tickRing(scene) {
   const p = getPos();
   if (!p) return;
@@ -255,6 +267,7 @@ function tickRing(scene) {
     else if (d > freeRadius(s) && !gateSites.has(s)) dropSite(s, scene);
   }
   stats.queue = uploadQueue.length;
+  updateHold(p);
   // visibility: only ready props, only inside their own show radius (with a little hysteresis)
   if (camera) { camera.updateMatrixWorld(); _pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); frustum.setFromProjectionMatrix(_pv); }
   const now = performance.now();

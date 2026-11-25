@@ -828,6 +828,15 @@
         font-size: 1rem;
         font-weight: 700;
       }
+      #stream-hold {
+        position: fixed; left: 50%; top: 14%; transform: translateX(-50%); z-index: 45;
+        background: rgba(247, 240, 220, 0.96); color: #1d2a55; border-radius: 12px; padding: 10px 20px; text-align: center;
+        font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', -apple-system, sans-serif;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: min(86vw, 420px);
+      }
+      #stream-hold.visible { opacity: 1; }
+      #stream-hold-en { margin: 0; font-size: 1.05rem; font-weight: 700; }
+      #stream-hold-hi { margin: 2px 0 0; font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.72rem; opacity: 0.75; }
       #toast-hi {
         margin: 2px 0 0;
         font-family: 'Noto Sans Devanagari', sans-serif;
@@ -1297,6 +1306,7 @@
         </div>
       </div>
       <div id="toast"><p id="toast-en"></p><p id="toast-hi"></p></div>
+      <div id="stream-hold"><p id="stream-hold-en">Loading the next part of the village</p><p id="stream-hold-hi">गाँव का अगला हिस्सा लोड हो रहा है</p></div>
       <div id="job-hud"><p id="job-hud-en"></p><p id="job-hud-hi"></p></div>
       <div id="job-overlay">
         <div id="job-card" class="panel-card">

@@ -187,3 +187,11 @@ export function setupStartOverlay({ isTouch, hasSave, storyDone = false, onStart
   playBtn.addEventListener('click', startNew);
   continueBtn.addEventListener('click', startContinue);
 }
+
+/** "Loading the next part of the village": shown while the world is held because the stream is behind the player (src/propGate.js streamHold). */
+let _holdShown = false;
+export function setStreamHoldNotice(on) {
+  if (on === _holdShown) return;
+  _holdShown = on;
+  document.getElementById('stream-hold')?.classList.toggle('visible', on);
+}

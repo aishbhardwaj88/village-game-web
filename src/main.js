@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { registerPilotVehicles } from './pilotVehicles.js';
-import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone } from './propGate.js';
+import { setPropGateRenderer, startPrefetch, startStreaming, startGate, propGateDone, streamHold } from './propGate.js';
 import { registerFreeProps } from './freeProps.js';
 import { schedule as scheduleFrameWork, runNow as runFrameWorkNow } from './frameQueue.js'; // first: switches TextureLoader to off-thread ImageBitmaps before any texture loads
 import { createRenderer, resizeRendererToDisplaySize } from './renderer.js';
@@ -8,7 +8,7 @@ import { createScene, createGround, createSun, loadEnvironment, applyFog } from 
 import { createPlayer, ThirdPersonCamera, CAMERA_DISTANCE, CAMERA_HEIGHT, PLAYER_RADIUS, PLAYER_HEIGHT } from './player.js';
 import { InputController, isTouchDevice } from './controls.js';
 import { createComposer, resizeComposer } from './postfx.js';
-import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, setReadyGate, isDevMode } from './ui.js';
+import { setupFpsCounter, setupStartOverlay, setupLoadingScreen, markOpeningViewLoaded, setReadyGate, isDevMode, setStreamHoldNotice } from './ui.js';
 import { createSky, updateSky } from './sky.js';
 import { getActiveAtmosphere } from './atmosphere.js';
 import { buildHeroZone, schoolXZ, SCHOOL_YAW, houseXZ, houseInverseXZ, HOUSE_YAW, halwaiXZ, HALWAI_YAW, HOUSE_CENTER, SCHOOL_CENTER, HALWAI_CENTER, HOUSE_BLOCK, HOUSE_STAIRS, HOUSE_ROOF_Y, SCHOOL_ROOM, HOUSE_HAND_PUMP_POSITION, PALETTE, darken } from './village.js';
@@ -3159,7 +3159,9 @@ async function main() {
     updateCharacterAnims(started && paused ? 0 : dt);
     if (FOLLOW_SUN_SHADOWS) sunRig.position.set(Math.round(player.position.x), 0, Math.round(player.position.z));
 
-    if (started && paused) {
+    const _held = started && streamHold(); // the player outran the prop stream: freeze like pause, with a notice, instead of showing holes (src/propGate.js)
+    setStreamHoldNotice(_held);
+    if (started && (paused || _held)) {
       // Drain any input that landed while paused so it doesn't fire the instant the
       // game resumes (e.g. an E press meant for the pause panel).
       input.consumeLookDelta();
