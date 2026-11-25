@@ -1843,3 +1843,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   building names; PAUSED-MAP map-lock question; container has no working browser). No unblocked
   BACKLOG item found (all open items are [PAUSED-MAP], [GATED-HER], or need a real browser/CC0
   proxy this container lacks). No code change. CI green on 9190811 (run 1369, another worker's).
+
+# 25 Nov ~23:1x scheduled run - no code change, repo unchanged since c0873b7/5fd97d8
+- Confirmed via git fetch: HEAD still 5fd97d8, no new commits landed since the prior run. NEEDS_YOU
+  still 60 open lines, none newly marked done by her - nothing unblocked that wasn't already checked.
+- CI green on 5fd97d8 (run 1371, success). Per A6, not re-running the LOOKS LIST audit a 5th time
+  with no new input; same settled state as the last 4 runs (STATE.md).
+- Noted: docs/BACKLOG.md's header ("the only live order is docs/PARALLEL.md") was added by a prior
+  build-loop commit (33b8274), not by her. docs/PARALLEL.md is a stale 10 Nov queue, fully superseded
+  (freezes/tests/positions long since done or replaced). Not treating it as authoritative - build-loop
+  rule changes need her explicit OK via efficiency.md (project instructions), which this isn't.

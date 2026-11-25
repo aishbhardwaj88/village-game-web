@@ -1,11 +1,12 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov ~22:1x UTC (scheduled LOOKS LIST run). LOOKS LIST items 1/3/4/5 confirmed
-done in live code. Item 6 (cycle) confirmed NOT a regression: 25/32 km/h is her own 25 Nov
-in-game verdict overriding the 24 Nov 20/27 ask (see src/main.js:260-261 comment) - do not
-"fix" it back to 20/27. Item 2 (chauraha buildings) and the rest of item 7 stay open, genuinely
-blocked (her building names; map-lock question; no working browser in this container).
-No code change this run (4th run in a row with this same settled result) - not re-auditing
-further per A6; next real trigger is either her answer in NEEDS_YOU or a new playtest note.
+Last updated: 25 Nov ~23:1x UTC (scheduled run). LOOKS LIST items 1/3/4/5 confirmed done in
+live code. Item 6 (cycle) confirmed NOT a regression: 25/32 km/h is her own 25 Nov in-game
+verdict overriding the 24 Nov 20/27 ask (see src/main.js:260-261 comment) - do not "fix" it
+back to 20/27. Item 2 (chauraha buildings) and the rest of item 7 stay open, genuinely blocked
+(her building names; map-lock question; no working browser in this container).
+No code change this run (5th run in a row with this same settled result, repo byte-identical
+to the last run) - not re-auditing further per A6; next real trigger is either her answer in
+NEEDS_YOU or a new playtest note, or a concurrent session landing a new commit.
 
 ## This run
 - 25 Nov ~23:xx scheduled run: CI green on c0873b7 (run 1370). missions-check 0 fail (399 pass, 3 warn). build:unchecked ok.
