@@ -151,22 +151,23 @@ function buildChunk(za, zb) {
     P.box('metal', 0, 0, 0, x1 - x0 + 0.6, 0.07, z1 - z0 + 0.6, { color: 0x8a8e8c, matrix: rm });
     for (const zz of [z0 + 2.5, (z0 + z1) / 2, z1 - 2.5]) { bench(P, x1 - 0.65, zz); sol.push({ minX: x1 - 0.95, maxX: x1 - 0.3, minZ: zz - 0.95, maxZ: zz + 0.95 }); }
   }
+  // 25 Nov (review rule 2): the station and waiting hall FRONT THE ROAD (east, where gali_n9 / gali_n11 end at them), so the entrance, ticket window and name board are on the east face; the platform (west) side keeps a door and windows
   for (const o of objs('new_Railway station')) if (inZ(o)) {
     const [x0, x1] = [o.rings[0][0][0], o.rings[0][1][0]].sort((a, b) => a - b), [z0, z1] = [o.rings[0][0][1], o.rings[0][2][1]].sort((a, b) => a - b), zm = (z0 + z1) / 2;
     building(P, null, {
       x0, x1, z0, z1, h: o.h, tint: 0xd9b98a,
-      east: [{ c: zm, w: 1.3, h: 2.4, sill: 0.3, kind: 'door' }, ...[-6.5, -3.8, 3.8, 6.5].map((d) => ({ c: zm + d, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }))],
-      west: [{ c: zm, w: 1.3, h: 2.4, sill: 0.3, kind: 'door' }, { c: zm - 7, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }, { c: zm - 5.2, w: 1.0, h: 1.2, sill: 1.1, kind: 'ticket' }, { c: zm + 5.2, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }, { c: zm + 7, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }],
+      east: [{ c: zm, w: 1.3, h: 2.4, sill: 0.3, kind: 'door' }, { c: zm - 7, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }, { c: zm - 5.2, w: 1.0, h: 1.2, sill: 1.1, kind: 'ticket' }, { c: zm + 5.2, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }, { c: zm + 7, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }],
+      west: [{ c: zm, w: 1.3, h: 2.4, sill: 0.3, kind: 'door' }, ...[-6.5, -3.8, 3.8, 6.5].map((d) => ({ c: zm + d, w: 1.2, h: 1.3, sill: 1.1, kind: 'window' }))],
     });
     sol.push({ minX: x0 - 0.1, maxX: x1 + 0.1, minZ: z0 - 0.1, maxZ: z1 + 0.1 });
-    for (const s of objs('new_sign').filter((q) => /railway station/i.test(q.name))) boards.push({ id: 'station', x: x0 - 0.06, y: 3.3, z: s.cz, ry: -Math.PI / 2, w: 5.4 });
+    for (const s of objs('new_sign').filter((q) => /railway station/i.test(q.name))) boards.push({ id: 'station', x: x1 + 0.06, y: 3.3, z: s.cz, ry: Math.PI / 2, w: 5.4 });
   }
   for (const o of objs('new_Ticket window and waiting hall')) if (inZ(o)) {
     const [x0, x1] = [o.rings[0][0][0], o.rings[0][1][0]].sort((a, b) => a - b), [z0, z1] = [o.rings[0][0][1], o.rings[0][2][1]].sort((a, b) => a - b), zm = (z0 + z1) / 2;
     building(P, null, {
       x0, x1, z0, z1, h: o.h, tint: 0xc9b99a, roofTint: 0xb4afa2,
-      east: [{ c: zm, w: 1.2, h: 2.3, sill: 0.3, kind: 'door' }, { c: zm - 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }, { c: zm + 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }],
-      west: [{ c: zm, w: 1.2, h: 2.3, sill: 0.3, kind: 'door' }, { c: zm - 2.3, w: 1.0, h: 1.2, sill: 1.0, kind: 'ticket' }, { c: zm + 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }],
+      east: [{ c: zm, w: 1.2, h: 2.3, sill: 0.3, kind: 'door' }, { c: zm - 2.3, w: 1.0, h: 1.2, sill: 1.0, kind: 'ticket' }, { c: zm + 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }],
+      west: [{ c: zm, w: 1.2, h: 2.3, sill: 0.3, kind: 'door' }, { c: zm - 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }, { c: zm + 2.3, w: 1.1, h: 1.2, sill: 1.0, kind: 'window' }],
     });
     sol.push({ minX: x0 - 0.1, maxX: x1 + 0.1, minZ: z0 - 0.1, maxZ: z1 + 0.1 });
   }

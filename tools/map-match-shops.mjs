@@ -16,10 +16,7 @@ const group = buildShops(map);
 const rep = group.userData.report;
 const rects = rep.rects; // { name, type, x, z, ry, w, d } as placed by shopsPlace.js
 // ---- exceptions the rule cannot fix, each with its reason (docs/layout/MOVE_LOG_SHOPS_25NOV.md)
-const ALLOWED = {
-  'Optician (2-storey)': { overlap: 'boxed in: the Inner loop band to its west and the flat start of gali_n41 to its east leave 4.3 m for a 4.5 m shop; no spot within 5 m' },
-  "Shopkeeper's home and godown": { facing: 'gali_n41 dead-ends 1 m from its front (-x face): it faces the end of that road, not its side' },
-};
+const ALLOWED = {}; // none: the Optician is 3.6 m wide (clears both bands) and the shopkeeper's home fronts gali_n41 under the review definition
 // ---- roads: flat caps at the two ends of each polyline, round joins between segments
 const roads = map.roads.map((r) => ({ id: r.id, half: (r.width || 4) / 2, pts: r.pts }));
 const rectDist = (s, x, z) => { // distance from a point to the flat-ended rectangle of one segment (0 inside)
@@ -46,17 +43,21 @@ for (const r of rects) {
   let clear = 1e9, clearRoad = null;
   const perim = []; for (let lx = -mx; lx <= px + 1e-9; lx += 0.1) perim.push([lx, -mz], [lx, pz]); for (let lz = -mz; lz <= pz + 1e-9; lz += 0.1) perim.push([-mx, lz], [px, lz]);
   for (const [lx, lz] of perim) { const q = bandDist(...W2(r, lx, lz)); if (q.d < clear) { clear = q.d; clearRoad = q.id; } }
-  // facing: the road whose band is nearest the front-face midpoint; the front must be square to one of that road's segments within 1 m of that
-  // nearest distance (a polyline bend has two normals) and the road must lie in front of the shop
-  const f = [Math.sin(r.ry), Math.cos(r.ry)], fm = [r.x + f[0] * bd / 2, r.z + f[1] * bd / 2];
-  let roadId = null, rd = 1e9;
-  for (const rr of roads) { let m = 1e9; for (let i = 0; i < rr.pts.length - 1; i++) m = Math.min(m, rectDist({ a: rr.pts[i], b: rr.pts[i + 1], half: rr.half }, fm[0], fm[1])); for (let i = 1; i < rr.pts.length - 1; i++) m = Math.min(m, Math.max(0, Math.hypot(fm[0] - rr.pts[i][0], fm[1] - rr.pts[i][1]) - rr.half)); if (m < rd) { rd = m; roadId = rr.id; } }
-  let faceErr = 90;
-  for (const s of segs) {
-    if (s.id !== roadId) continue; const d = rectDist(s, fm[0], fm[1]); if (d > rd + 1.0) continue;
-    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L = Math.hypot(dx, dz), e = Math.asin(Math.min(1, Math.abs(f[0] * dx / L + f[1] * dz / L))) * 180 / Math.PI;
-    const foot = Math.max(0, Math.min(1, ((fm[0] - s.a[0]) * dx + (fm[1] - s.a[1]) * dz) / (L * L))), qx = s.a[0] + dx * foot, qz = s.a[1] + dz * foot;
-    if ((qx - r.x) * f[0] + (qz - r.z) * f[1] > 0 && e < faceErr) faceErr = e;
+  // facing (REVIEW RULE 25 Nov): m_front = centre of the front face, m_back = centre of the back face (measured on the built box AND on the plot rect, the stricter counts);
+  // the road it fronts = the band nearest m_front; PASS when that band is within 15 m (any distance for an enclosed building with no band within 15 m of any face),
+  // m_front is not farther from a band than m_back is (+0.5 m), and the walls are square to that road's direction at the nearest point (5 deg, 10 on the curved ring roads)
+  const f = [Math.sin(r.ry), Math.cos(r.ry)], faceMids = [[W2(r, (px - mx) / 2, pz), W2(r, (px - mx) / 2, -mz)], [[r.x + f[0] * bd / 2, r.z + f[1] * bd / 2], [r.x - f[0] * bd / 2, r.z - f[1] * bd / 2]]];
+  let faceErr = 0, roadId = null; const CURVED = new Set(['ring_road', 'inner_loop', 'chauraha_ring']);
+  const enclosed = [[0, pz], [0, -mz], [px, 0], [-mx, 0]].every(([lx, lz]) => bandDist(...W2(r, lx, lz)).d > 15);
+  for (const [fm, bm] of faceMids) {
+    let rid = null, rdist = 1e9; for (const rr of roads) { let m = 1e9; for (let i = 0; i < rr.pts.length - 1; i++) m = Math.min(m, rectDist({ a: rr.pts[i], b: rr.pts[i + 1], half: rr.half }, fm[0], fm[1])); for (let i = 1; i < rr.pts.length - 1; i++) m = Math.min(m, Math.max(0, Math.hypot(fm[0] - rr.pts[i][0], fm[1] - rr.pts[i][1]) - rr.half)); if (m < rdist) { rdist = m; rid = rr.id; } }
+    const bdist = bandDist(bm[0], bm[1]).d; let e = 0;
+    if (!enclosed && rdist > 15) e = 90;
+    if (rdist > bdist + 0.5) e = Math.max(e, 90); // the back is nearer a road than the front
+    // skew of the walls against the direction of that road at the nearest point (segments within 5 cm of the nearest distance; the best counts at a bend)
+    let sk = 90; for (const s of segs) { if (s.id !== rid) continue; if (rectDist(s, fm[0], fm[1]) > rdist + 0.05) continue; const ang = Math.atan2(s.b[0] - s.a[0], s.b[1] - s.a[1]); sk = Math.min(sk, Math.abs(((r.ry - ang + Math.PI / 4) % (Math.PI / 2) + Math.PI / 2) % (Math.PI / 2) - Math.PI / 4) * 180 / Math.PI); }
+    if (sk > (CURVED.has(rid) ? 10 : 5)) e = Math.max(e, sk);
+    if (e > faceErr) faceErr = e; roadId = rid;
   }
   const road = roadId;
   rows.push({ name: /^sqh\|/.test(r.name) ? "Shopkeeper's home and godown" : r.name, type: r.type, x: +r.x.toFixed(2), z: +r.z.toFixed(2), overlapM2: +(hit * 0.0025).toFixed(3), clear: +clear.toFixed(2), clearRoad, faceErr: faceErr == null ? null : +faceErr.toFixed(2), faceRoad: road });
@@ -67,7 +68,7 @@ for (const r of rows) {
   const bad = [];
   if (r.overlapM2 > 0) bad.push('overlap');
   else if (r.clear < 0.1 - 1e-6) bad.push('clear');
-  if (r.faceErr == null || r.faceErr > 1.5) bad.push('facing');
+  if (r.faceErr == null || r.faceErr > 0) bad.push('facing');
   r.bad = bad;
   if (bad.length) { const al = ALLOWED[r.name]; const kinds = bad.filter((b) => !(al && (al[b === 'clear' ? 'overlap' : b]))); r.allowed = al ? bad.filter((b) => al[b === 'clear' ? 'overlap' : b]) : []; if (kinds.length) fails.push(r); }
 }
@@ -75,7 +76,7 @@ const key = (o) => o.label.split('|')[0].trim();
 const expected = map.objects.filter((o) => o.kind === 'solids' && o.rings?.[0]?.length === 4 && /^new_(sqx|kiosk|cart|sqh)$|^new_[A-Z]/.test(key(o))).length;
 const turned = rects.length; // placed
 console.log(`shops placed by src/kit/shopsPlace.js: ${rows.length} (houses ${rep.shopHouses}, homes ${rep.shopkeeperHomes}, shops ${rep.shops}, kiosks ${rep.kiosks}, carts ${rep.carts}, sheds ${rep.sheds}; 3 railway buildings are built by railway.js)`);
-console.log(`overlap with a road band (area > 0): ${rows.filter((r) => r.overlapM2 > 0).length} | clearance < 0.1 m: ${rows.filter((r) => r.clear < 0.1 - 1e-6).length} | front not square to its road (> 1.5 deg) or not pointing at it: ${rows.filter((r) => r.faceErr == null || r.faceErr > 1.5).length}`);
+console.log(`overlap with a road band (area > 0): ${rows.filter((r) => r.overlapM2 > 0).length} | clearance < 0.1 m: ${rows.filter((r) => r.clear < 0.1 - 1e-6).length} | fails the review facing rule (road within 15 m, front not farther than back + 0.5 m, walls square within 5/10 deg): ${rows.filter((r) => r.faceErr == null || r.faceErr > 1.5).length}`);
 const allowed = rows.filter((r) => r.allowed?.length);
 if (allowed.length) console.log('accepted exceptions (reason in MOVE_LOG_SHOPS_25NOV.md):\n' + allowed.map((r) => `  ${r.name} ${r.x},${r.z}: ${r.bad.join('+')} (${r.overlapM2} m2, clear ${r.clear} m, facing err ${r.faceErr}) - ${Object.values(ALLOWED[r.name]).join('; ')}`).join('\n'));
 console.log('game builder own check (round-capped roads, report.onRoad):', rep.onRoad.length ? rep.onRoad.join(' | ') : 'none');

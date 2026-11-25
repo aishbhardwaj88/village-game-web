@@ -220,7 +220,7 @@ export function stockInterior(P, trade, g) {
         });
       }
       for (let k = 0; k < 5; k++) { const bx = x0 + 0.45 + k * (w - 0.9) / 4, bz = zBack + 1.3 + (k % 2) * 0.8; Iron(P, bx, yCeil - 0.35, bz, 0.006, 0.55, 0.006, 0x2a2a2a); V(P, bx, yCeil - 0.66, bz, 0.025, 0.025, 0.04, BRASS, 6); ball(P, bx, yCeil - 0.74, bz, 0.06, 0xf4ecd0, 7); } // bulbs on cords
-      for (let k = 0; k < 3; k++) { const tx = x1 - 0.12 - k * 0.1; X(P, tx, yFloor + 1.1, zBack + 0.9 + k * 0.05, 0.022, 1.2, 0xf2f0e6, 6); P.cyl('concrete', tx, yFloor, zBack + 0.9, 0.022, 0.022, 1.2, { color: 0xf2f0e6, seg: 6 }); } // tube lights leaning on the wall
+      for (let k = 0; k < 3; k++) { const tx = x1 - 0.12 - k * 0.1; X(P, tx - 0.6, yFloor + 1.1, zBack + 0.9 + k * 0.05, 0.022, 1.2, 0xf2f0e6, 6); P.cyl('concrete', tx, yFloor, zBack + 0.9, 0.022, 0.022, 1.2, { color: 0xf2f0e6, seg: 6 }); } // tube lights leaning on the wall
       counter(0xd0c8b8);
       row(cxa, cxb, (k) => ({ w: 0.2, draw: (xc) => { ball(P, xc, cy + 0.07, cz - 0.05, 0.06, 0xf4ecd0, 7); V(P, xc, cy, cz - 0.05, 0.028, 0.03, 0.03, BRASS, 6); B(P, xc, cy + 0.025, cz + 0.12, 0.08, 0.05, 0.05, 0xece8dc); } }));
       for (let k = 0; k < 2; k++) { V(P, x0 + 0.45 + k * 0.55, yFloor, zFront - 0.25, 0.26, 0.26, 0.06, 0x7a5a3a, 10); V(P, x0 + 0.45 + k * 0.55, yFloor + 0.06, zFront - 0.25, 0.13, 0.13, 0.36, k ? 0x2a2a2a : 0xb83a2a, 9); V(P, x0 + 0.45 + k * 0.55, yFloor + 0.42, zFront - 0.25, 0.26, 0.26, 0.06, 0x7a5a3a, 10); } // cable drums on the floor
@@ -419,7 +419,7 @@ export function stockInterior(P, trade, g) {
           return { w: 0.22, draw: (xc) => { V(P, xc, y, zs, 0.1, 0.1, 0.07, 0xd8c8a0, 9); V(P, xc, y + 0.07, zs, 0.08, 0.08, 0.07, 0xc8b078, 9); } }; // rope coil
         });
       }
-      for (let k = 0; k < 5; k++) X(P, x1 - 0.1, yFloor + 0.2 + k * 0.1, zBack + 1.5 + (k % 2) * 0.1, 0.035, 1.3, 0xb8b4aa, 7); // pipes lying on a rack
+      for (let k = 0; k < 5; k++) X(P, x1 - 0.75, yFloor + 0.2 + k * 0.1, zBack + 1.5 + (k % 2) * 0.1, 0.035, 1.3, 0xb8b4aa, 7); // pipes lying on a rack
       counter(0xd0c8b8);
       for (let k = 0; k < 6; k++) Iron(P, cxa + 0.2 + k * 0.2, cy + 0.04, cz, 0.04, 0.08, 0.22, 0x5a5a5c);
       return true;

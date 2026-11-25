@@ -123,6 +123,10 @@ try {
   const { ANCHORS } = await import('../src/anchors.js'), { EXISTING_FOOTPRINTS } = await import('../src/layout/footprints.js');
   for (const [id, a] of Object.entries(ANCHORS)) { const f = EXISTING_FOOTPRINTS[id]; if (!f || f.open) continue; const r = { x: a.x, z: a.z, ry: a.ry || 0, box: f.box }; obstacles.push({ n: 'place ' + id, p: poly(r) }); }
 } catch (e) { console.error('place footprints not loaded (houses only):', e.message.split('\n')[0]); }
+// her answer 25 Nov (Optician, "make it narrower"): the free gap between the Inner loop band and gali_n41 is 4.22 m wide, so the shop is 3.6 m wide and
+// centred at x 569.6 (best spot: 0.22 m clear of both bands on the measured mesh, 0.05 m per side wider than the plot; the sign shrinks to fit, 3.35 m max).
+const SIZE_OVERRIDE = { 'Optician (2-storey)': { x: 569.6, w: 3.6 } };
+for (const s of shops) { const o = SIZE_OVERRIDE[s.name]; if (o) { s.x = o.x; s.w = o.w; s.box = FP[s.type](s.w, s.d); } }
 // ---------------------------------------------------------------- 1. face the nearest road, 2. clear the bands
 const deg = (v) => v * 180 / Math.PI;
 const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
@@ -175,13 +179,22 @@ for (const s of shops) {
   if (!done) { unmoved.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)}: ${blocked ? 'blocked by ' + blocked + ', ' : ''}no clear spot within ${MAXMOVE} m (clearance ${c0.toFixed(2)} m at ${worstAt(s).map((v) => v.toFixed(1))} on ${nearestSeg(...worstAt(s)).id})`); continue; }
   s.x = done.x; s.z = done.z;
 }
+
+// ---------------------------------------------------------------- 3. review rule 2 (25 Nov): the front face must not be farther from a band than the back face (+0.5 m)
+// m_front = centre of the front face, m_back = centre of the back face; both measured on the BUILT box and on the plot rect (c +- f*d/2); the smallest slide along the front, never past 5 m in all
+const faceMids = (s) => { const f = [Math.sin(s.ry), Math.cos(s.ry)], cx = (s.box[0] + s.box[1]) / 2; return [[toW(s, cx, s.box[3]), toW(s, cx, s.box[2])], [[s.x + f[0] * s.d / 2, s.z + f[1] * s.d / 2], [s.x - f[0] * s.d / 2, s.z - f[1] * s.d / 2]]]; };
+const balanceExcess = (s) => Math.max(...faceMids(s).map(([mf, mb]) => clearance(...mf) - clearance(...mb) - 0.5)); // > 0 = fails
+const BAL_MARGIN = 0.1, balanced = [];
+for (const s of shops) {
+  if (s.type === 'railway' || balanceExcess(s) <= -BAL_MARGIN) continue;
+  const f = [Math.sin(s.ry), Math.cos(s.ry)], x0 = s.x, z0 = s.z; let done = null;
+  for (let t = 0.01; t <= MAXMOVE; t += 0.01) { const p = { ...s, x: x0 + f[0] * t, z: z0 + f[1] * t }; p.box = s.box; if (Math.hypot(p.x - s.x0, p.z - s.z0) > MAXMOVE) break; if (footClear(p) < CLEAR + 0.01 || hitsProbe(p, s)) break; if (balanceExcess(p) <= -BAL_MARGIN) { done = p; break; } }
+  if (done) { balanced.push(`${s.name} at ${x0.toFixed(2)},${z0.toFixed(2)}: slid ${Math.hypot(done.x - x0, done.z - z0).toFixed(2)} m toward its front so the front face is not farther from a band than the back face`); s.x = done.x; s.z = done.z; }
+  else unmoved.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)}: back face nearer a road than the front by more than 0.5 m and no slide under ${MAXMOVE} m fixes it`);
+}
 // ---------------------------------------------------------------- result
 const newHits = []; for (const s of shops) { const h = hitsProbe(s, s); if (h) newHits.push(`${s.name} at ${s.x.toFixed(1)},${s.z.toFixed(1)} now overlaps ${h}`); }
 const rects = {}, rows = [];
-const SIZE_OVERRIDE = { // her answer 25 Nov (Optician, "make it narrower"): the free gap between the Inner loop band and gali_n41 is 4.22 m wide (x 567.47 to 571.69 over the shop's whole depth), so 3.8 m centred leaves about 0.2 m each side (the built mesh is a little wider than its rect)
-  'Optician (2-storey)': { x: 569.58, w: 3.8 },
-};
-for (const s of shops) { const o = SIZE_OVERRIDE[s.name]; if (o) { s.x = o.x; s.w = o.w; } }
 for (const s of shops) {
   const f = [Math.sin(s.ry), Math.cos(s.ry)];
   rects[s.rk] = { cx: r3(s.x), cz: r3(s.z), w: r3(s.w), d: r3(s.d), ry: r3(s.ry), front: [r3(f[0]), r3(f[1])], frontMid: [r3(s.x + f[0] * s.d / 2), r3(s.z + f[1] * s.d / 2)] };
@@ -192,6 +205,7 @@ const movedRows = rows.filter((r) => r.moved > 0.005), turnedRows = rows.filter(
 console.log(`shops ${shops.length} | turned >1 deg to face the nearest road: ${turnedRows.length} (max ${Math.max(0, ...rows.map((r) => r.turn)).toFixed(1)} deg) | moved off a band: ${movedRows.length} (max ${Math.max(0, ...rows.map((r) => r.moved)).toFixed(2)} m) | still touching a band (<0.1 m): ${rows.filter((r) => r.clear1 < CLEAR - 1e-6).length}`);
 if (newHits.length) console.log('NEW overlap with another building:\n' + newHits.join('\n'));
 if (notTurned.length) console.log('NOT TURNED:\n' + notTurned.join('\n'));
+if (balanced.length) console.log('BALANCED (front-vs-back rule):\n' + balanced.join('\n'));
 if (unmoved.length) console.log('NOT MOVED (cannot be done under 5 m):\n' + unmoved.join('\n'));
 if (process.argv.includes('--log')) {
   console.log('| Shop | Type | Old spot | New spot | Moved m | Facing deg old -> new | Turned deg | Nearest road | Clearance old -> new m |\n|---|---|---|---|---|---|---|---|---|');
