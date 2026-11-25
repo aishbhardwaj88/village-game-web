@@ -26,15 +26,21 @@ export const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; 
 export const ODDITY_SPOTS = {
   halfbuilt: { at: 'banta', lx: -31.2, lz: 15.5, yaw: -1.284 },
   sandpile: { at: 'post', lx: 24.6, lz: -4.7, yaw: 0.005 },
-  scaffold: { at: 'haveli', lx: 4.9, lz: 21.8, yaw: 0.037 },
-  well: { at: 'halwai', lx: -7.4, lz: -20.4, yaw: -0.09 },
+  scaffold: { at: 'haveli', lx: 5.11, lz: 24.29, yaw: 0.037 },
+  well: { at: 'halwai', lx: -5.95, lz: -18.68, yaw: -0.09 },
   mazar: { at: 'dairy', lx: -15.5, lz: 8.3, yaw: -0.003 }, // 7 Nov: dairy turned +90 deg (road-front audit); same world spot as before (was lx 8.3, lz 15.5, yaw 1.568)
   shamiana: { at: 'khalihan', lx: -28.3, lz: 7.2, yaw: -0.003 },
 };
 
+// 25 Nov, her order ROADS MUST BE EMPTY: scaffold (2.5 m) and well (2.25 m, clear of the drawn road, not the full scuffed apron) moved off the drawn road (band + scuffed apron + wander + 0.3 m) by editing their lx/lz above (was scaffold 4.9, 21.8; well -7.4, -20.4); tmp/roadempty/solve.mjs
+// removed 25 Nov: stood on road (main_road, 2-4 m deep) and no legal spot within 6 m; set to [] to bring it back
+export const ODDITY_REMOVED_25NOV = ['halfbuilt'];
+
 export function spotMatrix(sp) {
   const a = ANCHORS[sp.at];
   if (!a) return null;
+  const kind = Object.keys(ODDITY_SPOTS).find((k) => ODDITY_SPOTS[k] === sp); // the nudge and removal apply to this file's own spots only (src/oddityDiscoveries.js follows them)
+  if (kind && ODDITY_REMOVED_25NOV.includes(kind)) return null;
   const ry = a.ry || 0, s = Math.sin(ry), c = Math.cos(ry);
   const x = a.x + sp.lx * c + sp.lz * s, z = a.z - sp.lx * s + sp.lz * c;
   return new THREE.Matrix4().makeRotationY(ry + (sp.yaw || 0)).setPosition(x, 0, z);

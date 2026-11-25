@@ -90,6 +90,8 @@ function distToLine(pts, x, z) {
   return best;
 }
 
+// 25 Nov, her order ROADS MUST BE EMPTY: a standing scene keeps 0.3 m beyond the DRAWN road: scuffed apron + edge wander (src/roadNetwork.js ROAD_KINDS band + 1.4 x amp)
+const APRON_25NOV = { highway: 2.08, road: 1.85, lane: 1.52, back: 1.08, track: 2.13, path: 1.03 };
 export function createMainRoadLife(scene) {
   const group = new THREE.Group(); group.name = 'main_road_life';
   scene.add(group);
@@ -221,7 +223,7 @@ export function createMainRoadLife(scene) {
 
     // ---------------------------------------------------------------- site search
     const farFrom = (x, z, r) => Math.hypot(x - CHAURAHA.x, z - CHAURAHA.z) > r;
-    const roadClear = (x, z, r) => lines.every((l) => l.id === 'chauraha_ring' || distToLine(l.pts, x, z) > l.w / 2 + r + 0.3);
+    const roadClear = (x, z, r) => lines.every((l) => l.id === 'chauraha_ring' || distToLine(l.pts, x, z) > l.w / 2 + r + 0.3 + (APRON_25NOV[l.kind] ?? 1.1));
     const siteOk = (x, z, r, taken) => {
       if (!farFrom(x, z, 12 + r)) return false;
       if (!roadClear(x, z, r)) return false;

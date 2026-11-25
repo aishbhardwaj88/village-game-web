@@ -7,6 +7,7 @@ import { createWideSignAtlas, mapFrontFaceToRow } from './signboards.js';
 import { batchLateGroup, batchPeopleMesh, refreshPeopleMesh } from './placeBatch.js';
 import { keepOnGround, markFigure, settleInstances } from './standOn.js';
 import { settlingReleased, lazyDue } from './standOn.js';
+import { allRoadLines } from './mapRoads.js';
 
 /**
  * Street vendors, second set: a cabin kiosk (paan shop: mirror, film posters, a bulb, glass jars of sweets; no tobacco of any kind),
@@ -155,6 +156,19 @@ function buildGrinder(s, seed) {
   return { w: 2.4, d: 1.6, z: 0.3 };
 }
 
+// 25 Nov, her order ROADS MUST BE EMPTY: a stall site keeps 0.3 m beyond the DRAWN road (band + scuffed apron + edge wander, src/roadNetwork.js ROAD_KINDS); it stood on inner_loop (3 m deep) before
+const APRON_25NOV = { highway: 2.08, road: 1.85, lane: 1.52, back: 1.08, track: 2.13, path: 1.03 };
+function distToLine(pts, x, z) {
+  let best = Infinity;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, az] = pts[i - 1], [bx, bz] = pts[i], dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L));
+    best = Math.min(best, Math.hypot(ax + t * dx - x, az + t * dz - z));
+  }
+  return best;
+}
+let ROAD_LINES = null;
+const roadClear = (x, z, r) => (ROAD_LINES ||= allRoadLines()).every((l) => l.id === 'chauraha_ring' || distToLine(l.pts, x, z) > l.w / 2 + r + 0.3 + (APRON_25NOV[l.kind] ?? 1.1));
 const freeAt = (x, z, r) => !circleHitsAnyBox({ x, z }, r, staticBoxesNear(x, z, r + 1));
 function findSite(sp, taken) {
   if (!ANCHORS[sp.anchor]) return null;
@@ -164,7 +178,7 @@ function findSite(sp, taken) {
     for (let k = 0; k < n; k++) {
       const ang = (k / n) * Math.PI * 2 + ring * 0.7, x = base.x + Math.cos(ang) * ring, z = base.z + Math.sin(ang) * ring;
       if (taken.some((t) => Math.hypot(t.x - x, t.z - z) < 10)) continue;
-      if (freeAt(x, z, CLEAR + 1.0)) { const s = { x, z, ry: sp.ry + (ANCHORS[sp.anchor].ry || 0) }; taken.push(s); return s; }
+      if (freeAt(x, z, CLEAR + 1.0) && roadClear(x, z, CLEAR)) { const s = { x, z, ry: sp.ry + (ANCHORS[sp.anchor].ry || 0) }; taken.push(s); return s; }
     }
   }
   return null;
