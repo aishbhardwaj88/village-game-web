@@ -6,6 +6,7 @@ Item 2 (chauraha road buildings) still waiting on her building names (NEEDS_YOU,
 ask again).
 
 ## This run
+- 25 Nov 18:xx scheduled run: Actions green at 33b8274; temple+sabzi already AS_DRAWN (packed front -z = approved map, only 1 deg placeMoves turn); no literals at old coords of mandi/khalihan/mela/tanki/bhatta (grep); missions-check 0 fail; build:unchecked ok; load size + 'unsliced' have no unblocked non-look cut. No code change.
 - layout-tests.mjs: 125 failures (front 25, on-road 71, overlap 29), down from 129 (25/72/32) -
   concurrent position session still progressing, not stalled. Left alone per STATE's own plan.
 - All [ACTIVE] BACKLOG items checked: place-touching rules (none touched this run), CC0 proxy
