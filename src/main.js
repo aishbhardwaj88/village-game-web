@@ -1036,8 +1036,8 @@ async function main() {
       { x: startX, z: startZ, y: 0 },
       { ...bazaarXZ(bazaarUnitCx(3), BAZAAR_ROW_CZ), y: roofY }, // up onto the darzi's own roof
       { ...bazaarXZ(bazaarUnitCx(5), BAZAAR_ROW_CZ), y: roofY5 }, // across the rooftops, east
-      { ...bazaarXZ(bazaarUnitCx(6), BAZAAR_FRONT_Z - 6), y: 0 }, // back down to the lane (6 m out: the cloth shop of the final map stands closer)
-      { ...bazaarXZ(BAZAAR_EAST_X + 3, BAZAAR_FRONT_Z - 6), y: 0 },
+      { ...bazaarXZ(bazaarUnitCx(6), BAZAAR_FRONT_Z - 8), y: 0 }, // back down to the lane (6 m out: the cloth shop of the final map stands closer)
+      { ...bazaarXZ(BAZAAR_EAST_X + 3, BAZAAR_FRONT_Z - 8), y: 0 },
     ];
   }
   NPC_ROUTES.push({ kind: 'run', name: 'npc_monkey_chase', waypoints: monkeyChaseWaypoints(bazaarXZ(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3).x, bazaarXZ(bazaarUnitCx(3), BAZAAR_FRONT_Z - 3).z), radius: 0.3 });

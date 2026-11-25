@@ -122,8 +122,8 @@ async function collect(mode) {
   // M6 monkey
   const U = bazaar.BAZAAR_UNITS, cx = bazaar.bazaarUnitCx;
   add({ id: 'M6 monkey snatch spot', group: 'M6', kind: 'npc', owner: 'bazaar', pts: [bazaar.bazaarXZ(cx(3), bazaar.BAZAAR_FRONT_Z - 1.5)] });
-  add({ id: 'M6 monkey ground legs', group: 'M6', kind: 'route', owner: 'bazaar', pts: [bazaar.bazaarXZ(cx(3), bazaar.BAZAAR_FRONT_Z - 3), bazaar.bazaarXZ(cx(6), bazaar.BAZAAR_FRONT_Z - 6), bazaar.bazaarXZ(bazaar.BAZAAR_EAST_X + 3, bazaar.BAZAAR_FRONT_Z - 6)] });
-  add({ id: 'M6 monkey recovery (end)', group: 'M6', kind: 'waypoint', owner: 'bazaar', r: 2.0, mode: 'foot', pts: [bazaar.bazaarXZ(bazaar.BAZAAR_EAST_X + 3, bazaar.BAZAAR_FRONT_Z - 6)] });
+  add({ id: 'M6 monkey ground legs', group: 'M6', kind: 'route', owner: 'bazaar', pts: [bazaar.bazaarXZ(cx(3), bazaar.BAZAAR_FRONT_Z - 3), bazaar.bazaarXZ(cx(6), bazaar.BAZAAR_FRONT_Z - 8), bazaar.bazaarXZ(bazaar.BAZAAR_EAST_X + 3, bazaar.BAZAAR_FRONT_Z - 8)] });
+  add({ id: 'M6 monkey recovery (end)', group: 'M6', kind: 'waypoint', owner: 'bazaar', r: 2.0, mode: 'foot', pts: [bazaar.bazaarXZ(bazaar.BAZAAR_EAST_X + 3, bazaar.BAZAAR_FRONT_Z - 8)] });
   // M7 baagh
   add({ id: 'M7 baagh (drive here)', group: 'M7', kind: 'waypoint', r: 8, mode: 'tractor', near: { label: 'mango baagh', ...(ML && ML.mangoBaaghArea ? ML.mangoBaaghArea() : {}), max: 30 }, pts: [baagh.BAAGH_POSITION] });
   baagh.MANGO_KNOCK_POSITIONS.forEach((p, i) => add({ id: `M7 mango knock ${i + 1}`, group: 'M7', kind: 'interact', r: 2.2, mode: 'foot', pts: [p] }));
