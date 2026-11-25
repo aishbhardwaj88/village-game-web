@@ -24,9 +24,9 @@ const JOIN_TOL = 4; // m: a road whose end lies this close to our end is a joini
 
 // file, length (m, as the parked ones in villageVehicles.js), width, which model axis is long (x: nose +x, needs -90 deg), speed range m/s, seat [y, z, scale]
 const KINDS = {
-  bicycle:       { len: 1.75, axis: -Math.PI / 2, speed: [2, 3], seat: [0.23, -0.1, 0.9], cat: 'cycle' },
+  bicycle:       { len: 1.7, axis: -Math.PI / 2, speed: [2, 3], seat: [0.23, -0.1, 0.9], cat: 'cycle' },
   motorbike:     { len: 2.1, axis: -Math.PI / 2, speed: [4, 6], seat: [0.08, -0.1, 0.9], cat: 'bike' },
-  moped:         { len: 1.8, axis: Math.PI, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
+  moped:         { len: 2.0, axis: Math.PI, speed: [4, 6], seat: [0.03, -0.05, 0.9], cat: 'bike' },
   auto_rickshaw: { len: 2.6, axis: Math.PI, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
   tuk_tuk:       { len: 2.7, axis: 0, speed: [3, 5], seat: [-0.1, 0.55, 0.88], cat: 'auto' },
 };

@@ -136,8 +136,8 @@ export function registerVehicleModels({ tractor, trolley, bike }) {
     },
   });
   register({
-    name: 'veh_bike', file: 'bicycle', size: 1.75, center: { x: bike.group.position.x, z: bike.group.position.z },
-    spec: { axis: 'x', length: 1.75, yaw: -Math.PI / 2, centre: 'box', wheelName: /whell/, wheelAxis: 2, spinSign: -1 }, // file's front is +X; the bike's inner frame has its front at +Z
+    name: 'veh_bike', file: 'bicycle', size: 1.7, center: { x: bike.group.position.x, z: bike.group.position.z },
+    spec: { axis: 'x', length: 1.7, yaw: -Math.PI / 2, centre: 'box', wheelName: /whell/, wheelAxis: 2, spinSign: -1 }, // file's front is +X; the bike's inner frame has its front at +Z
     attach: ({ holder, wheels }) => {
       hideAll([...bike.bodyPivot.children, bike.frontWheel, bike.rearWheel]);
       bike.bodyPivot.add(holder);

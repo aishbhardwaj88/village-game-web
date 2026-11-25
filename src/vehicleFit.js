@@ -5,7 +5,7 @@
  * Parked list (villageVehicles.js) and roaming traffic (roamingTraffic.js) both use it, so they cannot disagree.
  */
 export const VEHICLE_FIT = {
-  bicycle: { len: 1.75, front: '+x' }, motorbike: { len: 2.1, front: '+x' }, moped: { len: 1.8, front: '-z' },
+  bicycle: { len: 1.7, front: '+x' }, motorbike: { len: 2.1, front: '+x' }, moped: { len: 2.0, front: '-z' },
   auto_rickshaw: { len: 2.6, front: '-z' }, tuk_tuk: { len: 2.7, front: '+z' },
   willys_jeep: { len: 3.4, front: '-z' }, old_tractor: { len: 3.5, front: '+z' }, trailer_pack: { len: 3.4, front: '+z' },
   mini_truck: { len: 4.2, front: '+z' }, thela_gadi: { len: 2.4, front: '+x' }, thela_b: { len: 2.2, front: '+z' }, water_tanker: { len: 5, front: '+z' },

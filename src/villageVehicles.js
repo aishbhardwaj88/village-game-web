@@ -30,11 +30,11 @@ export const VILLAGE_VEHICLES = [
   { file: 'auto_rickshaw', x: 535.19, z: -109.45, yaw: 1.481, length: 2.6 }, // yard_bus_adda road 2.96
   { file: 'tuk_tuk', x: 538.73, z: -109.38, yaw: 1.55, length: 2.7 }, // new_tempo road 1.19
   { file: 'tuk_tuk', x: 519.56, z: -92.55, yaw: 4.63, length: 2.7 }, // yard_bus_adda road 0.86
-  { file: 'bicycle', x: 589.32, z: 1.93, yaw: 0.662, hex: 0x2f4a6b, length: 1.75 }, // teastall road 3.35
-  { file: 'bicycle', x: 553.34, z: 88.75, yaw: -1.446, hex: 0x3d5a40, length: 1.75 }, // school road 0.94
-  { file: 'bicycle', x: 538.47, z: 37.65, yaw: 0.245, hex: 0x6b2a26, length: 1.75 }, // yard_chaupal road 3.29
+  { file: 'bicycle', x: 589.32, z: 1.93, yaw: 0.662, hex: 0x2f4a6b, length: 1.7 }, // teastall road 3.35
+  { file: 'bicycle', x: 553.34, z: 88.75, yaw: -1.446, hex: 0x3d5a40, length: 1.7 }, // school road 0.94
+  { file: 'bicycle', x: 538.47, z: 37.65, yaw: 0.245, hex: 0x6b2a26, length: 1.7 }, // yard_chaupal road 3.29
   { file: 'motorbike', x: 590.78, z: -96.98, yaw: 2.771, length: 2.1 }, // bazaar road 3.00
-  { file: 'moped', x: 556.22, z: 68.94, yaw: -1.418, hex: 0x8a2c2a, length: 1.8 }, // post road 1.07
+  { file: 'moped', x: 556.22, z: 68.94, yaw: -1.418, hex: 0x8a2c2a, length: 2 }, // post road 1.07
   { file: 'thela_gadi', x: 592.68, z: -99.58, yaw: 2.89, length: 2.4 }, // bazaar road 1.76
   { file: 'thela_gadi', x: 588.95, z: -19.13, yaw: 4.762, length: 2.4 }, // new_sqx_233 road 1.85
   { file: 'thela_gadi', x: 610.97, z: -105.81, yaw: -0.416, length: 2.4 }, // chemist road 2.92
@@ -43,14 +43,14 @@ export const VILLAGE_VEHICLES = [
   { file: 'thela_b', x: 588.95, z: -5.63, yaw: 4.79, length: 2.2 }, // new_sqx_236 road 2.79
   { file: 'willys_jeep', x: 537.97, z: 27.93, yaw: 0.019, length: 3.4 }, // yard_panchayat road 3.34
   { file: 'willys_jeep', x: 563.99, z: 35.29, yaw: -0.065, length: 3.4 }, // at road 3.30
-  { file: 'moped', x: 608.42, z: 58.82, yaw: 1.832, hex: 0x3a5a48, length: 1.8 }, // at road 0.84
-  { file: 'moped', x: 577.48, z: -20.29, yaw: 1.709, hex: 0xb8b2a0, length: 1.8 }, // at road 3.45
+  { file: 'moped', x: 608.42, z: 58.82, yaw: 1.832, hex: 0x3a5a48, length: 2 }, // at road 0.84
+  { file: 'moped', x: 577.48, z: -20.29, yaw: 1.709, hex: 0xb8b2a0, length: 2 }, // at road 3.45
   { file: 'motorbike', x: 577.01, z: 49.47, yaw: -0.106, length: 2.1 }, // at road 3.65
   { file: 'motorbike', x: 590.51, z: -57.59, yaw: 3.688, length: 2.1 }, // at road 0.66
-  { file: 'bicycle', x: 609.3, z: 6.94, yaw: 1.044, hex: 0x2b2b2e, length: 1.75 }, // at road 0.69
-  { file: 'bicycle', x: 577.65, z: 120.55, yaw: 2.753, hex: 0x3d5a40, length: 1.75 }, // at road 3.55
-  { file: 'bicycle', x: 528.65, z: 53.6, yaw: 0.129, hex: 0x2f4a6b, length: 1.75 }, // at road 0.79
-  { file: 'bicycle', x: 617.41, z: 35.68, yaw: 3.073, hex: 0x6b2a26, length: 1.75 }, // at road 4.06
+  { file: 'bicycle', x: 609.3, z: 6.94, yaw: 1.044, hex: 0x2b2b2e, length: 1.7 }, // at road 0.69
+  { file: 'bicycle', x: 577.65, z: 120.55, yaw: 2.753, hex: 0x3d5a40, length: 1.7 }, // at road 3.55
+  { file: 'bicycle', x: 528.65, z: 53.6, yaw: 0.129, hex: 0x2f4a6b, length: 1.7 }, // at road 0.79
+  { file: 'bicycle', x: 617.41, z: 35.68, yaw: 3.073, hex: 0x6b2a26, length: 1.7 }, // at road 4.06
   { file: 'auto_rickshaw', x: 543.14, z: -106.81, yaw: 4.846, length: 2.6 }, // at road 3.54
   { file: 'tuk_tuk', x: 589.43, z: -92.09, yaw: 2.764, length: 2.7 }, // at road 2.28
   { file: 'thela_gadi', x: 603.72, z: -90.33, yaw: 1.335, length: 2.4 }, // at road 0.85
