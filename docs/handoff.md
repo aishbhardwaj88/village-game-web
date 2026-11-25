@@ -1757,3 +1757,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   place-visibility-check all clean (Tier 1). No Tier 2 (no position/collision code of mine changed).
 - Agents used: none (small-task run, did not warrant spawning one per efficiency-rules.md).
 - 25 Nov 16:4x scheduled run: Actions green on c996779; list items (temple/sabzi, moved-place coords, pre-Play size, land-layer) already settled earlier today, no new unblocked item. missions-check 398/0/3, build:unchecked + 4 instant checks pass. No code change.
+
+## Agents, 25 Nov final round (all Sonnet, medium effort, none Opus/Fable, all read-only except fixers)
+- Overlap fixer (6 building overlaps + post office/chaupal): Sonnet, ran 24 min (over limit, told to wrap up). Real overlaps need moves, not boxes.
+- Props fixer (Spices far block, well, lamp): Sonnet, 17 min.
+- Final reviewers x4 (two rounds, independent scripts in tmp/review and tmp/review2): Sonnet. Round 2 at 1fada51: reviewer 1 NO ISSUES; reviewer 2 only flags Gossip Aunty (tvaunty.glb, compare scene only, pushed by another session in 70243f9/ec1982a, not placed in the village): needs her call.
+- Open for her: 7 buildings (ration, temple, jalebi, gaushala, tvhouse, jain, puncture yard) have a smaller lane closer behind than the front road; left as is (front faces a real road).
