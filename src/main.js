@@ -240,6 +240,7 @@ import { initServiceWorkerSupport, seedAndPrune } from './swRegister.js';
 import { houseShaderWarm, sharedMaterialWarm } from './shaderWarm.js';
 import { releaseDeferredMaps, deferredMapsDone, deferredMapsReady } from './deferredMaps.js'; // normal/roughness/ao maps after the Play unlock
 import { lateDone, isLateDone, yieldToMain, track, sliceGen } from './kit/lateBuild.js'; // boot-CPU pass: shops/land/map objects build after the Play gate
+import { startWallPosters } from './kit/wallMurals.js'; // 26 Nov: new wall poster atlas, laid out after Play
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -2267,6 +2268,7 @@ async function main() {
     storyDone: !!(savedGame && (savedGame.roam?.storyDone || savedGame.questStep === 'all_complete' || savedGame.questStep === 'free_roam')),
     onStart: (isContinue) => {
       started = true;
+      try { startWallPosters(scene).catch((e) => console.warn('[wall_posters]', e)); } catch (e) { console.warn('[wall_posters]', e); }
       if (isLateDone() && deferredMapsDone()) renderOK = true; else Promise.all([lateDone(), deferredMapsReady()]).then(() => { renderOK = true; _lm.lateHeldFrame = performance.now(); }); // never a half-built village on screen, nor one still missing its normal/roughness maps (src/deferredMaps.js)
       _lm.playPressed = performance.now(); postPressWarmUntil = _lm.playPressed + 60000; // D1: no 3D frame under the opaque title; its first-frame cost (textures/shaders already warmed) lands here
       startStreaming(scene, propPos, { x: player.position.x, z: player.position.z }, requestColliderRebuild); // props are already ready (the title gate waited for them); the ring takes over

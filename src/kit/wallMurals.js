@@ -529,7 +529,11 @@ export function buildWallMurals(boxes, opts = {}) { return runSync(buildWallMura
 /** Same, as a generator (slice points: one atlas design, then every 24 boxes of the placement walk) for src/kit/lateBuild.js sliceGen. */
 export function* buildWallMuralsGen(boxes, opts = {}) {
   // 26 Nov (her order): ALL wall posters removed so her new poster set can be pasted. No atlas, no mesh. Old code below is kept for re-use.
-  if (!opts.forceOn) return { mesh: null, stats: { candidates: boxes.length, placed: 0, skippedShort: 0, skippedDoor: 0, roadFacingPlaced: 0, designs: 0, instances: [], slid: 0, onRoadLeft: 0 } };
+  if (!opts.forceOn) { // 26 Nov: only REGISTER the boxes; startWallPosters(scene) lays the new atlas posters out after Play
+    for (const b of boxes) _registry.push(b);
+    if (opts.roads) _roads = opts.roads;
+    return { mesh: null, stats: { registered: boxes.length } };
+  }
   const offset = opts.offset ?? 0.03, minClear = opts.minClear ?? 0.6;
   const roads = opts.roads ?? null, roadFaceDist = opts.roadFaceDist ?? 7, roadBoost = opts.roadBoost ?? 3.5;
   const atlas = yield* buildAtlasGen();
@@ -674,3 +678,80 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
 }
 
 export const MURAL_DESIGN_IDS = DESIGNS.map((d) => d.id);
+
+// ---------------------------------------------------------------------------------------------------------------
+// New wall poster system (26 Nov): registry + startWallPosters
+// ---------------------------------------------------------------------------------------------------------------
+const _registry = [];
+let _roads = null;
+let _started = false;
+
+export async function startWallPosters(scene) {
+  if (_started) return null;
+  _started = true;
+  const [atlasMod, layoutMod, mapMod] = await Promise.all([
+    import('./wallPosterAtlas.json'), import('./wallPosterLayout.js'), import('../layout/mapData.json'),
+  ]);
+  const atlas = atlasMod.default || atlasMod;
+  const map = mapMod.default || mapMod;
+  const ctx = { places: map.places || [], roads: _roads };
+  const { placements } = layoutMod.layoutWallPosters(_registry, atlas.cells, ctx);
+  const loader = new THREE.TextureLoader();
+  const group = new THREE.Group(); group.name = 'wall_posters';
+  const perPage = atlas.pages.map(() => []);
+  for (const p of placements) { const c = atlas.cells[p.id]; if (c && perPage[c.page]) perPage[c.page].push(p); }
+  const counts = {}; let tris = 0, meshes = 0;
+  await Promise.all(atlas.pages.map(async (page, pi) => {
+    const list = perPage[pi]; if (!list.length) return;
+    const tex = await new Promise((res, rej) => loader.load(`${import.meta.env.BASE_URL || '/'}assets/posters/wall/${page.file}`.replace(/\/\//g, '/'), res, undefined, rej));
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    const pos = [], nor = [], uv = [], col = [], idx = [];
+    const quad = (p, rows, uvRect, w, h, cx, cy, cz, off, roll, rowMul, tint) => {
+      const nx = p.nx, nz = p.nz, rl = Math.hypot(nz, nx) || 1, Rx = nz / rl, Rz = -nx / rl;
+      const ox = nx * off, oz = nz * off, ca = Math.cos(roll), sa = Math.sin(roll);
+      const base = pos.length / 3;
+      const [u0, v0, u1, v1] = uvRect;
+      for (let r = 0; r <= rows; r++) {
+        const t = r / rows;
+        for (const s of [-1, 1]) {
+          const lx = s * w / 2, ly = (t - 0.5) * h; // local coords in the wall plane about the centre
+          const rx = lx * ca - ly * sa, ry = lx * sa + ly * ca;
+          pos.push(cx + Rx * rx + ox, cy + ry, cz + Rz * rx + oz);
+          nor.push(nx, 0, nz);
+          uv.push(s < 0 ? u0 : u1, v0 + (v1 - v0) * t);
+          const m = rowMul(t); col.push(tint[0] * m[0], tint[1] * m[1], tint[2] * m[2]);
+        }
+      }
+      for (let r = 0; r < rows; r++) { const a = base + r * 2; idx.push(a, a + 1, a + 3, a, a + 3, a + 2); }
+    };
+    const sorted = list.slice().sort((a, b) => (a.layer || 0) - (b.layer || 0));
+    for (const p of sorted) {
+      const c = atlas.cells[p.id]; counts[p.id] = (counts[p.id] || 0) + 1;
+      const cy = p.bottomY + p.h / 2, lo = 0.004 * ((p.layer || 0) + 1);
+      const one = () => [1, 1, 1];
+      // 1: contact shadow
+      if (page.shadow) quad(p, 1, page.shadow, p.w + 0.12, p.h + 0.12, p.cx, cy - 0.02, p.cz, lo - 0.001, 0, () => [0.12, 0.1, 0.09], [1, 1, 1]);
+      // 2: the poster, 1 x 4 grid with a ground-muddy gradient
+      const g = [0.62, 0.78, 0.92, 1.0], k = p.bottomY < 1.3 ? 1 : 0;
+      const wm = p.warm || 0, fd = p.fade || 0, br = p.bright ?? 1;
+      const tint = [br, br * (1 - 0.04 * wm) * (1 - 0.1 * fd), br * (1 - 0.12 * wm) * (1 - 0.1 * fd)];
+      quad(p, 4, c.uv, p.w, p.h, p.cx, cy, p.cz, lo + 0.004, p.rollRad || 0, (t) => { const v = g[Math.min(3, Math.round(t * 3))]; const m = k ? v : 1; return [m, m, m]; }, tint);
+      // 3: rain streak under the poster
+      if (p.rain && page.streak) quad(p, 1, page.streak, p.w * 0.4, 0.5, p.cx, p.bottomY - 0.25, p.cz, lo + 0.008 - 0.001, 0, one, [1, 1, 1]);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.setIndex(idx); geo.computeBoundingSphere();
+    const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, alphaTest: 0.02, depthWrite: true, roughness: 0.9, metalness: 0, vertexColors: true, side: THREE.FrontSide });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = 'wall_posters_page' + pi; mesh.userData.noAutoCollider = true; mesh.receiveShadow = true; mesh.frustumCulled = true;
+    group.add(mesh); tris += idx.length / 3; meshes++;
+  }));
+  scene.add(group);
+  const stats = { placed: counts, triangles: tris, drawCalls: meshes };
+  console.info(`[wall_posters] ${placements.length} posters, ${tris} tris, ${meshes} draw calls`);
+  return { group, stats };
+}
