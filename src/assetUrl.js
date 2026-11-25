@@ -7,7 +7,7 @@
  * main() installs it as THREE.DefaultLoadingManager's URL modifier, so GLTFLoader / TextureLoader / ImageLoader calls need
  * no edit; raw fetch() and FontFace call sites call ver() themselves. Other agents (src/propGate.js): fetch(ver(url)).
  */
-const HASHES = typeof __ASSET_H__ !== 'undefined' ? __ASSET_H__ : {};
+const HASHES = (typeof window !== 'undefined' && window.__ASSET_H__) || {}; // set by the table script the build puts in index.html (vite.config.js swManifestPlugin)
 const KEY = /(?:^|\/)((?:assets|fonts)\/[^?#]+)/;
 
 export function ver(url) {

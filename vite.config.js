@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { computeAssetHashes, gzModelList } from './tools/asset-hashes.mjs';
 import { genModelManifest, MODELS_DIR } from './tools/gen-model-manifest.mjs';
 
@@ -50,11 +51,22 @@ function bustPreloadsPlugin(hashes) {
 // what is current. Placeholder lives in public/sw.js.
 function swManifestPlugin(hashes) {
   const chunks = [];
+  // The hash table (url -> ?v= hash, and the gz model list) used to be compiled INTO the main chunk, so every changed asset
+  // gave the 1 MB main chunk a new name and every visitor re-downloaded it. It is now its own tiny classic script, named by
+  // its own content hash, injected into index.html (always fetched fresh) before the module script; src/assetUrl.js and
+  // src/loaders.js read window.__ASSET_H__ / window.__GZ_MODELS__. Same assets = same file = cached.
+  const tableSrc = `window.__ASSET_H__=${JSON.stringify(hashes)};window.__GZ_MODELS__=${JSON.stringify(gzModelList(hashes))};`;
+  const tableName = `assets/table-${createHash('sha1').update(tableSrc).digest('hex').slice(0, 8)}.js`;
   return {
     name: 'sw-manifest',
     apply: 'build',
     enforce: 'post',
-    generateBundle(_o, bundle) { for (const f of Object.keys(bundle)) if (/\.(js|css|json)$/.test(f)) chunks.push(f); },
+    transformIndexHtml: { order: 'post', handler: (html) => (Object.keys(hashes).length ? html.replace('<script type="module"', `<script src="/village-game-web/${tableName}"></script>\n    <script type="module"`) : html) },
+    generateBundle(_o, bundle) {
+      if (Object.keys(hashes).length) this.emitFile({ type: 'asset', fileName: tableName, source: tableSrc });
+      for (const f of Object.keys(bundle)) if (/\.(js|css|json)$/.test(f)) chunks.push(f);
+      if (Object.keys(hashes).length) chunks.push(tableName);
+    },
     closeBundle() {
       // inline <style> url() is minified after transformIndexHtml runs, so stamp the font url in the written html here
       for (const f of ['dist/index.html', 'dist/people.html']) {
@@ -107,10 +119,6 @@ export default defineConfig(({ command }) => {
   return {
   base: '/village-game-web/',
   plugins: [landMapPlugin(command), genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
-  define: {
-    __ASSET_H__: JSON.stringify(hashes),
-    __GZ_MODELS__: JSON.stringify(gzModelList(hashes)), // models that tools/gz-models.mjs ships as .glb.gz: no extra manifest fetch
-  },
   build: {
     target: 'es2020',
     rollupOptions: {
@@ -120,6 +128,14 @@ export default defineConfig(({ command }) => {
       input: {
         main: resolve(__dirname, 'index.html'),
         people: resolve(__dirname, 'people.html'),
+      },
+      output: {
+        // Code split by how often it changes: vendor (three.js, changes only on an upgrade), data (the packed map, changes
+        // only when the map does), app (everything else). A game-code deploy then re-downloads only the app chunks.
+        manualChunks(id) {
+          if (/[\\/]node_modules[\\/]three[\\/]/.test(id) && !/KTX2Loader|[\\/]basis[\\/]/.test(id)) return 'vendor';
+          if (/[\\/]src[\\/]layout[\\/]mapData\.json$/.test(id)) return 'data';
+        },
       },
     },
   },

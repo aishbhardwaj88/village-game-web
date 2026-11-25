@@ -1,7 +1,9 @@
 /* Dopahar service worker (25 Nov caching plan, task B). Repeat visits read files from the device, not the network.
  *  - any url with ?v=<hash> (src/assetUrl.js): cache-first in dopahar-assets-v1 (cache name never changes; a new hash is a new url)
  *  - hashed JS / CSS / JSON chunks: cache-first in dopahar-code-v1
- *  - the page (index.html): always asked fresh (cache: no-cache), the cached copy is only the offline fallback
+ *  - the page (index.html): cache-first, refreshed behind the scenes (stale-while-revalidate): a repeat visit paints from the
+ *    device and the next one gets the new build. First visit, and a page the cache does not have, still go to the network.
+ *    A stale page whose chunk 404s after a deploy reloads once (src/swRegister.js, vite:preloadError).
  *  - skipped: non-GET, cross-origin, Range requests
  *  - message 'prune': drops entries whose ?v= is no longer current and chunks of older builds
  * Saves live in localStorage; this file never touches them. Kill switch: ?nosw=1 on the address, or replace this file with
@@ -23,15 +25,20 @@ async function cacheFirst(req, cacheName) {
   return res;
 }
 
-async function freshPage(req) {
+const pageKey = (req) => { const u = new URL(req.url); u.search = ''; u.hash = ''; return u.href; }; // one cached page for every ?query variant
+async function pageFirst(e, req) {
   const cache = await caches.open(CODE);
-  try {
+  const key = pageKey(req);
+  const refresh = async () => {
     const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
-    if (res && res.status === 200 && res.type === 'basic') { try { await cache.put(req.url.split('#')[0], res.clone()); } catch (e) { /* quota */ } }
+    if (res && res.status === 200 && res.type === 'basic') { try { await cache.put(key, res.clone()); } catch (err) { /* quota */ } }
     return res;
-  } catch (err) {
-    const hit = (await cache.match(req.url, { ignoreSearch: true })) || (await cache.match(new URL('./', self.location.href).href, { ignoreSearch: true }));
-    if (hit) return hit;
+  };
+  const hit = await cache.match(key);
+  if (hit) { e.waitUntil(refresh().catch(() => {})); return hit; }
+  try { return await refresh(); } catch (err) {
+    const alt = await cache.match(new URL('./', self.location.href).href, { ignoreSearch: true });
+    if (alt) return alt;
     throw err;
   }
 }
@@ -41,7 +48,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || req.headers.has('range')) return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  if (req.mode === 'navigate') { e.respondWith(freshPage(req)); return; }
+  if (url.searchParams.has('nosw')) return; // kill switch: straight to the network
+  if (req.mode === 'navigate') { e.respondWith(pageFirst(e, req)); return; }
   if (url.searchParams.has('v')) { e.respondWith(cacheFirst(req, ASSETS)); return; }
   if (CHUNK.test(url.pathname) && !url.search) { e.respondWith(cacheFirst(req, CODE)); }
 });

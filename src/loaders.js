@@ -45,7 +45,7 @@ export const exemptModelUrls = new Set();
  * (characters, dev server, desktop build) loads as the plain file exactly as before. */
 const gzKey = (url) => { try { const u = new URL(url, document.baseURI); return u.pathname.slice(new URL('./', document.baseURI).pathname.length); } catch (e) { return url; } };
 // the list is embedded by the build (vite define __GZ_MODELS__, from tools/asset-hashes.mjs): no extra fetch before the first model.
-const gzSet = new Set(typeof __GZ_MODELS__ !== 'undefined' ? __GZ_MODELS__ : []);
+const gzSet = new Set((typeof window !== 'undefined' && window.__GZ_MODELS__) || []);
 export const gzReady = Promise.resolve();
 // the .gz url carries ?v=<hash> (ver) so public/sw.js caches it cache-first, like every other hashed asset
 export const modelFetchUrl = (url) => { const u = new URL(url, document.baseURI); return gzSet.has(gzKey(url)) ? ver(`${u.origin}${u.pathname}.gz${u.search}`) : url; };
