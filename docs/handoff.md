@@ -1609,3 +1609,14 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   against src/ for stray unwired models (found jug_01/ceramic_vase_01 this way last run) - all referenced.
 - Her map-finality question (NEEDS_YOU) and the other open NEEDS_YOU items remain unanswered. No code touched,
   so no build run (A5 exception). Agents used: none (research-only, too small for an agent).
+
+# 25 Nov (hourly loop, 09:13 UTC) - no code change, blockers re-tested directly not just trusted
+- Fresh container: npm ci + checkout -B main from origin (HEAD was detached on a stale local main, routine).
+- Re-tested rather than assumed: curl to api.polyhaven.com, ambientcg.com and the live github.io site all still
+  hit the egress proxy's 403 (connect_rejected) - confirms CC0 prop sourcing (BACKLOG [ACTIVE]) and the Item 7
+  shader-warm-up real-browser check both stay genuinely blocked here, not stale notes.
+- Ran tools/missions-check.mjs (no browser needed): 396 pass, 0 fail, 5 warn, same shape as last run (4
+  milk-job stops on back-lane roads = position/layout, paused per 5a-MAP; temple_bell ambient warn by design).
+- Re-checked every BACKLOG [ACTIVE] item: architecture/self-contained-unit and texture-pipeline UV checks have
+  no newly-reworked place to apply to; M7 baagh keeper still needs the broken headless browser.
+- Nothing both real and safe to ship blind. Agents used: none (too small for one, efficiency-rules.md).

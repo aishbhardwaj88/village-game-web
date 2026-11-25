@@ -1,10 +1,11 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching work continues below.
-This run (25 Nov, hourly): no code change. Checked every BACKLOG [ACTIVE] item for a fresh, ungated target: the
-two "standing rule" items have no current place rework to apply to (git log, 7 days); M7 baagh keeper needs
-draw-call-audit.mjs (needs the broken headless browser, A7, not re-chased per A6); CC0 props still proxy-
-blocked (not re-tested). All 23 public/assets/props/*.glb checked against src/ for stray unwired models (last
-run's jug_01 case) - all referenced, none free this time. Fresh container needed `npm ci` + checkout, routine.
+Last updated: 25 Nov 09:13 UTC (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching continues below.
+This run (25 Nov, hourly): no code change. Re-tested the two live blockers directly instead of trusting the
+prior note: curl to api.polyhaven.com / ambientcg.com / aishbhardwaj88.github.io all still return the egress
+proxy's 403 - CC0 prop sourcing and the Item 7 real-browser shader-warm-up check stay genuinely blocked, not
+stale assumptions. Ran tools/missions-check.mjs (non-browser): 396 pass, 0 fail, 5 warn, same shape as before
+(milk-job back-lane stops = paused layout work; temple_bell ambient warn is by design). Checked every BACKLOG
+[ACTIVE] item again: no fresh ungated target. Fresh container needed `npm ci` + checkout -B main, routine.
 
 ## Current state
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m. GATE3/GATE4 defer normal/roughness/ao maps
