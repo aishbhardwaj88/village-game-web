@@ -1,6 +1,14 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 25 Nov ~21:1x UTC scheduled run: no code change, nothing unblocked
+- Repo-state false alarm: stale cached origin/main ref made HEAD look like unrelated history
+  (shallow clone, merge-base failed); fresh `git fetch` showed origin/main already AT HEAD's tip
+  (1873264) - no real divergence, nothing lost. checkout -B main origin/main clean.
+- CI green on 1873264 (run 1363, Deploy to GitHub Pages, success).
+- LOOKS LIST 1-8 re-confirmed done/parked, same as last 2 runs - not re-auditing further per A6
+  (no repeat audits). BACKLOG [ACTIVE] has nothing to apply to; map-lock question still open.
+
 # 25 Nov ~20:1x UTC scheduled run: no code change, nothing unblocked
 - HEAD 7d84414 (agents-list handoff, not touched here), CI green (run 1358, deploy success). npm ci
   clean, node_modules was missing on this fresh container (expected per known container note).
