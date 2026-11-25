@@ -41,6 +41,14 @@ try {
     const h = plan.find((q) => q.i === i);
     if (!h) continue;
     Object.assign(h, { x, z, ry, w, d, front: [Math.sin(ry), Math.cos(ry)], corners: rectCorners(x, z, ry, w, d), road: road || h.road });
+    // the plan's probe gap / road direction belong to the drawn spot: re-measure them for the moved house (front-face centre to its front road, 25 Nov HOUSES2)
+    const fr = roads.find((q) => q.id === h.road);
+    if (fr) {
+      const fm = [x + Math.sin(ry) * d / 2, z + Math.cos(ry) * d / 2];
+      let bs = null, bdist = Infinity;
+      for (let k = 0; k + 1 < fr.pts.length; k++) { const dd = segDist(fm, fr.pts[k], fr.pts[k + 1]); if (dd < bdist) { bdist = dd; bs = [fr.pts[k], fr.pts[k + 1]]; } }
+      if (bs) { h.roadGap = Math.max(0, bdist - fr.width / 2); h.roadDir = Math.atan2(bs[1][1] - bs[0][1], bs[1][0] - bs[0][0]); }
+    }
   }
   console.log('applied', mv.length, 'logged moves (housesMoves.json)');
 } catch (e) { console.log('no housesMoves.json applied:', e.message); }
@@ -63,6 +71,7 @@ plan.forEach((h) => {
     const fd = Math.atan2(-h.front[0], h.front[1]); // edge direction = front normal turned 90 deg
     let a = Math.abs(((rd - fd) * 180) / Math.PI) % 180;
     if (a > 90) a = 180 - a;
+    if (a > 45) a = 90 - a; // her rule (25 Nov review): square to the road is measured mod 90 deg, so a front at a road END (walls square to the lane, front along it) passes
     h.roadAngle = a;
     if (a > 3) fails.notParallel.push({ i: h.i, x: +h.x.toFixed(1), z: +h.z.toFixed(1), road: h.road, deg: +a.toFixed(1) });
   }

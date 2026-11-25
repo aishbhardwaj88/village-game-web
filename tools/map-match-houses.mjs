@@ -103,20 +103,27 @@ for (const g of plan) {
   }
   if (worst < ROAD_CLEAR - 1e-6) bad.road.push({ house: g.i, clear: +worst.toFixed(3), road: wid });
 }
-// front road = the plan row's road (the one its front faces; nearest road when the row has none); front must be square to it (<= 5 deg) and point at it
-const rawBy = new Map(raw.roads.map((r) => [r.id, r]));
-const distSeg = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], L2 = dx * dx + dz * dz || 1e-9, t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / L2)); return { d: Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dz), q: [a[0] + t * dx, a[1] + t * dz] }; };
-const nearestOn = (r, p) => { let b = null; for (let k = 0; k + 1 < r.pts.length; k++) { const s = distSeg(p, r.pts[k], r.pts[k + 1]); if (!b || s.d < b.d) b = { ...s, a: r.pts[k], b: r.pts[k + 1] }; } return b; };
+// FACING, her measurable definition (review rules 25 Nov): m_front = centre of the front face, m_back = centre of the back face.
+// The road it fronts = the band nearest to m_front. PASS = that band within 15 m of m_front AND m_front not farther from the nearest
+// band than m_back (+0.5 m) AND the walls square to that road at the nearest point (<= 5 deg mod 90; <= 10 for the curved ring/inner loop/chauraha ring).
+// An enclosed house (no band within 15 m of any face) only has to face the nearest band at any distance. The plan row's road label must be that band.
+const CURVED = new Set(['ring_road', 'inner_loop', 'chauraha_ring']);
+const bandDist = (p, r) => Math.max(0, bandClear(p, { pts: r.pts, w: r.width }));
+const nearestBand = (p) => { let best = null; for (const r of raw.roads) { const dd = bandDist(p, r); if (!best || dd < best.d) best = { d: dd, r }; } return best; };
+const segDirAt = (r, p) => { let b = null; for (let k = 0; k + 1 < r.pts.length; k++) { const dx = r.pts[k + 1][0] - r.pts[k][0], dz = r.pts[k + 1][1] - r.pts[k][1], L2 = dx * dx + dz * dz || 1e-9, t = Math.max(0, Math.min(1, ((p[0] - r.pts[k][0]) * dx + (p[1] - r.pts[k][1]) * dz) / L2)), dd = Math.hypot(p[0] - r.pts[k][0] - t * dx, p[1] - r.pts[k][1] - t * dz); if (!b || dd < b.dd) b = { dd, th: Math.atan2(dx, dz) }; } return b.th; };
 for (const row of planData.rows) {
-  const [i, x, z, ry, w, d] = row, g = planBy.get(i);
-  let road = rawBy.get(row[7]);
-  const fm = [x + Math.sin(ry) * d / 2, z + Math.cos(ry) * d / 2];
-  if (!road) { let bd = 1e9; for (const r of raw.roads) { const c = Math.min(...g.corners.map((q) => nearestOn(r, q).d)) - r.width / 2; if (c < bd) { bd = c; road = r; } } }
-  const n = nearestOn(road, fm), th = Math.atan2(n.b[1] - n.a[1], n.b[0] - n.a[0]);
-  let nx = Math.sin(th), nz = -Math.cos(th);
-  if ((n.q[0] - fm[0]) * nx + (n.q[1] - fm[1]) * nz < 0) { nx = -nx; nz = -nz; }
-  const off = Math.abs(deg(Math.atan2(Math.sin(Math.atan2(nx, nz) - ry), Math.cos(Math.atan2(nx, nz) - ry))));
-  if (off > FACE_TOL) bad.facing.push({ house: i, road: road.id, offDeg: +off.toFixed(1) });
+  const [i, x, z, ry, w, d] = row, c = Math.cos(ry), s = Math.sin(ry);
+  const fm = [x + s * d / 2, z + c * d / 2], bm = [x - s * d / 2, z - c * d / 2];
+  const nf = nearestBand(fm), nb = nearestBand(bm);
+  const faces = [fm, bm, [x + c * w / 2, z - s * w / 2], [x - c * w / 2, z + s * w / 2]];
+  const enclosed = faces.every((q) => nearestBand(q).d > 15);
+  const th = segDirAt(nf.r, fm), skew = Math.abs(deg(((ry - th + Math.PI / 4) % (Math.PI / 2) + Math.PI / 2) % (Math.PI / 2) - Math.PI / 4));
+  const tol = CURVED.has(nf.r.id) ? 10 : FACE_TOL, why = [];
+  if (nf.d > 15 && !enclosed) why.push('front ' + nf.d.toFixed(1) + ' m from the nearest band');
+  if (nf.d > nb.d + 0.5) why.push('front farther (' + nf.d.toFixed(1) + ') than back (' + nb.d.toFixed(1) + ')');
+  if (skew > tol) why.push('skew ' + skew.toFixed(1) + ' deg');
+  if (row[7] !== nf.r.id) why.push('row road ' + row[7] + ' != fronted road ' + nf.r.id);
+  if (why.length) bad.facing.push({ house: i, road: nf.r.id, why: why.join('; ') });
 }
 // the log must be honest: logged row == plan row, old spot is a drawn house (<= 0.5 m), move <= 5 m
 for (const r of movesFile.rows) {
