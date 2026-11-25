@@ -8,6 +8,7 @@
  *    Spine2 / Spine1 / Neck / LeftShoulder only, never an arm bone. The kurta lower body (between hem and chest, not sleeve, not skin) is re-weighted
  *    to Spine / Hips with a share of the legs growing toward the hem. Then welded-vertex smoothing so the seams do not tear.
  *    Triangles fused between a hand/forearm vertex and the body are cut (the hands cover the cut in rest pose).
+ * 1b. gesture_wave = STANDING wave built from idle + the raw wave's left arm (tools/standwave.mjs); the raw clip is a squat
  * 3. matte (metalness 0)
  * 4. textures 4096 WebP q90, meshopt
  * Face pass (tools/face_keys.py, then tools/eye_patch.py, headless Blender) is run BEFORE this script on the raw file.
@@ -17,6 +18,7 @@ import sharp from 'sharp';
 import { MeshoptEncoder } from 'meshoptimizer';
 import * as THREE from 'three';
 import { load, buildRig } from './tvaunty-rig.mjs';
+import { fixWave } from './standwave.mjs';
 import { resolve } from 'node:path';
 import { statSync } from 'node:fs';
 
@@ -30,6 +32,9 @@ const NAMES = [[/^idle/i, 'idle'], [/^walk/i, 'walk'], [/^run/i, 'run'], [/^jump
 for (const a of root.listAnimations()) { const h = NAMES.find(([re]) => re.test(a.getName())); if (!h) throw new Error(`unexpected clip ${a.getName()}`); a.setName(h[1]); }
 const have = root.listAnimations().map((a) => a.getName()).sort().join(',');
 if (have !== NAMES.map((n) => n[1]).sort().join(',')) throw new Error(`clip set wrong: ${have}`);
+
+// 1b. 26 Nov: Tripo's raw 'wave_goodbye' is a deep SQUAT (hips drop 19 cm, hands clasped): replace it with a standing wave (idle + the wave clip's left arm)
+fixWave(doc);
 
 // 2. cloth weights
 const mat0 = root.listMaterials()[0];

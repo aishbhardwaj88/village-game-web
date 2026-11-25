@@ -4477,6 +4477,20 @@
     },
     {
       "match": [
+        "public/assets/models/cyberboy.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Cyber cafe boy (TV house review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-cyberboy.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, jeans and t-shirt hem re-weighted off the hand bones, standing wave built from idle plus the raw wave arm, face keys and eyes edited (tools/face_keys.py, tools/eye_patch.py); round wire-rim glasses added in this repo (tools/finish-cyberboy.mjs)"
+    },
+    {
+      "match": [
         "public/assets/models/tvuncle_sm.glb"
       ],
       "category": "tripo",
