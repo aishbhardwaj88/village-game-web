@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { computeAssetHashes } from './tools/asset-hashes.mjs';
 import { genModelManifest, MODELS_DIR } from './tools/gen-model-manifest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -24,56 +26,33 @@ function genModelManifestPlugin() {
   };
 }
 
-// Cache-busting token for the raw files under public/assets/ (textures, grass, trees).
-// Vite copies public/ verbatim with NO content hash in the filename (unlike the hashed
-// JS/CSS chunks below), so a texture that changes content at the same URL (e.g. a
-// material swap) can keep serving the OLD bytes from the browser's own cache or GitHub
-// Pages' CDN after a deploy, even though the new file really is live on the server - her
-// "textures aren't updated, boards still look the same" report, 23 Nov. Every texture load
-// appends ?v=<this>, so a changed texture gets a changed URL and is never served stale.
-// Bumped automatically every build (process.argv has no stable "nothing changed" case worth
-// optimising for - a cheap always-different token is simpler and safer than trying to hash
-// public/assets/ ourselves here). Computed ONCE here (not inline in `define`) so the index.html
-// preload plugin below can stamp the identical token onto its <link preload> hrefs - see that
-// plugin's comment for why they must match exactly.
-const ASSET_V = Date.now().toString(36);
-
-// The opening-view <link rel="preload" ...> texture tags in index.html (docs/perf-2026-11-08.md) had two
-// separate bugs that each caused every one of those textures to download TWICE before Play - measured 24 Nov
-// (efficiency item 7, "textures fetched twice"): 38-41 duplicate requests, ~3.5 MB wasted, confirmed with
-// real CDP Network-domain capture (encodedDataLength per request, not just a byte-count that double-counts a
-// reused preload), not just a repeated URL in the page's own request log.
-//   1. The tags were bare (no ?v=), while every real texture load goes through materials.js's bust() (and
-//      trees.js's/sharedTextures.js's own bust()-ed loads), which appends ?v=<ASSET_V>. A preload and a later
-//      fetch of a DIFFERENT url for the same file are two separate cache entries. Fixed by stamping the same
-//      ?v=<ASSET_V> onto the preload href below, so it is the exact url the real load requests.
-//   2. Even URL-matched, the tags said `as="image"`, but the actual loader (src/frameQueue.js's bitmap-patched
-//      TextureLoader.load) fetches via plain `fetch()`, not an <img>/background-image - a preload's `as` is
-//      matched against the REQUEST DESTINATION, and "image" only matches an <img>/CSS load, never a fetch()
-//      call, so the preload was always a wasted, unmatched download whatever its URL said (confirmed directly:
-//      swapping as="image" for as="fetch", same as the .glb model preloads a few lines down already correctly
-//      use, collapses 2 real network transfers of the same url into 1). index.html's own tags are now written
-//      as="fetch" directly (fixed at the source, like the .glb ones); this plugin only has to add the token.
-function bustPreloadsPlugin() {
+// Content hashes (25 Nov caching plan, task A): every file under public/assets and public/fonts gets the first 8 hex of
+// its sha1 (tools/asset-hashes.mjs). Vite copies public/ verbatim with no hash in the filename, so the hash rides as ?v=
+// (src/assetUrl.js ver()). Replaces the old per-build Date.now() token, which gave every texture a new URL on every
+// deploy and threw every visitor's cache away. Same bytes now means the same URL, so repeat visits are near instant.
+// Dev server: no hashes, plain urls.
+function bustPreloadsPlugin(hashes) {
+  // Stamps ?v=<hash> on the index.html preload hrefs and the font url(), so they are the exact url the real load requests
+  // (a preload and a later fetch of a different url are two separate cache entries).
   return {
-    name: 'bust-image-preloads',
+    name: 'hash-preloads',
     transformIndexHtml: {
       order: 'post',
       handler(html) {
-        return html.replace(
-          /(<link rel="preload" as="fetch"[^>]*href="[^"]*?\.webp)(")/g,
-          (_m, pre) => `${pre}?v=${ASSET_V}"`,
-        );
+        if (!Object.keys(hashes).length) return html;
+        return html.replace(/((?:href="|url\(['"]?)[^"')]*?\/)((?:assets|fonts)\/[^"')?]+)/g, (m, pre, path) => (hashes[path] ? `${m}?v=${hashes[path]}` : m));
       },
     },
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => {
+  const hashes = command === 'build' ? computeAssetHashes() : {};
+  return {
   base: '/village-game-web/',
-  plugins: [genModelManifestPlugin(), bustPreloadsPlugin()],
+  plugins: [genModelManifestPlugin(), bustPreloadsPlugin(hashes)],
   define: {
-    __ASSET_V__: JSON.stringify(ASSET_V),
+    __ASSET_H__: JSON.stringify(hashes),
   },
   build: {
     target: 'es2020',
@@ -87,4 +66,5 @@ export default defineConfig({
       },
     },
   },
+};
 });

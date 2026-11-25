@@ -232,6 +232,7 @@ import { initEdition, getQuality } from './edition.js'; // S7 WIRING (desktop)
 // S7 WIRING (shops-land)
 import { initShopsLand } from './kit/landInit.js';
 import { initMapObjects } from './kit/mapObjectsInit.js'; // S7 WIRING (mapobjects)
+import { ver } from './assetUrl.js';
 import { worldBounds } from './zoneManager.js'; // S7 WIRING (perf): player travel limits follow the active layout
 
 // S7 WIRING (perf): old = x -238..880, z +-280 (byte-for-byte the previous hardcoded limits); new = the approved map's
@@ -284,6 +285,7 @@ const schoolPt = (dx, dz) => schoolXZ(SCHOOL_CENTER.x + dx, SCHOOL_CENTER.z + dz
 const houseAt = (dx, dz) => houseXZ(HOUSE_CENTER.x + dx, HOUSE_CENTER.z + dz);
 
 async function main() {
+  THREE.DefaultLoadingManager.setURLModifier(ver); // content-hash ?v= on every asset url the loaders request (src/assetUrl.js)
   // S7 WIRING (desktop): which edition is running (web 'light' / desktop 'full'), published on window.__dopaharEdition (docs/s7/desktop.md)
   initEdition();
   let renderOK = false; // the opaque title hides the canvas, so no 3D render until the opening view is warmed

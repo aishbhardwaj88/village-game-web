@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { LAND_QUALITY } from './landQuality.js';
+import { ver } from '../assetUrl.js';
 import { treeParts, treeMaterials, CANOPIES } from '../trees.js';
 import { BatchKit, orientedBoxes } from './landInstancing.js';
 import { labelKey, labelName, ringCentre, ringRadius, hash01, inRing, makeRoadIndex } from './landLayout.js';
@@ -73,7 +74,7 @@ function impostorAtlas() {
     const img = new Image();
     img.onload = () => { ctx.drawImage(img, i * W, 0, W, W); tex.needsUpdate = true; res(); };
     img.onerror = () => res();
-    img.src = `assets/trees/impostor_${sp}.webp`;
+    img.src = ver(`assets/trees/impostor_${sp}.webp`); // same ?v= url as trees.js, one download
   })));
   return { mat, ready, cell: (sp) => IMPOSTORS.indexOf(sp) };
 }

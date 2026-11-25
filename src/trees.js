@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ver } from './assetUrl.js';
 import { batchLiveMesh } from './placeBatch.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -39,12 +40,8 @@ const ATLAS_COLS = 3;
 const ATLAS_ROWS = 2;
 const SPECIES_CELL = { neem: 0, peepal: 1, mango: 2, babool: 3, eucalyptus: 4 };
 
-// Cache-busting suffix (see vite.config.js's __ASSET_V__ and materials.js's bust()) - a
-// texture that changes content at the same public/ path keeps the same URL across deploys
-// (no content hash, unlike built JS/CSS), so without this a changed texture can keep
-// serving stale bytes from the browser cache or GitHub Pages' CDN.
-const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
-function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
+// Content-hash urls (?v=<hash>, src/assetUrl.js): one url per file, unchanged files keep their cache across deploys.
+const bust = ver;
 
 function makeLeafAtlas() {
   // Real ambientCG CC0 leaf photos cut out and arranged by tools/build-plant-atlas.mjs.

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ver } from './assetUrl.js';
 import { lampPoolUniform, lampPoolMix, POOL_N, POOL_RADIUS } from './lampPools.js';
 
 const textureLoader = new THREE.TextureLoader();
@@ -118,14 +119,9 @@ const VARIANT_OVERRIDE = (() => {
 })();
 const VARIANTS = { lane: 'lane_v2', plaster: 'plaster_v2' };
 
-/** Cache-busting suffix (see vite.config.js's __ASSET_V__) so a texture that changes
- * content at the same public/ path (no content hash, unlike the built JS/CSS) is never
- * served stale from the browser cache or GitHub Pages' CDN after a deploy. */
-const ASSET_V = typeof __ASSET_V__ !== 'undefined' ? __ASSET_V__ : Date.now().toString(36);
-// Exported so any other subsystem with its own raw TextureLoader/ImageLoader call site (sharedTextures.js's
-// GLTF-relink path) can request the exact same URL loadRaw() does, so a texture used by both the tiled-
-// material builder and a legacy relinked model shares one browser/frameQueue fetch instead of two.
-export function bust(url) { return url + (url.includes('?') ? '&' : '?') + 'v=' + ASSET_V; }
+/** Content-hash suffix (?v=<sha1 of the file>, src/assetUrl.js ver()): a changed texture gets a new URL, an unchanged one keeps
+ * its URL across deploys so the browser / service worker cache survives. Kept under the old name `bust` for its callers. */
+export const bust = ver;
 
 // Exported so the few call sites that need a raw library texture but build their own
 // bespoke Material (landFields.js's painted-crop ground shader, landMaterials.js's

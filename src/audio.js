@@ -21,6 +21,7 @@ const MUTE_KEY = 'dopahar_muted';
 // Sound is OFF for the whole game until the final polish (her call, 21 Nov). Add ?sound=1 to the address to hear it.
 const SOUND_ENABLED = (() => { try { return new URLSearchParams(location.search).has('sound'); } catch (e) { return false; } })();
 import { loadSavedVolume, saveVolume } from './quality.js';
+import { ver } from './assetUrl.js';
 
 // Real recordings (CC0, see docs/CREDITS.md). Fetched only after start() (the Play tap), never before.
 // Every use falls back to the old synthesised sound if a file is missing or fails to decode.
@@ -99,7 +100,7 @@ export class AudioEngine {
   _loadSamples() {
     const base = 'assets/audio/';
     for (const [key, file] of Object.entries(SAMPLE_FILES)) {
-      fetch(base + file + '.m4a').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+      fetch(ver(base + file + '.m4a')).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
         .then((ab) => new Promise((res, rej) => this.ctx.decodeAudioData(ab, res, rej)))
         .then((buf) => { this._samples[key] = buf; this._onSample(key); })
         .catch(() => { /* synth stays as the fallback for this sound */ });

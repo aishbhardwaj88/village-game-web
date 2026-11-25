@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { drawBilingual, clearSignLayoutCache } from '../signPaint.js';
+import { ver } from '../assetUrl.js';
 
 /**
  * ONE sign atlas for every new shop, shop-house, kiosk and cart board (?layout=new).
@@ -359,7 +360,7 @@ function loadSignFaces() {
   const jobs = [];
   for (const [fam, path, weight] of SIGN_FACES) {
     for (const sub of ['devanagari', 'latin']) {
-      const f = new FontFace(fam, `url(${base}fonts/${path.split('/')[0]}/${path.split('/')[1]}-${sub}-${weight}-normal.woff2) format('woff2')`, { weight, unicodeRange: RANGE[sub] });
+      const f = new FontFace(fam, `url(${ver(`${base}fonts/${path.split('/')[0]}/${path.split('/')[1]}-${sub}-${weight}-normal.woff2`)}) format('woff2')`, { weight, unicodeRange: RANGE[sub] });
       document.fonts.add(f);
       jobs.push(f.load().catch(() => null));
     }
