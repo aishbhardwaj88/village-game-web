@@ -434,13 +434,37 @@ function buildTrolleyGroup() {
   const staticParts = new THREE.Group();
   group.add(staticParts);
 
-  // Plank floor.
-  const floor = pbox(TR.bedW, 0.08, TR.bedLen, V.timber, 0.95);
-  floor.position.set(0, TR.floorY - 0.04, 0);
-  staticParts.add(floor);
+  // Plank floor — notched at each wheel so the deck doesn't pass straight through
+  // the tyre (real bug, found in the 25 Nov vehicle-vs-LAYOUT.md check: TR.track
+  // puts the wheels INBOARD of the bed, under the floor; at TR.wheelDia 1.1 m they
+  // stick up well above TR.floorY 0.9, so a single full-width slab used to clip
+  // straight through both tyres — same 3D region, not just close). A real
+  // flatbed handles this with a wheel arch cut into the deck: the floor here is a
+  // centre strip plus two short outer pieces fore and aft of each wheel, leaving
+  // the wheel's own footprint open. Outer strip width == TR.wheelW exactly, so it
+  // still reaches the bed edge (no footprint change, no spec change).
+  const wellInnerX = TR.track / 2 - TR.wheelW / 2; // 0.70 — wheel's inner face
+  const wellHalfZ = TR.wheelDia / 2; // 0.55 — wheel radius, fore-aft at the single axle (z=0)
+  const floorY2 = TR.floorY - 0.04;
+  const centreW = wellInnerX * 2;
+  const floorCentre = pbox(centreW, 0.08, TR.bedLen, V.timber, 0.95);
+  floorCentre.position.set(0, floorY2, 0);
+  staticParts.add(floorCentre);
+  const outerW = TR.bedW / 2 - wellInnerX; // 0.30 — strip outboard of the wheel, wheel to side wall
+  const outerSegLen = TR.bedLen / 2 - wellHalfZ; // 1.20 — floor length fore (or aft) of the wheel notch
+  for (const side of [-1, 1]) {
+    for (const zSign of [-1, 1]) {
+      const seg = pbox(outerW, 0.08, outerSegLen, V.timber, 0.95);
+      seg.position.set(side * (wellInnerX + outerW / 2), floorY2, zSign * (wellHalfZ + outerSegLen / 2));
+      staticParts.add(seg);
+    }
+  }
   // A few visible plank seams (thin darker strips) so it doesn't read as one slab.
+  // The centre seam (i=0) sits right over the axle (z=0, inside both wheel notches),
+  // so it's clipped to the centre strip's width; the others fall outside the wheel's
+  // z-radius and stay full width.
   for (let i = -2; i <= 2; i++) {
-    const seam = pbox(TR.bedW, 0.005, 0.02, V.timberDark, 0.95);
+    const seam = pbox(i === 0 ? centreW : TR.bedW, 0.005, 0.02, V.timberDark, 0.95);
     seam.position.set(0, TR.floorY + 0.001, (i / 2) * (TR.bedLen / 2) * 0.85);
     staticParts.add(seam);
   }

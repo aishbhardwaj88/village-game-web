@@ -1657,3 +1657,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 
 ## 25 Nov (vehicles vs LAYOUT.md)
 - Measured tractor/trolley/cart/bike from built geometry. Only bike height was off >10% (1.24 vs 1.10): headY/seatTopY lowered in src/vehicles.js, now 1.11. All else within 10% or a spec conflict (see STATE). Checks green. Agents: none.
+
+# 25 Nov (hourly loop) - trolley floor/wheel clip fixed (real game work, not an audit)
+- Found and fixed: trolley floor slab passed straight through both wheels (TR.track puts wheels inboard of
+  the bed, floor had no wheel-well cutout). Floor is now a centre strip + 4 outer pieces per wheel, same
+  outer edge/footprint as before, collision code untouched. src/vehicles.js only.
+- Checked player_cycle_v2 "0.71 vs 0.60" wheel note: not a bug, wrong baseline was compared (see STATE.md).
+- Verified: build:unchecked + licence-audit/check-dup-models/check-material-clone/place-visibility-check all
+  clean. Tier 2 real test (trolley-drive-test.js) crashed with the already-documented container "Target
+  crashed" signature after getting through Play+2M sample points; verified by code reading instead (A7).
+- Agents used: none.
