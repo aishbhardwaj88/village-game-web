@@ -33,18 +33,19 @@ const PROFILE = {
   // 25 Nov: TV Uncle review pair (?compare=tvuncle): clip chosen by buttons (reviewPlay) instead of idle/walk/random gestures
   tvuncle_hd: { review: true },
   tvuncle_sm: { review: true },
+  tvuncle_aunty: { review: true }, // 25 Nov: Gossip Aunty (tvaunty.glb): idle, walk, call, laugh, greet + Look (gesture_lookaround)
   tvuncle_didi: { review: true }, // Parlour Didi stands in the compare line-up for scale and face comparison (idle only: she has no walk/laugh review clips)
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)
 let reviewClip = 'idle';
-const REVIEW_NAMES = [[/^idle/i, 'idle'], [/^walk/i, 'walk'], [/^swagger/i, 'gesture_swagger'], [/^laugh/i, 'gesture_laugh'], [/^make_a_call/i, 'gesture_call'], [/^greet/i, 'gesture_greet']];
+const REVIEW_NAMES = [[/^idle/i, 'idle'], [/^walk/i, 'walk'], [/^swagger/i, 'gesture_swagger'], [/^laugh/i, 'gesture_laugh'], [/^make_a_call/i, 'gesture_call'], [/^greet/i, 'gesture_greet'], [/^look_?around/i, 'gesture_lookaround'], [/^gesture_lookaround/i, 'gesture_lookaround']];
 const reviewName = (n) => { const h = REVIEW_NAMES.find(([re]) => re.test(n)); return h ? h[1] : n; };
 export function reviewPlay(name) {
   reviewClip = name;
   for (const a of animators) if (a.review) applyReview(a);
 }
 function applyReview(a) {
-  const next = a.review.actions[reviewClip];
+  const next = a.review.actions[reviewClip] || a.review.actions.idle; // a character without that clip (e.g. Look, Swagger) just stands in idle
   if (!next || a.review.cur === next) return;
   // 25 Nov: clipAction(clip) returns the SAME action the idle/walk/gesture setup above already parked at weight 0
   // (gestures at LoopOnce + clamp); reset() keeps that weight, so every faded-in clip stayed at 0 x 1 = frozen. Reset all three.

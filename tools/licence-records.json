@@ -4434,6 +4434,20 @@
     },
     {
       "match": [
+        "public/assets/models/tvaunty.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Gossip Aunty (TV Aunty review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-tvaunty.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, face keys and eyes edited (tools/face_keys.py, tools/eye_patch.py); bindi, sindoor, nose pin, jhumkas, bangles and gold watch added in this repo (tools/finish-tvaunty.mjs)"
+    },
+    {
+      "match": [
         "public/assets/models/tvuncle_hd.glb"
       ],
       "category": "tripo",
