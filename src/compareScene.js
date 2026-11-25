@@ -65,13 +65,15 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     actors.push({ g, lbl, key, order: ORDER.findIndex((o) => o[0] === key), lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
   window.__compare = { get uncles() { return actors.map((a) => a.g); } }; // read-only debug handle (compare mode only): uncle.getObjectByName(...).userData.charLOD.mixer
-  let clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
+  let fitted = false, clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
   const keys = new Set();
   const origUpdate = camRig.update.bind(camRig);
   camRig.update = () => {}; // the two-shot / face views place the camera themselves
   const U = Math.hypot(VIEWER.x - CENTRE.x, VIEWER.z - CENTRE.z), ux = (VIEWER.x - CENTRE.x) / U, uz = (VIEWER.z - CENTRE.z) / U; // from the pair toward the viewer
   const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
   const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
+  let lineup = true; // 25 Nov: actors stand in the line-up until a move button; move buttons never touch the camera
+  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, 3.2 / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
   // Studio light (review only): neutral room environment + a soft fill light from the camera, like a model viewer
   let studio = null, studioOn = false, origEnv = null, origInt = 1;
   const toggleStudio = () => {
@@ -96,8 +98,8 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
       camRig.update = () => {}; // we place the camera ourselves while in face view
       mark(id);
     } else if (id === 'both') {
-      clip = 'idle'; reviewPlay('idle'); face = 'both'; orbit = 0; dist = BOTH_DIST; camRig.update = () => {}; mark(id);
-    } else { leaveFace(); clip = id; reviewPlay(id); mark(id); }
+      clip = 'idle'; reviewPlay('idle'); face = 'both'; lineup = true; orbit = 0; dist = fitDist(); camRig.update = () => {}; mark(id);
+    } else { lineup = false; clip = id; reviewPlay(id); mark(id); } // animation only: camera untouched
   });
   mark('both');
   const faceKey = (e) => ['a', 'd', 'w', 's', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key.length === 1 ? e.key.toLowerCase() : e.key);
@@ -121,10 +123,11 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
       const k = (n) => keys.has(n);
       const range = face === 'both' ? BOTH_RANGE : FACE_DIST;
       orbit += ((k('d') || k('ArrowRight') ? 1 : 0) - (k('a') || k('ArrowLeft') ? 1 : 0)) * ORBIT_RATE * dt;
+      if (face === 'both' && !fitted && actors.every((a) => a.head)) { dist = fitDist(); fitted = true; }
       dist = Math.min(range[1], Math.max(range[0], dist + ((k('s') || k('ArrowDown') ? 1 : 0) - (k('w') || k('ArrowUp') ? 1 : 0)) * ZOOM_RATE * dt));
     }
     const headOf = (a) => { if (!a.head) a.g.traverse((b) => { if (!a.head && b.isBone && /(^|rig|:)head$/i.test(b.name)) a.head = b; }); return a.head; };
-    const two = face === 'both';
+    const two = face === 'both' && lineup;
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
@@ -152,11 +155,11 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
       a.lbl.position.copy(tmpV);
       const dl = camera.position.distanceTo(tmpV);
       const dBody = Math.hypot(camera.position.x - a.x, camera.position.z - a.lane);
-      a.lbl.visible = !face || (two && dBody > 1.2); // hidden within 3 m of the Uncle in normal view, and in the close-ups
+      a.lbl.visible = !face || (face === 'both' && dBody > 1.2); // hidden within 3 m of the Uncle in normal view, and in the close-ups
       if (!face && dBody <= 3) a.lbl.visible = false;
       a.lbl.scale.set(dl * 0.12, dl * 0.03, 1); // fixed small size on screen, whatever the distance
     }
-    if (two) { // 25 Nov: locked eye-level two-shot from the first frame, pitch 0 (never looks down); the normal follow camera is a no-op (camRig.update replaced)
+    if (face === 'both') { // 25 Nov: locked eye-level two-shot from the first frame, pitch 0 (never looks down); the normal follow camera is a no-op (camRig.update replaced)
       const hs = actors.map(headOf);
       {
         if (hs.every(Boolean)) { tmpV.set(0, 0, 0); for (const h of hs) { h.getWorldPosition(tmp2); tmpV.add(tmp2); } tmpV.multiplyScalar(1 / hs.length); tmpV.y += 0.1; } // eye level, between the two faces
