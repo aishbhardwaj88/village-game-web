@@ -1,6 +1,6 @@
 /**
  * Free-vehicle pilot (24 Nov 2026, her request): two Sketchfab CC BY vehicles parked near the opening spawn
- * so she can judge if slimmed free models look good in the game. Streamed by src/propGate.js (prefetched during the title, ready before they can be seen).
+ * so she can judge if slimmed free models look good in the game. Streamed by src/propGate.js (never in the Play gate: gateRadius 0, they stream after Play; the tractor, trailer and bicycle are now the real drivable vehicles, src/vehicleModels.js).
  * Files were slimmed in a separate pass (meshopt geometry + WebP textures; auto rickshaw also switched from
  * see-through to solid, which was the cause of its "broken" look). Credits: docs/CREDITS.md.
  */
@@ -11,19 +11,16 @@ import { addThelaSign } from './thelaSign.js';
 
 export const PILOT_VEHICLES = [
   { file: 'auto_rickshaw', x: 607.6, z: 45.6, yaw: 1.2, length: 2.65 },
-  { file: 'old_tractor', x: 606.1, z: 52.2, yaw: 1.25, length: 3.1 },
   { file: 'tuk_tuk', x: 604.2, z: 42.8, yaw: 0.6, length: 2.65 },
   { file: 'motorbike', x: 608.8, z: 41.8, yaw: 2.2, length: 2.0 },
   { file: 'thela_gadi', x: 603.8, z: 47.4, yaw: 0.3, length: 2.4 },
-  { file: 'bicycle', x: 609.2, z: 49.2, yaw: 1.9, length: 1.8 },
   { file: 'moped', x: 603.6, z: 51.2, yaw: 0.9, length: 1.8 },
-  { file: 'trailer_pack', x: 607.2, z: 58.2, yaw: 1.25, length: 2.28 },
 ];
 
 const VEHICLES_SITE = { x: 606, z: 50, extent: 14 }; // src/propGate.js loads within 150 m of its edge
 export function registerPilotVehicles(groundAt) {
   registerPropSite({
-    name: 'pilot_vehicles', center: { x: VEHICLES_SITE.x, z: VEHICLES_SITE.z }, extent: VEHICLES_SITE.extent,
+    name: 'pilot_vehicles', gateRadius: 0, center: { x: VEHICLES_SITE.x, z: VEHICLES_SITE.z }, extent: VEHICLES_SITE.extent,
     items: PILOT_VEHICLES.map((v) => ({ url: `assets/vehicles_free/${v.file}.glb`, size: v.length })),
     makeGroup: () => new THREE.Group(), build: (gltfs, group) => buildPilotVehicles(gltfs, group, groundAt),
   });

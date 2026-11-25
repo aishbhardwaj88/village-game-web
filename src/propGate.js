@@ -68,7 +68,7 @@ export function startPrefetch(spawns) {
   const near = (s) => Math.min(...spawns.map((sp) => edgeDist(s, sp)));
   const urls = [], seen = new Set();
   for (const s of [...SITES].sort((a, b) => near(a) - near(b))) {
-    if (s.state !== 'idle') continue; // the gate already has these
+    if (s.state !== 'idle' || s.gateRadius === 0) continue; // the gate already has these; gateRadius 0 sites (vehicle models) are never fetched before the ring wants them
     for (const it of s.items) if (!seen.has(it.url)) { seen.add(it.url); urls.push(it.url); }
   }
   stats.prefetchTotal = urls.length;
@@ -152,6 +152,7 @@ async function siteReady(site, token) {
   for (const h of site.pend) { h.userData.ready = true; h.userData.readyAt = now; }
   site.pend = [];
   site.state = 'ready';
+  site.onReady?.(site); // optional: a site whose models move to another parent (src/vehicleModels.js)
   stats.loaded = countLoaded();
   site.onChange?.();
   gateWaiters.slice().forEach((f) => f());
@@ -265,7 +266,7 @@ function tickRing(scene) {
     if (heading) { const tx = s.center.x - p.x, tz = s.center.z - p.z, l = Math.hypot(tx, tz) || 1; if ((tx * heading.x + tz * heading.z) / l > 0.5) tuv -= 2; }
     if (!gateSites.has(s)) s.prio = tuv;
     if (s.state === 'idle') { if (d < loadRadius(s)) loadSite(s, scene); }
-    else if (d > freeRadius(s) && !gateSites.has(s)) dropSite(s, scene);
+    else if (!s.once && d > freeRadius(s) && !gateSites.has(s)) dropSite(s, scene);
   }
   stats.queue = uploadQueue.length;
   updateHold(p);
@@ -297,7 +298,7 @@ export const propGateDone = () => gateDone;
 export function startGate(scene, getPlayerPos, spawns, onChange) {
   gateOpen = true; getPos = getPlayerPos;
   for (const s of SITES) s.onChange = onChange;
-  const reach = (s) => spawns.some((sp) => edgeDist(s, sp) < s.showMax); // every site whose show radius reaches the spawn
+  const reach = (s) => spawns.some((sp) => edgeDist(s, sp) < (s.gateRadius ?? s.showMax)); // gateRadius 0 = never in the gate, streams after Play // every site whose show radius reaches the spawn
   const near = SITES.filter(reach);
   for (const s of near) { gateSites.add(s); s.prio = -1e9; loadSite(s, scene); }
   const check = () => {

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { vehicleSpawns } from './missionsLayout.js'; // S7 (missions)
+import { registerVehicleModels, TRAILER_DRAWBAR_M } from './vehicleModels.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mergeGroupByMaterial } from './mergeUtils.js';
 import { buildBovineGeometry, createHideMaterial } from './animals.js';
@@ -200,7 +201,7 @@ export function updateWheel(wheel, { linearSpeed, radius, dt, steerAngle = null 
   // about local Y instead never moves the Y axis itself (a rotation never moves
   // its own axis), so the parent's fixed Rz(90°) keeps the axle exactly
   // horizontal for every possible spin value, not just spin=0.
-  wheel.userData.roll.rotation.y += (linearSpeed / radius) * dt;
+  wheel.userData.roll.rotation.y += (linearSpeed / radius) * (wheel.userData.spinScale || 1) * dt; // spinScale: model wheels of another radius
   if (steerAngle !== null) wheel.rotation.y = steerAngle;
 }
 
@@ -419,7 +420,7 @@ const TR = {
   wheelDia: 1.1,
   wheelW: 0.3,
   track: 1.7, // not specified in LAYOUT.md — picked to sit inboard of the side walls (see docs/parked.md)
-  drawbarLen: 1.2,
+  drawbarLen: TRAILER_DRAWBAR_M, // 25 Nov: the trailer model's own drawbar (src/vehicleModels.js), eye still meets the tractor hitch
   hitchY: 0.55,
 };
 TR.frontZ = -TR.bedLen / 2;
@@ -1298,5 +1299,6 @@ export function spawnVehicles(scene) {
   cart.addToScene(scene);
   vehicles.push(cart);
 
+  registerVehicleModels({ tractor, trolley, bike }); // real models stream in after Play (src/vehicleModels.js)
   return vehicles;
 }

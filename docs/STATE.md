@@ -1,10 +1,9 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov (hourly loop) - trolley floor/wheel clip fixed. build:unchecked ok, Tier 1 clean.
-tractor 2.19 m tall vs spec 2.60 still open (spec contradicts its own parts - needs her call, not a code bug).
-player_cycle_v2 wheel 0.71 m vs 0.60: NOT a bug - 0.60 was an unrelated generic preset, not the player's spec;
-0.71 m matches a real 28" roadster tyre (build_player_cycle.py HY=0.355), period-correct. asset-slots.md gives
-no wheel diameter for bike.glb. Leaving. Fresh container: `npm ci` + checkout -B main (routine, see below).
-
+Last updated: 25 Nov (vehicle models run). Trolley floor/wheel clip fixed by the hourly loop; build:unchecked ok, Tier 1 clean, missions-check 396/0/5.
+This run (25 Nov vehicle models): drivable tractor, trolley, bicycle now use old_tractor/trailer_pack/bicycle.glb (src/vehicleModels.js). Code-built bodies stay as physics + fallback. Gate bytes before Play unchanged (7.6 MB cpu4, 0 vehicle requests); models stream after Play via propGate gateRadius 0.
+Open: tractor model is one mesh (no wheel spin, no front steer); bike wheel does not steer; cart still code-built (NEEDS_YOU). Ring load of the 3 sites after Play not measurable here (Chromium crashes after Play).
+All [ACTIVE] BACKLOG items still blocked as before (proxy 403, headless browser). Fresh container: `npm ci` + checkout -B main.
+Open (hourly loop): tractor spec 2.60 m vs parts 2.19 m needs her call; player_cycle_v2 wheel 0.71 m is correct (28 inch).
 ## Current state
 - 26 Nov SHOPS FIX: 19 skipped shops/kiosks/carts now built on their drawn plot (shopsPlace.js ring fallback; shops built 143 -> 162 of 165, 3 railway left). Tractor spawn x 642 -> 641. world-validator check 1 clear; check 2 floats (hb_main_39, school_bell) pre-existing.
 - 26 Nov RAILWAY + MELA: src/kit/railway.js (4 zones, dynamic import after Play; nearest zone edge 210 m from spawn). Mela zone enabled. Open: mela swing overlaps the map's Tent/wedding lights; full build/regression not run (container limit, A7).
