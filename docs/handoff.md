@@ -1668,3 +1668,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   crashed" signature after getting through Play+2M sample points; verified by code reading instead (A7).
 - Agents used: none.
 - 25 Nov 13:xx scheduled run: Actions green on d51f97a; temple/sabzi settled (a6c25a6), moved-place coords re-snapped by layout-wiring, pre-Play 10.7 MB has no non-look cut. missions-check 396/0/5, build:unchecked ok. No code change.
+
+## 25 Nov afternoon: agents run (head of engineering chat), all stopped on return
+- Opus medium: gate path (aef794a): measured, no gain from near/far split or fair-share builds; corrected diagnosis (total CPU work, not starvation). Opus because it was hard load-profiling reasoning.
+- Sonnet medium: budget (ae989ba): no safe cut found, far LOD for big places parked for her (NEEDS_YOU). Map completeness (a0cc5a3): audit vs final map only, 19 shops + railway + mela + 115 signs missing, docs/MAP_COMPLETENESS.md. Vehicles first run (aa0a96a): stopped, wrong spec (Places V1).
+- Sonnet medium, build work: shops (aaa7634, 19 built), railway + mela (a20d483), vehicle models wired (a13e9fe, drivable tractor/trolley/bike from her downloads, 0 bytes pre-Play), highway start (a91c470, new game at Welcome gate, mounted), signs (a3b6599, 115 map signs; I moved its build behind farGo), lane blocker (af4850b, removed old cycle shop on the main road).
+- Sonnet low: none. Haiku: none. Fable: none.
+- Real load on her machine (built-in pane, cold, hidden pane so timing is a floor): gateEnd 8.5 s. Frame rate NOT measured (pane hidden). Tris 1.78M, calls 242 at the gate view (was 1.49M/204 before today's shops, signs, railway).
