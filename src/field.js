@@ -26,6 +26,21 @@ const TRACK_SW = { x: FIELD_CENTER.x - 60, z: FIELD_CENTER.z - 45 };
 // track instead of a re-guessed one.
 export const TRACK_CORNERS = [TRACK_NW, TRACK_NE, TRACK_SE, TRACK_SW];
 
+// 25 Nov (her order, nothing stands on a road): the map's 26_Wheat field track (docs/layout/approved-map-2026-11-25.json, width 4) runs
+// north-south through the middle of this khet, so the khet is split into two halves with the track between them. Ground and every
+// crop stop TRACK_CLEAR from the track centre line (half width 2 + 0.15, clear of the band by at least 0.1 m even where it leans 3 deg).
+const FIELD_TRACK_PTS = [[608.3, -170.6], [608.4, -173.6], [608.6, -176.6], [608.8, -179.6], [609, -182.7], [609.2, -185.7], [609.4, -188.7], [609.5, -191.7], [609.6, -194.8], [609.6, -197.8], [609.6, -200.8], [609.5, -203.8], [609.5, -206.8], [609.5, -209.9], [609.5, -212.9], [609.4, -215.9], [609.3, -218.9], [609.2, -222], [609.1, -225], [609, -228], [613.08, -301.5]];
+export const TRACK_CLEAR = 2.15;
+/** x of the wheat field track's centre line at world z (the points run north to south, z falling). */
+export function wheatTrackX(z) {
+  const P = FIELD_TRACK_PTS;
+  if (z >= P[0][1]) return P[0][0];
+  for (let i = 0; i + 1 < P.length; i++) if (z <= P[i][1] && z >= P[i + 1][1]) return P[i][0] + (P[i + 1][0] - P[i][0]) * (P[i][1] - z) / (P[i][1] - P[i + 1][1]);
+  return P[P.length - 1][0];
+}
+/** true when a thing of radius r at (x, z) would stand closer to the track than TRACK_CLEAR. */
+const onWheatTrack = (x, z, r = 0) => Math.abs(x - wheatTrackX(z)) < TRACK_CLEAR + r;
+
 const TRACK_WIDTH = 5;
 const FIELD_GOLD = 0xc9a24f; // golden wheat/sabzi soil, distinct from the main dirt ground and lane
 
@@ -47,6 +62,7 @@ function buildTrackVerge() {
       const off = (TRACK_WIDTH / 2 + 1.6 + rnd() * 0.8) * out;
       const x = a.x + dx * t + nx * off, z = a.z + dz * t + nz * off;
       if (Math.hypot(x - BAAGH_CENTER.x, z - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS + 3) continue;
+      if (onWheatTrack(x, z, 0.5)) continue; // 25 Nov: nothing grows on the wheat field track
       const r = rnd();
       const kind = r < 0.5 ? GARDEN_KIND.TULSI : GARDEN_KIND.MARIGOLD;
       plants.push({ x, z, y: 0, kind, scale: 0.9 + rnd() * 0.3 });
@@ -89,14 +105,27 @@ function buildTrack() {
 const STUBBLE_FRAC = 0.33;
 const STRAW_GROUND = 0xe3cf94;
 
-function buildFieldGround(x0, x1, tint, name) {
-  const width = FIELD_SIZE.x * (x1 - x0);
+function buildFieldGround(x0, x1, tint, name, cut) {
+  // cut: 'east-edge' = this piece ends at the wheat field track's west edge, 'west-edge' = it starts at the track's east edge.
+  // 25 Nov: the rows are warped so the cut follows the track's lean (no triangle ever lies across the road).
+  const left = FIELD_CENTER.x - FIELD_SIZE.x / 2;
+  const trackMid = wheatTrackX(FIELD_CENTER.z);
+  const xa = cut === 'west-edge' ? trackMid + TRACK_CLEAR : left + FIELD_SIZE.x * x0;
+  const xb = cut === 'east-edge' ? trackMid - TRACK_CLEAR : left + FIELD_SIZE.x * x1;
+  const width = xb - xa;
   const segX = Math.max(1, Math.round(width / 2.2)), segZ = Math.round(FIELD_SIZE.z / 2.2);
   const geometry = ensureUv2(new THREE.PlaneGeometry(width, FIELD_SIZE.z, segX, segZ));
+  if (cut) {
+    const gpos = geometry.attributes.position;
+    for (let i = 0; i < gpos.count; i++) {
+      const f = (gpos.getX(i) + width / 2) / width, tx = wheatTrackX(FIELD_CENTER.z - gpos.getY(i));
+      gpos.setX(i, (cut === 'east-edge' ? xa + f * (tx - TRACK_CLEAR - xa) : (tx + TRACK_CLEAR) + f * (xb - (tx + TRACK_CLEAR))) - (xa + xb) / 2);
+    }
+  }
   // Per-vertex canopy tint: the ground under each plot carries the crop colour (flowering mustard yellow, green wheat...) so the field reads as a
   // continuous crop carpet from a distance. Values above 1 are intentional (the dark scanned soil needs overdriving). No extra draw call.
   const gp = geometry.attributes.position, cArr = new Float32Array(gp.count * 3), bund = new Uint8Array(gp.count);
-  const cx0 = FIELD_CENTER.x - FIELD_SIZE.x / 2 + FIELD_SIZE.x * (x0 + x1) / 2;
+  const cx0 = (xa + xb) / 2;
   for (let i = 0; i < gp.count; i++) {
     const wx = cx0 + gp.getX(i), wz = FIELD_CENTER.z - gp.getY(i);
     const fx = (wx - (FIELD_CENTER.x - FIELD_SIZE.x / 2)) / FIELD_SIZE.x;
@@ -135,7 +164,7 @@ function buildFieldGround(x0, x1, tint, name) {
   if (tint === STRAW_GROUND) material.color.multiplyScalar(1.9); // dark scanned soil needs overdriving to read as dry straw
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(FIELD_CENTER.x - FIELD_SIZE.x / 2 + FIELD_SIZE.x * (x0 + x1) / 2, 0.02, FIELD_CENTER.z);
+  mesh.position.set(cx0, 0.02, FIELD_CENTER.z);
   mesh.receiveShadow = true;
   mesh.name = name;
   return mesh;
@@ -270,12 +299,13 @@ function buildCropRows() {
       const stubble = fx < 0.33;
       const sabziZone = fx > 0.67;
       if (sabziZone && r % 4 === 3) continue; // walking path between sabzi beds
+      if (onWheatTrack(rx, rz, 0.65)) continue; // 25 Nov: the wheat field track splits the khet; no crop within 0.65 m (tuft reach) of its clear edge
       if (onBund(rx, rz)) continue; // earthen bund between plots: bare ridge, no crop growing out of it
       const ov = stubble || sabziZone ? outerVariant(rx, rz) : 0;
       if (ov === 2) continue; // a ploughed, bare plot among the stubble / an unsown sabzi bed (ground tint carries it)
       const kind = stubble || sabziZone ? null : plotKind(rx, rz);
       if (kind === 'ploughed') continue; // bare furrowed earth (ground shader draws the furrows)
-      if (kind === 'cane') { if (k % 3 !== 2 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
+      if (kind === 'cane') { if (k % 3 !== 2 && !onWheatTrack(rx, rz, 1.6) && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) caneSpots.push([rx + Math.sin(rx * 9.1 + rz) * 0.25, rz + Math.cos(rz * 7.3 + rx) * 0.25]); continue; } // sugarcane block: tall clumps, drawn by buildCaneClumps
       const sabzi = sabziZone || kind === 'veg';
       // Sabzi beds carry real brinjal (aubergine) and okra bushes among the leafy tufts: every other bed band is one crop, one tuft in three.
       if (sabziZone && ov !== 1 && k % 3 === 1 && !(Math.hypot(rx - BAAGH_CENTER.x, rz - BAAGH_CENTER.z) < BAAGH_CLEARING_RADIUS) && !inKeepOut(rx, rz)) vegSpots[Math.floor(r / 4) % 2 ? 'okra' : 'brinjal'].push([rx, rz]);
@@ -506,7 +536,8 @@ export function buildField(scene) {
   const group = new THREE.Group();
   group.name = 'field';
   group.add(buildFieldGround(0, STUBBLE_FRAC, STRAW_GROUND, 'field_ground_stubble'));
-  group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground'));
+  group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground', 'east-edge')); // west half of the khet, ends at the wheat field track
+  group.add(buildFieldGround(STUBBLE_FRAC, 1, FIELD_GOLD, 'field_ground_east', 'west-edge')); // east half, starts on the track's far side
   const crops = buildCropRows();
   group.add(crops);
   if (crops.userData.caneSpots.length) group.add(buildCaneClumps(crops.userData.caneSpots));

@@ -18,8 +18,9 @@ import { pt } from './anchors.js';
 
 // Water radius R is the water's own outline (same R/seed the old flat pond used). Banks rise from u=1 (water
 // edge) to u=rim (ground level); beyond that a short flat ring fades the mud colour out over the ground.
+// 25 Nov (her rule, nothing on a road): pond R 9.6 -> 6.7 so bank, mud ring and ghat clear Outer lane west, cross_road and gali_n23 by 0.1 m or more.
 export const BLOB_DIPS = {
-  pond: { ...pt('pond'), R: 9.6, seed: 1.3, water: -0.5, bed: -1.45, rim: 1.25, segs: 48 },
+  pond: { ...pt('pond'), R: 6.7, seed: 1.3, water: -0.5, bed: -1.45, rim: 1.25, segs: 48 },
   johad: { ...pt('johad'), R: 5.4, seed: 4.1, water: -0.38, bed: -1.0, rim: 1.32, segs: 36 },
 };
 const FADE = 0.15; // u beyond the rim the flat mud ring reaches (covers the hole edge)

@@ -20,7 +20,10 @@ export const EXISTING_FOOTPRINTS = {
   ration: { box: [-4, 4, -6, 4.2] }, // ration_shop_v2.glb bounds
   chakki: { box: [-4.5, 4.5, -6, 4.2] }, // atta_chakki_v2.glb bounds
   temple: { box: [-6.7, 10, -5.2, 5.2] }, // temple.glb bounds
-  field: { box: [-60, 60, -45, 45], open: true }, // src/field.js: field centre +-60 x, +-45 z (its tractor loop)
+  // 25 Nov: SPLIT in two by the 26_Wheat field track (x 608.6..610.5 across the khet), crops stop 0.1 m+ from its edges (src/field.js).
+  // The anchor turns by pi, so local x = 603.5 - world x. `box` = the west half (world x 548.5..606.0), `boxes` lists both halves; the
+  // east half is world x 613.5..658.5. The boxes stay inside the khet's crop and soil ground (110 x 80), which is the built part.
+  field: { box: [-2.5, 55, -40, 40], boxes: [[-2.5, 55, -40, 40], [-55, -10, -40, 40]], open: true },
   banta: { box: [-1.9, 1.9, -0.9, 0.9] }, // fit box 3.8 x 1.8
   chaat: { box: [-2.35, 2.35, -1.5, 1.5] }, // fit box 4.7 x 3.0
   jalebi: { box: [-2.1, 2.1, -1.3, 1.3] }, // fit box 4.2 x 2.6
@@ -28,9 +31,9 @@ export const EXISTING_FOOTPRINTS = {
   khalihan: { box: [-15, 15, -12, 12], open: true },
   tubewell: { box: [-6, 6.1, -5.1, 5] }, // tubewell_v2.glb bounds
   gaushala: { box: [-13.8, 13.6, -10.8, 11.4] }, // gaushala.glb bounds
-  pond: { box: [-13, 13, -13, 13], open: true }, // src/dips.js: water R 9.6 with a wobbling outline, bank to u 1.25
+  pond: { box: [-10.4, 10.4, -10.4, 10.4], open: true }, // src/dips.js: water R 6.7 (was 9.6, cut 25 Nov so the bank, mud ring and ghat clear Outer lane west, cross_road, gali_n23) with a wobbling outline, bank to u 1.25
   anganwadi: { box: [-5.3, 5.3, -4.85, 4.85] }, // docs/asset-slots.md fit box 10.6 x 9.7
-  mela: { box: [-10, 19.4, -13, 13.5], open: true }, // src/farmSites.js createMelaGround: shamiana, stage, benches, swing, stalls (the 62 x 53 m fit box was the old open-ground outline)
+  mela: { box: [-10, 19.4, -10, 13], open: true }, // src/farmSites.js createMelaGround: shamiana, stage, benches, swing, stalls. 25 Nov: trimmed from z -13..13.5 (local z- = gali_n0 side, z+ = highway side) so it clears both roads
   gurudwara: { box: [-5, 5, -3.6, 7.4] }, // createGurudwara: 9.2 x 7.2 hall + porch and steps to the front (fit box 11 deep)
   tvhouse: { box: [-8, 8, -12, 7.5] }, // tv_house_v2.glb bounds
   health: { box: [-4.8, 4.8, -2.85, 5] }, // createHealthSubCentre: 9.2 x 5.7 block + verandah to z 5

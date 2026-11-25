@@ -72,7 +72,7 @@ function frontRoad(a, box, id) {
   return null;
 }
 // Listed in docs/layout/MOVE_LOG_PLACES_25NOV.md as NOT movable under 5 m (her rule: do not move, list with the number); they still overlap and say so
-const KNOWN_LEFT = new Set(['mela', 'pond', 'field']);
+const KNOWN_LEFT = new Set([]); // 25 Nov (final 4): mela and pond trimmed, field split by its track, so nothing is listed-left any more
 let overlapBad = 0;
 let checked = 0, bad = 0, worstM = 0;
 for (const p of raw.places) {
@@ -93,7 +93,8 @@ for (const p of raw.places) {
   const fp = EXISTING_FOOTPRINTS[p.id];
   let roadNote = '';
   if (a && fp) {
-    const rs = roadStats(footprintCorners(a, fp.box));
+    let rs = null; // a place with several footprint boxes (the split wheat field) is judged on all of them: worst overlap, smallest gap
+    for (const bx of fp.boxes || [fp.box]) { const r1 = roadStats(footprintCorners(a, bx)); rs = !rs ? r1 : { ...rs, ov: rs.ov + r1.ov, gap: Math.min(rs.gap, r1.gap), hit: [...new Set([...rs.hit, ...r1.hit])] }; }
     if (rs.ov > 0.005 && !KNOWN_LEFT.has(p.id)) { flag = true; overlapBad++; roadNote += ` ROAD-OVERLAP ${rs.ov.toFixed(2)}m2 on ${rs.hit.join(',')}`; }
     else if (rs.ov > 0.005) roadNote += ` listed-left overlap ${rs.ov.toFixed(2)}m2 on ${rs.hit.join(',')}`;
     else if (rs.gap < 0.09) { flag = true; overlapBad++; roadNote += ` TOUCHES-ROAD gap ${rs.gap.toFixed(2)}m`; }

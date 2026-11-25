@@ -1940,8 +1940,8 @@ async function main() {
         const group = new THREE.Group();
         group.name = 'zone_pond_buffalo';
         const herd = createCattleHerd([
-          { x: pt('pond').x + 11.2, z: pt('pond').z + 4.2, y: dipHeightRaw(pt('pond').x + 11.2, pt('pond').z + 4.2), rotationY: 1.2, buffalo: true }, // standing down the dug bank
-          { x: pt('pond').x + 9.6, z: pt('pond').z + 7.0, y: dipHeightRaw(pt('pond').x + 9.6, pt('pond').z + 7.0), rotationY: 2.3, buffalo: true },
+          { x: pt('pond').x + 7.8, z: pt('pond').z + 2.9, y: dipHeightRaw(pt('pond').x + 7.8, pt('pond').z + 2.9), rotationY: 1.2, buffalo: true }, // standing down the dug bank (25 Nov: offsets x 0.7 with the smaller pond, were 11.2 / 4.2)
+          { x: pt('pond').x + 6.7, z: pt('pond').z + 4.9, y: dipHeightRaw(pt('pond').x + 6.7, pt('pond').z + 4.9), rotationY: 2.3, buffalo: true }, // was 9.6 / 7.0
         ]);
         group.add(herd.mesh);
         return { group, onFrame: (dt) => herd.update(dt) };

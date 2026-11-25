@@ -306,9 +306,9 @@ export function createPond(position) {
   // Lotus pads only (bare, her call 3 Nov: a lotus comes later). Pads keep to open water, never up on the bank.
   const geos = [];
   for (let c = 0; c < 4; c++) { // clusters near the shore sides, as lotus grows in the shallows
-    const ca = rnd() * Math.PI * 2, cr = 4.8 + rnd() * 1.8;
+    const ca = rnd() * Math.PI * 2, cr = (4.8 + rnd() * 1.8) * (D.R / 9.6); // 25 Nov: clusters scale with the smaller pond (R 9.6 -> 6.7)
     for (let i = 0; i < 16; i++) {
-      const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4;
+      const a = ca + (rnd() - 0.5) * 1.0, r = cr + (rnd() - 0.5) * 2.4 * (D.R / 9.6);
       const x = Math.cos(a) * r, z = Math.sin(a) * r, size = 0.6 + rnd() * 0.6, rot = rnd() * 6.28;
       if (r + size > D.R * blobEdge(Math.atan2(-z, x), D.seed) * 0.92) continue;
       geos.push(lotusPadGeo(x, z, size, rot, i % 3 ? 0x4a6e30 : 0x5d8238, (i % 5) * 0.012));
@@ -1521,7 +1521,10 @@ export function createLaneWaterCorner(position, name = 'lane_water', ry = 0) {
 /** Mela + wedding ground (SW outskirts): trampled open field, shamiana tent on poles, string-light mast, a ferris-wheel-free swing frame. */
 export function createMelaGround(position) {
   const geos = [];
-  geos.push(flatBlob(28, 7, 0.03, 0xb59a6a));
+  // 25 Nov (her rule, nothing on a road): the trampled ground is fitted INSIDE the trimmed site box, local x -9.8..19.2, z -9.8..12.8 (z+ = highway side, z- = gali_n0 side), 0.2 m in from its edge.
+  { const bg = new THREE.ShapeGeometry(blobShape(1, 7)); bg.rotateX(-Math.PI / 2); bg.computeBoundingBox(); const bb = bg.boundingBox;
+    const sx = 29 / (bb.max.x - bb.min.x), sz = 22.6 / (bb.max.z - bb.min.z), m = new THREE.Matrix4().makeTranslation(-9.8 - bb.min.x * sx, 0.03, -9.8 - bb.min.z * sz).multiply(new THREE.Matrix4().makeScale(sx, 1, sz));
+    geos.push(bake(bg, m, 0xb59a6a)); }
   // Shamiana: striped canopy on corner poles with a low stage.
   const stripe = [0xc4372f, 0xe8d9b0, 0xd8a22a, 0x2f7d5b];
   for (let i = 0; i < 8; i++) geos.push(bake(new THREE.BoxGeometry(2.5, 0.06, 12), new THREE.Matrix4().makeRotationZ(i % 2 ? 0.0 : 0.0).setPosition(-8.75 + i * 2.5, 4.4, 0), stripe[i % 4]));
@@ -1531,9 +1534,9 @@ export function createMelaGround(position) {
   for (let i = 0; i < 4; i++) geos.push(bake(new THREE.BoxGeometry(5, 0.4, 0.5), at(0, 0.25, -0.5 + i * 1.5), 0x8e969c)); // plastic-free bench rows (tin)
   // Swing frame (jhoola): a proper two-seat swing set.
   geos.push(...swingSetGeos(15, 12, 0, 0x3a5aa6));
-  // Stalls: three small cloth-roofed counters along the east edge.
+  // Stalls: three small cloth-roofed counters along the east edge (25 Nov: pulled in 3.5 m from the gali_n0 side, spaced 5 m, was z -12 / -6 / 0).
   for (let i = 0; i < 3; i++) {
-    const z = -12 + i * 6;
+    const z = -8.5 + i * 5;
     geos.push(bake(new THREE.BoxGeometry(2.4, 0.9, 1.2), at(18, 0.45, z), 0x8a6a45));
     geos.push(bake(new THREE.BoxGeometry(2.8, 0.05, 2.0), new THREE.Matrix4().makeRotationX(0.1).setPosition(18, 2.4, z), stripe[(i + 1) % 4]));
     for (const sx of [-1, 1]) geos.push(bake(new THREE.CylinderGeometry(0.04, 0.04, 2.4, 6), at(18 + sx * 1.3, 1.2, z - 0.6), 0x5a5a5a));
@@ -1543,7 +1546,7 @@ export function createMelaGround(position) {
     [0, -4, 5, 3], // stage
     ...[0, 1, 2, 3].map((i) => [0, -0.5 + i * 1.5, 5, 0.5]), // bench rows
     [13.4, 12, 0.3, 1.8], [16.6, 12, 0.3, 1.8], // swing legs
-    ...[0, 1, 2].map((i) => [18, -12 + i * 6, 2.4, 1.2]), // stall counters
+    ...[0, 1, 2].map((i) => [18, -8.5 + i * 5, 2.4, 1.2]), // stall counters
   ], boards: [{ id: 'mela', x: 0, y: 3.55, z: -5.7, w: 6.4 }] });
 }
 

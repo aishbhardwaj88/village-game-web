@@ -133,7 +133,7 @@ export function snapLayout(layout) {
   }
   // 1. a place standing over the pond / johad bank (src/dips.js: water R x rim 1.25-1.32, outline wobble up to x1.3) steps
   // straight away from the water, up to 6 m, when that clears it without touching anything else
-  const dips = ['pond', 'johad'].map((id) => layout.places[id]).filter(Boolean).map((p) => ({ id: p.id, x: p.x, z: p.z, r: p.id === 'pond' ? 9.6 * 1.25 * 1.3 + 0.5 : 5.4 * 1.32 * 1.3 + 0.5 }));
+  const dips = ['pond', 'johad'].map((id) => layout.places[id]).filter(Boolean).map((p) => ({ id: p.id, x: p.x, z: p.z, r: p.id === 'pond' ? 6.7 * 1.25 * 1.3 + 0.5 : 5.4 * 1.32 * 1.3 + 0.5 }));
   const overDip = (c) => dips.find((d) => c.some(([x, z]) => Math.hypot(x - d.x, z - d.z) < d.r) || edgeNear(c, d));
   for (const it of items) {
     if (it.kind !== 'place' || it.place.untouched || it.id === 'pond' || it.id === 'johad') continue;
