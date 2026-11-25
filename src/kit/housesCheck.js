@@ -8,7 +8,7 @@
  *  - a house with no road in front of it
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { planHouses, footprintRoadClearance, inRing, segDist, ringsOverlap as overlap, roadIndex } from './housesPlan.js';
+import { planHouses, footprintRoadClearance, inRing, segDist, ringsOverlap as overlap, roadIndex, rectCorners } from './housesPlan.js';
 import { houseMapFrom } from './housesLayout.js';
 
 // The game's own map (the layout agent's src/layout/mapData.json: the approved export with galis trimmed at junctions and the
@@ -33,6 +33,17 @@ for (const h of houses) {
 }
 const plan = planHouses(houses, roads, solids, { exact: true });
 mapSource = 'docs/layout/approved-map-2026-11-25.json (exact)';
+// Her road rules (25 Nov): the logged moves in housesMoves.json (made by the road-clearance pass) override the drawn spot,
+// size and facing of the houses they list, so re-running --write-plan never undoes them. Row: [i, old x5, new x5, metres, facing, road].
+try {
+  const mv = JSON.parse(readFileSync(new URL('./housesMoves.json', import.meta.url))).rows;
+  for (const [i, , , , , , x, z, ry, w, d, , , road] of mv) {
+    const h = plan.find((q) => q.i === i);
+    if (!h) continue;
+    Object.assign(h, { x, z, ry, w, d, front: [Math.sin(ry), Math.cos(ry)], corners: rectCorners(x, z, ry, w, d), road: road || h.road });
+  }
+  console.log('applied', mv.length, 'logged moves (housesMoves.json)');
+} catch (e) { console.log('no housesMoves.json applied:', e.message); }
 
 const convex = (r) => r.length >= 3;
 
@@ -47,6 +58,7 @@ plan.forEach((h) => {
     const p = [h.x + h.front[0] * (h.d / 2 + h.roadGap), h.z + h.front[1] * (h.d / 2 + h.roadGap)];
     let best = null, bd = Infinity;
     for (let k = 0; k + 1 < r.pts.length; k++) { const d = segDist(p, r.pts[k], r.pts[k + 1]); if (d < bd) { bd = d; best = [r.pts[k], r.pts[k + 1]]; } }
+    if (!best) return; // a logged move (housesMoves.json) changed the footprint: the stale probe gap no longer reaches the road; map-match-houses.mjs checks facing instead
     const rd = h.roadDir ?? Math.atan2(best[1][1] - best[0][1], best[1][0] - best[0][0]);
     const fd = Math.atan2(-h.front[0], h.front[1]); // edge direction = front normal turned 90 deg
     let a = Math.abs(((rd - fd) * 180) / Math.PI) % 180;
