@@ -101,7 +101,7 @@ export function initLayoutWiring({ zoneManager, scene, player } = {}) {
       if (prefix === 'ride_nook') {
         // 25 Nov, her order (ROADS MUST BE EMPTY, move never delete): the nook's footprint (its models reach about 2.4 m round the site) must
         // stand 0.6 m beyond the drawn road edge, so the dusty apron stays empty too. A site that does not clear it slides straight away from the road.
-        const c = Math.cos(site.ry), sn = Math.sin(site.ry), R = 2.4, pr = [[0, 0]];
+        const c = Math.cos(site.ry), sn = Math.sin(site.ry), R = 3.0, pr = [[0, 0]]; // R 3.0 (was 2.4): the 25 Nov re-scan still found the well part 0.26 m on the apron
         for (const [lx, lz] of [[R, 0], [-R, 0], [0, R], [0, -R], [R * 0.7, R * 0.7], [-R * 0.7, R * 0.7], [R * 0.7, -R * 0.7], [-R * 0.7, -R * 0.7]]) pr.push([lx * c + lz * sn, -lx * sn + lz * c]);
         const mv = roadEmptyPush(site.x, site.z, pr, 8, 0.6);
         if (mv && mv.moved > 0) { done.push(`${name} slid ${mv.moved.toFixed(2)} m off the road apron`); site.x = mv.x; site.z = mv.z; }

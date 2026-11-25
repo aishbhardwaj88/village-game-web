@@ -10,6 +10,7 @@ import { swapShared } from './stagingYard.js';
 import { PLACES } from './freeRoam.js';
 import { roadAt } from './eastRoad.js';
 import { OLD_SHIFT } from './anchors.js';
+import { roadEmptyPush } from './mapRoads.js';
 
 const SPACING = [6, 50, 95, 140]; // metres along the east road (src/eastRoad.js), which starts at the east gali's end
 // Stones on the highway's own west verge (road strip x 198..212, src/farmSites.js roadGeos): one per direction of travel.
@@ -56,11 +57,13 @@ export function milestoneSites() {
   const hwSites = HIGHWAY_STONES.map((h, i) => ({ id: `milestone_hw${i}`, cell: SPACING.length + i, x: h.x, z: h.z, ry: h.ry, hw: h }));
   return [...hwSites, ...SPACING.map((d, i) => {
     const { x, z, ux, uz } = roadAt(d);
+    // 25 Nov (roads empty, move never delete): 0.6 m beyond the drawn road edge (and its apron), pushed straight away from the nearest road, max 6 m
+    const e = roadEmptyPush(x - uz * SIDE, z + ux * SIDE, [[0, 0], [0.45, 0], [-0.45, 0], [0, 0.45], [0, -0.45]], 6, 0.6) || { x: x - uz * SIDE, z: z + ux * SIDE };
     return {
       id: `milestone_${i}`,
       cell: i,
-      x: x - uz * SIDE, // right of an eastbound walker (+z side)
-      z: z + ux * SIDE,
+      x: e.x, // right of an eastbound walker (+z side)
+      z: e.z,
       ry: Math.atan2(-ux, -uz), // face normal points back west along the road, towards the approaching walker
       toHighway: Math.round(Math.max(0, Math.hypot(hw.x - x, hw.z - z)) / 5) * 5,
     };

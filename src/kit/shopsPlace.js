@@ -10,6 +10,7 @@ import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMuralsGen } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 import { runSync, sliceGen } from './lateBuild.js';
+import { roadEmptyPush } from '../mapRoads.js';
 import SHOP_RECTS from '../layout/shopRects.json' with { type: 'json' }; // 25 Nov (her rule): every shop faces the road it fronts and stands 0 overlap off every band, made by tools/shop-rects-pack.mjs
 
 /**
@@ -79,6 +80,14 @@ function* buildShopsGen(map, { camera = null } = {}) {
   const designSigns = new Map();
 
   const put = (type, key, build, rect, opts, i) => {
+    // 25 Nov (her order: roads empty, move never delete): a kiosk, cart or shed whose body or board stands within 0.6 m of the drawn road edge (the chauraha ring
+    // is included) slides the smallest distance (max 3 m) straight away from the road; its board and colliders ride with it.
+    if (type === 'kiosk' || type === 'cart' || type === 'shed') {
+      const c0 = Math.cos(rect.ry), s0 = Math.sin(rect.ry), hw = rect.width / 2, hd = rect.depth / 2 + 0.1;
+      const probes = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd], [0, hd]].map(([lx, lz]) => [lx * c0 + lz * s0, -lx * s0 + lz * c0]);
+      const mv = roadEmptyPush(rect.x, rect.z, probes, 3, 0.6);
+      if (mv && mv.moved > 0) rect = { ...rect, x: mv.x, z: mv.z };
+    }
     (report.rects ||= []).push({ name: opts.signName || key, type, x: rect.x, z: rect.z, ry: rect.ry, w: rect.width, d: rect.depth }); // the rect each design is placed on (tools/map-match-shops.mjs --game reads this)
     const near = key, mid = key + '|lite';
     if (!kit.designs.has(near)) {

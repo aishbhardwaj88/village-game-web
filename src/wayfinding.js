@@ -14,6 +14,7 @@ import { PLACES } from './freeRoam.js';
 import { OLD_SHIFT } from './anchors.js';
 import { isNewLayout, getPlace } from './layout/layout.js'; // S7 layout
 import { seatBesideRoad, faceRoadYaw } from './layout/seat.js';
+import { roadEmptyPush } from './mapRoads.js';
 import { drawBilingual, hiFont, enFont } from './signPaint.js';
 
 const CELL_W = 1024;
@@ -50,15 +51,17 @@ const SIGNPOSTS_ON_MAP = [
 // 25 Nov, her order (roads empty): posts and the notice board stood 0 to 3.3 m inside cross_road / ring lanes (kerb 0.6 let a 1.5 m board overhang the band).
 // kerb 1.7 keeps the whole board clear of the road band and its drawn apron; a post with no such spot within reach (10 m) is dropped by seatBesideRoad.
 const WAY_SEAT = { kerb: 1.7, reach: 6 };
+const WAY_PROBES = [[0, 0], [0.8, 0], [-0.8, 0], [0, 0.8], [0, -0.8]];
 const SIGNPOSTS = SIGNPOSTS_ON_MAP.map((p) => ({ ...p, x: p.x + OLD_SHIFT.x, z: p.z + OLD_SHIFT.z }))
   .map((p) => (isNewLayout() ? { ...p, to: p.to.filter((id) => id !== 'mela') } : p)) // Mela ground parked by owner, 22 Nov: drop it off signposts under ?layout=new
-  .map((p) => { if (!isNewLayout()) return p; const q = seatBesideRoad(p.x, p.z, WAY_SEAT); return q ? { ...p, x: q.x, z: q.z } : null; })
+  .map((p) => { if (!isNewLayout()) return p; const q = seatBesideRoad(p.x, p.z, WAY_SEAT); if (!q) return null; const e = roadEmptyPush(q.x, q.z, WAY_PROBES, 6, 0.6); /* 25 Nov: 0.6 m beyond the drawn edge incl. the chauraha ring */ return e ? { ...p, x: e.x, z: e.z } : { ...p, x: q.x, z: q.z }; })
   .filter(Boolean);
 const NOTICE = (() => {
   const n = isNewLayout() && getPlace('new_notice');
   if (!n) return { x: -49.2 + OLD_SHIFT.x, z: 8.5 + OLD_SHIFT.z, ry: -Math.PI / 2 };
   const q = seatBesideRoad(n.x, n.z, { kerb: WAY_SEAT.kerb }) || seatBesideRoad(n.x, n.z) || { x: n.x, z: n.z };
-  return { x: q.x, z: q.z, ry: faceRoadYaw(q.x, q.z) };
+  const e = roadEmptyPush(q.x, q.z, WAY_PROBES, 6, 0.6) || q; // 25 Nov: 0.6 m beyond the drawn edge
+  return { x: e.x, z: e.z, ry: faceRoadYaw(e.x, e.z) };
 })();
 const NOTICE_LIST = ['school', 'bazaar', 'post', 'temple', 'canal', 'field', 'highway', 'mandi'];
 

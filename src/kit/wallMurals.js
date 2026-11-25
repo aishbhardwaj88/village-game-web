@@ -546,7 +546,7 @@ export function* buildWallMuralsGen(boxes, opts = {}) {
     // roads empty (25 Nov): keep the poster off the road + apron. Try sliding it along its own wall (smallest move first),
     // then a narrower poster; if the wall face itself stands on the road the poster stays where it was (reported).
     if (roads && roads.segs && slide) {
-      const fits = (c, w) => [-0.5, -0.25, 0, 0.25, 0.5].every((t) => roadDepth(roads, cx + tWx * (c + w * t), cz + tWz * (c + w * t)) <= 0);
+      const fits = (c, w) => [-0.5, -0.25, 0, 0.25, 0.5].every((t) => roadDepth(roads, cx + tWx * (c + w * t), cz + tWz * (c + w * t)) <= -0.5); // 25 Nov: 0.5 m beyond the band covers the wander and the alpha-0.5 apron
       let best = null;
       if (!fits(0, width)) {
         for (let w2 = width; w2 >= 0.6 - 1e-6 && !best; w2 -= 0.15) {

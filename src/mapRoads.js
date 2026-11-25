@@ -179,11 +179,13 @@ export function mapBandClearance(x, z) {
  * edge wander the surface draws past it (roadNetwork.js ROAD_KINDS amp x 1.4). Negative = on the road. Round caps (the stricter reading).
  * The scuffed apron past the wander (0.8 to 1.8 m of fading dirt) is ground colour, not road, and is not counted.
  */
-export const ROAD_EMPTY_MARGIN = 0.3; // an object must stand at least this far beyond the drawn edge
+export const ROAD_EMPTY_MARGIN = 0.6; // an object must stand at least this far beyond the drawn edge (25 Nov: 0.6 = 0.3 clear + the highway apron alpha 0.5 band that the drawn edge omits)
 let _drawnSegs = null;
+const APRON_A5 = { highway: 0.58, road: 0.42, lane: 0.31, back: 0.19, track: 0.46, path: 0.17 }; // metres past the band where the dusty apron is still alpha >= 0.5 (25 Nov re-scan model)
 export function drawnRoadClearance(x, z) {
   if (!isNewLayout()) return 99; // the retired old layout keeps its own roads
-  if (!_drawnSegs) { _drawnSegs = []; for (const r of getRoads()) { const k = ROAD_KINDS[r.kind] || ROAD_KINDS.lane; for (let i = 0; i + 1 < r.pts.length; i++) _drawnSegs.push({ a: r.pts[i], b: r.pts[i + 1], e: (r.width || 4) / 2 + k.amp * 1.4 }); } }
+  if (!_drawnSegs) { _drawnSegs = []; for (const r of getRoads()) { const k = ROAD_KINDS[r.kind] || ROAD_KINDS.lane; for (let i = 0; i + 1 < r.pts.length; i++) _drawnSegs.push({ a: r.pts[i], b: r.pts[i + 1], e: (r.width || 4) / 2 + Math.max(k.amp * 1.4, APRON_A5[r.kind] ?? 0.31) }); }
+    { const { x: cx, z: cz, ringR, ringW } = CHAURAHA, kr = ROAD_KINDS.road; for (let i = 0; i < 40; i++) { const a0 = (i / 40) * Math.PI * 2, a1 = ((i + 1) / 40) * Math.PI * 2; _drawnSegs.push({ a: [cx + Math.cos(a0) * ringR, cz + Math.sin(a0) * ringR], b: [cx + Math.cos(a1) * ringR, cz + Math.sin(a1) * ringR], e: ringW / 2 + Math.max(kr.amp * 1.4, APRON_A5.road) }); } } /* 25 Nov: the chauraha ring is drawn from CHAURAHA, not from getRoads(), so it was invisible to every clearance test */ }
   let best = 1e9;
   for (const s of _drawnSegs) {
     const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L2 = dx * dx + dz * dz || 1;

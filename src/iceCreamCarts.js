@@ -1,3 +1,4 @@
+import { roadEmptyPush } from './mapRoads.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { getGLTFLoader } from './loaders.js';
@@ -50,7 +51,10 @@ function spotMatrix(sp, i) {
   const a = ANCHORS[sp.at];
   if (!a) return null;
   const ry = a.ry || 0, s = Math.sin(ry), c = Math.cos(ry);
-  const x = a.x + sp.lx * c + sp.lz * s, z = a.z - sp.lx * s + sp.lz * c;
+  let x = a.x + sp.lx * c + sp.lz * s, z = a.z - sp.lx * s + sp.lz * c;
+  // 25 Nov (roads empty, move never delete): the whole cart stands 0.6 m beyond the drawn road edge (chauraha ring included), pushed straight away from the road, max 6 m
+  const e = roadEmptyPush(x, z, [[0, 0], [1, 0], [-1, 0], [0, 1.2], [0, -1.2], [0.8, 0.8], [-0.8, -0.8], [0.8, -0.8], [-0.8, 0.8]], 6, 0.6);
+  if (e) { x = e.x; z = e.z; }
   const sc = 0.97 + rnd(i) * 0.06;
   const yaw = ry + sp.yaw + (rnd(i + 40) - 0.5) * 0.12;
   return new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(sc, sc, sc));
