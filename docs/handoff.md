@@ -1794,3 +1794,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   question override STATE's old "safe to pick up" note - noted as superseded in STATE.md).
 - LOOKS LIST 1-8 and BACKLOG [ACTIVE] items re-confirmed done/parked/blocked (A6, not re-audited
   further): CC0 proxy 403, shader-warm needs real browser, no place being reworked. No new real task.
+
+## 26 Nov: vehicles (chat session)
+- Pushed e6d6244, deploy green. 34 parked copies (src/villageVehicles.js, streamed after Play), colour variants (src/vehicleVariants.js, tractor 4 colours), 4 new slimmed models (mini_truck, water_tanker, thela_b, willys_jeep, 1.03 MB). Checks: build ok, vehicle-spots 0 FAIL, road-clearance-props ok, missions 0 FAIL, check-budget ok.
+- Fable-style bake (tools/vehicle-bake.mjs, public/assets/vehicles_baked/, NOT used by the game yet): 2.64 MB vs 5.48 MB now, 3 shared textures, far_all.glb 82 KB. Needs the paint-mask shader and a before/after look before swapping.
+- Not verified: live look (browser pane hidden), facing of bicycle/motorbike/thela/thela_b, jeep body quality (sloppy simplify), tractor recolour look, fps, load time.
+- Agents: slimmer Sonnet low; colour system Sonnet medium; placement Sonnet medium (resumed once); bake Sonnet medium. Fable: 1 brainstorm agent, medium, 26 s, because she ordered it explicitly in chat. No Opus.
