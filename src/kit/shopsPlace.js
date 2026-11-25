@@ -10,7 +10,6 @@ import { PALETTE, WALL_TINT_STRENGTH } from '../village.js';
 import { stockTradeOf, stallGoodsOf } from './shopsStock.js';
 import { buildWallMuralsGen } from './wallMurals.js'; // S7 WIRING (integrator, signage)
 import { runSync, sliceGen } from './lateBuild.js';
-import { nudgeOffRoad } from './mapObjectsPlan.js'; import { getRoads } from '../layout/layout.js';
 
 /**
  * Places every new shop of the approved map (?layout=new): the ~44 two-storey shop-houses (new_sqx), the ~37 kiosks and
@@ -57,9 +56,18 @@ function* buildShopsGen(map, { camera = null } = {}) {
   const designSigns = new Map();
 
   const put = (type, key, build, rect, opts, i) => {
-    if (type === 'kiosk' || type === 'cart' || type === 'shed') { // 26 Nov: no object on a road. Small stands slide off a band (shops and houses are never moved)
-      const nn = nudgeOffRoad(getRoads(), rect.x, rect.z, Math.hypot(rect.width, rect.depth) / 2);
-      if (nn.moved > 0) { rect = { ...rect, x: nn.x, z: nn.z }; (report.nudged ||= []).push(`${opts.signName || key} ${nn.moved.toFixed(2)} m`); }
+    if (type === 'kiosk' || type === 'cart' || type === 'shed') { // 26 Nov: no object on a road, but the map position wins by up to 1 m
+      const rad = (rr) => { const c = Math.cos(rr.ry), sn = Math.sin(rr.ry); let w = 99; for (const [lx, lz] of [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [0, 0]]) w = Math.min(w, roads.clearance(rr.x + lx * rr.width / 2 * c + lz * rr.depth / 2 * sn, rr.z - lx * rr.width / 2 * sn + lz * rr.depth / 2 * c)); return w; };
+      // the exact rectangle on the map position is kept when it dips under 1 m into a band (the road surface is already cut there); deeper than that,
+      // the stand slides off the band by the least it takes (small steps along the way out), never by the old bounding-circle margin
+      if (rad(rect) < -1.0) {
+        let best = null, bd = 1e9;
+        for (let ang = 0; ang < 360; ang += 15) for (let step = 0.1; step <= 6 && step < bd; step += 0.1) {
+          const t = { ...rect, x: rect.x + Math.sin(ang * Math.PI / 180) * step, z: rect.z + Math.cos(ang * Math.PI / 180) * step };
+          if (rad(t) >= 0) { best = t; bd = step; break; }
+        }
+        if (best) { (report.nudged ||= []).push(`${opts.signName || key} ${Math.hypot(best.x - rect.x, best.z - rect.z).toFixed(2)} m`); rect = best; }
+      }
     }
     const near = key, mid = key + '|lite';
     if (!kit.designs.has(near)) {

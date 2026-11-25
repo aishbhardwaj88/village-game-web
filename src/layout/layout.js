@@ -24,6 +24,7 @@
  * per-asset front offset (src/layout/frontOffsets.js): feed it straight to the anchor.
  */
 import MAP_DATA from './mapData.json' with { type: 'json' };
+import SHOP_RECTS from './shopRects.json' with { type: 'json' };
 import { DEG, wrapPi, roadBBox } from './layoutCore.js';
 import { FRONT_OFFSETS } from './frontOffsets.js';
 
@@ -50,6 +51,9 @@ export function getLayout() {
   if (!LAYOUT) {
     const places = {};
     for (const p of MAP_DATA.places) places[p.id] = p;
+    // 26 Nov: shops stand exactly on the approved map's drawn plot, facing the map's own front (tools/shop-rects-pack.mjs). The pack's
+    // own rect (road-snapped, turned) is replaced for the ~40 shops where it moved the plot or turned the front off the marker.
+    for (const o of MAP_DATA.objects) { const r = o.rings && o.rings[0] && SHOP_RECTS.rects[`${o.label}@${o.rings[0][0][0]},${o.rings[0][0][1]}`]; if (r) o.rect = { ...(o.rect || {}), ...r }; }
     LAYOUT = { places, list: MAP_DATA.places, roads: MAP_DATA.roads.map((r) => ({ ...r, bbox: roadBBox(r) })), objects: MAP_DATA.objects, canal: MAP_DATA.canal, nudges: MAP_DATA.nudges, galiClips: MAP_DATA.galiClips, galiShifts: MAP_DATA.galiShifts || [] };
   }
   return LAYOUT;
