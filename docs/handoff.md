@@ -1630,3 +1630,22 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Checked the [!] material-library-freeze top item: docs/shots/ is gitignored by design, so no board.png
   persists in a fresh container - expected (screenshot tool already known broken here), not a new blocker.
 - Nothing both real and safe to ship blind. Agents used: none.
+
+# 25 Nov (hourly loop, ~10:54-11:10 UTC) - backfilled, no entry left by that run
+- Entry missing for 3 commits found already on main at this run's start: f661c46 (LOOKS LIST item 1 wall
+  variety - shops pick plaster/_j/_m/_p by id + tint jitter in src/kit/shopsPlace.js/houses.js/
+  landInstancing.js), c53cf10 (NEEDS_YOU: bicycle streaming test ask), 0cc22d5 (pre-Play JS cut - lazy
+  storyBeats/sideJobs imports, zstddec+ktx-parse out of the vendor chunk into KTX2, KTX2 starts after
+  gate). All three deployed green (gh Actions runs 1230-1232, conclusion success). STATE.md content was
+  updated for this work, only the handoff.md log line and STATE.md's own top timestamp were skipped.
+
+# 25 Nov (hourly loop, 11:11 UTC) - no code change, same blockers re-confirmed stable
+- Did not re-test the proxy/browser blockers (tested twice already this morning, A6/efficiency-rules.md
+  "no repeat audits"). Ran tools/missions-check.mjs instead (no browser, cheap, directly answers LOOKS LIST
+  item 8's "missions/10 side jobs proven on the new map"): 396 pass, 0 fail, 5 warn - same shape as every
+  prior run, confirms missions still clean on the just-landed final map. Console-errors sub-item of item 8
+  stays open (needs a real browser, known container limit).
+- Re-checked all [ACTIVE] BACKLOG items: architecture/texture-pipeline still have no newly-reworked place
+  (wall-variety commit above only changed material *selection*, not geometry/UVs via arch.py); CC0 prop
+  sourcing still proxy-blocked; M7 baagh keeper and item-7 shader-warm-up still need the broken browser.
+- Nothing both real and safe to ship blind. Agents used: none.

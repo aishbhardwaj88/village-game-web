@@ -1,6 +1,9 @@
 # State - rewritten every run, max 40 lines
-Last updated: 25 Nov 10:13 UTC (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching continues below.
-This run (25 Nov, hourly): no game change; builder-script arch.py audit and material-board check were optional/known (see BACKLOG line 64, docs/shots gitignored). Fresh container: `npm ci` + checkout -B main.
+Last updated: 25 Nov 11:11 UTC (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching continues below.
+This run (25 Nov, 11:11 UTC): no game change; missions-check re-run clean (396/0/5, same shape, confirms item 8
+on the final map); backfilled a missing handoff.md entry for the prior run's 3 commits (wall variety, NEEDS_YOU,
+pre-Play JS cut), already deployed green. All [ACTIVE] BACKLOG items still blocked the same way (proxy 403,
+headless browser) - not re-tested this run, per A6. Fresh container: `npm ci` + checkout -B main.
 
 ## Current state
 - 25 Nov WALL VARIETY (materials only): shops draw plaster as plaster/_j/_m/_p by shop id (BatchKit remap, +-6% tint jitter); house seeds re-rolled so pakka neighbours differ in plaster surface (181 -> 4 clashes of 421). No new texture requests before Play.
