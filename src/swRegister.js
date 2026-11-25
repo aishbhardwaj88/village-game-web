@@ -26,7 +26,16 @@ export function initServiceWorkerSupport() {
   });
   try { performance.setResourceTimingBufferSize(1000); } catch (e) { /* ignore */ }
   if (new URLSearchParams(location.search).has('nosw')) { killSwitch(); return false; }
-  const reg = () => navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE }).catch(() => {});
+  // 25 Nov: a deploy must reach returning visitors on the next load. sw.js is never read from the HTTP cache (updateViaCache none), is
+  // re-checked on every load, and its bytes change with every build (MANIFEST). skipWaiting + clients.claim in sw.js make the new worker
+  // take over at once; when it takes over a page that was already controlled by an older worker, reload ONCE so the page runs the new build.
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return; // first install: nothing stale to replace
+    try { if (sessionStorage.getItem('dopahar_sw_reload')) return; sessionStorage.setItem('dopahar_sw_reload', '1'); } catch (e) { /* ignore */ }
+    location.reload();
+  });
+  const reg = () => navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE, updateViaCache: 'none' }).then((r) => r.update().catch(() => {})).catch(() => {});
   if (document.readyState === 'complete') reg(); else window.addEventListener('load', reg, { once: true });
   return true;
 }

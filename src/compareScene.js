@@ -18,7 +18,7 @@ const STRIDE = { hd: { walk: 0.90, gesture_swagger: 0.915 }, sm: { walk: 0.914, 
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
 const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['All', 'both'], ['Face HD', 'face_hd'], ['Face Smart Mesh', 'face_sm'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 5.2, BOTH_GAP = 2, BOTH_RANGE = [1, 5], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 2.8, BOTH_GAP = 2, BOTH_RANGE = [0.6, 8], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -100,11 +100,11 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   const faceKey = (e) => ['a', 'd', 'w', 's', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key.length === 1 ? e.key.toLowerCase() : e.key);
   window.addEventListener('keydown', (e) => {
     if (!face) return;
-    if (face === 'both') { if (e.key === 'Escape' || faceKey(e)) { leaveFace(); mark(clip); } return; } // Escape or a walking key leaves the two-shot; the game still gets the key
+    if (e.key === 'Escape' && face === 'both') { leaveFace(); mark(clip); return; } // 25 Nov: Escape returns to normal walking; W/S dolly and A/D orbit now work in the two-shot too (below)
     if (e.key === 'Escape') { leaveFace(); mark(clip); e.stopImmediatePropagation(); return; }
     if (faceKey(e)) { keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); e.preventDefault(); }
   }, true);
-  window.addEventListener('keyup', (e) => { if (face && face !== 'both' && faceKey(e)) { keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); } }, true);
+  window.addEventListener('keyup', (e) => { if (face && faceKey(e)) { keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key); e.stopImmediatePropagation(); } }, true);
   const tmpV = new THREE.Vector3(), tmp2 = new THREE.Vector3();
   const turn = (a, want, dt) => { // exponential ease: fast at first, settles smoothly (no snap, no overshoot)
     const d = Math.atan2(Math.sin(want - a.yaw), Math.cos(want - a.yaw));
@@ -114,10 +114,11 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   return function update(dt) {
     if (!(dt > 0)) return;
     const walking = clip === 'walk' || clip === 'gesture_swagger';
-    if (face && face !== 'both') {
+    if (face) {
       const k = (n) => keys.has(n);
+      const range = face === 'both' ? BOTH_RANGE : FACE_DIST;
       orbit += ((k('d') || k('ArrowRight') ? 1 : 0) - (k('a') || k('ArrowLeft') ? 1 : 0)) * ORBIT_RATE * dt;
-      dist = Math.min(FACE_DIST[1], Math.max(FACE_DIST[0], dist + ((k('s') || k('ArrowDown') ? 1 : 0) - (k('w') || k('ArrowUp') ? 1 : 0)) * ZOOM_RATE * dt));
+      dist = Math.min(range[1], Math.max(range[0], dist + ((k('s') || k('ArrowDown') ? 1 : 0) - (k('w') || k('ArrowUp') ? 1 : 0)) * ZOOM_RATE * dt));
     }
     const headOf = (a) => { if (!a.head) a.g.traverse((b) => { if (!a.head && b.isBone && /(^|rig|:)head$/i.test(b.name)) a.head = b; }); return a.head; };
     const two = face === 'both';
@@ -152,10 +153,11 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
       if (!face && dBody <= 3) a.lbl.visible = false;
       a.lbl.scale.set(dl * 0.12, dl * 0.03, 1); // fixed small size on screen, whatever the distance
     }
-    if (two) {
+    if (two) { // 25 Nov: locked eye-level two-shot from the first frame, pitch 0 (never looks down); the normal follow camera is a no-op (camRig.update replaced)
       const hs = actors.map(headOf);
-      if (hs.every(Boolean)) {
-        tmpV.set(0, 0, 0); for (const h of hs) { h.getWorldPosition(tmp2); tmpV.add(tmp2); } tmpV.multiplyScalar(1 / hs.length); tmpV.y += 0.1; // eye level, between the two faces
+      {
+        if (hs.every(Boolean)) { tmpV.set(0, 0, 0); for (const h of hs) { h.getWorldPosition(tmp2); tmpV.add(tmp2); } tmpV.multiplyScalar(1 / hs.length); tmpV.y += 0.1; } // eye level, between the two faces
+        else tmpV.set(CENTRE.x, groundAt(CENTRE.x, CENTRE.z, 0) + 1.65, CENTRE.z); // models still loading: same height, same spot
         const ang = Math.atan2(ux, uz) + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
