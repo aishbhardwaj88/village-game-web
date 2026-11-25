@@ -1,4 +1,6 @@
 import { pAdd } from './perfProbe.js';
+import { isNewLayout } from './layout/layout.js';
+import { onNewRoad } from './layout/roadClear.js';
 import * as THREE from 'three';
 import { isAutoSolidMesh, deriveMeshBoxes } from './autoColliders.js';
 import { WALKABLE_RECTS } from './walkable.js';
@@ -172,6 +174,17 @@ function* buildCollidersGen(scene, sliceMs) {
     if (performance.now() - sliceStart > sliceMs) { yield; sliceStart = performance.now(); }
   }
   boxes.push(...boardBoxes);
+  // 25 Nov, her rule "no object on a road": under the approved map an explicit (non-derived) solid whose centre lies ON a road
+  // band is an old-layout leftover standing on the carriageway (e.g. a 6.9 x 6.8 m block at the square, 603.2,0.7). Roads are for
+  // vehicles, so it must never be an invisible wall. Thin walls (a side under 1.5 m) and big compounds (over 40 m) are kept.
+  if (isNewLayout()) {
+    return boxes.filter((b) => {
+      if (b.auto) return true;
+      const w = b.maxX - b.minX, d = b.maxZ - b.minZ;
+      if (w < 1.5 || d < 1.5 || w > 40 || d > 40) return true;
+      return !onNewRoad((b.minX + b.maxX) / 2, (b.minZ + b.maxZ) / 2, 0.01);
+    });
+  }
   return boxes;
 }
 
