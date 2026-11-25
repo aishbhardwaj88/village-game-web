@@ -79,6 +79,7 @@ const SETS = {
   plaster_m: { base: 'assets/textures_mix/plaster_m/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster004
   plaster_p: { base: 'assets/textures_mix/plaster_p/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster007
   concrete_e: { base: 'assets/textures_mix/concrete_e/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Concrete034
+  road_asphalt: { base: 'assets/textures_mix/road_asphalt/', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: ambientCG Road007 asphalt, baked lines removed, colour gained to the concrete_e mean (highway surface, src/roadNetwork.js)
 };
 
 // Real villages don't paint every wall and roof from one tin/one lane/one plaster -
@@ -300,7 +301,7 @@ const DP_FAMILY = {
  * Applied BEFORE applySurfaceVariation so removeSurfaceVariation() (wall grime) restores a hook that still has it.
  */
 const ANTITILE_SETS = new Set(['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g', 'plaster_h', 'plaster_i',
-  'plaster_j', 'plaster_m', 'plaster_p', 'mud_b', 'mud_c', 'concrete_e', 'concrete_f']);
+  'plaster_j', 'plaster_m', 'plaster_p', 'mud_b', 'mud_c', 'concrete_e', 'concrete_f', 'road_asphalt']);
 export function applyAntiTile(material) {
   if (!material || material.isShaderMaterial || !material.map || material.userData.dpAnti) return;
   material.userData.dpAnti = true;

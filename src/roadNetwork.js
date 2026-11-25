@@ -487,12 +487,12 @@ export function networkMesh(net, rect, name) {
   return g;
 }
 
-const ASPHALT_TILE = 2.4; // m of road per texture tile: fine aggregate grain at driving height
+const ASPHALT_TILE = 3.75; // m of road per texture tile: fine aggregate grain at driving height
 let AMAT = null, PMAT = null;
-/** Highway tarmac: the shared 'concrete_e' set (CC0 ambientCG Concrete034, normal + roughness) dark-tinted by vertex colour. No asphalt scan is in the repo and the build has no network, see docs/NEEDS_YOU.md. */
+/** Highway tarmac: real asphalt scan 'road_asphalt' (CC0 ambientCG Road007, lines removed, normal + roughness), dark-tinted by vertex colour. */
 export function asphaltMaterial() {
   if (AMAT) return AMAT;
-  AMAT = cloneTiledMaterial(getTiledMaterial('concrete_e', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
+  AMAT = cloneTiledMaterial(getTiledMaterial('road_asphalt', { repeatX: 1, repeatY: 1, roughness: 1, vertexColors: true }));
   AMAT.name = 'asphalt';
   AMAT.transparent = true;
   AMAT.polygonOffset = true; AMAT.polygonOffsetFactor = -1; AMAT.polygonOffsetUnits = -2;

@@ -4543,6 +4543,19 @@
       "family": [
         "wall_poster_atlas"
       ]
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/road_asphalt/*"
+      ],
+      "category": "credited",
+      "title": "Road007 (highway asphalt, 26 Nov)",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/view?id=Road007",
+      "author": "ambientCG",
+      "licence": "CC0",
+      "creditsKey": "Road007",
+      "evidence": "ambientCG 1K-JPG set; Color, NormalGL and Roughness converted to 1024 px WebP; baked lane lines removed; AO/Displacement ignored."
     }
   ],
   "worthKnowing": [
