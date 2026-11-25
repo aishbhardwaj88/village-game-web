@@ -110,7 +110,7 @@ const Y = new THREE.Vector3(0, 1, 0);
 // world matrix: put local Y along `dir` at `pos`
 const frame = (pos, dir) => new THREE.Matrix4().makeTranslation(pos.x, pos.y, pos.z).multiply(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, dir.clone().normalize())));
 
-const gold = doc.createMaterial('gold_jewellery').setBaseColorFactor([1.0, 0.76, 0.28, 1]).setMetallicFactor(1).setRoughnessFactor(0.3).setDoubleSided(true);
+const gold = doc.createMaterial('gold_jewellery').setBaseColorFactor([0.8, 0.52, 0.12, 1]).setMetallicFactor(1).setRoughnessFactor(0.35).setDoubleSided(true);
 const redMat = doc.createMaterial('sindoor_red').setBaseColorFactor([0.62, 0.02, 0.03, 1]).setMetallicFactor(0).setRoughnessFactor(0.7).setDoubleSided(true);
 const dialMat = doc.createMaterial('watch_dial').setBaseColorFactor([0.93, 0.9, 0.82, 1]).setMetallicFactor(0).setRoughnessFactor(0.6);
 
@@ -146,7 +146,7 @@ const DBG = {};
   const tx = +process.env.NOSE_X || 327, ty = +process.env.NOSE_Y || 383;
   const t = new THREE.Vector3(fx(tx), fy(ty), 0.07);
   const h = hit(new THREE.Vector3(t.x + 0.05, t.y, t.z + 0.07), t);
-  addMesh(head, 'nose_pin_gold', sphere(1.2 * MM, 12), gold, new THREE.Matrix4().makeTranslation(...h.p.clone().addScaledVector(h.n, 0.25 * MM).toArray()));
+  addMesh(head, 'nose_pin_gold', sphere(1.6 * MM, 12), gold, new THREE.Matrix4().makeTranslation(...h.p.clone().addScaledVector(h.n, 0.25 * MM).toArray()));
   DBG.nose = h.p.toArray();
 }
 { // EARRINGS: gold jhumkas, one per ear, hanging from the lobe
@@ -161,7 +161,7 @@ const DBG = {};
     const h = hit(new THREE.Vector3(sgn * 0.3, best[1] + 0.004, best[2]), new THREE.Vector3(0, best[1] + 0.004, best[2]));
     const lobe = h.p.clone(); lobe.x = sgn * (Math.abs(lobe.x) - 0.0006);
     const name = sgn > 0 ? 'left' : 'right';
-    const R = 4.6 * MM, top = new THREE.Vector3(best[0] + sgn * 0.0008, best[1] + 0.0013, best[2]); // bell hangs from the very bottom of the lobe
+    const R = 5 * MM, top = new THREE.Vector3(best[0] + sgn * 0.0008, best[1] + 0.0013, best[2]); // bell hangs from the very bottom of the lobe
     addMesh(head, `jhumka_stud_${name}`, sphere(1.8 * MM, 12), gold, new THREE.Matrix4().makeTranslation(lobe.x + sgn * 0.0006, best[1] + 0.0027, lobe.z));
     addMesh(head, `jhumka_dome_${name}`, dome(R), gold, new THREE.Matrix4().makeTranslation(top.x, top.y, top.z));
     addMesh(head, `jhumka_drop_${name}`, sphere(1.4 * MM, 10), gold, new THREE.Matrix4().makeTranslation(top.x, top.y - 1.18 * R - 0.9 * MM, top.z));
