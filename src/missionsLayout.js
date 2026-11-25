@@ -90,7 +90,7 @@ function table() {
   // as it is under ?layout=old). New: on the open ground behind the house, next to the wheat sack pile (M3 loads the trolley
   // there; M7 drives out from there), the bullock cart beside it, the spare cycle at the gate.
   T.vehicles = () => ({
-    tractor: { x: 642.0, z: 32.0, yaw: 0 }, // trolley rests 4.6 m south of it (642.0, 36.6); moved from (643.7, 31.0) when the final map put a hardware shop under the trolley; clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
+    tractor: { x: 641.0, z: 32.0, yaw: 0 }, // 26 Nov: x 642 -> 641 so it clears the hardware shop now built at 643.5-647.9 (validator: 0.31 m into its wall); trolley rests 4.6 m south of it; moved from (643.7, 31.0) when the final map put a hardware shop under the trolley; clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
     cart: { ...nearCart(), yaw: Math.PI },
     bike: { ...house(3.2, 9.0), yaw: ANCHORS.house.ry + Math.PI / 2 },
   });

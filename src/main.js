@@ -158,7 +158,7 @@ import { createYardSite } from './yardModels.js';
 import { applyDipHoles, dipHeightAt, dipHeightRaw } from './dips.js';
 import { surfaceAt as moverSurfaceAt } from './moverGround.js'; // G3: cycle wheels and walkers on the real surface (road lips, kerbs, dug banks)
 import { markFigure } from './standOn.js'; // pond, johad, canal dug for real (local dips)
-import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createCanalBankRoad, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
+import { createPond, createTubewell, createTeaStallHaystacks, createMapHaystacks, createFieldPropSite, createDungCakeYard, createSugarcaneBelt, createJohad, createKhalihan, createAnganwadi, createDudhDairy, createHealthSubCentre, createChemist, createMasjid, createGurudwara, createTvHouse, createManihari, createSabziRehris, createJainMandir, createHighwayCluster, createJalebiStall, createBantaShop, createChaatThela, createMelaGround, createKhelMaidan, createGurukul, createMandi, createEastRoadLeg, createGaliEdging, createBoundaryWall, createOldHaveli, createGaushala, createCarromScene, createLaneLaundry, createLaneWaterCorner } from './farmSites.js';
 import { updateLampPools } from './lampPools.js';
 import { registerLongWalks } from './longWalks.js';
 import { registerRideNooks } from './rideNooks.js';
@@ -2144,10 +2144,6 @@ async function main() {
     // 'khel_maidan' old code-built copy is no longer built: the map-placed v2 yard stands at the same anchor (1 Nov map move).
     // MAP.md: mandi, the town market past the highway (paved, warehouse scale). No coordinates given; east of the highway at x 226.
     zoneManager.register('mandi', { visibleRadius: LANDMARK_VIS, ...pt('mandi'), buildRadius: 70, teardownRadius: 85, build: () => turnSiteGroup(createMandi(pt('mandi')), ANCHORS.mandi.ry) });
-    // MAP.md: kachcha bank roads along the canal, field side (south bank), x -42..42 around (-8,27.6).
-    zoneManager.register('canal_bank_road', { detail: true, x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z - 5.4 }) });
-    // MAP.md: the village-side (north) bank road, z 38.8, just past the 1.2 m bank on the abadi side of the water.
-    zoneManager.register('canal_bank_road_n', { detail: true, x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z + 5.8, buildRadius: 28, teardownRadius: 38, build: () => createCanalBankRoad({ x: ANCHORS.canal.x + 1, z: ANCHORS.canal.z + 5.8 }, 'canal_bank_road_n') });
     // MAP.md organic village edge: low compound walls closing the abadi's west, south and east sides, gaps where lanes leave.
     // dropped 2 Nov (old outline, empty ground since the map move): zoneManager.register('edge_wall_w', { detail: true, x: -101, z: 66, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -101, z: 66 }, 'edge_wall_w', [{ a: { x: -101, z: 34 }, b: { x: -101, z: 100 } }], [{ x: -101, z: 62, w: 3.5 }]) });
     // dropped 2 Nov (old outline, empty ground since the map move): zoneManager.register('edge_wall_s', { detail: true, x: -70, z: 157, buildRadius: 55, teardownRadius: 68, build: () => createBoundaryWall({ x: -70, z: 157 }, 'edge_wall_s', [{ a: { x: -104, z: 157 }, b: { x: -38, z: 157 } }], [{ x: -72, z: 157, w: 4 }]) });

@@ -5,6 +5,7 @@ pre-Play JS cut), already deployed green. All [ACTIVE] BACKLOG items still block
 headless browser) - not re-tested this run, per A6. Fresh container: `npm ci` + checkout -B main.
 
 ## Current state
+- 26 Nov SHOPS FIX: 19 skipped shops/kiosks/carts now built on their drawn plot (shopsPlace.js ring fallback; shops built 143 -> 162 of 165, 3 railway left). Tractor spawn x 642 -> 641 (hardware shop now stands beside it). Old canal bank strips removed from main.js. world-validator check 1 clear; check 2 floats (hb_main_39, school_bell) is pre-existing.
 - 25 Nov WALL VARIETY (materials only): shops draw plaster as plaster/_j/_m/_p by shop id (BatchKit remap, +-6% tint jitter); house seeds re-rolled so pakka neighbours differ in plaster surface (181 -> 4 clashes of 421). No new texture requests before Play.
 - 25 Nov PRE-PLAY BYTES: plant models (flower_gazania 396 KB, shrub_01 246 KB) have no copy within 70 m of the spawn, so
   they now load after Play (realPlants.js setPlantGate, wired in main.js). Measured before Play 13.44 -> 12.81 MB. gurukul/bazaar/school were already after Play.

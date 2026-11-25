@@ -139,7 +139,25 @@ function* buildShopsGen(map, { camera = null } = {}) {
     const isSingle = /^new_[A-Z]/.test(key) && !NOT_SHOPS.has(name);
     if (!isSqx && !isKiosk && !isSingle) continue;
     const c0 = { x: o.rings[0].reduce((a, p) => a + p[0], 0) / 4, z: o.rings[0].reduce((a, p) => a + p[1], 0) / 4 };
-    const place = matchPlace(places, isSqx ? name.replace(/ \(2-storey\)$/, '') : name, c0.x, c0.z);
+    let place = matchPlace(places, isSqx ? name.replace(/ \(2-storey\)$/, '') : name, c0.x, c0.z);
+    if (!place && (isSqx || isKiosk)) {
+      // 26 Nov: 19 shops, kiosks and carts have their drawn plot more than 6 m from their own place marker (the marker was moved, the
+      // plot was not; some markers now sit on top of another shop). The drawn plot is the footprint, so it stands where it is drawn and
+      // its front is the plot edge that faces the nearest road (the same way the shopkeeper's homes find theirs), never moved.
+      const rg = o.rings[0], ee = [[rg[1][0] - rg[0][0], rg[1][1] - rg[0][1]], [rg[2][0] - rg[1][0], rg[2][1] - rg[1][1]]];
+      let best = null;
+      for (const e of ee) {
+        const L = Math.hypot(e[0], e[1]) || 1;
+        for (const sg of [1, -1]) {
+          const f = [sg * e[0] / L, sg * e[1] / L], rr = ringRect(rg, f);
+          const cl = roads.clearance(c0.x + f[0] * (rr.depth / 2 + 3), c0.z + f[1] * (rr.depth / 2 + 3));
+          if (!best || cl < best.cl) best = { cl, f };
+        }
+      }
+      place = { name, x: c0.x, z: c0.z, front: best.f, fallback: true };
+      report.matchedByRing = (report.matchedByRing || 0) + 1;
+      (report.matchedByRingList ||= []).push(o.label);
+    }
     if (!place) { report.skipped.push(`${o.label}: no place with a front`); continue; }
     // The layout agent's corrected footprint (squared to its road, off roads and galis) wins over the drawn ring (S7 WIRING, 21 Nov).
     const rect = o.rect ? { x: o.rect.cx, z: o.rect.cz, width: o.rect.w, depth: o.rect.d, front: o.rect.front, ry: o.rect.ry, skewDeg: 0 } : ringRect(o.rings[0], place.front);

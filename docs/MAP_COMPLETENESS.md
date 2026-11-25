@@ -13,10 +13,7 @@ Counts (map rows): places 436, objects 1627. BUILT ~417 places / ~1585 objects. 
 | Railway station building | 405.8,-92 | shopsPlace.js `isSingle` accepts it, but matchPlace finds no place named "Railway station" so it is skipped ("no place with a front") |
 | Platform shelter | 395.9,-93 | same skip |
 | Ticket window and waiting hall | 405.8,-79.5 | same skip |
-| 7 two-storey shops: Kirana 607.7,76.2; Jeweller 561.9,12.9; Readymade clothes 619.3,-17.7; Pooja items 611.3,36.6; Kites and toys 594.5,40; Gift shop 594.5,35.1; Grocery 594.1,50.3 | as listed | object ring is more than 6 m from the same-named place marker (marker moved, ring did not), so matchPlace returns null and shopsPlace.js:84 skips it |
-| Hardware and paint (2-storey) | 645.7,27.8 | sqx object whose only same-named place is the single shop at 650,-114 (far), skipped |
-| 11 kiosks/carts: Fruit kiosk 591.5,30.5; Kulfi kiosk 631,53.6; Juice kiosk 634.5,52.9; Toys and balloons kiosk 638.1,52.1; Sweet corn kiosk 595.6,57; Aloo tikki kiosk 657.4,59.5; Dosa cart 581.6,-10.9; Momos cart 576.4,-3.1; Lassi cart 627.7,53.2; Juice cart 620,35.4; Sweet corn cart 596,60.1 | as listed | same cause: marker and ring more than 6 m apart |
-Net effect: those 18 place markers (new_sqx_244/251/253/268/269/273/274, new_k280/281/283/286/287/288/289/290/302/303/307) have no building at the marker either; the shops stand at the old ring spots or not at all.
+| (FIXED 26 Nov) 7 two-storey shops, Hardware and paint, 11 kiosks/carts that were skipped | Kirana 607.7,76.2; Jeweller 561.9,12.9; Readymade clothes 619.3,-17.7; Pooja 611.3,36.6; Kites and toys 594.5,40; Gift shop 594.5,35.1; Grocery 594.1,50.4; Hardware 645.7,27.8; 11 kiosks/carts | Now built on their drawn plot (src/kit/shopsPlace.js: unmatched sqx/kiosk/cart take their front from the plot edge facing the nearest road; markers were moved or sit on other shops, so the plot is the footprint). Shops 165 objects: built 143 -> 162, skipped 22 -> 3. The 3 left are the railway station, platform shelter and waiting hall (railway, not shops) |
 
 ## B. PARTIAL
 | Item | Evidence |
@@ -50,7 +47,7 @@ The shops kit reads the RAW file (landLayout.js), so shop positions follow the r
 |---|---|---|
 | Second school ("Yard 1", primary_school.glb) | 320,-225 | stagedPlaces.js yard_school, registered by stagingYard.js; mapPlan.js says it is not placed on the map; no map entry |
 | Village houses kit yard A-H (house_kit_a-h) | 308.6,-175 | stagedPlaces.js yard_houses, registered, no map entry |
-| Canal bank road strips x2 (old canal) | 772,28.4 and 772,39.6 | main.js:2148-2151 uses ANCHORS.canal (771,33.8); the map canal is at x 824, so these sit 52 m off the water |
+| Canal bank road strips x2 (old canal) | REMOVED 26 Nov | main.js zone registrations deleted (nothing else referenced them) |
 | Old mission canal anchor | 771,33.8 | anchors.js `canal`, map has no entry (only new_canal at 824) |
 | Sugarcane belt, neighbour orchard, old highway cluster, mela | dropped under new layout | layout-wiring-entry.js drops them; listed only to show they are not extra |
 | Material board yard | 560,15 | dev mode only, not built for players |
