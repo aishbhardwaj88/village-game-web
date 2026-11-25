@@ -2,6 +2,8 @@
  * Service worker wiring (25 Nov caching plan, task B). Web production build only: not the dev server, not the desktop app.
  *   ?nosw=1  kill switch: unregisters the worker, deletes its caches, skips registration. Never touches localStorage (saves).
  * registerServiceWorker() runs at the start of main(); seedAndPrune() 3 s after Play is ready.
+ * This is the service_worker family: builds/owns public/sw.js and its hand-authored emergency kill switch
+ * public/sw-kill.js (copy it over sw.js and deploy if the worker ever misbehaves - see that file's own header).
  */
 import { getEdition } from './edition.js';
 

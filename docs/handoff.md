@@ -1588,3 +1588,15 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   diff); licence-audit --check 0 UNKNOWN; check-dup-models PASS; check-material-clone PASS; place-visibility-check
   PASS; missions-check 396/0/5 (0 FAIL, same shape as baseline). Tier 1 (builder files), no position/collision touched.
 - Agents used: none (small, same-area change; Sonnet main loop handled it directly per efficiency-rules.md).
+
+# 25 Nov (hourly loop) - licence-audit false-positive fixed, map-finality question raised
+- licence-audit.mjs was flagging public/sw-kill.js as OWNER-unclear: its licence record names src/swRegister.js
+  as builder, but that file never literally said "sw-kill" or the "service_worker" family name the record files
+  it under, so the text-match check failed even though the file is legitimately self-made and already tracked.
+  Added one comment line to swRegister.js naming both; OWNER warnings 3 -> 2, both remaining pre-existing and
+  out of scope this loop (parlour_didi texture is a character; the Tripo billing question is already closed in
+  NEEDS_YOU and intentionally tracked only in licence-audit's own output).
+- Raised in NEEDS_YOU: several BACKLOG items are still tagged [PAUSED-MAP] ("wait for the new map") though a
+  map landed and was approved 25 Nov - asked her if it's locked for good so that work can safely resume.
+- Verified: build:unchecked, licence-audit --check, check-dup-models, check-material-clone, place-visibility-
+  check all clean (Tier 1, comment-only src/ change). Agents used: none (small, single-file).
