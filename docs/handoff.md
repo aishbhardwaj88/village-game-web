@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov (hourly loop) - no code change this run; docs-only (A5 exception), every lead genuinely blocked
+- Fresh container had no node_modules at all (not just "empty") - a shallow `ls` check mid-run falsely looked
+  non-empty; ran `npm ci`, then re-verified build:unchecked + all 4 instant checks clean on this checkout.
+- Extended STATE's next-item #5 sweep (flat vertex-colour, no texture, CLAUDE.md 5b rule 2) from props/
+  farmSites/roadEvents to chaurahaEdges/rideNooks/villageFurniture2/thelaSign.js: clean - the only bare
+  MeshStandardMaterials left are the intentional capsule people stand-ins (characters parked). Item 5 done.
+- Re-tried: screenshot.js (hung ~100s, same container block, A7), api.polyhaven.com/ambientcg.com for CC0
+  prop sourcing (both proxy-403). Zone-streaming/ring-weight/memory-hygiene stay parked, real regression risk.
+- No unblocked, in-scope, safe item found this hour (characters/vehicles/shops out of scope, map paused,
+  rest gated on her or on network/browser access this container doesn't have). STATE.md rewritten.
+
 # 25 Nov (hourly loop) - real-material fix on the village's tallest landmark (CLAUDE.md 5b rule 2)
 - src/props.js createWaterTankProp() (paani ki tanki + transformer, MAP.md's "tallest structure, visible
   from most of the map") was 100% flat vertex-colour, no texture - an automatic fail under the realism
