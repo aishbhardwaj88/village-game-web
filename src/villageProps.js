@@ -20,6 +20,11 @@ const MODELS = [
   // there as "Not found in the game code (maybe unused)"; round_wooden_table_01/painted_wooden_chair_01 are already used in
   // the Carrom scene (src/farmSites.js) and share loadModel()'s cache, so reusing them here adds no new fetch.
   ['small_wooden_table_01', 0.68, 2], ['round_wooden_table_01', 0.72, 1], ['painted_wooden_chair_01', 0.82, 3],
+  // 25 Nov (BACKLOG "CC0 prop sourcing before hand-building"): jug_01 and ceramic_vase_01 were already downloaded, shrunk
+  // and credited (docs/CREDITS.md line 76) but never wired into any scene - caught while checking that list against
+  // src/villageProps.js. Real heights measured from the .glb bounding box (jug_01 0.211 m, ceramic_vase_01 0.4 m), not
+  // guessed. Same doorstep-clutter role as brass_pot_01/metal_jug, lower weight so they read as occasional variety.
+  ['jug_01', 0.211, 2], ['ceramic_vase_01', 0.4, 1],
 ];
 const TABLE = MODELS.flatMap((m, i) => Array(m[2]).fill(i));
 // Dedicated pool for item 4 ("houses need flower pots, plants and climbers ... use the existing props potted_plant_*,

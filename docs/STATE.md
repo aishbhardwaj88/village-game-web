@@ -1,6 +1,6 @@
 # State - rewritten every run, max 40 lines
 
-Last updated: 25 Nov (gate agent). Streaming/caching work below; LOOKS LIST items 1-7 done or parked.
+Last updated: 25 Nov (hourly loop). Streaming/caching work below; LOOKS LIST items 1-8 done or parked (item 8's "zero console errors" needs a real browser, container limit).
 
 ## Current state
 - 26 Nov HONEST GATE: Play unlocks only when the start area (160 m ring) is downloaded, built, uploaded, compiled (src/ui.js, main.js setReadyGate, zoneManager setGate). No timers. World builds at boot behind the title. Far zones stream ahead of the player; hold + notice if outrun. Debug panel (?debug=1) shows zone late pop-ins and shader programs. regression-check now waits for the real ready state.
@@ -19,8 +19,13 @@ Last updated: 25 Nov (gate agent). Streaming/caching work below; LOOKS LIST item
 1. Real gate: build only the start area before Play (hero zone/bazaar/temples are still built eagerly in main()); needs
    her laptop (?debug=1) to measure, headless crashes after Play here.
 2. Texture bytes before Play: 68 shared webp (grass/thatch/plaster_h normals 0.3-0.4 MB each); only defer with her OK (look).
-3. Zone streaming rule (pixel-rule appear distance, request = appear + speed x load time) for zoneManager houses/zones.
-4. Memory hygiene: close decoded ImageBitmaps after GPU upload (needs a shared-texture check first), audio beds by nearness.
+3. Zone streaming rule (pixel-rule appear distance): the speed-lead half (request = appear + speed x load time) is already
+   built (zoneManager.js leadM, 26 Nov); the on-screen-size half (visibleRadius set by actual apparent size, not a fixed
+   metre value per zone type) is not - broad refactor touching every zone registration site, real regression risk, do
+   only as a scoped follow-up, not blind.
+4. Memory hygiene: close decoded ImageBitmaps after GPU upload (needs a shared-texture check first); audio-by-nearness is
+   already substantially built (audio.js setListenerDistanceToRadio/Water/Cattle, setPlaceAmbience) - re-check only if she
+   flags a specific place that still sounds flat.
 5. Doorstep plants at 42 m / zone detail radius pop-in, house atlas shader warm-up.
 
 ## Blockers

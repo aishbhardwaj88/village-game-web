@@ -1514,3 +1514,18 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - New src/storyBeats.js (school-out, kanta slip, kirana-yard reverse, bell flag-down, mango catch, rooftop neighbours); wired in main.js outside boot (ensureStoryBeats in the loop, B key, postmanWalk hold). All beats optional, never fail a step.
 - Decisions: gate tolerance 3.5 m (+Rs5), catch window 2.5 s (+Rs2), bell range 16 m / hold 25 s, kids brake vehicles within 12 m of the school gate, kanta 50 kg per sack. Terraces are slab+stand-in placeholders at house-local offsets (may overlap real neighbours; map is being uprooted, not fixed).
 - missions-node-env.mjs fixed (document.baseURI, fetch) after the gzip loader broke it; missions-check now runs tools/story-beats-behaviour.mjs (37 pass, 0 fail).
+
+# 25 Nov (hourly loop) - wired 2 unused CC0 props; LOOKS LIST confirmed done/parked
+- LOOKS LIST items 1-7 already done/parked (confirmed by reading STATE.md/handoff), item 8 (missions/bell/canal) already
+  PASS'd 24 Nov - only its "zero console errors" sub-item is open, needs a real browser (container limit, A7). Nothing new
+  to file in NEEDS_YOU beyond the existing "Looks fixes ready" line.
+- Took a BACKLOG [ACTIVE] item instead (CC0 prop sourcing): jug_01 and ceramic_vase_01 were already downloaded, shrunk and
+  credited (docs/CREDITS.md line 76) but never wired into any scene - found while checking that credits line against
+  src/villageProps.js's MODELS table. Added both with real measured heights (gltf-transform getBounds: jug_01 0.211 m,
+  ceramic_vase_01 0.4 m, not guessed). Also fixed a stale CREDITS.md line: small_wooden_table_01 said "maybe unused" but
+  was wired in 24 Nov - corrected the note.
+- Verified: build:unchecked clean, licence-audit --check (UNKNOWN 0, both new files already had a credits row), dup-models
+  PASS, material-clone PASS, place-visibility-check PASS. Budget breaches reported (character sizes, 101 MB total, old/new
+  Play-time) are pre-existing, unrelated to this diff (no characters/boot code touched) - not re-investigated (A6).
+- Reread STATE.md item 3/4: speed-lead streaming and most audio-by-nearness were already built in earlier runs - STATE.md
+  updated to say so precisely instead of repeating them as open.
