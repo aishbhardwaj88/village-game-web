@@ -7,6 +7,7 @@ import { register } from 'node:module';
 
 const HOOKS = `
 export async function resolve(spec, context, next) {
+  if (spec === 'virtual:land-map-url') return { url: 'data:text/javascript,export default "";export const SLIM=false;', shortCircuit: true }; // vite.config.js landMapPlugin
   if (/\\?(url|raw)$/.test(spec)) spec = spec.replace(/\\?(url|raw)$/, '');
   return next(spec, context);
 }

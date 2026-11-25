@@ -25,8 +25,8 @@
  * Map coords = game world coords (x east, z south, metres). Checked 21 Nov against three running places:
  * house 652.1,40.2 / school 556.5,108.5 / halwai 637.4,21.4 / temple 695.7,-78.3 = anchors.js + MAP_SHIFT (600,0). All match.
  */
-import mapUrl from '../../docs/layout/approved-map-2026-11-21.json?url';
-import { isNewLayout } from '../layout/layout.js';
+import mapUrl, { SLIM } from 'virtual:land-map-url'; // vite.config.js landMapPlugin: the raw export, minus objects the packed map already holds
+import { isNewLayout, getLayout } from '../layout/layout.js';
 
 // Fixed 24 Nov: this was its own literal ?layout=new query-string check (same stale-default bug fixed in
 // landInit.js/mapObjectsInit.js/canal.js). Currently unused (no importer left in src/), kept exported and
@@ -38,7 +38,13 @@ export function isNewLayoutParam() {
 let loading = null;
 /** Resolves to the raw approved map { places, roads, objects, canal }. */
 export function loadLandMap() {
-  if (!loading) loading = fetch(mapUrl).then((res) => res.json());
+  if (!loading) loading = fetch(mapUrl).then((res) => res.json()).then((m) => {
+    if (SLIM) { // objects the file marks null are the packed copy's own (same kind/label/colour/heights/rings), rebuilt exactly
+      const packed = getLayout().objects;
+      m.objects = m.objects.map((o, i) => o || { kind: packed[i].kind, label: packed[i].label, color: packed[i].color, y0: packed[i].y0, y1: packed[i].y1, y: packed[i].y, rings: packed[i].rings });
+    }
+    return m;
+  });
   return loading;
 }
 

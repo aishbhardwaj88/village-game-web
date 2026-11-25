@@ -43,6 +43,10 @@ function applyQuality(q) {
 // A new Tripo character wired some other way: add its file name here so it waits for Play instead of loading at boot.
 export const CHARACTER_FILES = new Set(['maa', 'dadi', 'pitaji', 'sarpanch', 'dada', 'postman', 'sister', 'brother', 'teacher', 'parlour_didi',
   'halwai', 'doodhwala', 'kulfiwala', 'chaatwala', 'bantawala', 'shopkeeper', 'villager_aunty', 'kid_a', 'kid_b', 'kid_c', 'kid_d']);
+/** Characters are PARKED (art director, until she unparks them): no character model downloads after Play, the capsule
+ * stand-ins stay. Flip to true when she unparks them. Test and review pages (?chars=1, ?gather, ?lineup, ?face, ?play=) still load them. */
+export const CHARACTERS_UNPARKED = false;
+const unparked = () => CHARACTERS_UNPARKED || (typeof window !== 'undefined' && ['chars', 'gather', 'lineup', 'face', 'play'].some((k) => new URLSearchParams(window.location.search).has(k)));
 const FULL = 0, MID = 1, PAUSED = 2, HIDDEN = 3;
 const NAMES = ['full', 'mid', 'paused', 'hidden'];
 
@@ -170,6 +174,7 @@ function loadNearest(assetSlots, radius) {
 export function initCharacterLOD({ camera, assetSlots, quality }) {
   if (installed) return;
   installed = true;
+  const charsOn = unparked(); // evaluated once
   const preset = (quality && getQualityPreset(quality)) || getQuality();
   applyQuality(preset);
   const q = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -178,7 +183,7 @@ export function initCharacterLOD({ camera, assetSlots, quality }) {
   const loop = () => {
     requestAnimationFrame(loop);
     if (tiersOn && entries.length) assign(camera);
-    if (assetSlots && pending.length) {
+    if (assetSlots && pending.length && charsOn) {
       camera.getWorldPosition(camPos);
       for (let k = 0; k < LOD.LOAD_AT_ONCE; k++) loadNearest(assetSlots, tiersOn ? LOD.LOAD_RADIUS : Infinity);
     }

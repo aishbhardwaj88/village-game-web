@@ -93,7 +93,18 @@ export class AudioEngine {
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.started = true;
     this._startAmbience();
-    this._loadSamples();
+    this._loadSamplesLater();
+  }
+
+  /** The recordings start fetching 5 s after the world reveal (never in the first seconds after Play: those bytes belong to the village). */
+  _loadSamplesLater() {
+    const t0 = performance.now();
+    const tick = () => {
+      const revealed = !!(window.__loadMarks && window.__loadMarks.deferredEnd);
+      if ((revealed && performance.now() - t0 >= 5000) || performance.now() - t0 >= 20000) this._loadSamples();
+      else setTimeout(tick, 500);
+    };
+    setTimeout(tick, 5000);
   }
 
   /** Fetch + decode the recordings after Play; beds start the moment their file is ready. */

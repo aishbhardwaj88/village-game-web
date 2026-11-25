@@ -70,11 +70,43 @@ function swManifestPlugin(hashes) {
   };
 }
 
+// Task C1 (25 Nov): the land map was shipped twice. src/layout/mapData.json (packed, in the main chunk) already holds the
+// same ring points as docs/layout/approved-map-2026-11-21.json for 1059 of 1643 objects, so the raw copy shipped to the
+// browser keeps only what the packed copy lacks (places, roads, canal and the 584 objects that have no rings there).
+// src/kit/landLayout.js hydrates the missing objects from the in-memory packed copy, giving back the EXACT raw export
+// (this plugin checks that at build time and ships the full object whenever it would not). Dev server: raw file as before.
+function landMapPlugin(command) {
+  const RAW = resolve(__dirname, 'docs/layout/approved-map-2026-11-21.json');
+  const PACK = resolve(__dirname, 'src/layout/mapData.json');
+  const FIELDS = ['kind', 'label', 'color', 'y0', 'y1', 'y', 'rings'];
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  return {
+    name: 'land-map-slim',
+    resolveId(id) { return id === 'virtual:land-map-url' ? '\0virtual:land-map-url' : null; },
+    load(id) {
+      if (id !== '\0virtual:land-map-url') return null;
+      if (command !== 'build') return `import u from '${RAW.replace(/\\/g, '/')}?url'; export default u; export const SLIM = false;`;
+      const raw = JSON.parse(readFileSync(RAW, 'utf8'));
+      const pack = JSON.parse(readFileSync(PACK, 'utf8'));
+      let nulled = 0;
+      const objects = raw.objects.map((o, i) => {
+        const q = pack.objects[i];
+        if (q && FIELDS.every((k) => same(o[k], q[k])) && Object.keys(o).length === FIELDS.length) { nulled++; return null; }
+        return o;
+      });
+      this.addWatchFile(RAW); this.addWatchFile(PACK);
+      const ref = this.emitFile({ type: 'asset', name: 'land-map-slim.json', source: JSON.stringify({ ...raw, objects }) });
+      this.info(`land map: ${nulled}/${raw.objects.length} objects served from the packed copy`);
+      return `export default import.meta.ROLLUP_FILE_URL_${ref}; export const SLIM = true;`;
+    },
+  };
+}
+
 export default defineConfig(({ command }) => {
   const hashes = command === 'build' ? computeAssetHashes() : {};
   return {
   base: '/village-game-web/',
-  plugins: [genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
+  plugins: [landMapPlugin(command), genModelManifestPlugin(), bustPreloadsPlugin(hashes), swManifestPlugin(hashes)],
   define: {
     __ASSET_H__: JSON.stringify(hashes),
   },
