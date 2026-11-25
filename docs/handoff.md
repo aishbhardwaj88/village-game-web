@@ -1728,3 +1728,18 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Her answers: move off lanes; face the road; Mela smaller, Pond smaller, Field split, Optician narrower (3.8 m rect).
 - Logs: docs/layout/MOVE_LOG_{HOUSES,SHOPS,PLACES,FINAL4}_25NOV.md, NUDGE_LOG_25NOV.md. Audit: docs/layout/MATCH_AUDIT_3_25NOV.md (tmp/audit/run4.sh).
 - Open: audit facing check disagrees with movers on which road 50 buildings front (round chauraha); Optician clearance 0.08 m (rule 0.1); round road ends vs flat-cap rule for 4 shops at 711.6,-73.1.
+
+# 25 Nov 16:1x-16:2x scheduled run
+- Found+fixed mapData.json out-of-sync with layout-pack.mjs's own inputsHash (map pack FAIL -> PASS);
+  full repack confirmed no semantic change (same overlap/road-snap counts). Commit was a no-op on
+  rebase - a concurrent chat-session agent had already pushed the identical fix (52c6cb3).
+- A concurrent chat session is actively driving named-places/shops/houses/roads/props position work
+  (move-off-lane / face-road, her 25 Nov answer) - 2 of its commits landed mid-run. Did not duplicate;
+  layout-tests.mjs still shows 129 failures (front 25 / on-road 72 / overlap 32) in that same territory.
+- Corrected a stale STATE.md note: chaurahaEdges.js tea/tailor-vs-sqx_235/236 "overlap" is dead code
+  (filtered out whenever isNewLayout(), which is the default) - never reachable in the live game.
+- CI anomaly noted, not chased: Actions list shows no workflow run for the last 2 pushes (7c4ff01,
+  52c6cb3) though both commits are confirmed on origin/main via get_commit. Worth a look if it recurs.
+- Verified: npm run build:unchecked, licence-audit --check, check-dup-models, check-material-clone,
+  place-visibility-check all clean (Tier 1). No Tier 2 (no position/collision code of mine changed).
+- Agents used: none (small-task run, did not warrant spawning one per efficiency-rules.md).
