@@ -1,11 +1,10 @@
 # State - rewritten every run, max 40 lines
 Last updated: 25 Nov (hourly loop). LOOKS LIST items 1-8 done or parked. Streaming/caching work continues below.
-This run (25 Nov, hourly): licence-audit.mjs false-flagged public/sw-kill.js as unowned (builder record points
-at src/swRegister.js, which never named "sw-kill" or its "service_worker" family). Added one comment line to
-swRegister.js naming both; OWNER warnings 3 -> 2 (both left are pre-existing/out of scope: parlour_didi texture
-[character] and the Tripo billing question [already closed in NEEDS_YOU]). Also asked her whether the 25 Nov
-map is locked for good - several BACKLOG items are still [PAUSED-MAP] despite a map landing/being approved
-25 Nov; nobody had asked. Fresh container needed `npm ci` + `git fetch/checkout -B main` (stale detached HEAD), routine.
+This run (25 Nov, hourly): no code change. Checked every BACKLOG [ACTIVE] item for a fresh, ungated target: the
+two "standing rule" items have no current place rework to apply to (git log, 7 days); M7 baagh keeper needs
+draw-call-audit.mjs (needs the broken headless browser, A7, not re-chased per A6); CC0 props still proxy-
+blocked (not re-tested). All 23 public/assets/props/*.glb checked against src/ for stray unwired models (last
+run's jug_01 case) - all referenced, none free this time. Fresh container needed `npm ci` + checkout, routine.
 
 ## Current state
 - 26 Nov HONEST GATE, start area only: GATE_RADIUS 160 -> 70 m. GATE3/GATE4 defer normal/roughness/ao maps

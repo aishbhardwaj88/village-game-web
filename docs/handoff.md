@@ -1600,3 +1600,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   map landed and was approved 25 Nov - asked her if it's locked for good so that work can safely resume.
 - Verified: build:unchecked, licence-audit --check, check-dup-models, check-material-clone, place-visibility-
   check all clean (Tier 1, comment-only src/ change). Agents used: none (small, single-file).
+
+# 25 Nov (hourly loop) - no code change, confirmed no fresh ungated work
+- Checked all BACKLOG [ACTIVE] items for a real target: architecture self-contained-unit and texture-pipeline
+  verify have no place reworked via arch.py in the last 7 days to apply to; M7 baagh keeper needs draw-call-
+  audit.mjs, which needs the headless browser (still broken in this container, A7, not re-chased per A6); CC0
+  prop sourcing still proxy-blocked (not re-tested, per STATE). Checked all 23 public/assets/props/*.glb
+  against src/ for stray unwired models (found jug_01/ceramic_vase_01 this way last run) - all referenced.
+- Her map-finality question (NEEDS_YOU) and the other open NEEDS_YOU items remain unanswered. No code touched,
+  so no build run (A5 exception). Agents used: none (research-only, too small for an agent).
