@@ -1,3 +1,4 @@
+import { FOG_MIN_DENSITY } from './showCap.js';
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { getTiledMaterial, ensureUv2, applyGroundNoiseDetail } from './materials.js';
@@ -109,5 +110,5 @@ export function applyFog(scene, preset) {
   // fogColor is deliberately NOT identical to the sky horizon colour in every preset
   // any more (slightly different, so the ground-to-sky transition isn't a dead seam,
   // while still reading as the same hazy air).
-  scene.fog = new THREE.FogExp2(preset.fogColor.getHex(), preset.fogDensity);
+  scene.fog = new THREE.FogExp2(preset.fogColor.getHex(), Math.max(preset.fogDensity, FOG_MIN_DENSITY)); // floor: 85% fogged at SHOW_CAP (src/showCap.js)
 }

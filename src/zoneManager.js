@@ -1,3 +1,4 @@
+import { SHOW_CAP } from './showCap.js';
 import * as THREE from 'three';
 import { startStaticColliderRebuild, colliderRequests } from './collision.js';
 import { modelLoads } from './loaders.js';
@@ -103,7 +104,7 @@ export function createZoneManager(scene) {
     const wb = worldBounds();
     if (x < wb.ground.minX || x > wb.ground.maxX || z < wb.ground.minZ || z > wb.ground.maxZ) console.warn(`zoneManager: zone ${name} at (${Math.round(x)}, ${Math.round(z)}) is off the ground for layout=${currentLayout()}`);
     const lead = detail && visibleRadius == null ? DETAIL_LEAD : 0;
-    zones.set(name, { name, detail, visibleRadius: visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA), x, z, buildRadius: buildRadius + lead, teardownRadius: teardownRadius + lead, ownRadius: buildRadius, build, group: null, active: false, onFrame: null, forceBuild: false });
+    zones.set(name, { name, detail, visibleRadius: Math.min(SHOW_CAP, visibleRadius ?? buildRadius + (detail ? 0 : VIS_EXTRA)), x, z, buildRadius: buildRadius + lead, teardownRadius: teardownRadius + lead, ownRadius: buildRadius, build, group: null, active: false, onFrame: null, forceBuild: false });
   }
 
   function disposeObject(obj) {
