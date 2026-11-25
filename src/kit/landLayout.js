@@ -1,5 +1,5 @@
 /**
- * Shops-land: the one place this kit reads the approved map (docs/layout/approved-map-2026-11-21.json).
+ * Shops-land: the one place this kit reads the approved map (docs/layout/approved-map-2026-11-25.json).
  *
  * Always fetches the raw export itself (?url, lazy — never adds to the Before-Play download). An earlier version of
  * this file also tried src/layout/layout.js's getLayout() first, to skip the fetch when that data was already in

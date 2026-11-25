@@ -14,10 +14,10 @@ import { houseMapFrom } from './housesLayout.js';
 // The game's own map (the layout agent's src/layout/mapData.json: the approved export with galis trimmed at junctions and the
 // chauraha ring added) when it is there, else the approved export itself.
 const LAYOUT_DATA = new URL('../layout/mapData.json', import.meta.url);
-const APPROVED = new URL('../../docs/layout/approved-map-2026-11-21.json', import.meta.url);
+const APPROVED = new URL('../../docs/layout/approved-map-2026-11-25.json', import.meta.url);
 let mapSource = 'src/layout/mapData.json';
 let map;
-try { map = JSON.parse(readFileSync(LAYOUT_DATA)); } catch { map = JSON.parse(readFileSync(APPROVED)); mapSource = 'docs/layout/approved-map-2026-11-21.json'; }
+try { map = JSON.parse(readFileSync(LAYOUT_DATA)); } catch { map = JSON.parse(readFileSync(APPROVED)); mapSource = 'docs/layout/approved-map-2026-11-25.json'; }
 console.log('map:', mapSource);
 const { houses, roads, solids } = houseMapFrom(map);
 const plan = planHouses(houses, roads, solids);

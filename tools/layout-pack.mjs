@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Packs the approved map (docs/layout/approved-map-2026-11-21.json) into the copy the game ships (src/layout/mapData.json):
+ * Packs the approved map (docs/layout/approved-map-2026-11-25.json) into the copy the game ships (src/layout/mapData.json):
  * every tree's 24-32 point circle becomes centre + radius (it is a circle), coordinates keep 2 decimals, and everything the
  * game needs is derived here once (src/layout/layoutCore.js buildLayout: yaws, untouched places, oriented footprints, the
  * roundabout ring; src/layout/layoutSnap.js: the road snap), so the game only reads the result.
@@ -15,11 +15,11 @@ import { buildLayout, roadBBox } from '../src/layout/layoutCore.js';
 import { snapLayout, clipGalis, nudgeGalis } from '../src/layout/layoutSnap.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-export const SRC = ROOT + 'docs/layout/approved-map-2026-11-21.json';
+export const SRC = ROOT + 'docs/layout/approved-map-2026-11-25.json';
 export const OUT = ROOT + 'src/layout/mapData.json';
 /** What the packed result depends on: the approved map and the rules that derive from it. Stored in the pack, so the tests can
  * tell in a moment whether mapData.json is out of date without re-running the (minutes-long) snap. */
-export const INPUTS = ['docs/layout/approved-map-2026-11-21.json', 'src/layout/layoutCore.js', 'src/layout/layoutSnap.js', 'src/layout/footprints.js', 'src/layout/frontOffsets.js', 'tools/layout-pack.mjs'];
+export const INPUTS = ['docs/layout/approved-map-2026-11-25.json', 'src/layout/layoutCore.js', 'src/layout/layoutSnap.js', 'src/layout/footprints.js', 'src/layout/frontOffsets.js', 'tools/layout-pack.mjs'];
 export function inputsHash() {
   const h = crypto.createHash('sha256');
   for (const f of INPUTS) h.update(f + '\n').update(fs.readFileSync(ROOT + f));
@@ -67,7 +67,7 @@ export function pack(raw) {
   const round = (v) => (typeof v === 'number' ? +v.toFixed(4) : v);
   const cleanRect = (r) => r && { cx: r2(r.cx), cz: r2(r.cz), w: r2(r.w), d: r2(r.d), ry: round(r.ry), front: r.front.map(round), frontMid: r.frontMid.map(r2) };
   return {
-    source: 'docs/layout/approved-map-2026-11-21.json, derived by tools/layout-pack.mjs (fronts, footprints, road snap)',
+    source: 'docs/layout/approved-map-2026-11-25.json, derived by tools/layout-pack.mjs (fronts, footprints, road snap)',
     inputsHash: inputsHash(),
     places: layout.list.map((p) => ({ ...p, frontYaw: round(p.frontYaw), ry: round(p.ry) })),
     roads: layout.roads.map(({ bbox, ...r }) => r),

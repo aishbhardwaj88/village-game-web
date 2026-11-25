@@ -34,3 +34,6 @@ tools/_vfix_*
 
 # Her local downloads of free 3D models: never push
 3d models_downloaded from internet/
+
+# downloaded free 3D models stay local, never pushed
+3d models_downloaded from internet/

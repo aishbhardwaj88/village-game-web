@@ -2,7 +2,7 @@
 /**
  * LAYOUT TESTS for the approved 21 Nov map (?layout=new). Measured, never judged. Exit 1 on any failure.
  *
- *  0. SYNC     src/layout/mapData.json is the packed copy of docs/layout/approved-map-2026-11-21.json.
+ *  0. SYNC     src/layout/mapData.json is the packed copy of docs/layout/approved-map-2026-11-25.json.
  *  1. ANCHORS  every existing place's "before" position is where src/anchors.js has it today (coordinate frame check).
  *  2. FRONT    every named building's front edge faces its nearest road: the road is in front of it, the gap from the front
  *              edge to the road edge is at most 3 m, and the front edge is parallel to the road within 3 deg.

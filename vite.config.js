@@ -97,12 +97,12 @@ function swManifestPlugin(hashes) {
 }
 
 // Task C1 (25 Nov): the land map was shipped twice. src/layout/mapData.json (packed, in the main chunk) already holds the
-// same ring points as docs/layout/approved-map-2026-11-21.json for 1059 of 1643 objects, so the raw copy shipped to the
+// same ring points as docs/layout/approved-map-2026-11-25.json for 1059 of 1643 objects, so the raw copy shipped to the
 // browser keeps only what the packed copy lacks (places, roads, canal and the 584 objects that have no rings there).
 // src/kit/landLayout.js hydrates the missing objects from the in-memory packed copy, giving back the EXACT raw export
 // (this plugin checks that at build time and ships the full object whenever it would not). Dev server: raw file as before.
 function landMapPlugin(command) {
-  const RAW = resolve(__dirname, 'docs/layout/approved-map-2026-11-21.json');
+  const RAW = resolve(__dirname, 'docs/layout/approved-map-2026-11-25.json');
   const PACK = resolve(__dirname, 'src/layout/mapData.json');
   const FIELDS = ['kind', 'label', 'color', 'y0', 'y1', 'y', 'rings'];
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);

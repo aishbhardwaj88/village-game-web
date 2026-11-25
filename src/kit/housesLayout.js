@@ -11,7 +11,7 @@ export { isNewLayout } from '../layout/layout.js';
 
 /** { houses: [{ ring, mud }], roads: [{ id, width, pts }], solids: [{ label, ring }] } from the approved map. */
 export async function loadHouseMap() {
-  const mod = await import('../../docs/layout/approved-map-2026-11-21.json');
+  const mod = await import('../../docs/layout/approved-map-2026-11-25.json');
   return houseMapFrom(mod.default || mod);
 }
 
