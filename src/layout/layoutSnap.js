@@ -297,6 +297,31 @@ export function snapLayout(layout) {
     }
     nudges.push({ id: it.id, name: it.name, kind: it.kind, relocated: true, move: +best.dist.toFixed(2), turnDeg: +(dRy / DEG).toFixed(1), why: 'no road in front where drawn: moved to the nearest free frontage' });
   }
+  // 4. a stray prop (washing line, notice board) left overlapping a building that itself never moved this pass: step 2's
+  // cart-clearing only fires for carts in the way of a NAMED building's own candidate move, so a prop sitting on a building
+  // that already satisfied its own checks (never tried a candidate) is never pushed. Push any such prop clear in 8
+  // directions, smallest distance first, same off-road test as a real cart move.
+  for (const it of items) {
+    if (it.kind !== 'solid' || it.fixed || it.named) continue;
+    if (!isCart(it) && !/notice board/i.test(it.name)) continue;
+    if (overlapsOf(it, items, false) <= OVERLAP_TOL) continue;
+    const cx = it.corners.reduce((s, q) => s + q[0], 0) / 4, cz = it.corners.reduce((s, q) => s + q[1], 0) / 4;
+    const dirs8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, 0.7071], [-0.7071, -0.7071]];
+    const saved = it.corners;
+    let done = false;
+    for (let d = 0.1; d <= 6 && !done; d += 0.1) {
+      for (const [ux, uz] of dirs8) {
+        const moved = saved.map(([x, z]) => [x + ux * d, z + uz * d]);
+        it.corners = moved; it._bb = null;
+        if (overlapsOf(it, items, false) <= OVERLAP_TOL && !roadDepth(roads, moved)) {
+          applyNudge(it, 0, ux * d, uz * d, cx, cz);
+          nudges.push({ id: it.id, name: it.name, kind: it.kind, turnDeg: 0, move: +d.toFixed(2), why: 'stray prop pushed clear of a building it overlapped (never itself moved)' });
+          done = true; break;
+        }
+      }
+    }
+    if (!done) { it.corners = saved; it._bb = null; }
+  }
   return nudges;
 }
 /** Give a solid a new front side (same footprint): its rect turns by `turn` (three.js yaw), w and d swap for a quarter turn. */

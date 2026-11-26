@@ -1938,3 +1938,18 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   in STATE.md; still fine to background.
 - Remaining 81 (27 front-face, 28 on-road, 26 overlap) need per-item look, not
   another search-granularity tweak. Agents used: none.
+
+# 26 Nov scheduled run: stray-prop overlap clear (washing lines / notice boards)
+- Found the gap: step 2's cart-clearing only fires for a cart in the way of a NAMED
+  building's own candidate move; a prop overlapping a building that never itself
+  tried a move (already passed its own checks) was never pushed. Added layoutSnap.js
+  step 4: any non-fixed, non-named solid matching isCart() or /notice board/i that
+  still overlaps something gets pushed clear in 8 directions (0.1 m steps, up to 6 m,
+  same off-road test as a real cart move).
+- Repacked: 81 -> 79 failures (overlap 26 -> 24: washing line #4 and #7 cleared).
+  The other 4 stray washing lines + 1 notice board stayed put - no direction within
+  6 m clears them (sandwiched between two buildings, or the move itself would cross
+  a gali); real per-item moves, not this pass's job.
+- Verified: build:unchecked + licence-audit + check-dup-models + check-material-clone
+  + place-visibility-check all clean (Tier 1, only layoutSnap.js + mapData.json
+  changed). Agents used: none.
