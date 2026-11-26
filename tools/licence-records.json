@@ -4477,6 +4477,20 @@
     },
     {
       "match": [
+        "public/assets/models/darzi.glb"
+      ],
+      "category": "tripo",
+      "title": "Character: Darzi / tailor (TV house review)",
+      "source": "Tripo AI (made from Gemini reference pictures)",
+      "licence": "Tripo output: paid plan = private + commercial use; free plan = public, CC BY 4.0",
+      "plan": "UNKNOWN",
+      "builder": [
+        "tools/finish-darzi.mjs"
+      ],
+      "evidence": "Tripo texture inside the file (tripo_rgb_...); rigged on Tripo's Mixamo-style skeleton; clips renamed, kurta and churidar re-weighted onto leg bones, standing wave built from idle plus the raw wave arm, face keys and eyes edited (tools/face_keys.py, tools/eye_patch.py); round wire-rim glasses, tailor's tape and wrist cord added in this repo (tools/finish-darzi.mjs)"
+    },
+    {
+      "match": [
         "public/assets/models/cyberboy.glb"
       ],
       "category": "tripo",
