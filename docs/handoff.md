@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov ~01:xx UTC scheduled run: no code change, 3rd run running flat on same state
+- Repo fetched clean, HEAD still b3696a3 (no concurrent commit landed since last run). CI
+  confirmed green (run 1373, success) via actions API, not re-run.
+- BACKLOG open items unchanged: all [PAUSED-MAP]/[GATED-HER], or [ACTIVE] items (M7 NPC
+  draw-call headroom, item-7 shader warm-up) that need a real browser this container
+  cannot run (confirmed container limit, docs/efficiency.md A7/STATE.md) - not re-measuring,
+  per A6 and the project's "no repeat audits" rule.
+- NEEDS_YOU 88 lines, all still open, none newly answered since last check.
+- Per A6 not re-auditing the LOOKS LIST a further time with no new input. Next real driver:
+  her answer in NEEDS_YOU, a new playtest note, or a concurrent session's commit.
+
 # 25 Nov ~21:1x UTC scheduled run: no code change, nothing unblocked
 - Repo-state false alarm: stale cached origin/main ref made HEAD look like unrelated history
   (shallow clone, merge-base failed); fresh `git fetch` showed origin/main already AT HEAD's tip

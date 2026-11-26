@@ -1,5 +1,7 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 00:xx UTC (scheduled run). Repo identical to last run; CI green on b4fe7e4 (run 1372), missions-check 0 fail, build:unchecked ok. No code change.
+Last updated: 26 Nov ~01:xx UTC (scheduled run). Repo identical to last run; CI green on
+b3696a3 (run 1373, confirmed via API, not re-run). No code change, 3rd run flat on the
+same settled state - not re-auditing per A6.
 live code. Item 6 (cycle) confirmed NOT a regression: 25/32 km/h is her own 25 Nov in-game
 verdict overriding the 24 Nov 20/27 ask (see src/main.js:260-261 comment) - do not "fix" it
 back to 20/27. Item 2 (chauraha buildings) and the rest of item 7 stay open, genuinely blocked
