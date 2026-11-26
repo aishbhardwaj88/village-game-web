@@ -2043,3 +2043,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   1-8 all confirmed done/parked by 3+ prior independent entries (grepped handoff/
   NEEDS_YOU, did not re-run the checks - A6). No new unblocked item found. No code
   change, no agents. 12th flat run on this thread.
+**26 Nov (scheduled run, no code change):** CI green on 4729f3b (run 1416). Temple/sabzi stay as drawn (AS_DRAWN, front -z, 152 deg item stale); no hard-coded moved-place coords left; pre-Play 10.7 MB and land layers remain her call. missions-check 399/0/3.
