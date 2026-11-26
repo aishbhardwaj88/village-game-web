@@ -1,20 +1,18 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov (scheduled run, 7th flat). HEAD 2523aa1, CI green (run 1375). missions-check 399/0/3, build:unchecked ok.
-b1e004a, local main re-synced to origin/main fresh via git fetch, no drift). CI green
-on b1e004a (run 1374, confirmed via Actions API). 6th run in a row with this same
-settled state - per A6, not re-auditing the LOOKS LIST or BACKLOG again with no new
-input; only re-confirmed CI and checked for new commits/her answers, found none.
+Last updated: 26 Nov (scheduled run, 8th flat). HEAD f73d680, CI green (run 1376).
 
 ## This run
-- git fetch + checkout -B main origin/main: clean, no divergence, no local commits lost.
-- CI green on b1e004a (run 1374, success). No new commit from any other worker since
+- git fetch + checkout -B main origin/main: HEAD matched origin/main exactly, no
+  divergence, nothing lost.
+- CI green on f73d680 (run 1376, success). No new commit from any other worker since
   the last run. docs/NEEDS_YOU.md unchanged (60+ open lines, none marked done by her).
-- No code change. Not re-verifying LOOKS LIST 1-8 or BACKLOG a further time (A6) -
-  nothing in the repo or in her NEEDS_YOU answers changed since the last 5 confirmations.
+- No code change. Per A6, not re-auditing LOOKS LIST or BACKLOG an 8th time with no
+  new input (no new commit, no new her-answer) - only re-confirmed CI and scanned for
+  new commits/answers, found none.
 
 ## Current state
 - Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/
-  overlap, 123 failures, flat for 6+ runs now) has no active driver - watch for either a
+  overlap, 123 failures, flat for 7+ runs now) has no active driver - watch for either a
   new position commit (resume tracking) or her map-lock answer (then pick up).
 - LOOKS LIST 1-8 (24 Nov playtest): 1/3/4/5/6 done and live; 2 (chauraha buildings) could
   not be reproduced, logged to NEEDS_YOU with her exact names needed; 7 partly done
@@ -42,3 +40,5 @@ input; only re-confirmed CI and checked for new commits/her answers, found none.
 - Headless chromium crashes ("Target crashed") on any real page.evaluate - screenshot.js/
   world-validator.js/regression-check.js all hit this. Verify via code reading + Tier 1 (A7).
 - `node tools/layout-pack.mjs` (full repack) takes ~4.5 min, not "minutes-long" vaguely - budget.
+- docs/handoff.md has grown to ~1,900 lines (A3 wants >3-day entries archived) - not touching
+  it this run, note-tidying isn't in-scope game work, but it's worth one real cycle sometime.
