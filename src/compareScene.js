@@ -27,6 +27,7 @@ const STRIDE = { aunty: { walk: 0.546, walk_plain: 0.546 }, sm: { walk: 0.914, g
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
 const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Face Kirana', 'face_kirana'], ['Face Pehelwan', 'face_pehelwan'], ['Face Kulfiwala', 'face_kulfiwala'], ['Face Sabziwala', 'face_sabziwala'], ['Face Nai', 'face_nai'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
+const BOTH_ORBIT = 0.35; // 26 Nov: the straight-on two-shot of the 13-actor row puts the camera against something dark (half the frame black); 0.35 rad round to the side is clear
 const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 22], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
@@ -72,7 +73,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     actors.push({ g, lbl, key, order: ORDER.findIndex((o) => o[0] === key), lane: LANE_Z[key], x: CENTRE.x, dir: 1, yaw: null, head: null });
   }
   window.__compare = { get uncles() { return actors.map((a) => a.g); } }; // read-only debug handle (compare mode only): uncle.getObjectByName(...).userData.charLOD.mixer
-  let fitted = false, clip = 'idle', face = 'both', orbit = 0, dist = BOTH_DIST; // starts in the eye-level two-shot
+  let fitted = false, clip = 'idle', face = 'both', orbit = BOTH_ORBIT, dist = BOTH_DIST; // starts in the eye-level two-shot
   const keys = new Set();
   const origUpdate = camRig.update.bind(camRig);
   camRig.update = () => {}; // the two-shot / face views place the camera themselves
@@ -105,7 +106,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
       camRig.update = () => {}; // we place the camera ourselves while in face view
       mark(id);
     } else if (id === 'both') {
-      clip = 'idle'; reviewPlay('idle'); face = 'both'; lineup = true; orbit = 0; dist = fitDist(); camRig.update = () => {}; mark(id);
+      clip = 'idle'; reviewPlay('idle'); face = 'both'; lineup = true; orbit = BOTH_ORBIT; dist = fitDist(); camRig.update = () => {}; mark(id);
     } else { lineup = false; clip = id; reviewPlay(id); mark(id); } // animation only: camera untouched
   });
   mark('both');
