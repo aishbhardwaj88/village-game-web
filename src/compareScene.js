@@ -10,22 +10,23 @@
  * 26 Nov: Kirana (shopkeeper, kirana.glb, 1.65 m) stands 2 m right of the Halwai: same clips, Face Kirana button.
  * 26 Nov: Halwai (sweet maker, halwai.glb, 1.6 m, very fat) stands 2 m right of the Darzi: same clips, Face Halwai button.
  * 26 Nov: Darzi (tailor, darzi.glb, loaded only here; glasses, tape measure and wrist cord added after Tripo) stands 2 m right of Cyber boy: same clips, Face Darzi button.
+ * 26 Nov: Pehelwan (wrestler, pehelwan.glb, 1.88 m = 6 ft 2, the tallest man in the village) stands 2 m right of the Kirana, then Kulfiwala (kulfiwala.glb, 1.70 m): same clips, Face Pehelwan / Face Kulfiwala buttons.
  * Labels hide when the camera is within 2 m. Face Uncle button: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
  */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5, daughter: -117.5, milkman: -115.5, cyber: -113.5, darzi: -111.5, halwai: -109.5, kirana: -107.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5, daughter: -117.5, milkman: -115.5, cyber: -113.5, darzi: -111.5, halwai: -109.5, kirana: -107.5, pehelwan: -105.5, kulfiwala: -103.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 // 25 Nov: ground speed that makes each clip's planted foot stand still on the ground (no sliding), MEASURED from the clips (tools: foot bone
 // speed relative to the hips while the foot is within 4 cm of its lowest point, at the in-game model scale; both clips are in-place).
 // Same idea as walkRef in src/characterAnim.js. Review clips play at 1x, so speed = stride length / cycle time.
 const STRIDE = { aunty: { walk: 0.546, walk_plain: 0.546 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Face Kirana', 'face_kirana'], ['Studio light', 'studio']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Face Kirana', 'face_kirana'], ['Face Pehelwan', 'face_pehelwan'], ['Face Kulfiwala', 'face_kulfiwala'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 12], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 22], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -38,12 +39,12 @@ function label(text) {
 
 function bar(onPick) {
   const ui = document.createElement('div');
-  ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:96vw;font:600 16px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
+  ui.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:96vw;font:600 15px system-ui;background:rgba(0,0,0,.6);color:#fff;padding:10px 14px;border-radius:12px';
   const buttons = [];
   const mark = (id) => buttons.forEach(([b, i]) => { if (i !== 'studio') b.style.background = i === id ? '#f5c542' : '#fff'; });
   for (const [text, id] of CLIPS) {
     const b = document.createElement('button'); b.textContent = text;
-    b.style.cssText = 'font:600 16px system-ui;padding:8px 14px;border-radius:8px;border:0;cursor:pointer';
+    b.style.cssText = 'font:600 15px system-ui;padding:7px 11px;border-radius:8px;border:0;cursor:pointer';
     for (const ev of ['pointerdown', 'mousedown', 'click']) b.addEventListener(ev, (e) => { e.stopPropagation(); if (ev === 'click') { const r = onPick(id); if (id === 'studio') b.style.background = r ? '#7ad7f0' : '#fff'; else mark(id); } });
     buttons.push([b, id]); ui.appendChild(b);
   }
@@ -59,7 +60,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  const ORDER = [['daughter', "AUNTY'S DAUGHTER", 'tvdaughter', 1.33], ['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72], ['milkman', 'MILKMAN', 'milkman', 1.65], ['cyber', 'CYBER BOY', 'cyberboy', 1.7], ['darzi', 'DARZI', 'darzi', 1.6], ['halwai', 'HALWAI', 'halwai', 1.6], ['kirana', 'KIRANA', 'kirana', 1.65]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
+  const ORDER = [['daughter', "AUNTY'S DAUGHTER", 'tvdaughter', 1.33], ['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72], ['milkman', 'MILKMAN', 'milkman', 1.65], ['cyber', 'CYBER BOY', 'cyberboy', 1.7], ['darzi', 'DARZI', 'darzi', 1.6], ['halwai', 'HALWAI', 'halwai', 1.6], ['kirana', 'KIRANA', 'kirana', 1.65], ['pehelwan', 'PEHELWAN', 'pehelwan', 1.88], ['kulfiwala', 'KULFIWALA', 'kulfiwala', 1.7]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
   for (const [key, side, file, hh] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
@@ -78,7 +79,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
   const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
   let lineup = true; // 25 Nov: actors stand in the line-up until a move button; move buttons never touch the camera
-  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, 6.8 / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
+  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, ((actors.length - 1) * BOTH_GAP / 2 + 1.3) / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
   // Studio light (review only): neutral room environment + a soft fill light from the camera, like a model viewer
   let studio = null, studioOn = false, origEnv = null, origInt = 1;
   const toggleStudio = () => {
@@ -139,7 +140,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
         const side = (a.order - 3) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
-      } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
+      } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && a.key !== 'pehelwan' && a.key !== 'kulfiwala' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         const k = Math.max(0, Math.min(1, 1 - err / 1.2)); // walk speed ramps in as the body comes round (0 at 180 degrees, full under ~0 degrees)
@@ -176,7 +177,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     } else if (face) { // eye level on the head bone, looking straight at the face
       const h = headOf(face);
       if (h) {
-        h.getWorldPosition(tmpV); tmpV.y += ['daughter', 'milkman'].includes(face.key) ? 0.075 : face.key === 'cyber' ? 0.06 : face.key === 'darzi' ? 0.08 : face.key === 'halwai' ? 0.03 : face.key === 'kirana' ? 0.08 : 0.1; // head bone sits at the neck top; eyes are ~10 cm above (7.5 cm on the 1.33 m child)
+        h.getWorldPosition(tmpV); tmpV.y += ['daughter', 'milkman'].includes(face.key) ? 0.075 : face.key === 'cyber' ? 0.06 : face.key === 'darzi' ? 0.08 : face.key === 'halwai' ? 0.03 : face.key === 'kirana' ? 0.08 : face.key === 'pehelwan' ? 0.07 : face.key === 'kulfiwala' ? 0.07 : 0.1; // head bone sits at the neck top; eyes are ~10 cm above (7.5 cm on the 1.33 m child)
         const ang = face.yaw + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
