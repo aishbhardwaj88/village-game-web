@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov (scheduled run, real code change). CI check pending on this push.
+Last updated: 26 Nov (scheduled run, no code change). CI green on a1d0df0, missions 399/0/3.
 
 ## This run
 - Detached HEAD matched origin/main exactly (0 divergence); reattached with
@@ -21,7 +21,7 @@ Last updated: 26 Nov (scheduled run, real code change). CI check pending on this
 ## Next 5 items
 1. Map-position cleanup: 81 failures (27 front-face, 28 on-road, 26 overlap) - per-item
    look next, granularity is tapped out; `node tools/layout-tests.mjs --verbose`.
-2. Front-face 27 unchanged across both granularity/pass tweaks - likely needs an actual
+2. Front-face 27 unchanged (most have par~0 = already facing road, fail is gap 3-9 m only; temple/sabzi accepted as drawn) across both granularity/pass tweaks - likely needs an actual
    per-building look (gap/par numbers in the verbose log), not another algorithm param.
 3. House atlas n/r + water-tank fix need real-browser confirmation - her own machine.
 4. CC0 prop sourcing: proxy-403, not a code task until that changes.
