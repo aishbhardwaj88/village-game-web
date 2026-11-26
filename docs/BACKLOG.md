@@ -60,6 +60,15 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       right on main.js's 9000ms SAFETY timeout, so the real "slots loaded" signal never
       resolved organically here. Could be this headless/no-GPU container or a real
       stuck-slot bug - check on a real browser before acting either way.
+- [ ] [ACTIVE] 26 Nov, world-validator.js check 1 (not run successfully here before,
+      see STATE.md): parked tractor and bullock cart overlap a wall - tractor
+      (637.0, 32.0) clearance -0.19m, cart (639.4, 31.0) clearance -0.276m
+      (src/missionsLayout.js T.vehicles, nearCart()). Comment trail there is stale
+      (says x 642->641, actual code has x 637) - position has moved since last tuned
+      against a wall check; did not nudge blind given that history, needs the actual
+      overlapping mesh identified (collider boxes carry no name/id, see
+      src/collision.js minSignedDistanceToColliders) then a real re-check, not another
+      guess-and-see.
 
 GAME_COMPLETE.md is fully ticked and audit-confirmed; everything above is optional
 future polish layered on a finished game. See docs/NEEDS_YOU.md for anything blocked on

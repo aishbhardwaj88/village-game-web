@@ -2061,3 +2061,15 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   runs (map-lock decision, CC0 proxy 403, real-browser need). Spot-checked only:
   BACKLOG.md's tag list (unchanged) and live CI status.
 - Nothing newly unblocked. No agents used. No code change.
+
+# 26 Nov ~22:xx scheduled run: docs-only, 16th run on this thread but new signal found
+- Re-tested the 3 standing blockers instead of trusting the 15-run log (A6 allows
+  this when something could have changed): CC0 proxy still 403, map-lock still
+  unanswered (claude.ai project doc checked too, unchanged wording).
+- Headless chromium is no longer flatly broken here: `node tools/world-validator.js`
+  got past checks 1-3 for the first time (previously 0/300s). It found a real bug
+  (tractor/cart parked overlapping a wall, -0.19/-0.276m clearance) - logged in
+  BACKLOG, not hand-nudged (stale comment trail on that position already). Confirmed
+  school_bell's "float" is not a bug (documented 0.12m verandah floor in props.js).
+  Still crashes at check 4/5's heavy geometry sampling. Details in STATE.md.
+- No code change, no agents (nothing here needed one). CI unaffected (docs only).
