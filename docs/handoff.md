@@ -1953,3 +1953,20 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Verified: build:unchecked + licence-audit + check-dup-models + check-material-clone
   + place-visibility-check all clean (Tier 1, only layoutSnap.js + mapData.json
   changed). Agents used: none.
+
+# 26 Nov scheduled run: tree-trunk overlap fix (4 of 4 cleared)
+- Last run flagged 4 tree-trunk-inside-building overlaps as "src/trees.js's job, not
+  layoutSnap.js" - checked, and they're actually layout-level: a tree's trunk point is
+  its map circle centre (src/kit/landTrees.js reads cx/cz straight from mapData.json),
+  so the real fix belongs with the other position nudges. Added `nudgeTreeTrunks()` to
+  layoutSnap.js (same 8-direction push pattern as the existing stray-prop fix, run
+  after solids reach their final snapped position) and wired it into layout-pack.mjs.
+- Repacked: 79 -> 75 failures (overlap 24 -> 20: mango #164 + kilngreen #29/30/32 all
+  clear of yard_bhatta/mandi). Verified: build:unchecked + licence-audit.mjs --check +
+  check-dup-models + check-material-clone + place-visibility-check all exit 0
+  (Tier 1), missions-check 399/0/3 unchanged.
+- Remaining 20 overlaps are each wedged (3 named-building-vs-house, 9 systematic
+  0.05 m house-pairs in CATTLE AND DAIRY/OLD HAVELI, 5 sandwiched washing-line/notice
+  board) - the snap search already covers these candidates and can't improve them.
+  Not another algorithm pass; next real move is either a hand-logged per-item nudge or
+  her call that a sub-0.3 m touch is fine as drawn. Agents used: none.

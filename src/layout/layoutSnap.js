@@ -402,6 +402,37 @@ function applyNudge(it, t, dx, dz, cx, cz) {
   }
 }
 
+/**
+ * A tree's trunk point (the map circle's centre, src/kit/landTrees.js places the trunk there) landing inside a building's
+ * final footprint is a real bug (the trunk mesh intersects the wall), not a drawing nicety - unlike a canopy circle grazing a
+ * wall, which is normal and left alone. Four cases found 26 Nov (a mango near the kiln, three kiln-green clumps near the
+ * mandi): push the point the smallest distance clear, 8 directions, 0.1 m steps, up to 6 m - same search as the stray-prop
+ * push above, but for a point instead of a quad. Run after the road snap, so it reads solids' FINAL positions.
+ */
+export function nudgeTreeTrunks(layout) {
+  const items = footprintItems(layout).filter((it) => !it.crossing && !(it.kind === 'place' && it.open));
+  for (const it of items) it._bb = it._bb || bboxOf(it.corners);
+  const dirs8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, 0.7071], [-0.7071, -0.7071]];
+  const clear = (x, z) => !items.some((it) => x >= it._bb[0] && x <= it._bb[2] && z >= it._bb[1] && z <= it._bb[3] && distToQuad(x, z, it.corners) === -1);
+  const nudges = [];
+  for (const o of layout.objects) {
+    if (o.kind !== 'trees') continue;
+    const hit = items.find((it) => o.cx >= it._bb[0] && o.cx <= it._bb[2] && o.cz >= it._bb[1] && o.cz <= it._bb[3] && distToQuad(o.cx, o.cz, it.corners) === -1);
+    if (!hit) continue;
+    let done = false;
+    for (let d = 0.1; d <= 6 && !done; d += 0.1) {
+      for (const [ux, uz] of dirs8) {
+        const x = o.cx + ux * d, z = o.cz + uz * d;
+        if (!clear(x, z)) continue;
+        o.cx = +x.toFixed(2); o.cz = +z.toFixed(2);
+        nudges.push({ id: o.label, against: hit.name, move: +d.toFixed(2) });
+        done = true; break;
+      }
+    }
+  }
+  return nudges;
+}
+
 // ------------------------------------------------------------------ gali ends
 const distToQuad = (x, z, q) => {
   let inside = true, best = Infinity;

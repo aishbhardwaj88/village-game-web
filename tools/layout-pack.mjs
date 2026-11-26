@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { buildLayout, roadBBox } from '../src/layout/layoutCore.js';
-import { snapLayout, clipGalis, nudgeGalis } from '../src/layout/layoutSnap.js';
+import { snapLayout, clipGalis, nudgeGalis, nudgeTreeTrunks } from '../src/layout/layoutSnap.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 export const SRC = ROOT + 'docs/layout/approved-map-2026-11-25.json';
@@ -176,6 +176,7 @@ export function pack(raw0) {
   for (const c of clipGalis(layout)) clips.push({ ...c, after: 'snap' });
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   const propNudges = nudgeSmallProps(layout.objects, layout.list, raw.roads);
+  const treeNudges = nudgeTreeTrunks(layout); // after solids' final positions: push any trunk left inside a building clear of it
   const round = (v) => (typeof v === 'number' ? +v.toFixed(4) : v);
   const cleanRect = (r) => r && { cx: r2(r.cx), cz: r2(r.cz), w: r2(r.w), d: r2(r.d), ry: round(r.ry), front: r.front.map(round), frontMid: r.frontMid.map(r2) };
   return {
@@ -189,6 +190,7 @@ export function pack(raw0) {
     galiClips: clips,
     galiShifts,
     propNudges,
+    treeNudges,
   };
 }
 
