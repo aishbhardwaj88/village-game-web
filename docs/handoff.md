@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov scheduled run - no code change, repo unchanged since f9616e6
+- git fetch + checkout -B main origin/main: HEAD matched origin/main exactly, no
+  divergence, no local commits lost. CI green on f9616e6 (run 1377, success).
+- 9th run in a row flat: no new commit from any other worker, no new her answer in
+  NEEDS_YOU (map-lock, material-board verdict, chauraha building names all still open).
+  Per A6, not re-auditing LOOKS LIST/BACKLOG a further time with no new input.
+- Every open BACKLOG item stays [PAUSED-MAP], [GATED-HER], or needs a real browser/CC0
+  access this container lacks. Nothing newly unblocked. No code change.
+
 # 26 Nov ~01:xx UTC scheduled run: no code change, 3rd run running flat on same state
 - Repo fetched clean, HEAD still b3696a3 (no concurrent commit landed since last run). CI
   confirmed green (run 1373, success) via actions API, not re-run.
