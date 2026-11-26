@@ -12,7 +12,7 @@
  * 26 Nov: Darzi (tailor, darzi.glb, loaded only here; glasses, tape measure and wrist cord added after Tripo) stands 2 m right of Cyber boy: same clips, Face Darzi button.
  * 26 Nov: Pehelwan (wrestler, pehelwan.glb, 1.88 m = 6 ft 2, the tallest man in the village) stands 2 m right of the Kirana, then Kulfiwala (kulfiwala.glb, 1.70 m): same clips, Face Pehelwan / Face Kulfiwala buttons.
  * 26 Nov: Sabziwala (vegetable seller, sabziwala.glb, 1.70 m) and Nai (barber, nai.glb, 1.72 m) stand 2 m right of the Kulfiwala: same clips, Face Sabziwala / Face Nai buttons. The 13-actor row is centred on order 6.
- * 26 Nov: Rascal (thief.glb, 1.68 m, jute sack on the right shoulder; the label never says thief) stands 2 m right of Nai: same clips, Face Rascal button. The 14-actor row is centred on order 6.5.
+ * 26 Nov: Rascal (thief.glb, 1.68 m, jute sack on the right shoulder; the label never says thief) stands 2 m right of Nai: same clips, Face Rascal button. The 14-actor row is centred on order 7.5 (Rascal stood against the Gupta store at 6.5).
  * Labels hide when the camera is within 2 m. Face Uncle button: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
  */
 import * as THREE from 'three';
@@ -140,7 +140,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 6.5) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
+        const side = (a.order - 7.5) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
       } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && a.key !== 'pehelwan' && a.key !== 'kulfiwala' && a.key !== 'sabziwala' && a.key !== 'nai' && a.key !== 'rascal' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
