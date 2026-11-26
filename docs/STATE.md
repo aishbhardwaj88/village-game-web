@@ -9,6 +9,10 @@ Last updated: 26 Nov 15:4x (scheduled run). CI green on 8f87ab5 (run 1393); miss
   an actual bug, found none - symptom matches known no-GPU container limit, stays
   parked. 7th flat run in a row on this thread - genuinely no actionable code work
   until her input or a working browser arrives. Docs-only commit, per A5's exception.
+## Run 26 Nov 15:5x (fronts and coords check)
+- Temple, sabzi, khalihan, mela, mandi, paani_tanki, bhatta: packed mapData `front` and x,z equal docs/layout/approved-map exactly. Temple faces -z as drawn; the "152 deg" turn is stale, nothing to fix.
+- Stale coords (e.g. anchors.js sabzi 623.1,27.4) sit only in the ?layout=old table; default is new and overrides them. No code change.
+- Load size (10.7 MB) and unsliced land layers: need a working browser to measure, not possible here. missions 399/0/3, build:unchecked + 4 checks clean.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 75 layout-pack failures (27 front-face, 28
   on-road, 20 overlap) - all wedged (algorithm already tries, can't improve): 3 named-
