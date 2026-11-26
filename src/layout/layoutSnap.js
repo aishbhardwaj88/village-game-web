@@ -322,6 +322,32 @@ export function snapLayout(layout) {
     }
     if (!done) { it.corners = saved; it._bb = null; }
   }
+  // 5. a house left overlapping a neighbour (another house, or a fixed named building) by a small depth: step 2 above only
+  // ever moves a house that itself fails a check (base.ov > 0 for THAT house); when two adjacent houses each individually
+  // score as fine except for the sliver they share, or a house overlaps a named building that is fixed-as-drawn and never
+  // moves, neither side's own candidate search ever tries the move that would clear it. Push the house (never the named
+  // building) the smallest distance clear, 8 directions, same off-road + whole-layout-clear test as the stray-prop push
+  // above, capped at 2 m (the real gap here is always a sliver, never a genuine relocation).
+  for (const it of items) {
+    if (it.kind !== 'house' || it.fixed) continue;
+    if (overlapsOf(it, items, false) <= OVERLAP_TOL) continue;
+    const cx = it.corners.reduce((s, q) => s + q[0], 0) / 4, cz = it.corners.reduce((s, q) => s + q[1], 0) / 4;
+    const dirs8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, 0.7071], [-0.7071, -0.7071]];
+    const saved = it.corners;
+    let done = false;
+    for (let d = 0.05; d <= 2 && !done; d += 0.05) {
+      for (const [ux, uz] of dirs8) {
+        const moved = saved.map(([x, z]) => [x + ux * d, z + uz * d]);
+        it.corners = moved; it._bb = null;
+        if (overlapsOf(it, items, false) <= OVERLAP_TOL && !roadDepth(roads, moved)) {
+          applyNudge(it, 0, ux * d, uz * d, cx, cz);
+          nudges.push({ id: it.id, name: it.name, kind: it.kind, turnDeg: 0, move: +d.toFixed(2), why: 'house pushed clear of a neighbour it overlapped by a sliver (neither side ever tried this move)' });
+          done = true; break;
+        }
+      }
+    }
+    if (!done) { it.corners = saved; it._bb = null; }
+  }
   return nudges;
 }
 /** Give a solid a new front side (same footprint): its rect turns by `turn` (three.js yaw), w and d swap for a quarter turn. */

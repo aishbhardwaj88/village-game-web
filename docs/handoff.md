@@ -1,6 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 26 Nov scheduled run: real code change, one wedged overlap actually cleared
+- Added layoutSnap.js step 5 (same 8-dir/off-road pattern as the stray-prop/tree-trunk
+  pushes): a house that never itself tried a move (fine except the sliver it shares with a
+  neighbour, or that neighbour is a fixed named building) is now pushed clear, up to 2 m.
+- Repacked (~16 min, backgrounded): 75 -> 74 failures (overlap 20 -> 19: house#229/#246
+  cleared). Verified clean: swapped old/new mapData.json through layout-tests.mjs --verbose
+  - front-face (27) and on-road (28) lists byte-identical, only that one pair left the
+  overlap list. Tier 1 chain all exit 0; missions-check 399/0/3 unchanged.
+- Remaining 19 overlaps (3 named-vs-house, 9 house-pairs at 0.05 m, 7 washing-line/notice-
+  board) genuinely sandwiched - step 5 tried all, no direction clears them. Next move is
+  hers (sub-0.3 m fine as drawn?) or a hand placement, not another generic search. No
+  agents used.
+
 # 26 Nov scheduled run: no code change, 4th flat run in a row - nothing newly unblocked
 - Fresh checkout matched origin/main exactly (no divergence, no other worker commit since
   26243f6). npm ci (node_modules missing on this container, as always). CI confirmed green
