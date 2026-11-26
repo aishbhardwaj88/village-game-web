@@ -2144,6 +2144,58 @@
     },
     {
       "match": [
+        "public/assets/textures_mix/white_stucco_02/*"
+      ],
+      "category": "credited",
+      "title": "white_stucco_02 (house wall swap, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/white_stucco_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "white_stucco_02",
+      "evidence": "One of the four wall sets she chose (26 Nov) to replace textures she disliked. Poly Haven 1K blend zip (diffuse JPG, OpenGL normal EXR, roughness) re-encoded to 1024 px WebP; normal map std-dev measured not flat. Real tile size 1.8 m."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/painted_worn_brick/*"
+      ],
+      "category": "credited",
+      "title": "painted_worn_brick (house wall swap, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/painted_worn_brick",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "painted_worn_brick",
+      "evidence": "One of the four wall sets she chose (26 Nov) to replace textures she disliked. Poly Haven 1K blend zip (diffuse JPG, OpenGL normal EXR, roughness) re-encoded to 1024 px WebP; normal map std-dev measured not flat. Real tile size 1.8 m."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/whitewashed_brick/*"
+      ],
+      "category": "credited",
+      "title": "whitewashed_brick (house wall swap, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/whitewashed_brick",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "whitewashed_brick",
+      "evidence": "One of the four wall sets she chose (26 Nov) to replace textures she disliked. Poly Haven 1K blend zip (diffuse JPG, OpenGL normal EXR, roughness) re-encoded to 1024 px WebP; normal map std-dev measured not flat. Real tile size 2.0 m."
+    },
+    {
+      "match": [
+        "public/assets/textures_mix/brown_brick_02/*"
+      ],
+      "category": "credited",
+      "title": "brown_brick_02 (house wall swap, 26 Nov)",
+      "source": "Poly Haven",
+      "url": "https://polyhaven.com/a/brown_brick_02",
+      "author": "Poly Haven",
+      "licence": "CC0",
+      "creditsKey": "brown_brick_02",
+      "evidence": "One of the four wall sets she chose (26 Nov) to replace textures she disliked. Poly Haven 1K blend zip (diffuse JPG, OpenGL normal EXR, roughness) re-encoded to 1024 px WebP; normal map std-dev measured not flat. Real tile size 1.0 m."
+    },
+    {
+      "match": [
         "public/assets/textures_mix/plaster_i/*"
       ],
       "category": "credited",

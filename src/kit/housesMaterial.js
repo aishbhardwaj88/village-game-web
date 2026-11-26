@@ -24,20 +24,23 @@ import { track } from './lateBuild.js';
 
 export const CELL = { plaster: 0, concrete: 1, brick: 2, brickWash: 3, wood: 4, rust: 5, terracotta: 6, mud: 7 };
 /** Tiles per metre for each cell, from the library table (tools/blender/arch.py: brick 1.2, plaster 0.5, wood 1.0, metal 1.0). */
-export const CELL_REPEAT = [0.5, 0.5, 1.2, 1.2, 1.0, 1.0, 1.0, 0.7];
+// 26 Nov wall swap: cell 0 = white_stucco_02 (1.8 m tile), cell 3 = whitewashed_brick (2.0 m tile)
+export const CELL_REPEAT = [1 / 1.8, 0.5, 1.2, 0.5, 1.0, 1.0, 1.0, 0.7];
 
 const COLS = 4, ROWS = 4, CS = houseQuality().atlasCell, MARGIN = Math.round(CS * 24 / 512);
 // cells 8..11: extra wall surfaces picked per house by its seed (ambientCG CC0, shared library names plaster_j/m/p, concrete_e).
 // They start as copies of the plaster cell and are swapped in after the game has started (loadHouseVariants), so they add
 // no request before Play.
-export const WALL_VARIANTS = ['plaster_j', 'plaster_m', 'plaster_p', 'concrete_e'];
+// 26 Nov: plaster_p (mossy, mottled) replaced by painted_worn_brick (Poly Haven CC0, warm yellow painted brick, 1.8 m tile).
+export const WALL_VARIANTS = ['plaster_j', 'plaster_m', 'painted_worn_brick', 'concrete_e'];
 // cells 12..15 (24 Nov, second round, ambientCG CC0): brick_b = Bricks105 (finer yellow-pink brick, picked by ~45% of the brick
 // walls), concrete_f = Concrete046 (pale stained cast concrete, ~35% of concrete trim/boundary walls), mud_b = Clay004 and
 // mud_c = Clay005 (brown and grey clay, kachcha mud walls: a third each with the original dryearth). Same late swap as above.
-export const EXTRA_VARIANTS = ['brick_b', 'concrete_f', 'mud_b', 'mud_c'];
+// 26 Nov: mud_c (cell 15) replaced by brown_brick_02 (Poly Haven CC0 brick, 1.0 m tile); mud walls now pick dryearth or mud_b.
+export const EXTRA_VARIANTS = ['brick_b', 'concrete_f', 'mud_b', 'brown_brick_02'];
 const ALL_VARIANTS = [...WALL_VARIANTS, ...EXTRA_VARIANTS];
 const SETS = [
-  ['plaster', 'plaster'], ['concrete', 'concrete'], ['brick', 'brick'], ['brick', 'brickWash'],
+  ['white_stucco_02', 'plaster'], ['concrete', 'concrete'], ['brick', 'brick'], ['whitewashed_brick', 'brickWash'],
   ['wood', 'wood'], ['rust', 'rust'], ['terracotta', 'terracotta'], ['dryearth', 'mud'],
 ];
 
@@ -91,7 +94,8 @@ export function buildHouseAtlas(base = 'assets/textures/') {
     const kinds = ['color', 'normal', 'roughness'];
     const sets = [...new Set(SETS.map((s) => s[0]))];
     const bm = {};
-    const loadKinds = (ks) => Promise.all(sets.flatMap((s) => ks.map(async (k) => { bm[s + k] = await loadBitmap(`${base}${s}/${s}_${k}.webp`); })));
+    const MIX = new Set(['white_stucco_02', 'whitewashed_brick']); // 26 Nov: these two cells load from textures_mix/ (same 1K to CS downscale, same count of requests)
+    const loadKinds = (ks) => Promise.all(sets.flatMap((s) => ks.map(async (k) => { bm[s + k] = await loadBitmap(`${MIX.has(s) ? 'assets/textures_mix/' : base}${s}/${s}_${k}.webp`); })));
     await loadKinds(['color']); // only colour before Play; normal + roughness are fetched and drawn after it (deferredTask)
     const wash = noiseCanvas(256, 3.7, 4, 0.42, 0.18);
     const out = {};
@@ -100,8 +104,8 @@ export function buildHouseAtlas(base = 'assets/textures/') {
       SETS.forEach(([set, name], i) => {
         const col = i % COLS, row = Math.floor(i / COLS);
         let img = bm[set + k];
-        // plaster is a 2:1 strip (2 m x 1 m): two copies stacked make one square 2 m tile
-        if (set === 'plaster') {
+        // (old plaster was a 2:1 strip; white_stucco_02 is already square, so no stacking)
+        if (false) {
           const sq = document.createElement('canvas'); sq.width = sq.height = img.width;
           const sg = sq.getContext('2d'); sg.drawImage(img, 0, 0, img.width, img.width / 2); sg.drawImage(img, 0, img.width / 2, img.width, img.width / 2);
           img = sq;
@@ -109,7 +113,7 @@ export function buildHouseAtlas(base = 'assets/textures/') {
         drawTile(g, img, col, row);
         if (name === 'plaster') { plasterSq[k] = img; WALL_VARIANTS.forEach((_, vi) => drawTile(g, img, (8 + vi) % COLS, Math.floor((8 + vi) / COLS))); }
         // extra cells start as copies of the surface they replace (brick, concrete, mud, mud) until the real maps arrive
-        const ex = { brick: [12], concrete: [13], mud: [14, 15] }[name];
+        const ex = { brick: [12, 15], concrete: [13], mud: [14, 15] }[name];
         if (ex) ex.forEach((c) => drawTile(g, img, c % COLS, Math.floor(c / COLS)));
         if (name === 'brickWash' && false) { // lime whitewash brushed over the brick in ragged patches: paler, flatter, smoother where it sits
           const x0 = col * CS, y0 = row * CS;
@@ -212,8 +216,8 @@ export function getHouseMaterial() {
         varying vec3 vHW;
         varying vec3 vHLocal;
         const vec3 DOOR_PAINTS[8] = vec3[8](${doorPaints});
-        const float CELL_BOOST[8] = float[8](1.35, 1.45, 1.25, 1.2, 2.4, 1.15, 1.3, 1.25);
-        const float CELL_NORMAL[8] = float[8](2.2, 1.0, 1.0, 1.0, 1.1, 1.2, 1.0, 0.3);
+        const float CELL_BOOST[8] = float[8](1.35, 1.45, 1.25, 1.1, 2.4, 1.15, 1.3, 1.25);
+        const float CELL_NORMAL[8] = float[8](0.9, 1.0, 1.0, 1.0, 1.1, 1.2, 1.0, 0.3);
         float hh_(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
         float hn_(vec3 p) {
           vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -249,9 +253,10 @@ export function getHouseMaterial() {
         if (hCell < 0.5 && hAt > 0.5) hAt += 7.0;
         if (hCell >= 0.5) hAt = hCell;
         // brick (cells 2, 3), concrete (1) and mud (7): some houses take the second-round surface (cells 12..15) instead
-        if (hCell == 2.0 || hCell == 3.0) { if (fract(vSeed * 23.71) < 0.45) { hAt = 12.0; hUv *= 0.58; } }
+        // 26 Nov: cell 3 is whitewashed_brick for every house that has it; cell 2 splits 30% brick_b, 30% brown_brick_02, rest the original brick
+        if (hCell == 2.0) { float bk_ = fract(vSeed * 23.71); if (bk_ < 0.30) { hAt = 12.0; hUv *= 0.58; } else if (bk_ < 0.60) { hAt = 15.0; hUv *= 0.8333; } }
         else if (hCell == 1.0) { if (fract(vSeed * 29.13) < 0.35) hAt = 13.0; }
-        else if (hCell == 7.0) { float mu_ = fract(vSeed * 19.37); if (mu_ > 0.34) hAt = mu_ > 0.67 ? 15.0 : 14.0; }
+        else if (hCell == 7.0) { float mu_ = fract(vSeed * 19.37); if (mu_ > 0.5) hAt = 14.0; }
         {
           vec4 tex_ = atlasTex(map, hUv, hAt);
           tex_.rgb *= CELL_BOOST[int(hCell)];
@@ -303,12 +308,12 @@ export function getHouseMaterial() {
             float row_ = floor(bt_.y);
             vec2 cl_ = vec2(floor(bt_.x + hh_(vec3(row_, 3.0, 1.0)) * 4.8), row_);
             float r1_ = hh_(vec3(cl_, 7.0)), r2_ = hh_(vec3(cl_, 13.0));
-            float k_ = hAt < 11.5 ? 1.0 : 0.0; // the per-brick tone is laid out for the original brick only
+            float k_ = hAt == 2.0 ? 1.0 : 0.0; // the per-brick tone is laid out for the original brick only
             diffuseColor.rgb *= 1.0 + k_ * (0.82 + 0.34 * r1_ - 1.0);
             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.62, 0.55, 0.52), k_ * step(0.93, r2_) * 0.7);
             diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))), diffuseColor.rgb, 0.82);
           }
-          if (hCell == 3.0) {
+          if (hCell == 3.0 && false) { // 26 Nov: off, the whitewashed_brick texture is already washed
             // old lime whitewash over the brick: big irregular patches (world space, so no tile ever repeats), thin and
             // translucent at their ragged edges, the mortar lines still showing through
             float big_ = hn_(wp_ * vec3(0.35, 0.5, 0.35) + vSeed * 17.0) * 0.65 + hn_(wp_ * vec3(1.1, 1.4, 1.1) + 3.0) * 0.25 + hn_(wp_ * 6.0) * 0.1;
@@ -335,7 +340,7 @@ export function getHouseMaterial() {
           normal = normalize( tbn * mapN );
         }`);
   };
-  material.customProgramCacheKey = () => 'houses_s7_atlas_v4';
+  material.customProgramCacheKey = () => 'houses_s7_atlas_v5';
   return material;
 }
 

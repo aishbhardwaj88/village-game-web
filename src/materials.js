@@ -72,7 +72,7 @@ const SETS = {
   // whatever lossy path produced the earlier borderline-flat (0.008-0.010) normal maps.
   // Re-measured clean this time: worn_cracked_plaster std 0.017-0.026, yellow_plaster
   // std 0.012-0.019 - both clear of the 0.012 flatness floor, no longer held back.
-  plaster_h: { base: 'assets/textures_mix/plaster_h/', maps: ['color', 'normal', 'roughness'] }, // worn_cracked_plaster
+  plaster_h: { base: 'assets/textures_mix/white_stucco_02/', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: art director rejected worn_cracked_plaster (old files stay in textures_mix/plaster_h/, unused); the name now points at Poly Haven white_stucco_02 so the cracked look never appears
   plaster_i: { base: 'assets/textures_mix/plaster_i/', maps: ['color', 'normal', 'roughness'] }, // yellow_plaster
   // 24 Nov, ambientCG CC0 wall surfaces for wall variety (house atlas cells 8..11 in src/kit/housesMaterial.js, and available
   // by name here). Not in MIX_GROUPS on purpose: adding them there would add texture requests before Play.
@@ -80,6 +80,11 @@ const SETS = {
   plaster_m: { base: 'assets/textures_mix/plaster_m/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster004
   plaster_p: { base: 'assets/textures_mix/plaster_p/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Plaster007
   concrete_e: { base: 'assets/textures_mix/concrete_e/', maps: ['color', 'normal', 'roughness'] }, // ambientCG Concrete034
+  // 26 Nov wall swap (docs/wall-texture-swap-26nov.md): her 4 chosen Poly Haven CC0 sets. Real tile sizes: white_stucco_02 1.8 m, painted_worn_brick 1.8 m, whitewashed_brick 2.0 m, brown_brick_02 1.0 m (repeat = 1/tile_m).
+  white_stucco_02: { base: 'assets/textures_mix/white_stucco_02/', maps: ['color', 'normal', 'roughness'] },
+  painted_worn_brick: { base: 'assets/textures_mix/painted_worn_brick/', maps: ['color', 'normal', 'roughness'] },
+  whitewashed_brick: { base: 'assets/textures_mix/whitewashed_brick/', maps: ['color', 'normal', 'roughness'] },
+  brown_brick_02: { base: 'assets/textures_mix/brown_brick_02/', maps: ['color', 'normal', 'roughness'] },
   road_asphalt: { base: 'assets/textures_mix/road_asphalt/', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: ambientCG Road007 asphalt, baked lines removed, colour gained to the concrete_e mean (highway surface, src/roadNetwork.js)
   // 26 Nov (ORDER-26NOV ground zones): 16 Poly Haven CC0 sets, 1K WebP + a 512 px <name>_height.webp (blend steering only, not in maps). Not in MIX_GROUPS, so nothing loads before Play; the zone ground (applyGroundNoiseDetail zones:true) packs them into texture arrays, getTiledMaterial(name) uses them one by one.
   dirt_floor: { base: 'assets/textures_mix/dirt_floor/', maps: ['color', 'normal', 'roughness'] }, // Poly Haven dirt_floor (ground)
@@ -319,7 +324,7 @@ const DP_FAMILY = {
  * Applied BEFORE applySurfaceVariation so removeSurfaceVariation() (wall grime) restores a hook that still has it.
  */
 const ANTITILE_SETS = new Set(['plaster', 'plaster_b', 'plaster_c', 'plaster_d', 'plaster_e', 'plaster_f', 'plaster_g', 'plaster_h', 'plaster_i',
-  'plaster_j', 'plaster_m', 'plaster_p', 'mud_b', 'mud_c', 'concrete_e', 'concrete_f', 'road_asphalt']);
+  'plaster_j', 'plaster_m', 'plaster_p', 'white_stucco_02', 'painted_worn_brick', 'mud_b', 'mud_c', 'concrete_e', 'concrete_f', 'road_asphalt']);
 export function applyAntiTile(material) {
   if (!material || material.isShaderMaterial || !material.map || material.userData.dpAnti) return;
   material.userData.dpAnti = true;
