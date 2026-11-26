@@ -2,6 +2,7 @@
 Last updated: 26 Nov 18:4x (scheduled run). CI green on dc5b37a (run 1413) at start;
 no code change this run. Missions 399/0/3 unchanged (not re-run, A6). LAST_FULL_PASS=3362c4f.
 ## This run
+- 26 Nov 19:5x scheduled list run: CI green on e9d699f (run 1414). Temple/sabzi stay AS_DRAWN (her order 25 Nov, layout-tests ACCEPTED), moved-place coords already snapped, pre-Play 10.7 MB has no non-look cut (her call), land layers yield 8 ms. missions 399/0/3, build:unchecked + 4 checks clean. No code change, no agents.
 - Fresh checkout matched origin/main (HEAD detached as always, reset), npm ci
   (node_modules missing again, as always). CI confirmed green via GitHub Actions API.
 - Re-ran tools/layout-tests.mjs fresh (fast checker): still 74 failures (27 front-
