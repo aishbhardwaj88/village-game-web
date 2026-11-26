@@ -1,5 +1,13 @@
 # Needs you
 
+- Map-position cleanup, FYI only (26 Nov): fixed a real bug (houses were scoring "clear"
+  against a gali the game never actually ships, so they stayed on the real road) - on-road
+  failures dropped 68 to 44. Side effect: 21 new, very small (0.05-0.16 m) house-to-house
+  back-wall overlaps appeared, where a house pushed properly off the real lane now meets the
+  row behind it. Net fewer failures and the fixed category is the visible one (a building on
+  a road); the new one is a few cm of wall overlap you'd need to be inside the house to see.
+  Nothing needed unless you'd rather I leave on-road houses as they were - status: open
+
 - Water tank (paani ki tanki, the tallest structure) now has real materials instead of flat colour (25 Nov):
   nothing needed from you unless you want to look and say if it reads right - https://aishbhardwaj88.github.io/village-game-web/?at=-18,110 - status: open
 - 24-hour push lanes, UPDATE (24 Nov 23:15 IST): you already caught this and

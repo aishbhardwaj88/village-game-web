@@ -3,47 +3,39 @@ Last updated: 26 Nov (scheduled run, real code change). CI check pending on this
 
 ## This run
 - git fetch + checkout -B main origin/main: HEAD matched origin/main, no divergence.
-- Picked up the stalled map-position cleanup (123 failures, flat 7+ runs, no active
-  driver): layoutSnap.js's snap search ran only 2 passes; raised to 4. Pure algorithm
-  change, no hand-edited coordinates. Repacked mapData.json: 123 -> 120 failures (3
-  houses' on-road depth fixed, 1 overlap resolved as a side effect), verified by diff
-  of the full --verbose failure list: only already-moving houses nudged further, zero
-  new failures anywhere. missions-check unchanged (399/0/3). Tier 1 clean (build:
-  unchecked, licence-audit, check-dup-models, check-material-clone, place-visibility).
-- Committed (code: layoutSnap.js + mapData.json). Still 120 failures open - this is
-  one algorithmic pass, not a fix for the rest; see Next items.
+- Map-position cleanup, continued: nudgeGalis() in layoutSnap.js mutated layout.roads
+  (shift/narrow a gali) before snapLayout's 2nd round, but layout-pack.mjs always ships
+  roads exactly as drawn (her 24-26 Nov rule: roads never move, buildings do) - so some
+  houses scored "clear" against a gali that never shipped, then stayed on the real one.
+  Made nudgeGalis report-only (no longer writes pts/width back).
+- Repacked: 120 -> 117 failures. On-road 68 -> 44 (-24, real fixes now). Overlaps 25 ->
+  46 (+21, house-vs-house back-wall only, 0.05-0.16 m, no named place) - pushing houses
+  off the real gali lands them on the row behind. Net fewer, visible defect traded for a
+  near-invisible one; flagged in NEEDS_YOU. missions-check 399/0/3 unchanged, Tier 1 clean.
 
 ## Current state
-- Game is feature-complete against GAME_COMPLETE.md; map-position cleanup now at 120
-  failures (was 123, see above) - has a driver again, pick up next run if time allows.
-- LOOKS LIST 1-8 (24 Nov playtest): 1/3/4/5/6 done and live; 2 (chauraha buildings) could
-  not be reproduced, logged to NEEDS_YOU with her exact names needed; 7 partly done
-  (dup fetch fixed, map-shipped-twice/shader-warm-up parked, PAUSED-MAP/no browser); 8
-  (missions/bell/canal) done per STATE history. "Looks fixes ready" line stands in NEEDS_YOU.
-- Her "is the 25 Nov map locked for good?" (NEEDS_YOU) still open; [PAUSED-MAP] items stay parked.
-- Free-props review row (100+ Poly Haven props staged) still unreviewed - NEEDS_YOU, ?at=606,33.
+- Feature-complete against GAME_COMPLETE.md; map-position cleanup now at 117 failures
+  (was 120), still has a real driver - pick up next run if time allows.
+- LOOKS LIST 1-8: 1/3/4/5/6/8 done and live; 2 unreproducible (NEEDS_YOU); 7 partly done
+  (dup fetch fixed, rest parked). "Looks fixes ready" line stands in NEEDS_YOU.
+- Her "is the 25 Nov map locked for good?" (NEEDS_YOU) still open; [PAUSED-MAP] parked.
 
 ## Next 5 items
-1. Map-position cleanup: 120 failures left (27 front-face, 68 on-road, 25 overlap, see
-   `node tools/layout-tests.mjs --verbose`). Remaining ones are harder than a parameter
-   tweak (named places set back from any road, genuine house-pair overlaps) - need a
-   per-item look, not another blanket pass. Real work, pick up when time allows.
-2. House atlas n/r + water-tank fix need real-browser confirmation - her own machine can confirm.
-3. Zone streaming pixel-rule: broad refactor, real regression risk, scoped only.
-4. Memory hygiene (parked, NEEDS_YOU): closing decoded ImageBitmaps unsafe blind.
-5. CC0 prop sourcing: proxy-403 on polyhaven/ambientcg, not a code task until that changes.
+1. Map-position cleanup: 117 failures (27 front-face, 44 on-road, 46 overlap) - per-item
+   look next; `node tools/layout-tests.mjs --verbose`.
+2. clipGalis() may have the same discard-leak nudgeGalis did (its trims never ship
+   either) - not yet checked, needs its own careful look.
+3. House atlas n/r + water-tank fix need real-browser confirmation - her own machine.
+4. CC0 prop sourcing: proxy-403, not a code task until that changes.
+5. Zone streaming pixel-rule: broad refactor, real regression risk, scoped only.
 
 ## Blockers
-- [PAUSED-MAP] BACKLOG items: her "map locked?" question unanswered; do not unpark without her yes.
+- [PAUSED-MAP]: her "map locked?" question unanswered; do not unpark without her yes.
 - CC0 proxy (polyhaven/ambientcg): 403, re-confirmed 25 Nov. Do not re-check hourly.
 
 ## Known about this container
-- node_modules missing on fresh container, every time - always run `npm ci` first.
-- HEAD can show detached/divergent from a STALE cached origin/main ref - always `git fetch`
-  fresh before judging divergence.
-- Headless chromium crashes ("Target crashed") on any real page.evaluate - screenshot.js/
-  world-validator.js/regression-check.js all hit this. Verify via code reading + Tier 1 (A7).
-- `node tools/layout-pack.mjs` full repack now takes ~10 min (was ~4.5 min before this run's
-  4-pass change) - budget for it, don't assume the old number.
-- docs/handoff.md has grown to ~1,900 lines (A3 wants >3-day entries archived) - not touching
-  it this run, note-tidying isn't in-scope game work, but it's worth one real cycle sometime.
+- node_modules missing on fresh container, every time - run `npm ci` first.
+- HEAD can show detached/stale vs origin/main - always `git fetch` fresh before judging.
+- Headless chromium crashes ("Target crashed") - screenshot.js/world-validator.js/
+  regression-check.js hit this; verify via code reading + Tier 1 (A7) instead.
+- A full repack (`node tools/layout-pack.mjs`) now takes ~8.5 min - budget for it.

@@ -444,9 +444,14 @@ function edgeNear(c, d) {
 }
 
 /**
- * A gali drawn so that a building's back or side stands on it along its length (not at its end): slide the whole gali
- * sideways, as little as possible (0.25 m steps, up to 2.5 m), until it clears every building. Galis are 4 m lanes between
- * house rows, so this is checked against both rows. Returns the shifts.
+ * A gali drawn so that a building's back or side stands on it along its length (not at its end): report how far the whole
+ * gali would need to slide (0.25 m steps, up to 2.5 m) and/or narrow to clear every building. REPORTING ONLY (bug fixed 26
+ * Nov): tools/layout-pack.mjs ships every road exactly as drawn ("nothing may sit on a road, so the buildings move, never
+ * the road" - her 24-26 Nov policy), so a shift this used to apply to layout.roads never reached the shipped map anyway -
+ * it only leaked into the SECOND snapLayout round, which then scored houses as clear against a narrower/shifted gali that
+ * was about to be thrown away, leaving them still on the real, wider, unshifted gali once exported. Mutating the road here
+ * would misinform every snap pass that runs after it; galis are never resized or moved, so this only returns the list for
+ * docs/s7/layout.md. Returns the shifts.
  */
 export function nudgeGalis(layout) {
   const items = footprintItems(layout).filter((it) => !it.crossing && !(it.kind === 'place' && it.open));
@@ -480,7 +485,8 @@ export function nudgeGalis(layout) {
       for (let s = 0; s <= 2.5 && !done; s += 0.25) for (const sg of s ? [1, -1] : [1]) {
         if (!s && w === r.width) continue;
         const pts = r.pts.map(([x, z]) => [+(x + nx * s * sg).toFixed(2), +(z + nz * s * sg).toFixed(2)]);
-        if (conflicts(pts, w) === 0) { r.pts = pts; r.width = w; r.bbox = undefined; shifts.push({ id: r.id, shift: s * sg, width: w }); done = true; break; }
+        // report-only: do not write pts/width/bbox back onto the live road (see the function doc above)
+        if (conflicts(pts, w) === 0) { shifts.push({ id: r.id, shift: s * sg, width: w }); done = true; break; }
       }
       if (done) break;
     }

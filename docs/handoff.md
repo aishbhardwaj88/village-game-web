@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov scheduled run: gali-position bug fixed, map-position cleanup continued
+- Root cause found: nudgeGalis() in layoutSnap.js mutated layout.roads (shift/narrow a gali)
+  before snapLayout's 2nd round, but tools/layout-pack.mjs always SHIPS roads exactly as drawn
+  (her 24-26 Nov rule: roads never move, buildings do) - so some houses scored "clear" against
+  a gali that would never ship, then stayed on the real, unshifted one once exported. Made
+  nudgeGalis report-only (no longer writes pts/width back); it still reports for docs/s7.
+- Repacked mapData.json: 120 -> 117 failures. On-road 68 -> 44 (-24, the visible "building on
+  a road" bug, now real fixes). Overlaps 25 -> 46 (+21, all house-vs-house back-wall touches
+  0.05-0.16 m, none involve a named place) - houses pushed further off the real gali now meet
+  the row behind. Net fewer failures, worse category traded for a near-invisible one; trade-off
+  flagged in NEEDS_YOU. missions-check 399/0/3 unchanged, Tier 1 clean. Agents used: none.
+
 # 26 Nov scheduled run - no code change, repo unchanged since f9616e6
 - git fetch + checkout -B main origin/main: HEAD matched origin/main exactly, no
   divergence, no local commits lost. CI green on f9616e6 (run 1377, success).
