@@ -2016,3 +2016,20 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   clone.mjs + place-visibility-check all PASS/exit 0.
 - Checked BACKLOG [ACTIVE]/NEEDS_YOU for a new answer from her: none. CC0 proxy not
   rechecked (standing note). No item newly unblocked. No code change. Agents: none.
+
+# 26 Nov scheduled run: re-ran layout-tests.mjs fresh, same 74 failures, no new unblock
+- Fresh checkout matched origin/main, npm ci (node_modules missing again). CI green
+  on dc5b37a (run 1413) via GitHub MCP. No local work lost (HEAD==origin/main).
+- Re-ran tools/layout-tests.mjs fresh (fast checker, not the 16-min repack): still 74
+  failures (27 front-face, 28 on-road, 19 overlap), byte-identical to last log - the
+  remaining cases (school/temple/gurudwara vs a house, 5 house-pairs at exactly the
+  0.05 m OVERLAP_TOL boundary, washing-line/notice-board at 0.3 m) sit right at the
+  snap pass's own tolerance or are boxed in with no clear 8-dir push inside 2 m
+  (checked layoutSnap.js step 5 logic, added 3362c4f this thread) - not re-attempting
+  the search again this run (A6).
+- Checked the Claude.ai project for a newer answer to "is the 25 Nov map locked":
+  found claude/final-map.md (25 Nov) already states the map is "Closed, do not change
+  without her" - added that as context to the open NEEDS_YOU question rather than
+  self-resolving it (it's her call to unpark [PAUSED-MAP], not an inference I should
+  make for her). CC0 proxy not rechecked (already 403 today, A3 same-day rule). No
+  other new answer in NEEDS_YOU/BACKLOG. No code change this run. Agents used: none.
