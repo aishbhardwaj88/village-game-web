@@ -2033,3 +2033,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   self-resolving it (it's her call to unpark [PAUSED-MAP], not an inference I should
   make for her). CC0 proxy not rechecked (already 403 today, A3 same-day rule). No
   other new answer in NEEDS_YOU/BACKLOG. No code change this run. Agents used: none.
+- 26 Nov 20:2x scheduled list run: CI confirmed green via Actions API on c7bc29e (run
+  1415), no local build needed. Fresh checkout re-synced to origin/main (HEAD detached
+  as always), npm ci (node_modules missing again, as always). Re-checked every open
+  BACKLOG [ACTIVE] item for a new angle: architecture-as-unit and texture-pipeline
+  items both read "for any/new reworked places" - no place is being reworked while
+  [PAUSED-MAP] stands; M7 flavour NPC needs draw-call headroom not measurable here;
+  item 7 shader-warm-up needs a real browser (known container limit). LOOKS LIST
+  1-8 all confirmed done/parked by 3+ prior independent entries (grepped handoff/
+  NEEDS_YOU, did not re-run the checks - A6). No new unblocked item found. No code
+  change, no agents. 12th flat run on this thread.
