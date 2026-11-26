@@ -1,20 +1,23 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 20:2x (scheduled run). CI green on c7bc29e (run 1415), confirmed
+Last updated: 26 Nov 20:5x (scheduled run). CI green on d85831c (run 1417), confirmed
 via Actions API, no local build needed. No code change this run. LAST_FULL_PASS=3362c4f.
 ## This run
-- 26 Nov 20:2x scheduled list run: re-synced to origin/main (HEAD detached as always,
+- 13th flat run on this thread: re-synced to origin/main (HEAD detached as always,
   reset), npm ci (node_modules missing again, as always). CI confirmed green via
   GitHub Actions API without a local build.
-- Re-checked every open BACKLOG [ACTIVE] item for a genuinely new angle (not a
-  re-verify, A6): architecture-as-self-contained-unit and texture-pipeline items
-  both only apply "for any/new reworked places" - no place is being reworked while
-  [PAUSED-MAP] stands, so neither is actionable now. M7 flavour NPC needs draw-call
-  headroom this container can't measure. Item 7 shader-warm-up needs a real browser
-  (known container limit, see below).
-- LOOKS LIST 1-8: all confirmed done/parked by 3+ independent prior entries (grepped
-  handoff.md/NEEDS_YOU.md, did not re-run checks - A6 forbids re-verifying logged
-  work). No new unblocked item found anywhere. No code change, no agents. 12th flat
-  run on this thread.
+- Re-checked every open BACKLOG [ACTIVE] item for a genuinely new angle (A6, not a
+  re-verify): architecture-as-unit and texture-pipeline items still only apply to a
+  reworked place - none is being reworked while [PAUSED-MAP] stands. M7 NPC needs
+  draw-call headroom this container can't measure. Item 7 shader-warm-up needs a
+  real browser. CC0 proxy still 403 (not re-checked twice same day per note).
+- Ran check-budget: still using a stale perf-ride (21 Nov, flagged "older than 3
+  days: reported only", not a fresh measurement) - 13.01 MB/7.2s before Play, same
+  ballpark as the 10.7 MB already in NEEDS_YOU, nothing new to report her way.
+  public/assets du -sh = 186 MB total, but CLAUDE.md's cap on that total was already
+  relaxed 27 Oct in favour of before-Play size, which is the real open item.
+- LOOKS LIST 1-8: all confirmed done/parked by many prior independent entries
+  (grepped handoff.md/NEEDS_YOU.md, did not re-run checks - A6). No new unblocked
+  item found anywhere.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures (27 front-face,
   28 on-road, 19 overlap) - all three independently confirmed wedged across 6+
@@ -39,7 +42,7 @@ via Actions API, no local build needed. No code change this run. LAST_FULL_PASS=
 ## Blockers
 - [PAUSED-MAP]: her "map locked?" question unanswered (now with final-map.md
   context); do not unpark without her yes. Every [ACTIVE]/[PAUSED-MAP] BACKLOG item
-  is now blocked on either this, the CC0 proxy, or a real browser - 12 flat runs.
+  is now blocked on either this, the CC0 proxy, or a real browser - 13 flat runs.
 - CC0 proxy (polyhaven/ambientcg): 403, re-confirmed 26 Nov. Do not re-check hourly.
 ## Known about this container
 - node_modules missing on fresh container, every time - run `npm ci` first. HEAD can

@@ -2044,3 +2044,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   NEEDS_YOU, did not re-run the checks - A6). No new unblocked item found. No code
   change, no agents. 12th flat run on this thread.
 **26 Nov (scheduled run, no code change):** CI green on 4729f3b (run 1416). Temple/sabzi stay as drawn (AS_DRAWN, front -z, 152 deg item stale); no hard-coded moved-place coords left; pre-Play 10.7 MB and land layers remain her call. missions-check 399/0/3.
+- 26 Nov 20:5x scheduled run: CI confirmed green via Actions API on d85831c (run
+  1417), no local build needed. Re-checked every open BACKLOG [ACTIVE] item for a new
+  angle (A6): architecture-as-unit/texture-pipeline still apply only to a reworked
+  place, none reworked under [PAUSED-MAP]; M7 NPC needs draw-call headroom; item 7
+  shader-warmup needs a real browser; CC0 proxy still 403. Ran check-budget: still a
+  stale 21 Nov perf-ride (13.01 MB/7.2s before Play), same ballpark as the 10.7 MB
+  already in NEEDS_YOU - nothing new. LOOKS LIST 1-8 reconfirmed done/parked by prior
+  entries, not re-run (A6). No new unblocked item, no code change, no agents. 13th
+  flat run on this thread.
