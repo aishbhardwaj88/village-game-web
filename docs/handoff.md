@@ -1,6 +1,20 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 26 Nov ~18:1x scheduled run: no code change, 9th flat run on this thread
+- Fresh checkout matched origin/main exactly (HEAD detached/stale as always, reset),
+  npm ci (node_modules missing again). CI confirmed green on 3362c4f (run 1405) via
+  the GitHub Actions API directly.
+- Rechecked the CC0 proxy (polyhaven.com, ambientcg.com): both still 403 via the
+  agent-proxy, unchanged since 25 Nov.
+- BACKLOG [ACTIVE]/NEEDS_YOU: no new answer from her; front-face(27)/on-road(28)/
+  remaining-19-overlap are already confirmed wedged over several runs (not re-run
+  again, A6); no new/reworked place for the architecture/texture-pipeline rules to
+  apply to; check-budget.js's perf data is 5 days stale, real-browser ride still
+  unavailable here, so no new M7/shader-warmup measurement to act on.
+- Another worker pushed c8774ce (character work, not my scope) after my fetch -
+  next run should rebase past it. No item unblocked. No code change. Agents: none.
+
 # 26 Nov scheduled run: real code change, one wedged overlap actually cleared
 - Added layoutSnap.js step 5 (same 8-dir/off-road pattern as the stray-prop/tree-trunk
   pushes): a house that never itself tried a move (fine except the sliver it shares with a
