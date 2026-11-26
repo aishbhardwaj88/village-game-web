@@ -391,8 +391,14 @@ const distToQuad = (x, z, q) => {
   return inside || inside2 ? -1 : best;
 };
 /**
- * A gali (4 m back lane) drawn a little too long runs its end into the wall of the building it leads to. Pull each end back,
- * 0.25 m at a time (at most 8 m), until its carriageway stops 0.3 m short of every building footprint. Returns the clips.
+ * A gali (4 m back lane) drawn a little too long runs its end into the wall of the building it leads to: report how far each
+ * end would need to pull back, 0.25 m at a time (at most 8 m), until its carriageway stops 0.3 m short of every building
+ * footprint. REPORTING ONLY (bug fixed 26 Nov, same shape as nudgeGalis below): tools/layout-pack.mjs ships every road
+ * exactly as drawn ("nothing may sit on a road, so the buildings move, never the road" - her 24-26 Nov policy), so the cut
+ * this used to write to `r.pts` never reached the shipped map - it only leaked into whichever snapLayout round ran after it,
+ * which then scored a building as clear of a gali-cap that was about to be thrown away, leaving the real, uncut cap still
+ * overlapping it once exported. Mutating the road here would misinform every snap pass that runs after it; galis are never
+ * trimmed, so this only returns the list for docs/s7/layout.md. Returns the clips.
  */
 export function clipGalis(layout) {
   const items = footprintItems(layout).filter((it) => !it.crossing && !(it.kind === 'place' && it.open));
@@ -423,9 +429,6 @@ export function clipGalis(layout) {
       let cut = 0;
       while (hits(x + ux * cut, z + uz * cut, r.width) && cut < Math.min(8, L - 2)) cut += 0.25;
       if (cut > 0 && !hits(x + ux * cut, z + uz * cut, r.width)) {
-        pts[0] = [+(x + ux * cut).toFixed(2), +(z + uz * cut).toFixed(2)];
-        r.pts = end ? pts.reverse() : pts;
-        r.bbox = undefined;
         clips.push({ id: r.id, end: end ? 'end' : 'start', cut });
       }
     }

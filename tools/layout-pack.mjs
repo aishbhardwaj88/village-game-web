@@ -165,7 +165,7 @@ export function pack(raw0) {
   const clips = clipGalis(layout);
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   const nudges = snapLayout(layout);
-  // a gali whose length runs along a building's back slides sideways off it; then trim gali ends the snap moved buildings onto
+  // galiShifts/clips below are report-only (26 Nov): roads ship exactly as drawn, never shifted or trimmed - see their docstrings
   const galiShifts = nudgeGalis(layout);
   for (const r of layout.roads) if (!r.bbox) r.bbox = roadBBox(r);
   for (const c of clipGalis(layout)) clips.push({ ...c, after: 'snap' });

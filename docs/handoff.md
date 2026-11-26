@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/ (moved 24 Nov, see handoff-pre-22nov.md).
 
+# 26 Nov scheduled run: clipGalis had the same discard-leak as nudgeGalis, fixed
+- Same shape as the previous run's nudgeGalis bug: clipGalis() trimmed a dead-end lane's
+  cap in layout.roads to clear a building, but layout-pack.mjs always ships roads exactly
+  as drawn, so the trim never reached the shipped map - it only misled the snap round after
+  it into scoring a building clear of a cut that was about to be thrown away. Made it
+  report-only. Repacked: 117 -> 116 failures (on-road 44 -> 43). missions-check 399/0/3
+  unchanged, Tier 1 clean (build:unchecked, licence-audit, check-dup-models,
+  check-material-clone, place-visibility-check). Agents used: none.
+
 # 26 Nov scheduled run: gali-position bug fixed, map-position cleanup continued
 - Root cause found: nudgeGalis() in layoutSnap.js mutated layout.roads (shift/narrow a gali)
   before snapLayout's 2nd round, but tools/layout-pack.mjs always SHIPS roads exactly as drawn

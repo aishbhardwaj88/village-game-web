@@ -1,5 +1,11 @@
 # Needs you
 
+- Map-position cleanup, FYI only (26 Nov, 2nd fix): clipGalis() had the exact same bug as
+  the gali fix below - it computed a trim for a dead-end lane's cap, but the real map always
+  ships the lane untrimmed, so a building could score "clear" of a cut that never happened.
+  Made it report-only too. One more on-road failure now genuinely fixed (44 -> 43); nothing
+  else moved. Nothing needed from you - status: open
+
 - Map-position cleanup, FYI only (26 Nov): fixed a real bug (houses were scoring "clear"
   against a gali the game never actually ships, so they stayed on the real road) - on-road
   failures dropped 68 to 44. Side effect: 21 new, very small (0.05-0.16 m) house-to-house
