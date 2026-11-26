@@ -1926,3 +1926,15 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Remaining 120 need per-item work, not another parameter tweak. Agents used: none.
 
 **26 Nov (scheduled run, no code change):** CI green on 211358a. Temple front already -z in mapData (AS_DRAWN, frontYaw 179 deg), the 152 deg item is stale; sabzi AS_DRAWN too. missions 399/0/3, build:unchecked + 4 checks clean. Pre-Play 10.7 MB and land layers stay her call (NEEDS_YOU).
+
+# 26 Nov scheduled run: map-position cleanup, finer snap granularity
+- Per STATE's own next-step note: added finer candidate steps (0.05/0.1/0.15/0.2 m,
+  was 0.25 min) to layoutSnap.js's snap search, same pure-algorithm pattern as the
+  2->4 pass change. Repacked mapData.json: 116 -> 81 failures (on-road 43->28,
+  overlap 46->26, front-face unchanged 27 - untouched by this search axis).
+- Verified: build:unchecked + licence-audit + check-dup-models + check-material-clone
+  + place-visibility-check all clean (Tier 1, only layoutSnap.js + mapData.json
+  changed). Repack now costs ~16 min (was ~10) - more candidates per item - noted
+  in STATE.md; still fine to background.
+- Remaining 81 (27 front-face, 28 on-road, 26 overlap) need per-item look, not
+  another search-granularity tweak. Agents used: none.

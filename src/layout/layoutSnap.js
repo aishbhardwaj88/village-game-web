@@ -207,7 +207,7 @@ export function snapLayout(layout) {
         const ks = new Set([0]);
         if (p1 && p1.gap > GAP_OK) for (const g of GAP_TARGETS) if (p1.gap - g <= maxPush) ks.add(+(p1.gap - g).toFixed(2));
         if (d1 && d1.pen <= MAX_BACK) { ks.add(+(-(d1.pen + 0.3)).toFixed(2)); ks.add(+(d1.pen + 0.3).toFixed(2)); }
-        for (const k of [0.25, 0.5, 1, 1.5]) { ks.add(k); ks.add(-k); }
+        for (const k of [0.05, 0.1, 0.15, 0.2, 0.25, 0.5, 1, 1.5]) { ks.add(k); ks.add(-k); }
         const side = [fr[1], -fr[0]];
         for (const k of ks) for (const j of (needSide || t ? SIDE_STEPS : [0])) {
           if (!t && !k && !j) continue;
