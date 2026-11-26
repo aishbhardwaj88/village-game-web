@@ -76,7 +76,9 @@ function enforceMatteMaterial(material) {
 let manifestPromise = null;
 function loadManifest() {
   if (!manifestPromise) {
-    manifestPromise = fetch(`${MODEL_BASE}manifest.json`)
+    // 26 Nov: cache:'no-cache' = always revalidate (a 304 costs ~nothing). Pages serves it with max-age=600, so after a deploy a plain
+    // fetch kept the old list for ~10 min and new characters never appeared. The service worker ignores it (no ?v=, not a hashed chunk).
+    manifestPromise = fetch(`${MODEL_BASE}manifest.json`, { cache: 'no-cache' })
       .then((res) => (res.ok ? res.json() : []))
       .then((names) => new Set(names))
       .catch(() => null); // null, not an empty set: falls back to the old per-file check below

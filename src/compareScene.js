@@ -29,6 +29,7 @@ const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, 
 const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Face Kirana', 'face_kirana'], ['Face Pehelwan', 'face_pehelwan'], ['Face Kulfiwala', 'face_kulfiwala'], ['Face Sabziwala', 'face_sabziwala'], ['Face Nai', 'face_nai'], ['Face Rascal', 'face_rascal'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
 const BOTH_ORBIT = -0.2; // 26 Nov: the straight-on two-shot of the 13-actor row puts the camera against the Gupta store wall (half the frame black); 0.2 rad round to the other side shows the whole row, Nai beside the store
+const ROW_SHIFT = 4; // 26 Nov: 14-actor row slid 4 m toward TV Aunty so Nai and Rascal stand clear of the Gupta store stall (camera aims at the mean head position, so it follows)
 const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 22], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
@@ -140,7 +141,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 7.5) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
+        const side = (a.order - 7.5) * BOTH_GAP - ROW_SHIFT; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
       } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && a.key !== 'pehelwan' && a.key !== 'kulfiwala' && a.key !== 'sabziwala' && a.key !== 'nai' && a.key !== 'rascal' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
