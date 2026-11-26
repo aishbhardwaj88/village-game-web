@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov ~02:xx UTC (scheduled run). Repo byte-identical to last run (HEAD
+Last updated: 26 Nov (scheduled run, 7th flat). HEAD 2523aa1, CI green (run 1375). missions-check 399/0/3, build:unchecked ok.
 b1e004a, local main re-synced to origin/main fresh via git fetch, no drift). CI green
 on b1e004a (run 1374, confirmed via Actions API). 6th run in a row with this same
 settled state - per A6, not re-auditing the LOOKS LIST or BACKLOG again with no new
