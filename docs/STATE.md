@@ -1,13 +1,14 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 15:1x (scheduled run). CI green on 3def1ef (run 1392); missions 399/0/3, build:unchecked + 4 checks clean.
-missions 399/0/3 (unchanged, not rechecked this run per A6).
+Last updated: 26 Nov 15:4x (scheduled run). CI green on 8f87ab5 (run 1393); missions
+399/0/3, build:unchecked + 4 checks clean (not rechecked this run per A6).
 ## This run
 - Fresh checkout matched origin/main exactly (no divergence, no other worker commit
   landed since last run). node_modules missing, ran `npm ci`.
 - Re-checked every [ACTIVE] BACKLOG item and NEEDS_YOU for a new answer from her:
-  none newly unblocked. 6th flat run in a row on this thread - genuinely no
-  actionable code work until her input or a working browser arrives. Docs-only
-  commit, per A5's exception.
+  none newly unblocked. Read item-7 shader-warmup source (main.js/assetSlots.js) for
+  an actual bug, found none - symptom matches known no-GPU container limit, stays
+  parked. 7th flat run in a row on this thread - genuinely no actionable code work
+  until her input or a working browser arrives. Docs-only commit, per A5's exception.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 75 layout-pack failures (27 front-face, 28
   on-road, 20 overlap) - all wedged (algorithm already tries, can't improve): 3 named-

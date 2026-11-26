@@ -1964,3 +1964,18 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   proxy not rechecked (standing note), ACTIVE items still have no new place to apply
   to / still need a real browser. Per A6, did not re-run layout-tests/missions-check
   again (already confirmed unchanged twice this thread). Agents used: none.
+
+# 26 Nov 15:4x scheduled run: no code change, 7th flat run on this thread
+- Fresh checkout matched origin/main exactly (HEAD was detached/stale as always, reset
+  to origin/main), npm ci (node_modules missing again). CI confirmed green on 8f87ab5
+  (run 1393) via GitHub MCP.
+- Read source for item-7 shader-warmup (src/main.js warm loop + assetSlots.js
+  resolveAllNearFirst) looking for an actual code bug independent of the browser, since
+  that's allowed even when re-verifying the conclusion isn't: found none - the near-
+  slot gate and texture-warm loop both look correct; the stuck texWarmed/late-release
+  symptom is consistent with no real GPU/decode in this container, matching the
+  existing note. Still needs a real browser, not a new code change - leaving it parked,
+  not re-logging it as a fresh finding.
+- No new answer from her in NEEDS_YOU/BACKLOG; CC0 proxy not rechecked (standing note);
+  no other worker commit landed since last run. Did not re-run layout-tests/missions-
+  check (A6, already confirmed flat multiple times this thread). Agents used: none.
