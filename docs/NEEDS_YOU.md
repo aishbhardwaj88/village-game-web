@@ -1,5 +1,15 @@
 # Needs you
 
+- Map-objects-vs-houses overlap check, FYI only (26 Nov): ran the existing
+  `src/kit/mapObjectsCheck.js` tool (not previously reported at this detail) and found 16 small
+  objects sitting inside a house footprint: 3 resting spots (bench/charpai), 3 empty house-plot
+  markers overlapping the house later built there, 1 milestone, 1 tempo-stand patch, 1 kids-play
+  patch, and 4 cases where a Cattle/Buffalo pond's bank reaches into a house. Did not move any of
+  them: `src/kit/mapObjectsPlan.js` has a standing 26 Nov rule in its own code ("props stand at
+  their exact map spot, nothing is slid off a road") that I'm respecting, so this is each prop
+  sitting exactly where her map draws it, next to a house that happens to land close by. The 4
+  pond cases are the ones worth a look - a house this close to a pond bank. Nothing needed from
+  you unless you want any of these nudged - status: open
 - Map-position cleanup, FYI only (26 Nov, 2nd fix): clipGalis() had the exact same bug as
   the gali fix below - it computed a trim for a dead-end lane's cap, but the real map always
   ships the lane untrimmed, so a building could score "clear" of a cut that never happened.
