@@ -1915,3 +1915,5 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   houses nudged further, zero new failures) + missions-check unchanged (399/0/3) +
   Tier 1 clean. Repack now costs ~10 min, not ~4.5 - noted in STATE.md.
 - Remaining 120 need per-item work, not another parameter tweak. Agents used: none.
+
+**26 Nov (scheduled run, no code change):** CI green on 211358a. Temple front already -z in mapData (AS_DRAWN, frontYaw 179 deg), the 152 deg item is stale; sabzi AS_DRAWN too. missions 399/0/3, build:unchecked + 4 checks clean. Pre-Play 10.7 MB and land layers stay her call (NEEDS_YOU).
