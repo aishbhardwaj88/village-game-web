@@ -1894,3 +1894,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Every open BACKLOG item is [PAUSED-MAP] (map-lock question unanswered), [GATED-HER]
   (material board verdict pending), or needs a real browser/CC0 access this container
   lacks. Nothing newly unblocked. No code change.
+
+# 26 Nov scheduled run: real code change, map-position cleanup picked up
+- 9+ flat runs had left the 123-failure layout cleanup with no driver. Raised
+  layoutSnap.js's snap search from 2 passes to 4 (pure algorithm, no hand-edited
+  coords) and repacked mapData.json: 123 -> 120 failures (3 houses' road depth
+  fixed, 1 overlap resolved). Verified by full --verbose diff (only already-moving
+  houses nudged further, zero new failures) + missions-check unchanged (399/0/3) +
+  Tier 1 clean. Repack now costs ~10 min, not ~4.5 - noted in STATE.md.
+- Remaining 120 need per-item work, not another parameter tweak. Agents used: none.

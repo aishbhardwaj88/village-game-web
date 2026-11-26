@@ -166,7 +166,7 @@ export function snapLayout(layout) {
     return { s: faces * fs + rs + 20 * ov, pr, d, ov };
   };
   const order = [...items.filter((i) => i.kind === 'place'), ...items.filter((i) => i.kind === 'solid' && i.named), ...items.filter((i) => i.kind === 'house')];
-  for (let pass = 0; pass < 2; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     for (const it of order) {
       if (it.fixed || it.crossing) continue;
       if (process.env.DEBUG_ONLY && process.env.DEBUG_ONLY !== it.id) continue;
