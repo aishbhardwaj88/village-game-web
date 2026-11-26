@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 26 Nov scheduled run: no code change, 4th flat run in a row - nothing newly unblocked
+- Fresh checkout matched origin/main exactly (no divergence, no other worker commit since
+  26243f6). npm ci (node_modules missing on this container, as always). CI confirmed green
+  on 26243f6 (run 1389) via the GitHub API directly (not gh).
+- Re-ran missions-check.mjs (399 PASS/0 FAIL/3 WARN, same 3 known-by-design warns) and
+  layout-tests.mjs (75 failures, same 20 wedged overlaps as the last 2 runs - no new
+  avenue, confirmed again that the 3 named-vs-house and house-pair/washing-line items need
+  her OK, not another algorithm pass, per the prior run's note).
+- Checked BACKLOG.md/NEEDS_YOU.md for anything newly unblocked (CC0 proxy, browser checks,
+  map-lock answer): nothing changed. Every open BACKLOG item is still [PAUSED-MAP],
+  [GATED-HER], or needs a real browser/CC0 access this container lacks. Agents used: none.
+
 # 26 Nov scheduled run: overlap dead-ends mapped, no safe code change; handoff archived
 - Chased the remaining 20 layout-pack overlaps further: confirmed via `src/kit/mapObjectsPlan.js`'s
   own code that props it places (resting spots, buffalo, milestones, pond banks) carry a 26 Nov
