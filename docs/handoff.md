@@ -1924,3 +1924,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   board) - the snap search already covers these candidates and can't improve them.
   Not another algorithm pass; next real move is either a hand-logged per-item nudge or
   her call that a sub-0.3 m touch is fine as drawn. Agents used: none.
+- 26 Nov ~11:xx scheduled run: CI green on c3b49c0, missions 399/0/3; temple/sabzi, moved-place coords, pre-Play 10.7 MB (her call), land layers unchanged and still parked - no code change.
