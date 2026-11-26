@@ -1,7 +1,8 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 20:5x (scheduled run). CI green on d85831c (run 1417), confirmed
+Last updated: 26 Nov 21:3x (scheduled run). CI green on d85831c (run 1417), confirmed
 via Actions API, no local build needed. No code change this run. LAST_FULL_PASS=3362c4f.
 ## This run
+- 14th run, list order: CI green on 417d7ce (run 1418). missions-check 399/0/3. DECISION (map-is-law): temple keeps its packed 152 deg turn, it faces the highway/ring road per proposed-map-21nov (true front = nearest road); no repack. Sabzi already turned to front cross_road (placeMoves). Moved-place hard-coded coords, load size, unsliced land builds: still need browser/her call, no change.
 - 13th flat run on this thread: re-synced to origin/main (HEAD detached as always,
   reset), npm ci (node_modules missing again, as always). CI confirmed green via
   GitHub Actions API without a local build.
