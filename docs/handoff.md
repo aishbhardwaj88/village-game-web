@@ -1925,3 +1925,14 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   Not another algorithm pass; next real move is either a hand-logged per-item nudge or
   her call that a sub-0.3 m touch is fine as drawn. Agents used: none.
 - 26 Nov ~11:xx scheduled run: CI green on c3b49c0, missions 399/0/3; temple/sabzi, moved-place coords, pre-Play 10.7 MB (her call), land layers unchanged and still parked - no code change.
+
+# 26 Nov scheduled run: no code change, re-checked the overlap chase independently
+- Re-ran tools/layout-tests.mjs fresh (75 failures: 27 front-face, 28 on-road, 20
+  overlap) and traced the same 20 overlaps myself before reading handoff: same
+  conclusion as the commit right before this one (c3b49c0) - 3 named-building-vs-
+  house (named places are now fixed-as-drawn per the 26 Nov code comment), 9
+  house-pairs at 0.05 m, 5 sandwiched washing-line/notice-board all wedged; no
+  unblocked code fix. Did not repack or touch mapData.json (would only reconfirm
+  what's already logged - A6).
+- CI green on a310cbe (run 1388). missions-check 399/0/3 unchanged. No other
+  worker commits landed since last run. Nothing newly unblocked. No code change.
