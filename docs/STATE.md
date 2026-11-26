@@ -1,25 +1,25 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov ~01:xx UTC (scheduled run). Repo identical to last run; CI green on
-b3696a3 (run 1373, confirmed via API, not re-run). No code change, 3rd run flat on the
-same settled state - not re-auditing per A6.
-live code. Item 6 (cycle) confirmed NOT a regression: 25/32 km/h is her own 25 Nov in-game
-verdict overriding the 24 Nov 20/27 ask (see src/main.js:260-261 comment) - do not "fix" it
-back to 20/27. Item 2 (chauraha buildings) and the rest of item 7 stay open, genuinely blocked
-(her building names; map-lock question; no working browser in this container).
-No code change this run (5th run in a row with this same settled result, repo byte-identical
-to the last run) - not re-auditing further per A6; next real trigger is either her answer in
-NEEDS_YOU or a new playtest note, or a concurrent session landing a new commit.
+Last updated: 26 Nov ~02:xx UTC (scheduled run). Repo byte-identical to last run (HEAD
+b1e004a, local main re-synced to origin/main fresh via git fetch, no drift). CI green
+on b1e004a (run 1374, confirmed via Actions API). 6th run in a row with this same
+settled state - per A6, not re-auditing the LOOKS LIST or BACKLOG again with no new
+input; only re-confirmed CI and checked for new commits/her answers, found none.
 
 ## This run
-- 25 Nov ~23:xx scheduled run: CI green on c0873b7 (run 1370). missions-check 0 fail (399 pass, 3 warn). build:unchecked ok.
-- Temple/sabzi front: packed mapData already has temple front -z (frontYaw 3.12) and sabzi as drawn (AS_DRAWN in layoutSnap.js); the 152 deg turn is not in current data, nothing to fix.
-- Moved-place coords: anchors.js/mapPlan.js hold old base coords that placeMoves/layout override; not re-audited (A6).
-- Load size before Play (10.7 MB) cuts need her call (NEEDS_YOU, already open); no browser here to measure.
+- git fetch + checkout -B main origin/main: clean, no divergence, no local commits lost.
+- CI green on b1e004a (run 1374, success). No new commit from any other worker since
+  the last run. docs/NEEDS_YOU.md unchanged (60+ open lines, none marked done by her).
+- No code change. Not re-verifying LOOKS LIST 1-8 or BACKLOG a further time (A6) -
+  nothing in the repo or in her NEEDS_YOU answers changed since the last 5 confirmations.
 
 ## Current state
-- Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/overlap,
-  123 failures, flat for 3+ runs now) has no active driver - watch for either a new position
-  commit (resume tracking) or her map-lock answer (then pick up).
+- Game is feature-complete against GAME_COMPLETE.md; map-position cleanup (front/on-road/
+  overlap, 123 failures, flat for 6+ runs now) has no active driver - watch for either a
+  new position commit (resume tracking) or her map-lock answer (then pick up).
+- LOOKS LIST 1-8 (24 Nov playtest): 1/3/4/5/6 done and live; 2 (chauraha buildings) could
+  not be reproduced, logged to NEEDS_YOU with her exact names needed; 7 partly done
+  (dup fetch fixed, map-shipped-twice/shader-warm-up parked, PAUSED-MAP/no browser); 8
+  (missions/bell/canal) done per STATE history. "Looks fixes ready" line stands in NEEDS_YOU.
 - Her "is the 25 Nov map locked for good?" (NEEDS_YOU) still open; [PAUSED-MAP] items stay parked.
 - Free-props review row (100+ Poly Haven props staged) still unreviewed - NEEDS_YOU, ?at=606,33.
 
@@ -38,8 +38,7 @@ NEEDS_YOU or a new playtest note, or a concurrent session landing a new commit.
 ## Known about this container
 - node_modules missing on fresh container, every time - always run `npm ci` first.
 - HEAD can show detached/divergent from a STALE cached origin/main ref - always `git fetch`
-  fresh before judging divergence (25 Nov 21:1x: false alarm, merge-base fails on stale ref but
-  resolves clean once fetched). Shallow clone (50-commit history, graft root db68c07).
+  fresh before judging divergence.
 - Headless chromium crashes ("Target crashed") on any real page.evaluate - screenshot.js/
   world-validator.js/regression-check.js all hit this. Verify via code reading + Tier 1 (A7).
 - `node tools/layout-pack.mjs` (full repack) takes ~4.5 min, not "minutes-long" vaguely - budget.
