@@ -4,7 +4,7 @@
  *   node tools/finish-nai.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.0, z 0.865, 0.20 m / 600 px; eyes (243,303) (375,303), mouth corners (262,420) (378,417):
  *   echo "0.0 0.865 0.20" > nai_cam.txt ; python3 tools/face_keys.py raw.glb nai 243,303,375,303 262,420,378,417   (-> nai_keys.glb)
- *   echo "0.0 0.865 0.20 600" > nai_head.txt ; python3 tools/eye_patch.py -- nai_keys.glb nai_eyes.glb nai '[[243,303],[375,303]]'
+ *   echo "0.0 0.865 0.20 600" > nai_head.txt ; python3 tools/eye_patch.py -- nai_keys.glb nai_eyes.glb nai '[[243,303],[375,303]]' '{"wx":0.62}'
  * White towel on the LEFT shoulder: found by colour, weighted to Spine2 / Neck / LeftShoulder / Spine1 only. Sunglasses hooked on the shirt front: found by colour, weighted to Spine2.
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. The whole body is one shell, so by POSITION: the jeans (and the shirt hem over the belt) are Hips / UpLeg / Leg / Foot only, zero arm / hand weight, blending back into the
@@ -52,7 +52,7 @@ for (let i = 0; i < N; i++) {
   J.getElement(i, jh); W.getElement(i, wh); let hw = 0; for (let k = 0; k < 4; k++) if (/^(Left|Right)Hand/.test(jn[jh[k]])) hw += wh[k];
   if (hw > 0.5) { handDom[i] = 1; continue; } // the hands (their thumbs reach x 0.12, the kurta edge) are left exactly as Tripo skinned them
   let aw = 0; for (let k = 0; k < 4; k++) if (/^(Left|Right)(Arm|ForeArm)/.test(jn[jh[k]])) aw += wh[k];
-  const p = pos[i]; if (Math.abs(p.x) < HALF && p.y < 0.64 && !(aw > 0.55 && p.y > 0.48)) lower[i] = 1; // sleeves / rolled cuffs (arm-dominant) are not cloth of the lower body, they keep Tripo's arm weights
+  const p = pos[i]; if (Math.abs(p.x) < HALF && p.y < 0.64 && !(aw > 0.45 || (aw > 0.12 && p.y > 0.5 && Math.abs(p.x) > 0.085))) lower[i] = 1; // sleeves / rolled cuffs (arm-dominant) are not cloth of the lower body, they keep Tripo's arm weights
 }
 // Tripo welded the thumbs to the kurta edge (x 0.12): cut every triangle that joins a hand vertex to a lower-body / vest vertex, or the cloth is dragged to the hand
 {
@@ -98,7 +98,7 @@ const towelSel = new Uint8Array(N);
   const colAt = (i) => { UV.getElement(i, uv); const x = Math.min(img.info.width - 1, Math.max(0, Math.floor(uv[0] * img.info.width))), y = Math.min(img.info.height - 1, Math.max(0, Math.floor(uv[1] * img.info.height))), o = (y * img.info.width + x) * img.info.channels; return [img.data[o], img.data[o + 1], img.data[o + 2]]; };
   let n0 = 0;
   for (let i = 0; i < N; i++) { const p = pos[i]; if (p.x < TOWEL.x0 || p.y < TOWEL.y0 || p.y > 0.9 || p.x > 0.17 || handDom[i]) continue; if (TOWEL.test(colAt(i))) { towelSel[i] = 1; n0++; } }
-  const loose = ([r, g, b]) => Math.min(r, g, b) > 105 && Math.max(r, g, b) - Math.min(r, g, b) < 65; // edge vertices of the cloth are a little darker / blurrier: grow the selection over neighbours that still look like the cloth
+  const loose = ([r, g, b]) => Math.min(r, g, b) > 100 && Math.max(r, g, b) - Math.min(r, g, b) < 40; // edge vertices of the cloth are a little darker / blurrier: grow the selection over neighbours that still look like the cloth
   const add = [];
   for (let pass = 0; pass < 2; pass++) { const got = []; for (let t = 0; t < idx.length; t += 3) { const v = [idx[t], idx[t + 1], idx[t + 2]]; if (v.some((q) => towelSel[q])) for (const q of v) if (!towelSel[q] && pos[q].x > TOWEL.x0 && pos[q].y > TOWEL.y0 && pos[q].y < 0.9 && pos[q].x < 0.17 && !handDom[q] && loose(colAt(q))) got.push(q); } for (const q of got) if (!towelSel[q]) { towelSel[q] = 1; add.push(q); } }
   const sm = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };

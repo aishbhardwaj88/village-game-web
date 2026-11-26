@@ -52,7 +52,7 @@ for (let i = 0; i < N; i++) {
   J.getElement(i, jh); W.getElement(i, wh); let hw = 0; for (let k = 0; k < 4; k++) if (/^(Left|Right)Hand/.test(jn[jh[k]])) hw += wh[k];
   if (hw > 0.5) { handDom[i] = 1; continue; } // the hands (their thumbs reach x 0.12, the kurta edge) are left exactly as Tripo skinned them
   let aw = 0; for (let k = 0; k < 4; k++) if (/^(Left|Right)(Arm|ForeArm)/.test(jn[jh[k]])) aw += wh[k];
-  const p = pos[i]; if (Math.abs(p.x) < HALF && p.y < 0.64 && !(aw > 0.55 && p.y > 0.48)) lower[i] = 1; // sleeves / rolled cuffs (arm-dominant) are not cloth of the lower body, they keep Tripo's arm weights
+  const p = pos[i]; if (Math.abs(p.x) < HALF && p.y < 0.64 && !(aw > 0.45 || (aw > 0.12 && p.y > 0.5 && Math.abs(p.x) > 0.085))) lower[i] = 1; // sleeves / rolled cuffs (arm-dominant) are not cloth of the lower body, they keep Tripo's arm weights
 }
 // Tripo welded the thumbs to the kurta edge (x 0.12): cut every triangle that joins a hand vertex to a lower-body / vest vertex, or the cloth is dragged to the hand
 {
