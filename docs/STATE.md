@@ -1,12 +1,13 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov (scheduled run). CI green on 26243f6; missions 399/0/3 (unchanged).
+Last updated: 26 Nov 13:12 (scheduled run). Last CI check green on 26243f6; missions
+399/0/3 (unchanged, not rechecked this run per A6).
 ## This run
-- Fresh checkout matched origin/main exactly (no divergence, no other worker commit landed
-  since last run). node_modules missing, ran `npm ci`. CI confirmed green via GitHub API.
-- Re-ran missions-check.mjs (399/0/3, same 3 known-by-design warns) and layout-tests.mjs
-  (75 failures, same 20 wedged overlaps) - no new avenue, no code change. 4th flat run in
-  a row on this thread; every open BACKLOG item re-confirmed [PAUSED-MAP]/[GATED-HER]/
-  needs-real-browser. Did not re-chase the overlaps a further time (A6).
+- Fresh checkout matched origin/main exactly (no divergence, no other worker commit
+  landed since last run). node_modules missing, ran `npm ci`.
+- Re-checked every [ACTIVE] BACKLOG item against current repo state (not a repack/
+  browser re-run, just status): none newly unblocked. 5th flat run in a row on this
+  thread - genuinely no actionable code work until her input or a working browser
+  arrives. Docs-only commit, per A5's exception.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 75 layout-pack failures (27 front-face, 28
   on-road, 20 overlap) - all wedged (algorithm already tries, can't improve): 3 named-

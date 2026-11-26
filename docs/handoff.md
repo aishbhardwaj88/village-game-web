@@ -1948,3 +1948,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   what's already logged - A6).
 - CI green on a310cbe (run 1388). missions-check 399/0/3 unchanged. No other
   worker commits landed since last run. Nothing newly unblocked. No code change.
+
+# 26 Nov 13:12 scheduled run: no code change, 5th flat run on this thread
+- Checked all [ACTIVE] BACKLOG items fresh: architecture/texture-pipeline rules have
+  no new/reworked place to apply to right now; CC0 prop sourcing still proxy-403
+  (not rechecked, per standing note); M7 NPC and item-7 shader-warmup both still
+  need a real browser, unavailable here. No item unblocked since last run.
+- Did not re-run layout-tests/missions-check (A6: already logged twice this thread,
+  nothing changed that would move them). No other worker commits landed.
