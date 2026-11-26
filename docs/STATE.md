@@ -1,13 +1,13 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 13:12 (scheduled run). Last CI check green on 26243f6; missions
-399/0/3 (unchanged, not rechecked this run per A6).
+Last updated: 26 Nov 14:13 (scheduled run). Last CI check green on 1be3a48 (run 1391);
+missions 399/0/3 (unchanged, not rechecked this run per A6).
 ## This run
 - Fresh checkout matched origin/main exactly (no divergence, no other worker commit
   landed since last run). node_modules missing, ran `npm ci`.
-- Re-checked every [ACTIVE] BACKLOG item against current repo state (not a repack/
-  browser re-run, just status): none newly unblocked. 5th flat run in a row on this
-  thread - genuinely no actionable code work until her input or a working browser
-  arrives. Docs-only commit, per A5's exception.
+- Re-checked every [ACTIVE] BACKLOG item and NEEDS_YOU for a new answer from her:
+  none newly unblocked. 6th flat run in a row on this thread - genuinely no
+  actionable code work until her input or a working browser arrives. Docs-only
+  commit, per A5's exception.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 75 layout-pack failures (27 front-face, 28
   on-road, 20 overlap) - all wedged (algorithm already tries, can't improve): 3 named-
