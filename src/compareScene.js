@@ -137,7 +137,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     for (const a of actors) {
       if (a.yaw === null) a.yaw = Math.atan2(VIEWER.x - a.x, VIEWER.z - a.lane);
       if (two) { // side by side, 2 m apart, facing the camera
-        const side = (a.order - 3) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
+        const side = (a.order - 5) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
       } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && a.key !== 'pehelwan' && a.key !== 'kulfiwala' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
