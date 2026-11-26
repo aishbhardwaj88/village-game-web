@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 26 Nov 14:13 (scheduled run). Last CI check green on 1be3a48 (run 1391);
+Last updated: 26 Nov 15:1x (scheduled run). CI green on 3def1ef (run 1392); missions 399/0/3, build:unchecked + 4 checks clean.
 missions 399/0/3 (unchanged, not rechecked this run per A6).
 ## This run
 - Fresh checkout matched origin/main exactly (no divergence, no other worker commit
