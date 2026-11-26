@@ -38,6 +38,7 @@ const PROFILE = {
   tvuncle_cyber: { review: true }, // 26 Nov: Cyber cafe boy (cyberboy.glb): idle, walk, run, laugh, wave, jump
   tvuncle_darzi: { review: true }, // 26 Nov: Darzi / tailor (darzi.glb): idle, walk, run, laugh, wave, jump
   tvuncle_halwai: { review: true }, // 26 Nov: Halwai / sweet maker (halwai.glb): idle, walk, run, laugh, wave, jump
+  tvuncle_kirana: { review: true }, // 26 Nov: Kirana / shopkeeper (kirana.glb): idle, walk, run, laugh, wave, jump
   tvuncle_didi: { review: true }, // Parlour Didi stands in the compare line-up for scale and face comparison (idle only: she has no walk/laugh review clips)
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)

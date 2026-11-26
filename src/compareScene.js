@@ -7,6 +7,7 @@
  * 25 Nov: Gossip Aunty (tvaunty.glb, loaded only here) stands 2 m left of Didi: idle / walk (in place) / call / laugh / greet / Look, Face Aunty button; the All two-shot frames all four.
  * 26 Nov: Milkman (milkman.glb, loaded only here) stands 2 m right of TV Uncle: idle / walk (in place) / run / laugh / wave / jump, Face Milkman button.
  * 26 Nov: Cyber boy (cyberboy.glb, loaded only here, round wire glasses on his Head bone) stands 2 m right of Milkman: same clips, Face Cyber boy button. Wave = standing wave (the raw Tripo clip is a squat).
+ * 26 Nov: Kirana (shopkeeper, kirana.glb, 1.65 m) stands 2 m right of the Halwai: same clips, Face Kirana button.
  * 26 Nov: Halwai (sweet maker, halwai.glb, 1.6 m, very fat) stands 2 m right of the Darzi: same clips, Face Halwai button.
  * 26 Nov: Darzi (tailor, darzi.glb, loaded only here; glasses, tape measure and wrist cord added after Tripo) stands 2 m right of Cyber boy: same clips, Face Darzi button.
  * Labels hide when the camera is within 2 m. Face Uncle button: eye-level face view (A/D orbit, W/S zoom, Esc leaves). Review only: nothing here runs in normal play.
@@ -15,14 +16,14 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { reviewPlay } from './characterAnim.js';
 
-const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5, daughter: -117.5, milkman: -115.5, cyber: -113.5, darzi: -111.5, halwai: -109.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
+const LANE_X = [606, 610], LANE_Z = { sm: -125.5, didi: -121.5, aunty: -119.5, daughter: -117.5, milkman: -115.5, cyber: -113.5, darzi: -111.5, halwai: -109.5, kirana: -107.5 }, CENTRE = { x: 608, z: -124.5 }; // 4 m path along the highway, lanes 2 m apart
 const VIEWER = { x: 604.2, z: -120.6 }; // ~5.4 m from the middle, to the side
 // 25 Nov: ground speed that makes each clip's planted foot stand still on the ground (no sliding), MEASURED from the clips (tools: foot bone
 // speed relative to the hips while the foot is within 4 cm of its lowest point, at the in-game model scale; both clips are in-place).
 // Same idea as walkRef in src/characterAnim.js. Review clips play at 1x, so speed = stride length / cycle time.
 const STRIDE = { aunty: { walk: 0.546, walk_plain: 0.546 }, sm: { walk: 0.914, gesture_swagger: 0.934 } }; // m/s
 const TURN_K = 9; // yaw closes ~96% of a half turn in 0.35 s (smooth ease-out, about 0.4 s for 180 degrees)
-const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Studio light', 'studio']];
+const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'], ['Swagger', 'gesture_swagger'], ['Laugh', 'gesture_laugh'], ['Wave', 'gesture_wave'], ['Call', 'gesture_call'], ['Greet', 'gesture_greet'], ['Run', 'run'], ['Cheer', 'gesture_cheer'], ['Jump', 'gesture_jump'], ['Look', 'gesture_lookaround'], ['All', 'both'], ['Face Daughter', 'face_daughter'], ['Face Aunty', 'face_aunty'], ['Face Didi', 'face_didi'], ['Face Uncle', 'face_sm'], ['Face Milkman', 'face_milkman'], ['Face Cyber boy', 'face_cyber'], ['Face Darzi', 'face_darzi'], ['Face Halwai', 'face_halwai'], ['Face Kirana', 'face_kirana'], ['Studio light', 'studio']];
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
 const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 12], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
@@ -58,7 +59,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   camRig.yaw = Math.atan2(-(CENTRE.x - VIEWER.x), -(CENTRE.z - VIEWER.z));
 
   const actors = [];
-  const ORDER = [['daughter', "AUNTY'S DAUGHTER", 'tvdaughter', 1.33], ['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72], ['milkman', 'MILKMAN', 'milkman', 1.65], ['cyber', 'CYBER BOY', 'cyberboy', 1.7], ['darzi', 'DARZI', 'darzi', 1.6], ['halwai', 'HALWAI', 'halwai', 1.6]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
+  const ORDER = [['daughter', "AUNTY'S DAUGHTER", 'tvdaughter', 1.33], ['aunty', 'TV AUNTY', 'tvaunty', 1.6], ['didi', 'PARLOUR DIDI', 'parlour_didi', 1.7], ['sm', 'TV UNCLE', 'tvuncle_sm', 1.72], ['milkman', 'MILKMAN', 'milkman', 1.65], ['cyber', 'CYBER BOY', 'cyberboy', 1.7], ['darzi', 'DARZI', 'darzi', 1.6], ['halwai', 'HALWAI', 'halwai', 1.6], ['kirana', 'KIRANA', 'kirana', 1.65]]; // left to right in the line-up; Didi 2 m to the left of HD (idle only)
   for (const [key, side, file, hh] of ORDER) {
     const g = new THREE.Group();
     g.name = `gather_tvuncle_${key}`;
@@ -138,7 +139,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
         const side = (a.order - 3) * BOTH_GAP; // 7 in a row now: Cyber boy 2 m right of Milkman; // 4 in a row (TV Uncle keeps his spot: +1 m), left to right, 2 m apart (HD and Smart Mesh keep their spots, Didi is 2 m left of HD, Aunty 2 m left of Didi)
         a.x = CENTRE.x + uz * side; a.lane = CENTRE.z - ux * side;
         turn(a, Math.atan2(ux, uz), dt);
-      } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
+      } else if (walking && a.key !== 'didi' && a.key !== 'daughter' && a.key !== 'milkman' && a.key !== 'cyber' && a.key !== 'darzi' && a.key !== 'halwai' && a.key !== 'kirana' && (a.key !== 'aunty' || clip.startsWith('walk'))) {
         const want = a.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
         const err = turn(a, want, dt);
         const k = Math.max(0, Math.min(1, 1 - err / 1.2)); // walk speed ramps in as the body comes round (0 at 180 degrees, full under ~0 degrees)
@@ -175,7 +176,7 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
     } else if (face) { // eye level on the head bone, looking straight at the face
       const h = headOf(face);
       if (h) {
-        h.getWorldPosition(tmpV); tmpV.y += ['daughter', 'milkman'].includes(face.key) ? 0.075 : face.key === 'cyber' ? 0.06 : face.key === 'darzi' ? 0.08 : face.key === 'halwai' ? 0.03 : 0.1; // head bone sits at the neck top; eyes are ~10 cm above (7.5 cm on the 1.33 m child)
+        h.getWorldPosition(tmpV); tmpV.y += ['daughter', 'milkman'].includes(face.key) ? 0.075 : face.key === 'cyber' ? 0.06 : face.key === 'darzi' ? 0.08 : face.key === 'halwai' ? 0.03 : face.key === 'kirana' ? 0.08 : 0.1; // head bone sits at the neck top; eyes are ~10 cm above (7.5 cm on the 1.33 m child)
         const ang = face.yaw + orbit;
         camera.position.set(tmpV.x + Math.sin(ang) * dist, tmpV.y, tmpV.z + Math.cos(ang) * dist);
         camera.lookAt(tmpV);
