@@ -1,6 +1,7 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 4). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on d542cf8 (run 1442), missions 399/0/3.
+Last updated: 27 Nov (scheduled run 5). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on 5773f3c (run 1443), missions 399/0/3.
+Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
 ## This run
 - CI green on d542cf8 (run 1442). Re-synced (HEAD detached, container
   quirk); npm ci (node_modules missing).
