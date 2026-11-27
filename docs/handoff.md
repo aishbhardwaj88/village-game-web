@@ -2194,3 +2194,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   warmup needs real browser). final-map.md/NEEDS_YOU re-check was already
   done 2 runs ago with same result - not repeating (A6). No code change.
 - 27 Nov (scheduled run 4): CI green on 0eb8d27 (run 1441); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
+- 27 Nov (scheduled run 4): CI green on d542cf8 (run 1442); missions-check
+  399/0/3. No code change. Looked past the usual blocker re-check for new
+  unblocked work (not a CC0/map-lock repeat, A6): src/anchors.js (5a-MAP's
+  anchors table) already complete. sweet_potato/yellow_onion prop-load issue
+  and signage-handoff-27nov.md are shop-goods territory (shops helper owns
+  it) - left untouched; load-lane-blocked-27nov.md is a different scheduled
+  task's own no-repo-access problem. All 5 BACKLOG items still blocked, same
+  reasons as last run.
