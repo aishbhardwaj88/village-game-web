@@ -30,9 +30,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
 - [ ] [ACTIVE] Architecture: every place as one self-contained unit (geometry, props,
       colliders, anchors, signage) with one anchor transform read from a single source -
       standing rule, survives any map move, keep applying to new/reworked places.
-- [ ] [ACTIVE] Far-eastern cluster: new house row facing temple, MAP.md elevation
-      checks against the approved map. (Road-connection part moved to archive 27 Nov:
-      confirmed covered by the map's own road network, not the retired east-road.)
 - [ ] [ACTIVE] Texture pipeline: verify UVs/tiling survive arch.py -> strip-textures.mjs
       -> stagingYard.js for any place reworked; re-tint from sampled Places V1 colours,
       not picked by eye.
@@ -41,9 +38,16 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
 - [ ] [ACTIVE] CC0 prop sourcing before hand-building, for any place still using
       hand-built generic props (pumps, matkas, pots, stools, charpais, carts, buckets,
       crates, tools). Check source + budget before each swap.
-- [ ] [ACTIVE] MAP.md coverage checklist: lanes/kerbs/drains network, background houses
-      + boundary walls. Canal+bridge already done (src/kit/landCanal.js, built from the
-      map's own bridge/ghat rings).
+- [ ] [ACTIVE] MAP.md coverage checklist: lanes/kerbs/drains (roadNetwork.js already
+      covers every kind by name, real-browser look still owed, no code gap found 27
+      Nov). Background houses + canal/bridge already built. Compound/boundary walls
+      FIXED 27 Nov: they were still at 1-Nov-plan positions, never carried to the 25
+      Nov map (drift 7-150 m/place) - re-anchored via the map's own documented
+      rotate-then-translate recipe (src/mapCompoundWalls.js); "Small shrine" wall
+      removed (7 Nov no-shrines order). Residue filed in NEEDS_YOU.md: 2 re-anchored
+      walls (gurudwara, anganwadi) now sit fully on the new road network and get
+      dropped by the existing on-road filter; "Tea stall at the square" has no
+      confident match and stays at its old position.
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
 - [!] shader bug found 27 Nov, not caused by any change this run (reproduces on

@@ -2267,3 +2267,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (crop-plot specifics and far-east road-connection both already built/superseded),
   archived them with evidence to docs/archive/backlog-done.md, trimmed BACKLOG.md
   to 75 lines. No code change (docs correction only, A5 exception).
+- 27 Nov (scheduled run 16): real code change. src/mapCompoundWalls.js's 24 roadside
+  compound walls were still at 1-Nov-plan positions, never carried to the 25 Nov map
+  (drift 7-150 m vs approved-map-2026-11-25.json). Re-anchored 21 via the map's own
+  rotate-then-translate recipe; removed "Small shrine" (7 Nov no-shrines order); left
+  "Tea stall at the square" (no confident match). Verified: position math (<10 m off
+  now) + Tier 1 all pass; world-validator crashed same as the known container limit
+  (A7), unrelated TypeError, not chased. gurudwara/anganwadi walls now get dropped by
+  the on-road filter - filed in NEEDS_YOU.md. Also archived far-east house-row item
+  (code-verified, no gap). CI pushed, confirm green next run.

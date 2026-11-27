@@ -735,3 +735,14 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
   Kept open: the other two sub-claims on that BACKLOG line (new house row facing temple,
   MAP.md elevation checks) are NOT re-verified here and stay in BACKLOG.md as their own
   item - this entry covers only the road-connection part.
+- "Far-eastern cluster new house row facing temple, MAP.md elevation checks" (the rest
+  of the above line, 27 Nov): checked by code. src/kit/housesPlanData.json has 56 houses
+  east of the temple (x 670-791, z -42 to -154) each carrying its own x/z/ry and a
+  road/gali label (ring_road, gali_n0, gali_n1, gali_n6, gali_n7, Outer lane) straight
+  from the locked 25 Nov map; src/kit/houses.js createNewMapHouses reads position/ry
+  from this data unchanged (NEW_HOUSES.push keeps e.x/e.z/e.ry as given). Elevation is
+  not a static per-object field to audit against MAP.md: createNewMapHouses is called
+  with groundAt: dipHeightRaw (src/main.js), so every house follows the live terrain
+  height at its own x/z at runtime. Nothing left to fix in code; whether the row's
+  facing *reads* right toward the temple is a visual/taste call (CLAUDE.md 5a1), not
+  verifiable without a real browser - left for her to eyeball, not re-opened here.
