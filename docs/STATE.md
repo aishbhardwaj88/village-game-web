@@ -1,14 +1,20 @@
 # State - rewritten every run, max 40 lines
 Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on e4e84db, missions 399/0/3.
+3362c4f (unchanged). CI green on 865a12f, missions 399/0/3.
 ## This run
-- 27 Nov (scheduled run): CI green on e4e84db (run 1434, confirmed via Actions
-  API). Re-synced to origin/main (HEAD detached again, same container quirk).
-  Checked all 5 open BACKLOG items: still blocked, same reasons as last run
+- 27 Nov (scheduled run): CI green on 865a12f (run 1435, confirmed via
+  mcp__github__actions_list - no gh CLI in this container). Re-synced to
+  origin/main (HEAD detached again, same container quirk). missions-check.mjs
+  re-run: 399/0/3, same 3 WARN as every prior run.
+- Noted: the hourly scheduled task's own stored prompt text still carries the
+  24 Nov LOOKS LIST 1-8 as open work, but repo state (this file, BACKLOG.md,
+  handoff.md) all independently confirm it's done/parked - the stored prompt
+  is stale, not the repo. Treated repo as source of truth, per "continuity
+  lives only in the repo."
+- Checked all 5 open BACKLOG items: still blocked, same reasons as last run
   (GATED-HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403,
   not retested without reason - A6; M7 NPC needs draw-call headroom; shader-
-  warmup needs a real browser). NEEDS_YOU/final-map.md re-check already done
-  2 runs ago (handoff.md) - not repeating that read, per A6. No code change.
+  warmup needs a real browser). No new unblocked item found.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.
@@ -39,6 +45,7 @@ Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
 ## Known about this container
 - node_modules missing on fresh container, every time - `npm ci` first. HEAD
   can show detached/stale - `git fetch` fresh first.
+- No `gh` CLI here - use mcp__github__actions_list / actions_get for CI status.
 - check-material-clone script is check-material-clone.mjs, not .js.
   layout-pack.mjs (--check too) takes minutes, don't run foreground;
   layout-tests.mjs is fast.

@@ -1,6 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run: flat, CI green, scheduled-task prompt's LOOKS LIST already done
+- Re-synced to origin/main (HEAD detached again, same container quirk), npm ci fresh.
+- CI confirmed green on 865a12f (run 1435) via Actions API (no gh CLI in this
+  container - used mcp__github__actions_list instead).
+- The hourly scheduled task's own stored prompt still carries the 24 Nov LOOKS LIST
+  1-8 as if open; STATE.md/BACKLOG.md/handoff.md all agree it's done/parked
+  (confirmed, not just trusted) - the stored prompt text is stale, repo state wins.
+- missions-check.mjs re-run: 399/0/3, same 3 WARN (gali_n38/n39 back positions,
+  [PAUSED-MAP]) as every prior run - nothing new.
+- All 5 open BACKLOG items still blocked, same reasons as last 6+ runs (material
+  verdict GATED-HER; 4x PAUSED-MAP map-lock; CC0 proxy 403; M7/shader-warmup need
+  real browser). No new angle, no code change, no agents.
+
 # 27 Nov scheduled run: no code change, one real finding, nothing newly unblocked
 - CC0 proxy re-tested once (polyhaven): still 403, unchanged.
 - Tier-1 checks (licence/dup-models/material-clone/place-visibility) all PASS,
