@@ -2259,3 +2259,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   future run doesn't re-discover it. No further unblocked in-scope task found -
   BACKLOG's other 5 items are the same ones blocked for several runs running
   (GATED-HER, shops-file-ownership, needs-real-browser, CC0 403/A6). No code change.
+- 27 Nov (scheduled run 14): CI green on e0987a1 (run 1453); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
