@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 22). No code change: CI green on c107d11 (run 1463), missions 399/0/3 (re-ran tools/missions-check.mjs, no regression).
+Last updated: 27 Nov (scheduled run 23). No code change: CI green on 6636408 (run 1464), missions 399/0/3. List items: temple front done (d364499), moved-place walls done (5a23bce), load size and unsliced builds are her call in NEEDS_YOU.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
 - Flat run: LOOKS LIST 1-8 and all 7 ACTIVE BACKLOG items re-confirmed done/parked/
