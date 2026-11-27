@@ -712,3 +712,26 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
   end walls, open-side posts, built-in bench, roof slab, wall/post colliders. No new
   signboard (src/wayfinding.js's nameplate already covers it). Screenshot-verified at
   ?at=545,-117; her taste verdict pending in NEEDS_YOU.md.
+
+## 27 Nov: crop-plot specifics + far-east road-connection confirmed done (moved from BACKLOG.md)
+- "Crop-plot specifics (which plot is which crop, growth-stage mix, density per plot)":
+  checked by code, already implemented. src/layout/mapData.json carries a `name` field
+  per `new_field` object (her approved map's own crop label, e.g. "Young wheat",
+  "Sugarcane", "Mustard in flower", "Marigold", "Potato", "Chilli", "Brinjal",
+  "Cauliflower", "Harvested paddy, stubble", "Green fodder") - 57 field plots across all
+  10 CROPS entries in src/kit/landFields.js, read via labelName(o) so moving a plot in
+  the map just re-labels it, nothing to build. Density/variety per plot is also already
+  code (landFields.js build()): each field gets its own deterministic (seeded from plot
+  centre, stable across reloads) soil/crop colour shade, row spacing, cover and row
+  angle, plus a real-plant band (wheat/sarson/cane tufts) 1.5-14 m from the road edge
+  only. Nothing left to build for this item.
+- "Far-eastern cluster road connection" (part of the old combined line): src/eastRoad.js
+  already documents this as retired 3 Nov - its own comment: "The map's own roads now
+  reach every place it served (src/mapRoads.js, src/roadNetwork.js)." Confirmed still
+  true under the 25 Nov locked map: src/wayfinding.js's signposts place real destination
+  boards for this exact cluster (cross_east -> johad/jain/health/mela; ring_east ->
+  gurukul/maidan) via seatBesideRoad()/roadEmptyPush(), which only succeeds when real
+  road geometry exists near that point - so the cluster is on the network, not stranded.
+  Kept open: the other two sub-claims on that BACKLOG line (new house row facing temple,
+  MAP.md elevation checks) are NOT re-verified here and stay in BACKLOG.md as their own
+  item - this entry covers only the road-connection part.

@@ -1,41 +1,45 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 13). No code change, doc correction only.
+Last updated: 27 Nov (scheduled run 15). No code change, doc correction only.
 LAST_FULL_PASS=3362c4f (unchanged, no Tier 1/2 diff this run).
 ## This run
-- BACKLOG's "319 places not built... still unbuilt: ponds, tempo stand, village
-  bank, library" line was stale (detail in docs/archive/backlog-done.md "319
-  unbuilt" entry): all 4 are already built (ponds+temple tank in
-  mapObjectsGround.js, tempo stand a ground patch, bank/library in shopsPlace.js,
-  shops worker's file). A key-by-key scan of every `new_*` label in mapData.json
-  found a handler for all of them. Moved the line to archive so a future run
-  doesn't re-discover this (2nd run to reach this conclusion, after run 10's
-  wells/pumps/haystacks finding).
-- No further unblocked, in-scope, safe code task found: BACKLOG's other 5 open
-  items are the same ones blocked for several runs (GATED-HER material verdict;
-  loadLandMap() needs shopsPlace.js; M7 NPC draw-call headroom; shader-warmup +
-  dev-mode shader bug need a real browser; CC0 proxy still 403, not retested/A6).
+- Fresh look at the 2 remaining un-archived ACTIVE BACKLOG items the map-lock unparked
+  (run 10): "crop-plot specifics" and "far-east road connection" (wayfinding signage
+  was already confirmed built in an earlier run). Checked by code, both done:
+  - Crop-plot specifics: src/layout/mapData.json's `new_field` objects each carry the
+    map's own crop `name` (57 plots, all 10 landFields.js CROPS types represented);
+    density/growth-stage variety is already procedural per-field in landFields.js
+    build(). Archived to docs/archive/backlog-done.md, removed from BACKLOG.md.
+  - Far-east road connection: src/eastRoad.js's own comment says this was retired
+    3 Nov ("the map's own roads now reach every place it served"); confirmed still
+    true under the 25 Nov map because wayfinding.js's signposts place real boards for
+    that exact cluster (cross_east, ring_east), which only succeeds on real road
+    geometry. Archived the road-connection half; kept "new house row facing temple"
+    + "MAP.md elevation checks" open (not re-verified).
+  - BACKLOG.md's wayfinding line split too: signage confirmed-done note added, "lane
+    continuity" (kerbs/drains/lamps/street-life walk-test) kept open, unverified.
+- BACKLOG.md now 75 lines (cap 80).
 ## Current state
-- Feature-complete against GAME_COMPLETE.md. LOOKS LIST items 1-8 all done/
-  superseded/parked (confirmed again, see handoff.md); item 2 (chauraha
-  buildings) stays GATED-HER, nothing new to add.
+- Feature-complete against GAME_COMPLETE.md. Remaining BACKLOG ACTIVE items are mostly
+  narrower now: lane-continuity walk-test, far-east house-row/elevation, architecture
+  standing-rule (ongoing), texture-pipeline verify, NPC path validation, CC0 prop
+  sourcing (403), MAP.md coverage checklist, M7 NPC, loadLandMap (shops-file-owner
+  block), shader-warmup (needs real browser).
 - Remaining blockers: material-library taste verdict (GATED-HER), CC0 proxy 403,
   M7 NPC draw-call headroom, shader-warmup + dev-mode shader bug (need a real
-  browser - container can't reliably drive one, two failure modes seen), and
-  loadLandMap() (file-ownership block, needs the shops worker).
+  browser), loadLandMap() (file-ownership block, needs the shops worker).
 ## Next 5 items
-1. New gap from a screenshot/playtest: build that (named, not a blanket sweep -
-   the sweep came up empty this run).
-2. Diegetic wayfinding / lane continuity against the approved map (BACKLOG,
-   ACTIVE, not yet attempted - worth a fresh look next run).
-3. If CC0 proxy ever returns non-403: resume prop sourcing (matka/charpai/cylinder).
-4. If the shops worker can coordinate: loadLandMap() reconciliation (data-side
-   ready, consumer swap is their file).
-5. world-validator.js checks 1-3 pass; 4/5 (heavy geometry sampling) still hangs.
+1. Lane continuity walk-test (needs a real browser - try once, don't loop on it).
+2. Far-east "new house row facing temple" + MAP.md elevation checks - unverified,
+   worth a fresh code-level look next run (positions only, read mapData.json).
+3. NPC/animal path validation - same real-browser caveat as item 1.
+4. If CC0 proxy ever returns non-403: resume prop sourcing (matka/charpai/cylinder).
+5. If the shops worker can coordinate: loadLandMap() reconciliation.
 ## Known about this container
 - node_modules missing on fresh container - `npm ci` first. HEAD can show detached/
   stale - `git fetch` fresh first. No `gh` CLI - use mcp__github__actions_list/get.
 - check-material-clone script is check-material-clone.mjs, not .js.
+- tools/findability-audit.mjs is broken against current freeRoam.js (regex no longer
+  matches PLACES export) - not fixed this run, out of scope (A6: no new validators).
 - A real in-browser check (screenshot/regression-check/world-validator step 4-5)
   does not reliably finish here: headless-shell crashes, full chrome hangs on
-  blocked outbound network calls (android.clients.google.com/accounts.google.com).
-  Don't keep retrying either path same-day; verify by code reading + Tier 1 instead.
+  blocked outbound network calls. Don't keep retrying either path same-day.

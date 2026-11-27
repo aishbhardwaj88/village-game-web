@@ -23,13 +23,16 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       once at 2m per panel, send, wait for her verdict only on THIS item, keep working
       everything else). Once approved: freeze in docs/material-library.md, apply by name
       everywhere, re-render staged places against it. BLOCKED: her taste verdict.
-- [ ] [ACTIVE] Diegetic wayfinding (signs, notice board, milestones) and lane
-      continuity against the approved map.
+- [ ] [ACTIVE] Lane continuity against the approved map: a real on-foot/real-browser
+      check that kerbs, drains, lamps and street life carry all the way to where each
+      lane leads (FEEDBACK A-2c item 8). Signage half of this item moved to archive
+      27 Nov (confirmed built).
 - [ ] [ACTIVE] Architecture: every place as one self-contained unit (geometry, props,
       colliders, anchors, signage) with one anchor transform read from a single source -
       standing rule, survives any map move, keep applying to new/reworked places.
-- [ ] [ACTIVE] Far-eastern cluster road connection, new house row facing temple,
-      MAP.md elevation checks against the approved map.
+- [ ] [ACTIVE] Far-eastern cluster: new house row facing temple, MAP.md elevation
+      checks against the approved map. (Road-connection part moved to archive 27 Nov:
+      confirmed covered by the map's own road network, not the retired east-road.)
 - [ ] [ACTIVE] Texture pipeline: verify UVs/tiling survive arch.py -> strip-textures.mjs
       -> stagingYard.js for any place reworked; re-tint from sampled Places V1 colours,
       not picked by eye.
@@ -38,8 +41,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
 - [ ] [ACTIVE] CC0 prop sourcing before hand-building, for any place still using
       hand-built generic props (pumps, matkas, pots, stools, charpais, carts, buckets,
       crates, tools). Check source + budget before each swap.
-- [ ] [ACTIVE] Crop-plot specifics (which plot is which crop, growth-stage mix, density
-      per plot) against the approved map. Crop mesh/texture quality already [ACTIVE].
 - [ ] [ACTIVE] MAP.md coverage checklist: lanes/kerbs/drains network, background houses
       + boundary walls. Canal+bridge already done (src/kit/landCanal.js, built from the
       map's own bridge/ghat rings).

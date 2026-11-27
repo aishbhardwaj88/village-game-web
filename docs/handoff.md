@@ -2260,3 +2260,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   BACKLOG's other 5 items are the same ones blocked for several runs running
   (GATED-HER, shops-file-ownership, needs-real-browser, CC0 403/A6). No code change.
 - 27 Nov (scheduled run 14): CI green on e0987a1 (run 1453); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
+- 27 Nov (scheduled run 15): CI confirmed green on b4233f8 (run 1454) via Actions
+  API. Re-synced (HEAD detached again, container quirk; npm ci fresh). LOOKS LIST
+  already confirmed done per STATE.md, so checked BACKLOG's remaining ACTIVE items
+  by code instead of repeating the old blocker list: found 2 stale entries
+  (crop-plot specifics and far-east road-connection both already built/superseded),
+  archived them with evidence to docs/archive/backlog-done.md, trimmed BACKLOG.md
+  to 75 lines. No code change (docs correction only, A5 exception).
