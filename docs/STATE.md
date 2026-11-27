@@ -1,23 +1,11 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 15). No code change, doc correction only.
+Last updated: 27 Nov (scheduled run 16). No code change.
 LAST_FULL_PASS=3362c4f (unchanged, no Tier 1/2 diff this run).
 ## This run
-- Fresh look at the 2 remaining un-archived ACTIVE BACKLOG items the map-lock unparked
-  (run 10): "crop-plot specifics" and "far-east road connection" (wayfinding signage
-  was already confirmed built in an earlier run). Checked by code, both done:
-  - Crop-plot specifics: src/layout/mapData.json's `new_field` objects each carry the
-    map's own crop `name` (57 plots, all 10 landFields.js CROPS types represented);
-    density/growth-stage variety is already procedural per-field in landFields.js
-    build(). Archived to docs/archive/backlog-done.md, removed from BACKLOG.md.
-  - Far-east road connection: src/eastRoad.js's own comment says this was retired
-    3 Nov ("the map's own roads now reach every place it served"); confirmed still
-    true under the 25 Nov map because wayfinding.js's signposts place real boards for
-    that exact cluster (cross_east, ring_east), which only succeeds on real road
-    geometry. Archived the road-connection half; kept "new house row facing temple"
-    + "MAP.md elevation checks" open (not re-verified).
-  - BACKLOG.md's wayfinding line split too: signage confirmed-done note added, "lane
-    continuity" (kerbs/drains/lamps/street-life walk-test) kept open, unverified.
-- BACKLOG.md now 75 lines (cap 80).
+- CI green on b3f4434 (run 1455). missions-check 399 pass / 0 fail / 3 warn.
+- Temple front checked: map front [0.017,-1] (faces -z); packed ry -1.5878 (-91 deg) already turns the west-facing temple to -z. No 152 deg turn in the packed data; AS_DRAWN keeps it. Nothing to fix.
+- Moved places (mandi, mela, tanki, bhatta, wedding, railway): grep finds no hard-coded coords; all use pt()/ANCHORS.
+- Load size 10.7 MB: only a look call (NEEDS_YOU line 93), left open. Not touched.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Remaining BACKLOG ACTIVE items are mostly
   narrower now: lane-continuity walk-test, far-east house-row/elevation, architecture
