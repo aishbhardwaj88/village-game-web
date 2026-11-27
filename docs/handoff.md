@@ -2277,3 +2277,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   the on-road filter - filed in NEEDS_YOU.md. Also archived far-east house-row item
   (code-verified, no gap). CI pushed, confirm green next run.
 - 27 Nov (scheduled run 17): CI green on 5a23bce (run 1457); list items settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
+- 27 Nov (scheduled run 18): CI confirmed green on 8cba6db (run 1458) via Actions
+  API. Checked the full LOOKS LIST (items 1-8 of this run's prompt) against code
+  instead of re-running old checks: 1/3/4/5/6 already done and reported to her;
+  2 is moot since the 25 Nov map removed the old road-blocking buildings (already
+  asked her to name any new one); 7 partly done, rest parked; 8 confirmed settled
+  (missions-check.mjs 399/0/3, same as every recent run). Retested CC0 proxy
+  (polyhaven/ambientcg): still 403. No new unblocked BACKLOG work found, no new
+  answers in NEEDS_YOU.md since run 16. No code change.

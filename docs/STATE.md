@@ -1,27 +1,26 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 16). Real code change this run.
+Last updated: 27 Nov (scheduled run 18). No code change this run.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- Fixed src/mapCompoundWalls.js: 24 roadside compound walls were still at their 1-Nov
-  positions, never carried when their places moved in the 25 Nov rebuild (drift
-  7-150 m vs docs/layout/approved-map-2026-11-25.json). Re-anchored 21 via the map's
-  own rotate-about-place-then-translate recipe; removed "Small shrine" (7 Nov
-  no-shrines order); left "Tea stall at the square" (no confident match - filed).
-- Side effect filed in NEEDS_YOU.md: gurudwara's/anganwadi's re-anchored walls now
-  land on the new road network and get dropped by the on-road filter - no wall
-  right now, needs her call.
-- Archived "far-eastern cluster new house row + MAP.md elevation" BACKLOG line:
-  code-verified (housesPlanData.json/houses.js already use the locked map's
-  position/ry; elevation follows terrain at runtime) - no code gap, taste call only.
-- Verified: Tier 1 (licence-audit, check-dup-models, check-material-clone,
-  place-visibility-check) + build:unchecked pass. world-validator crashed with an
-  unrelated TypeError, matches the documented container limit (A7), not chased.
+- CI confirmed green on 8cba6db (run 1458) via Actions API.
+- Checked the full LOOKS LIST (prompt's items 1-8) against code, not just tags:
+  1/3/4/5/6 already done and reported to her (NEEDS_YOU "Looks fixes ready");
+  2 (chauraha road-blocking buildings) moot - old map's blockers no longer exist
+  since the 25 Nov map, already filed asking her to name any new one; 7 partly
+  done (texture double-fetch fixed), map-shipped-twice/shader-warmup parked
+  (needs real browser / waits on map, both already filed); 8 (missions+bell+
+  canal) confirmed settled, re-ran missions-check.mjs: 399 PASS/0 FAIL/3 WARN,
+  same as every recent run.
+- Retested the CC0 proxy (polyhaven.com, ambientcg.com): still 403, unchanged.
+- No new unblocked BACKLOG work found: all 9 ACTIVE items blocked same as last
+  run (GATED-HER taste verdict, CC0 403, needs-real-browser, file-ownership,
+  draw-call headroom). No new answers in NEEDS_YOU.md since run 16.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Remaining BACKLOG ACTIVE items: lane
   continuity, architecture standing rule, texture pipeline verify, NPC path
   validation, CC0 prop sourcing (403), MAP.md lanes/kerbs/drains look, M7 NPC,
-  loadLandMap (shops-file-owner block) - all blocked same as last run (GATED-HER
-  taste verdict, CC0 403, draw-call headroom, needs-real-browser, file-ownership).
+  loadLandMap (shops-file-owner block) - all blocked (GATED-HER taste verdict,
+  CC0 403, draw-call headroom, needs-real-browser, file-ownership).
 ## Next 5 items
 1. Lane continuity walk-test (needs a real browser - try once, don't loop on it).
 2. NPC/animal path validation - same real-browser caveat as item 1.
@@ -38,3 +37,5 @@ LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new 
   Don't keep retrying same-day.
 - reference-from-unity/ is not present in this container (her-machine only); use
   docs/layout/approved-map-2026-11-25.json as the locked map source.
+- CC0 proxy (polyhaven.com, ambientcg.com) still 403 as of this run - don't re-test
+  more than about once a day.
