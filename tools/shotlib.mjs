@@ -21,7 +21,7 @@
  */
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 const HIDE_CSS = `
@@ -37,10 +37,17 @@ export async function startGame({ port = 5330, viewport = { width: 1280, height:
   for (let i = 0; i < 100; i++) {
     try { await fetch(base); break; } catch { await new Promise((r) => setTimeout(r, 300)); }
   }
-  const browser = await chromium.launch({
+  // Same fix as tools/screenshot.js/regression-check.js (found 23 Nov): Playwright's default
+  // headless mode can resolve to the lightweight "chrome-headless-shell" binary, which reliably
+  // crashes ("Target crashed") rendering this village's full load under SwiftShader. The full
+  // `chrome` binary, same flags, doesn't. No-op when that binary isn't present.
+  const FULL_CHROMIUM_PATH = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
+  const launchOpts = {
     headless: true,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-sandbox'],
-  });
+  };
+  try { if (existsSync(FULL_CHROMIUM_PATH)) launchOpts.executablePath = FULL_CHROMIUM_PATH; } catch {}
+  const browser = await chromium.launch(launchOpts);
   const page = await browser.newPage({ viewport });
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

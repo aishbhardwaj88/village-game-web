@@ -8,8 +8,34 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { getGLTFLoader } from './loaders.js';
 import { swapShared } from './stagingYard.js';
 import { floatGeometry } from './pots.js';
+import { cloneTiledMaterial } from './materials.js';
 
 export const HAY_TYPES = ['cone', 'heap', 'half'];
+
+// 27 Nov playtest note: "Haystacks look shiny. Haystacks are never shiny: roughness 1, no
+// specular, matte." swapShared() above puts a haystack's thatch mesh on the SAME shared
+// 'thatch' library material real roofs use (stagingYard.js sharedSetMaterial, keyed by
+// set+repeat) - editing that material's properties in place would also flatten every
+// thatched roof in the village, not just haystacks. cloneTiledMaterial (materials.js) gives
+// one haystack-only clone that still carries the addWeathering onBeforeCompile hook (a plain
+// .clone() silently drops it - see that function's own comment), with roughness forced to 1
+// (belt and braces: the roughness map itself already averages 0.72-1.0, matte already) and
+// envMapIntensity zeroed so the sky HDRI stops putting a reflected highlight on it - the
+// actual "shiny" culprit, since MeshStandardMaterial has no separate specular toggle to turn
+// off. Cached per source material, so this is one extra Material object total, not per
+// placement: addHaystacks groups meshes by material reference, so the merged-mesh/draw-call
+// count below is unchanged.
+const matteCache = new Map();
+function matteThatch(mat) {
+  let m = matteCache.get(mat);
+  if (!m) {
+    m = cloneTiledMaterial(mat);
+    m.roughness = 1;
+    m.envMapIntensity = 0;
+    matteCache.set(mat, m);
+  }
+  return m;
+}
 
 let modelsPromise = null;
 function loadHay() {
@@ -20,7 +46,7 @@ function loadHay() {
       gltf.scene.traverse((o) => {
         if (!o.isMesh) return;
         swapShared(o);
-        parts.push({ geo: floatGeometry(o.geometry).applyMatrix4(o.matrixWorld), mat: o.material });
+        parts.push({ geo: floatGeometry(o.geometry).applyMatrix4(o.matrixWorld), mat: matteThatch(o.material) });
       });
       return [t, parts];
     }))).then((entries) => Object.fromEntries(entries));

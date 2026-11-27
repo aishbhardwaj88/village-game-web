@@ -1,8 +1,19 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
-# 27 Nov scheduled run: flat, confirmed item 8 fully settled, nothing re-tested
-- CI confirmed green on bb827b5 (run 1447) via Actions API, no local build needed.
+# 27 Nov scheduled run: LOOKS LIST checked against code + haystack matte fix
+- LOOKS LIST checked against real code, not the repeated "unchanged" note: items 1, 4, 5
+  already built (code comments cite these exact playtest notes); item 6 superseded by her
+  25 Nov 25/32 km/h order; item 7's map-shipped-twice already fixed 25 Nov. Item 2 stays
+  GATED-HER (no road-overlapping footprint in the data, matches existing NEEDS_YOU line;
+  tried a playwright screenshot to find the buildings myself, browser hung on blocked
+  network calls - A7 container limit, not chased further).
+- Real fix: haystacks shared the 'thatch' library material with real roofs, so couldn't
+  flatten it in place. src/haystacks.js now clones it (cloneTiledMaterial, keeps the
+  weathering hook) with roughness 1 + envMapIntensity 0 - one extra Material, same draw
+  calls. Also pointed tools/shotlib.mjs at the full-chromium binary (screenshot.js already
+  does, documented fix).
+- Tier 1 checks pass incl. check-material-clone's clone-safety scan on the new clone.
 - Per A6: did not re-ping the CC0 proxy or re-read final-map.md - the immediately
   prior run did exactly that (same result, <1h ago); repeating it now is the
   re-audit A6 forbids.
