@@ -2202,3 +2202,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   it) - left untouched; load-lane-blocked-27nov.md is a different scheduled
   task's own no-repo-access problem. All 5 BACKLOG items still blocked, same
   reasons as last run.
+- 27 Nov (scheduled run 6): CI confirmed green on a5b6945 (run 1444) via
+  Actions API. Re-synced (HEAD detached again, container quirk); npm ci
+  (node_modules missing, fresh container). LOOKS LIST 1-8 and the 5 ACTIVE
+  BACKLOG items unchanged, same blockers as last run (GATED-HER material
+  verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403, not retested per
+  A6; M7 NPC needs draw-call headroom; shader-warmup needs real browser).
+  Per efficiency-rules.md ("a run with no unblocked game work ends within
+  2 minutes"), did not re-run already-logged checks. No code change.

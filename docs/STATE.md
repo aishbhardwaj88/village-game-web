@@ -1,16 +1,14 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 5). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on 5773f3c (run 1443), missions 399/0/3.
+Last updated: 27 Nov (scheduled run 6). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on a5b6945 (run 1444), missions 399/0/3.
 Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
 ## This run
-- CI green on d542cf8 (run 1442). Re-synced (HEAD detached, container
-  quirk); npm ci (node_modules missing).
-- Looked past the standard re-check for new unblocked work (not a CC0/map-
-  lock repeat, A6): src/anchors.js (5a-MAP's "anchors table") already
-  complete. sweet_potato/yellow_onion load issue + signage-handoff-27nov.md
-  are shop-goods territory (shops helper owns it) - left untouched.
-  load-lane-blocked-27nov.md is a different scheduled task's own problem.
-- All 5 open BACKLOG items re-confirmed blocked, same reasons as last run.
+- CI confirmed green on a5b6945 (run 1444) via Actions API. Re-synced (HEAD
+  detached, container quirk); npm ci (node_modules missing).
+- LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items unchanged, same blockers as
+  last run. Per A6 + efficiency-rules.md, did not re-run already-logged
+  checks (CC0 proxy, map-lock) with no new reason to expect a different
+  result.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.
