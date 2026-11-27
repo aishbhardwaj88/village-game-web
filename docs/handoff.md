@@ -2132,3 +2132,16 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   2 already-logged stale findings, check 4/5 hit the known container timeout,
   unrelated to this diff. No agents.
 - 27 Nov (hourly list run): CI green on 7ad1fbe (run 1427); list items unchanged and settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB and land layers her call); missions-check 399/0/3. No code change.
+
+# 27 Nov scheduled run: flat, checked project docs for a new decision, found none
+- CI confirmed green on aa2bce4 (run 1428) via Actions API.
+- LOOKS LIST 1-8 and the 5 ACTIVE BACKLOG items all still blocked the same way
+  (map-lock answer, CC0 proxy 403, draw-call headroom, real-browser need) - per A6,
+  did not re-run their checks again (that pattern is itself the repeat-audit A6
+  forbids; last distinct re-test was 2 runs ago with the same result).
+- New this run: searched the claude.ai project docs (final-map.md, handoff-25nov*,
+  downloads-26nov.md) for any decision not yet reflected in the repo - found none;
+  final-map.md's "closed, do not change without her" wording is unchanged from what
+  NEEDS_YOU already quotes, CC0-proxy-blocked is confirmed there too, nothing new.
+- STATE.md was 56 lines (over A2's 40-line cap) - rewritten to fit.
+- No code change, no agents.
