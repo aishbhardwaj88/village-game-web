@@ -2211,3 +2211,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   Per efficiency-rules.md ("a run with no unblocked game work ends within
   2 minutes"), did not re-run already-logged checks. No code change.
 - 27 Nov (scheduled run 7): CI green on 641ab10 (run 1445); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call). No code change.
+- 27 Nov (scheduled run 8): CI confirmed green on 7de2b9e (run 1446) via
+  Actions API. Re-synced (HEAD detached again, container quirk). Tested
+  CC0 proxy directly (curl polyhaven.com): still 403. NEEDS_YOU checked for
+  new answers from her: none since 25 Nov. LOOKS LIST 1-7 and the 5 ACTIVE
+  BACKLOG items unchanged, same blockers as last run. No unblocked game
+  work found; ended without re-running already-logged checks (A6). No
+  code change.

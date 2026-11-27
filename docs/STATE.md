@@ -1,14 +1,14 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 7). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on a5b6945 (run 1444), missions 399/0/3.
+Last updated: 27 Nov (scheduled run 8). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on 7de2b9e (run 1446), missions 399/0/3.
 Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
 ## This run
-- CI confirmed green on a5b6945 (run 1444) via Actions API. Re-synced (HEAD
-  detached, container quirk); npm ci (node_modules missing).
+- CI confirmed green on 7de2b9e (run 1446) via Actions API. Re-synced (HEAD
+  detached, container quirk).
+- Did test CC0 proxy directly this run (curl polyhaven.com): still 403.
+  Checked NEEDS_YOU.md for new answers: none since 25 Nov.
 - LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items unchanged, same blockers as
-  last run. Per A6 + efficiency-rules.md, did not re-run already-logged
-  checks (CC0 proxy, map-lock) with no new reason to expect a different
-  result.
+  last run. No unblocked game work found.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.
