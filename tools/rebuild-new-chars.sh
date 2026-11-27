@@ -1,5 +1,5 @@
 #!/bin/bash
-# 27 Nov: rebuild the 10 Smart Mesh characters from Tripo's RAW files WITHOUT tools/eye_patch.py (owner rule 22 Nov: never paint,
+# 27 Nov (eyes): strip-morphs.mjs runs last, no blink/smile keys ship (they dragged Tripo's lids half shut). # 27 Nov: rebuild the 10 Smart Mesh characters from Tripo's RAW files WITHOUT tools/eye_patch.py (owner rule 22 Nov: never paint,
 # patch or project our own eyes onto a Tripo model). Per character: face_keys.py (blink + smile shape keys on Tripo's own eyelids / lips,
 # no texture change) then finish-<name>.mjs (clip names, standing wave, cloth weights, 4K WebP, meshopt).
 #   [ONLY="nai kirana"] bash tools/rebuild-new-chars.sh <raw-dir> [work-dir]      raw-dir holds <name>_v2/<name>_sm_raw.glb
@@ -10,7 +10,7 @@ while read -r n p cx cz cs eyes mouth; do
   [ -z "$n" ] && continue
   [ -n "$ONLY" ] && [[ " $ONLY " != *" $n "* ]] && continue
   echo "$cx $cz $cs" > ${p}_cam.txt
-  ( python3 "$HERE/tools/face_keys.py" "$RAW/${n}_v2/${n}_sm_raw.glb" $p $eyes $mouth > $n.fk.log 2>&1 && node "$HERE/tools/zero-morph-weights.mjs" ${p}_keys.glb ${p}_keys0.glb > $n.zero.log 2>&1 && node "$HERE/tools/finish-$n.mjs" ${p}_keys0.glb "$HERE/public/assets/models/$n.glb" > $n.finish.log 2>&1 && echo "$n ok" ) &
+  ( python3 "$HERE/tools/face_keys.py" "$RAW/${n}_v2/${n}_sm_raw.glb" $p $eyes $mouth > $n.fk.log 2>&1 && node "$HERE/tools/zero-morph-weights.mjs" ${p}_keys.glb ${p}_keys0.glb > $n.zero.log 2>&1 && node "$HERE/tools/finish-$n.mjs" ${p}_keys0.glb "$HERE/public/assets/models/$n.glb" > $n.finish.log 2>&1 && node "$HERE/tools/strip-morphs.mjs" "$HERE/public/assets/models/$n.glb" "$HERE/public/assets/models/$n.glb" > $n.strip.log 2>&1 && echo "$n ok" ) &
   while [ "$(jobs -r | wc -l)" -ge 3 ]; do sleep 2; done
 done <<'LIST'
 milkman mk 0.0 0.9 0.30 247,312,345,312 252,399,337,399
