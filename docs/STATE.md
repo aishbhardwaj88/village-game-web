@@ -1,6 +1,6 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on 865a12f, missions 399/0/3.
+Last updated: 27 Nov (scheduled run 2). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on f44a11e (run 1438), missions 399/0/3.
 ## This run
 - 27 Nov (scheduled run): CI green on 865a12f (run 1435, confirmed via
   mcp__github__actions_list - no gh CLI in this container). Re-synced to
