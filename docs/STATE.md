@@ -1,15 +1,14 @@
 # State - rewritten every run, max 40 lines
 Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on 8adf5ef, missions 399/0/3.
+3362c4f (unchanged). CI green on e4e84db, missions 399/0/3.
 ## This run
-- 27 Nov (later scheduled run): CI green on 32607ee (run 1433); missions 399/0/3; list items unchanged and settled, no code change.
-- 27 Nov (scheduled run): CI green on 8adf5ef (run 1432, confirmed via Actions API).
-  Re-synced to origin/main (HEAD had gone detached again, same container quirk).
-  Checked all 5 open BACKLOG items: still blocked, same reasons as last run (GATED-
-  HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403, not retested
-  without reason - A6; M7 NPC needs draw-call headroom; shader-warmup needs a real
-  browser). handoff.md entries all within the 3-day archive window - no archiving
-  due. NEEDS_YOU items unchanged, nothing new to add. No code change.
+- 27 Nov (scheduled run): CI green on e4e84db (run 1434, confirmed via Actions
+  API). Re-synced to origin/main (HEAD detached again, same container quirk).
+  Checked all 5 open BACKLOG items: still blocked, same reasons as last run
+  (GATED-HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403,
+  not retested without reason - A6; M7 NPC needs draw-call headroom; shader-
+  warmup needs a real browser). NEEDS_YOU/final-map.md re-check already done
+  2 runs ago (handoff.md) - not repeating that read, per A6. No code change.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.

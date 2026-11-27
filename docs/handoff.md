@@ -2165,3 +2165,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   warmup needs real browser). handoff.md entries all within the 3-day window
   (24-27 Nov), no archiving due yet. LOOKS LIST 1-8 and NEEDS_YOU unchanged, nothing
   new to flag. No code change, no unblocked item found.
+- 27 Nov (scheduled run): CI green on e4e84db (run 1434, confirmed via Actions
+  API). Re-synced (HEAD detached again on fresh container, npm ci fresh).
+  Checked BACKLOG's 5 open items: all still blocked, same reasons as last run
+  (GATED-HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403,
+  not retested without reason - A6; M7 NPC needs draw-call headroom; shader-
+  warmup needs real browser). final-map.md/NEEDS_YOU re-check was already
+  done 2 runs ago with same result - not repeating (A6). No code change.
