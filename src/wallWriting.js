@@ -282,11 +282,17 @@ export function createWallWriting(scene) {
       decals.push(placed(quadGeo(w * scale, h * scale, CELLS[cell]), cx + nx * off, y, cz + nz * off, Math.atan2(nx, nz)));
     }
   };
-  onWall('Tyre repair shop', 27.8, -106.8, 1.5, 'peshab', 0.76, 1);
-  onWall('Truck weighbridge', 122.7, -100.7, 2.0, 'slogan1', 0.76, 1);
-  onWall('Petrol pump', -42.2, -154.1, 6.0, 'slogan2', 0.76, 1);
-  onWall('Tubewell and pump room', 128.3, 38.5, 2.0, 'cricket', 0.76, 1);
-  onWall('Creche and preschool (anganwadi)', -23.6, 103.6, 2.0, 'kids', 0.72, 1);
+  // 27 Nov: all 7 of this file's wall-writing/story coordinates below were left at their PRE-re-anchor (1-Nov-plan)
+  // positions when the 27 Nov compound-wall fix (src/mapCompoundWalls.js, commit 5a23bce) moved these walls onto the
+  // 25 Nov map (drift 7-150 m/wall) - findRun() matches on exact map-local coordinates, so every one of them had gone
+  // stale and threw "has no run starting at x,z" the moment createWallWriting() ran (confirmed with a real browser
+  // console, not assumed), aborting the rest of src/main.js's boot sequence after this call. Re-derived from the same
+  // point's index in both the old and new MAP_COMPOUND_WALLS (topology unchanged, just rotated/translated - checked
+  // programmatically, not by eye).
+  onWall('Tyre repair shop', -49.88, -106.29, 1.5, 'peshab', 0.76, 1);
+  onWall('Truck weighbridge', 35.02, -99.7, 2.0, 'slogan1', 0.76, 1);
+  onWall('Petrol pump', -114.28, -99.8, 6.0, 'slogan2', 0.76, 1);
+  onWall('Tubewell and pump room', 116.9, -3.84, 2.0, 'cricket', 0.76, 1);
   // RESTORED 25 Nov (her order: move, never delete): the two decals stood on a road at their old spot along the wall run; each now slides along the SAME
   // wall run to the nearest point where both faces are 0.4 m+ beyond the drawn road (onWallOffRoad); if the whole run is on road it stays off (nothing to hang on).
   const onWallOffRoad = (wall, ax, az, s0, cell, y, scale) => {
@@ -298,8 +304,14 @@ export function createWallWriting(scene) {
     }
     return null;
   };
-  onWallOffRoad('Sweet shop (halwai)', 40.3, 19.4, 1.75, 'card', 0.78, 1);
-  onWallOffRoad('General store', 24.1, 49, 1.75, 'tolet', 0.74, 1);
+  onWallOffRoad('Sweet shop (halwai)', 17.52, 4.79, 1.75, 'card', 0.78, 1);
+  onWallOffRoad('General store', 14.44, -111.97, 1.75, 'tolet', 0.74, 1);
+  // Creche and preschool (anganwadi): its re-anchored wall now sits fully inside the new road band (NEEDS_YOU.md,
+  // run 16 - her call on shorten/move/leave off, still open), and the trim fix in src/mapCompoundWalls.js still
+  // removes every stretch of it, so there is no physical run left anywhere to hang a decal on. onWallOffRoad
+  // degrades gracefully here (searches the run for a clear spot, does nothing if there is none) instead of
+  // onWall's unconditional placement, which would float the decal with no wall under it.
+  onWallOffRoad('Creche and preschool (anganwadi)', -24.6, 86.6, 2.0, 'kids', 0.72, 1);
 
   // ---- newspaper on the open-air barber's tool box (src/lifeScenes.js: scene at chaupal local (-6.4, 6.8), yaw 2.4, box at (0.95, 0.85), top y 0.30) ----
   {

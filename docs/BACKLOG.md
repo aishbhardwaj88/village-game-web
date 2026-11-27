@@ -44,10 +44,16 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       FIXED 27 Nov: they were still at 1-Nov-plan positions, never carried to the 25
       Nov map (drift 7-150 m/place) - re-anchored via the map's own documented
       rotate-then-translate recipe (src/mapCompoundWalls.js); "Small shrine" wall
-      removed (7 Nov no-shrines order). Residue filed in NEEDS_YOU.md: 2 re-anchored
-      walls (gurudwara, anganwadi) now sit fully on the new road network and get
-      dropped by the existing on-road filter; "Tea stall at the square" has no
-      confident match and stays at its old position.
+      removed (7 Nov no-shrines order). Residue: the on-road filter used to drop a
+      whole wall run if any part touched a road - IMPROVED 27 Nov to trim to the
+      clear stretch instead, restoring hidden pieces on 7 walls incl. 1/4 of
+      gurudwara's (measured, filed in NEEDS_YOU.md); anganwadi's wall measures fully
+      inside the road on all 4 stretches, genuinely nothing to restore there, her
+      call still open; "Tea stall at the square" has no confident match and stays at
+      its old position. Also found+fixed (27 Nov) a live boot-crash: src/wallWriting.js
+      had 7 wall-decal coordinates all stale since the re-anchor, the first one threw
+      uncaught and halted src/main.js's boot right after it - likely the real cause of
+      the game hanging at "Loading the village 0%". Fixed, verified live.
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
 - [ ] [ACTIVE] src/kit/landLayout.js loadLandMap() (24 Nov item 7 dup download): the

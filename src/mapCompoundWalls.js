@@ -17,22 +17,33 @@ export function createMapCompoundWall(entry, createBoundaryWall, THREE) {
   const pts = entry.lines.flat().map(([x, z]) => ({ x: x + 600, z }));
   const c = { x: pts.reduce((s, p) => s + p.x, 0) / pts.length, z: pts.reduce((s, p) => s + p.z, 0) / pts.length };
   const runs = [], boxes = [];
+  const addRun = (a, b) => { // the wall-run + ~2 m collider-box build, called once per CLEAR stretch found below
+    runs.push({ a, b });
+    const nearAxis = Math.min(Math.abs(b.x - a.x), Math.abs(b.z - a.z)) <= 1.2; // gently sloped run: one box, no staggered 2 m nubs
+    const n = nearAxis ? 1 : Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 2));
+    for (let k = 0; k < n; k++) {
+      const x0 = a.x + (b.x - a.x) * k / n, x1 = a.x + (b.x - a.x) * (k + 1) / n, z0 = a.z + (b.z - a.z) * k / n, z1 = a.z + (b.z - a.z) * (k + 1) / n;
+      const alongX = Math.abs(b.x - a.x) >= Math.abs(b.z - a.z); // pad across the wall only, so neighbouring chunks butt instead of overlapping
+      boxes.push({ minX: Math.min(x0, x1) - (alongX ? 0 : 0.15), maxX: Math.max(x0, x1) + (alongX ? 0 : 0.15), minZ: Math.min(z0, z1) - (alongX ? 0.15 : 0), maxZ: Math.max(z0, z1) + (alongX ? 0.15 : 0) });
+    }
+  };
   for (const line of entry.lines) {
     for (let i = 0; i + 1 < line.length; i++) {
       const a = { x: line[i][0] + 600, z: line[i][1] }, b = { x: line[i + 1][0] + 600, z: line[i + 1][1] };
-      { // 26 Nov: no object on a road. A run of the old 1 Nov wall set that crosses a new road band is dropped (new layout only)
-        const Ln = Math.hypot(b.x - a.x, b.z - a.z); let hit = false;
-        for (let d = 0; d <= Ln && !hit; d += 1.5) hit = onNewRoad(a.x + (b.x - a.x) * d / (Ln || 1), a.z + (b.z - a.z) * d / (Ln || 1), 0.4);
-        if (hit || onNewRoad(b.x, b.z, 0.4)) continue;
+      // 27 Nov: trim to the clear stretch instead of dropping the whole run (26 Nov's rule, "no object on a
+      // road"). A 1-Nov wall re-anchored onto the 25 Nov road network usually only has ONE end sitting on the
+      // new road, not the whole run - the gurudwara and anganwadi walls were vanishing entirely because of
+      // this (NEEDS_YOU.md, run 16). Sample along the segment at 0.5 m and keep every clear sub-stretch of at
+      // least 0.5 m; still "nothing on a road" - every kept point samples clear at the same 0.4 m radius as before.
+      const Ln = Math.hypot(b.x - a.x, b.z - a.z), STEP = 0.5;
+      let start = null;
+      for (let d = 0; d <= Ln; d += STEP) {
+        const t = Math.min(1, d / (Ln || 1)), x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+        const clear = !onNewRoad(x, z, 0.4);
+        if (clear && start === null) start = { x, z };
+        else if (!clear && start !== null) { if (Math.hypot(x - start.x, z - start.z) >= 0.5) addRun(start, { x, z }); start = null; }
       }
-      runs.push({ a, b });
-      const nearAxis = Math.min(Math.abs(b.x - a.x), Math.abs(b.z - a.z)) <= 1.2; // gently sloped run: one box, no staggered 2 m nubs
-      const n = nearAxis ? 1 : Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 2));
-      for (let k = 0; k < n; k++) {
-        const x0 = a.x + (b.x - a.x) * k / n, x1 = a.x + (b.x - a.x) * (k + 1) / n, z0 = a.z + (b.z - a.z) * k / n, z1 = a.z + (b.z - a.z) * (k + 1) / n;
-        const alongX = Math.abs(b.x - a.x) >= Math.abs(b.z - a.z); // pad across the wall only, so neighbouring chunks butt instead of overlapping
-        boxes.push({ minX: Math.min(x0, x1) - (alongX ? 0 : 0.15), maxX: Math.max(x0, x1) + (alongX ? 0 : 0.15), minZ: Math.min(z0, z1) - (alongX ? 0.15 : 0), maxZ: Math.max(z0, z1) + (alongX ? 0.15 : 0) });
-      }
+      if (start !== null && Math.hypot(b.x - start.x, b.z - start.z) >= 0.5) addRun(start, b);
     }
   }
   for (let i = boxes.length - 1; i >= 0; i--) { boxes[i].maxX = Math.min(boxes[i].maxX, 879.4); if (boxes[i].maxX <= boxes[i].minX) boxes.splice(i, 1); } // safety clamp: the world ends at x 880

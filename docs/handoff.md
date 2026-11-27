@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run 24: real code change, found+fixed a live boot-crash bug
+- LOOKS LIST/BACKLOG re-confirmed same state as recent entries; picked NEEDS_YOU's gurudwara/anganwadi
+  wall item. src/mapCompoundWalls.js: trim each wall run to its clear stretch instead of dropping the
+  WHOLE run on any road touch - restores hidden pieces on 6 other walls + 1/4 of gurudwara's; anganwadi
+  measured fully inside the new road band on all 4 segments (-0.04 to -1.96 m), confirmed no fix possible.
+- While verifying live (not assumed): src/wallWriting.js's 7 wall-decal coordinates were ALL stale
+  pre-re-anchor positions since commit 5a23bce (walls moved 7-150 m) - the first one threw uncaught
+  ("findRun...has no run"), aborting src/main.js boot right after wallWriting, almost certainly why the
+  game hangs at "Loading the village 0%". Re-derived all 7 from old/new point-index correspondence, fixed;
+  anganwadi decal switched to the existing graceful onWallOffRoad. Verified live: error gone, game boots.
+- Tier 1 pass + missions-check 399/0/3 unaffected. Pushing, will confirm CI green.
+
 # 27 Nov scheduled run 22: flat, CI green, nothing new unblocked
 - Re-synced to origin/main (HEAD detached again, container quirk); npm ci (node_modules
   missing, fresh container). CI confirmed green on c107d11 (run 1463) via Actions API.
