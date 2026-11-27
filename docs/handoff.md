@@ -2193,3 +2193,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   not retested without reason - A6; M7 NPC needs draw-call headroom; shader-
   warmup needs real browser). final-map.md/NEEDS_YOU re-check was already
   done 2 runs ago with same result - not repeating (A6). No code change.
+- 27 Nov (scheduled run 4): CI green on 0eb8d27 (run 1441); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
