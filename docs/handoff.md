@@ -2117,3 +2117,17 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (her call, already asked once - not re-asked).
 - No new angle found, no code change, no agents. LOOKS LIST 1-8 and all 5 ACTIVE
   BACKLOG items stand as logged.
+
+# 27 Nov scheduled run: real fix, plaster_h wall texture was silently failing
+- New probe (tmp/probe-console-errors.mjs, cheap page-load, not the heavy chain)
+  re-tested item 8 "zero console errors" and found 3 real ones: plaster_h's 3
+  .webp maps 404 on every wall using it, every run, since the 26 Nov wall swap.
+- Cause: plaster_h's base points at folder white_stucco_02/ but materials.js
+  built the filename from the material key, not the folder's real file prefix -
+  only mismatch in the whole SETS table (checked). Silent fallback hurt item 1
+  wall variety on every house using plaster_h.
+- Fix: added `prefix` field + loader uses `set.prefix || resolvedName`
+  (src/materials.js). Re-probed rebuilt dist: 0 errors, was 3.
+- Tier 1 PASS; full build also run (materials.js = Tier 2): checks 1-3 only the
+  2 already-logged stale findings, check 4/5 hit the known container timeout,
+  unrelated to this diff. No agents.

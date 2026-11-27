@@ -72,7 +72,7 @@ const SETS = {
   // whatever lossy path produced the earlier borderline-flat (0.008-0.010) normal maps.
   // Re-measured clean this time: worn_cracked_plaster std 0.017-0.026, yellow_plaster
   // std 0.012-0.019 - both clear of the 0.012 flatness floor, no longer held back.
-  plaster_h: { base: 'assets/textures_mix/white_stucco_02/', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: art director rejected worn_cracked_plaster (old files stay in textures_mix/plaster_h/, unused); the name now points at Poly Haven white_stucco_02 so the cracked look never appears
+  plaster_h: { base: 'assets/textures_mix/white_stucco_02/', prefix: 'white_stucco_02', maps: ['color', 'normal', 'roughness'] }, // 26 Nov: art director rejected worn_cracked_plaster (old files stay in textures_mix/plaster_h/, unused); the name now points at Poly Haven white_stucco_02 so the cracked look never appears. prefix (27 Nov fix): the folder's real files are named white_stucco_02_*.webp, not plaster_h_*.webp - without this the loader built a filename that never existed and the 3 maps silently failed to load every time plaster_h was picked (console error, wall fell back to an untextured/default material, undercutting LOOKS LIST item 1's wall variety).
   plaster_i: { base: 'assets/textures_mix/plaster_i/', maps: ['color', 'normal', 'roughness'] }, // yellow_plaster
   // 24 Nov, ambientCG CC0 wall surfaces for wall variety (house atlas cells 8..11 in src/kit/housesMaterial.js, and available
   // by name here). Not in MIX_GROUPS on purpose: adding them there would add texture requests before Play.
@@ -194,7 +194,7 @@ export function getTiledMaterial(name, { repeatX = 1, repeatY = 1, tint = null, 
 
   const opts = { map: null, normalMap: null, roughnessMap: null, aoMap: null, roughness };
   for (const mapType of set.maps) {
-    const tex = loadRaw(set.base + resolvedName + '_' + mapType + '.webp', mapType === 'color').clone();
+    const tex = loadRaw(set.base + (set.prefix || resolvedName) + '_' + mapType + '.webp', mapType === 'color').clone();
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(repeatX, repeatY);
