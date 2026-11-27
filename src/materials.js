@@ -578,10 +578,6 @@ const ZONE_GLSL_COMMON = `
         uniform vec4 uZ[${ZONE_MAX}];            // per zone: layer, aux layer, aux coverage, 1 = flooring
         uniform vec3 uZDbg[${ZONE_MAX}];         // flat debug colours
         uniform float uZScale[${LAYERS.length}]; // 1 / metres per tile
-        float gZOn_g = 0.0;
-        float gZR_g = 1.0;
-        vec3 gZN_g = vec3(0.0);
-        vec3 gZDbg_g = vec3(0.0);
         struct ZSurf_z { vec3 c; vec3 n; float r; float h; };
         const mat2 ZROT_z = mat2(0.8, -0.6, 0.6, 0.8);
         // one texture set, anti-tiled: two scales (the second turned 37 degrees and 0.41x the frequency), blended by a slow noise
@@ -744,6 +740,15 @@ export function applyGroundNoiseDetail(
         uniform sampler2D uGrassNormal;
         uniform sampler2D uGrassRough;
         float gGrassMask_g = 0.0;
+        // Zone-ground globals (bug fix 27 Nov): gZOn_g is read at the grass-patch
+        // check below even when zones:false (no zone ground at all), so it and its
+        // siblings must always be declared here, not only inside ZONE_GLSL_COMMON
+        // (which is skipped when zones:false) - that mismatch was the cause of the
+        // "gZOn_g undeclared identifier" ground-shader compile failure (BACKLOG.md).
+        float gZOn_g = 0.0;
+        float gZR_g = 1.0;
+        vec3 gZN_g = vec3(0.0);
+        vec3 gZDbg_g = vec3(0.0);
         uniform vec2 uDampPos0;
         uniform float uDampRadius0;
         uniform vec3 uDampTint0;

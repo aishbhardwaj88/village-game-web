@@ -746,3 +746,22 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
   height at its own x/z at runtime. Nothing left to fix in code; whether the row's
   facing *reads* right toward the temple is a visual/taste call (CLAUDE.md 5a1), not
   verifiable without a real browser - left for her to eyeball, not re-opened here.
+
+- 27 Nov (scheduled run): ground-shader "gZOn_g undeclared identifier" bug (BACKLOG
+  27 Nov entry) FIXED. Root cause by static read: `gZOn_g`/`gZR_g`/`gZN_g`/`gZDbg_g`
+  were declared only inside `ZONE_GLSL_COMMON`, injected only when `zones: true`
+  (src/materials.js applyGroundNoiseDetail), but the grass-patch check
+  `if (uGrassEnabled > 0.5 && gZOn_g < 0.5)` reads `gZOn_g` unconditionally - so the
+  default ground (`zones: false`, the normal case) never declared it at all. Fixed by
+  hoisting the 4 declarations into the always-included common block, right next to
+  the other always-declared ground globals (gGrassMask_g, gExA_g, etc). Verified:
+  full `npm run build` green (licence/dup-models/material-clone/place-visibility/vite
+  build all pass); world-validator still crashes on this container on an unrelated,
+  pre-existing issue (`window.__dopahar.dialogue` undefined - container limitation,
+  A7). Also ran a one-off playwright check (not kept - A6) against both `vite build`
+  +preview and `vite dev`, fixed and unfixed code, at ?at=545,-117: zero shader or
+  console errors in this container's full-chrome SwiftShader either way, so the
+  original compile crash could not be reproduced here (only reported from a
+  chrome-headless-shell run, since replaced by the full chrome binary per the 23 Nov
+  screenshot-tool fix) - but the undeclared-identifier bug and the fix are unambiguous
+  from the shader source itself, independent of whether any one runtime tolerates it.

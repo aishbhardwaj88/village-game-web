@@ -50,12 +50,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       confident match and stays at its old position.
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
-- [!] shader bug found 27 Nov, not caused by any change this run (reproduces on
-      unmodified main too): `vite dev` + headless SwiftShader throws "gZOn_g undeclared
-      identifier" compiling the `ground` fragment shader after pressing Play (tested at
-      ?at=545,-117). Tier-1 checks and `build:unchecked` still passed. Dev-mode-only or
-      a real regression - needs a production build/real browser. BLOCKED: this
-      container's browser checks are unreliable (A7).
 - [ ] [ACTIVE] src/kit/landLayout.js loadLandMap() (24 Nov item 7 dup download): the
       real win (serve mapData.json instead of re-fetching the raw map file) was unsafe
       while position work waited on the map (887/1643 objects have a packed `.rect` in

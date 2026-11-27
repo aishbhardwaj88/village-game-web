@@ -2285,3 +2285,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (missions-check.mjs 399/0/3, same as every recent run). Retested CC0 proxy
   (polyhaven/ambientcg): still 403. No new unblocked BACKLOG work found, no new
   answers in NEEDS_YOU.md since run 16. No code change.
+- 27 Nov (scheduled run 20): real code change. Fixed the 27 Nov ground-shader bug
+  (gZOn_g undeclared identifier): 4 GLSL globals were declared only inside the
+  zones:true block but read unconditionally by the grass-patch check, so the
+  default (zones:false) ground never declared them. Hoisted the declarations into
+  the always-included common block (src/materials.js). Full `npm run build` green
+  except world-validator's known container crash (unrelated, A7). Could not force
+  the original crash to repro here via a one-off playwright check, but the static
+  bug and fix are unambiguous. Moved the BACKLOG item to archive. Pushing now.
