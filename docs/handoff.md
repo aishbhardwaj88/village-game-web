@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run: no code change, nothing newly unblocked
+- LOOKS LIST 1-8 confirmed already done/parked (STATE.md), "Looks fixes ready" line
+  already in NEEDS_YOU. All 5 [ACTIVE] BACKLOG items checked: 2 are standing rules
+  with no new/reworked place to apply to; CC0 proxy re-tested, still 403 (unchanged);
+  M7/shader-warmup still need draw-call headroom / a real browser.
+- Retried `npm run build`'s check 4/5 (STATE.md's suggestion, container may have
+  improved): checks 1-3 ran fine again (same stale tractor/school_bell false
+  positives as last run, already resolved - real cart fix stands), check 4/5's heavy
+  geometry sampling still hangs past 200s. No change from prior finding.
+- No commit (no code or doc content changed beyond this log + STATE.md).
+
 # 26 Nov ~18:1x scheduled run: no code change, 9th flat run on this thread
 - Fresh checkout matched origin/main exactly (HEAD detached/stale as always, reset),
   npm ci (node_modules missing again). CI confirmed green on 3362c4f (run 1405) via

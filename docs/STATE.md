@@ -1,14 +1,13 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run). Real fix this run. LAST_FULL_PASS=3362c4f (unchanged).
+Last updated: 27 Nov (scheduled run). Flat run, nothing newly unblocked. LAST_FULL_PASS=3362c4f (unchanged).
 ## This run
-- Fixed the parked-vehicle wall overlap for real, not guessed: a live Playwright
-  probe (tmp/probe-vehicle-wall.mjs, vite preview + window.__dopahar.getStaticColliders())
-  found the tractor/trolley were already clear (+0.44m/+5.55m) - 26 Nov's "-0.19m"
-  tractor entry was stale. Only the cart (639.4,31.0) truly overlapped a hand-tagged
-  wall box X[637.10,639.90] Z[27.14,29.58], by 0.276m.
-- Fix: nearCart() z 31.0 -> 31.6 (src/missionsLayout.js). Re-probed after rebuild:
-  clearance +0.324m, spawn-guard warning gone. Tier 1 verify all PASS.
-- BACKLOG item closed, moved to docs/archive/backlog-done.md.
+- Checked all 5 [ACTIVE] BACKLOG items and LOOKS LIST 1-8: nothing newly unblocked.
+  2 ACTIVE items are standing rules with no new/reworked place to apply to right now.
+- Retried world-validator check 4/5 per last run's suggestion: checks 1-3 still run
+  clean (same known stale false positives - tractor/school_bell, already resolved),
+  check 4/5 heavy geometry sampling still hangs past 200s. Container limit unchanged.
+- CC0 proxy (polyhaven/ambientcg) re-tested: still 403, unchanged.
+- No code change this run.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged across
   6+ passes - needs her verdict or a new hand-placement idea, not another pass.
