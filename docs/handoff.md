@@ -2131,3 +2131,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Tier 1 PASS; full build also run (materials.js = Tier 2): checks 1-3 only the
   2 already-logged stale findings, check 4/5 hit the known container timeout,
   unrelated to this diff. No agents.
+- 27 Nov (hourly list run): CI green on 7ad1fbe (run 1427); list items unchanged and settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB and land layers her call); missions-check 399/0/3. No code change.
