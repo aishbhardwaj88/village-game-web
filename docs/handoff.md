@@ -2317,3 +2317,5 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   except world-validator's known container crash (unrelated, A7). Could not force
   the original crash to repro here via a one-off playwright check, but the static
   bug and fix are unambiguous. Moved the BACKLOG item to archive. Pushing now.
+
+**27 Nov (scheduled run, no code change):** CI green on 1034743 (run 1466). Temple/sabzi already as drawn (frontYaw 179/140 in mapData, 152 deg item stale again); pre-Play 10.7 MB and land layers remain her call. missions-check 399/0/3.
