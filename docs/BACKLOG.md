@@ -23,15 +23,6 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       once at 2m per panel, send, wait for her verdict only on THIS item, keep working
       everything else). Once approved: freeze in docs/material-library.md, apply by name
       everywhere, re-render staged places against it. BLOCKED: her taste verdict.
-- [ ] [ACTIVE] 319 of 436 places in the approved map are `new_*`, not built yet (see
-      docs/layout/approved-map-2026-11-25.json / src/layout/mapData.json; map-lock
-      and bus-shelter history in docs/archive/backlog-done.md). Small/generic ones
-      already build from map data via landProps.js/landTrees.js/landCanal.js: island+
-      flag, peepal, wells, hand pumps, washing lines, haystacks, dung stacks, canal+
-      bridges, bus shelter. Still unbuilt: ponds (clay pit/temple/cattle/buffalo),
-      tempo/auto stand (ground marker, no vehicle - that's the vehicles worker's file),
-      village bank, library, every `new_sqx_*` shop row (shops worker's scope, not
-      this loop's). Work through a few at a time, same pattern as busShelter().
 - [ ] [ACTIVE] Diegetic wayfinding (signs, notice board, milestones) and lane
       continuity against the approved map.
 - [ ] [ACTIVE] Architecture: every place as one self-contained unit (geometry, props,
@@ -67,6 +58,10 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       sank 3 house-batch meshes once). Map is locked now, so this can be done properly:
       reconcile the two files field-by-field before switching every `o.rect` consumer
       (shopsPlace.js etc.), one Tier-2 commit, full build + regression-check.
+      NOTE 27 Nov: the main consumer is shopsPlace.js, which this loop may not edit
+      (shops worker's file per the scheduler's standing scope list) - this loop can
+      reconcile landLayout.js's own data but can't switch that consumer alone; needs
+      either the shops worker to do the swap or her OK to cross scope.
 - [ ] [ACTIVE] Item 7 shader-warm-up/slot-release, measured 24 Nov (window.__loadMarks
       on built dist/): texWarmed stuck at 2 all run, modelsReleased fired at ~9.38s -
       right on main.js's 9000ms SAFETY timeout, so the real "slots loaded" signal never

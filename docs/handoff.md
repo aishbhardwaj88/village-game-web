@@ -2251,3 +2251,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (pre-existing, not caused here) a `vite dev` ground-shader compile error,
   filed in BACKLOG.md. Code change, flat-run streak ended.
 - 27 Nov (scheduled run 12): CI green on cc2feda (run 1451); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3, build:unchecked + 4 checks ok. No code change.
+- 27 Nov (scheduled run 13): BACKLOG's "319 unbuilt places... ponds/tempo stand/
+  village bank/library" line was stale - checked by code, all 4 already built
+  (ponds+temple tank in mapObjectsGround.js, tempo stand a ground patch, bank/
+  library in shopsPlace.js). Key-by-key scan of every `new_*` label in mapData.json
+  found a handler for all of them; moved the line to archive/backlog-done.md so a
+  future run doesn't re-discover it. No further unblocked in-scope task found -
+  BACKLOG's other 5 items are the same ones blocked for several runs running
+  (GATED-HER, shops-file-ownership, needs-real-browser, CC0 403/A6). No code change.

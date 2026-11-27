@@ -1,45 +1,35 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 11). Real code change this run.
-LAST_FULL_PASS=3362c4f (unchanged, Tier 1 change only this run).
+Last updated: 27 Nov (scheduled run 13). No code change, doc correction only.
+LAST_FULL_PASS=3362c4f (unchanged, no Tier 1/2 diff this run).
 ## This run
-- Checked the LOOKS LIST (her 24 Nov playtest notes) against actual code instead of
-  repeating the "unchanged" handoff line: items 1 (wall variety), 4 (flower pots/
-  climbers) and 5 (street life props) are already built - each has its own code
-  comment citing that exact playtest note. Item 6 (cycle feel) already superseded by
-  her 25 Nov "felt too slow" order (25/32 km/h). Item 7's "map shipped twice" already
-  fixed 25 Nov (vite.config.js landMapPlugin); housesLayout.js's raw-JSON dynamic
-  import has no caller anywhere, so it's dead code, not a real second fetch.
-- Item 2 (chauraha white/red building blocking the road): re-checked map data, no
-  footprint overlaps the road at x 600-615 z 25-60, same finding as the existing
-  NEEDS_YOU line. Tried to resolve it myself with a playwright screenshot instead of
-  waiting on her - the browser hung on blocked Google network calls (different
-  symptom than the documented headless-shell crash, same A7 container limitation).
-  Stays GATED-HER, no new data to add to the NEEDS_YOU line.
-- Real fix (code change): haystacks looked shiny because they share the live
-  'thatch' library material with real thatched roofs (stagingYard.js swapShared) -
-  editing it in place would have flattened every roof too. src/haystacks.js now
-  makes one haystack-only clone (materials.js cloneTiledMaterial, so the weathering
-  onBeforeCompile hook survives - a plain .clone() silently drops it) with
-  roughness=1 and envMapIntensity=0. One extra Material object; draw-call count for
-  haystacks is unchanged (still grouped/merged by material reference).
-- Also pointed tools/shotlib.mjs at the full-chromium binary when present, same
-  workaround tools/screenshot.js and regression-check.js already use.
+- BACKLOG's "319 places not built... still unbuilt: ponds, tempo stand, village
+  bank, library" line was stale (detail in docs/archive/backlog-done.md "319
+  unbuilt" entry): all 4 are already built (ponds+temple tank in
+  mapObjectsGround.js, tempo stand a ground patch, bank/library in shopsPlace.js,
+  shops worker's file). A key-by-key scan of every `new_*` label in mapData.json
+  found a handler for all of them. Moved the line to archive so a future run
+  doesn't re-discover this (2nd run to reach this conclusion, after run 10's
+  wells/pumps/haystacks finding).
+- No further unblocked, in-scope, safe code task found: BACKLOG's other 5 open
+  items are the same ones blocked for several runs (GATED-HER material verdict;
+  loadLandMap() needs shopsPlace.js; M7 NPC draw-call headroom; shader-warmup +
+  dev-mode shader bug need a real browser; CC0 proxy still 403, not retested/A6).
 ## Current state
-- Feature-complete against GAME_COMPLETE.md; LOOKS LIST items 1/4/5/6/7 effectively
-  done or superseded; item 2 genuinely needs her (name the two buildings); item 3
-  fixed this run; item 8 (missions/side jobs/console/bell/canal) last measured
-  399/0/3, not re-tested this run.
-- Remaining blockers: material-library taste verdict (GATED-HER), CC0 proxy still
-  403 (not retested same-day per A6), M7 NPC needs draw-call headroom, shader-warmup
-  and the chauraha building names need a real browser / her eye - this container
-  can't reliably drive a headless browser session (two different failure modes seen
-  now: Target-crashed on headless-shell, hung on blocked network calls on full chrome).
+- Feature-complete against GAME_COMPLETE.md. LOOKS LIST items 1-8 all done/
+  superseded/parked (confirmed again, see handoff.md); item 2 (chauraha
+  buildings) stays GATED-HER, nothing new to add.
+- Remaining blockers: material-library taste verdict (GATED-HER), CC0 proxy 403,
+  M7 NPC draw-call headroom, shader-warmup + dev-mode shader bug (need a real
+  browser - container can't reliably drive one, two failure modes seen), and
+  loadLandMap() (file-ownership block, needs the shops worker).
 ## Next 5 items
-1. Pick 2-4 more unbuilt `new_*` places from BACKLOG.md (ponds first).
-2. Diegetic wayfinding / lane continuity against the approved map.
-3. loadLandMap() mapData.json reconciliation - unblocked, Tier 2: one commit, full
-   build + regression-check.
-4. If CC0 proxy ever returns non-403: resume prop sourcing (matka/charpai/cylinder).
+1. New gap from a screenshot/playtest: build that (named, not a blanket sweep -
+   the sweep came up empty this run).
+2. Diegetic wayfinding / lane continuity against the approved map (BACKLOG,
+   ACTIVE, not yet attempted - worth a fresh look next run).
+3. If CC0 proxy ever returns non-403: resume prop sourcing (matka/charpai/cylinder).
+4. If the shops worker can coordinate: loadLandMap() reconciliation (data-side
+   ready, consumer swap is their file).
 5. world-validator.js checks 1-3 pass; 4/5 (heavy geometry sampling) still hangs.
 ## Known about this container
 - node_modules missing on fresh container - `npm ci` first. HEAD can show detached/

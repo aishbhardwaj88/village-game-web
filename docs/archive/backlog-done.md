@@ -682,6 +682,28 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
       by 0.276m. nearCart() z 31.0 -> 31.6 (src/missionsLayout.js); re-probed after
       rebuild, clearance +0.324m, spawn-guard warning gone.
 
+## 27 Nov: "319 unbuilt places" line was stale (moved from BACKLOG.md)
+- The line read: "319 of 436 places... not built yet... still unbuilt: ponds (clay
+  pit/temple/cattle/buffalo), tempo/auto stand, village bank, library". Checked by
+  code this run, all four were already wrong:
+  - Ponds + temple tank: built in src/kit/mapObjectsGround.js (earthen bund, mud bed,
+    water surface, solid collider, height fn) from plan.ponds/plan.tanks
+    (mapObjectsPlan.js). mapData.json has exactly 1 Buffalo/Cattle/Clay-pit pond and
+    1 temple tank, each with a water+bank ring pair, matching the code's pairing.
+  - Tempo/auto stand: a painted ground patch (mapObjectsPlan.js patches, kind
+    `tempo`), also built.
+  - Village bank / Library and reading room: both match shopsPlace.js's generic
+    civic-building path (isSingle = /^new_[A-Z]/.test(key) && !NOT_SHOPS.has(name))
+    - that file is the shops worker's, not this loop's, and it already places them.
+  - A full key-by-key scan of every distinct `new_*` label in mapData.json (solids
+    kind) found an existing handler for each across landProps.js/mapObjectsPlan.js/
+    mapObjectsGround.js/landCanal.js/railway.js/shopsPlace.js - no unhandled
+    `new_*` place-type found.
+  - Caveat: this is a code-level "a builder exists" check (grep + logic reading),
+    not a render/look verification done through a screenshot - a place can still
+    look wrong even though something builds it. If a specific place looks unbuilt
+    or wrong, name it in NEEDS_YOU.md rather than reopening this as a blanket line.
+
 ## 27 Nov: map-lock resolved + bus shelter (moved from BACKLOG.md)
 - Map-lock question answered by reading claude/final-map.md directly: the 25 Nov map
   is "Closed, do not change without her". Every [PAUSED-MAP] BACKLOG item unparked to
