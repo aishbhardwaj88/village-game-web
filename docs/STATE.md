@@ -40,3 +40,4 @@ ended. LAST_FULL_PASS=3362c4f (unchanged, Tier 1 change only this run).
 - check-material-clone script is check-material-clone.mjs, not .js.
 - This session has Claude.ai Project read access (claude/*.md docs) - use it, not
   secondhand NEEDS_YOU.md notes, when a question points at a doc there.
+- 27 Nov (head-of-eng run 2): CI green 9295fe3, missions 399/0/3, build:unchecked + 4 checks pass. Temple/sabzi/moved coords/land layers/10.7 MB all still settled (her call). No code change.
