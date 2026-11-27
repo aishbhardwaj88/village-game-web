@@ -681,3 +681,12 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
       (639.4,31.0) overlapped a hand-tagged wall box X[637.10,639.90] Z[27.14,29.58]
       by 0.276m. nearCart() z 31.0 -> 31.6 (src/missionsLayout.js); re-probed after
       rebuild, clearance +0.324m, spawn-guard warning gone.
+
+## 27 Nov: map-lock resolved + bus shelter (moved from BACKLOG.md)
+- Map-lock question answered by reading claude/final-map.md directly: the 25 Nov map
+  is "Closed, do not change without her". Every [PAUSED-MAP] BACKLOG item unparked to
+  [ACTIVE] on that reading; her override request is in NEEDS_YOU.md.
+- Bus shelter built (545.4,-117.5): src/kit/landProps.js busShelter() - back wall, low
+  end walls, open-side posts, built-in bench, roof slab, wall/post colliders. No new
+  signboard (src/wayfinding.js's nameplate already covers it). Screenshot-verified at
+  ?at=545,-117; her taste verdict pending in NEEDS_YOU.md.

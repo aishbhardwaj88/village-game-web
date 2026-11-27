@@ -115,12 +115,35 @@ function well(P, x, z, r, seed, tall = false) {
   }
 }
 
+/** Bus-stop shelter: back wall, two low end walls, open-side posts, a built-in bench and a roof slab. Her
+ * 25 Nov approved map has exactly one (545.4, -117.5), footprint 8 x 3, front south toward the highway -
+ * hardcoded for that one instance, not a generic front-detector (the ring alone can't say which short edge
+ * faces the road). No painted board of its own: src/wayfinding.js already puts a correctly-formatted
+ * bilingual nameplate ("बस प्रतीक्षालय / Bus shelter") at every place, this one included - verified in the
+ * 27 Nov screenshot before adding a second, differently-worded sign here. */
+function busShelter(P, colliders, cx, cz, w, d) {
+  const backZ = cz + d / 2 - 0.08; // closed side, away from the road
+  const frontZ = cz - d / 2 + 0.1; // open side, where riders step in from the highway
+  const wallH = 2.3, roofY = 2.85;
+  P.box('concrete', cx, wallH / 2, backZ, w - 0.3, wallH, 0.15, { color: CEMENT });
+  for (const side of [-1, 1]) {
+    const ex = cx + side * (w / 2 - 0.1);
+    P.box('brick', ex, 0.45, cz, 0.15, 0.9, d - 0.16, { color: 0xe6d8c8 }); // low knee wall, partial enclosure
+    P.box('concrete', cx + side * (w / 2 - 0.25), roofY / 2, frontZ, 0.18, roofY, 0.18, { color: CEMENT }); // open-side post
+  }
+  P.box('concrete', cx, 0.42, backZ - 0.35, w - 0.8, 0.08, 0.4, { color: 0xc9c2ae }); // built-in bench seat
+  for (const lx of [-w / 2 + 0.6, 0, w / 2 - 0.6]) P.box('concrete', cx + lx, 0.21, backZ - 0.35, 0.12, 0.42, 0.36, { color: CEMENT }); // bench legs
+  P.box('concrete', cx, roofY + 0.075, cz, w + 0.3, 0.15, d + 0.3, { color: 0x9aa1a6 }); // roof slab, small overhang
+  colliders.push(...orientedBoxes(cx, backZ, 0, w - 0.3, 0.3));
+  for (const side of [-1, 1]) colliders.push(...orientedBoxes(cx + side * (w / 2 - 0.1), cz, 0, 0.3, d - 0.16));
+}
+
 export async function build(map) {
   const P = new Parts({ brick: 1.2, plaster: 1.5, concrete: 1.0, wood: 1.0, rust: 1.0 });
   const group = new THREE.Group();
   group.name = 's7_props';
   const colliders = [];
-  const report = { flagIsland: false, peepalPlatform: false, wells: 0, pumps: 0, washingLines: 0, haystacks: 0, dungStacks: 0 };
+  const report = { flagIsland: false, peepalPlatform: false, wells: 0, pumps: 0, washingLines: 0, haystacks: 0, dungStacks: 0, busShelter: false };
   // 26 Nov, art director: props stand at their EXACT map spot (the final map has nothing on a road); no nudging
   const pumps = [], hay = [], gobar = [], lines = [];
   const flagGeos = [];
@@ -212,6 +235,10 @@ export async function build(map) {
       gobar.push({ type: hash01(hc.x, hc.z) < 0.5 ? 'stack' : 'stack_b', x: c.x, y: 0, z: c.z, ry: hash01(hc.z, 2) * 6.28, s: (r * 2) / 2.6 });
       colliders.push(...orientedBoxes(c.x, c.z, 0, r * 1.3, r * 1.3));
       report.dungStacks++;
+    } else if (key === 'new_Bus shelter') {
+      const xs = ring.map((p) => p[0]), zs = ring.map((p) => p[1]);
+      busShelter(P, colliders, c.x, c.z, Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs));
+      report.busShelter = true;
     }
   }
 

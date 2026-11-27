@@ -1,45 +1,42 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 9). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on bb827b5 (run 1447), missions 399/0/3.
-Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
+Last updated: 27 Nov (scheduled run 10). Real code change this run, flat-run streak
+ended. LAST_FULL_PASS=3362c4f (unchanged, Tier 1 change only this run).
 ## This run
-- CI confirmed green on bb827b5 (run 1447) via Actions API. Re-synced (HEAD
-  detached, container quirk, npm ci fresh).
-- Per A6: did not re-test CC0 proxy or map-lock question - the immediately prior
-  run did exactly that under an hour ago with the same result.
-- Traced LOOKS LIST item 8 end to end instead (new angle): missions 399/0/3 pass,
-  console errors 0 (27 Nov plaster_h fix holds in this HEAD), school bell float
-  confirmed not-a-bug (26 Nov), canal distance is a MAP.md position item so it's
-  [PAUSED-MAP] same as the other 4 ACTIVE BACKLOG blockers. Item 8 fully settled
-  or correctly parked - nothing left to re-check there.
-- LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items unchanged, same blockers as
-  last run. No unblocked game work found.
+- Map-lock resolved: read the Claude.ai project doc claude/final-map.md directly (this
+  session has project access, prior runs didn't use it) - 25 Nov map is "Closed, do
+  not change without her". Treated as her yes (can say no in NEEDS_YOU.md). Every
+  [PAUSED-MAP] BACKLOG item unparked to [ACTIVE].
+- Found the real scope: 319 of 436 approved-map places are `new_*`, unbuilt. Several
+  small ones prior runs filed as still-blocked - island+flag, peepal, wells/pumps/
+  washing lines/haystacks/dung stacks, canal+bridges - are ALREADY DONE in code
+  (landProps.js, landCanal.js). Lesson: check the actual code before trusting an old
+  "paused" tag, not just the doc.
+- Built the one genuinely missing small item: Bus shelter (545.4,-117.5),
+  landProps.js busShelter(). Tier 1 checks pass; screenshot-verified at ?at=545,-117
+  (playwright). No new sign - src/wayfinding.js's nameplate already covers it.
+- Found, not caused by this change (reproduces on unmodified main): `vite dev` +
+  headless SwiftShader throws a shader compile error on `ground` after Play. Filed in
+  BACKLOG.md as [!]; needs a production build/real browser to confirm dev-only or real.
 ## Current state
-- Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
-  across 6+ passes - needs her verdict or a new hand-placement idea.
-- LOOKS LIST 1-8: all done/parked (item 8 traced in full this run, see above).
-- 5 [ACTIVE] BACKLOG items left, all blocked: architecture/texture-pipeline
-  apply only to a place being reworked (none is, [PAUSED-MAP]); CC0 sourcing
-  needs the proxy (403, last confirmed 27 Nov); M7 NPC needs draw-call
-  headroom; shader-warmup needs a real (non-headless) browser.
-- Her "is the 25 Nov map locked for good?" still open - root blocker behind
-  the flat-run streak. Already asked once, not re-asking (A6).
+- Feature-complete against GAME_COMPLETE.md; map-dependent polish (wayfinding,
+  far-eastern cluster, NPC paths, crop-plot specifics, MAP.md checklist) is [ACTIVE]
+  again, not blocked - real work resumes next run.
+- Remaining blockers, unrelated to the map: material-library taste verdict (GATED-HER),
+  CC0 proxy still 403 (confirmed 27 Nov, don't re-test same-day), M7 NPC needs draw-
+  call headroom, shader-warmup needs a real browser.
+- Possible stray, not re-investigated: NEEDS_YOU.md's 24 Nov line claims 20/27 km/h
+  cycle cruise/sprint; main.js now has 25/32 km/h.
 ## Next 5 items
-1. Map-lock / CC0 proxy: nothing to do but wait - don't re-ask (A6).
-2. If CC0 proxy works: resume prop sourcing (matka/charpai/cylinder/bicycle).
-3. If map-lock answered yes: unpark PAUSED-MAP items (wayfinding, far-eastern
-   cluster, NPC path validation, crop-plot specifics, MAP.md checklist incl.
-   canal distance).
-4. If she says yes to opening railway station/hall walls: cut real door/
-   window openings in src/kit/railway.js wallRun(), then furniture.
-5. world-validator.js checks 1-3 pass here; check 4/5 (heavy geometry
-   sampling) still hangs - keep retrying lightly, don't force it.
-## Blockers
-- [PAUSED-MAP] her map-lock answer, unchanged. CC0 proxy 403 (27 Nov).
-  Real browser: PARTIAL (world-validator checks 1-3 survive; 4/5 fail).
+1. Pick 2-4 more unbuilt `new_*` places from BACKLOG.md (ponds first - reuse
+   src/water.js blobWaterGeometry/createWaterMaterial, like the johad).
+2. Diegetic wayfinding / lane continuity against the approved map - now unblocked.
+3. loadLandMap() mapData.json reconciliation - unblocked but Tier 2: one commit,
+   full build + regression-check.
+4. If CC0 proxy ever returns non-403: resume prop sourcing (matka/charpai/cylinder).
+5. world-validator.js checks 1-3 pass; 4/5 (heavy geometry sampling) still hangs.
 ## Known about this container
-- node_modules missing on fresh container, every time - `npm ci` first. HEAD
-  can show detached/stale - `git fetch` fresh first.
-- No `gh` CLI here - use mcp__github__actions_list / actions_get for CI status.
+- node_modules missing on fresh container - `npm ci` first. HEAD can show detached/
+  stale - `git fetch` fresh first. No `gh` CLI - use mcp__github__actions_list/get.
 - check-material-clone script is check-material-clone.mjs, not .js.
-- docs/handoff.md is 2200+ lines, A3's archive move isn't happening - not urgent (read by grep only), flagging for spare cycles.
+- This session has Claude.ai Project read access (claude/*.md docs) - use it, not
+  secondhand NEEDS_YOU.md notes, when a question points at a doc there.

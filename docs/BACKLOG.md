@@ -23,38 +23,50 @@ wait, never stop a run. A `- [!]` item is skipped until its NEEDS_YOU line reads
       once at 2m per panel, send, wait for her verdict only on THIS item, keep working
       everything else). Once approved: freeze in docs/material-library.md, apply by name
       everywhere, re-render staged places against it. BLOCKED: her taste verdict.
-- [ ] [PAUSED-MAP] Diegetic wayfinding (signs, notice board, milestones) and lane
-      continuity - layout-dependent, wait for the new map.
+- [ ] [ACTIVE] 319 of 436 places in the approved map are `new_*`, not built yet (see
+      docs/layout/approved-map-2026-11-25.json / src/layout/mapData.json; map-lock
+      and bus-shelter history in docs/archive/backlog-done.md). Small/generic ones
+      already build from map data via landProps.js/landTrees.js/landCanal.js: island+
+      flag, peepal, wells, hand pumps, washing lines, haystacks, dung stacks, canal+
+      bridges, bus shelter. Still unbuilt: ponds (clay pit/temple/cattle/buffalo),
+      tempo/auto stand (ground marker, no vehicle - that's the vehicles worker's file),
+      village bank, library, every `new_sqx_*` shop row (shops worker's scope, not
+      this loop's). Work through a few at a time, same pattern as busShelter().
+- [ ] [ACTIVE] Diegetic wayfinding (signs, notice board, milestones) and lane
+      continuity against the approved map.
 - [ ] [ACTIVE] Architecture: every place as one self-contained unit (geometry, props,
       colliders, anchors, signage) with one anchor transform read from a single source -
       standing rule, survives any map move, keep applying to new/reworked places.
-- [ ] [PAUSED-MAP] Far-eastern cluster road connection, new house row facing temple,
-      MAP.md elevation checks - all position/layout calls, wait for the new map.
+- [ ] [ACTIVE] Far-eastern cluster road connection, new house row facing temple,
+      MAP.md elevation checks against the approved map.
 - [ ] [ACTIVE] Texture pipeline: verify UVs/tiling survive arch.py -> strip-textures.mjs
       -> stagingYard.js for any place reworked; re-tint from sampled Places V1 colours,
       not picked by eye.
-- [ ] [PAUSED-MAP] NPC/animal path validation against walls, door-routing through
-      openings - path geometry is layout-dependent, wait for the new map.
+- [ ] [ACTIVE] NPC/animal path validation against walls, door-routing through openings,
+      against the approved map's roads/lanes.
 - [ ] [ACTIVE] CC0 prop sourcing before hand-building, for any place still using
       hand-built generic props (pumps, matkas, pots, stools, charpais, carts, buckets,
       crates, tools). Check source + budget before each swap.
-- [ ] [PAUSED-MAP] Crop-plot specifics (which plot is which crop, growth-stage mix,
-      density per plot) - plot positions are moving, wait for the new map. Crop mesh/
-      texture quality itself (not position) stays [ACTIVE].
-- [ ] [PAUSED-MAP] MAP.md coverage checklist items that are pure position/layout
-      (lanes/kerbs/drains network, canal+bridge, background houses+boundary walls) -
-      wait for the new map.
+- [ ] [ACTIVE] Crop-plot specifics (which plot is which crop, growth-stage mix, density
+      per plot) against the approved map. Crop mesh/texture quality already [ACTIVE].
+- [ ] [ACTIVE] MAP.md coverage checklist: lanes/kerbs/drains network, background houses
+      + boundary walls. Canal+bridge already done (src/kit/landCanal.js, built from the
+      map's own bridge/ghat rings).
 - [ ] [ACTIVE] M7 optional flavour NPC (baagh keeper) - revisit if draw-call headroom
       opens up; not required for done.
-- [ ] [PAUSED-MAP] src/kit/landLayout.js loadLandMap() (24 Nov item 7 dup download):
-      the dead always-false getLayout() attempt is removed (24 Nov) - this now just
-      fetches the raw map once, same behaviour, less wasted work. The real win (serve
-      mapData.json instead of re-fetching the raw file) stays unsafe: field-by-field
-      check found the two files have really diverged (887/1643 objects have a packed
-      `.rect` in mapData.json vs 0/1643 in the raw file; places carry an `adjust`
-      nudge too, e.g. house ~6.3 m moved) - switching changes real positions for every
-      consumer (shopsPlace.js, every o.rect reader), already proven once to sink 3
-      house-batch meshes. Real layout/position work - wait for the new map, per 5a-MAP.
+- [!] shader bug found 27 Nov, not caused by any change this run (reproduces on
+      unmodified main too): `vite dev` + headless SwiftShader throws "gZOn_g undeclared
+      identifier" compiling the `ground` fragment shader after pressing Play (tested at
+      ?at=545,-117). Tier-1 checks and `build:unchecked` still passed. Dev-mode-only or
+      a real regression - needs a production build/real browser. BLOCKED: this
+      container's browser checks are unreliable (A7).
+- [ ] [ACTIVE] src/kit/landLayout.js loadLandMap() (24 Nov item 7 dup download): the
+      real win (serve mapData.json instead of re-fetching the raw map file) was unsafe
+      while position work waited on the map (887/1643 objects have a packed `.rect` in
+      mapData.json vs 0/1643 in the raw file, plus per-place `adjust` nudges - already
+      sank 3 house-batch meshes once). Map is locked now, so this can be done properly:
+      reconcile the two files field-by-field before switching every `o.rect` consumer
+      (shopsPlace.js etc.), one Tier-2 commit, full build + regression-check.
 - [ ] [ACTIVE] Item 7 shader-warm-up/slot-release, measured 24 Nov (window.__loadMarks
       on built dist/): texWarmed stuck at 2 all run, modelsReleased fired at ~9.38s -
       right on main.js's 9000ms SAFETY timeout, so the real "slots loaded" signal never

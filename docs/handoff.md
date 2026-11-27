@@ -2230,3 +2230,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   BACKLOG items unchanged, same blockers as last run. No unblocked game
   work found; ended without re-running already-logged checks (A6). No
   code change.
+- 27 Nov (scheduled run 10): map-lock resolved by reading the Claude.ai project
+  doc claude/final-map.md directly ("Closed, do not change without her") - every
+  [PAUSED-MAP] BACKLOG item unparked to [ACTIVE], her override request filed in
+  NEEDS_YOU.md. Checked code, not just tags: canal+bridge, island, peepal, wells,
+  pumps, haystacks were already built for the new map, just never verified.
+  Built the one real gap, a Bus shelter (545.4,-117.5), src/kit/landProps.js
+  busShelter(); Tier 1 checks pass, screenshot-verified at ?at=545,-117. Found
+  (pre-existing, not caused here) a `vite dev` ground-shader compile error,
+  filed in BACKLOG.md. Code change, flat-run streak ended.
