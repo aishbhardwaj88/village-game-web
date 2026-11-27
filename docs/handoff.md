@@ -2210,3 +2210,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   A6; M7 NPC needs draw-call headroom; shader-warmup needs real browser).
   Per efficiency-rules.md ("a run with no unblocked game work ends within
   2 minutes"), did not re-run already-logged checks. No code change.
+- 27 Nov (scheduled run 7): CI green on 641ab10 (run 1445); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call). No code change.

@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 6). Flat run, no code change. LAST_FULL_PASS=
+Last updated: 27 Nov (scheduled run 7). Flat run, no code change. LAST_FULL_PASS=
 3362c4f (unchanged). CI green on a5b6945 (run 1444), missions 399/0/3.
 Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
 ## This run
