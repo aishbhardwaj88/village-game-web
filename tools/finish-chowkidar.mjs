@@ -92,12 +92,14 @@ const towelSel = new Uint8Array(N);
 {
   const tex = root.listTextures()[0], img = await sharp(Buffer.from(tex.getImage())).raw().toBuffer({ resolveWithObject: true }), UV = prim.getAttribute('TEXCOORD_0'), uv = [0, 0];
   const colAt = (i) => { UV.getElement(i, uv); const x = Math.min(img.info.width - 1, Math.max(0, Math.floor(uv[0] * img.info.width))), y = Math.min(img.info.height - 1, Math.max(0, Math.floor(uv[1] * img.info.height))), o = (y * img.info.width + x) * img.info.channels; return [img.data[o], img.data[o + 1], img.data[o + 2]]; };
+  // 27 Nov live fix: the mouth / beard (dark brownish pixels, y 0.82-0.86, front z>0.02) matched 'brown' and was welded to Spine2, so the head nodding in idle tore the mouth open (gash with teeth). Face front keeps Tripo's head weights.
+  const FACE = (p) => p.y > 0.815 && Math.abs(p.x) < 0.075 && p.z > 0.02;
   const brown = ([r, g, b]) => r < 135 && r > b + 18 && g < r - 6 && g > b - 4 && r > 45, foreW = new Float32Array(N);
   for (let i = 0; i < N; i++) { J.getElement(i, jh); W.getElement(i, wh); for (let k = 0; k < 4; k++) if (/^(Left|Right)(ForeArm|Hand)/.test(jn[jh[k]])) foreW[i] += wh[k]; }
   let n0 = 0;
-  for (let i = 0; i < N; i++) { const p = pos[i]; if (p.y < 0.2 || p.y > 0.86 || handDom[i] || foreW[i] > 0.2) continue; if (brown(colAt(i))) { towelSel[i] = 1; n0++; } }
+  for (let i = 0; i < N; i++) { const p = pos[i]; if (p.y < 0.2 || p.y > 0.86 || handDom[i] || foreW[i] > 0.2 || FACE(p)) continue; if (brown(colAt(i))) { towelSel[i] = 1; n0++; } }
   const add = [];
-  for (let pass = 0; pass < 2; pass++) { const got = []; for (let t = 0; t < idx.length; t += 3) { const v = [idx[t], idx[t + 1], idx[t + 2]]; if (v.some((q) => towelSel[q])) for (const q of v) if (!towelSel[q] && pos[q].y > 0.2 && pos[q].y < 0.86 && !handDom[q] && foreW[q] <= 0.2 && brown(colAt(q))) got.push(q); } for (const q of got) if (!towelSel[q]) { towelSel[q] = 1; add.push(q); } }
+  for (let pass = 0; pass < 2; pass++) { const got = []; for (let t = 0; t < idx.length; t += 3) { const v = [idx[t], idx[t + 1], idx[t + 2]]; if (v.some((q) => towelSel[q])) for (const q of v) if (!towelSel[q] && !FACE(pos[q]) && pos[q].y > 0.2 && pos[q].y < 0.86 && !handDom[q] && foreW[q] <= 0.2 && brown(colAt(q))) got.push(q); } for (const q of got) if (!towelSel[q]) { towelSel[q] = 1; add.push(q); } }
   const sm = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
   let nT = 0;
   for (let i = 0; i < N; i++) {
@@ -106,6 +108,7 @@ const towelSel = new Uint8Array(N);
     const e = Object.entries(out).filter(([, v]) => v > 1e-4).sort((a, b) => b[1] - a[1]).slice(0, 4), s = e.reduce((a, b) => a + b[1], 0); while (e.length < 4) e.push(['Hips', 0]);
     J.setElement(i, e.map(([b]) => ji[b])); W.setElement(i, e.map(([, v]) => v / s)); nT++;
   }
+  if (process.env.DBG) { const f=[]; for (let i=0;i<N;i++) if (towelSel[i]&&pos[i].y>0.78) f.push(pos[i]); const mn=(k)=>Math.min(...f.map(p=>p[k])).toFixed(3), mx=(k)=>Math.max(...f.map(p=>p[k])).toFixed(3); console.log('DBG shawl y>0.78 n',f.length,'x',mn('x'),mx('x'),'y',mn('y'),mx('y'),'z',mn('z'),mx('z')); const c=f.filter(p=>Math.abs(p.x)<0.06&&p.y>0.80); console.log('DBG centre y>0.80',c.length, c.length?[mn('z'),mx('z')]:''); }
   console.log(`shawl: ${n0} by colour + ${add.length} neighbours = ${nT} vertices on Spine2/Neck/Shoulder/Spine1/Hips (zero arm weight)`);
 }
 if (!process.env.NOSLEEVECUT)

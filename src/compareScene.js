@@ -30,7 +30,7 @@ const CLIPS = [['Idle', 'idle'], ['Walk', 'walk'], ['Walk plain', 'walk_plain'],
 // face view: camera at eye level on his face; A/D or arrows orbit, W/S zoom, Escape (or any other button) leaves
 const BOTH_ORBIT = -0.2; // 26 Nov: the straight-on two-shot of the 13-actor row puts the camera against the Gupta store wall (half the frame black); 0.2 rad round to the other side shows the whole row, Nai beside the store
 const ROW_SHIFT = 6; // 26 Nov: 16-actor row (Bystander, Chowkidar added 27 Nov) slid 6 m toward TV Aunty so Nai and Rascal stand clear of the Gupta store stall (camera aims at the mean head position, so it follows)
-const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 22], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
+const FACE_DIST = [0.5, 2], FACE_START = 0.9, BOTH_DIST = 7.2, BOTH_GAP = 2, BOTH_RANGE = [0.6, 45], ORBIT_RATE = 0.6, ZOOM_RATE = 0.8;
 
 function label(text) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 128;
@@ -83,7 +83,12 @@ export function setupCompare({ scene, camera, camRig, player, renderer, assetSlo
   const resetLanes = () => { for (const a of actors) { a.x = CENTRE.x; a.lane = LANE_Z[a.key]; } };
   const leaveFace = () => { if (!face) return; face = null; keys.clear(); camRig.update = origUpdate; resetLanes(); camRig.update(); };
   let lineup = true; // 25 Nov: actors stand in the line-up until a move button; move buttons never touch the camera
-  const fitDist = () => { const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect); return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, ((actors.length - 1) * BOTH_GAP / 2 + 1.3) / Math.tan(hf / 2))); }; // all three (4 m wide + margin) in frame
+  const fitDist = () => { // 27 Nov: frame the REAL row (head positions), not (n-1)*gap: 16 actors no longer fit the old estimate (left side and Chowkidar were cut off)
+    const hf = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect);
+    let half = (actors.length - 1) * BOTH_GAP / 2;
+    if (actors.every((a) => a.head)) { const m = new THREE.Vector3(), p = new THREE.Vector3(); actors.forEach((a) => { a.head.getWorldPosition(p); m.add(p); }); m.multiplyScalar(1 / actors.length); half = Math.max(...actors.map((a) => { a.head.getWorldPosition(p); return Math.hypot(p.x - m.x, p.z - m.z); })); }
+    return Math.min(BOTH_RANGE[1], Math.max(BOTH_DIST, (half * 1.12 + 1.8) / Math.tan(hf / 2)));
+  };
   // Studio light (review only): neutral room environment + a soft fill light from the camera, like a model viewer
   let studio = null, studioOn = false, origEnv = null, origInt = 1;
   const toggleStudio = () => {
