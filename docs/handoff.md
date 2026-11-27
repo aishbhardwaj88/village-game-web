@@ -2276,3 +2276,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (A7), unrelated TypeError, not chased. gurudwara/anganwadi walls now get dropped by
   the on-road filter - filed in NEEDS_YOU.md. Also archived far-east house-row item
   (code-verified, no gap). CI pushed, confirm green next run.
+- 27 Nov (scheduled run 17): CI green on 5a23bce (run 1457); list items settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
