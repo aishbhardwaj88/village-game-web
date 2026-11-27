@@ -2103,3 +2103,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   with CLAUDE.md 5a1 and the project's "rules change only via an explicit order"
   rule) - flagged in NEEDS_YOU for her call, left file as-is.
 - No code change, no agents (nothing needed one).
+- 27 Nov (hourly list run, Actions green on a584481): temple/sabzi fronts, moved-place coords, unsliced land builds, 10.7 MB pre-Play all already settled (handoff 25 Nov, a6c25a6); characters 4-6 MB each load after Play. missions-check 399/0/3, build:unchecked ok. No code change.
