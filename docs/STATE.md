@@ -1,18 +1,23 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 8). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on 7de2b9e (run 1446), missions 399/0/3.
+Last updated: 27 Nov (scheduled run 9). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on bb827b5 (run 1447), missions 399/0/3.
 Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers: all already settled/her call (handoff 26 Nov).
 ## This run
-- CI confirmed green on 7de2b9e (run 1446) via Actions API. Re-synced (HEAD
-  detached, container quirk).
-- Did test CC0 proxy directly this run (curl polyhaven.com): still 403.
-  Checked NEEDS_YOU.md for new answers: none since 25 Nov.
+- CI confirmed green on bb827b5 (run 1447) via Actions API. Re-synced (HEAD
+  detached, container quirk, npm ci fresh).
+- Per A6: did not re-test CC0 proxy or map-lock question - the immediately prior
+  run did exactly that under an hour ago with the same result.
+- Traced LOOKS LIST item 8 end to end instead (new angle): missions 399/0/3 pass,
+  console errors 0 (27 Nov plaster_h fix holds in this HEAD), school bell float
+  confirmed not-a-bug (26 Nov), canal distance is a MAP.md position item so it's
+  [PAUSED-MAP] same as the other 4 ACTIVE BACKLOG blockers. Item 8 fully settled
+  or correctly parked - nothing left to re-check there.
 - LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items unchanged, same blockers as
   last run. No unblocked game work found.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.
-- LOOKS LIST 1-8: all done/parked.
+- LOOKS LIST 1-8: all done/parked (item 8 traced in full this run, see above).
 - 5 [ACTIVE] BACKLOG items left, all blocked: architecture/texture-pipeline
   apply only to a place being reworked (none is, [PAUSED-MAP]); CC0 sourcing
   needs the proxy (403, last confirmed 27 Nov); M7 NPC needs draw-call
@@ -23,7 +28,8 @@ Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers
 1. Map-lock / CC0 proxy: nothing to do but wait - don't re-ask (A6).
 2. If CC0 proxy works: resume prop sourcing (matka/charpai/cylinder/bicycle).
 3. If map-lock answered yes: unpark PAUSED-MAP items (wayfinding, far-eastern
-   cluster, NPC path validation, crop-plot specifics, MAP.md checklist).
+   cluster, NPC path validation, crop-plot specifics, MAP.md checklist incl.
+   canal distance).
 4. If she says yes to opening railway station/hall walls: cut real door/
    window openings in src/kit/railway.js wallRun(), then furniture.
 5. world-validator.js checks 1-3 pass here; check 4/5 (heavy geometry
@@ -36,4 +42,4 @@ Temple/sabzi AS_DRAWN (front -z), moved-place coords, pre-Play size, land layers
   can show detached/stale - `git fetch` fresh first.
 - No `gh` CLI here - use mcp__github__actions_list / actions_get for CI status.
 - check-material-clone script is check-material-clone.mjs, not .js.
-- docs/handoff.md is 2196 lines, A3's archive move isn't happening - not urgent (read by grep only), flagging for spare cycles.
+- docs/handoff.md is 2200+ lines, A3's archive move isn't happening - not urgent (read by grep only), flagging for spare cycles.

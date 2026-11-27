@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run: flat, confirmed item 8 fully settled, nothing re-tested
+- CI confirmed green on bb827b5 (run 1447) via Actions API, no local build needed.
+- Per A6: did not re-ping the CC0 proxy or re-read final-map.md - the immediately
+  prior run did exactly that (same result, <1h ago); repeating it now is the
+  re-audit A6 forbids.
+- Traced item 8 instead (new angle, not previously laid out in one place): missions
+  399/0/3 (passing), console errors 0 (27 Nov plaster_h fix, still in this HEAD),
+  school bell "float" confirmed not-a-bug 26 Nov, canal distance is a MAP.md
+  position item - [PAUSED-MAP] per 5a-MAP, same as the other 4 ACTIVE BACKLOG
+  blockers. All of LOOKS LIST item 8 is therefore settled or correctly parked.
+- No new unblocked item found. No code change, no agents.
+
 # 27 Nov scheduled run 3: flat, CI green on 9d1b314 (run 1440), no code change
 - Re-synced to origin/main (HEAD detached again, same container quirk), npm ci skipped
   (node_modules present). Re-confirmed CC0 proxy still 403 (polyhaven+ambientcg, same
