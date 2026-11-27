@@ -2145,3 +2145,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   NEEDS_YOU already quotes, CC0-proxy-blocked is confirmed there too, nothing new.
 - STATE.md was 56 lines (over A2's 40-line cap) - rewritten to fit.
 - No code change, no agents.
+- 27 Nov (scheduled list run): CI green on 6894618 (run 1429); list items unchanged and settled; missions-check 399/0/3 after npm ci. No code change.

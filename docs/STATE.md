@@ -1,6 +1,6 @@
 # State - rewritten every run, max 40 lines
 Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged - Tier 2 full chain still can't finish check 4/5 here).
+3362c4f (unchanged). CI green on 6894618, missions 399/0/3.
 ## This run
 - CI confirmed green on aa2bce4 (run 1428).
 - Checked claude.ai project docs for any new decision not yet in the repo
