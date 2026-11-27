@@ -1,7 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
-# 27 Nov scheduled run: flat, CI green, scheduled-task prompt's LOOKS LIST already done
+# 27 Nov scheduled run 3: flat, CI green on 9d1b314 (run 1440), no code change
+- Re-synced to origin/main (HEAD detached again, same container quirk), npm ci skipped
+  (node_modules present). Re-confirmed CC0 proxy still 403 (polyhaven+ambientcg, same
+  allowlist refusal, not transient) - the real blocker behind every [ACTIVE] item.
+- All 5 open BACKLOG items re-checked, still blocked, same reasons as runs 1-2.
+- No unblocked work found; did not re-run the LOOKS LIST (already done/parked per
+  STATE.md - stored scheduled-task prompt text is stale, repo is source of truth).
+
+# 27 Nov scheduled run 2: flat, CI green, scheduled-task prompt's LOOKS LIST already done
 - Re-synced to origin/main (HEAD detached again, same container quirk), npm ci fresh.
 - CI confirmed green on 865a12f (run 1435) via Actions API (no gh CLI in this
   container - used mcp__github__actions_list instead).

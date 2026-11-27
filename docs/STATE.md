@@ -1,28 +1,28 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 2). Flat run, no code change. LAST_FULL_PASS=
-3362c4f (unchanged). CI green on f44a11e (run 1438), missions 399/0/3.
+Last updated: 27 Nov (scheduled run 3). Flat run, no code change. LAST_FULL_PASS=
+3362c4f (unchanged). CI green on 9d1b314 (run 1440), missions 399/0/3.
 ## This run
-- 27 Nov (scheduled run): CI green on 865a12f (run 1435, confirmed via
+- 27 Nov (scheduled run 3): CI green on 9d1b314 (run 1440, confirmed via
   mcp__github__actions_list - no gh CLI in this container). Re-synced to
-  origin/main (HEAD detached again, same container quirk). missions-check.mjs
-  re-run: 399/0/3, same 3 WARN as every prior run.
-- Noted: the hourly scheduled task's own stored prompt text still carries the
-  24 Nov LOOKS LIST 1-8 as open work, but repo state (this file, BACKLOG.md,
-  handoff.md) all independently confirm it's done/parked - the stored prompt
-  is stale, not the repo. Treated repo as source of truth, per "continuity
-  lives only in the repo."
-- Checked all 5 open BACKLOG items: still blocked, same reasons as last run
-  (GATED-HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403,
-  not retested without reason - A6; M7 NPC needs draw-call headroom; shader-
-  warmup needs a real browser). No new unblocked item found.
+  origin/main (HEAD detached again, same container quirk; node_modules already
+  present, npm ci skipped).
+- Re-confirmed CC0 proxy still 403 on both polyhaven and ambientcg - this is an
+  egress-allowlist refusal (connect_rejected, HTTP 403), not a transient fault,
+  so it will not clear on its own; worth a spot-check each run but not an audit.
+- All 5 open BACKLOG items re-checked, still blocked, same reasons as runs 1-2
+  (GATED-HER material verdict; 4x PAUSED-MAP wait-for-new-map; CC0 proxy 403;
+  M7 NPC needs draw-call headroom; shader-warmup needs a real browser).
+- Scheduled task's stored prompt still carries the 24 Nov LOOKS LIST 1-8 as
+  open work - confirmed again this is stale text, not new instructions; repo
+  (this file/BACKLOG/handoff) is the source of truth per the task's own rule.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged
   across 6+ passes - needs her verdict or a new hand-placement idea.
 - LOOKS LIST 1-8: all done/parked (plaster_h fix landed several runs ago).
 - 5 [ACTIVE] BACKLOG items left, all blocked: architecture/texture-pipeline
   apply only to a place being reworked (none is, under [PAUSED-MAP]); CC0
-  sourcing needs the proxy (403, last confirmed 27 Nov); M7 NPC needs draw-call
-  headroom (needs a real browser to measure); shader-warmup needs a real
+  sourcing needs the proxy (403, confirmed again 27 Nov); M7 NPC needs draw-
+  call headroom (needs a real browser to measure); shader-warmup needs a real
   (non-headless) browser.
 - Her "is the 25 Nov map locked for good?" still open - the root blocker
   behind the flat-run streak. Already asked once, not re-asking (A6).
@@ -38,7 +38,7 @@ Last updated: 27 Nov (scheduled run 2). Flat run, no code change. LAST_FULL_PASS
    sampling) still hangs - keep retrying lightly each run, don't force it.
 ## Blockers
 - [PAUSED-MAP]: her map-lock answer, unchanged.
-- CC0 proxy (polyhaven/ambientcg): 403, last confirmed 27 Nov.
+- CC0 proxy (polyhaven/ambientcg): 403, re-confirmed 27 Nov (allowlist refusal).
 - Real browser: PARTIAL (world-validator checks 1-3 survive; check 4/5 still
   crashes/times out). Two lightweight Playwright probe patterns work instead
   (not present right now - tmp/ is gitignored and this is a fresh container).
