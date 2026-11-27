@@ -674,3 +674,10 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
       Temple interior is deliberately bare (CLAUDE.md 7 "zero tasks at any of the four
       faith buildings" + the art director's own "no deity figures/imagery" rule in
       build_temple.py) - not a furnishing gap.
+
+- [x] 27 Nov: parked tractor/cart wall overlap, fixed for real (not guessed). Live
+      probe of window.__dopahar.getStaticColliders() found the tractor was already
+      clear (+0.44m, the "26 Nov -0.19m" entry was stale) and only the cart
+      (639.4,31.0) overlapped a hand-tagged wall box X[637.10,639.90] Z[27.14,29.58]
+      by 0.276m. nearCart() z 31.0 -> 31.6 (src/missionsLayout.js); re-probed after
+      rebuild, clearance +0.324m, spawn-guard warning gone.

@@ -92,7 +92,7 @@ function table() {
   // as it is under ?layout=old). New: on the open ground behind the house, next to the wheat sack pile (M3 loads the trolley
   // there; M7 drives out from there), the bullock cart beside it, the spare cycle at the gate.
   T.vehicles = () => ({
-    tractor: { x: 637.0, z: 32.0, yaw: 0 }, // 26 Nov: x 642 -> 641 so it clears the hardware shop now built at 643.5-647.9 (validator: 0.31 m into its wall); trolley rests 4.6 m south of it; moved from (643.7, 31.0) when the final map put a hardware shop under the trolley; clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov)
+    tractor: { x: 637.0, z: 32.0, yaw: 0 }, // 26 Nov: x 642 -> 641 so it clears the hardware shop now built at 643.5-647.9 (validator: 0.31 m into its wall); trolley rests 4.6 m south of it; moved from (643.7, 31.0) when the final map put a hardware shop under the trolley; clear of the game's own collider box at x 642.2-645, z 26.8-28.2 (headless probe, 22 Nov). 27 Nov: BACKLOG's "-0.19m" note for this exact spot is stale - live getStaticColliders() probe at this position now reads clearance +0.44m, clear; only the cart (above) was actually overlapping.
     cart: { ...nearCart(), yaw: Math.PI },
     bike: { ...house(3.2, 9.0), yaw: ANCHORS.house.ry + Math.PI / 2 },
   });
@@ -164,8 +164,12 @@ function table() {
   return T;
 }
 
-// the bullock cart: beside the tractor, west of it, same heading (checked clear by tools/missions-check.mjs)
-function nearCart() { return { x: 639.4, z: 31.0 }; }
+// the bullock cart: beside the tractor, west of it, same heading. 27 Nov: z 31.0 -> 31.6 -
+// live collider probe (window.__dopahar.getStaticColliders(), not mapData.json, which doesn't
+// carry this wall) found the real overlap: a hand-tagged wall box X[637.10,639.90] Z[27.14,29.58],
+// the cart's body-radius circle (hypot(1.6,3)/2=1.698) reached 0.276m into it at z=31.0. z=31.6
+// clears it by ~0.32m and stays clear of the nearest other colliders (jute_9 boxes ~3.8m away).
+function nearCart() { return { x: 639.4, z: 31.6 }; }
 
 /** The point to use for `name`: the old value under ?layout=old, the approved-map value under ?layout=new. */
 export function spot(name, oldValue) {

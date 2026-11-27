@@ -2073,3 +2073,13 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   school_bell's "float" is not a bug (documented 0.12m verandah floor in props.js).
   Still crashes at check 4/5's heavy geometry sampling. Details in STATE.md.
 - No code change, no agents (nothing here needed one). CI unaffected (docs only).
+
+# 27 Nov scheduled run: real fix, the parked-vehicle wall overlap (BACKLOG item)
+- No name/id on colliders, so queried the live game instead of guessing: vite
+  preview + a one-off Playwright probe (tmp/probe-vehicle-wall.mjs) reading
+  window.__dopahar.getStaticColliders() at the tractor/cart/trolley spots.
+- Tractor/trolley actually clear (+0.44m/+5.55m) - 26 Nov's "-0.19m" was stale.
+  Only the cart (639.4,31.0) truly overlapped a hand-tagged wall box, by 0.276m.
+- Fix: nearCart() z 31.0 -> 31.6 in src/missionsLayout.js. Re-probed after
+  rebuild: clearance now +0.324m, spawn-guard warning gone.
+- Tier 1 verify all PASS. No agents (one small fix). BACKLOG item closed.
