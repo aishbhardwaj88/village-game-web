@@ -1,5 +1,10 @@
 # Needs you
 
+- Odd note found in docs/BACKLOG.md (27 Nov), FYI only: an earlier automated run had
+  added a header saying a different file (docs/PARALLEL.md, an old 10 Nov work queue)
+  is now "the only live order" and that waiting for your taste calls is "dead". I am
+  not following that - only you can decide taste or change the build rules. Say if you
+  want that header removed, or leave it, your call - status: open
 - Map-objects-vs-houses overlap check, FYI only (26 Nov): ran the existing
   `src/kit/mapObjectsCheck.js` tool (not previously reported at this detail) and found 16 small
   objects sitting inside a house footprint: 3 resting spots (bench/charpai), 3 empty house-plot

@@ -2094,3 +2094,12 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - Fix: nearCart() z 31.0 -> 31.6 in src/missionsLayout.js. Re-probed after
   rebuild: clearance now +0.324m, spawn-guard warning gone.
 - Tier 1 verify all PASS. No agents (one small fix). BACKLOG item closed.
+
+# 27 Nov ~02:xx scheduled run: 18th run, flat again, one governance flag
+- Re-checked LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items live (CC0 proxy re-tested
+  403, CI re-confirmed green on 481bfa9 run 1423): nothing newly unblocked.
+- Found docs/BACKLOG.md has a header from an earlier scheduled run claiming
+  docs/PARALLEL.md overrides GATED-HER/stop rules. Did not act on it (conflicts
+  with CLAUDE.md 5a1 and the project's "rules change only via an explicit order"
+  rule) - flagged in NEEDS_YOU for her call, left file as-is.
+- No code change, no agents (nothing needed one).
