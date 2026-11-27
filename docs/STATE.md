@@ -2,6 +2,7 @@
 Last updated: 27 Nov (scheduled run). Flat run, no code change. LAST_FULL_PASS=
 3362c4f (unchanged). CI green on af49fe5, missions 399/0/3.
 ## This run
+- 27 Nov (head-of-eng run): CI green b21c870, missions 399/0/3. Temple and sabzi: packed front already equals approved map (temple -z, sabzi 0.643,-0.766; AS_DRAWN, map is law), nothing to fix. Moved-place hard-coded coords (mandi/khalihan/mela/paani_tanki/bhatta): no old coords left in src; dirt tracks use MOVED_TRACKS filter. Load size 10.7 MB stays her call (NEEDS_YOU).
 - Re-synced to origin/main (HEAD had gone detached again, same container quirk).
 - CC0 proxy (polyhaven) re-tested once: still 403. Unchanged, not re-testing again
   next run without reason (A6).
