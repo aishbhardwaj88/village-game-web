@@ -2104,3 +2104,16 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   rule) - flagged in NEEDS_YOU for her call, left file as-is.
 - No code change, no agents (nothing needed one).
 - 27 Nov (hourly list run, Actions green on a584481): temple/sabzi fronts, moved-place coords, unsliced land builds, 10.7 MB pre-Play all already settled (handoff 25 Nov, a6c25a6); characters 4-6 MB each load after Play. missions-check 399/0/3, build:unchecked ok. No code change.
+
+# 27 Nov scheduled run: flat again, deliberately did NOT re-test the 3 blockers
+- CI confirmed green via Actions API on 23760e1 (run 1425). Fresh checkout, npm ci
+  (both as always on a fresh container).
+- Per A6 / project rule ("do not re-audit what's already measured"): the CC0 proxy,
+  map-lock question and real-browser need have each been re-tested live on 4+ of the
+  last 5 runs with the identical result every time. That pattern is itself the
+  re-audit A6 forbids, so this run trusted the standing log instead of re-pinging
+  the proxy or re-reading the project doc again.
+- BACKLOG.md's unauthorized header: left exactly as the 19th run's flag states
+  (her call, already asked once - not re-asked).
+- No new angle found, no code change, no agents. LOOKS LIST 1-8 and all 5 ACTIVE
+  BACKLOG items stand as logged.

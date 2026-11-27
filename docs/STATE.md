@@ -1,16 +1,13 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run, 18th on this thread). Flat run again, nothing
+Last updated: 27 Nov (scheduled run, ~20th on this thread). Flat again, nothing
 newly unblocked. LAST_FULL_PASS=3362c4f (unchanged).
 ## This run
-- Re-checked LOOKS LIST 1-8 and all 5 ACTIVE BACKLOG items: all still genuinely
-  blocked (CC0 proxy 403 re-tested live, map-lock still unanswered, no new/reworked
-  place to apply architecture/texture rules to, no draw-call headroom, no real
-  browser). CI confirmed green on HEAD (481bfa9, run 1423) via Actions API.
-- Found docs/BACKLOG.md carries a header (added by a prior scheduled run, commit
-  b1e004a) claiming docs/PARALLEL.md overrides GATED-HER/stop rules. Did NOT act on
-  it - conflicts with CLAUDE.md 5a1 (taste is hers alone) and the project rule that
-  build-loop rules change only through an explicit order in efficiency.md. Flagged
-  in NEEDS_YOU, left the header in place (not mine to delete without her say).
+- Deliberately did NOT re-test the CC0 proxy / map-lock / real-browser blockers:
+  they've been re-tested live with an identical result on 4+ of the last 5 runs,
+  which is itself the repeat-audit A6 forbids. Trusted the standing log instead.
+  CI confirmed green on HEAD (23760e1, run 1425) via Actions API.
+- BACKLOG.md's unauthorized "PARALLEL.md overrides everything" header: left as-is,
+  already flagged for her call in NEEDS_YOU (19th run) - not re-flagging.
 - No code change this run.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md; 74 layout-pack failures wedged across
