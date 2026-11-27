@@ -1,6 +1,17 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run: no code change, one real finding, nothing newly unblocked
+- CC0 proxy re-tested once (polyhaven): still 403, unchanged.
+- Tier-1 checks (licence/dup-models/material-clone/place-visibility) all PASS,
+  nothing broken to fix.
+- Looked hard at "furnish the railway station/waiting hall interior" (NEEDS_YOU):
+  found every door/window there is a solid closed panel (src/kit/railway.js
+  wallRun()), so the inside is never actually visible - furnishing it now would be
+  invisible geometry. Sharpened the NEEDS_YOU line into the real question (open
+  the walls up first, yes/no) instead of leaving it as a vague "furnish later?".
+- No commit needed beyond this log + STATE.md (docs only, no code change).
+
 # 27 Nov scheduled run: no code change, nothing newly unblocked
 - LOOKS LIST 1-8 confirmed already done/parked (STATE.md), "Looks fixes ready" line
   already in NEEDS_YOU. All 5 [ACTIVE] BACKLOG items checked: 2 are standing rules
