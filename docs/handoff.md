@@ -1,6 +1,18 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 27 Nov scheduled run 22: flat, CI green, nothing new unblocked
+- Re-synced to origin/main (HEAD detached again, container quirk); npm ci (node_modules
+  missing, fresh container). CI confirmed green on c107d11 (run 1463) via Actions API.
+- Re-ran tools/missions-check.mjs (cheap, no browser): 399 PASS, 0 FAIL, 3 WARN -
+  unchanged, no regression since last run.
+- LOOKS LIST 1-8 and all 7 ACTIVE BACKLOG items re-confirmed done/parked/blocked, same
+  reasons as prior runs (GATED-HER material verdict; CC0 proxy 403 re-tested earlier
+  today per 0eb8d27, not re-testing twice in one day per A6; real-browser-only checks;
+  shops-file-ownership cross-scope block on loadLandMap). No new answers in NEEDS_YOU.md
+  since last run. Per A6/project rule, not re-auditing further with no new input. No
+  code change.
+
 # 27 Nov scheduled run: LOOKS LIST checked against code + haystack matte fix
 - LOOKS LIST checked against real code, not the repeated "unchanged" note: items 1, 4, 5
   already built (code comments cite these exact playtest notes); item 6 superseded by her

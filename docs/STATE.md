@@ -1,19 +1,12 @@
 # State - rewritten every run, max 40 lines
-Last updated: 27 Nov (scheduled run 21). No code change: CI green on 970a7f5 (run 1462), missions 399/0/3, build:unchecked + 4 checks pass.
+Last updated: 27 Nov (scheduled run 22). No code change: CI green on c107d11 (run 1463), missions 399/0/3 (re-ran tools/missions-check.mjs, no regression).
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- Fixed the 27 Nov ground-shader bug (BACKLOG): gZOn_g/gZR_g/gZN_g/gZDbg_g were
-  declared only inside the zones:true GLSL block but read unconditionally by the
-  grass-patch check, so the default ground (zones:false) never declared them -
-  undeclared-identifier bug by static read. Hoisted the 4 declarations into the
-  always-included common block (src/materials.js). Full `npm run build`: licence/
-  dup-models/material-clone/place-visibility/vite build all green; world-validator
-  still crashes on this container on an unrelated pre-existing issue (dialogue
-  undefined, A7 container limit). One-off playwright check (not kept) found zero
-  shader/console errors either way, fixed or not - couldn't force the original
-  crash to reproduce here, but the bug and fix are unambiguous from the source.
-  Full detail: docs/archive/backlog-done.md (27 Nov entry).
-- Pushed as e87830b; CI confirmed green (run 1461) via Actions API this run.
+- Flat run: LOOKS LIST 1-8 and all 7 ACTIVE BACKLOG items re-confirmed done/parked/
+  blocked, same reasons as last run (GATED-HER material verdict; CC0 proxy 403 as of
+  today's earlier test; real-browser-only checks; shops-file-ownership cross-scope
+  block on loadLandMap). No new NEEDS_YOU answers from her. Per A6, did not re-run
+  the full audit - just CI check + cheap missions-check. No code change.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Remaining BACKLOG ACTIVE items: lane
   continuity, architecture standing rule, texture pipeline verify, NPC path
