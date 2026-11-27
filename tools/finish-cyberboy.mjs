@@ -4,7 +4,7 @@
  *   node tools/finish-cyberboy.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender), on the raw file, eyes/mouth picked from a head render (600 px = 0.30 m, centre x 0.002, z 0.915):
  *   echo "0.002 0.915 0.30" > cb_cam.txt ; python3 tools/face_keys.py raw.glb cb 250,330,326,330 251,402,324,402   (-> cb_keys.glb)
- *   echo "0.002 0.915 0.30 600" > cyber_head.txt ; python3 tools/eye_patch.py -- cb_keys.glb cb_eyes.glb cyber '[[250,330],[326,330]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.002 0.915 0.30 600" > cyber_head.txt ; python3 tools/eye_patch.py -- cb_keys.glb cb_eyes.glb cyber '[[250,330],[326,330]]'
  * 1. clip names -> game convention; the raw wave is a squat, replaced by a standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. Tripo skinned the jeans and the t-shirt hem to the HAND / forearm bones, so the jeans stretched up whenever he waved.
  *    The body+jeans shell (one connected piece, the arms are separate shells) is re-weighted by position:
@@ -120,11 +120,11 @@ for (const m of root.listMaterials()) m.setMetallicFactor(0).setRoughnessFactor(
 
 // 4. glasses: thin round wire rims, parented to the Head bone, sized from the eye patches (second primitive = the two eye patches)
 if (process.env.GLASSES !== '0') {
-  const patch = root.listMeshes()[0].listPrimitives()[1];
+  const patch = root.listMeshes()[0].listPrimitives()[1] || null; // 27 Nov: no eye-patch primitive any more, the eye points come from Tripo's own eyelid vertices (the ones the blink key moves)
   const head = rig.joints.find((j) => j.getName() === 'mixamorig:Head');
   const hinv = headRestInv;
-  const PP = patch.getAttribute('POSITION'), eyes = { 1: { n: 0, x: 0, y: 0, z: 0 }, [-1]: { n: 0, x: 0, y: 0, z: 0 } }, e = [0, 0, 0];
-  for (let i = 0; i < PP.getCount(); i++) { PP.getElement(i, e); const s = Math.sign(e[0]), E = eyes[s]; E.n++; E.x += e[0]; E.y += e[1]; E.z = Math.max(E.z, e[2]); }
+  const P0 = root.listMeshes()[0].listPrimitives()[0], BT = P0.listTargets()[0] && P0.listTargets()[0].getAttribute('POSITION'), PP = patch ? patch.getAttribute('POSITION') : P0.getAttribute('POSITION'), eyes = { 1: { n: 0, x: 0, y: 0, z: 0 }, [-1]: { n: 0, x: 0, y: 0, z: 0 } }, e = [0, 0, 0];
+  const dd = [0, 0, 0]; for (let i = 0; i < PP.getCount(); i++) { PP.getElement(i, e); if (!patch) { BT.getElement(i, dd); if (Math.hypot(dd[0], dd[1], dd[2]) < 1e-4) continue; } const s = Math.sign(e[0]), E = eyes[s]; E.n++; E.x += e[0]; E.y += e[1]; E.z = Math.max(E.z, e[2]); }
   const ex = [eyes[1].x / eyes[1].n, eyes[-1].x / eyes[-1].n], ey = (eyes[1].y / eyes[1].n + eyes[-1].y / eyes[-1].n) / 2;
   const mid = (ex[0] + ex[1]) / 2, ipd = Math.abs(ex[0] - ex[1]);
   // skin depth: eye patch front, nose bridge front (all non-hair vertices near the centre line at eye height), head half-width by depth at eye height

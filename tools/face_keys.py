@@ -62,4 +62,7 @@ for name,vals in [('neutral',(0,0)),('blink',(1,0)),('smile',(0,1))]:
     for o in meshes:
         kb=o.data.shape_keys.key_blocks; kb['blink'].value=vals[0]; kb['smile'].value=vals[1]
     sc.render.filepath=f'{out}_{name}.png'; bpy.ops.render.render(write_still=True)
+# 27 Nov: the render loop above leaves smile=1 as the shape-key value, and the exporter writes that as the DEFAULT mesh weight (a stretched grin at rest). Reset to 0 before export.
+for o in meshes:
+    kb=o.data.shape_keys.key_blocks; kb['blink'].value=0; kb['smile'].value=0
 bpy.ops.export_scene.gltf(filepath=out+'_keys.glb', export_morph=True, export_animations=True)

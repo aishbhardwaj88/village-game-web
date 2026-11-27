@@ -4,7 +4,7 @@
  *   node tools/finish-thief.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.0, z 0.875, 0.20 m / 600 px; eyes (232,243) (368,248), mouth corners (238,382) (352,380):
  *   echo "0.0 0.875 0.20" > th_cam.txt ; python3 tools/face_keys.py raw.glb th 232,243,368,248 238,382,352,380   (-> th_keys.glb)
- *   echo "0.0 0.875 0.20 600" > thief_head.txt ; python3 tools/eye_patch.py -- th_keys.glb th_eyes.glb thief '[[232,243],[368,248]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.0 0.875 0.20 600" > thief_head.txt ; python3 tools/eye_patch.py -- th_keys.glb th_eyes.glb thief '[[232,243],[368,248]]'
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. Jute sack + strap + mangoes (separate shells on the RIGHT shoulder, found by shell position) are rigid on Spine / Spine1 / Spine2 (+ a little RightShoulder on the strap), never an arm or hand bone.
  *    The checked lungi (found by colour in the leg shell + its two pleat shells) and the shirt hem are Hips / UpLeg / Leg only, left/right blended over the centre line, zero arm / hand weight.

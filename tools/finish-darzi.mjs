@@ -4,7 +4,7 @@
  *   node tools/finish-darzi.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender): head render centre x 0.002, z 0.915, 0.30 m / 600 px; eyes (243,306) (337,306), mouth corners (240,396) (346,396):
  *   echo "0.002 0.915 0.30" > dz_cam.txt ; python3 tools/face_keys.py raw.glb dz 243,306,337,306 240,396,346,396   (-> dz_keys.glb)
- *   echo "0.002 0.915 0.30 600" > darzi_head.txt ; python3 tools/eye_patch.py -- dz_keys.glb dz_eyes.glb darzi '[[243,306],[337,306]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.002 0.915 0.30 600" > darzi_head.txt ; python3 tools/eye_patch.py -- dz_keys.glb dz_eyes.glb darzi '[[243,306],[337,306]]'
  * Weight fix: kurta below the vest hem (y < 0.47) and the churidar = Hips / UpLeg / Leg / Foot only (left/right by x), no arm or hand weight at all.
  * Small items added here (owner rule): round wire glasses on the Head bone; a yellow tailor's tape over the shoulders and down the chest (skinned: weights copied
  * from the nearest vest vertex, arm-chain weights stripped, so it never follows the arms); the thin cord on the right wrist (weights from the forearm).
@@ -130,11 +130,11 @@ for (const m of root.listMaterials()) m.setMetallicFactor(0).setRoughnessFactor(
 
 // 4. glasses: thin round wire rims, parented to the Head bone, sized from the eye patches (second primitive = the two eye patches)
 if (process.env.GLASSES !== '0') {
-  const patch = root.listMeshes()[0].listPrimitives()[1];
+  const patch = root.listMeshes()[0].listPrimitives()[1] || null; // 27 Nov: no eye-patch primitive any more, the eye points come from Tripo's own eyelid vertices (the ones the blink key moves)
   const head = rig.joints.find((j) => j.getName() === 'mixamorig:Head');
   const hinv = headRestInv;
-  const PP = patch.getAttribute('POSITION'), eyes = { 1: { n: 0, x: 0, y: 0, z: 0 }, [-1]: { n: 0, x: 0, y: 0, z: 0 } }, e = [0, 0, 0];
-  for (let i = 0; i < PP.getCount(); i++) { PP.getElement(i, e); const s = Math.sign(e[0]), E = eyes[s]; E.n++; E.x += e[0]; E.y += e[1]; E.z = Math.max(E.z, e[2]); }
+  const P0 = root.listMeshes()[0].listPrimitives()[0], BT = P0.listTargets()[0] && P0.listTargets()[0].getAttribute('POSITION'), PP = patch ? patch.getAttribute('POSITION') : P0.getAttribute('POSITION'), eyes = { 1: { n: 0, x: 0, y: 0, z: 0 }, [-1]: { n: 0, x: 0, y: 0, z: 0 } }, e = [0, 0, 0];
+  const dd = [0, 0, 0]; for (let i = 0; i < PP.getCount(); i++) { PP.getElement(i, e); if (!patch) { BT.getElement(i, dd); if (Math.hypot(dd[0], dd[1], dd[2]) < 1e-4) continue; } const s = Math.sign(e[0]), E = eyes[s]; E.n++; E.x += e[0]; E.y += e[1]; E.z = Math.max(E.z, e[2]); }
   const ex = [eyes[1].x / eyes[1].n, eyes[-1].x / eyes[-1].n], ey = (eyes[1].y / eyes[1].n + eyes[-1].y / eyes[-1].n) / 2;
   const mid = (ex[0] + ex[1]) / 2, ipd = Math.abs(ex[0] - ex[1]);
   // skin depth: eye patch front, nose bridge front (all non-hair vertices near the centre line at eye height), head half-width by depth at eye height

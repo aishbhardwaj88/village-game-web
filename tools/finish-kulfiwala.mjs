@@ -4,7 +4,7 @@
  *   node tools/finish-kulfiwala.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.0, z 0.93, 0.20 m / 600 px; eyes (240,325) (356,325), mouth corners (258,462) (345,462):
  *   echo "0.0 0.93 0.20" > kw_cam.txt ; python3 tools/face_keys.py raw.glb kw 240,325,356,325 258,462,345,462   (-> kw_keys.glb)
- *   echo "0.0 0.93 0.20 600" > kulfiwala_head.txt ; python3 tools/eye_patch.py -- kw_keys.glb kw_eyes.glb kulfiwala '[[240,325],[356,325]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.0 0.93 0.20 600" > kulfiwala_head.txt ; python3 tools/eye_patch.py -- kw_keys.glb kw_eyes.glb kulfiwala '[[240,325],[356,325]]'
  * Red gamchha on the LEFT shoulder: found by colour, weighted to Spine2 / Neck / LeftShoulder only.
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. The whole body is one shell, so by POSITION: below the vest hem (y < 0.50, |x| < 0.125) the long kurta and the trousers are Hips / UpLeg / Leg / Foot only,

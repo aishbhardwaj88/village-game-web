@@ -1,3 +1,4 @@
+# DISABLED 27 Nov 2026: do not run. Owner rule (22 Nov): never paint, patch or project our own eyes onto a Tripo model. Kept for history only.
 # Eye patch v2: Tripo carves eyelids/lashes as thin flaps that stick out of the face; seen from below or
 # above, their stretched undersides read as grey jagged lids, thick liner bands and hooded eyes.
 # Fix (free): push the flaps behind the skin and lay a smooth, skinned patch over each eye that carries a

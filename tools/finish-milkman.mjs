@@ -11,7 +11,7 @@
  * 1b. gesture_wave = STANDING wave built from idle + the raw wave's left arm (tools/standwave.mjs); the raw clip is a squat
  * 3. matte (metalness 0)
  * 4. textures 4096 WebP q90, meshopt
- * Face pass (tools/face_keys.py, then tools/eye_patch.py, headless Blender) is run BEFORE this script on the raw file.
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh): Face pass (tools/face_keys.py, ONLY, eye_patch.py is DISABLED 27 Nov: owner rule, no patched eyes; see tools/rebuild-new-chars.sh) is run BEFORE this script on the raw file.
  */
 import { textureCompress, prune, meshopt } from '@gltf-transform/functions';
 import sharp from 'sharp';

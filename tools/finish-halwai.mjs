@@ -4,7 +4,7 @@
  *   node tools/finish-halwai.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.002, z 0.90, 0.30 m / 600 px; eyes (242,247) (336,247), mouth corners (250,333) (334,333):
  *   echo "0.002 0.90 0.30" > hw_cam.txt ; python3 tools/face_keys.py raw.glb hw 242,247,336,247 250,333,334,333   (-> hw_keys.glb)
- *   echo "0.002 0.90 0.30 600" > halwai_head.txt ; python3 tools/eye_patch.py -- hw_keys.glb hw_eyes.glb halwai '[[242,247],[336,247]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.002 0.90 0.30 600" > halwai_head.txt ; python3 tools/eye_patch.py -- hw_keys.glb hw_eyes.glb halwai '[[242,247],[336,247]]'
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. Tripo skinned the apron, the striped cloth and the lungi to the arm / hand bones (his hand touched the apron in the pictures), so the apron
  *    stretched to a spike and the lungi tore at the thigh in the wave. Every garment shell below the shirt hem (apron, cloth, waist band, back piece, lungi) is

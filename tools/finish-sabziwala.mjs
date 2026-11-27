@@ -4,7 +4,7 @@
  *   node tools/finish-sabziwala.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.0, z 0.93, 0.20 m / 600 px; eyes (225,339) (352,336), mouth corners (243,477) (352,477):
  *   echo "0.0 0.93 0.20" > sw_cam.txt ; python3 tools/face_keys.py raw.glb sw 225,339,352,336 243,477,352,477   (-> sw_keys.glb)
- *   echo "0.0 0.93 0.20 600" > sabziwala_head.txt ; python3 tools/eye_patch.py -- sw_keys.glb sw_eyes.glb sabziwala '[[225,339],[352,336]]'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.0 0.93 0.20 600" > sabziwala_head.txt ; python3 tools/eye_patch.py -- sw_keys.glb sw_eyes.glb sabziwala '[[225,339],[352,336]]'
  * Grey cloth pouch at his LEFT hip: found by grey colour in a hip box, weighted to Hips only.
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. The whole body is one shell, so by POSITION: the white dhoti (and the shirt hem over it) is Hips / UpLeg / Leg / Foot only, zero arm / hand weight, and blends back

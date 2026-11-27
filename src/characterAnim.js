@@ -44,6 +44,8 @@ const PROFILE = {
   tvuncle_sabziwala: { review: true }, // 26 Nov: Sabziwala / vegetable seller (sabziwala.glb, 1.70 m): idle, walk, run, laugh, wave, jump
   tvuncle_nai: { review: true }, // 26 Nov: Nai / barber (nai.glb, 1.72 m): idle, walk, run, laugh, wave, jump
   tvuncle_rascal: { review: true }, // 26 Nov: Rascal (thief.glb, 1.68 m, jute sack with a mango on his right shoulder): idle, walk, run, laugh, wave, jump
+  tvuncle_bystander: { review: true }, // 27 Nov: Bystander (bystander.glb): idle, walk, run, laugh, wave, jump
+  tvuncle_chowkidar: { review: true }, // 27 Nov: Chowkidar (chowkidar.glb, brown shawl on Spine/shoulders only): idle, walk, run, laugh, wave, jump
   tvuncle_didi: { review: true }, // Parlour Didi stands in the compare line-up for scale and face comparison (idle only: she has no walk/laugh review clips)
 };
 // review mode: one clip loops on every review character until reviewPlay() picks another (src/compareScene.js buttons)

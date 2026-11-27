@@ -4,7 +4,7 @@
  *   node tools/finish-nai.mjs <face-passed.glb> <out.glb> [texPx=4096]
  * Face pass first (headless Blender, raw file). Head render centre x 0.0, z 0.865, 0.20 m / 600 px; eyes (243,303) (375,303), mouth corners (262,420) (378,417):
  *   echo "0.0 0.865 0.20" > nai_cam.txt ; python3 tools/face_keys.py raw.glb nai 243,303,375,303 262,420,378,417   (-> nai_keys.glb)
- *   echo "0.0 0.865 0.20 600" > nai_head.txt ; python3 tools/eye_patch.py -- nai_keys.glb nai_eyes.glb nai '[[243,303],[375,303]]' '{"wx":0.62}'
+ * DISABLED 27 Nov (owner rule 22 Nov, no painted/patched eyes on Tripo models; eye_patch.py is NOT run, use tools/rebuild-new-chars.sh):   echo "0.0 0.865 0.20 600" > nai_head.txt ; python3 tools/eye_patch.py -- nai_keys.glb nai_eyes.glb nai '[[243,303],[375,303]]' '{"wx":0.62}'
  * White towel on the LEFT shoulder: found by colour, weighted to Spine2 / Neck / LeftShoulder / Spine1 only. Sunglasses hooked on the shirt front: found by colour, weighted to Spine2.
  * 1. clip names -> game convention; the raw wave is a squat, replaced by the standing wave (tools/standwave.mjs)
  * 2. WEIGHT FIX. The whole body is one shell, so by POSITION: the jeans (and the shirt hem over the belt) are Hips / UpLeg / Leg / Foot only, zero arm / hand weight, blending back into the
