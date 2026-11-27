@@ -2157,3 +2157,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
 - STATE.md was 56 lines (over A2's 40-line cap) - rewritten to fit.
 - No code change, no agents.
 - 27 Nov (scheduled list run): CI green on 6894618 (run 1429); list items unchanged and settled; missions-check 399/0/3 after npm ci. No code change.
+- 27 Nov (scheduled run): CI green on 8adf5ef (run 1432, confirmed via Actions API).
+  Re-synced (HEAD detached again on fresh container, same quirk - checked out main
+  from origin). npm ci (fresh container). Checked BACKLOG's 5 open items: all still
+  blocked (GATED-HER material verdict; 4x PAUSED-MAP waiting on new map; CC0 proxy
+  403 from last run, not retested per A6; M7 NPC needs draw-call headroom; shader-
+  warmup needs real browser). handoff.md entries all within the 3-day window
+  (24-27 Nov), no archiving due yet. LOOKS LIST 1-8 and NEEDS_YOU unchanged, nothing
+  new to flag. No code change, no unblocked item found.
