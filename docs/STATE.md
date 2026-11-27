@@ -13,7 +13,7 @@ LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new 
   shader/console errors either way, fixed or not - couldn't force the original
   crash to reproduce here, but the bug and fix are unambiguous from the source.
   Full detail: docs/archive/backlog-done.md (27 Nov entry).
-- Push pending this run; confirm CI green next run before trusting it further.
+- Pushed as e87830b; CI confirmed green (run 1461) via Actions API this run.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Remaining BACKLOG ACTIVE items: lane
   continuity, architecture standing rule, texture pipeline verify, NPC path
