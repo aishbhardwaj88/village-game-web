@@ -1,7 +1,8 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 22). No code change (A5 exception: one log line).
+Last updated: 28 Nov (scheduled run 23). No code change (A5 exception: one log line).
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
+- Run 23 (28 Nov): CI green on 85b2f0a (run 1489). missions 399/0/3 after npm ci. List items unchanged (settled). No notification.
 - Run 22 (28 Nov): CI confirmed green on 84305ca (run 1488) via Actions API. Did not
   re-derive LOOKS LIST/BACKLOG (A6, 21 flat runs today already confirmed identical).
   No notification (nothing new; NEEDS_YOU stall already flagged once on run 20).
