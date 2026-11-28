@@ -1,18 +1,13 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 3). No code change: CI green on 0eb4155 (run 1469), missions 399/0/3, Tier 1 chain fresh-run clean (only pre-existing known budget/character overages already in NEEDS_YOU).
+Last updated: 28 Nov (scheduled run 4). Temple/sabzi fronts verified vs map, no code change.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- CI confirmed green on 0eb4155 (run 1469) via Actions API.
-- Re-checked the LOOKS LIST (1-8) against current code, not a blind re-audit:
-  1/3/4/5/6 confirmed done (cycle physics now pedal/sprint-based, no CYCLE_ACCEL
-  left); 2 moot (25 Nov map removed chauraha blockers, her answer still open); 7
-  settled (map/textures no longer double-shipped, shader warm-up already gated);
-  8 settled (missions 399/0/3).
-- Ran Tier 1 fresh (build:unchecked + licence-audit + check-dup-models +
-  check-material-clone + place-visibility-check): all PASS, only known pre-
-  reported budget/character overages (same figures as NEEDS_YOU, not new).
-- BACKLOG's 7 ACTIVE items all still blocked (her-call/real-browser/CC0-403/
-  rework-only/out-of-scope). No new unblocked item found.
+- CI green on f7c06d6 (run 1470). missions 399/0/3; build:unchecked OK (npm ci was needed).
+- Temple/sabzi front: NO CHANGE. Packed frontYaw matches approved map (temple 179 deg = faces -z; the 152/-92 deg is the model ry in placeMoves, not the front). Both are AS_DRAWN accepted exceptions (her 25 Nov order). Only 'new_*' and zone points differ from map fronts.
+- Hard-coded old coords of moved places (mandi, khalihan, mela, paani_tanki, bhatta, temple): none in src. Only anchors.js sabzi (old-layout base, remapped by placeMoves; leave).
+- Load: load-time-test measured 3.61 MB transferred at Play ready (0.14 MB at title); NEEDS_YOU's 10.7 MB uses a different count. Remaining cuts are look calls (start area/building shapes), so not done.
+- tools/layout-tests.mjs: 74 FAIL (27 front, 28 on-road, 19 overlap), not in CI/package.json, layout is being uprooted: noted, not fixed.
+- Not done: unsliced land-layer builds.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 ## Next 5 items
