@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 14). No code change; 13 runs flat today.
+Last updated: 28 Nov (scheduled run 15). No code change; 14 runs flat today.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
 - Re-synced HEAD (detached again, known container quirk, safe per note below).
