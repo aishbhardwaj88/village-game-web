@@ -972,3 +972,4 @@
 - 28 Nov (scheduled run 15): CI green on bca1f24; list items unchanged (temple/sabzi AS_DRAWN, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3. No code change.
 - 28 Nov (scheduled run 16): CI green on 41d365a (run 1482); NEEDS_YOU.md still unanswered since 25 Nov; all ACTIVE BACKLOG items re-checked, same blockers (her-call/real-browser/CC0-403/out-of-scope). No code change, per A6 did not re-derive LOOKS LIST/BACKLOG (15 flat runs today).
 - 28 Nov (scheduled run 17): CI green on ba6e285 (1483); list items settled, missions 399/0/3, build:unchecked ok. No code change.
+- 28 Nov (scheduled run 21): CI green on a208515 (run 1487); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3, build:unchecked + 4 checks ok. No code change.

@@ -1,7 +1,8 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 20). Docs-only (A5 exception): handoff.md archived.
+Last updated: 28 Nov (scheduled run 21). No code change (A5 exception: one log line).
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
+- Run 21 (28 Nov): CI green on a208515 (run 1487). List items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call). missions 399/0/3, build:unchecked + 4 instant checks pass. No notification (nothing changed).
 - Scheduled run 20 (28 Nov): CI green on d2921f6 (1486) confirmed first. Housekeeping instead
   of another flat no-op: handoff.md had grown to 2403 lines (back to 7 Nov, past A3/A4's 3-day
   cutoff) - archived Nov 7-24 (37 entries/1443 lines) to docs/archive/handoff-history.md
