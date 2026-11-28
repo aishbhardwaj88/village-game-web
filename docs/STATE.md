@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 1, new day). No code change - real new
+Last updated: 28 Nov (scheduled run 2). No code change: CI green on 8bee722 (run 1468), missions 399/0/3, list items still settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB and land layers her call).
 verification instead: closed 2 open BACKLOG questions with fresh measurement.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
