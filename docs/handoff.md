@@ -2344,3 +2344,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   (build:unchecked+licence+dup-models+material-clone+place-visibility): all PASS,
   only known pre-reported budget/character overages. BACKLOG's 7 ACTIVE items all
   still blocked (her-call/real-browser/CC0-403/rework-only/out-of-scope).
+- 28 Nov (scheduled run 7): no code change. CI confirmed green on c33685d (run 1473)
+  via Actions API. npm ci (node_modules missing again this container), re-ran
+  missions-check.mjs fresh: 399/0/3, same 3 pre-logged WARNs. NEEDS_YOU.md checked
+  for new answers: none since 25 Nov. Per A6, did not repeat the full LOOKS LIST /
+  BACKLOG re-derivation already logged identically on runs 3-6 today - all 7 ACTIVE
+  items remain genuinely blocked (her-call, real-browser, CC0 403, out-of-scope).

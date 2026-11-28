@@ -1,11 +1,15 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 6). No code change; CI green on 22e9fb6, map-match-places 46/0 flagged, missions 399/0/3.
+Last updated: 28 Nov (scheduled run 7). No code change; CI green on c33685d, missions 399/0/3.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- CI confirmed green on 91ab1d7 (run 1471, success) via Actions API. No build run (Tier 0: docs
-  only, no diff) - node_modules was missing fresh, not installed since no code change needed it.
-- LOOKS LIST 1-8 and all BACKLOG [ACTIVE] items re-confirmed done/parked/blocked, same reasons as
-  the last several runs (see below). No new answers in docs/NEEDS_YOU.md. No new angle found.
+- CI confirmed green on c33685d (run 1473, success) via Actions API.
+- npm ci (node_modules was missing fresh again) then missions-check.mjs re-run clean: 399/0/3,
+  same 3 pre-logged WARNs (temple_bell ambient, 2 milk-stop back-of-gali spots).
+- Checked docs/NEEDS_YOU.md top entries: no new answer from her since 25 Nov (the unauthorized
+  BACKLOG.md header question is still the newest, still open).
+- Per A6, did not re-run the full LOOKS LIST / BACKLOG re-derivation again - identical result
+  logged on runs 3, 4, 5, 6 today already. All 7 ACTIVE BACKLOG items still blocked for the
+  same reasons (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 - Why every [ACTIVE] BACKLOG item is still blocked (checked again this run, not just repeated):
