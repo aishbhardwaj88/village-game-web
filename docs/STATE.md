@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 5). No code change; CI reconfirmed green, nothing new unblocked.
+Last updated: 28 Nov (scheduled run 6). No code change; CI green on 22e9fb6, map-match-places 46/0 flagged, missions 399/0/3.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
 - CI confirmed green on 91ab1d7 (run 1471, success) via Actions API. No build run (Tier 0: docs
