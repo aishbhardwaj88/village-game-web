@@ -1,5 +1,5 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 12). No code change; CI green on 2336f73, missions 399/0/3.
+Last updated: 28 Nov (scheduled run 13). No code change; CI green on 4a5d3c1, missions 399/0/3, build:unchecked ok.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
 - CI confirmed green on 2336f73 (run 1478, success) via Actions API.

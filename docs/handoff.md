@@ -2379,3 +2379,4 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   feature-complete against GAME_COMPLETE.md, every open BACKLOG item genuinely
   blocked (her-call/real-browser/CC0-403/out-of-scope). Next real driver is an
   answer from her.
+- 28 Nov (scheduled run 13): CI green on 4a5d3c1 (run 1479); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3, build:unchecked ok. No code change.
