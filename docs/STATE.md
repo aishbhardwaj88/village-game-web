@@ -1,16 +1,17 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 15). No code change; 14 runs flat today.
+Last updated: 28 Nov (scheduled run 16). No code change; 15 runs flat today.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
 - Re-synced HEAD (detached again, known container quirk, safe per note below).
+- Confirmed CI green on 41d365a (run 1482) via Actions API.
 - Checked docs/NEEDS_YOU.md: no new answer from her since 25 Nov (same long open
   list, nothing new, incl. run 10's chauraha building question).
 - Per A6/project rule (no repeat audits, measure first then propose), did not
   re-derive the LOOKS LIST or BACKLOG, or re-check CI/CC0 proxy again - identical
-  result logged 13 times already today.
-  All 7 ACTIVE BACKLOG items still blocked for the same reasons
+  result logged 14 times already today.
+  All ACTIVE BACKLOG items still blocked for the same reasons
   (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
-  13 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
+  15 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 - Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-13):
