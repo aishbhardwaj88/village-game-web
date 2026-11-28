@@ -1,13 +1,17 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 19). No code change.
+Last updated: 28 Nov (scheduled run 20). Docs-only (A5 exception): handoff.md archived.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- Scheduled run 19 (28 Nov): CI green on 17087da (run 1485), missions 399/0/3; list items (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB and land layers her call) unchanged. Prior: run 18, CI green on 88cd3b3. NEEDS_YOU.md still unanswered since
-  25 Nov. Per A6/project rule (no repeat audits), did not re-derive LOOKS LIST/BACKLOG again -
-  identical to runs 3-17 today (18 flat runs). No code change.
+- Scheduled run 20 (28 Nov): CI green on d2921f6 (1486) confirmed first. Housekeeping instead
+  of another flat no-op: handoff.md had grown to 2403 lines (back to 7 Nov, past A3/A4's 3-day
+  cutoff) - archived Nov 7-24 (37 entries/1443 lines) to docs/archive/handoff-history.md
+  append-only, diff-verified. handoff.md now ~970 lines, Nov 25-28 only.
+- NEEDS_YOU.md: all 66 lines still open, oldest since 25 Nov (3 days, ~20 flat runs today).
+  Sent one PushNotification flagging the stall - first time this loop has, since flat runs
+  only logged it in handoff.md, which nobody reads.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
-- Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-13):
+- Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-20):
   lane continuity + live NPC/wall trace (world-validator check 9) need a real browser - confirmed
   container limit (A7); CC0 prop sourcing blocked by proxy 403 (not retested today, A6); M7 flavour
   NPC needs draw-call headroom, unmeasurable without a real browser; landLayout.js dedup's last
@@ -15,8 +19,8 @@ LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new 
   library freeze is GATED-HER (taste verdict pending); architecture/texture-pipeline standing rules
   have no newly-reworked place to apply to this run.
 ## Next 5 items
-1. Watch NEEDS_YOU for her answers (chauraha blockers, anganwadi wall, free-props
-   review row, material board - many open).
+1. Watch NEEDS_YOU for her answers (chauraha blockers, anganwadi wall, free-props,
+   material board - 66 lines open).
 2. If a place gets reworked: apply texture-pipeline verify + architecture rule.
 3. Lane continuity / live NPC-path trace - try once if a real browser becomes
    available; don't loop on it meanwhile.
