@@ -1,6 +1,16 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 28 Nov scheduled run (5): no code change, nothing new unblocked
+- CI confirmed green on 91ab1d7 (run 1471, success, Actions API). Re-synced HEAD (detached again,
+  known container quirk - git fetch + checkout -B main origin/main, safe per STATE.md note).
+- LOOKS LIST 1-8 and all BACKLOG [ACTIVE] items re-confirmed done/parked/blocked, same documented
+  reasons as last several runs: CC0 proxy 403 (not retested today, A6); world-validator check 9 and
+  M7's draw-call headroom need a real browser (confirmed container limit, A7); landLayout.js dedup's
+  remaining half needs the shops worker or her OK (cross-scope); material board GATED-HER; lane/NPC
+  live-trace needs real browser. No new answers in docs/NEEDS_YOU.md. Per A6, not re-running the
+  checks a further time - no code change this run.
+
 # 27 Nov scheduled run 24: real code change, found+fixed a live boot-crash bug
 - LOOKS LIST/BACKLOG re-confirmed same state as recent entries; picked NEEDS_YOU's gurudwara/anganwadi
   wall item. src/mapCompoundWalls.js: trim each wall run to its clear stretch instead of dropping the
