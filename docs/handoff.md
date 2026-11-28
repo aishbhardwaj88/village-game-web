@@ -2326,3 +2326,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   texWarmed=92 (not stuck at 2), modelsReleased ~12.4-12.9s organically (not the
   9000ms safety timeout) - resolves the 24 Nov stuck-slot-bug question as a
   measurement artifact, archived. CC0 proxy retested (new day): still 403.
+- 28 Nov (scheduled run 3): no code change. CI confirmed green on 0eb4155 (run
+  1469). Re-checked the LOOKS LIST (1-8) against current code instead of a blind
+  audit: 1/3/4/5/6 done (cycle is pedal/sprint-based, no CYCLE_ACCEL left), 2 moot
+  (25 Nov map removed chauraha blockers), 7 settled (map/texture double-ship both
+  fixed, shader warm-up gated), 8 settled (missions 399/0/3). Ran Tier 1 fresh
+  (build:unchecked+licence+dup-models+material-clone+place-visibility): all PASS,
+  only known pre-reported budget/character overages. BACKLOG's 7 ACTIVE items all
+  still blocked (her-call/real-browser/CC0-403/rework-only/out-of-scope).
