@@ -1,8 +1,8 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 18). No code change.
+Last updated: 28 Nov (scheduled run 19). No code change.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- Scheduled run 18 (28 Nov): CI green on 88cd3b3 (run 1484). NEEDS_YOU.md still unanswered since
+- Scheduled run 19 (28 Nov): CI green on 17087da (run 1485), missions 399/0/3; list items (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB and land layers her call) unchanged. Prior: run 18, CI green on 88cd3b3. NEEDS_YOU.md still unanswered since
   25 Nov. Per A6/project rule (no repeat audits), did not re-derive LOOKS LIST/BACKLOG again -
   identical to runs 3-17 today (18 flat runs). No code change.
 ## Current state
