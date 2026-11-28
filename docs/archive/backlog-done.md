@@ -765,3 +765,18 @@ See `docs/NEEDS_YOU.md` for anything blocked on the user, written in plain langu
   chrome-headless-shell run, since replaced by the full chrome binary per the 23 Nov
   screenshot-tool fix) - but the undeclared-identifier bug and the fix are unambiguous
   from the shader source itself, independent of whether any one runtime tolerates it.
+
+- RESOLVED 28 Nov: Item 7 shader-warm-up/slot-release question (open since 24 Nov -
+  texWarmed stuck at 2, modelsReleased firing at ~9.38s on main.js's 9000ms SAFETY
+  timeout, unclear if a stuck-slot bug or a container artifact). Measured for real
+  via tools/load-time-test.mjs MARKS=1 (lightweight purpose-built Playwright script,
+  not the full npm run build chain that hangs/OOMs here) against a fresh `npm run
+  build:unchecked` dist, run twice: texWarmed=92 both times (not 2), modelsReleased
+  fired organically at 12898ms / 12387ms (not the 9000ms safety value), 0 page
+  errors. Confirms the "stuck at 2 / hits the safety timeout" reading was itself a
+  measurement artifact of whatever ran it 24 Nov, not a real stuck-slot bug - no
+  code change needed. The one real finding from these runs: Play ready took 33168ms
+  / ~31s on throttled 4G + 4x CPU (budget 10000ms) - this is the SAME pre-existing
+  load-before-Play weight already tracked in NEEDS_YOU.md ("Load size before Play is
+  about 10.7 MB, target 4-6 MB... her call"), not a new issue, just a harsher
+  synthetic condition than check-budget.js's own unthrottled number (7.2s).

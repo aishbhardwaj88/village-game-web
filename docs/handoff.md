@@ -2319,3 +2319,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   bug and fix are unambiguous. Moved the BACKLOG item to archive. Pushing now.
 
 **27 Nov (scheduled run, no code change):** CI green on 1034743 (run 1466). Temple/sabzi already as drawn (frontYaw 179/140 in mapData, 152 deg item stale again); pre-Play 10.7 MB and land layers remain her call. missions-check 399/0/3.
+- 28 Nov (scheduled run 1, new day): no code change, real new verification instead.
+  CI green on 021f5a7 (run 1467). Ran `roaming-check.mjs` for the first time ever
+  (0 FAILs, 5230 lane samples/12 roads) - closes the roads/lanes half of "NPC/animal
+  path validation". Ran `load-time-test.mjs MARKS=1` twice against a fresh build:
+  texWarmed=92 (not stuck at 2), modelsReleased ~12.4-12.9s organically (not the
+  9000ms safety timeout) - resolves the 24 Nov stuck-slot-bug question as a
+  measurement artifact, archived. CC0 proxy retested (new day): still 403.
