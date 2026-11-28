@@ -1,19 +1,20 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 10). No code change; CI green on 1faba5f, missions 399/0/3.
+Last updated: 28 Nov (scheduled run 11). No code change; CI green on 8b0baf3, missions 399/0/3.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- CI confirmed green on 68627f4 (run 1475, success) via Actions API.
+- CI confirmed green on 8b0baf3 (run 1477, success) via Actions API.
 - Checked docs/NEEDS_YOU.md top entries: no new answer from her since 25 Nov (same long
-  open list, nothing new).
-- Per A6/project rule (never invent audits or tidying to fill a run), did not re-run
-  the LOOKS LIST / BACKLOG re-derivation again - identical result logged on runs 3-8
-  today already. Did not retest the CC0 proxy again today either (same policy).
+  open list, nothing new, incl. run 10's chauraha building question).
+- Per A6/project rule (never invent audits or note tidying to fill a run; project doc
+  says measure first, don't repeat audits), did not re-run the LOOKS LIST / BACKLOG
+  re-derivation again - identical result logged on runs 3-10 today already. Did not
+  retest the CC0 proxy again today either (same policy).
   All 7 ACTIVE BACKLOG items still blocked for the same reasons
   (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
-  9 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
+  10 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
-- Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-8):
+- Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-10):
   lane continuity + live NPC/wall trace (world-validator check 9) need a real browser - confirmed
   container limit (A7); CC0 prop sourcing blocked by proxy 403 (not retested today, A6); M7 flavour
   NPC needs draw-call headroom, unmeasurable without a real browser; landLayout.js dedup's last

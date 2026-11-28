@@ -2363,3 +2363,11 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   / BACKLOG again - identical to runs 3-8 today. Per standing policy did not retest
   the CC0 proxy again today either. All 7 ACTIVE BACKLOG items still blocked the
   same way. 9 runs flat today; next real driver is an answer from her.
+- 28 Nov (scheduled run 11): no code change. CI confirmed green on 8b0baf3 (run
+  1477) via Actions API. NEEDS_YOU.md still unanswered since 25 Nov (same list,
+  incl. the chauraha "white/red building" question from run 10). Per A6/project
+  rule (no repeat audits, measure first then propose), did not re-derive the LOOKS
+  LIST or BACKLOG again - identical result on runs 3-10 today. 10 runs flat today;
+  the project is feature-complete against GAME_COMPLETE.md and every open BACKLOG
+  item is genuinely blocked (her-call/real-browser/CC0-403/out-of-scope). Next
+  real driver is an answer from her, not another pass of this loop.
