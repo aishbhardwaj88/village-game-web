@@ -1,15 +1,14 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 7). No code change; CI green on c33685d, missions 399/0/3.
+Last updated: 28 Nov (scheduled run 8). No code change; CI green on f2ade59, missions 399/0/3.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- CI confirmed green on c33685d (run 1473, success) via Actions API.
-- npm ci (node_modules was missing fresh again) then missions-check.mjs re-run clean: 399/0/3,
-  same 3 pre-logged WARNs (temple_bell ambient, 2 milk-stop back-of-gali spots).
-- Checked docs/NEEDS_YOU.md top entries: no new answer from her since 25 Nov (the unauthorized
-  BACKLOG.md header question is still the newest, still open).
+- CI confirmed green on f2ade59 (run 1474, success) via Actions API.
+- Checked docs/NEEDS_YOU.md top entries: no new answer from her since 25 Nov (same long
+  open list, nothing new).
 - Per A6, did not re-run the full LOOKS LIST / BACKLOG re-derivation again - identical result
-  logged on runs 3, 4, 5, 6 today already. All 7 ACTIVE BACKLOG items still blocked for the
+  logged on runs 3-7 today already. All 7 ACTIVE BACKLOG items still blocked for the
   same reasons (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
+  8 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 - Why every [ACTIVE] BACKLOG item is still blocked (checked again this run, not just repeated):

@@ -2350,3 +2350,10 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   for new answers: none since 25 Nov. Per A6, did not repeat the full LOOKS LIST /
   BACKLOG re-derivation already logged identically on runs 3-6 today - all 7 ACTIVE
   items remain genuinely blocked (her-call, real-browser, CC0 403, out-of-scope).
+- 28 Nov (scheduled run 8): no code change. CI confirmed green on f2ade59 (run 1474)
+  via Actions API. NEEDS_YOU.md checked for new answers: none since 25 Nov (same
+  long open list). Per A6/project rule (no repeat audits), did not re-run the LOOKS
+  LIST / BACKLOG re-derivation again - identical result logged on runs 3-7 today.
+  All 7 ACTIVE BACKLOG items remain blocked the same way (her-call/real-browser/
+  CC0-403/out-of-scope/no-reworked-place-to-apply-to). 8 runs flat today; nothing
+  new to act on until she answers something in NEEDS_YOU.md or BACKLOG unblocks.
