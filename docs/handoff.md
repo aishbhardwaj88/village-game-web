@@ -974,3 +974,11 @@
 - 28 Nov (scheduled run 17): CI green on ba6e285 (1483); list items settled, missions 399/0/3, build:unchecked ok. No code change.
 - 28 Nov (scheduled run 21): CI green on a208515 (run 1487); list items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call); missions-check 399/0/3, build:unchecked + 4 checks ok. No code change.
 - 28 Nov (scheduled run 22): CI confirmed green on 84305ca (run 1488) via Actions API. NEEDS_YOU.md still unanswered since 25 Nov (same open lines, incl. run 10's chauraha question). Per A6/project rule (no repeat audits, measure first then propose), did not re-derive the LOOKS LIST or BACKLOG again - 21 runs flat today, identical result each time. No code change; project remains feature-complete against GAME_COMPLETE.md, every open BACKLOG item genuinely blocked (her-call/real-browser/CC0-403/out-of-scope). Next real driver is an answer from her.
+- 28 Nov (scheduled run 24): no code change. CI confirmed green on c7e6391 (run
+  1490) via Actions API. NEEDS_YOU.md still unanswered since 25 Nov (same 66
+  open lines). No new commits from other workers since run 23 (origin/main ==
+  last run's HEAD). Per A6/project rule (no repeat audits, measure first then
+  propose), did not re-derive LOOKS LIST/BACKLOG again - 23 runs flat today,
+  identical result each time. Project remains feature-complete against
+  GAME_COMPLETE.md, every open BACKLOG item genuinely blocked (her-call/real-
+  browser/CC0-403/out-of-scope). Next real driver is an answer from her.
