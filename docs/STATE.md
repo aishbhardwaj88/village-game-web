@@ -1,11 +1,10 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 17). No code change.
+Last updated: 28 Nov (scheduled run 18). No code change.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- Scheduled run 17 (28 Nov): CI green on ba6e285 (run 1483). missions-check 399/0/3, build:unchecked + 4 instant checks pass.
-- List items re-read against code/handoff, all already settled (no new work): temple/sabzi AS_DRAWN (front -z, 152 deg item stale),
-  moved-place anchors follow the approved map via applyPlaceMoves (old literals only in mapPlan, shifted), pre-Play size and
-  land-layer slicing stay her call in NEEDS_YOU. No code change.
+- Scheduled run 18 (28 Nov): CI green on 88cd3b3 (run 1484). NEEDS_YOU.md still unanswered since
+  25 Nov. Per A6/project rule (no repeat audits), did not re-derive LOOKS LIST/BACKLOG again -
+  identical to runs 3-17 today (18 flat runs). No code change.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 - Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-13):
