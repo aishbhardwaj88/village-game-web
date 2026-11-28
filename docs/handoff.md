@@ -1,6 +1,15 @@
 # Handoff log - one entry per run, max 8 lines, newest on top.
 # Entries older than 3 days live in docs/archive/handoff-history.md (moved 24 Nov to handoff-pre-22nov.md, moved 26 Nov: the 22 Nov block).
 
+# 28 Nov scheduled run (14): no code change, nothing new unblocked
+- Re-synced HEAD (detached again, known container quirk - fetch + checkout -B main origin/main).
+  NEEDS_YOU.md checked: no new answer since 25 Nov (same open list, incl. run 10's chauraha
+  question). All 7 ACTIVE BACKLOG items re-checked against the same blockers as runs 3-13 today
+  (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to) - unchanged. Per A6/
+  project rule (no repeat audits, measure first then propose), did not re-derive the LOOKS LIST or
+  retest CI/CC0 proxy again - identical result logged 13 times already today. 13 runs flat; next
+  real driver is an answer from her in NEEDS_YOU.md, not another pass of this loop.
+
 # 28 Nov scheduled run (5): no code change, nothing new unblocked
 - CI confirmed green on 91ab1d7 (run 1471, success, Actions API). Re-synced HEAD (detached again,
   known container quirk - git fetch + checkout -B main origin/main, safe per STATE.md note).
