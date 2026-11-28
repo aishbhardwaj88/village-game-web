@@ -1,15 +1,17 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 21). No code change (A5 exception: one log line).
+Last updated: 28 Nov (scheduled run 22). No code change (A5 exception: one log line).
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
+- Run 22 (28 Nov): CI confirmed green on 84305ca (run 1488) via Actions API. Did not
+  re-derive LOOKS LIST/BACKLOG (A6, 21 flat runs today already confirmed identical).
+  No notification (nothing new; NEEDS_YOU stall already flagged once on run 20).
 - Run 21 (28 Nov): CI green on a208515 (run 1487). List items all settled (temple/sabzi AS_DRAWN, no stale coords, 10.7 MB pre-Play and land layers her call). missions 399/0/3, build:unchecked + 4 instant checks pass. No notification (nothing changed).
 - Scheduled run 20 (28 Nov): CI green on d2921f6 (1486) confirmed first. Housekeeping instead
   of another flat no-op: handoff.md had grown to 2403 lines (back to 7 Nov, past A3/A4's 3-day
   cutoff) - archived Nov 7-24 (37 entries/1443 lines) to docs/archive/handoff-history.md
   append-only, diff-verified. handoff.md now ~970 lines, Nov 25-28 only.
-- NEEDS_YOU.md: all 66 lines still open, oldest since 25 Nov (3 days, ~20 flat runs today).
-  Sent one PushNotification flagging the stall - first time this loop has, since flat runs
-  only logged it in handoff.md, which nobody reads.
+- NEEDS_YOU.md: all 66 lines still open, oldest since 25 Nov (3 days, ~21 flat runs today).
+  Already flagged once by PushNotification on run 20; not repeating.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
 - Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-20):
