@@ -2357,3 +2357,9 @@ needed (docs only, Tier 0). NEXT: Part B (B2 duplicate-fetch check, B6 shader me
   All 7 ACTIVE BACKLOG items remain blocked the same way (her-call/real-browser/
   CC0-403/out-of-scope/no-reworked-place-to-apply-to). 8 runs flat today; nothing
   new to act on until she answers something in NEEDS_YOU.md or BACKLOG unblocks.
+- 28 Nov (scheduled run 9): no code change. CI confirmed green on 68627f4 (run 1475)
+  via Actions API. NEEDS_YOU.md still unanswered since 25 Nov. Per A6/project rule
+  (never invent audits or note-tidying to fill a run), did not re-derive LOOKS LIST
+  / BACKLOG again - identical to runs 3-8 today. Per standing policy did not retest
+  the CC0 proxy again today either. All 7 ACTIVE BACKLOG items still blocked the
+  same way. 9 runs flat today; next real driver is an answer from her.

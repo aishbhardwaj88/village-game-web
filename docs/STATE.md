@@ -1,17 +1,19 @@
 # State - rewritten every run, max 40 lines
-Last updated: 28 Nov (scheduled run 8). No code change; CI green on f2ade59, missions 399/0/3.
+Last updated: 28 Nov (scheduled run 9). No code change; CI green on 68627f4, missions 399/0/3.
 LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new pass).
 ## This run
-- CI confirmed green on f2ade59 (run 1474, success) via Actions API.
+- CI confirmed green on 68627f4 (run 1475, success) via Actions API.
 - Checked docs/NEEDS_YOU.md top entries: no new answer from her since 25 Nov (same long
   open list, nothing new).
-- Per A6, did not re-run the full LOOKS LIST / BACKLOG re-derivation again - identical result
-  logged on runs 3-7 today already. All 7 ACTIVE BACKLOG items still blocked for the
-  same reasons (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
-  8 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
+- Per A6/project rule (never invent audits or tidying to fill a run), did not re-run
+  the LOOKS LIST / BACKLOG re-derivation again - identical result logged on runs 3-8
+  today already. Did not retest the CC0 proxy again today either (same policy).
+  All 7 ACTIVE BACKLOG items still blocked for the same reasons
+  (her-call/real-browser/CC0-403/out-of-scope/no-reworked-place-to-apply-to).
+  9 runs flat today - next real driver is an answer from her in NEEDS_YOU.md.
 ## Current state
 - Feature-complete against GAME_COMPLETE.md. Nothing newly unblocked this run.
-- Why every [ACTIVE] BACKLOG item is still blocked (checked again this run, not just repeated):
+- Why every [ACTIVE] BACKLOG item is still blocked (unchanged from runs 3-8):
   lane continuity + live NPC/wall trace (world-validator check 9) need a real browser - confirmed
   container limit (A7); CC0 prop sourcing blocked by proxy 403 (not retested today, A6); M7 flavour
   NPC needs draw-call headroom, unmeasurable without a real browser; landLayout.js dedup's last
@@ -38,4 +40,4 @@ LAST_FULL_PASS=3362c4f (Tier 2 browser step crashed, container limit, not a new 
   (world-validator/regression-check/screenshot.js's heavier chain) are flakier.
 - reference-from-unity/ not present; use docs/layout/approved-map-2026-11-25.json.
 - CC0 proxy (polyhaven/ambientcg/api.polyhaven) still 403 as of 28 Nov (tested run
-  2, not retested this run per "don't retest same day").
+  2, not retested since per "don't retest same day").
